@@ -401,7 +401,6 @@ export default function Home() {
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [celebrationExercises, setCelebrationExercises] = useState([]);
   const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
-  // ── NEW: store the previous (baseline) exercises for the share screen animation ──
   const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
@@ -566,7 +565,6 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  // ── KEY CHANGE: accept previousExercises as 4th arg ──────────────────────
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -581,7 +579,7 @@ export default function Home() {
     setCelebrationChallenges(challengesData);
     setCelebrationExercises(exercises);
     setCelebrationWorkoutName(workoutName);
-    setCelebrationPreviousExercises(previousExercises); // <-- store baseline
+    setCelebrationPreviousExercises(previousExercises);
     const showShare = () => { setShowShareWorkout(true); };
     setShowStreakCelebration(true);
     setTimeout(() => {
@@ -871,6 +869,10 @@ export default function Home() {
                   const isInCurrentSplit = trainingDays.includes(day);
                   const isRestDay = done ? false : !isInCurrentSplit;
                   const isMissed = !isRestDay && !done && isPast && !isPreJoin;
+
+                  // ── KEY FIX: past or today rest days count as "completed" visually ──
+                  const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
+
                   const size = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
                   const workoutLog = logsByDay[day];
@@ -878,21 +880,32 @@ export default function Home() {
                   const hasBubbleBtn = done && !isRestDay && workoutLog || showViewWorkout;
                   const BUBBLE_W = 274;
                   const BUBBLE_H = hasBubbleBtn ? 118 : 78;
+
                   const getBg = () => {
-                    if (isRestDay) return done ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+                    if (isRestDay) {
+                      // Past or today rest days → green (you rested as planned)
+                      if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
+                      // Future rest days → grey
+                      return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+                    }
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
                     if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
                     return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                   };
                   const getBorder = () => {
-                    if (isRestDay) return done ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
+                    if (isRestDay) {
+                      if (isPastOrTodayRestDay) return '1px solid rgba(74,222,128,0.5)';
+                      return '1px solid rgba(71,85,105,0.7)';
+                    }
                     if (done) return '1px solid rgba(147,197,253,0.5)';
                     if (isMissed) return '1px solid rgba(248,113,113,0.5)';
                     return '1px solid rgba(71,85,105,0.7)';
                   };
                   const getBoxShadow = () => {
-                    if (isRestDay && done) return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
-                    if (isRestDay) return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                    if (isRestDay) {
+                      if (isPastOrTodayRestDay) return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
+                      return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                    }
                     if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     if (isMissed) return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
@@ -938,7 +951,8 @@ export default function Home() {
                         onTouchEnd={() => setPressedDay(null)}>
 
                         {isRestDay ? (
-                          done ? (
+                          isPastOrTodayRestDay ? (
+                            // Past/today rest day — filled green tree (same as the original done=true rest day icon)
                             <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
                               <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
                               <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
@@ -952,6 +966,7 @@ export default function Home() {
                               <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
                             </svg>
                           ) : (
+                            // Future rest day — outline grey tree
                             <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
                               <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
                               <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
@@ -993,7 +1008,7 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
-                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
+                          const solidColor = isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
                             `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
@@ -1092,7 +1107,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* STAGE 1 — Streak animation (unchanged) */}
+      {/* STAGE 1 — Streak animation */}
       <AnimatePresence>
         {showStreakCelebration && (
           <motion.div
@@ -1115,7 +1130,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* STAGE 2 — Challenges (unchanged) */}
+      {/* STAGE 2 — Challenges */}
       <AnimatePresence>
         {showChallengesCelebration && celebrationChallenges.length > 0 && (
           <motion.div
@@ -1145,7 +1160,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* STAGE 3 — Share Workout (now receives previousExercises too) */}
+      {/* STAGE 3 — Share Workout */}
       <AnimatePresence>
         {showShareWorkout && (
           <ShareWorkoutScreen
