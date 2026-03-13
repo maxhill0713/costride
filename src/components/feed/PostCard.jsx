@@ -17,15 +17,19 @@ import { createPageUrl } from '@/utils';
 
 // ── Exercise row — compact version fitting 8 on screen ───────────────────────
 function ExerciseRow({ ex, idx }) {
-  const exName = ex.name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-  const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
-  const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
-  const weight = ex.weight ?? ex.weight_kg ?? '-';
+  const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '';
+  // Clean up snake_case or camelCase if the name slipped through unformatted
+  const displayName = exName
+    ? exName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    : `Exercise ${idx + 1}`;
+  const sets = ex.sets || ex.set_count || ex.setsReps?.split('x')?.[0] || '-';
+  const reps = ex.reps || ex.rep_count || ex.setsReps?.split('x')?.[1] || '-';
+  const weight = ex.weight ?? ex.weight_kg ?? ex.weight_lbs ?? '-';
 
   return (
     <div className="bg-white/5 py-1 pl-1.5 rounded-lg border border-white/10 grid gap-0.5 items-center"
       style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
-      <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{exName}</div>
+      <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{displayName}</div>
       <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center ml-0.5 py-0.5" style={{ width: 28 }}>
         {sets}
       </div>
@@ -245,7 +249,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     // Summary panel: 85% width, slightly scaled down
     const PHOTO_WIDTH = '90%';
     const SUMMARY_WIDTH = '85%';
-    const PANEL_HEIGHT = 'min(66vw, 300px)';
+    const PANEL_HEIGHT = 'min(71vw, 315px)';
     const totalReactions = Object.keys(post.reactions || {}).length;
 
     const userComment = (() => {
@@ -265,8 +269,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
     // ── Inline exercise summary JSX ──────────────────────────────────────
     const exerciseSummaryJSX = (
-      <div className="w-full h-full flex flex-col overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, rgba(10,16,35,0.98) 0%, rgba(8,12,26,0.99) 100%)' }}>
+      <div className="w-full h-full flex flex-col overflow-hidden">
         <div className="px-2 pt-2 pb-1 flex-1 min-h-0 flex flex-col">
           {/* Column headers */}
           <div className="grid gap-0.5 mb-1 items-end px-1 flex-shrink-0"
@@ -310,7 +313,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         }}>
 
         {/* ── TOP BAR ── */}
-        <div style={{ background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        <div style={{ background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)' }}
           className="px-4 pt-3.5 pb-3">
           <div className="flex items-center justify-between mb-3">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
@@ -344,24 +347,29 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
             )}
           </div>
-          <p className="text-lg font-black text-white tracking-tight leading-tight mb-2.5" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
-          <div className="flex items-center gap-2 flex-wrap">
-            {post.workout_duration && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                <Clock className="w-3 h-3 text-blue-400" /><span className="text-[11px] font-bold text-blue-300">{post.workout_duration}</span>
-              </div>
-            )}
-            {exercises.length > 0 && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.2)' }}>
-                <Dumbbell className="w-3 h-3 text-orange-400" /><span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
-              </div>
-            )}
-            {post.workout_volume && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(250,204,21,0.10)', border: '1px solid rgba(250,204,21,0.18)' }}>
-                <Zap className="w-3 h-3 text-yellow-400" /><span className="text-[11px] font-bold text-yellow-300">{post.workout_volume}</span>
-              </div>
-            )}
+          <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
+
+          {/* ── Stat row: value on top, label below, vertical separators ── */}
+          <div className="flex items-center">
+            {/* Exercises */}
+            <div className="flex flex-col items-center flex-1">
+              <span className="text-sm font-black text-white leading-tight">{exercises.length > 0 ? exercises.length : '—'}</span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
+            </div>
+            <div className="w-px self-stretch bg-white/10" />
+            {/* Duration */}
+            <div className="flex flex-col items-center flex-1">
+              <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
+            </div>
+            <div className="w-px self-stretch bg-white/10" />
+            {/* Volume */}
+            <div className="flex flex-col items-center flex-1">
+              <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
+            </div>
           </div>
+
           {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
         </div>
 
@@ -385,7 +393,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               if (Math.abs(dx) > dy) {
                 setIsDragging(true);
                 touchCurrentX.current = e.touches[0].clientX;
-                // Constrain drag: can't drag past the boundary panels
                 const rawOffset = dx;
                 const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.9;
                 const minDrag = slide === 0 ? -window.innerWidth * 0.9 : 0;
@@ -406,13 +413,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               setDragOffset(0);
             }}
           >
-            {/* ── PHOTO PANEL — 90% wide, slight left inset, rounded both sides ── */}
+            {/* ── PHOTO PANEL ── */}
             <div
               className="absolute top-0 h-full overflow-hidden"
               style={{
                 left: '3%',
                 width: '87%',
-                borderRadius: '8px 8px 8px 8px',
+                borderRadius: '8px',
                 transform: `translateX(${
                   isDragging
                     ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)`
@@ -435,17 +442,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                   objectPosition: 'center center',
                 }}
               />
-              {/* Top/bottom fade */}
-              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
             </div>
 
-            {/* ── SUMMARY PANEL — 85% wide, slides in from right ── */}
+            {/* ── SUMMARY PANEL ── */}
             <div
               className="absolute top-0 h-full overflow-hidden"
               style={{
                 width: SUMMARY_WIDTH,
-                left: '10%', // peeks 10% from left edge when photo is visible
+                left: '10%',
                 transform: `translateX(${
                   isDragging
                     ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)`
@@ -456,10 +460,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               }}
             >
               {exerciseSummaryJSX}
-              {/* Swipe back hint arrow */}
-              <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none">
-                <ChevronDown className="w-5 h-5 text-white rotate-90" />
-              </div>
             </div>
 
           </div>
@@ -474,7 +474,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
         {/* ── BOTTOM BAR ── */}
         <div className="flex items-center justify-between px-3 py-1"
-          style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
+          style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', minHeight: 44 }}>
           {currentUser && (
             <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
               className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
