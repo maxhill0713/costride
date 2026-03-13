@@ -672,24 +672,12 @@ export default function Home() {
             <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
               CoStride
             </h1>
-            <Link
-              to={createPageUrl('Friends')}
-              onClick={() => {
-                if (currentUser) {
-                  base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                }
-              }}
-              className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
-              <div className="relative">
-                <FriendsIcon className="w-7 h-7 text-cyan-400" />
-                {(friendPosts.length > 0 || notifications.length > 0) && (
-                  !currentUser?.last_friends_view ||
-                  friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view) ||
-                  notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view)) && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
-                )}
-              </div>
-            </Link>
+            <button
+              onClick={() => setShowFriendsModal(true)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu -mr-2">
+              <span className="text-[11px] font-semibold">{friends.length}</span>
+              <span className="text-[11px] font-medium">Friends</span>
+            </button>
           </div>
         </div>
 
