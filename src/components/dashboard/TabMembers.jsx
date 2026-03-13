@@ -79,7 +79,8 @@ export default function TabMembers({
       ═══════════════════════════════════════════════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
 
-        {/* ── Members Table ── */}
+        {/* ── Left Column: Members Table + Push Notifications ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Card style={{ overflow: 'hidden' }}>
           {/* Filter bar */}
           <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
