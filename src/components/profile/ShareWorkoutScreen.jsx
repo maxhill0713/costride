@@ -185,15 +185,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const handleShare = async () => {
     setSharing(true);
     try {
-      const exerciseSummary = exercises
-        ?.map(ex => `${ex.exercise || ex.name}  ${ex.setsReps || ''}  ${ex.weight ? ex.weight + 'kg' : ''}`.trim())
-        .filter(Boolean).join('\n') || '';
-
-      const content = [
-        `💪 Just finished ${workoutName}!`,
-        comment ? `\n${comment}` : '',
-        exerciseSummary ? `\n\n${exerciseSummary}` : '',
-      ].join('').trim();
+      const content = comment ? comment.trim() : '';
 
       // Total volume: sum of (sets × reps × weight) across all exercises
       const totalVolume = exercises?.reduce((acc, ex) => {
