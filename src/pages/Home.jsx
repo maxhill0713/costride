@@ -500,6 +500,68 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id)];
+  const { data: friendUsersList = [] } = useQuery({
+    queryKey: ['friendUsers', knownUserIds.join(',')],
+    queryFn: async () => {
+      if (knownUserIds.length === 0) return [];
+      const results = await Promise.all(knownUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null)));
+      return results.filter(Boolean);
+    },
+    enabled: (showFriendsModal || showAddFriendModal) && knownUserIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: allRecentCheckIns = [] } = useQuery({
+    queryKey: ['checkIns', 'recent90'],
+    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: ninetyDaysAgo } }, '-check_in_date', 1000),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: recentLifts = [] } = useQuery({
+    queryKey: ['recentLifts', 'friends'],
+    queryFn: () => base44.entities.Lift.filter({ is_pr: true, created_date: { $gte: sevenDaysAgoLifts } }, '-created_date', 50),
+    enabled: !!currentUser && friends.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['searchUsers', friendSearchQuery],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 5 }).then(res => res.data.users || []),
+    enabled: friendSearchQuery.length >= 2,
+    staleTime: 30000,
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); setShowAddFriendModal(false); setFriendSearchQuery(''); },
+  });
+  const acceptFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
+    onSuccess: () => { queryClient.invalidateQueries(['friendRequests']); queryClient.invalidateQueries(['friends']); },
+  });
+  const rejectFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
+    onSuccess: () => queryClient.invalidateQueries(['friendRequests']),
+  });
+  const removeFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
+    onSuccess: () => queryClient.invalidateQueries(['friends']),
+  });
+
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
   const { data: checkInUsers = [] } = useQuery({
