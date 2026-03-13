@@ -862,7 +862,13 @@ export default function Home() {
           src={POSE_1_URL}
           alt="streak"
           className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} animate-[breathe_3s_ease-in-out_infinite]`}
-          style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
+          style={{
+            objectFit: 'contain',
+            filter: workoutLoggedToday
+              ? 'drop-shadow(0 0 1px rgba(255,150,0,0.3))'
+              : 'drop-shadow(0 0 1px rgba(255,150,0,0.3)) saturate(0) brightness(1.8) sepia(1) hue-rotate(5deg) saturate(3) brightness(0.85)',
+            opacity: workoutLoggedToday ? 1 : 0.55,
+          }} />
         <span
           className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
           style={{
