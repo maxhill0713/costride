@@ -907,7 +907,9 @@ export default function Home() {
           <HeaderContent compact={false} />
         </div>
 
-        <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto px-4 py-2 pb-32">
+          {/* Main content */}
+          <div className={`lg:col-span-2 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
             <>
               {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
@@ -1309,70 +1311,68 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {/* ── Social Feed ── */}
-          {friends.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 pt-1">
-                <FriendsIcon className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-sm font-black text-white tracking-tight">Social Feed</h2>
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 pt-1">
+              <FriendsIcon className="w-4 h-4 text-cyan-400" />
+              <h2 className="text-sm font-black text-white tracking-tight">Feed</h2>
+            </div>
 
-              {filteredActivityCards.length > 0 && (
-                <div className="space-y-3">
-                  {filteredActivityCards.map(card => (
-                    <div key={card.id} style={{ background:'#1e293b', border:'1.5px solid #334155', borderBottom:'4px solid #0f172a', borderRadius:16 }} className="relative overflow-hidden">
-                      <button onClick={() => dismissCard(card.id)} className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all text-[10px] font-bold z-10">✕</button>
-                      <div className="px-4 py-4 flex items-center gap-4">
-                        <span className="text-3xl select-none flex-shrink-0">{card.emoji}</span>
-                        <div className="flex-1 min-w-0 pr-4">
-                          <p className="font-extrabold text-white text-[14px] leading-tight">{card.title}</p>
-                          <p className="text-[12px] text-slate-400 mt-1 font-medium">{card.message}</p>
-                        </div>
+            {filteredActivityCards.length > 0 && (
+              <div className="space-y-3">
+                {filteredActivityCards.map(card => (
+                  <div key={card.id} style={{ background:'#1e293b', border:'1.5px solid #334155', borderBottom:'4px solid #0f172a', borderRadius:16 }} className="relative overflow-hidden">
+                    <button onClick={() => dismissCard(card.id)} className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all text-[10px] font-bold z-10">✕</button>
+                    <div className="px-4 py-4 flex items-center gap-4">
+                      <span className="text-3xl select-none flex-shrink-0">{card.emoji}</span>
+                      <div className="flex-1 min-w-0 pr-4">
+                        <p className="font-extrabold text-white text-[14px] leading-tight">{card.title}</p>
+                        <p className="text-[12px] text-slate-400 mt-1 font-medium">{card.message}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-              {activityFeed.length > 0 && (
-                <div className="space-y-3">
-                  {activityFeed.map(activity =>
-                    activity.type === 'notification' ? (
-                      <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
-                        <div className="p-3"><p className="text-xs text-white leading-tight">{activity.message}</p></div>
-                      </Card>
-                    ) : (
-                      <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
-                        <div className="p-3">
-                          <div className="flex items-center gap-3">
-                            <Link to={createPageUrl('UserProfile') + `?id=${activity.friendId}`} className="flex-shrink-0">
-                              {activity.friendAvatar
-                                ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30" />
-                                : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30"><span className="text-white font-bold text-sm">{activity.friendName?.charAt(0)?.toUpperCase()||'U'}</span></div>}
-                            </Link>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-white leading-tight"><span className="font-semibold">{activity.friendName}</span> <span className="text-slate-300">{activity.message}</span>{activity.emoji && <span className="ml-1">{activity.emoji}</span>}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] text-slate-500">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
-                                {activity.type === 'pr' && <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">🏆 PR</Badge>}
-                              </div>
+            {activityFeed.length > 0 && (
+              <div className="space-y-3">
+                {activityFeed.map(activity =>
+                  activity.type === 'notification' ? (
+                    <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
+                      <div className="p-3"><p className="text-xs text-white leading-tight">{activity.message}</p></div>
+                    </Card>
+                  ) : (
+                    <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
+                      <div className="p-3">
+                        <div className="flex items-center gap-3">
+                          <Link to={createPageUrl('UserProfile') + `?id=${activity.friendId}`} className="flex-shrink-0">
+                            {activity.friendAvatar
+                              ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30" />
+                              : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30"><span className="text-white font-bold text-sm">{activity.friendName?.charAt(0)?.toUpperCase()||'U'}</span></div>}
+                          </Link>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white leading-tight"><span className="font-semibold">{activity.friendName}</span> <span className="text-slate-300">{activity.message}</span>{activity.emoji && <span className="ml-1">{activity.emoji}</span>}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] text-slate-500">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
+                              {activity.type === 'pr' && <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">🏆 PR</Badge>}
                             </div>
                           </div>
                         </div>
-                      </Card>
-                    )
-                  )}
-                </div>
-              )}
+                      </div>
+                    </Card>
+                  )
+                )}
+              </div>
+            )}
 
-              {socialFeedPosts.length > 0 && (
-                <div className="space-y-3">
-                  {socialFeedPosts.map(post => (
-                    <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            {socialFeedPosts.length > 0 && (
+              <div className="space-y-3">
+                {socialFeedPosts.map(post => (
+                  <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+                ))}
+              </div>
+            )}
+          </div>
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
@@ -1387,8 +1387,42 @@ export default function Home() {
               </div>
             </Card>
           )}
-        </div>
-      </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="hidden lg:block space-y-4">
+           {/* Recent Posts */}
+           {socialFeedPosts.length > 0 && (
+             <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-2xl p-4 space-y-3 sticky top-24 max-h-[calc(100vh-150px)] overflow-y-auto">
+               <h3 className="text-sm font-black text-white tracking-tight">Recent</h3>
+               <div className="space-y-2">
+                 {socialFeedPosts.slice(0, 5).map(post => (
+                   <Link key={post.id} to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                       {post.member_avatar ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{post.member_name?.charAt(0)?.toUpperCase()}</span>}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                       <p className="text-xs font-semibold text-white truncate">{post.member_name}</p>
+                       <p className="text-[10px] text-slate-400 truncate">{post.content?.substring(0, 30)}...</p>
+                     </div>
+                   </Link>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           {/* Upcoming Events */}
+           {memberGym?.id && (
+             <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-2xl p-4 space-y-3 sticky top-[30rem] max-h-[calc(100vh-500px)] overflow-y-auto">
+               <h3 className="text-sm font-black text-white tracking-tight">Upcoming</h3>
+               <div className="space-y-2 text-xs text-slate-300">
+                 <p className="text-center py-4">No upcoming events</p>
+               </div>
+             </div>
+           )}
+          </div>
+          </div>
+          </div>
 
       {/* STAGE 1 — Streak animation */}
       <AnimatePresence>
