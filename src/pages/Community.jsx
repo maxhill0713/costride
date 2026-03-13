@@ -66,7 +66,6 @@ function filterByTime(sets, filter){
   return sets
 }
 
-// Flatten WorkoutLog exercises into flat set records
 function flattenWorkoutLogs(logs, userMap={}){
   const flat = []
   logs.forEach(log=>{
@@ -136,7 +135,8 @@ function Dropdown({options,value,onChange}){
       {open&&(
         <div style={{
           position:'absolute',top:'110%',right:0,minWidth:170,borderRadius:14,overflow:'hidden',
-          background:'#0d1e3d',border:'1px solid rgba(255,255,255,0.1)',zIndex:50,
+          background:'linear-gradient(160deg, rgba(15,23,42,0.98) 0%, rgba(10,16,30,0.99) 100%)',
+          border:'1px solid rgba(255,255,255,0.1)',zIndex:50,
           boxShadow:'0 16px 48px rgba(0,0,0,0.6)',
         }}>
           {options.map(o=>(
@@ -216,7 +216,7 @@ function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, o
       <div style={{
         position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
         display:'flex',flexDirection:'column',
-        background:'linear-gradient(175deg,#020918 0%,#050e28 35%,#030c22 65%,#010510 100%)',
+        background:'linear-gradient(135deg, #020817 0%, #0f1729 35%, #0c1a3a 65%, #020817 100%)',
         animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
         overflow:'hidden',
       }}>
@@ -409,7 +409,12 @@ export default function Community(){
   return (
     <>
       <style>{LBOARD_CSS}</style>
-      <div style={{minHeight:'100vh',background:'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',fontFamily:"'Outfit',system-ui,sans-serif",color:'#e2e8f0'}}>
+      <div style={{
+        minHeight:'100vh',
+        background:'linear-gradient(135deg, #020817 0%, #0f1729 35%, #0c1a3a 65%, #020817 100%)',
+        fontFamily:"'Outfit',system-ui,sans-serif",
+        color:'#e2e8f0',
+      }}>
         <div style={{maxWidth:480,margin:'0 auto',padding:'0 0 32px'}}>
 
           {/* HEADER */}
@@ -427,7 +432,7 @@ export default function Community(){
           <div style={{padding:'0 14px',display:'flex',flexDirection:'column',gap:12}}>
 
             {/* PERSONAL CARD */}
-            <div style={{borderRadius:20,overflow:'hidden',background:'linear-gradient(135deg,rgba(15,30,65,0.95),rgba(8,16,31,0.98))',border:`1px solid rgba(${liftMeta.colorRgb},0.25)`,boxShadow:'0 4px 32px rgba(0,0,0,0.4)'}}>
+            <div style={{borderRadius:20,overflow:'hidden',background:'linear-gradient(135deg,rgba(15,23,42,0.75),rgba(10,15,30,0.90))',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',border:`1px solid rgba(${liftMeta.colorRgb},0.25)`,boxShadow:'0 4px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)'}}>
               <div style={{padding:'20px 20px 18px'}}>
                 {myEntry ? (
                   <>
@@ -474,7 +479,7 @@ export default function Community(){
             )}
 
             {/* COMMUNITY STATS */}
-            <div style={{borderRadius:20,padding:'18px 20px',background:'linear-gradient(135deg,rgba(15,30,65,0.95),rgba(8,16,31,0.98))',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 4px 32px rgba(0,0,0,0.4)'}}>
+            <div style={{borderRadius:20,padding:'18px 20px',background:'linear-gradient(135deg,rgba(15,23,42,0.75),rgba(10,15,30,0.90))',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 4px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)'}}>
               <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:16}}>
                 <Users2 size={14} style={{color:'#64748b'}}/>
                 <span style={{fontSize:14,fontWeight:800,color:'#fff'}}>Community Activity</span>
@@ -500,11 +505,13 @@ export default function Community(){
                 setLbOpen(false)
               }}
               style={{
-                width:'100%',padding:'16px',borderRadius:20,border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer',
-                background:'linear-gradient(135deg,rgba(15,30,65,0.95),rgba(8,16,31,0.98))',
+                width:'100%',padding:'16px',borderRadius:20,cursor:'pointer',
+                background:'linear-gradient(135deg,rgba(15,23,42,0.75),rgba(10,15,30,0.90))',
+                backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',
+                border:'1px solid rgba(255,255,255,0.08)',
                 color:'#e2e8f0',fontSize:15,fontWeight:800,
                 display:'flex',alignItems:'center',justifyContent:'center',gap:8,
-                boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+                boxShadow:'0 4px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)',
               }}
             >
               Compare Other Lifts <ChevronRight style={{width:16,height:16,color:'#64748b'}}/>
