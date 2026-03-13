@@ -12,10 +12,10 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-start justify-center pt-12 px-4 bg-slate-950/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[999] flex items-start justify-center pt-12 px-4 bg-slate-950/60 backdrop-blur-sm"
       onClick={handleBackdropClick}>
 
-      <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative">
+      <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative z-[9999]">
         {/* Streak Freezes - top right */}
         <div className="absolute top-4 right-5 flex items-center gap-1.5">
           <Snowflake className="w-4 h-4 text-cyan-400" />
