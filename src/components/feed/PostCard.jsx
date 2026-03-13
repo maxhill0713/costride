@@ -113,16 +113,22 @@ function ReportModal({ open, onClose, postId }) {
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/90 backdrop-blur-xl border border-slate-700/40 rounded-3xl shadow-2xl shadow-black/60 text-white overflow-hidden">
 
         {/* Header */}
-        <div className="px-5 pt-5 pb-3 border-b border-slate-700/40">
-          <h3 className="text-xl font-black text-white tracking-tight">Report</h3>
-          <p className="text-slate-400 text-xs mt-1 font-medium">Your report is anonymous</p>
+        <div className="px-5 pt-5 pb-3">
+          <h3 className="text-xl font-black text-white tracking-tight text-center">Report</h3>
+          <p className="text-slate-400 text-xs mt-1 font-medium text-center">Your report is anonymous</p>
         </div>
 
         {/* Categories */}
-        <div className="px-3 py-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
+        <div className="px-3 pb-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
           {REPORT_CATEGORIES.map((cat) => {
             const isSelected = selected === cat.id;
             const isExpanded = expanded === cat.id;
+
+            // Single button: tapping the square fills it AND toggles the definition
+            const handleRowPress = () => {
+              setSelected(isSelected ? null : cat.id);
+              setExpanded(isExpanded ? null : cat.id);
+            };
 
             return (
               <div
@@ -133,36 +139,22 @@ function ReportModal({ open, onClose, postId }) {
                     : 'border-slate-700/40 bg-slate-800/50'
                 }`}>
 
-                {/* Row */}
+                {/* Row — square on the RIGHT, label pushed all the way left */}
                 <div className="flex items-center gap-3 px-3 py-2.5">
-                  {/* Checkbox */}
-                  <button
-                    onClick={() => setSelected(isSelected ? null : cat.id)}
-                    className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150 ${
-                      isSelected
-                        ? 'bg-blue-500 border-blue-500 shadow-sm shadow-blue-500/40'
-                        : 'border-slate-600 bg-slate-700/50'
-                    }`}>
-                    {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                  </button>
-
-                  {/* Label */}
+                  {/* Label — takes all available space, flush left */}
                   <span className={`flex-1 text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-200'}`}>
                     {cat.label}
                   </span>
 
-                  {/* Expand toggle */}
+                  {/* Square toggle — fills on select, expands definition */}
                   <button
-                    onClick={() => toggleExpand(cat.id)}
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-150 ${
-                      isExpanded
-                        ? 'bg-slate-600 text-white'
-                        : 'bg-slate-700/60 text-slate-400 hover:text-slate-200'
+                    onClick={handleRowPress}
+                    className={`w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150 ${
+                      isSelected
+                        ? 'bg-blue-500 border-blue-500 shadow-sm shadow-blue-500/40'
+                        : 'border-slate-600 bg-slate-700/50 hover:border-slate-400'
                     }`}>
-                    <ChevronDown
-                      className="w-4 h-4 transition-transform duration-200"
-                      style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    />
+                    {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                   </button>
                 </div>
 
@@ -176,7 +168,6 @@ function ReportModal({ open, onClose, postId }) {
                       transition={{ duration: 0.2, ease: 'easeInOut' }}
                       className="overflow-hidden">
                       <div className="px-4 pb-3 pt-0">
-                        <div className="h-px bg-slate-700/50 mb-2.5" />
                         <p className="text-xs text-slate-400 leading-relaxed">{cat.definition}</p>
                       </div>
                     </motion.div>
@@ -188,7 +179,7 @@ function ReportModal({ open, onClose, postId }) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-slate-700/40">
+        <div className="px-4 py-3">
           <AnimatePresence>
             {selected && (
               <motion.button
