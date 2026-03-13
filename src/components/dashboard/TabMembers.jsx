@@ -324,10 +324,9 @@ export default function TabMembers({
             </div>
           </Card>
 
-        </div>{/* end right sidebar */}
-      </div>{/* end top grid */}
+        </div>
+      </div>
 
-      {/* Habit Tracker — full width */}
       <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
 
     </div>
