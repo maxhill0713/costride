@@ -5,7 +5,6 @@ import { Card, SectionTitle, Empty, Avatar } from './DashboardPrimitives';
 
 export default function TabContent({
   events, challenges, polls, posts, checkIns, ci30, avatarMap,
-  leaderboardView, setLeaderboardView,
   openModal, now,
 }) {
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
