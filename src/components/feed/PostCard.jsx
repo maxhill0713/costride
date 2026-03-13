@@ -406,12 +406,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               setDragOffset(0);
             }}
           >
-            {/* ── PHOTO PANEL — 90% wide, left-aligned, rounded ── */}
+            {/* ── PHOTO PANEL — 90% wide, slight left inset, rounded both sides ── */}
             <div
-              className="absolute left-0 top-0 h-full overflow-hidden"
+              className="absolute top-0 h-full overflow-hidden"
               style={{
-                width: PHOTO_WIDTH,
-                borderRadius: '0 8px 8px 0',
+                left: '3%',
+                width: '87%',
+                borderRadius: '8px 8px 8px 8px',
                 transform: `translateX(${
                   isDragging
                     ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)`
@@ -437,10 +438,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               {/* Top/bottom fade */}
               <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
               <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
-              {/* Swipe hint arrow */}
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none">
-                <ChevronDown className="w-5 h-5 text-white -rotate-90" />
-              </div>
             </div>
 
             {/* ── SUMMARY PANEL — 85% wide, slides in from right ── */}
@@ -465,11 +462,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
             </div>
 
-            {/* Dot indicators */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none">
-              <div style={{ width: slide === 0 ? 16 : 6, height: 6, borderRadius: 999, background: slide === 0 ? 'white' : 'rgba(255,255,255,0.35)', transition: 'all 0.3s' }} />
-              <div style={{ width: slide === 1 ? 16 : 6, height: 6, borderRadius: 999, background: slide === 1 ? 'white' : 'rgba(255,255,255,0.35)', transition: 'all 0.3s' }} />
-            </div>
           </div>
         ) : (
           /* No photo — show exercise summary directly */
@@ -483,7 +475,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         {/* ── BOTTOM BAR ── */}
         <div className="flex items-center justify-between px-3 py-1"
           style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
-          {currentUser && !isOwnProfile && (
+          {currentUser && (
             <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
               className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
               {userStreakVariant === 'sunglasses'
