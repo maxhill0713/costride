@@ -195,6 +195,15 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         exerciseSummary ? `\n\n${exerciseSummary}` : '',
       ].join('').trim();
 
+      // Total volume: sum of (sets × reps × weight) across all exercises
+      const totalVolume = exercises?.reduce((acc, ex) => {
+        const s = parseFloat(ex.sets) || 0;
+        const r = parseFloat(ex.reps || ex.setsReps?.split('x')?.[1]) || 0;
+        const w = parseFloat(ex.weight) || 0;
+        return acc + s * r * w;
+      }, 0);
+      const volumeStr = totalVolume > 0 ? `${Math.round(totalVolume).toLocaleString()} kg` : null;
+
       await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: currentUser.full_name,
@@ -205,6 +214,10 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         likes: 0, comments: [], reactions: {},
         is_system_generated: false,
         allow_gym_repost: false,
+        // ── Fields consumed by GymPostCard Strava layout ──
+        workout_name: workoutName || null,
+        workout_exercises: exercises || [],
+        workout_volume: volumeStr,
       });
 
       toast.success('Workout shared with your friends! 🔥');
