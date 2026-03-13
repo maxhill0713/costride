@@ -420,10 +420,8 @@ export default function Home() {
   const [summaryLog, setSummaryLog] = useState(null);
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
-  const [showStickyHeader, setShowStickyHeader] = useState(false);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     injectStreakStyles();
@@ -602,21 +600,6 @@ export default function Home() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
-  
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScroll = window.scrollY;
-      if (lastScrollY.current - currentScroll > 10) {
-        setShowStickyHeader(true);
-      } else if (currentScroll - lastScrollY.current > 50 || currentScroll < 60) {
-        setShowStickyHeader(false);
-      }
-      lastScrollY.current = currentScroll;
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
