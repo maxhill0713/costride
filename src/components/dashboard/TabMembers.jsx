@@ -13,7 +13,7 @@ import LeaderboardSection from '../leaderboard/LeaderboardSection';
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
   atRisk, atRiskMembersList, retentionRate, totalMembers, activeThisWeek, newSignUps, weeklyChangePct,
-  avatarMap,
+  avatarMap, now: nowProp,
   memberFilter, setMemberFilter, memberSearch, setMemberSearch, memberSort, setMemberSort,
   memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
   openModal, now,
