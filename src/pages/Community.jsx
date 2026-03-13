@@ -28,18 +28,19 @@ function matchLift(name = '') {
 }
 
 // Flatten WorkoutLog records into individual exercise entries
-function flattenWorkoutLogs(logs) {
+function flattenWorkoutLogs(logs, userMap = {}) {
   const flat = [];
   logs.forEach(log => {
+    const userName = userMap[log.user_id] || log.created_by?.split('@')[0] || 'Athlete';
     (log.exercises || []).forEach(ex => {
       const w = parseFloat(ex.weight || 0);
       if (!w) return;
       flat.push({
-        user_id:   log.user_id,
-        user_name: log.user_name || log.created_by || 'Athlete',
-        exercise:  ex.exercise || '',
-        weight:    w,
-        unit:      'kg',
+        user_id:     log.user_id,
+        user_name:   userName,
+        exercise:    ex.exercise || '',
+        weight:      w,
+        unit:        'kg',
         logged_date: log.completed_date || log.created_date,
       });
     });
