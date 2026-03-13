@@ -638,19 +638,37 @@ export default function GymCommunity() {
   ).map(item => ({ ...item, streak: calcUserStreak(item.userId) }))
    .sort((a, b) => b.streak - a.streak).slice(0, 10);
 
-  const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
-  const progressLeaderboard = Object.values(
-    lifts.reduce((acc, lift) => {
-      if (new Date(lift.lift_date) >= weekAgoDate) {
+  const calculateProgressLeaderboard = (timeFilterDays) => {
+    const cutoffDate = timeFilterDays === null ? new Date(0) : new Date(now.getTime() - timeFilterDays * 86400000);
+    const userMaxWeights = {};
+    const userPrevMaxWeights = {};
+    
+    lifts.forEach(lift => {
+      const liftDate = new Date(lift.lift_date);
+      if (liftDate >= cutoffDate) {
         const key = `${lift.member_id}-${lift.exercise}`;
-        if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 };
-        else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; }
+        if (!userMaxWeights[key]) userMaxWeights[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, prevMax: 0 };
+        if (lift.weight_lbs > userMaxWeights[key].maxWeight) { userMaxWeights[key].prevMax = userMaxWeights[key].maxWeight; userMaxWeights[key].maxWeight = lift.weight_lbs; }
       }
-      return acc;
-    }, {})
-  ).map(item => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax }))
-   .filter(item => item.increase > 0)
-   .sort((a, b) => b.increase - a.increase).slice(0, 10);
+    });
+    
+    return Object.values(userMaxWeights)
+      .map(item => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, increase: item.maxWeight - item.prevMax }))
+      .filter(item => item.increase > 0)
+      .reduce((acc, item) => {
+        const existing = acc.find(a => a.userId === item.userId);
+        if (existing) existing.increase += item.increase;
+        else acc.push(item);
+        return acc;
+      }, [])
+      .sort((a, b) => b.increase - a.increase)
+      .slice(0, 10);
+  };
+
+  const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
+  const progressLeaderboardWeek = calculateProgressLeaderboard(7);
+  const progressLeaderboardMonth = calculateProgressLeaderboard(30);
+  const progressLeaderboardAllTime = calculateProgressLeaderboard(null);
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
