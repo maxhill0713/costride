@@ -157,7 +157,7 @@ function Dropdown({options,value,onChange}){
 
 /* ───────────────── LEADERBOARD PANEL ───────────────── */
 
-function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, onClose }){
+function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, onClose, userAvatarMap={} }){
   const podium = leaderboard.slice(0,3)
   const restList = leaderboard.slice(3,10)
   const maxVal = leaderboard.length>0 ? Math.max(...leaderboard.map(e=>e.weight),1) : 1
