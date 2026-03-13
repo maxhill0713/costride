@@ -1,228 +1,172 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Users, Trophy, Plus, X, Check, Zap, Star, Crown, Flame, Medal } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trophy, TrendingUp, Users, Flame } from 'lucide-react';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const LIFTS = [
-  { id: 'overall',  label: 'Overall',  emoji: '⚡', color: '#38bdf8' },
-  { id: 'squat',    label: 'Squat',    emoji: '🦵', color: '#f59e0b' },
-  { id: 'bench',    label: 'Bench',    emoji: '💪', color: '#0ea5e9' },
-  { id: 'deadlift', label: 'Deadlift', emoji: '🏋️', color: '#ef4444' },
-  { id: 'ohp',      label: 'OHP',      emoji: '☝️', color: '#10b981' },
-  { id: 'row',      label: 'Row',      emoji: '🔁', color: '#a78bfa' },
+  { id: 'all',      label: 'All Lifts',      emoji: '⚡', color: '#38bdf8',  keywords: [] },
+  { id: 'squat',    label: 'Squat',          emoji: '🦵', color: '#f59e0b',  keywords: ['squat','back squat','front squat'] },
+  { id: 'bench',    label: 'Bench Press',    emoji: '💪', color: '#0ea5e9',  keywords: ['bench','bench press','chest press'] },
+  { id: 'deadlift', label: 'Deadlift',       emoji: '🏋️', color: '#ef4444', keywords: ['deadlift','dead lift'] },
+  { id: 'ohp',      label: 'Overhead Press', emoji: '☝️', color: '#10b981', keywords: ['overhead press','ohp','shoulder press','military press'] },
+  { id: 'row',      label: 'Barbell Row',    emoji: '🔁', color: '#a78bfa',  keywords: ['barbell row','bent over row','row'] },
 ];
 
-const RANK_GRADIENTS = [
-  'linear-gradient(135deg,#f59e0b 0%,#fbbf24 100%)',
-  'linear-gradient(135deg,#94a3b8 0%,#cbd5e1 100%)',
-  'linear-gradient(135deg,#b45309 0%,#d97706 100%)',
+const TIME_FILTERS = [
+  { id: 'week',  label: 'This Week' },
+  { id: 'month', label: 'This Month' },
+  { id: 'all',   label: 'All Time' },
 ];
-const RANK_ICONS = ['🥇','🥈','🥉'];
 
-function getPercentile(rank, total) {
-  if (!rank || total < 2) return null;
-  return Math.round(((total - rank) / (total - 1)) * 100);
+function matchLift(name = '') {
+  const lower = name.toLowerCase().trim();
+  for (const l of LIFTS.filter(l => l.id !== 'all')) {
+    if (l.keywords.some(k => lower.includes(k))) return l.id;
+  }
+  return null;
 }
 
-function getBadges(myLifts, allLifts, userId) {
-  const badges = [];
-  LIFTS.filter(l => l.id !== 'overall').forEach(l => {
-    const best = {};
-    allLifts.filter(r => r.lift_type === l.id).forEach(r => {
-      if (!best[r.user_id] || r.weight > best[r.user_id].weight) best[r.user_id] = r;
-    });
-    const sorted = Object.values(best).sort((a,b) => b.weight - a.weight);
-    const rank   = sorted.findIndex(r => r.user_id === userId) + 1;
-    const pct    = getPercentile(rank, sorted.length);
-    if (pct !== null) {
-      if (pct >= 90) badges.push({ label: `Top 10% ${l.label}`, color: '#f59e0b', icon: '🏆', lift: l });
-      else if (pct >= 75) badges.push({ label: `Top 25% ${l.label}`, color: '#10b981', icon: '⭐', lift: l });
-      else if (pct >= 50) badges.push({ label: `Top 50% ${l.label}`, color: '#0ea5e9', icon: '💪', lift: l });
-      if (rank === 1) badges.push({ label: `#1 ${l.label}`, color: '#f59e0b', icon: '👑', lift: l });
+function filterByTime(sets, timeId) {
+  const now = Date.now();
+  if (timeId === 'week')  return sets.filter(s => now - new Date(s.logged_date||s.created_date||0) < 7*86400000);
+  if (timeId === 'month') return sets.filter(s => now - new Date(s.logged_date||s.created_date||0) < 30*86400000);
+  return sets;
+}
+
+function buildLeaderboard(sets, liftId) {
+  const best = {};
+  sets.forEach(s => {
+    const lId = matchLift(s.exercise_name || s.exercise || s.name || '');
+    if (liftId !== 'all' && lId !== liftId) return;
+    if (!lId) return;
+    const w = parseFloat(s.weight || s.max_weight || 0);
+    if (!w) return;
+    const uid = s.user_id;
+    if (!best[uid] || w > best[uid].weight) {
+      best[uid] = { user_id: uid, user_name: s.user_name || s.full_name || 'Athlete', weight: w, unit: s.unit || s.weight_unit || 'kg', history: [] };
     }
   });
-  return [...new Map(badges.map(b => [b.label, b])).values()].slice(0, 6);
+  // Build history per user for the active lift
+  const history = {};
+  sets.forEach(s => {
+    const lId = matchLift(s.exercise_name || s.exercise || s.name || '');
+    if (liftId !== 'all' && lId !== liftId) return;
+    if (!lId) return;
+    const uid = s.user_id;
+    if (!history[uid]) history[uid] = [];
+    const w = parseFloat(s.weight || 0);
+    if (w) history[uid].push({ weight: w, date: s.logged_date || s.created_date, unit: s.unit || 'kg' });
+  });
+  Object.keys(best).forEach(uid => { best[uid].history = (history[uid]||[]).sort((a,b) => new Date(a.date)-new Date(b.date)); });
+  return Object.values(best).sort((a,b) => b.weight - a.weight);
 }
 
-// ─── Log Lift Modal ───────────────────────────────────────────────────────────
-function LogLiftModal({ onClose, onSave, existingLifts = {} }) {
-  const [lift,   setLift]   = useState('bench');
-  const [weight, setWeight] = useState('');
-  const [unit,   setUnit]   = useState('kg');
-  const [saving, setSaving] = useState(false);
-
-  const liftMeta   = LIFTS.find(l => l.id === lift);
-  const existingPR = existingLifts[lift];
-  const isNewPR    = weight && Number(weight) > (existingPR || 0);
-
-  const handleSave = async () => {
-    if (!weight || isNaN(weight) || Number(weight) <= 0) return;
-    setSaving(true);
-    await onSave({ lift, weight: Number(weight), unit });
-    setSaving(false);
-    onClose();
-  };
-
+// ─── Dropdown ─────────────────────────────────────────────────────────────────
+function Dropdown({ options, value, onChange, label }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  const selected = options.find(o => o.id === value);
   return (
-    <div
-      onClick={onClose}
-      style={{ position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(0,0,0,0.8)',backdropFilter:'blur(8px)' }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{ width:'100%',maxWidth:480,background:'linear-gradient(170deg,#0f172a 0%,#020714 100%)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'24px 24px 0 0',padding:'28px 20px 44px',boxShadow:'0 -20px 60px rgba(0,0,0,0.6)' }}
-      >
-        {/* Handle bar */}
-        <div style={{ width:40,height:4,borderRadius:99,background:'rgba(255,255,255,0.12)',margin:'0 auto 24px' }}/>
-
-        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:22 }}>
-          <div>
-            <div style={{ fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.03em' }}>Log a Lift</div>
-            <div style={{ fontSize:12,color:'#475569',marginTop:2 }}>Only saves if it beats your PR</div>
-          </div>
-          <button onClick={onClose} style={{ background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:10,padding:8,cursor:'pointer',color:'#64748b',display:'flex' }}>
-            <X style={{ width:16,height:16 }}/>
-          </button>
-        </div>
-
-        {/* Lift grid */}
-        <div style={{ marginBottom:20 }}>
-          <div style={{ fontSize:10,fontWeight:700,color:'#475569',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10 }}>Exercise</div>
-          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:6 }}>
-            {LIFTS.filter(l => l.id !== 'overall').map(l => (
-              <button key={l.id} onClick={() => setLift(l.id)} style={{
-                display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:12,cursor:'pointer',border:'none',transition:'all 0.15s',
-                background: lift===l.id ? `${l.color}20` : 'rgba(255,255,255,0.03)',
-                outline: `1px solid ${lift===l.id ? `${l.color}60` : 'rgba(255,255,255,0.07)'}`,
-              }}>
-                <span style={{ fontSize:16 }}>{l.emoji}</span>
-                <div style={{ textAlign:'left' }}>
-                  <div style={{ fontSize:12,fontWeight:700,color:lift===l.id?'#fff':'#64748b' }}>{l.label}</div>
-                  {existingLifts[l.id] && <div style={{ fontSize:9,color:'#334155',marginTop:1 }}>PR {existingLifts[l.id]}{unit}</div>}
-                </div>
-                {lift===l.id && <div style={{ marginLeft:'auto',width:6,height:6,borderRadius:'50%',background:l.color }}/>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Weight */}
-        <div style={{ marginBottom:22 }}>
-          <div style={{ fontSize:10,fontWeight:700,color:'#475569',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10 }}>Weight</div>
-          <div style={{ display:'flex',gap:8 }}>
-            <input
-              type="number" value={weight} onChange={e => setWeight(e.target.value)} placeholder="0"
-              style={{ flex:1,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:14,padding:'14px',fontSize:28,fontWeight:900,color:'#fff',outline:'none',textAlign:'center',fontFamily:'inherit' }}
-            />
-            <div style={{ display:'flex',flexDirection:'column',borderRadius:12,overflow:'hidden',border:'1px solid rgba(255,255,255,0.1)' }}>
-              {['kg','lbs'].map(u => (
-                <button key={u} onClick={() => setUnit(u)} style={{
-                  flex:1,padding:'0 16px',fontSize:12,fontWeight:700,cursor:'pointer',border:'none',transition:'all 0.15s',
-                  background: unit===u ? 'rgba(14,165,233,0.25)' : 'rgba(255,255,255,0.03)',
-                  color: unit===u ? '#38bdf8' : '#334155',
-                }}>{u}</button>
-              ))}
-            </div>
-          </div>
-          {isNewPR && existingPR && (
-            <div style={{ marginTop:10,padding:'8px 12px',borderRadius:10,background:'rgba(245,158,11,0.1)',border:'1px solid rgba(245,158,11,0.25)',fontSize:12,color:'#f59e0b',fontWeight:700 }}>
-              🎉 New PR! +{(Number(weight)-existingPR).toFixed(1)}{unit} over your current best
-            </div>
-          )}
-          {isNewPR && !existingPR && (
-            <div style={{ marginTop:10,padding:'8px 12px',borderRadius:10,background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.25)',fontSize:12,color:'#10b981',fontWeight:700 }}>
-              🔥 First logged {liftMeta?.label} — it's on the board!
-            </div>
-          )}
-        </div>
-
-        <button onClick={handleSave} disabled={!weight||saving} style={{
-          width:'100%',padding:'15px',borderRadius:14,border:'none',cursor:weight?'pointer':'not-allowed',
-          background: weight ? `linear-gradient(135deg,${liftMeta?.color},${liftMeta?.color}cc)` : 'rgba(255,255,255,0.05)',
-          color: weight?'#fff':'#1e293b', fontSize:15,fontWeight:800,letterSpacing:'-0.01em',
-          display:'flex',alignItems:'center',justifyContent:'center',gap:8,
-          boxShadow: weight ? `0 6px 24px ${liftMeta?.color}45` : 'none',transition:'all 0.2s',
+    <div ref={ref} style={{ position:'relative', userSelect:'none' }}>
+      <button onClick={() => setOpen(o=>!o)} style={{
+        display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:12,border:'none',cursor:'pointer',
+        background:'rgba(255,255,255,0.07)',backdropFilter:'blur(8px)',
+        color:'#e2e8f0',fontSize:13,fontWeight:700,
+        outline:'1px solid rgba(255,255,255,0.1)',
+      }}>
+        {selected?.label || label} <ChevronDown style={{ width:13,height:13,color:'#64748b' }}/>
+      </button>
+      {open && (
+        <div style={{
+          position:'absolute',top:'calc(100% + 8px)',right:0,zIndex:50,minWidth:160,
+          background:'linear-gradient(160deg,#0f1e3a,#08101f)',
+          border:'1px solid rgba(56,189,248,0.2)',borderRadius:14,overflow:'hidden',
+          boxShadow:'0 16px 48px rgba(0,0,0,0.6)',
         }}>
-          {saving ? 'Saving…' : <><Check style={{ width:16,height:16 }}/> Save Lift</>}
-        </button>
-      </div>
+          {options.map((o,i) => (
+            <button key={o.id} onClick={() => { onChange(o.id); setOpen(false); }} style={{
+              display:'flex',alignItems:'center',justifyContent:'space-between',
+              width:'100%',padding:'12px 16px',border:'none',cursor:'pointer',textAlign:'left',
+              background: value===o.id ? 'rgba(56,189,248,0.12)' : i%2===0?'rgba(255,255,255,0.02)':'transparent',
+              color: value===o.id ? '#38bdf8' : '#e2e8f0',
+              fontSize:13,fontWeight:value===o.id?700:500,
+              borderBottom: i<options.length-1?'1px solid rgba(255,255,255,0.05)':'none',
+            }}>
+              {o.emoji && <span style={{ marginRight:8 }}>{o.emoji}</span>}
+              {o.label}
+              {value===o.id && <span style={{ color:'#38bdf8',fontSize:15 }}>✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Leaderboard Row ──────────────────────────────────────────────────────────
-function LeaderRow({ entry, rank, isMe, color, animDelay = 0 }) {
-  const top3 = rank <= 3;
+// ─── Mini Line Chart (SVG) ─────────────────────────────────────────────────────
+function ProgressChart({ history, color = '#38bdf8', liftLabel }) {
+  if (!history || history.length < 2) return (
+    <div style={{ padding:'20px',textAlign:'center',color:'#334155',fontSize:12 }}>Not enough data to show progress</div>
+  );
+
+  const W = 320, H = 90, PAD = { l:8, r:8, t:20, b:24 };
+  const weights = history.map(h => h.weight);
+  const min = Math.min(...weights) * 0.95;
+  const max = Math.max(...weights) * 1.02;
+  const toX = (i) => PAD.l + (i/(history.length-1))*(W-PAD.l-PAD.r);
+  const toY = (w) => PAD.t + (1-(w-min)/(max-min))*(H-PAD.t-PAD.b);
+
+  const pts = history.map((h,i) => ({ x:toX(i), y:toY(h.weight), ...h }));
+  const pathD = pts.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  const fmt = (d) => {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  };
+
   return (
-    <div style={{
-      display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:14,
-      background: isMe
-        ? `linear-gradient(135deg,${color}18 0%,${color}08 100%)`
-        : top3 ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
-      border: `1px solid ${isMe ? `${color}50` : top3 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'}`,
-      boxShadow: isMe ? `0 0 20px ${color}20, inset 0 0 0 1px ${color}30` : 'none',
-      position:'relative', overflow:'hidden',
-      animation: `fadeSlideIn 0.4s ease ${animDelay}s both`,
-    }}>
-      {/* Left glow for user row */}
-      {isMe && <div style={{ position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(to bottom,${color},${color}88)`,borderRadius:'0 2px 2px 0' }}/>}
-
-      {/* Rank badge */}
-      <div style={{
-        width:32,height:32,borderRadius:10,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
-        background: top3 ? RANK_GRADIENTS[rank-1] : 'rgba(255,255,255,0.06)',
-        fontSize: top3?15:11, fontWeight:900, color: top3?'#fff':'#334155',
-        boxShadow: top3 ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
-      }}>
-        {top3 ? RANK_ICONS[rank-1] : `#${rank}`}
-      </div>
-
-      {/* Avatar */}
-      <div style={{
-        width:36,height:36,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
-        background: isMe ? `linear-gradient(135deg,${color}50,${color}20)` : 'rgba(255,255,255,0.08)',
-        fontSize:13,fontWeight:900,color: isMe?color:'#64748b',
-        border:`2px solid ${isMe?color:'rgba(255,255,255,0.08)'}`,
-        boxShadow: isMe ? `0 0 12px ${color}40` : 'none',
-      }}>
-        {(entry.user_name||'?')[0].toUpperCase()}
-      </div>
-
-      {/* Name + gym */}
-      <div style={{ flex:1,minWidth:0 }}>
-        <div style={{ display:'flex',alignItems:'center',gap:6 }}>
-          <span style={{ fontSize:14,fontWeight:isMe?900:700,color:isMe?'#fff':'#e2e8f0',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
-            {entry.user_name||'Athlete'}
-          </span>
-          {isMe && (
-            <span style={{ fontSize:9,fontWeight:900,color:color,background:`${color}20`,border:`1px solid ${color}40`,borderRadius:99,padding:'1px 6px',flexShrink:0 }}>
-              YOU ⭐
-            </span>
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible' }}>
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={color} stopOpacity="0.5"/>
+          <stop offset="100%" stopColor={color} stopOpacity="1"/>
+        </linearGradient>
+      </defs>
+      {/* Grid line */}
+      <line x1={PAD.l} y1={H-PAD.b} x2={W-PAD.r} y2={H-PAD.b} stroke="rgba(255,255,255,0.06)" strokeWidth={1}/>
+      {/* Line */}
+      <path d={pathD} fill="none" stroke="url(#lineGrad)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Points + labels */}
+      {pts.map((p,i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r={4} fill={color} stroke="#0f1e3a" strokeWidth={2}/>
+          {(i===0||i===pts.length-1||i===Math.floor(pts.length/2)) && (
+            <text x={p.x} y={p.y-8} textAnchor="middle" fill="#fff" fontSize={9} fontWeight="800" fontFamily="Outfit,sans-serif">
+              {p.weight}
+            </text>
           )}
-          {rank===1 && !isMe && <span style={{ fontSize:11 }}>🔥</span>}
-        </div>
-        {entry.gym_name && (
-          <div style={{ fontSize:10,color:'#334155',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{entry.gym_name}</div>
-        )}
-      </div>
-
-      {/* Weight */}
-      <div style={{ textAlign:'right',flexShrink:0 }}>
-        <div style={{ fontSize:17,fontWeight:900,color:isMe?color:top3?'#fff':'#64748b',letterSpacing:'-0.02em',lineHeight:1 }}>
-          {entry.weight}
-          <span style={{ fontSize:11,fontWeight:600,color:'#334155',marginLeft:2 }}>{entry.unit||'kg'}</span>
-        </div>
-      </div>
-    </div>
+        </g>
+      ))}
+      {/* X axis labels */}
+      {[0, pts.length-1].map(i => (
+        <text key={i} x={pts[i].x} y={H-6} textAnchor={i===0?'start':'end'} fill="#334155" fontSize={9} fontFamily="Outfit,sans-serif">
+          {i===pts.length-1 ? 'Today' : fmt(pts[i].date)}
+        </text>
+      ))}
+    </svg>
   );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Community() {
-  const [activeLift, setActiveLift] = useState('overall');
-  const [showModal,  setShowModal]  = useState(false);
-  const queryClient = useQueryClient();
+  const [activeLift, setActiveLift] = useState('bench');
+  const [timeFilter, setTimeFilter] = useState('week');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -230,303 +174,285 @@ export default function Community() {
     staleTime: 5*60*1000,
   });
 
-  const { data: allLifts = [], isLoading } = useQuery({
-    queryKey: ['communityLifts'],
-    queryFn: () => base44.entities.LiftRecord.list(),
-    staleTime: 2*60*1000,
-  });
-
-  const { data: myLifts = [] } = useQuery({
-    queryKey: ['myLifts', currentUser?.id],
-    queryFn: () => base44.entities.LiftRecord.filter({ user_id: currentUser.id }),
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status:'active' }),
     enabled: !!currentUser,
-    staleTime: 2*60*1000,
+    staleTime: 5*60*1000,
   });
 
-  const saveLift = useMutation({
-    mutationFn: async ({ lift, weight, unit }) => {
-      const existing = myLifts.find(l => l.lift_type === lift);
-      if (existing) {
-        if (weight > existing.weight)
-          return base44.entities.LiftRecord.update(existing.id, { weight, unit, updated_date: new Date().toISOString() });
-      } else {
-        return base44.entities.LiftRecord.create({
-          user_id: currentUser.id,
-          user_name: currentUser.full_name || currentUser.email?.split('@')[0] || 'You',
-          lift_type: lift, weight, unit,
-          logged_date: new Date().toISOString(),
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['communityLifts']);
-      queryClient.invalidateQueries(['myLifts', currentUser?.id]);
-    },
+  const gymName = gymMemberships[0]?.gym_name || 'Your Gym';
+
+  const { data: allSets = [], isLoading } = useQuery({
+    queryKey: ['communityWorkoutSets'],
+    queryFn: () => base44.entities.WorkoutSet.list(),
+    staleTime: 3*60*1000,
   });
 
-  // Build leaderboard — for "overall" sum the best of all lifts per user
-  const leaderboard = useMemo(() => {
-    if (activeLift === 'overall') {
-      const totals = {};
-      LIFTS.filter(l => l.id !== 'overall').forEach(l => {
-        const best = {};
-        allLifts.filter(r => r.lift_type === l.id).forEach(r => {
-          if (!best[r.user_id] || r.weight > best[r.user_id].weight) best[r.user_id] = r;
-        });
-        Object.values(best).forEach(r => {
-          if (!totals[r.user_id]) totals[r.user_id] = { user_id:r.user_id, user_name:r.user_name, gym_name:r.gym_name, weight:0, unit:'kg' };
-          totals[r.user_id].weight += r.weight;
-        });
-      });
-      return Object.values(totals).sort((a,b) => b.weight - a.weight);
-    }
-    const best = {};
-    allLifts.filter(r => r.lift_type === activeLift).forEach(r => {
-      if (!best[r.user_id] || r.weight > best[r.user_id].weight) best[r.user_id] = r;
-    });
-    return Object.values(best).sort((a,b) => b.weight - a.weight);
-  }, [allLifts, activeLift]);
+  const filteredSets = useMemo(() => filterByTime(allSets, timeFilter), [allSets, timeFilter]);
+  const leaderboard  = useMemo(() => buildLeaderboard(filteredSets, activeLift), [filteredSets, activeLift]);
 
-  const myRank   = currentUser ? leaderboard.findIndex(l => l.user_id === currentUser.id) + 1 : null;
   const myEntry  = leaderboard.find(l => l.user_id === currentUser?.id);
-  const myPct    = getPercentile(myRank||null, leaderboard.length);
-  const liftMeta = LIFTS.find(l => l.id === activeLift);
-  const myRecord = activeLift === 'overall' ? myEntry : myLifts.find(l => l.lift_type === activeLift);
+  const myRank   = myEntry ? leaderboard.findIndex(l => l.user_id === currentUser?.id) + 1 : null;
+  const myPct    = myRank && leaderboard.length > 1 ? Math.round(((leaderboard.length-myRank)/(leaderboard.length-1))*100) : null;
 
-  const existingLifts = useMemo(() => {
-    const m = {}; myLifts.forEach(l => { m[l.lift_type] = l.weight; }); return m;
-  }, [myLifts]);
+  // All-time personal best
+  const myAllTimeBest = useMemo(() => {
+    const mySets = allSets.filter(s => s.user_id === currentUser?.id);
+    const liftSets = mySets.filter(s => activeLift==='all' ? matchLift(s.exercise_name||s.exercise||s.name||'') : matchLift(s.exercise_name||s.exercise||s.name||'')===activeLift);
+    return liftSets.reduce((best,s) => Math.max(best, parseFloat(s.weight||0)), 0);
+  }, [allSets, currentUser?.id, activeLift]);
 
-  const badges = useMemo(() => currentUser ? getBadges(myLifts, allLifts, currentUser.id) : [], [myLifts, allLifts, currentUser]);
+  // Community activity stats
+  const todayLifters = useMemo(() => {
+    const today = new Set(allSets.filter(s => Date.now()-new Date(s.logged_date||s.created_date||0)<86400000).map(s=>s.user_id));
+    return today.size;
+  }, [allSets]);
 
-  const pctColor = myPct >= 90 ? '#f59e0b' : myPct >= 75 ? '#10b981' : myPct >= 50 ? '#0ea5e9' : '#64748b';
-  const pctLabel = myPct >= 90 ? `Top ${100-myPct}%` : myPct >= 50 ? `Top ${100-myPct}%` : myRank ? `Rank #${myRank}` : null;
+  const avgWeight = useMemo(() => {
+    const w = filteredSets.filter(s => activeLift==='all'?matchLift(s.exercise_name||''):matchLift(s.exercise_name||'')||activeLift===matchLift(s.exercise_name||'')).map(s=>parseFloat(s.weight||0)).filter(Boolean);
+    return w.length ? Math.round(w.reduce((a,b)=>a+b,0)/w.length) : 0;
+  }, [filteredSets, activeLift]);
+
+  const topThisWeek = useMemo(() => {
+    const w7 = filterByTime(allSets,'week').filter(s => activeLift==='all'?matchLift(s.exercise_name||''):matchLift(s.exercise_name||'')||activeLift===matchLift(s.exercise_name||'')).map(s=>parseFloat(s.weight||0));
+    return w7.length ? Math.max(...w7) : 0;
+  }, [allSets, activeLift]);
+
+  const liftMeta = LIFTS.find(l => l.id === activeLift) || LIFTS[0];
+  const pctColor = myPct>=90?'#f59e0b':myPct>=75?'#10b981':'#38bdf8';
+
+  // My progress history for chart
+  const myHistory = myEntry?.history || [];
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
-        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes pulseGlow   { 0%,100% { box-shadow:0 0 20px rgba(56,189,248,0.3); } 50% { box-shadow:0 0 40px rgba(56,189,248,0.6); } }
-        @keyframes shimmer     { 0% { background-position:-200% center; } 100% { background-position:200% center; } }
-        .lift-tab::-webkit-scrollbar { display:none; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        * { box-sizing:border-box; }
       `}</style>
 
-      <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#020714 0%,#041230 50%,#020714 100%)', fontFamily:"'Outfit',system-ui,sans-serif", color:'#e2e8f0' }}>
-        <div style={{ maxWidth:480, margin:'0 auto', padding:'0 0 100px' }}>
+      <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#06090f 0%,#0b1a35 45%,#06090f 100%)', fontFamily:"'Outfit',system-ui,sans-serif", color:'#e2e8f0' }}>
+        <div style={{ maxWidth:480, margin:'0 auto', padding:'0 0 32px' }}>
 
           {/* ── Header ── */}
-          <div style={{
-            padding:'20px 20px 16px',
-            background:'rgba(2,7,20,0.8)',
-            backdropFilter:'blur(20px)',
-            WebkitBackdropFilter:'blur(20px)',
-            borderBottom:'1px solid rgba(56,189,248,0.1)',
-            position:'sticky', top:0, zIndex:10,
-          }}>
-            <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4 }}>
-              <div style={{ display:'flex',alignItems:'center',gap:10 }}>
-                <div style={{ width:34,height:34,borderRadius:10,background:'rgba(56,189,248,0.12)',border:'1px solid rgba(56,189,248,0.25)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-                  <Users style={{ width:16,height:16,color:'#38bdf8' }}/>
-                </div>
-                <div>
-                  <div style={{
-                    fontSize:20,fontWeight:900,letterSpacing:'-0.03em',lineHeight:1,
-                    background:'linear-gradient(135deg,#e0f2fe 0%,#38bdf8 60%,#818cf8 100%)',
-                    WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',
-                  }}>Community Lifts</div>
-                  <div style={{ fontSize:11,color:'#334155',marginTop:1,fontWeight:600 }}>Compare your lifts with your gym</div>
-                </div>
-              </div>
-              <button onClick={() => setShowModal(true)} style={{
-                display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:12,border:'none',cursor:'pointer',
-                background:'linear-gradient(135deg,#0ea5e9,#0284c7)',
-                color:'#fff',fontSize:12,fontWeight:800,
-                boxShadow:'0 4px 16px rgba(14,165,233,0.4)',
-              }}>
-                <Plus style={{ width:13,height:13 }}/> Log
-              </button>
+          <div style={{ padding:'24px 20px 18px', display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+            <div>
+              <h1 style={{ fontSize:28,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',margin:0,lineHeight:1 }}>Community Lifts</h1>
+              <p style={{ fontSize:13,color:'#475569',margin:'5px 0 0',fontWeight:600 }}>{gymName}</p>
+            </div>
+            <div style={{ display:'flex',gap:8,marginTop:4 }}>
+              <Dropdown
+                options={LIFTS}
+                value={activeLift}
+                onChange={setActiveLift}
+              />
+              <Dropdown
+                options={TIME_FILTERS}
+                value={timeFilter}
+                onChange={setTimeFilter}
+              />
             </div>
           </div>
 
-          <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:18 }}>
-
-            {/* ── Lift Selector Tabs ── */}
-            <div className="lift-tab" style={{ display:'flex',gap:6,overflowX:'auto',paddingBottom:2 }}>
-              {LIFTS.map(l => {
-                const isActive = activeLift === l.id;
-                return (
-                  <button key={l.id} onClick={() => setActiveLift(l.id)} style={{
-                    display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:99,border:'none',cursor:'pointer',flexShrink:0,transition:'all 0.2s',
-                    background: isActive
-                      ? 'linear-gradient(135deg,#0ea5e9,#0284c7)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: isActive ? '#fff' : '#475569',
-                    fontSize:12,fontWeight:isActive?800:600,
-                    outline: isActive ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                    boxShadow: isActive ? '0 4px 14px rgba(14,165,233,0.4)' : 'none',
-                  }}>
-                    <span style={{ fontSize:13 }}>{l.emoji}</span> {l.label}
-                  </button>
-                );
-              })}
-            </div>
+          <div style={{ padding:'0 14px', display:'flex', flexDirection:'column', gap:12 }}>
 
             {/* ── Personal Performance Card ── */}
-            {myRecord ? (
-              <div style={{
-                borderRadius:20,overflow:'hidden',position:'relative',
-                background:'linear-gradient(135deg,rgba(14,165,233,0.18) 0%,rgba(2,132,199,0.08) 50%,rgba(6,182,212,0.12) 100%)',
-                border:'1px solid rgba(56,189,248,0.3)',
-                boxShadow:'0 8px 40px rgba(14,165,233,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
-                animation:'pulseGlow 4s ease-in-out infinite',
-              }}>
-                {/* Decorative glow orb */}
-                <div style={{ position:'absolute',top:-40,right:-40,width:160,height:160,borderRadius:'50%',background:'rgba(14,165,233,0.12)',filter:'blur(40px)',pointerEvents:'none' }}/>
-
-                <div style={{ padding:'20px 20px 18px', position:'relative' }}>
-                  <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14 }}>
-                    <div>
-                      <div style={{ fontSize:11,fontWeight:700,color:'#38bdf8',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4 }}>
-                        Your {liftMeta.label}
-                      </div>
-                      <div style={{ fontSize:46,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1 }}>
-                        {myRecord.weight}
-                        <span style={{ fontSize:18,fontWeight:700,color:'#38bdf8',marginLeft:5 }}>{myRecord.unit||'kg'}</span>
-                      </div>
-                      {myRank && myPct !== null && (
-                        <div style={{ marginTop:10,display:'flex',alignItems:'center',gap:6 }}>
-                          <div style={{
-                            display:'inline-flex',alignItems:'center',gap:6,
-                            padding:'6px 12px',borderRadius:99,
-                            background:`${pctColor}20`,border:`1px solid ${pctColor}45`,
-                          }}>
-                            <Trophy style={{ width:12,height:12,color:pctColor }}/>
-                            <span style={{ fontSize:12,fontWeight:800,color:pctColor }}>{pctLabel} at your gym</span>
-                          </div>
-                        </div>
-                      )}
-                      {myRank && myPct !== null && (
-                        <div style={{ marginTop:8,fontSize:12,color:'#64748b',fontWeight:600 }}>
-                          Stronger than <span style={{ color:'#e2e8f0',fontWeight:800 }}>{myPct}%</span> of your gym community
-                        </div>
-                      )}
+            <div style={{
+              borderRadius:20,overflow:'hidden',
+              background:'linear-gradient(135deg,rgba(15,30,65,0.95) 0%,rgba(8,16,31,0.98) 100%)',
+              border:'1px solid rgba(56,189,248,0.2)',
+              boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+            }}>
+              <div style={{ padding:'20px 20px 18px' }}>
+                {myEntry ? (
+                  <>
+                    <div style={{ fontSize:13,fontWeight:700,color:'#64748b',marginBottom:6 }}>{liftMeta.label}</div>
+                    <div style={{ fontSize:52,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:10 }}>
+                      {myEntry.weight} <span style={{ fontSize:22,fontWeight:700,color:'#64748b' }}>{myEntry.unit||'kg'}</span>
                     </div>
-                    <div style={{
-                      width:52,height:52,borderRadius:16,flexShrink:0,
-                      background:'linear-gradient(135deg,rgba(245,158,11,0.3),rgba(245,158,11,0.1))',
-                      border:'1px solid rgba(245,158,11,0.4)',
-                      display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,
-                      boxShadow:'0 4px 16px rgba(245,158,11,0.3)',
-                    }}>🏆</div>
-                  </div>
-
-                  {/* Mini stats */}
-                  <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,paddingTop:14,borderTop:'1px solid rgba(56,189,248,0.15)' }}>
-                    {[
-                      { label:'Personal Best', value:`${myRecord.weight} ${myRecord.unit||'kg'}` },
-                      { label:'Gym Rank',       value: myRank ? `#${myRank} / ${leaderboard.length}` : '—' },
-                    ].map((s,i) => (
-                      <div key={i} style={{ background:'rgba(0,0,0,0.2)',borderRadius:12,padding:'10px 12px' }}>
-                        <div style={{ fontSize:10,fontWeight:700,color:'#334155',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4 }}>{s.label}</div>
-                        <div style={{ fontSize:16,fontWeight:900,color:'#fff',letterSpacing:'-0.02em' }}>{s.value}</div>
+                    {myPct !== null && (
+                      <div style={{ display:'flex',alignItems:'center',gap:6,marginBottom:4 }}>
+                        <Trophy style={{ width:14,height:14,color:pctColor }}/>
+                        <span style={{ fontSize:14,fontWeight:800,color:'#fff' }}>Top {100-myPct}% at {gymName}</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div style={{
-                borderRadius:20,padding:'24px 20px',textAlign:'center',
-                background:'rgba(255,255,255,0.02)',border:'1px dashed rgba(255,255,255,0.1)',
-              }}>
-                <div style={{ fontSize:36,marginBottom:10 }}>{liftMeta.emoji}</div>
-                <div style={{ fontSize:15,fontWeight:800,color:'#e2e8f0',marginBottom:6 }}>No {liftMeta.label} logged yet</div>
-                <div style={{ fontSize:12,color:'#334155',marginBottom:16 }}>Log your lift to appear on the leaderboard</div>
-                <button onClick={() => setShowModal(true)} style={{
-                  padding:'10px 24px',borderRadius:12,border:'none',cursor:'pointer',
-                  background:'linear-gradient(135deg,#0ea5e9,#0284c7)',
-                  color:'#fff',fontSize:13,fontWeight:800,
-                  boxShadow:'0 4px 16px rgba(14,165,233,0.35)',
-                }}>
-                  <Plus style={{ width:13,height:13,display:'inline',marginRight:6,verticalAlign:'middle' }}/>
-                  Log {liftMeta.label}
-                </button>
-              </div>
-            )}
-
-            {/* ── Achievement Badges ── */}
-            {badges.length > 0 && (
-              <div>
-                <div style={{ fontSize:11,fontWeight:800,color:'#334155',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10 }}>Your Achievements</div>
-                <div style={{ display:'flex',gap:8,flexWrap:'wrap' }}>
-                  {badges.map((b,i) => (
-                    <div key={i} style={{
-                      display:'flex',alignItems:'center',gap:6,padding:'7px 12px',borderRadius:99,
-                      background:`${b.color}15`,border:`1px solid ${b.color}35`,
-                      fontSize:12,fontWeight:700,color:b.color,
-                    }}>
-                      <span style={{ fontSize:14 }}>{b.icon}</span> {b.label}
+                    )}
+                    {myRank && (
+                      <div style={{ fontSize:13,color:'#64748b',fontWeight:600,marginBottom:14 }}>
+                        Rank #{myRank} of {leaderboard.length}
+                      </div>
+                    )}
+                    <div style={{ borderTop:'1px solid rgba(255,255,255,0.07)',paddingTop:14 }}>
+                      <span style={{ fontSize:13,color:'#64748b',fontWeight:600 }}>PB </span>
+                      <span style={{ fontSize:13,color:'#e2e8f0',fontWeight:800 }}>{myAllTimeBest} {myEntry.unit||'kg'}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── Leaderboard ── */}
-            <div style={{ borderRadius:20,overflow:'hidden',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.07)' }}>
-              {/* Board header */}
-              <div style={{
-                padding:'14px 18px',
-                background:'linear-gradient(135deg,rgba(14,165,233,0.1),rgba(6,182,212,0.05))',
-                borderBottom:'1px solid rgba(255,255,255,0.07)',
-                display:'flex',alignItems:'center',justifyContent:'space-between',
-              }}>
-                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-                  <Trophy style={{ width:14,height:14,color:'#f59e0b' }}/>
-                  <span style={{ fontSize:14,fontWeight:900,color:'#fff',letterSpacing:'-0.01em' }}>
-                    {liftMeta.label} Leaderboard
-                  </span>
-                </div>
-                <span style={{ fontSize:11,fontWeight:700,color:'#334155',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:99,padding:'3px 10px' }}>
-                  {leaderboard.length} athletes
-                </span>
-              </div>
-
-              <div style={{ padding:10,display:'flex',flexDirection:'column',gap:5 }}>
-                {isLoading ? (
-                  <div style={{ padding:40,textAlign:'center',color:'#334155',fontSize:13 }}>Loading leaderboard…</div>
-                ) : leaderboard.length === 0 ? (
-                  <div style={{ padding:'36px 16px',textAlign:'center' }}>
-                    <div style={{ fontSize:36,marginBottom:10 }}>{liftMeta.emoji}</div>
-                    <div style={{ fontSize:14,fontWeight:700,color:'#e2e8f0',marginBottom:6 }}>No entries yet</div>
-                    <div style={{ fontSize:12,color:'#334155' }}>Be the first to set a {liftMeta.label} record!</div>
-                  </div>
+                  </>
                 ) : (
-                  leaderboard.map((entry, i) => (
-                    <LeaderRow
-                      key={entry.user_id||i}
-                      entry={entry}
-                      rank={i+1}
-                      isMe={entry.user_id === currentUser?.id}
-                      color={liftMeta.color}
-                      animDelay={i * 0.04}
-                    />
-                  ))
+                  <div style={{ padding:'8px 0',textAlign:'center' }}>
+                    <div style={{ fontSize:32,marginBottom:8 }}>{liftMeta.emoji}</div>
+                    <div style={{ fontSize:14,fontWeight:800,color:'#e2e8f0',marginBottom:4 }}>No {liftMeta.label} data yet</div>
+                    <div style={{ fontSize:12,color:'#334155' }}>Log a {liftMeta.label} workout to appear here</div>
+                  </div>
                 )}
               </div>
             </div>
 
+            {/* ── Leaderboard Card ── */}
+            <div style={{
+              borderRadius:20,overflow:'hidden',
+              background:'linear-gradient(135deg,rgba(15,30,65,0.95) 0%,rgba(8,16,31,0.98) 100%)',
+              border:'1px solid rgba(255,255,255,0.08)',
+              boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+            }}>
+              <div style={{ padding:'16px 18px 12px',borderBottom:'1px solid rgba(255,255,255,0.07)',display:'flex',alignItems:'center',justifyContent:'space-between' }}>
+                <span style={{ fontSize:15,fontWeight:800,color:'#fff' }}>{liftMeta.label} Leaderboard</span>
+                <span style={{ fontSize:11,color:'#334155',fontWeight:700 }}>{leaderboard.length} athletes</span>
+              </div>
+
+              {isLoading ? (
+                <div style={{ padding:32,textAlign:'center',color:'#334155',fontSize:13 }}>Loading…</div>
+              ) : leaderboard.length === 0 ? (
+                <div style={{ padding:'28px 16px',textAlign:'center',color:'#334155',fontSize:13 }}>No data for this period</div>
+              ) : (
+                leaderboard.slice(0,10).map((entry,i) => {
+                  const isMe = entry.user_id === currentUser?.id;
+                  const rank = i+1;
+                  // Week-over-week change
+                  const prevWeek = useMemo ? null : null; // computed inline below
+                  return (
+                    <div key={entry.user_id||i} style={{
+                      display:'flex',alignItems:'center',gap:12,padding:'13px 18px',
+                      borderBottom: i<Math.min(leaderboard.length,10)-1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                      background: isMe ? 'rgba(56,189,248,0.08)' : 'transparent',
+                      borderLeft: isMe ? '3px solid #38bdf8' : '3px solid transparent',
+                      transition:'background 0.15s',
+                    }}>
+                      {/* Rank */}
+                      <div style={{ width:28,fontSize:13,fontWeight:900,color:rank===1?'#f59e0b':rank===2?'#94a3b8':rank===3?'#b45309':'#334155',flexShrink:0,textAlign:'center' }}>
+                        {rank===1?'🔥':`#${rank}`}
+                      </div>
+                      {/* Avatar */}
+                      <div style={{
+                        width:36,height:36,borderRadius:'50%',flexShrink:0,
+                        background: isMe ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.07)',
+                        border:`2px solid ${isMe?'#38bdf8':'rgba(255,255,255,0.1)'}`,
+                        display:'flex',alignItems:'center',justifyContent:'center',
+                        fontSize:13,fontWeight:900,color:isMe?'#38bdf8':'#64748b',
+                        overflow:'hidden',flexShrink:0,
+                      }}>
+                        {entry.avatar_url
+                          ? <img src={entry.avatar_url} style={{ width:'100%',height:'100%',objectFit:'cover' }}/>
+                          : (entry.user_name||'A')[0].toUpperCase()
+                        }
+                      </div>
+                      {/* Name */}
+                      <div style={{ flex:1,minWidth:0 }}>
+                        <div style={{ fontSize:15,fontWeight:isMe?900:700,color:isMe?'#fff':'#e2e8f0',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
+                          {isMe ? 'You' : entry.user_name}
+                        </div>
+                      </div>
+                      {/* Weight + badge */}
+                      <div style={{ display:'flex',alignItems:'center',gap:8,flexShrink:0 }}>
+                        {isMe && entry.history?.length > 1 && (() => {
+                          const prev = entry.history[entry.history.length-2]?.weight;
+                          const curr = entry.weight;
+                          const diff = curr - prev;
+                          if (diff > 0) return (
+                            <span style={{ fontSize:10,fontWeight:800,color:'#38bdf8',background:'rgba(56,189,248,0.12)',border:'1px solid rgba(56,189,248,0.25)',borderRadius:99,padding:'2px 7px',display:'flex',alignItems:'center',gap:3 }}>
+                              +{diff} {entry.unit||'kg'}
+                              <span style={{ color:'#64748b',fontWeight:500 }}>week</span>
+                            </span>
+                          );
+                          return null;
+                        })()}
+                        <div style={{ fontSize:16,fontWeight:900,color:isMe?'#fff':rank<=3?'#e2e8f0':'#94a3b8',letterSpacing:'-0.02em' }}>
+                          {entry.weight} <span style={{ fontSize:11,fontWeight:600,color:'#334155' }}>{entry.unit||'kg'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* ── Community Activity Card ── */}
+            <div style={{
+              borderRadius:20,padding:'18px 20px',
+              background:'linear-gradient(135deg,rgba(15,30,65,0.95) 0%,rgba(8,16,31,0.98) 100%)',
+              border:'1px solid rgba(255,255,255,0.08)',
+              boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+            }}>
+              <div style={{ fontSize:15,fontWeight:800,color:'#fff',marginBottom:14 }}>Community Activity</div>
+              <div style={{ display:'grid',gridTemplateColumns:'1fr 1px 1fr 1px 1fr',gap:0,alignItems:'center' }}>
+                {/* Lifters today */}
+                <div style={{ paddingRight:16 }}>
+                  <div style={{ fontSize:22,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',lineHeight:1 }}>
+                    {todayLifters} <span style={{ fontSize:12,fontWeight:600,color:'#475569' }}>lifters today</span>
+                  </div>
+                  <div style={{ fontSize:12,color:'#475569',marginTop:4,fontWeight:600 }}>{avgWeight} {leaderboard[0]?.unit||'kg'}</div>
+                </div>
+                <div style={{ width:1,height:40,background:'rgba(255,255,255,0.08)' }}/>
+                {/* Avg weight */}
+                <div style={{ padding:'0 16px',textAlign:'center' }}>
+                  <div style={{ fontSize:22,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',lineHeight:1 }}>
+                    {avgWeight} <span style={{ fontSize:12,fontWeight:600,color:'#475569' }}>{leaderboard[0]?.unit||'kg'}</span>
+                  </div>
+                  <div style={{ fontSize:12,color:'#475569',marginTop:4,fontWeight:600 }}>avg {TIME_FILTERS.find(t=>t.id===timeFilter)?.label.toLowerCase()}</div>
+                </div>
+                <div style={{ width:1,height:40,background:'rgba(255,255,255,0.08)' }}/>
+                {/* Top this week */}
+                <div style={{ paddingLeft:16,textAlign:'right' }}>
+                  <div style={{ fontSize:11,color:'#475569',fontWeight:700,marginBottom:2 }}>Top {liftMeta.label} This Week</div>
+                  <div style={{ fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',lineHeight:1 }}>
+                    {topThisWeek} <span style={{ fontSize:11,fontWeight:600,color:'#475569' }}>{leaderboard[0]?.unit||'kg'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Progress Chart Card ── */}
+            {myHistory.length >= 2 && (
+              <div style={{
+                borderRadius:20,padding:'18px 20px',
+                background:'linear-gradient(135deg,rgba(15,30,65,0.95) 0%,rgba(8,16,31,0.98) 100%)',
+                border:'1px solid rgba(255,255,255,0.08)',
+                boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+              }}>
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ fontSize:15,fontWeight:800,color:'#fff' }}>Your {liftMeta.label} Progress</div>
+                  {myHistory[0]?.date && (
+                    <div style={{ fontSize:11,color:'#475569',fontWeight:600,marginTop:2 }}>
+                      Since {new Date(myHistory[0].date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+                    </div>
+                  )}
+                </div>
+                <ProgressChart history={myHistory} color={liftMeta.color} liftLabel={liftMeta.label}/>
+              </div>
+            )}
+
+            {/* ── Compare Other Lifts Button ── */}
+            <button
+              onClick={() => setActiveLift(prev => {
+                const idx = LIFTS.findIndex(l => l.id === prev);
+                return LIFTS[(idx+1) % LIFTS.length].id;
+              })}
+              style={{
+                width:'100%',padding:'16px',borderRadius:20,border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer',
+                background:'linear-gradient(135deg,rgba(15,30,65,0.95) 0%,rgba(8,16,31,0.98) 100%)',
+                color:'#e2e8f0',fontSize:15,fontWeight:800,letterSpacing:'-0.01em',
+                display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+                boxShadow:'0 4px 32px rgba(0,0,0,0.4)',
+                transition:'all 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(56,189,248,0.4)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}
+            >
+              Compare Other Lifts <ChevronRight style={{ width:16,height:16,color:'#64748b' }}/>
+            </button>
+
           </div>
         </div>
-
-        {showModal && (
-          <LogLiftModal
-            onClose={() => setShowModal(false)}
-            onSave={saveLift.mutateAsync}
-            existingLifts={existingLifts}
-          />
-        )}
       </div>
     </>
   );
