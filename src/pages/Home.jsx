@@ -638,7 +638,6 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  // ── Social feed helpers ──
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());
@@ -823,11 +822,11 @@ export default function Home() {
             <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
               CoStride
             </h1>
+            {/* ── Friends icon button (top right) ── */}
             <button
               onClick={() => setShowFriendsModal(true)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu -mr-2">
-              <span className="text-[11px] font-semibold">{friends.length}</span>
-              <span className="text-[11px] font-medium">Friends</span>
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[calc(-50%+3px)] active:scale-95 transition-all duration-100 transform-gpu -mr-2">
+              <UserPlus className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -1011,10 +1010,7 @@ export default function Home() {
                   const isInCurrentSplit = trainingDays.includes(day);
                   const isRestDay = done ? false : !isInCurrentSplit;
                   const isMissed = !isRestDay && !done && isPast && !isPreJoin;
-
-                  // ── KEY FIX: past or today rest days count as "completed" visually ──
                   const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
-
                   const size = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
                   const workoutLog = logsByDay[day];
@@ -1025,9 +1021,7 @@ export default function Home() {
 
                   const getBg = () => {
                     if (isRestDay) {
-                      // Past or today rest days → green (you rested as planned)
                       if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
-                      // Future rest days → grey
                       return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                     }
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
@@ -1094,7 +1088,6 @@ export default function Home() {
 
                         {isRestDay ? (
                           isPastOrTodayRestDay ? (
-                            // Past/today rest day — filled green tree (same as the original done=true rest day icon)
                             <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
                               <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
                               <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
@@ -1108,7 +1101,6 @@ export default function Home() {
                               <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
                             </svg>
                           ) : (
-                            // Future rest day — outline grey tree
                             <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
                               <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
                               <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
