@@ -540,8 +540,8 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 5 }).then(res => res.data.users || []),
-    enabled: friendSearchQuery.length >= 2,
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 10 }).then(res => res.data.users || []),
+    enabled: friendSearchQuery.length >= 1,
     staleTime: 30000,
   });
 
