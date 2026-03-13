@@ -333,15 +333,24 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden shadow-2xl shadow-black/20 rounded-xl -mx-2"
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl -mx-2 relative"
         style={{
-          background: 'linear-gradient(160deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%)',
+          background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}>
 
+        {/* Top shine line */}
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+
+        {/* Background glow blob */}
+        <div className="absolute inset-0 pointer-events-none rounded-xl"
+          style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
+
         {/* ── TOP BAR ── */}
-        <div style={{ background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)' }}
-          className="px-4 pt-3.5 pb-3">
+        <div className="relative z-10 px-4 pt-3.5 pb-3">
           <div className="flex items-center justify-between mb-4">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -498,8 +507,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         )}
 
         {/* ── BOTTOM BAR ── */}
-        <div className="flex items-center justify-between px-3 py-1"
-          style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', minHeight: 44 }}>
+        <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
           {/* Left side: react + share */}
           <div className="flex items-center gap-1">
             {currentUser && (
@@ -519,10 +527,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             )}
             <motion.button
               onClick={handleWorkoutShare}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
+              className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
-              <Send className="w-4 h-4" />
-              <span className="text-[11px] font-semibold">Share</span>
+              <Send className="w-5 h-5" />
             </motion.button>
           </div>
           {/* Right side: reactions */}
