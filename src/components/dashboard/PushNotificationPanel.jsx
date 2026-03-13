@@ -365,118 +365,106 @@ export default function PushNotificationPanel({
         </div>
       </div>
 
-      {/* Body — 3 columns */}
+      {/* Body */}
       <div style={styles.body}>
 
-        {/* Col 1: Stats + Member List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={styles.statsRow}>
-            <div style={styles.statCard}>
-              <div style={{ ...styles.statNum, color: '#f87171' }}>{atRiskMembers.length}</div>
-              <div style={styles.statLabel}>At-risk</div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={{ ...styles.statNum, color: '#2dd4bf' }}>{allMembers.length}</div>
-              <div style={styles.statLabel}>Total</div>
-            </div>
+        {/* Stats */}
+        <div style={styles.statsRow}>
+          <div style={styles.statCard}>
+            <div style={{ ...styles.statNum, color: '#f87171' }}>{atRiskMembers.length}</div>
+            <div style={styles.statLabel}>At-risk</div>
           </div>
-          <div>
-            <div style={styles.sectionLabel}>Members</div>
-            <div style={styles.tabRow}>
-              <button style={styles.tab(memberTab === 'risk')} onClick={() => setMemberTab('risk')}>
-                At-risk ({atRiskMembers.length})
-              </button>
-              <button style={styles.tab(memberTab === 'all')} onClick={() => setMemberTab('all')}>
-                All ({allMembers.length})
-              </button>
-            </div>
-            {renderMemberList()}
+          <div style={styles.statCard}>
+            <div style={{ ...styles.statNum, color: '#2dd4bf' }}>{allMembers.length}</div>
+            <div style={styles.statLabel}>Active</div>
           </div>
         </div>
 
-        {/* Col 2: Message */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <div style={styles.sectionLabel}>Message</div>
-            <div style={{ ...styles.chipRow, marginBottom: 12 }}>
-              {[
-                { id: 'preset', label: 'Preset templates' },
-                { id: 'custom', label: 'Write custom' },
-              ].map(m => (
-                <button key={m.id} style={styles.chip(mode === m.id)} onClick={() => setMode(m.id)}>
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            {mode === 'preset' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {PRESET_MESSAGES.map(p => (
-                  <div key={p.id} style={styles.presetCard(selectedPreset === p.id)} onClick={() => setSelectedPreset(p.id)}>
-                    <div style={styles.presetTitle}>{p.label}</div>
-                    <div style={styles.presetBody}>{p.body(gymName)}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <textarea
-                value={customMsg}
-                onChange={e => setCustomMsg(e.target.value)}
-                placeholder="Write a personalised message to your members…"
-                rows={6}
-                style={styles.textarea}
-              />
-            )}
+        {/* Member List */}
+        <div>
+          <div style={styles.sectionLabel}>Members</div>
+          <div style={styles.tabRow}>
+            <button style={styles.tab(memberTab === 'risk')} onClick={() => setMemberTab('risk')}>
+              At-risk ({atRiskMembers.length})
+            </button>
+            <button style={styles.tab(memberTab === 'all')} onClick={() => setMemberTab('all')}>
+              All ({allMembers.length})
+            </button>
+          </div>
+          {renderMemberList()}
+        </div>
+
+        <hr style={styles.divider} />
+
+        {/* Send To */}
+        <div>
+          <div style={styles.sectionLabel}>Send to</div>
+          <div style={styles.chipRow}>
+            {[
+              { id: 'atRisk', label: `At-risk (${atRiskMembers.length})` },
+              { id: 'all',    label: `All members (${allMembers.length})` },
+            ].map(opt => (
+              <button key={opt.id} style={styles.chip(target === opt.id)} onClick={() => setTarget(opt.id)}>
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Col 3: Send To + Send Button */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <div style={styles.sectionLabel}>Send to</div>
+        {/* Message */}
+        <div>
+          <div style={styles.sectionLabel}>Message</div>
+          <div style={{ ...styles.chipRow, marginBottom: 12 }}>
+            {[
+              { id: 'preset', label: 'Preset templates' },
+              { id: 'custom', label: 'Write custom' },
+            ].map(m => (
+              <button key={m.id} style={styles.chip(mode === m.id)} onClick={() => setMode(m.id)}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {mode === 'preset' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                { id: 'atRisk', label: `At-risk members`, sub: `${atRiskMembers.length} inactive 14+ days`, icon: AlertTriangle, iconColor: '#f87171' },
-                { id: 'all',    label: `All members`,     sub: `${allMembers.length} total members`,        icon: Users,         iconColor: '#2dd4bf' },
-              ].map(opt => (
-                <button key={opt.id} onClick={() => setTarget(opt.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${target === opt.id ? 'rgba(20,184,166,0.4)' : 'rgba(255,255,255,0.06)'}`, background: target === opt.id ? 'rgba(20,184,166,0.06)' : 'rgba(255,255,255,0.02)', transition: 'all 0.15s', textAlign: 'left' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: target === opt.id ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <opt.icon style={{ width: 14, height: 14, color: target === opt.id ? opt.iconColor : '#475569' }}/>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: target === opt.id ? '#f1f5f9' : '#64748b' }}>{opt.label}</div>
-                    <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>{opt.sub}</div>
-                  </div>
-                </button>
+              {PRESET_MESSAGES.map(p => (
+                <div key={p.id} style={styles.presetCard(selectedPreset === p.id)} onClick={() => setSelectedPreset(p.id)}>
+                  <div style={styles.presetTitle}>{p.label}</div>
+                  <div style={styles.presetBody}>{p.body(gymName)}</div>
+                </div>
               ))}
             </div>
-          </div>
-
-          <div style={{ marginTop: 'auto' }}>
-            {sent ? (
-              <div style={styles.sentConfirm}>
-                <Check style={{ width: 15, height: 15 }} />
-                Sent to {sent.count} member{sent.count !== 1 ? 's' : ''}!
-              </div>
-            ) : (
-              <button onClick={handleSend} disabled={!canSend} style={styles.sendBtn(canSend, sending)}>
-                {sending ? 'Sending…' : (
-                  <>
-                    <Send style={{ width: 14, height: 14 }} />
-                    {canSend ? `Send to ${targetCount} members` : 'Select a message to send'}
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          {message.trim() && (
-            <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Preview</div>
-              <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.55 }}>{message}</div>
-            </div>
+          ) : (
+            <textarea
+              value={customMsg}
+              onChange={e => setCustomMsg(e.target.value)}
+              placeholder="Write a personalised message to your members…"
+              rows={4}
+              style={styles.textarea}
+            />
           )}
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={styles.footer}>
+        {sent ? (
+          <div style={styles.sentConfirm}>
+            <Check style={{ width: 15, height: 15 }} />
+            Sent to {sent.count} member{sent.count !== 1 ? 's' : ''}!
+          </div>
+        ) : (
+          <button onClick={handleSend} disabled={!canSend} style={styles.sendBtn(canSend, sending)}>
+            {sending ? (
+              'Sending…'
+            ) : (
+              <>
+                <Send style={{ width: 14, height: 14 }} />
+                {canSend ? `Send to ${targetCount} members` : 'Select a message to send'}
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
