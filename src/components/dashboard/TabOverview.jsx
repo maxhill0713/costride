@@ -142,12 +142,8 @@ export default function TabOverview({
           </ResponsiveContainer>
         </Card>
 
-        {/* Heatmap + Member Growth */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Card style={{ padding: 20 }}>
-            <SectionTitle>Attendance Heatmap</SectionTitle>
-            <AttendanceHeatmap checkIns={checkIns}/>
-          </Card>
+        {/* Member Growth */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
           <Card style={{ padding: 20 }}>
             <div style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', marginBottom: 2 }}>Member Growth</div>

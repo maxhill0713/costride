@@ -96,9 +96,26 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
           </ResponsiveContainer>
         </Card>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
           <Card style={{ padding: 20 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>Attendance Heatmap</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>Peak Hours</div>
+            {peakHours.length === 0 ? <Empty icon={Clock} label="No check-in data yet"/> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+                {peakHours.map((h, i) => (
+                  <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: i===0?'#f59e0b':'var(--text3)', width: 20, textAlign: 'right', flexShrink: 0 }}>#{i+1}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 38, flexShrink: 0 }}>{h.label}</span>
+                    <div style={{ flex: 1, height: 7, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+                      <div style={{ height: '100%', width: `${h.pct}%`, borderRadius: 99, background: i===0?'linear-gradient(90deg,#f59e0b,#ef4444)':'linear-gradient(90deg,#8b5cf6,#ec4899)', transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)' }}/>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: i===0?'#fbbf24':'var(--text2)', width: 24, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+          {false && <Card style={{ padding: 20 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>REMOVED</div>
             {(() => {
               const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
               const slots = ['6AM','12PM','6PM','9PM'];
