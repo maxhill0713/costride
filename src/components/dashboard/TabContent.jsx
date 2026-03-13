@@ -5,9 +5,10 @@ import { Card, SectionTitle, Empty, Avatar } from './DashboardPrimitives';
 import PostCard from '../feed/PostCard';
 
 export default function TabContent({
-  events, challenges, polls, posts, checkIns, ci30, avatarMap,
+  events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
   openModal, now, leaderboardView, setLeaderboardView,
 }) {
+  const allPosts = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
@@ -63,9 +64,9 @@ export default function TabContent({
 
         {/* Posts Feed */}
         <div style={{ maxWidth: '50%' }}>
-          {posts.length > 0 ? (
+          {allPosts.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {posts.map((post) => (
+              {allPosts.map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
               ))}
             </div>
