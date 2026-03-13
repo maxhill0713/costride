@@ -1,52 +1,71 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { event } = await req.json();
 
-    if (event.type !== 'create' || event.entity_name !== 'WorkoutLog') {
+    if (!event) {
       return Response.json({ success: true });
     }
 
-    const { user_id: userId } = event.data;
+    let userId = null;
 
-    // Fetch the user to get their current streak
+    // Handle CheckIn events (check_ins challenge)
+    if (event.entity_name === 'CheckIn' && event.type === 'create') {
+      userId = event.data?.user_id;
+    } 
+    // Handle User streak updates (streak challenge)
+    else if (event.entity_name === 'User' && event.type === 'update') {
+      userId = event.data?.id;
+    } 
+    else {
+      return Response.json({ success: true });
+    }
+
+    if (!userId) {
+      return Response.json({ error: 'User ID not found in event' }, { status: 400 });
+    }
+
+    // Fetch the user to get current streak and check-in count
     const users = await base44.asServiceRole.entities.User.filter({ id: userId });
     if (users.length === 0) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const currentStreak = users[0].current_streak || 0;
+    const user = users[0];
+    const currentStreak = user.current_streak || 0;
 
     // Find all active challenges for this user
-    const participants = await base44.entities.ChallengeParticipant.filter({
+    const participants = await base44.asServiceRole.entities.ChallengeParticipant.filter({
       user_id: userId,
-      status: 'active'
+      completed: false
     });
 
     // Update progress for each active challenge
     for (const participant of participants) {
-      let newProgress;
+      let newProgress = participant.progress || 0;
       
-      if (participant.goal_type === 'longest_streak') {
-        newProgress = currentStreak - participant.starting_streak;
-      } else if (participant.goal_type === 'most_check_ins') {
-        // Count check-ins since joining challenge
-        const checkIns = await base44.entities.CheckIn.filter({
-          user_id: userId,
-          created_date: { $gte: participant.joined_date }
+      // Streak challenge: increment by 1 when streak increases
+      if (participant.goal_type === 'streak' || participant.goal_type === 'longest_streak') {
+        newProgress = currentStreak;
+      } 
+      // Check-in challenge: count total check-ins
+      else if (participant.goal_type === 'check_ins' || participant.goal_type === 'most_check_ins') {
+        const checkIns = await base44.asServiceRole.entities.CheckIn.filter({
+          user_id: userId
         });
         newProgress = checkIns.length;
-      } else {
-        continue; // Skip other goal types for now
+      } 
+      else {
+        continue; // Skip other goal types
       }
 
       const isCompleted = newProgress >= participant.target_value;
 
-      await base44.entities.ChallengeParticipant.update(participant.id, {
-        current_progress: Math.max(0, newProgress),
-        status: isCompleted ? 'completed' : 'active',
+      await base44.asServiceRole.entities.ChallengeParticipant.update(participant.id, {
+        progress: Math.max(0, newProgress),
+        completed: isCompleted,
         completed_date: isCompleted ? new Date().toISOString() : null
       });
     }
