@@ -1151,19 +1151,25 @@ export default function Home() {
                       <button
                         data-circle-btn="true"
                         onPointerDown={() => setPressedDay(day)}
-                        onPointerUp={() => setPressedDay(null)}
+                        onPointerUp={() => {
+                          if (pressedDay === day) {
+                            setActiveCircleDay((prev) => prev === day ? null : day);
+                          }
+                          setPressedDay(null);
+                        }}
                         onPointerLeave={() => setPressedDay(null)}
-                        onClick={() => setActiveCircleDay((prev) => prev === day ? null : day)}
+                        onPointerCancel={() => setPressedDay(null)}
                         style={{
                           width: size, height: size, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
-                          transition: pressedDay === day ? 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease' : 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.18s cubic-bezier(0.34,1.5,0.64,1)',
+                          transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                           animation: pressedDay === day ? 'none' : getAnimation(),
                           animationPlayState: 'running',
                           animationDelay: bounce ? '0s' : `${i * 0.18}s`,
-                          transform: pressedDay === day ? 'scale(0.84) translateY(4px)' : 'scale(1) translateY(0px)',
-                          willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
+                          opacity: pressedDay === day ? 0.65 : 1,
+                          transform: 'none',
+                          willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                           touchAction: 'manipulation',
                         }}>
