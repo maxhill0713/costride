@@ -77,13 +77,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
                       {wd.name}
                     </p>
                   </div>
-                  {isActive && (
-                    <div className="flex-shrink-0">
-                      <span className="text-[10px] font-bold text-blue-400 bg-blue-500/20 border border-blue-500/30 rounded-full px-2 py-0.5">
-                        Today
-                      </span>
-                    </div>
-                  )}
+
                 </div>
               </button>
             );
