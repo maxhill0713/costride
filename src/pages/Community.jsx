@@ -484,6 +484,7 @@ export default function Community(){
                 open={lbOpen}
                 onOpen={()=>setLbOpen(true)}
                 onClose={()=>setLbOpen(false)}
+                userAvatarMap={userAvatarMap}
               />
             )}
 
