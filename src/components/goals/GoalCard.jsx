@@ -140,14 +140,10 @@ function DotMenu({ goal, onRequestDelete, onRequestToggleReminder }) {
     <div className="relative flex-shrink-0">
       <button
         onClick={() => setOpen(p => !p)}
-        className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-        style={{
-          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          color: 'rgba(255,255,255,0.4)',
-        }}
+        className="w-8 h-8 flex items-center justify-center transition-opacity active:scale-90 duration-100"
+        style={{ color: open ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.35)' }}
       >
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreHorizontal className="w-5 h-5" />
       </button>
 
       {open && (
