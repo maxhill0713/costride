@@ -32,24 +32,19 @@ export default function TabContent({
   }, [checkIns, ci30]);
 
   return (
-    // Outer wrapper: full height, no overflow so children can manage their own scroll
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, height: 'calc(100vh - 56px - 44px)', alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, height: 'calc(100vh - 56px - 44px)' }}>
 
-      {/* ── LEFT: scrollable feed column ── */}
-      <div style={{ height: '100%', overflowY: 'auto', paddingRight: 4 }}>
-        {/* Hero action cards — sticky at top of scroll area */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 10,
-          background: 'var(--bg)',
-          paddingBottom: 12,
-          marginBottom: 4,
-        }}>
+      {/* ── LEFT: action cards fixed + posts scroll ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+
+        {/* Action cards — never move */}
+        <div style={{ flexShrink: 0, paddingBottom: 12 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
             {[
-              { icon: MessageSquarePlus, label: 'New Post',      sub: 'Share with members',            grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post') },
+              { icon: MessageSquarePlus, label: 'New Post',      sub: 'Share with members',                grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post') },
               { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)', border: 'rgba(16,185,129,0.3)',  iconBg: 'rgba(16,185,129,0.2)',  iconColor: '#6ee7b7', fn: () => openModal('event') },
               { icon: Trophy,            label: 'New Challenge', sub: `${activeChallenges.length} active`, grad: 'linear-gradient(135deg,#3a1010 0%,#5a1a1a 50%,#dc2626 100%)', border: 'rgba(239,68,68,0.3)',   iconBg: 'rgba(239,68,68,0.2)',   iconColor: '#fca5a5', fn: () => openModal('challenge') },
-              { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,        grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)', iconBg: 'rgba(139,92,246,0.2)', iconColor: '#c4b5fd', fn: () => openModal('poll') },
+              { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,           grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)', iconBg: 'rgba(139,92,246,0.2)', iconColor: '#c4b5fd', fn: () => openModal('poll') },
             ].map(({ icon: Icon, label, sub, grad, border, iconBg, iconColor, fn }, i) => (
               <div key={i} onClick={fn}
                 style={{ borderRadius: 16, padding: '20px 18px 18px', cursor: 'pointer', background: grad, border: `1px solid ${border}`, position: 'relative', overflow: 'hidden', transition: 'transform 0.18s, box-shadow 0.18s', minHeight: 110 }}
@@ -66,30 +61,28 @@ export default function TabContent({
           </div>
         </div>
 
-        {/* Posts feed — scrolls naturally within the column */}
-        <div style={{ maxWidth: '50%' }}>
-          {allPosts.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {allPosts.map((post) => (
-                <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
-              ))}
-            </div>
-          ) : (
-            <Card style={{ padding: 20, textAlign: 'center' }}>
-              <Empty icon={MessageSquarePlus} label="No posts yet"/>
-            </Card>
-          )}
+        {/* Posts feed — only this scrolls */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
+          <div style={{ maxWidth: '50%' }}>
+            {allPosts.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {allPosts.map((post) => (
+                  <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
+                ))}
+              </div>
+            ) : (
+              <Card style={{ padding: 20, textAlign: 'center' }}>
+                <Empty icon={MessageSquarePlus} label="No posts yet"/>
+              </Card>
+            )}
+          </div>
         </div>
+
       </div>
 
-      {/* ── RIGHT: sticky sidebar, independently scrollable if needed ── */}
-      <div style={{
-        height: '100%',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}>
+      {/* ── RIGHT: sidebar — never scrolls ── */}
+      <div style={{ height: '100%', overflowY: 'hidden', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
         {/* Recent Posts */}
         <Card style={{ padding: 16, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -123,7 +116,6 @@ export default function TabContent({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {upcomingEvents.length > 0 ? upcomingEvents.slice(0, 3).map((ev) => {
               const evDate = new Date(ev.event_date);
-              const diffDays = Math.floor((evDate - now) / 86400000);
               return (
                 <div key={ev.id}
                   style={{ padding: '8px', borderRadius: 8, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4 }}
@@ -251,6 +243,7 @@ export default function TabContent({
             </div>
           </Card>
         )}
+
       </div>
     </div>
   );
