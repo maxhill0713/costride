@@ -423,6 +423,42 @@ export default function Home() {
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
+  // ── Sticky header scroll logic ───────────────────────────────────────────
+  const [stickyHeaderVisible, setStickyHeaderVisible] = useState(false);
+  const lastScrollY = useRef(0);
+  const scrollTicking = useRef(false);
+
+  useEffect(() => {
+    const SHOW_THRESHOLD = 60;   // must scroll down at least this far before sticky can appear
+    const SCROLL_UP_TRIGGER = 8; // px scrolled upward before header appears
+
+    const handleScroll = () => {
+      if (scrollTicking.current) return;
+      scrollTicking.current = true;
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const delta = lastScrollY.current - currentY; // positive = scrolling up
+
+        if (currentY < SHOW_THRESHOLD) {
+          // Near top — always hide sticky
+          setStickyHeaderVisible(false);
+        } else if (delta > SCROLL_UP_TRIGGER) {
+          // Scrolling UP — show
+          setStickyHeaderVisible(true);
+        } else if (delta < -4) {
+          // Scrolling DOWN — hide
+          setStickyHeaderVisible(false);
+        }
+
+        lastScrollY.current = currentY;
+        scrollTicking.current = false;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     injectStreakStyles();
     injectCheckInStyles();
@@ -796,41 +832,62 @@ export default function Home() {
   };
   const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
 
+  // ── Shared header content (used in both inline and sticky) ───────────────
+  const HeaderContent = ({ compact = false }) => (
+    <div className={`max-w-4xl mx-auto flex items-center justify-center relative px-4 ${compact ? 'py-0' : ''}`}>
+      <button
+        onClick={() => setShowStreakVariants(true)}
+        className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2">
+        <img
+          src={POSE_1_URL}
+          alt="streak"
+          className={`${compact ? 'w-10 h-10' : 'w-14 h-14'} animate-[breathe_3s_ease-in-out_infinite]`}
+          style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
+        <span
+          className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
+          style={{
+            color: '#ffffff',
+            textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+          }}>
+          {userStreak}
+        </span>
+      </button>
+      <h1 className={`${compact ? 'text-lg' : 'text-xl'} font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight`}>
+        CoStride
+      </h1>
+      <button
+        onClick={() => setShowFriendsModal(true)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
+        <Users className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
+      </button>
+    </div>
+  );
+
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        {/* Header */}
-        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
-            <button
-              onClick={() => setShowStreakVariants(true)}
-              className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2">
-              <img
-                src={POSE_1_URL}
-                alt="streak"
-                className="w-14 h-14 animate-[breathe_3s_ease-in-out_infinite]"
-                style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
-              <span
-                className="font-black text-xl -ml-2 mt-3 select-none"
-                style={{
-                  color: '#ffffff',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1,
-                }}>
-                {userStreak}
-              </span>
-            </button>
-            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
-              CoStride
-            </h1>
-            {/* ── Friends icon button (top right) ── */}
-            <button
-              onClick={() => setShowFriendsModal(true)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
-              <Users className="w-6 h-6" />
-            </button>
+
+        {/* ── Sticky header — slides down when scrolling up ── */}
+        <div
+          className="fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out"
+          style={{
+            transform: stickyHeaderVisible ? 'translateY(0)' : 'translateY(-110%)',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            paddingTop: 'env(safe-area-inset-top)',
+          }}>
+          <div className="px-4 py-2.5">
+            <HeaderContent compact={true} />
           </div>
+        </div>
+
+        {/* ── Original inline header (always in the DOM at the top of the page) ── */}
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm px-4 py-3">
+          <HeaderContent compact={false} />
         </div>
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
