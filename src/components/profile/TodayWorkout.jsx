@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
@@ -52,7 +52,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
         {/* Header */}
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-xl font-black text-white tracking-tight text-center">Switch Workout</h3>
-          <p className="text-slate-400 text-xs mt-1 font-medium text-center">One-off swap — only affects today's session</p>
+
         </div>
 
         {/* Workout list */}
@@ -73,11 +73,8 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
                 }`}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
+                    <p className={`text-base font-black truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
                       {wd.name}
-                    </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
-                      {wd.dayName} · {wd.exercises.length} exercise{wd.exercises.length !== 1 ? 's' : ''}
                     </p>
                   </div>
                   {isActive && (
@@ -87,23 +84,13 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
                       </span>
                     </div>
                   )}
-                  {!isActive && (
-                    <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                  )}
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Footer */}
-        <div className="px-4 py-3">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-2xl font-bold text-sm text-slate-400 hover:text-slate-200 transition-colors">
-            Cancel
-          </button>
-        </div>
+
       </div>
     </>
   );
@@ -439,17 +426,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 {todayWorkout.name.length > 28 ? todayWorkout.name.substring(0, 28) + '…' : todayWorkout.name}
               </h2>
               {/* Small swap indicator */}
-              <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${isOverridden ? 'text-orange-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+
             </motion.button>
 
-            {/* Override badge */}
-            {isOverridden && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setOverrideDayKey(null); }}
-                className="flex-shrink-0 text-[9px] font-bold text-orange-300 bg-orange-500/20 border border-orange-500/30 rounded-full px-2 py-0.5 hover:bg-orange-500/30 transition-colors whitespace-nowrap">
-                Swap · Undo
-              </button>
-            )}
           </div>
 
           {showInfo && (
