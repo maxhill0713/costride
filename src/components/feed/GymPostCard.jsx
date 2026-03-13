@@ -16,9 +16,9 @@ const REACTIONS = ['💪', '🔥', '👏', '💯', '⚡'];
 // ── Exercise row — matches View Summary modal style ──────────────────────────
 function ExerciseRow({ ex, idx }) {
   const exName = ex.name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-  const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
-  const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
-  const weight = ex.weight ?? ex.weight_kg ?? '-';
+  const sets = ex.sets ?? '-';
+  const reps = ex.reps ?? '-';
+  const weight = ex.weight ?? '-';
 
   return (
     <div className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
@@ -70,7 +70,6 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   const [editImageUrl, setEditImageUrl] = useState(post.image_url || '');
   const [isUploading, setIsUploading] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
-  const COLLAPSED_COUNT = 0; // fully collapsed by default
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -129,218 +128,149 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   const exercises = post.workout_exercises || [];
   const PREVIEW_COUNT = 3;
 
-  // ── WORKOUT POST — Strava-style card ────────────────────────────────────
+  // ── Workout post (Strava-style) ──────────────────────────────────────────
   if (isWorkoutPost) {
-    // User comment: strip the auto-generated prefix if present
-    const userComment = post.content && !post.content.startsWith('💪 Just finished')
-      ? post.content
-      : null;
-
     return (
-      <Card
-        className="overflow-hidden shadow-2xl w-full max-w-lg mx-auto"
-        style={{
-          background: 'linear-gradient(160deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%)',
-          border: '1px solid rgba(255,255,255,0.07)',
-        }}>
+      <Card className="bg-gradient-to-br from-blue-950/90 via-slate-950/95 to-blue-950/90 backdrop-blur-xl border border-white/5 overflow-hidden shadow-2xl w-full max-w-lg mx-auto">
 
-        {/* ── TOP BAR ── */}
-        <div
-          style={{
-            background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-          }}
-          className="px-4 pt-3.5 pb-3">
-
-          {/* Row 1: avatar + name + date + menu */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              {/* Avatar with gradient ring */}
-              <div
-                className="flex-shrink-0 rounded-full p-[2px]"
-                style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)' }}>
-                <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
-                  {post.member_avatar
-                    ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-                    : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  {format(new Date(post.created_date), 'MMM d · h:mm a')}
-                </p>
+        {/* Header: avatar + name + date */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-0.5 flex-shrink-0">
+              <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                {post.member_avatar
+                  ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                  : <span className="text-xs font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || 'G'}</span>}
               </div>
             </div>
-            {isGymOwner && (
-              <button onClick={() => setShowEditModal(true)} className="text-slate-600 hover:text-slate-300 p-1 transition-colors">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-            )}
+            <div>
+              <h3 className="text-sm font-bold text-white leading-tight">{post.member_name}</h3>
+              <p className="text-[11px] text-slate-400">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+            </div>
           </div>
-
-          {/* Row 2: workout name (left-aligned, prominent) */}
-          <p
-            className="text-lg font-black text-white tracking-tight leading-tight mb-2.5"
-            style={{ letterSpacing: '-0.02em' }}>
-            {post.workout_name}
-          </p>
-
-          {/* Row 3: stats pills */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {post.workout_duration && (
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                <Clock className="w-3 h-3 text-blue-400" />
-                <span className="text-[11px] font-bold text-blue-300">{post.workout_duration}</span>
-              </div>
-            )}
-            {exercises.length > 0 && (
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.2)' }}>
-                <Dumbbell className="w-3 h-3 text-orange-400" />
-                <span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
-              </div>
-            )}
-            {post.workout_volume && (
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(250,204,21,0.10)', border: '1px solid rgba(250,204,21,0.18)' }}>
-                <Zap className="w-3 h-3 text-yellow-400" />
-                <span className="text-[11px] font-bold text-yellow-300">{post.workout_volume}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Row 4: user comment (if any) */}
-          {userComment && (
-            <p
-              className="mt-2.5 text-sm text-slate-300 leading-relaxed"
-              style={{ fontStyle: 'italic' }}>
-              "{userComment}"
-            </p>
+          {isGymOwner && (
+            <button onClick={() => setShowEditModal(true)} className="text-slate-500 hover:text-white p-1.5">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
           )}
         </div>
 
-        {/* ── PHOTO (70% height, centre-cropped) ── */}
+        {/* Workout title — centred */}
+        <div className="px-4 pb-3 text-center">
+          <p className="text-xl font-black text-white tracking-tight">{post.workout_name}</p>
+        </div>
+
+        {/* Stats row: duration · exercises · volume */}
+        <div className="flex items-center justify-center gap-5 px-4 pb-3">
+          {post.workout_duration && (
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-xs font-bold text-slate-300">{post.workout_duration}</span>
+            </div>
+          )}
+          {exercises.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <Dumbbell className="w-3.5 h-3.5 text-orange-400" />
+              <span className="text-xs font-bold text-slate-300">{exercises.length} exercises</span>
+            </div>
+          )}
+          {post.workout_volume && (
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-yellow-400" />
+              <span className="text-xs font-bold text-slate-300">{post.workout_volume}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Comment (if any) */}
+        {post.content && !post.content.startsWith('💪 Just finished') && (
+          <div className="px-4 pb-3">
+            <p className="text-sm text-slate-300 leading-relaxed italic">"{post.content}"</p>
+          </div>
+        )}
+
+        {/* Image — edge-to-edge, cropped top+bottom 15% */}
         {post.image_url && (
-          <div
-            className="relative w-full overflow-hidden"
-            style={{
-              // 70% of a standard 1:1 post = 70vw, capped at 310px
-              height: 'min(70vw, 310px)',
-              maxHeight: 310,
-            }}>
+          <div className="relative w-full overflow-hidden" style={{ height: '56vw', maxHeight: 340 }}>
             <img
               src={post.image_url}
               alt="workout"
-              style={{
-                // Fill the container then shift vertically to show the middle 70%
-                // i.e. image height = 100%/0.7 ≈ 143% of container, centred
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                width: '100%',
-                height: '143%',        // taller than container → top+bottom 15% overflow and hide
-                top: '-21.5%',         // shift up so middle 70% is visible
-                objectFit: 'cover',
-                objectPosition: 'center center',
-              }}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center 50%' }}
             />
+            {/* Gradient overlays to create the cropped feel */}
+            <div className="absolute inset-x-0 top-0 h-[15%] bg-gradient-to-b from-slate-950 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-[15%] bg-gradient-to-t from-slate-950 to-transparent" />
 
-            {/* Subtle top/bottom vignettes to blend into bars */}
-            <div
-              className="absolute inset-x-0 top-0 pointer-events-none"
-              style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
-            <div
-              className="absolute inset-x-0 bottom-0 pointer-events-none"
-              style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
-
-            {/* 🔥 reaction button overlaid on photo */}
+            {/* Reaction button overlaid bottom-left */}
             {currentUser && (
+              <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+                <button
+                  onClick={() => reactionMutation.mutate({ postId: post.id, emoji: '🔥' })}
+                  className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1.5 transition-transform active:scale-90"
+                >
+                  <Flame className={`w-5 h-5 ${isLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`} />
+                  {totalReactions > 0 && <span className="text-xs font-bold text-white">{totalReactions}</span>}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* If no image, show standalone reaction button */}
+        {!post.image_url && currentUser && (
+          <div className="px-4 pb-2 flex items-center gap-2">
+            <button
+              onClick={() => reactionMutation.mutate({ postId: post.id, emoji: '🔥' })}
+              className="flex items-center gap-1 transition-transform active:scale-90"
+            >
+              <Flame className={`w-6 h-6 ${isLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`} />
+              {totalReactions > 0 && <span className="text-xs font-bold text-slate-300">{totalReactions}</span>}
+            </button>
+          </div>
+        )}
+
+        {/* Exercise breakdown */}
+        {exercises.length > 0 && (
+          <div className="px-3 pt-3 pb-2">
+            <div className="space-y-2">
+              {/* Column headers */}
+              <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1 items-end px-1">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Exercise</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Sets</div>
+                <div />
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Reps</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest pl-3">Weight</div>
+              </div>
+              {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
+                <ExerciseRow key={idx} ex={ex} idx={idx} />
+              ))}
+            </div>
+
+            {exercises.length > PREVIEW_COUNT && (
               <button
-                onClick={() => reactionMutation.mutate({ postId: post.id, emoji: '🔥' })}
-                className="absolute bottom-3 right-3 flex items-center gap-1.5 transition-transform active:scale-90"
-                style={{
-                  background: 'rgba(0,0,0,0.52)',
-                  backdropFilter: 'blur(8px)',
-                  border: isLiked ? '1px solid rgba(249,115,22,0.5)' : '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 999,
-                  padding: '6px 11px 6px 8px',
-                }}>
-                <Flame className={`w-4.5 h-4.5 ${isLiked ? 'fill-orange-500 text-orange-500' : 'text-white/80'} transition-colors`} style={{ width: 18, height: 18 }} />
-                {totalReactions > 0 && (
-                  <span className="text-xs font-bold text-white">{totalReactions}</span>
+                onClick={() => setExercisesExpanded(v => !v)}
+                className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                {exercisesExpanded ? (
+                  <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                ) : (
+                  <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more exercises</>
                 )}
               </button>
             )}
           </div>
         )}
 
-        {/* If no photo, show standalone reaction row */}
-        {!post.image_url && currentUser && (
-          <div
-            className="px-4 py-2 flex items-center gap-2"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <button
-              onClick={() => reactionMutation.mutate({ postId: post.id, emoji: '🔥' })}
-              className="flex items-center gap-1.5 transition-transform active:scale-90">
-              <Flame className={`w-5 h-5 ${isLiked ? 'fill-orange-500 text-orange-500' : 'text-slate-400'} transition-colors`} />
-              {totalReactions > 0 && <span className="text-xs font-bold text-slate-400">{totalReactions}</span>}
-            </button>
-          </div>
-        )}
-
-        {/* ── BOTTOM BAR — exercise breakdown (collapsed by default) ── */}
-        {exercises.length > 0 && (
-          <div
-            style={{
-              background: 'linear-gradient(180deg, rgba(14,20,40,0.92) 0%, rgba(10,15,28,0.97) 100%)',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-            }}
-            className="px-3 pt-2 pb-1">
-
-            {/* Always-visible expand / collapse row */}
-            <button
-              onClick={() => setExercisesExpanded(v => !v)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
-              {exercisesExpanded
-                ? <><ChevronUp className="w-3.5 h-3.5" />Hide exercises</>
-                : <><ChevronDown className="w-3.5 h-3.5" />{exercises.length} exercise{exercises.length !== 1 ? 's' : ''} — tap to expand</>}
-            </button>
-
-            {/* Rows — only shown when expanded */}
-            {exercisesExpanded && (
-              <div className="mt-2">
-                {/* Column headers */}
-                <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
-                  <div />
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
-                </div>
-                <div className="space-y-2 -mx-2">
-                  {exercises.map((ex, idx) => (
-                    <ExerciseRow key={idx} ex={ex} idx={idx} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Share button */}
-            {currentUser && (
-              <div className="flex items-center pt-2 pb-1 mt-1 border-t border-white/5 relative">
-                <div className="relative">
-                  <button onClick={() => setShowShareMenu(v => !v)} className="transition-transform active:scale-90">
-                    <Send style={{ width: 18, height: 18 }} className="text-slate-500 hover:text-white transition-colors" />
-                  </button>
-                  {showShareMenu && <ShareMenu gym={gym} post={post} onClose={() => setShowShareMenu(false)} />}
-                </div>
-              </div>
-            )}
+        {/* Bottom: share button */}
+        {currentUser && (
+          <div className="px-4 pb-3 pt-1 flex items-center gap-2 border-t border-white/5 mt-1 relative">
+            <div className="relative">
+              <button onClick={() => setShowShareMenu(v => !v)} className="transition-transform active:scale-90">
+                <Send className="w-5 h-5 text-slate-400 hover:text-white transition-colors" />
+              </button>
+              {showShareMenu && <ShareMenu gym={gym} post={post} onClose={() => setShowShareMenu(false)} />}
+            </div>
           </div>
         )}
 
@@ -364,7 +294,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
     );
   }
 
-  // ── STANDARD POST (unchanged) ────────────────────────────────────────────
+  // ── Standard post (unchanged layout) ────────────────────────────────────
   const isTextOnly = !post.video_url && !post.image_url;
 
   return (
