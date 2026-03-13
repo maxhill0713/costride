@@ -324,7 +324,7 @@ function AnalyticsIllustration() {
 }
 
 function SplitIllustration() {
-  const src = "data:image/png;base64,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";
+  const src = "data:image/png;base64,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";
   return (
     <img
       src={src}
@@ -459,28 +459,22 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
-      {/* Illustration — top right corner */}
-      <div className="absolute top-0 right-0 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
+      {/* Illustration — top right corner, inset from edge */}
+      <div className="absolute top-0 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
         <Illustration />
       </div>
       {/* Content */}
       <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
-            <Icon className="w-4 h-4" style={{ color: iconColor }} />
-          </div>
+        <div className="flex items-center">
           <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
         </div>
         {description && (
           <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
         )}
       </div>
-      {/* Arrow chip bottom-right */}
+      {/* Arrow bottom-right — bare chevron, no circle */}
       <div className="absolute bottom-3 right-3">
-        <div className="w-6 h-6 rounded-full flex items-center justify-center"
-          style={{ background: iconBg, border: `1px solid ${accentBorder}` }}>
-          <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
-        </div>
+        <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
       </div>
     </div>
   );
