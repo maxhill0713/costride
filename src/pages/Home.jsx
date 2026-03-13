@@ -429,8 +429,8 @@ export default function Home() {
   const scrollTicking = useRef(false);
 
   useEffect(() => {
-    const SHOW_THRESHOLD = 60;   // must scroll down at least this far before sticky can appear
-    const SCROLL_UP_TRIGGER = 8; // px scrolled upward before header appears
+    const INLINE_HEADER_HEIGHT = 64;
+    const SCROLL_UP_TRIGGER = 8;
 
     const handleScroll = () => {
       if (scrollTicking.current) return;
@@ -439,9 +439,9 @@ export default function Home() {
         const currentY = window.scrollY;
         const delta = lastScrollY.current - currentY; // positive = scrolling up
 
-        if (currentY < SHOW_THRESHOLD) {
-          // Near top — always hide sticky
-          setStickyHeaderVisible(false);
+        if (currentY <= INLINE_HEADER_HEIGHT) {
+          // At/near the top — keep sticky visible so it sits flush over the inline header
+          setStickyHeaderVisible(true);
         } else if (delta > SCROLL_UP_TRIGGER) {
           // Scrolling UP — show
           setStickyHeaderVisible(true);
@@ -454,6 +454,9 @@ export default function Home() {
         scrollTicking.current = false;
       });
     };
+
+    // Start visible — we're at the top on mount
+    setStickyHeaderVisible(true);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -885,8 +888,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Original inline header (always in the DOM at the top of the page) ── */}
-        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm px-4 py-3">
+        {/* ── Inline header placeholder — keeps layout spacing; hidden behind sticky ── */}
+        <div className="px-4 py-3 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={false} />
         </div>
 
