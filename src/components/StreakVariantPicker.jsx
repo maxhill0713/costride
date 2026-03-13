@@ -12,9 +12,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-start justify-center pt-12 px-4"
-      onClick={handleBackdropClick}
-      style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
+      className="fixed inset-0 z-40 flex items-start justify-center pt-12 px-4 bg-slate-950/60 backdrop-blur-sm"
+      onClick={handleBackdropClick}>
 
       <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative">
         {/* Streak Freezes - top right */}
