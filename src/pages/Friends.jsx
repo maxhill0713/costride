@@ -344,7 +344,9 @@ export default function Friends() {
 
     notifications.forEach((notification) => {
       const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
-      if (daysSince <= 7) {
+      const text = (notification.message || notification.title || '').toLowerCase();
+      const isFriendRequestNotif = text.includes('accepted') || text.includes('friend request');
+      if (daysSince <= 7 && !isFriendRequestNotif) {
         activities.push({
           id: `notification-${notification.id}`,
           type: 'notification',
