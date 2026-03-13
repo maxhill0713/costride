@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import { format } from 'date-fns';
@@ -10,10 +10,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+
+
+// ── Shared confirm dialog — same style as remove-friends confirmation ─────────
+function ConfirmDialog({ open, onClose, title, description, confirmLabel, confirmClass, onConfirm, isPending }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">{title}</h3>
+        <p className="text-slate-300 text-sm mb-6">{description}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isPending}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-sm text-white active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50 ${confirmClass}`}>
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
 
 // ── Exercise row — compact version fitting 8 on screen ───────────────────────
 function ExerciseRow({ ex, idx }) {
@@ -316,6 +343,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
 
     return (
+    <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -353,8 +381,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 {showMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
-                      <button onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium">
+                    <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] z-20 overflow-hidden min-w-[110px]">
+                      <button onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 text-sm font-semibold transition-colors">
                         <Trash2 className="w-4 h-4" /> Delete
                       </button>
                     </div>
@@ -517,22 +545,19 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           )}
         </div>
 
-        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
-              <AlertDialogDescription className="text-slate-300">This action cannot be undone.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="flex gap-3 justify-center">
-              <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} disabled={deleteMutation.isPending}
-                className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </AlertDialogAction>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
       </motion.div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Post?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
+        onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }}
+        isPending={deleteMutation.isPending}
+      />
+    </>
     );
   }
 
@@ -564,6 +589,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   };
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -607,18 +633,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
+                  <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] z-20 overflow-hidden min-w-[130px]">
                     <button
                       onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
                       disabled={updatePostMutation.isPending}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
                       <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
                       {post.is_favourite ? 'Unfavourite' : 'Favourite'}
                     </button>
                     <button
                       onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
                       disabled={deleteMutation.isPending}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
                   </div>
@@ -720,42 +746,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
       <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
 
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">Are you sure you want to delete your post? This action cannot be undone.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-center">
-            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} disabled={deleteMutation.isPending}
-              className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showFavouriteConfirm} onOpenChange={setShowFavouriteConfirm}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
-              {post.is_favourite ? 'This post will no longer appear as your favourite on your profile.' : 'This post will appear as your favourite on your profile for others to see.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-center">
-            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }}
-              disabled={updatePostMutation.isPending}
-              className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
-              {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
         <DialogContent className="max-w-lg fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
           <DialogHeader>
@@ -786,5 +776,32 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         </DialogContent>
       </Dialog>
     </motion.div>
+
+      {/* ── Delete confirm (standard post) ── */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Post?"
+        description="Are you sure you want to delete your post? This action cannot be undone."
+        confirmLabel="Delete"
+        confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
+        onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }}
+        isPending={deleteMutation.isPending}
+      />
+
+      {/* ── Favourite confirm (standard post) ── */}
+      <ConfirmDialog
+        open={showFavouriteConfirm}
+        onClose={() => setShowFavouriteConfirm(false)}
+        title={post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}
+        description={post.is_favourite
+          ? 'This post will no longer appear as your favourite on your profile.'
+          : 'This post will appear as your favourite on your profile for others to see.'}
+        confirmLabel={post.is_favourite ? 'Remove' : 'Add to Favourites'}
+        confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+        onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }}
+        isPending={updatePostMutation.isPending}
+      />
+    </>
   );
 }
