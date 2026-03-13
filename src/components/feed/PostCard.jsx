@@ -319,9 +319,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl -mx-2 relative"
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+          background: 'linear-gradient(135deg, rgba(40,48,80,0.88) 0%, rgba(18,22,42,0.93) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -429,7 +429,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               style={{
                 left: '3%',
                 width: '87%',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
@@ -567,9 +567,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl -mx-2 relative"
+      className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
       style={{
-        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        background: 'linear-gradient(135deg, rgba(40,48,80,0.88) 0%, rgba(18,22,42,0.93) 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
@@ -643,10 +643,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
       {/* ── MEDIA ── */}
       {hasMedia && (
-        <div className="relative w-full overflow-hidden" style={{ borderRadius: '0 0 0 0' }}>
-          {post.video_url
-            ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
-            : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
+        <div className="relative overflow-hidden px-3 pb-1">
+          <div className="overflow-hidden rounded-xl">
+            {post.video_url
+              ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
+              : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
+          </div>
         </div>
       )}
 
