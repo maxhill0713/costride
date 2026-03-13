@@ -202,12 +202,13 @@ export default function Community() {
 
   const gymName = gymMemberships[0]?.gym_name || 'Your Gym';
 
-  const { data: allSets = [], isLoading } = useQuery({
-    queryKey: ['communityWorkoutSets'],
-    queryFn: () => base44.entities.WorkoutSet.list(),
+  const { data: workoutLogs = [], isLoading } = useQuery({
+    queryKey: ['communityWorkoutLogs'],
+    queryFn: () => base44.entities.WorkoutLog.list(),
     staleTime: 3*60*1000,
   });
 
+  const allSets = useMemo(() => flattenWorkoutLogs(workoutLogs), [workoutLogs]);
   const filteredSets = useMemo(() => filterByTime(allSets, timeFilter), [allSets, timeFilter]);
   const leaderboard  = useMemo(() => buildLeaderboard(filteredSets, activeLift), [filteredSets, activeLift]);
 
