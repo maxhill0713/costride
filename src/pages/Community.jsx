@@ -27,36 +27,55 @@ function matchLift(name = '') {
   return null;
 }
 
+// Flatten WorkoutLog records into individual exercise entries
+function flattenWorkoutLogs(logs) {
+  const flat = [];
+  logs.forEach(log => {
+    (log.exercises || []).forEach(ex => {
+      const w = parseFloat(ex.weight || 0);
+      if (!w) return;
+      flat.push({
+        user_id:   log.user_id,
+        user_name: log.user_name || log.created_by || 'Athlete',
+        exercise:  ex.exercise || '',
+        weight:    w,
+        unit:      'kg',
+        logged_date: log.completed_date || log.created_date,
+      });
+    });
+  });
+  return flat;
+}
+
 function filterByTime(sets, timeId) {
   const now = Date.now();
-  if (timeId === 'week')  return sets.filter(s => now - new Date(s.logged_date||s.created_date||0) < 7*86400000);
-  if (timeId === 'month') return sets.filter(s => now - new Date(s.logged_date||s.created_date||0) < 30*86400000);
+  if (timeId === 'week')  return sets.filter(s => now - new Date(s.logged_date||0) < 7*86400000);
+  if (timeId === 'month') return sets.filter(s => now - new Date(s.logged_date||0) < 30*86400000);
   return sets;
 }
 
 function buildLeaderboard(sets, liftId) {
   const best = {};
   sets.forEach(s => {
-    const lId = matchLift(s.exercise_name || s.exercise || s.name || '');
+    const lId = matchLift(s.exercise || '');
     if (liftId !== 'all' && lId !== liftId) return;
     if (!lId) return;
-    const w = parseFloat(s.weight || s.max_weight || 0);
+    const w = s.weight;
     if (!w) return;
     const uid = s.user_id;
     if (!best[uid] || w > best[uid].weight) {
-      best[uid] = { user_id: uid, user_name: s.user_name || s.full_name || 'Athlete', weight: w, unit: s.unit || s.weight_unit || 'kg', history: [] };
+      best[uid] = { user_id: uid, user_name: s.user_name || 'Athlete', weight: w, unit: 'kg', history: [] };
     }
   });
   // Build history per user for the active lift
   const history = {};
   sets.forEach(s => {
-    const lId = matchLift(s.exercise_name || s.exercise || s.name || '');
+    const lId = matchLift(s.exercise || '');
     if (liftId !== 'all' && lId !== liftId) return;
     if (!lId) return;
     const uid = s.user_id;
     if (!history[uid]) history[uid] = [];
-    const w = parseFloat(s.weight || 0);
-    if (w) history[uid].push({ weight: w, date: s.logged_date || s.created_date, unit: s.unit || 'kg' });
+    if (s.weight) history[uid].push({ weight: s.weight, date: s.logged_date, unit: 'kg' });
   });
   Object.keys(best).forEach(uid => { best[uid].history = (history[uid]||[]).sort((a,b) => new Date(a.date)-new Date(b.date)); });
   return Object.values(best).sort((a,b) => b.weight - a.weight);
