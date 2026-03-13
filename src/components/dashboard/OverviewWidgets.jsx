@@ -1,74 +1,73 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
-// ─── Habit Formation Tracker ──────────────────────────────────────────────────
-export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Date() }) => {
-  const memberHabits = useMemo(() => {
-    return allMemberships.slice(0, 8).map((m) => {
-      const name = m.user_name || 'Member';
-      const weekCounts = Array.from({ length: 4 }, (_, wi) => {
-        const weekStart = new Date(now); weekStart.setDate(now.getDate() - (wi + 1) * 7);
-        const weekEnd   = new Date(now); weekEnd.setDate(now.getDate() - wi * 7);
-        return checkIns.filter(c => c.user_id === m.user_id && new Date(c.check_in_date) >= weekStart && new Date(c.check_in_date) < weekEnd).length;
-      }).reverse();
-      const avg   = weekCounts.reduce((a, b) => a + b, 0) / 4;
-      const trend = weekCounts[3] - weekCounts[0];
-      return { name, weekCounts, avg: Math.round(avg * 10) / 10, trend, user_id: m.user_id };
-    }).sort((a, b) => b.avg - a.avg);
-  }, [checkIns, allMemberships, now]);
+// ─── Gym Culture Radar ────────────────────────────────────────────────────────
+export const CultureRadar = ({ checkIns = [], allMemberships = [], challenges = [], posts = [], polls = [], now = new Date() }) => {
+  const scores = React.useMemo(() => {
+    const total  = allMemberships.length || 1;
+    const ci30   = checkIns.filter(c => now - new Date(c.check_in_date) < 30 * 86400000);
+    const active = new Set(ci30.map(c => c.user_id));
+    const consistency  = Math.min(100, Math.round((active.size / total) * 100));
+    const community    = Math.min(100, Math.round((posts.length / Math.max(total,1)) * 300));
+    const chalPart     = challenges.reduce((s,c) => s + (c.participants?.length||0), 0);
+    const motivation   = Math.min(100, Math.round((chalPart / Math.max(total,1)) * 150));
+    const voteCount    = polls.reduce((s,p) => s + (p.voters?.length||0), 0);
+    const social       = Math.min(100, Math.round((voteCount / Math.max(total,1)) * 200 + polls.length * 8));
+    const ci7          = checkIns.filter(c => now - new Date(c.check_in_date) < 7 * 86400000).length;
+    const ci7prev      = checkIns.filter(c => { const age = now - new Date(c.check_in_date); return age >= 7*86400000 && age < 14*86400000; }).length;
+    const energy       = Math.min(100, Math.max(20, ci7prev > 0 ? Math.round((ci7/ci7prev)*60) : ci7>0?70:30));
+    return { consistency, community, motivation, social, energy };
+  }, [checkIns, allMemberships, challenges, posts, polls, now]);
 
-  const getCell = (v) => {
-    if (!v) return 'rgba(255,255,255,0.05)';
-    if (v <= 1) return 'rgba(14,165,233,0.2)';
-    if (v <= 2) return 'rgba(14,165,233,0.45)';
-    if (v <= 3) return 'rgba(14,165,233,0.7)';
-    return 'rgba(14,165,233,0.95)';
-  };
+  const dims = [
+    { key:'consistency', label:'Consistency', color:'#0ea5e9' },
+    { key:'community',   label:'Community',   color:'#10b981' },
+    { key:'motivation',  label:'Motivation',  color:'#f59e0b' },
+    { key:'social',      label:'Social',      color:'#a78bfa' },
+    { key:'energy',      label:'Energy',      color:'#f87171' },
+  ];
+  const cx=88, cy=88, maxR=68, n=dims.length;
+  const toXY  = (i,pct) => { const a=(i/n)*Math.PI*2-Math.PI/2, r=(pct/100)*maxR; return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}; };
+  const lblXY = (i)     => { const a=(i/n)*Math.PI*2-Math.PI/2, r=maxR+19;        return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}; };
+  const webPts = dims.map((d,i) => toXY(i, scores[d.key]));
+  const webPath = webPts.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+  const overall = Math.round(Object.values(scores).reduce((a,b)=>a+b,0) / dims.length);
 
   return (
     <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14 }}>
+      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12 }}>
         <div>
-          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>Habit Formation</div>
-          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>Weekly check-in frequency per member</div>
+          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>Gym Culture Radar</div>
+          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>Community health · 5 dimensions</div>
         </div>
-        <div style={{ display:'flex',gap:4,alignItems:'center' }}>
-          {[0.2,0.55,0.9].map((o,i) => <div key={i} style={{ width:8,height:8,borderRadius:2,background:`rgba(14,165,233,${o})` }}/>)}
-          <span style={{ fontSize:9,color:'var(--text3)',marginLeft:2 }}>Low → High</span>
-        </div>
-      </div>
-      <div style={{ display:'grid',gridTemplateColumns:'86px 1fr',gap:6,marginBottom:5 }}>
-        <div/>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:3 }}>
-          {['3w ago','2w ago','Last w','This w'].map((l,i) => (
-            <div key={l} style={{ fontSize:9,color:i===3?'#38bdf8':'var(--text3)',textAlign:'center',fontWeight:i===3?700:600 }}>{l}</div>
-          ))}
+        <div style={{ fontSize:18,fontWeight:900,color:overall>=70?'#10b981':overall>=45?'#f59e0b':'#f87171',letterSpacing:'-0.03em' }}>
+          {overall}<span style={{ fontSize:10,fontWeight:600,color:'var(--text3)',marginLeft:2 }}>/100</span>
         </div>
       </div>
-      <div style={{ display:'flex',flexDirection:'column',gap:5 }}>
-        {memberHabits.length === 0
-          ? <div style={{ padding:12,textAlign:'center',fontSize:12,color:'var(--text3)' }}>No member data yet</div>
-          : memberHabits.map((m, i) => (
-            <div key={m.user_id||i} style={{ display:'grid',gridTemplateColumns:'86px 1fr',gap:6,alignItems:'center' }}>
-              <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0 }}>
-                <div style={{ width:22,height:22,borderRadius:'50%',background:m.trend>0?'rgba(16,185,129,0.18)':m.trend<0?'rgba(239,68,68,0.15)':'rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:m.trend>0?'#34d399':m.trend<0?'#f87171':'var(--text3)',flexShrink:0 }}>
-                  {m.trend > 0 ? '↑' : m.trend < 0 ? '↓' : '→'}
-                </div>
-                <span style={{ fontSize:11,fontWeight:600,color:'var(--text2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{m.name.split(' ')[0]}</span>
-              </div>
-              <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:3 }}>
-                {m.weekCounts.map((v, wi) => (
-                  <div key={wi} title={`${v} check-in${v!==1?'s':''}`} style={{ height:16,borderRadius:3,background:getCell(v),display:'flex',alignItems:'center',justifyContent:'center' }}>
-                    {v > 0 && <span style={{ fontSize:8,fontWeight:800,color:v>=3?'#fff':'rgba(255,255,255,0.6)' }}>{v}</span>}
-                  </div>
-                ))}
-              </div>
+      <div style={{ display:'flex',justifyContent:'center' }}>
+        <svg width={176} height={176} style={{ overflow:'visible' }}>
+          {[25,50,75,100].map(ring =>
+            dims.map((_,i) => toXY(i,ring)).map((pt,i,pts) => i<pts.length-1 ? (
+              <line key={`r${ring}-${i}`} x1={pt.x} y1={pt.y} x2={pts[(i+1)%pts.length].x} y2={pts[(i+1)%pts.length].y} stroke="rgba(255,255,255,0.06)" strokeWidth={0.8}/>
+            ) : null)
+          )}
+          {dims.map((_,i) => { const end=toXY(i,100); return <line key={`ax${i}`} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.08)" strokeWidth={0.8}/>; })}
+          <path d={webPath} fill="rgba(14,165,233,0.1)" stroke="rgba(14,165,233,0.55)" strokeWidth={1.5}/>
+          {webPts.map((p,i) => <circle key={i} cx={p.x} cy={p.y} r={3} fill={dims[i].color}/>)}
+          {dims.map((d,i) => { const {x,y}=lblXY(i); return <text key={d.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill={d.color} fontSize={9} fontWeight={700} style={{fontFamily:'Outfit,sans-serif'}}>{d.label}</text>; })}
+        </svg>
+      </div>
+      <div style={{ display:'flex',flexDirection:'column',gap:6,marginTop:4 }}>
+        {dims.map(d => (
+          <div key={d.key}>
+            <div style={{ display:'flex',justifyContent:'space-between',marginBottom:3 }}>
+              <span style={{ fontSize:10,fontWeight:600,color:'var(--text2)' }}>{d.label}</span>
+              <span style={{ fontSize:10,fontWeight:800,color:d.color }}>{scores[d.key]}</span>
             </div>
-          ))
-        }
-      </div>
-      <div style={{ marginTop:12,paddingTop:10,borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',justifyContent:'space-between' }}>
-        <span style={{ fontSize:10,color:'var(--text3)' }}>{memberHabits.filter(m=>m.avg>=3).length} members training 3×/week+</span>
-        <span style={{ fontSize:10,color:'var(--text3)',fontWeight:600 }}>4-week window</span>
+            <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.06)' }}>
+              <div style={{ height:'100%',width:`${scores[d.key]}%`,borderRadius:99,background:d.color,opacity:0.8,transition:'width 1s cubic-bezier(0.22,1,0.36,1)' }}/>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -76,7 +75,7 @@ export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Dat
 
 // ─── Streak Celebrations ──────────────────────────────────────────────────────
 export const StreakCelebrations = ({ checkIns = [], openModal, now = new Date() }) => {
-  const milestones = useMemo(() => {
+  const milestones = React.useMemo(() => {
     const acc = {}, userIdMap = {};
     checkIns.forEach(c => {
       if (!acc[c.user_name]) acc[c.user_name] = new Set();
@@ -173,7 +172,7 @@ export const GymSetupChecklist = ({ selectedGym, classes = [], coaches = [], ope
 
 // ─── Smart Action Nudges ──────────────────────────────────────────────────────
 export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openModal, setTab, checkIns, allMemberships, now }) => {
-  const nudges = useMemo(() => {
+  const nudges = React.useMemo(() => {
     const list = [];
     if (atRisk > 0) list.push({ icon:'💬', title:`${atRisk} members haven't visited`, sub:'Send a personalised re-engagement message', color:'#f87171', bg:'rgba(239,68,68,0.08)', border:'rgba(239,68,68,0.2)', cta:'Message them', fn:()=>openModal('post') });
     if (!challenges.some(c=>c.status==='active')) list.push({ icon:'🏆', title:'Launch a community challenge', sub:'Active challenges boost check-ins by ~40%', color:'#fbbf24', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Create challenge', fn:()=>openModal('challenge') });
@@ -207,3 +206,32 @@ export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openMod
     </div>
   );
 };
+
+// ─── Invite to Classes card ───────────────────────────────────────────────────
+export const InviteToClasses = ({ classes = [], openModal }) => (
+  <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:20 }}>
+    <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14 }}>
+      <span style={{ fontSize:14,fontWeight:700,color:'var(--text1)' }}>Invite to Classes</span>
+      <button onClick={() => openModal('classes')} style={{ fontSize:11,fontWeight:600,color:'var(--cyan)',background:'none',border:'none',cursor:'pointer' }}>Manage →</button>
+    </div>
+    <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+      {classes.length === 0
+        ? <div style={{ padding:'20px',textAlign:'center',fontSize:12,color:'var(--text3)' }}>Add classes to invite members</div>
+        : classes.slice(0,3).map((cls,i) => (
+          <div key={cls.id||i} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ width:32,height:32,borderRadius:9,background:'rgba(14,165,233,0.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+              📅
+            </div>
+            <div style={{ flex:1,minWidth:0 }}>
+              <div style={{ fontSize:12,fontWeight:700,color:'var(--text1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{cls.name}</div>
+              <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>{cls.schedule?.[0]?.day || 'See schedule'}</div>
+            </div>
+            <button onClick={() => openModal('post')} style={{ padding:'4px 9px',borderRadius:7,background:'rgba(14,165,233,0.12)',color:'#38bdf8',border:'1px solid rgba(14,165,233,0.25)',fontSize:10,fontWeight:700,cursor:'pointer',flexShrink:0 }}>
+              Invite
+            </button>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+);
