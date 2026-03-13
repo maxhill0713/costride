@@ -42,10 +42,11 @@ const styles = {
   },
   body: {
     padding: '16px 20px',
-    display: 'grid',
-    gridTemplateColumns: '200px 1fr 1fr',
-    gap: 20,
-    alignItems: 'start',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    overflowY: 'auto',
+    maxHeight: 'calc(90vh - 80px)',
   },
   statsRow: {
     display: 'grid',
