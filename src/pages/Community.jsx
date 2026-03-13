@@ -283,7 +283,8 @@ function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, o
                         <div style={{position:'relative'}}>
                           <div style={{width:avatarSz+6,height:avatarSz+6,borderRadius:'50%',background:M.avatarRing,animation:`${M.pulse} 2.5s ease-in-out infinite`,display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <div style={{width:avatarSz,height:avatarSz,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,color:M.color,background:M.bg,border:'2px solid rgba(0,0,0,0.3)',fontSize:isFirst?17:12}}>
-                              {initials(data.user_name)}
+                              {userAvatarMap[data.user_id]?<img src={userAvatarMap[data.user_id]} alt={data.user_name} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex'}}/>:null}
+                              <span style={{display:userAvatarMap[data.user_id]?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:isFirst?17:12}}>{initials(data.user_name)}</span>
                             </div>
                           </div>
                           <div style={{position:'absolute',bottom:-2,right:-2,width:17,height:17,borderRadius:'50%',background:'rgba(6,10,24,0.9)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,boxShadow:`0 0 0 2px ${M.color}`,animation:'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both',zIndex:5}}>{M.label}</div>
