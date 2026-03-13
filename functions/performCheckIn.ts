@@ -65,6 +65,19 @@ Deno.serve(async (req) => {
       first_visit: false
     });
 
+    // Update challenge progress immediately
+    try {
+      await base44.functions.invoke('updateChallengeProgress', {
+        event: {
+          type: 'create',
+          entity_name: 'CheckIn',
+          data: { user_id: user.id }
+        }
+      });
+    } catch (e) {
+      console.warn('Failed to update challenge progress:', e.message);
+    }
+
     return Response.json({ checkIn });
   } catch (error) {
     console.error('Error performing check-in:', error);

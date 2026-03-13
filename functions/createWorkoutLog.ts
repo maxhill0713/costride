@@ -40,8 +40,21 @@ Deno.serve(async (req) => {
     });
 
     // Increment user streak
-    const newStreak = (user.streak || 0) + 1;
-    await base44.auth.updateMe({ streak: newStreak });
+    const newStreak = (user.current_streak || 0) + 1;
+    await base44.auth.updateMe({ current_streak: newStreak });
+
+    // Update challenge progress immediately
+    try {
+      await base44.functions.invoke('updateChallengeProgress', {
+        event: {
+          type: 'update',
+          entity_name: 'User',
+          data: { id: user.id, current_streak: newStreak }
+        }
+      });
+    } catch (e) {
+      console.warn('Failed to update challenge progress:', e.message);
+    }
 
     return Response.json({ workoutLog, newStreak });
   } catch (error) {
