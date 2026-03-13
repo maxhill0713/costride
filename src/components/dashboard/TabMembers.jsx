@@ -340,20 +340,16 @@ export default function TabMembers({
         </div>{/* end right sidebar */}
       </div>{/* end top grid */}
 
-      {/* ═══════════════════════════════════════════════════════
-          BOTTOM ROW — exact same grid: 1fr | 268px
-          HabitTracker lines up under the table
-          PushNotificationPanel lines up under the sidebar
-      ═══════════════════════════════════════════════════════ */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
-        <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
-        <PushNotificationPanel
-          atRiskMembers={atRiskMembersList}
-          allMembers={allMemberships}
-          selectedGym={selectedGym}
-          memberLastCheckIn={memberLastCheckIn}
-        />
-      </div>
+      {/* Push Notifications — full width, above Habit Tracker */}
+      <PushNotificationPanel
+        atRiskMembers={atRiskMembersList}
+        allMembers={allMemberships}
+        selectedGym={selectedGym}
+        memberLastCheckIn={memberLastCheckIn}
+      />
+
+      {/* Habit Tracker — full width */}
+      <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
 
     </div>
   );
