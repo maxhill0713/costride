@@ -420,8 +420,10 @@ export default function Home() {
   const [summaryLog, setSummaryLog] = useState(null);
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     injectStreakStyles();
