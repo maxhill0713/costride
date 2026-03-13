@@ -224,7 +224,7 @@ export default function TabMembers({
           selectedGym={selectedGym}
           memberLastCheckIn={memberLastCheckIn}
         />
-        </div>{/* end left column */}
+        </div>
 
         {/* ── Right Sidebar ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
