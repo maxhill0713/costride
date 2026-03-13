@@ -212,11 +212,104 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
   }
 
-  // ── WORKOUT POST — Strava-style ──────────────────────────────────────────
+  // ── WORKOUT POST — Strava-style with swipeable photo/summary ───────────────
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
     const userComment = post.content?.trim() || null;
     const totalReactions = Object.keys(post.reactions || {}).length;
+    const hasPhoto = !!post.image_url;
+    const PANEL_HEIGHT = 'min(72vw, 320px)';
+
+    // Swipe state — only relevant when there's a photo
+    const touchStartX = React.useRef(null);
+    const [slide, setSlide] = React.useState(0); // 0 = photo, 1 = summary
+
+    const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+    const handleTouchEnd = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      if (dx < -40) setSlide(1);
+      else if (dx > 40) setSlide(0);
+      touchStartX.current = null;
+    };
+
+    // Reusable streak icon button
+    const StreakBtn = () => (
+      currentUser && !isOwnProfile ? (
+        <motion.button
+          onClick={() => reactMutation.mutate(!hasReacted)}
+          disabled={reactMutation.isPending}
+          className="flex items-center gap-1 flex-shrink-0"
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.9 }}>
+          {userStreakVariant === 'sunglasses'
+            ? <div className="relative w-11 h-11 flex items-center justify-center">
+                <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                </svg>
+              </div>
+            : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+        </motion.button>
+      ) : null
+    );
+
+    // Reaction count cluster
+    const ReactionCount = () => totalReactions > 0 ? (
+      <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+        <div className="flex items-center" style={{ gap: 0 }}>
+          {Object.entries(post.reactions || {}).slice(0, 3).map(([userId, variant], i) =>
+            <div key={userId} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
+              {variant === 'sunglasses'
+                ? <div className="relative w-full h-full flex items-center justify-center">
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+            </div>
+          )}
+          {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
+        </div>
+      </button>
+    ) : null;
+
+    // Exercise summary panel content
+    const ExerciseSummaryPanel = ({ scrollable = false }) => (
+      <div
+        className={`w-full h-full flex flex-col ${scrollable ? 'overflow-y-auto' : 'overflow-hidden'}`}
+        style={{ background: 'linear-gradient(160deg, rgba(10,16,35,0.98) 0%, rgba(8,12,26,0.99) 100%)' }}>
+        <div className="px-3 pt-3 pb-2 flex-1 min-h-0 flex flex-col">
+          {/* Column headers */}
+          <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2 flex-shrink-0">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+            <div />
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+          </div>
+          <div className="space-y-2 -mx-2 flex-1 min-h-0 overflow-y-auto">
+            {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
+              <ExerciseRow key={idx} ex={ex} idx={idx} />
+            ))}
+          </div>
+          {exercises.length > PREVIEW_COUNT && (
+            <button
+              onClick={() => setExercisesExpanded(v => !v)}
+              className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
+              {exercisesExpanded
+                ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more</>}
+            </button>
+          )}
+        </div>
+      </div>
+    );
 
     return (
       <motion.div
@@ -235,13 +328,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}
           className="px-4 pt-3.5 pb-3">
-
-          {/* Avatar + name + date + menu */}
           <div className="flex items-center justify-between mb-3">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
-              <div
-                className="flex-shrink-0 rounded-full p-[2px]"
-                style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)' }}>
+              <div className="flex-shrink-0 rounded-full p-[2px]" style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)' }}>
                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
                   {post.member_avatar
                     ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
@@ -250,9 +339,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  {format(new Date(post.created_date), 'MMM d · h:mm a')}
-                </p>
+                <p className="text-[11px] text-slate-500 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
               </div>
             </Link>
             {isOwner && (
@@ -264,9 +351,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                     <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
-                      <button
-                        onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium">
+                      <button onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium">
                         <Trash2 className="w-4 h-4" /> Delete
                       </button>
                     </div>
@@ -275,166 +360,118 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
             )}
           </div>
-
-          {/* Workout name */}
           <p className="text-lg font-black text-white tracking-tight leading-tight mb-2.5" style={{ letterSpacing: '-0.02em' }}>
             {post.workout_name}
           </p>
-
-          {/* Stat pills */}
           <div className="flex items-center gap-2 flex-wrap">
             {post.workout_duration && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                <Clock className="w-3 h-3 text-blue-400" />
-                <span className="text-[11px] font-bold text-blue-300">{post.workout_duration}</span>
+                <Clock className="w-3 h-3 text-blue-400" /><span className="text-[11px] font-bold text-blue-300">{post.workout_duration}</span>
               </div>
             )}
             {exercises.length > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.2)' }}>
-                <Dumbbell className="w-3 h-3 text-orange-400" />
-                <span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
+                <Dumbbell className="w-3 h-3 text-orange-400" /><span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
               </div>
             )}
             {post.workout_volume && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(250,204,21,0.10)', border: '1px solid rgba(250,204,21,0.18)' }}>
-                <Zap className="w-3 h-3 text-yellow-400" />
-                <span className="text-[11px] font-bold text-yellow-300">{post.workout_volume}</span>
+                <Zap className="w-3 h-3 text-yellow-400" /><span className="text-[11px] font-bold text-yellow-300">{post.workout_volume}</span>
               </div>
             )}
           </div>
-
-          {/* User comment */}
-          {userComment && (
-            <p className="mt-2.5 text-sm text-slate-300 leading-relaxed italic">"{userComment}"</p>
-          )}
+          {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed italic">"{userComment}"</p>}
         </div>
 
-        {/* ── PHOTO (centre-cropped to 70%) ── */}
-        {post.image_url && (
-          <div className="relative w-full overflow-hidden" style={{ height: 'min(70vw, 310px)', maxHeight: 310 }}>
-            <img
-              src={post.image_url}
-              alt="workout"
-              style={{
-                position: 'absolute', left: 0, right: 0,
-                width: '100%', height: '143%', top: '-21.5%',
-                objectFit: 'cover', objectPosition: 'center center',
-              }}
-            />
-            <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
-            <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
-
-            {/* Streak icon reaction — bottom-left, same as normal post */}
-            {currentUser && !isOwnProfile && (
-              <motion.button
-                onClick={() => reactMutation.mutate(!hasReacted)}
-                disabled={reactMutation.isPending}
-                className="absolute bottom-2 left-3 flex items-center gap-1"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}>
-                {userStreakVariant === 'sunglasses'
-                  ? <div className="relative w-12 h-12 flex items-center justify-center">
-                      <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                      </svg>
-                    </div>
-                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
-              </motion.button>
-            )}
-
-            {/* Reaction count — bottom-right */}
-            {totalReactions > 0 && (
-              <button onClick={() => setShowReactionsModal(true)} className="absolute bottom-3 right-3 flex items-center hover:opacity-80 transition-opacity">
-                {(() => {
-                  const reactionEntries = Object.entries(post.reactions || {});
-                  const visibleReactions = reactionEntries.slice(0, 3);
-                  const overflow = reactionEntries.length - visibleReactions.length;
-                  return (
-                    <div className="flex items-center" style={{ gap: 0 }}>
-                      {visibleReactions.map(([userId, variant], i) =>
-                        <div key={userId} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
-                          {variant === 'sunglasses'
-                            ? <div className="relative w-full h-full flex items-center justify-center">
-                                <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                                </svg>
-                              </div>
-                            : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
-                        </div>
-                      )}
-                      {overflow > 0 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{overflow}</span></div>}
-                    </div>
-                  );
-                })()}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* No photo — standalone reaction row */}
-        {!post.image_url && currentUser && !isOwnProfile && (
-          <div className="px-4 py-2 flex items-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <motion.button
-              onClick={() => reactMutation.mutate(!hasReacted)}
-              disabled={reactMutation.isPending}
-              className="flex items-center gap-1"
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}>
-              {userStreakVariant === 'sunglasses'
-                ? <div className="relative w-12 h-12 flex items-center justify-center">
-                    <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
-            </motion.button>
-          </div>
-        )}
-
-        {/* ── BOTTOM BAR — exercise breakdown ── */}
-        {exercises.length > 0 && (
+        {/* ── SWIPEABLE PANEL: photo ↔ summary (only when photo exists) ── */}
+        {hasPhoto ? (
           <div
-            style={{
-              background: 'linear-gradient(180deg, rgba(14,20,40,0.92) 0%, rgba(10,15,28,0.97) 100%)',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-            }}
-            className="px-3 pt-3 pb-1">
+            className="relative overflow-hidden"
+            style={{ height: PANEL_HEIGHT }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}>
 
-            {/* Column headers */}
-            <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
-              <div />
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+            {/* Sliding track — two panels side by side */}
+            <div
+              className="flex h-full"
+              style={{
+                width: '200%',
+                transform: `translateX(${slide === 0 ? '0%' : '-50%'})`,
+                transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+              }}>
+
+              {/* Panel 0 — Photo */}
+              <div className="relative flex-shrink-0" style={{ width: '50%', height: '100%' }}>
+                <img
+                  src={post.image_url}
+                  alt="workout"
+                  style={{
+                    position: 'absolute', left: 0, right: 0,
+                    width: '100%', height: '143%', top: '-21.5%',
+                    objectFit: 'cover', objectPosition: 'center center',
+                  }}
+                />
+                <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
+                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
+                {/* Swipe hint arrow */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 opacity-60">
+                  <ChevronDown className="w-4 h-4 text-white -rotate-90" />
+                </div>
+              </div>
+
+              {/* Panel 1 — Exercise summary */}
+              <div className="flex-shrink-0 overflow-hidden" style={{ width: '50%', height: '100%' }}>
+                <ExerciseSummaryPanel />
+              </div>
             </div>
 
-            <div className="space-y-2 -mx-2">
-              {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
-                <ExerciseRow key={idx} ex={ex} idx={idx} />
-              ))}
+            {/* Dot indicators */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              <div className={`rounded-full transition-all duration-300 ${slide === 0 ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40'}`} />
+              <div className={`rounded-full transition-all duration-300 ${slide === 1 ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40'}`} />
             </div>
-
-            {exercises.length > PREVIEW_COUNT && (
-              <button
-                onClick={() => setExercisesExpanded(v => !v)}
-                className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
-                {exercisesExpanded
-                  ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
-                  : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more exercises</>}
-              </button>
-            )}
           </div>
+        ) : (
+          /* No photo — show exercise summary directly */
+          exercises.length > 0 && (
+            <div style={{ background: 'linear-gradient(160deg, rgba(10,16,35,0.98) 0%, rgba(8,12,26,0.99) 100%)' }}
+              className="px-3 pt-3 pb-2">
+              <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+                <div />
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+              </div>
+              <div className="space-y-2 -mx-2">
+                {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
+                  <ExerciseRow key={idx} ex={ex} idx={idx} />
+                ))}
+              </div>
+              {exercises.length > PREVIEW_COUNT && (
+                <button
+                  onClick={() => setExercisesExpanded(v => !v)}
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
+                  {exercisesExpanded
+                    ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                    : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more exercises</>}
+                </button>
+              )}
+            </div>
+          )
         )}
+
+        {/* ── BOTTOM BAR — reaction button + reaction count ── */}
+        <div
+          className="flex items-center justify-between px-3 py-1"
+          style={{
+            background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            minHeight: 44,
+          }}>
+          <StreakBtn />
+          <ReactionCount />
+        </div>
 
         {/* Delete confirmation */}
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
