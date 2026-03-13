@@ -387,6 +387,13 @@ export default function Community(){
     return m
   },[users,currentUser])
 
+  const userAvatarMap = useMemo(()=>{
+    const m={}
+    users.forEach(u=>{if(u.avatar_url||u.profile_picture||u.photo_url)m[u.id]=u.avatar_url||u.profile_picture||u.photo_url})
+    if(currentUser?.avatar_url||currentUser?.profile_picture||currentUser?.photo_url)m[currentUser.id]=currentUser.avatar_url||currentUser.profile_picture||currentUser.photo_url
+    return m
+  },[users,currentUser])
+
   const allSets      = useMemo(()=>flattenWorkoutLogs(workoutLogs,userMap),[workoutLogs,userMap])
   const filteredSets = useMemo(()=>filterByTime(allSets,timeFilter),[allSets,timeFilter])
   const leaderboard  = useMemo(()=>buildLeaderboard(filteredSets,activeLift),[filteredSets,activeLift])
