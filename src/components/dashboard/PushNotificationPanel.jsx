@@ -13,7 +13,6 @@ const styles = {
   // Matches the dashboard card style exactly
   panel: {
     width: '100%',
-    maxWidth: 400,
     borderRadius: 16,
     background: 'rgba(255,255,255,0.03)',
     border: '1px solid rgba(255,255,255,0.08)',
