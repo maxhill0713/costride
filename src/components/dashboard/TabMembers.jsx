@@ -314,39 +314,15 @@ export default function TabMembers({
             </div>
           </Card>
 
-          {/* Smart Suggestions */}
-          <Card style={{ padding: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Smart Suggestions</div>
-            {atRisk > 0 ? (
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', lineHeight: 1.4, marginBottom: 4 }}>
-                  <span style={{ color: '#fbbf24', fontWeight: 800 }}>{atRisk} members</span> haven't been in lately
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.4 }}>Send a personalised re-engagement nudge.</div>
-                <button onClick={() => openModal('post')} style={{ width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  Send Nudge
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#34d399', lineHeight: 1.4, marginBottom: 4 }}>Everything looks great! 🎉</div>
-                <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>Attendance is up and members are engaged. Keep up the momentum!</div>
-                <button onClick={() => openModal('challenge')} style={{ marginTop: 10, width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <Trophy style={{ width: 12, height: 12 }}/> Create a Challenge
-                </button>
-              </div>
-            )}
-          </Card>
+          {/* Push Notifications */}
+          <PushNotificationPanel
+            atRiskMembers={atRiskMembersList}
+            allMembers={allMemberships}
+            selectedGym={selectedGym}
+            memberLastCheckIn={memberLastCheckIn}
+          />
         </div>{/* end right sidebar */}
       </div>{/* end top grid */}
-
-      {/* Push Notifications — full width, above Habit Tracker */}
-      <PushNotificationPanel
-        atRiskMembers={atRiskMembersList}
-        allMembers={allMemberships}
-        selectedGym={selectedGym}
-        memberLastCheckIn={memberLastCheckIn}
-      />
 
       {/* Habit Tracker — full width */}
       <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
