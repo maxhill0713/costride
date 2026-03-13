@@ -35,7 +35,7 @@ export default function TabContent({
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, alignItems: 'start' }}>
 
       {/* ── LEFT: FEED ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
