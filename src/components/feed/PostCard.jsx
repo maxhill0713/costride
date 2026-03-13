@@ -223,14 +223,45 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     // Swipe state — only relevant when there's a photo
     const touchStartX = React.useRef(null);
     const [slide, setSlide] = React.useState(0); // 0 = photo, 1 = summary
+    const swipePanelRef = React.useRef(null);
 
-    const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+    // Attach non-passive touchmove so we can preventDefault and block page scroll
+    React.useEffect(() => {
+      const el = swipePanelRef.current;
+      if (!el) return;
+      const onMove = (e) => {
+        if (touchStartX.current === null) return;
+        const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+        const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+        if (dx > dy && dx > 5) e.preventDefault();
+      };
+      el.addEventListener('touchmove', onMove, { passive: false });
+      return () => el.removeEventListener('touchmove', onMove);
+    }, [hasPhoto]);
+
+    const touchStartY = React.useRef(null);
+    const handleTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const handleTouchMove = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+      // If mostly horizontal, prevent page scroll
+      if (dx > dy && dx > 5) e.preventDefault();
+    };
     const handleTouchEnd = (e) => {
       if (touchStartX.current === null) return;
       const dx = e.changedTouches[0].clientX - touchStartX.current;
-      if (dx < -40) setSlide(1);
-      else if (dx > 40) setSlide(0);
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      // Only register as horizontal swipe if it's more horizontal than vertical
+      if (Math.abs(dx) > dy && Math.abs(dx) > 30) {
+        if (dx < 0) setSlide(1);
+        else setSlide(0);
+      }
       touchStartX.current = null;
+      touchStartY.current = null;
     };
 
     // Reusable streak icon button
@@ -386,6 +417,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         {/* ── SWIPEABLE PANEL: photo ↔ summary (only when photo exists) ── */}
         {hasPhoto ? (
           <div
+            ref={swipePanelRef}
             className="relative overflow-hidden"
             style={{ height: PANEL_HEIGHT }}
             onTouchStart={handleTouchStart}
