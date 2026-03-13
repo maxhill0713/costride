@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { format } from 'date-fns';
 import { Plus, Image as ImageIcon, Trophy, BarChart2, MessageSquarePlus, Calendar, MessageCircle, ChevronRight } from 'lucide-react';
 import { Card, SectionTitle, Empty, Avatar } from './DashboardPrimitives';
-import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
 export default function TabContent({
   events, challenges, polls, posts, checkIns, ci30, avatarMap,
