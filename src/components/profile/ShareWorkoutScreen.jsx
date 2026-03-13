@@ -366,34 +366,80 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
             {/* Scrollable area */}
             <div className="w-full flex flex-col items-center overflow-y-auto max-h-[85vh] pb-4">
 
-              {/* Compact workout summary card */}
+              {/* ── POST PREVIEW CARD ── */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 22 }}
-                className="w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 p-6 mb-5">
+                className="w-full max-w-sm mb-5 overflow-hidden shadow-2xl shadow-black/20 rounded-2xl"
+                style={{
+                  background: 'linear-gradient(160deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                }}>
 
-                <div className="mb-5">
-                  <h3 className="text-2xl font-black text-white mb-1">{workoutName}</h3>
+                {/* Top bar — name, stats */}
+                <div style={{ background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  className="px-4 pt-4 pb-4">
+
+                  {/* Workout title */}
+                  <p className="text-xl font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>
+                    {workoutName}
+                  </p>
+
+                  {/* Stat pills */}
+                  {(() => {
+                    const totalSets = exercises?.reduce((acc, ex) => acc + (parseFloat(parseEx(ex).sets) || 0), 0) || 0;
+                    const totalVol = exercises?.reduce((acc, ex) => {
+                      const { sets: s, reps: r, weight: w } = parseEx(ex);
+                      return acc + (parseFloat(s)||0) * (parseFloat(r)||0) * (parseFloat(w)||0);
+                    }, 0) || 0;
+                    return (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {exercises?.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.2)' }}>
+                            <span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
+                          </div>
+                        )}
+                        {totalSets > 0 && (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                            <span className="text-[11px] font-bold text-blue-300">{totalSets} sets</span>
+                          </div>
+                        )}
+                        {totalVol > 0 && (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(250,204,21,0.10)', border: '1px solid rgba(250,204,21,0.18)' }}>
+                            <span className="text-[11px] font-bold text-yellow-300">{Math.round(totalVol).toLocaleString()} kg</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Description textarea — lives inside the card */}
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Add a description… (optional)"
+                    rows={2}
+                    className="w-full mt-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                  />
                 </div>
 
-                {/* Photo preview */}
+                {/* Photo preview (if uploaded) */}
                 {photoUrl && (
-                  <div className="relative mb-4 rounded-xl overflow-hidden">
-                    <img src={photoUrl} alt="workout" className="w-full h-40 object-cover" />
-                    <button
-                      onClick={() => setPhotoUrl(null)}
-                      className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white">
+                  <div className="relative" style={{ height: 'min(60vw, 260px)' }}>
+                    <img src={photoUrl} alt="workout"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={() => setPhotoUrl(null)}
+                      className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white z-10">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 )}
 
-                {/* Exercises */}
+                {/* Exercise summary */}
                 {exercises && exercises.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
-                    <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                  <div className="px-4 pt-3 pb-4" style={{ borderTop: photoUrl ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                    <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-2 items-end px-2 -mx-2">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
                       <div />
@@ -403,8 +449,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
                     <div className="space-y-2 -mx-2">
                       <AnimatePresence initial={false}>
                         {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
-                          <motion.div
-                            key={idx}
+                          <motion.div key={idx}
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
@@ -415,53 +460,22 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
                         ))}
                       </AnimatePresence>
                     </div>
-
-                    {hasMore && !exercisesExpanded && (
-                      <div className="flex flex-col items-center pt-1">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                          +{exercises.length - PREVIEW_COUNT} more
-                        </span>
-                        <motion.button
-                          onClick={() => setExercisesExpanded(true)}
-                          className="flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors p-1"
-                          animate={{ y: [0, 4, 0] }}
-                          transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-                          <ChevronDown className="w-5 h-5" />
-                        </motion.button>
-                      </div>
-                    )}
-                    {hasMore && exercisesExpanded && (
-                      <div className="flex justify-center pt-1">
-                        <motion.button
-                          onClick={() => setExercisesExpanded(false)}
-                          className="flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors p-1"
-                          animate={{ y: [0, -4, 0] }}
-                          transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-                          <ChevronDown className="w-5 h-5 rotate-180" />
-                        </motion.button>
-                      </div>
+                    {hasMore && (
+                      <button onClick={() => setExercisesExpanded(v => !v)}
+                        className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
+                        {exercisesExpanded
+                          ? <><ChevronDown className="w-3.5 h-3.5 rotate-180" /> Show less</>
+                          : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more</>}
+                      </button>
                     )}
                   </div>
                 )}
               </motion.div>
 
-              {/* Comment */}
+              {/* Add photo button — above the action buttons, outside card */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="w-full max-w-sm mb-4">
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Add a comment about your workout… (optional)"
-                  rows={3}
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-400 resize-none focus:outline-none focus:border-blue-400 transition-colors" />
-              </motion.div>
-
-              {/* Photo upload */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
                 className="w-full max-w-sm mb-4">
                 <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
                 <button
