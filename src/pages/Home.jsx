@@ -1388,6 +1388,102 @@ export default function Home() {
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} gymCount={gymMemberships.length} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
 
+      {/* ── Friends Modal ── */}
+      {showFriendsModal && (
+        <>
+          <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowFriendsModal(false)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+            <div className="px-3 py-1 flex items-center gap-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <Input placeholder="Search friends..." value={friendsListSearchQuery} onChange={e => setFriendsListSearchQuery(e.target.value)}
+                  className="pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
+              </div>
+              <Button onClick={() => { setShowAddFriendModal(true); setShowFriendsModal(false); }}
+                className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px]">
+                <UserPlus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {friendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.user_id); return (u?.full_name||req.user_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
+                const u = friendUsersList.find(u => u.id === request.user_id);
+                const name = u?.full_name || request.user_name || request.friend_name;
+                return (
+                  <div key={request.id} className="p-2 rounded-lg bg-blue-700/40 border border-blue-500/30 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                      </div>
+                      <div><p className="font-semibold text-white text-xs truncate">{name}</p><Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">Request pending</Badge></div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button size="icon" onClick={() => acceptFriendMutation.mutate(request.user_id)} className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"><CheckCircle className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => rejectFriendMutation.mutate(request.user_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"><X className="w-3 h-3" /></Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {friends.length === 0 && friendRequests.length === 0
+                ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
+                : friendsWithActivity.filter(friend => { const u = friendUsersList.find(u => u.id === friend.friend_id); return (u?.full_name||friend.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(friend => {
+                    const u = friendUsersList.find(u => u.id === friend.friend_id);
+                    const name = u?.full_name || friend.friend_name;
+                    return (
+                      <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2">
+                        <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setShowFriendsModal(false)}>
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                          </div>
+                          <p className="font-semibold text-white text-xs truncate">{name}</p>
+                        </Link>
+                        <Button variant="ghost" size="icon" onClick={() => removeFriendMutation.mutate(friend.friend_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"><UserMinus className="w-3 h-3" /></Button>
+                      </div>
+                    );
+                  })
+              }
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Add Friend Modal ── */}
+      {showAddFriendModal && (
+        <>
+          <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm" onClick={() => { setShowAddFriendModal(false); setFriendSearchQuery(''); }} />
+          <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+            <div className="px-3 py-1 flex items-center gap-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
+                <Input placeholder="Add Friends..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
+                  className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
+              </div>
+              <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {friendSearchQuery.length >= 2 && (
+                filteredSearchResults.length === 0
+                  ? <p className="text-center text-slate-400 text-sm py-8">No users found</p>
+                  : filteredSearchResults.map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
+                            {user.avatar_url ? <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-sm font-semibold text-white">{user.full_name?.charAt(0)?.toUpperCase()}</span>}
+                          </div>
+                          <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.email}</div></div>
+                        </div>
+                        <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                          <UserPlus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))
+              )}
+            </div>
+          </Card>
+        </>
+      )}
+
       {/* Workout Summary Modal */}
       <AnimatePresence>
         {summaryLog && (
