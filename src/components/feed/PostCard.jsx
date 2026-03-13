@@ -18,7 +18,6 @@ import { createPageUrl } from '@/utils';
 // ── Exercise row — compact version fitting 8 on screen ───────────────────────
 function ExerciseRow({ ex, idx }) {
   const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '';
-  // Clean up snake_case or camelCase if the name slipped through unformatted
   const displayName = exName
     ? exName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
     : `Exercise ${idx + 1}`;
@@ -58,7 +57,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [showFullContent, setShowFullContent] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
-  const [slide, setSlide] = useState(0); // 0 = photo, 1 = summary
+  const [slide, setSlide] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = React.useRef(null);
@@ -68,10 +67,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const queryClient = useQueryClient();
   const contentRef = React.useRef(null);
 
-  // ── Show 8 exercises before expand ──
   const PREVIEW_COUNT = 8;
 
-  // Non-passive touchmove for swipeable workout post panel
   useEffect(() => {
     const el = swipePanelRef.current;
     if (!el) return;
@@ -214,10 +211,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     onError: () => toast.error('Failed to nudge friends')
   });
 
-  useEffect(() => {
-    if (contentRef.current && showFullContent) setContentHeight(contentRef.current.offsetHeight);
-  }, [showFullContent]);
-
   // ── Gym join post ────────────────────────────────────────────────────────
   if (isGymJoinPost) {
     return (
@@ -245,8 +238,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
 
-    // Photo panel: 90% width, left-aligned, so 10% of summary peeks on right
-    // Summary panel: 85% width, slightly scaled down
     const PHOTO_WIDTH = '90%';
     const SUMMARY_WIDTH = '85%';
     const PANEL_HEIGHT = 'min(71vw, 315px)';
@@ -284,10 +275,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         await navigator.share({ title: post.workout_name || 'My Workout', text });
         return;
       } catch (e) {
-        if (e.name === 'AbortError') return; // user cancelled — do nothing
+        if (e.name === 'AbortError') return;
       }
     }
-    // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Workout copied to clipboard!');
@@ -295,10 +285,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       toast.error('Could not share');
     }
   };
+
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
         <div className="px-2 pt-2 pb-1 flex-1 min-h-0 flex flex-col">
-          {/* Column headers */}
           <div className="grid gap-0.5 mb-1 items-end px-1 flex-shrink-0"
             style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
@@ -307,15 +297,11 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: -22 }}>Reps</div>
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest" style={{ paddingLeft: 6 }}>Weight</div>
           </div>
-
-          {/* Exercise rows */}
           <div className="space-y-1 flex-1 overflow-hidden">
             {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
               <ExerciseRow key={idx} ex={ex} idx={idx} />
             ))}
           </div>
-
-          {/* Expand chevron — tight spacing */}
           {exercises.length > PREVIEW_COUNT && (
             <button
               onClick={() => setExercisesExpanded(v => !v)}
@@ -341,15 +327,11 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           WebkitBackdropFilter: 'blur(20px)',
         }}>
 
-        {/* Top shine line */}
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-
-        {/* Background glow blob */}
         <div className="absolute inset-0 pointer-events-none rounded-xl"
           style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-        {/* ── TOP BAR ── */}
         <div className="relative z-10 px-4 pt-3.5 pb-3">
           <div className="flex items-center justify-between mb-4">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
@@ -383,21 +365,17 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           </div>
           <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
 
-          {/* ── Stat row: value on top, label below, vertical separators ── */}
           <div className="flex items-center">
-            {/* Exercises */}
             <div className="flex flex-col items-center flex-1">
               <span className="text-sm font-black text-white leading-tight">{exercises.length > 0 ? exercises.length : '—'}</span>
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
             </div>
             <div className="w-px self-stretch bg-white/10" />
-            {/* Duration */}
             <div className="flex flex-col items-center flex-1">
               <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
             </div>
             <div className="w-px self-stretch bg-white/10" />
-            {/* Volume */}
             <div className="flex flex-col items-center flex-1">
               <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
@@ -407,7 +385,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
         </div>
 
-        {/* ── SWIPEABLE PANEL (photo + summary) ── */}
         {hasPhoto ? (
           <div
             ref={swipePanelRef}
@@ -447,18 +424,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               setDragOffset(0);
             }}
           >
-            {/* ── PHOTO PANEL ── */}
             <div
               className="absolute top-0 h-full overflow-hidden"
               style={{
                 left: '3%',
                 width: '87%',
                 borderRadius: '8px',
-                transform: `translateX(${
-                  isDragging
-                    ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)`
-                    : slide === 0 ? '0%' : '-100%'
-                })`,
+                transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
               }}
@@ -477,28 +449,20 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 }}
               />
             </div>
-
-            {/* ── SUMMARY PANEL ── */}
             <div
               className="absolute top-0 h-full overflow-hidden"
               style={{
                 width: SUMMARY_WIDTH,
                 left: '10%',
-                transform: `translateX(${
-                  isDragging
-                    ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)`
-                    : slide === 0 ? '100%' : '0%'
-                })`,
+                transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '100%' : '0%'})`,
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
               }}
             >
               {exerciseSummaryJSX}
             </div>
-
           </div>
         ) : (
-          /* No photo — show exercise summary directly */
           exercises.length > 0 && (
             <div style={{ width: SUMMARY_WIDTH }}>
               {exerciseSummaryJSX}
@@ -506,9 +470,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           )
         )}
 
-        {/* ── BOTTOM BAR ── */}
         <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
-          {/* Left side: react + share */}
           <div className="flex items-center gap-1">
             {currentUser && (
               <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
@@ -532,8 +494,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <Send className="w-5 h-5" />
             </motion.button>
           </div>
-          {/* Right side: reactions */}
-          {totalReactions > 0 && (
+          {Object.keys(post.reactions || {}).length > 0 && (
             <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
@@ -550,7 +511,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                       : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                   </div>
                 ))}
-                {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
+                {Object.keys(post.reactions || {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(post.reactions || {}).length - 3}</span></div>}
               </div>
             </button>
           )}
@@ -575,134 +536,184 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
   }
 
-  // ── STANDARD POST (unchanged) ────────────────────────────────────────────
+  // ── STANDARD POST ─────────────────────────────────────────────────────────
+  // Restyled to match the workout post card aesthetic:
+  // header → caption (optional) → media (optional) → reaction/share bar
+  const totalReactions = Object.keys(post.reactions || {}).length;
+
+  const handleShare = async () => {
+    const text = [
+      post.content || '',
+      `\n— shared from my workout app`,
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Post', text });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    } catch {
+      toast.error('Could not share');
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden overflow-x-hidden relative shadow-2xl shadow-black/20 mb-4 ${
-        hasMedia ? '' : 'min-h-[120px]'
-      } ${
-        fullWidth ? 'w-screen ml-[-50vw] left-[50%] rounded-none' : 'rounded-xl'
-      }`}>
+      className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl -mx-2 relative"
+      style={{
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      }}>
 
-      {/* Header */}
-      <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
-        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all">
-          {post.member_avatar
-            ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-            : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase()}</span>}
-        </div>
-        <span className="text-sm font-semibold text-white">{post.member_name}</span>
-      </Link>
+      {/* Top shine line */}
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-      {/* Delete Menu */}
-      {isOwner &&
-        <div className="absolute top-3 right-3 z-20">
-          <div className="relative flex items-center gap-2">
-            {post.is_favourite && <Star className="w-5 h-5 fill-amber-400 text-amber-400" />}
-            <button onClick={() => setShowMenu(!showMenu)} className="text-slate-300 hover:text-white">
-              <MoreHorizontal className="w-6 h-6" />
-            </button>
-            {showMenu &&
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
-                  <button
-                    onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
-                    disabled={updatePostMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
-                    <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
-                    {post.is_favourite ? 'Unfavourite' : 'Favourite'}
-                  </button>
-                  <button
-                    onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
-                    disabled={deleteMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
-                    <Trash2 className="w-4 h-4" /> Delete
-                  </button>
-                </div>
-              </>
-            }
-          </div>
-        </div>
-      }
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none rounded-xl"
+        style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-      {/* Media */}
-      {hasMedia &&
-        <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%] isolate" onClick={() => showFullContent && setShowFullContent(false)}>
-          {post.video_url
-            ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
-            : <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />}
-        </div>
-      }
+      {/* ── HEADER ── */}
+      <div className="relative z-10 px-4 pt-3.5 pb-3">
+        <div className="flex items-center justify-between">
+          <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
+              {post.member_avatar
+                ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+              <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+            </div>
+          </Link>
 
-      {/* Caption */}
-      <div className={`${hasMedia ? 'absolute left-0 right-0 bottom-0' : 'relative mt-14'} px-4 z-10 transition-all duration-300 ${showFullContent ? 'py-4' : 'py-2.5'}`}>
-        <div ref={contentRef} className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
-          <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
-            {post.content && post.content.length > 30 && !showFullContent
-              ? <>{post.content.substring(0, 30)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
-              : post.content}
-          </p>
-          {post.weight && <span className="block mt-1 text-blue-400 font-semibold">💪 {post.weight} lbs</span>}
-        </div>
-
-        {/* Reactions display */}
-        {Object.keys(post.reactions || {}).length > 0 && (() => {
-          const reactionEntries = Object.entries(post.reactions || {});
-          const visibleReactions = reactionEntries.slice(0, 3);
-          const overflow = reactionEntries.length - visibleReactions.length;
-          return (
-            <button onClick={() => setShowReactionsModal(true)} className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
-              <div className="flex items-center" style={{ gap: 0 }}>
-                {visibleReactions.map(([userId, variant], i) =>
-                  <div key={userId} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center">
-                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+          {isOwner && (
+            <div className="relative flex items-center gap-2">
+              {post.is_favourite && <Star className="w-4 h-4 fill-amber-400 text-amber-400" />}
+              <button onClick={() => setShowMenu(!showMenu)} className="text-slate-600 hover:text-slate-300 p-1 transition-colors">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
+                    <button
+                      onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
+                      disabled={updatePostMutation.isPending}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
+                      <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
+                      {post.is_favourite ? 'Unfavourite' : 'Favourite'}
+                    </button>
+                    <button
+                      onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
+                      disabled={deleteMutation.isPending}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
                   </div>
-                )}
-                {overflow > 0 && <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{overflow}</span></div>}
-              </div>
-            </button>
-          );
-        })()}
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
-        {isNudgePost && isOwner &&
-          <button onClick={() => nudgeMutation.mutate()} disabled={nudgeMutation.isPending} className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+        {/* ── CAPTION ── */}
+        {post.content && (
+          <div className="mt-3">
+            <p className="text-sm text-slate-300 leading-relaxed">
+              {post.content.length > 120 && !showFullContent
+                ? <>{post.content.substring(0, 120)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
+                : post.content}
+            </p>
+            {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
+          </div>
+        )}
+      </div>
+
+      {/* ── MEDIA ── */}
+      {hasMedia && (
+        <div className="relative w-full overflow-hidden" style={{ borderRadius: '0 0 0 0' }}>
+          {post.video_url
+            ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
+            : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
+        </div>
+      )}
+
+      {/* ── NUDGE BUTTON ── */}
+      {isNudgePost && isOwner && (
+        <div className="px-4 pt-2">
+          <button onClick={() => nudgeMutation.mutate()} disabled={nudgeMutation.isPending}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
             {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
           </button>
-        }
+        </div>
+      )}
 
-        {/* Reaction button */}
-        {!isOwnProfile &&
+      {/* ── BOTTOM BAR ── */}
+      <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
+        {/* Left: react + share */}
+        <div className="flex items-center gap-1">
+          {currentUser && (
+            <motion.button
+              onClick={() => reactMutation.mutate(!hasReacted)}
+              disabled={reactMutation.isPending}
+              className="flex items-center gap-1 flex-shrink-0"
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}>
+              {userStreakVariant === 'sunglasses'
+                ? <div className="relative w-11 h-11 flex items-center justify-center">
+                    <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+            </motion.button>
+          )}
           <motion.button
-            onClick={() => reactMutation.mutate(!hasReacted)}
-            disabled={reactMutation.isPending}
-            style={showFullContent ? { bottom: `${contentHeight + 16}px` } : { bottom: '2.1rem' }}
-            className="absolute left-4 transition-all flex items-center gap-1"
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.9 }}>
-            {userStreakVariant === 'sunglasses'
-              ? <div className="relative w-12 h-12 flex items-center justify-center">
-                  <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                    <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                    <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                    <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                  </svg>
-                </div>
-              : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+            onClick={handleShare}
+            className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.93 }}>
+            <Send className="w-5 h-5" />
           </motion.button>
-        }
+        </div>
+
+        {/* Right: reaction avatars */}
+        {totalReactions > 0 && (
+          <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+            <div className="flex items-center" style={{ gap: 0 }}>
+              {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
+                  {variant === 'sunglasses'
+                    ? <div className="relative w-full h-full flex items-center justify-center">
+                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                        </svg>
+                      </div>
+                    : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                </div>
+              ))}
+              {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Modals */}
@@ -717,7 +728,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           </AlertDialogHeader>
           <div className="flex gap-3 justify-center">
             <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} disabled={deleteMutation.isPending} className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
+            <AlertDialogAction onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} disabled={deleteMutation.isPending}
+              className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </div>
@@ -734,7 +746,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           </AlertDialogHeader>
           <div className="flex gap-3 justify-center">
             <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} disabled={updatePostMutation.isPending} className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
+            <AlertDialogAction
+              onClick={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }}
+              disabled={updatePostMutation.isPending}
+              className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
               {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
             </AlertDialogAction>
           </div>
