@@ -113,9 +113,12 @@ const NAV_ROW = [
   { rankOpacity: 0.38, nameOpacity: 0.36, barOpacity: 0.18, pillOpacity: 0.38 },
 ];
 
-export default function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
+export default function LeaderboardSection({ view: viewProp, setView: setViewProp, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
+  const [viewInternal, setViewInternal] = React.useState('checkins');
+  const view = viewProp ?? viewInternal;
+  const setView = setViewProp ?? setViewInternal;
 
   const tabs = [
     { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins' },
