@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   TrendingUp, Flame, Zap, Bell, BellOff,
   Plus, Minus, Edit3, Check, CheckCircle2, X, Clock,
-  Dumbbell, MoreHorizontal, Loader2,
+  Dumbbell, MoreHorizontal, Loader2, Trash2,
 } from 'lucide-react';
 import { differenceInDays, format } from 'date-fns';
 import confetti from 'canvas-confetti';
