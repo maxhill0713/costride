@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-// ── Exercise row — matches View Summary modal style ──────────────────────────
+// ── Exercise row — compact version fitting 8 on screen ───────────────────────
 function ExerciseRow({ ex, idx }) {
   const exName = ex.name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
   const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
@@ -23,18 +23,19 @@ function ExerciseRow({ ex, idx }) {
   const weight = ex.weight ?? ex.weight_kg ?? '-';
 
   return (
-    <div className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
-      <div className="text-sm font-bold text-white leading-tight ml-1 truncate">{exName}</div>
-      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: 36 }}>
+    <div className="bg-white/5 py-1 pl-1.5 rounded-lg border border-white/10 grid gap-0.5 items-center"
+      style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
+      <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{exName}</div>
+      <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center ml-0.5 py-0.5" style={{ width: 28 }}>
         {sets}
       </div>
-      <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
-      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: 36 }}>
+      <div className="text-slate-400 text-[10px] font-bold flex items-center justify-center">×</div>
+      <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center py-0.5" style={{ width: 28 }}>
         {reps}
       </div>
-      <div className="ml-3 pr-3">
-        <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-          {weight}<span className="text-[10px] font-bold">kg</span>
+      <div className="ml-1.5 pr-2">
+        <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-0.5 px-1 text-[11px] font-black text-center rounded-xl shadow-sm shadow-blue-900/20 min-w-[42px]">
+          {weight}<span className="text-[9px] font-bold">kg</span>
         </div>
       </div>
     </div>
@@ -53,13 +54,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [showFullContent, setShowFullContent] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
-  const [slide, setSlide] = useState(0); // 0 = photo, 1 = summary (workout posts)
+  const [slide, setSlide] = useState(0); // 0 = photo, 1 = summary
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = React.useRef(null);
   const touchStartY = React.useRef(null);
+  const touchCurrentX = React.useRef(null);
   const swipePanelRef = React.useRef(null);
   const queryClient = useQueryClient();
   const contentRef = React.useRef(null);
-  const PREVIEW_COUNT = 3;
+
+  // ── Show 8 exercises before expand ──
+  const PREVIEW_COUNT = 8;
 
   // Non-passive touchmove for swipeable workout post panel
   useEffect(() => {
@@ -230,28 +236,26 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
   }
 
-  // ── WORKOUT POST — Strava-style with swipeable photo/summary ───────────────
+  // ── WORKOUT POST ──────────────────────────────────────────────────────────
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
-    const PANEL_HEIGHT = 'min(72vw, 320px)';
+
+    // Photo panel: 90% width, left-aligned, so 10% of summary peeks on right
+    // Summary panel: 85% width, slightly scaled down
+    const PHOTO_WIDTH = '90%';
+    const SUMMARY_WIDTH = '85%';
+    const PANEL_HEIGHT = 'min(66vw, 300px)';
     const totalReactions = Object.keys(post.reactions || {}).length;
 
-    // Only show user-written comment — strip everything auto-generated
-    // We do this simply: if content contains a newline, only keep lines that
-    // look like plain prose (no emoji-only lines, no "x" rep patterns, no "kg" lines)
-    // For old posts the content had exercises appended; for new posts it's just the comment.
     const userComment = (() => {
       if (!post.content) return null;
       const lines = post.content.split('\n');
       const kept = lines.filter(l => {
         const t = l.trim();
         if (!t) return false;
-        // drop lines that are purely emoji / short symbol strings
         if (t.length <= 3 && t.codePointAt(0) > 255) return false;
-        // drop auto-prefix line
         if (t.includes('Just finished')) return false;
-        // drop exercise summary lines: contain digit+x+digit or end with kg/lbs
         if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
         if (/[0-9]+(kg|lbs)/i.test(t)) return false;
         return true;
@@ -259,29 +263,36 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       return kept.join('\n').trim() || null;
     })();
 
-    // Inline exercise summary JSX (avoids component-inside-render issues)
+    // ── Inline exercise summary JSX ──────────────────────────────────────
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden"
         style={{ background: 'linear-gradient(160deg, rgba(10,16,35,0.98) 0%, rgba(8,12,26,0.99) 100%)' }}>
-        <div className="px-3 pt-3 pb-2 flex-1 min-h-0 flex flex-col">
-          <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2 flex-shrink-0">
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+        <div className="px-2 pt-2 pb-1 flex-1 min-h-0 flex flex-col">
+          {/* Column headers */}
+          <div className="grid gap-0.5 mb-1 items-end px-1 flex-shrink-0"
+            style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
+            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: -20 }}>Sets</div>
             <div />
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: -22 }}>Reps</div>
+            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest" style={{ paddingLeft: 6 }}>Weight</div>
           </div>
-          <div className="space-y-2 -mx-2 flex-1 overflow-y-auto">
+
+          {/* Exercise rows */}
+          <div className="space-y-1 flex-1 overflow-hidden">
             {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
               <ExerciseRow key={idx} ex={ex} idx={idx} />
             ))}
           </div>
+
+          {/* Expand chevron — tight spacing */}
           {exercises.length > PREVIEW_COUNT && (
-            <button onClick={() => setExercisesExpanded(v => !v)}
-              className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
+            <button
+              onClick={() => setExercisesExpanded(v => !v)}
+              className="mt-1 w-full flex items-center justify-center gap-1 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
               {exercisesExpanded
-                ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
-                : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more</>}
+                ? <><ChevronUp className="w-3 h-3" /> Show less</>
+                : <><ChevronDown className="w-3 h-3" /> +{exercises.length - PREVIEW_COUNT} more</>}
             </button>
           )}
         </div>
@@ -354,39 +365,103 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
         </div>
 
-        {/* ── PHOTO + SUMMARY SWIPEABLE (when photo exists) ── */}
+        {/* ── SWIPEABLE PANEL (photo + summary) ── */}
         {hasPhoto ? (
-          <div ref={swipePanelRef} className="relative overflow-hidden" style={{ height: PANEL_HEIGHT }}
-            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; }}
+          <div
+            ref={swipePanelRef}
+            className="relative overflow-hidden"
+            style={{ height: PANEL_HEIGHT }}
+            onTouchStart={(e) => {
+              touchStartX.current = e.touches[0].clientX;
+              touchStartY.current = e.touches[0].clientY;
+              touchCurrentX.current = e.touches[0].clientX;
+              setIsDragging(false);
+              setDragOffset(0);
+            }}
+            onTouchMove={(e) => {
+              if (touchStartX.current === null) return;
+              const dx = e.touches[0].clientX - touchStartX.current;
+              const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+              if (Math.abs(dx) > dy) {
+                setIsDragging(true);
+                touchCurrentX.current = e.touches[0].clientX;
+                // Constrain drag: can't drag past the boundary panels
+                const rawOffset = dx;
+                const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.9;
+                const minDrag = slide === 0 ? -window.innerWidth * 0.9 : 0;
+                setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset)));
+              }
+            }}
             onTouchEnd={(e) => {
               if (touchStartX.current === null) return;
               const dx = e.changedTouches[0].clientX - touchStartX.current;
               const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0));
-              if (Math.abs(dx) > 30 && Math.abs(dx) > dy) setSlide(dx < 0 ? 1 : 0);
+              if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
+                setSlide(dx < 0 ? 1 : 0);
+              }
               touchStartX.current = null;
               touchStartY.current = null;
-            }}>
-
-            {/* Two-panel track */}
-            <div className="flex h-full w-full" style={{ position: 'relative' }}>
-              {/* Photo panel — slides out on swipe */}
-              <div className="absolute inset-0 w-full h-full"
-                style={{ transform: `translateX(${slide === 0 ? '0%' : '-100%'})`, transition: 'transform 0.32s ease', willChange: 'transform' }}>
-                <img src={post.image_url} alt="workout"
-                  style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '143%', top: '-21.5%', objectFit: 'cover', objectPosition: 'center center' }} />
-                <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
-                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-70 pointer-events-none">
-                  <ChevronDown className="w-5 h-5 text-white -rotate-90" />
-                </div>
+              touchCurrentX.current = null;
+              setIsDragging(false);
+              setDragOffset(0);
+            }}
+          >
+            {/* ── PHOTO PANEL — 90% wide, left-aligned, rounded ── */}
+            <div
+              className="absolute left-0 top-0 h-full overflow-hidden"
+              style={{
+                width: PHOTO_WIDTH,
+                borderRadius: '0 8px 8px 0',
+                transform: `translateX(${
+                  isDragging
+                    ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)`
+                    : slide === 0 ? '0%' : '-100%'
+                })`,
+                transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                willChange: 'transform',
+              }}
+            >
+              <img
+                src={post.image_url}
+                alt="workout"
+                style={{
+                  position: 'absolute',
+                  left: 0, right: 0,
+                  width: '100%',
+                  height: '143%',
+                  top: '-21.5%',
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                }}
+              />
+              {/* Top/bottom fade */}
+              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
+              {/* Swipe hint arrow */}
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-white -rotate-90" />
               </div>
-              {/* Summary panel — slides in from right */}
-              <div className="absolute inset-0 w-full h-full"
-                style={{ transform: `translateX(${slide === 0 ? '100%' : '0%'})`, transition: 'transform 0.32s ease', willChange: 'transform' }}>
-                {exerciseSummaryJSX}
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-70 pointer-events-none">
-                  <ChevronDown className="w-5 h-5 text-white rotate-90" />
-                </div>
+            </div>
+
+            {/* ── SUMMARY PANEL — 85% wide, slides in from right ── */}
+            <div
+              className="absolute top-0 h-full overflow-hidden"
+              style={{
+                width: SUMMARY_WIDTH,
+                left: '10%', // peeks 10% from left edge when photo is visible
+                transform: `translateX(${
+                  isDragging
+                    ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)`
+                    : slide === 0 ? '100%' : '0%'
+                })`,
+                transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                willChange: 'transform',
+              }}
+            >
+              {exerciseSummaryJSX}
+              {/* Swipe back hint arrow */}
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none">
+                <ChevronDown className="w-5 h-5 text-white rotate-90" />
               </div>
             </div>
 
@@ -398,10 +473,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           </div>
         ) : (
           /* No photo — show exercise summary directly */
-          exercises.length > 0 && exerciseSummaryJSX
+          exercises.length > 0 && (
+            <div style={{ width: SUMMARY_WIDTH }}>
+              {exerciseSummaryJSX}
+            </div>
+          )
         )}
 
-        {/* ── BOTTOM BAR — react + reactions ── */}
+        {/* ── BOTTOM BAR ── */}
         <div className="flex items-center justify-between px-3 py-1"
           style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
           {currentUser && !isOwnProfile && (
@@ -461,7 +540,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
   }
 
-  // ── STANDARD POST (completely unchanged) ────────────────────────────────
+  // ── STANDARD POST (unchanged) ────────────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
