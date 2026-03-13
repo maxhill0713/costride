@@ -315,18 +315,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         {/* ── TOP BAR ── */}
         <div style={{ background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)' }}
           className="px-4 pt-3.5 pb-3">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
-              <div className="flex-shrink-0 rounded-full p-[2px]" style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)' }}>
-                <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
-                  {post.member_avatar
-                    ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-                    : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
-                </div>
+              <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
+                {post.member_avatar
+                  ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                  : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                <p className="text-[11px] text-slate-500 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+                <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
               </div>
             </Link>
             {isOwner && (
