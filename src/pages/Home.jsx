@@ -396,6 +396,14 @@ export default function Home() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [friendSearchQuery, setFriendSearchQuery] = useState('');
+  const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
+  const [dismissedCardIds, setDismissedCardIds] = useState(() => {
+    try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
+    catch { return new Set(); }
+  });
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
