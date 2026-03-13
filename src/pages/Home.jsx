@@ -683,6 +683,19 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
+  // ── Streak icon fill logic: outline until workout logged, resets at 3 AM ──
+  const effectiveToday = (() => {
+    const now = new Date();
+    if (now.getHours() < 3) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    }
+    return now.toISOString().split('T')[0];
+  })();
+  const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
+  const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
+
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());

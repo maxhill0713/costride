@@ -52,6 +52,7 @@ import AddGym from './pages/AddGym';
 import AdminGyms from './pages/AdminGyms';
 import AppearanceSettings from './pages/AppearanceSettings';
 import ClaimGym from './pages/ClaimGym';
+import Community from './pages/Community';
 import Friends from './pages/Friends';
 import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
@@ -65,6 +66,7 @@ import InviteOwner from './pages/InviteOwner';
 import Leaderboard from './pages/Leaderboard';
 import MemberSignup from './pages/MemberSignup';
 import Messages from './pages/Messages';
+import ModeratorDashboard from './pages/ModeratorDashboard';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
@@ -87,6 +89,7 @@ export const PAGES = {
     "AdminGyms": AdminGyms,
     "AppearanceSettings": AppearanceSettings,
     "ClaimGym": ClaimGym,
+    "Community": Community,
     "Friends": Friends,
     "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
@@ -100,6 +103,7 @@ export const PAGES = {
     "Leaderboard": Leaderboard,
     "MemberSignup": MemberSignup,
     "Messages": Messages,
+    "ModeratorDashboard": ModeratorDashboard,
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
     "Onboarding": Onboarding,
