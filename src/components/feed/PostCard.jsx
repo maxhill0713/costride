@@ -240,7 +240,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
     const PHOTO_WIDTH = '90%';
     const SUMMARY_WIDTH = '85%';
-    const PANEL_HEIGHT = 'min(71vw, 315px)';
+    const PANEL_HEIGHT = 'min(78vw, 346px)';
     const totalReactions = Object.keys(post.reactions || {}).length;
 
     const userComment = (() => {
@@ -442,8 +442,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                   position: 'absolute',
                   left: 0, right: 0,
                   width: '100%',
-                  height: '143%',
-                  top: '-21.5%',
+                  height: '130%',
+                  top: '-15%',
                   objectFit: 'cover',
                   objectPosition: 'center center',
                 }}
