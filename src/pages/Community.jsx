@@ -209,7 +209,20 @@ export default function Community() {
     staleTime: 3*60*1000,
   });
 
-  const allSets = useMemo(() => flattenWorkoutLogs(workoutLogs), [workoutLogs]);
+  const { data: users = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list(),
+    staleTime: 10*60*1000,
+  });
+
+  const userMap = useMemo(() => {
+    const m = {};
+    users.forEach(u => { m[u.id] = u.full_name || u.email?.split('@')[0] || 'Athlete'; });
+    if (currentUser) m[currentUser.id] = currentUser.full_name || currentUser.email?.split('@')[0] || 'You';
+    return m;
+  }, [users, currentUser]);
+
+  const allSets = useMemo(() => flattenWorkoutLogs(workoutLogs, userMap), [workoutLogs, userMap]);
   const filteredSets = useMemo(() => filterByTime(allSets, timeFilter), [allSets, timeFilter]);
   const leaderboard  = useMemo(() => buildLeaderboard(filteredSets, activeLift), [filteredSets, activeLift]);
 
