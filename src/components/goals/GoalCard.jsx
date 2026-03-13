@@ -181,13 +181,12 @@ function DotMenu({ goal, onRequestDelete, onRequestToggleReminder }) {
 
             <button
               onClick={() => { onRequestDelete(); setOpen(false); }}
-              className="w-full px-4 py-2.5 text-left flex items-center gap-2.5 transition-colors"
+              className="w-full px-4 py-2.5 text-left flex items-center gap-2 transition-colors"
               style={{ color: '#f87171', fontSize: 12, fontWeight: 700 }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.07)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <span className="text-[13px]">🗑️</span>
-              Delete goal
+              <Trash2 className="w-4 h-4 flex-shrink-0" /> Delete
             </button>
           </div>
         </>
