@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, Flame, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import { format } from 'date-fns';
@@ -324,36 +324,79 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
             <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
 
-            {/* 🔥 reaction overlaid on photo */}
-            {currentUser && (
-              <button
+            {/* Streak icon reaction — bottom-left, same as normal post */}
+            {currentUser && !isOwnProfile && (
+              <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-3 right-3 flex items-center gap-1.5 transition-transform active:scale-90"
-                style={{
-                  background: 'rgba(0,0,0,0.52)',
-                  backdropFilter: 'blur(8px)',
-                  border: hasReacted ? '1px solid rgba(249,115,22,0.5)' : '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 999,
-                  padding: '6px 11px 6px 8px',
-                }}>
-                <Flame className={`w-4 h-4 ${hasReacted ? 'fill-orange-500 text-orange-500' : 'text-white/80'} transition-colors`} />
-                {totalReactions > 0 && <span className="text-xs font-bold text-white">{totalReactions}</span>}
+                className="absolute bottom-2 left-3 flex items-center gap-1"
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}>
+                {userStreakVariant === 'sunglasses'
+                  ? <div className="relative w-12 h-12 flex items-center justify-center">
+                      <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                      </svg>
+                    </div>
+                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+              </motion.button>
+            )}
+
+            {/* Reaction count — bottom-right */}
+            {totalReactions > 0 && (
+              <button onClick={() => setShowReactionsModal(true)} className="absolute bottom-3 right-3 flex items-center hover:opacity-80 transition-opacity">
+                {(() => {
+                  const reactionEntries = Object.entries(post.reactions || {});
+                  const visibleReactions = reactionEntries.slice(0, 3);
+                  const overflow = reactionEntries.length - visibleReactions.length;
+                  return (
+                    <div className="flex items-center" style={{ gap: 0 }}>
+                      {visibleReactions.map(([userId, variant], i) =>
+                        <div key={userId} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
+                          {variant === 'sunglasses'
+                            ? <div className="relative w-full h-full flex items-center justify-center">
+                                <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                                </svg>
+                              </div>
+                            : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                        </div>
+                      )}
+                      {overflow > 0 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{overflow}</span></div>}
+                    </div>
+                  );
+                })()}
               </button>
             )}
           </div>
         )}
 
         {/* No photo — standalone reaction row */}
-        {!post.image_url && currentUser && (
+        {!post.image_url && currentUser && !isOwnProfile && (
           <div className="px-4 py-2 flex items-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <button
+            <motion.button
               onClick={() => reactMutation.mutate(!hasReacted)}
               disabled={reactMutation.isPending}
-              className="flex items-center gap-1.5 transition-transform active:scale-90">
-              <Flame className={`w-5 h-5 ${hasReacted ? 'fill-orange-500 text-orange-500' : 'text-slate-400'} transition-colors`} />
-              {totalReactions > 0 && <span className="text-xs font-bold text-slate-400">{totalReactions}</span>}
-            </button>
+              className="flex items-center gap-1"
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}>
+              {userStreakVariant === 'sunglasses'
+                ? <div className="relative w-12 h-12 flex items-center justify-center">
+                    <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+            </motion.button>
           </div>
         )}
 
