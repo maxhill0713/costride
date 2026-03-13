@@ -424,7 +424,8 @@ export default function Home() {
   const celebTimers = useRef([]);
 
   // ── Sticky header scroll logic ───────────────────────────────────────────
-  const [stickyHeaderVisible, setStickyHeaderVisible] = useState(false);
+  const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
   const scrollTicking = useRef(false);
 
@@ -439,7 +440,10 @@ export default function Home() {
         const currentY = window.scrollY;
         const delta = lastScrollY.current - currentY; // positive = scrolling up
 
-        if (currentY <= INLINE_HEADER_HEIGHT) {
+        const atTop = currentY <= INLINE_HEADER_HEIGHT;
+        setIsAtTop(atTop);
+
+        if (atTop) {
           // At/near the top — keep sticky visible so it sits flush over the inline header
           setStickyHeaderVisible(true);
         } else if (delta > SCROLL_UP_TRIGGER) {
@@ -877,11 +881,14 @@ export default function Home() {
           className="fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out"
           style={{
             transform: stickyHeaderVisible ? 'translateY(0)' : 'translateY(-110%)',
-            background: 'rgba(15, 23, 42, 0.85)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            background: isAtTop
+              ? 'linear-gradient(to bottom, rgba(30,41,59,0.4), transparent)'
+              : 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: isAtTop ? 'none' : 'blur(16px)',
+            WebkitBackdropFilter: isAtTop ? 'none' : 'blur(16px)',
+            borderBottom: isAtTop ? 'none' : '1px solid rgba(255,255,255,0.07)',
             paddingTop: 'env(safe-area-inset-top)',
+            transition: 'transform 300ms ease-out, background 200ms ease, border-color 200ms ease',
           }}>
           <div className="px-4 py-2.5">
             <HeaderContent compact={true} />
