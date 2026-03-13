@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, Flame, ChevronDown, ChevronUp } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import { format } from 'date-fns';
@@ -15,6 +15,32 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
+// ── Exercise row — matches View Summary modal style ──────────────────────────
+function ExerciseRow({ ex, idx }) {
+  const exName = ex.name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+  const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
+  const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
+  const weight = ex.weight ?? ex.weight_kg ?? '-';
+
+  return (
+    <div className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+      <div className="text-sm font-bold text-white leading-tight ml-1 truncate">{exName}</div>
+      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: 36 }}>
+        {sets}
+      </div>
+      <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: 36 }}>
+        {reps}
+      </div>
+      <div className="ml-3 pr-3">
+        <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+          {weight}<span className="text-[10px] font-bold">kg</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -26,8 +52,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
+  const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const queryClient = useQueryClient();
   const contentRef = React.useRef(null);
+  const PREVIEW_COUNT = 3;
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -65,18 +93,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       toast.success('Post deleted');
       if (onDelete) onDelete(post.id);
     },
-    onError: () => {
-      toast.error('Failed to delete post');
-    }
+    onError: () => toast.error('Failed to delete post')
   });
 
   const updatePostMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       if (data.is_favourite && !post.is_favourite) {
         const favouriteCount = userPosts.filter((p) => p.is_favourite).length;
-        if (favouriteCount >= 3) {
-          throw new Error('You can only have 3 favourite posts');
-        }
+        if (favouriteCount >= 3) throw new Error('You can only have 3 favourite posts');
       }
       return base44.entities.Post.update(id, data);
     },
@@ -86,151 +110,87 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       toast.success(post.is_favourite ? 'Removed from favourites' : 'Added to favourites');
     },
     onError: (error) => {
-      if (error.message === 'You can only have 3 favourite posts') {
-        toast.error('You can only have 3 favourite posts');
-      } else {
-        toast.error('Failed to update post');
-      }
+      toast.error(error.message === 'You can only have 3 favourite posts'
+        ? 'You can only have 3 favourite posts'
+        : 'Failed to update post');
     }
   });
 
   const isOwner = currentUser?.id === post.member_id;
   const isNudgePost = post.exercise === 'workout_completion_nudge';
-  const isWeightIncreasePost = post.content?.includes('increased their weight');
   const isGymJoinPost = post.gym_join === true;
+  const isWorkoutPost = !!post.workout_name;
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
   const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
 
-  const getStreakIcon = (variant) => {
-    return variant;
-  };
-
   const reactMutation = useMutation({
     mutationFn: async (isReacting) => {
       const updatedReactions = { ...post.reactions };
-      if (isReacting) {
-        updatedReactions[currentUser.id] = userStreakVariant;
-      } else {
-        delete updatedReactions[currentUser.id];
-      }
+      if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
+      else delete updatedReactions[currentUser.id];
       await base44.entities.Post.update(post.id, { reactions: updatedReactions });
     },
     onMutate: async (isReacting) => {
       const updatePost = (old = []) => old.map((p) => {
         if (p.id !== post.id) return p;
         const updatedReactions = { ...p.reactions };
-        if (isReacting) {
-          updatedReactions[currentUser.id] = userStreakVariant;
-        } else {
-          delete updatedReactions[currentUser.id];
-        }
+        if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
+        else delete updatedReactions[currentUser.id];
         return { ...p, reactions: updatedReactions };
       });
-
-      const queries = [
-        ['posts'],
-        ['friendPosts', currentUser?.id],
-        ['userPosts', currentUser?.id]
-      ];
-
+      const queries = [['posts'], ['friendPosts', currentUser?.id], ['userPosts', currentUser?.id]];
       if (post.gym_id) queries.push(['posts', post.gym_id]);
-
-      const snapshots = queries.map((key) => ({
-        key,
-        data: queryClient.getQueryData(key)
-      }));
-
+      const snapshots = queries.map((key) => ({ key, data: queryClient.getQueryData(key) }));
       queries.forEach((key) => queryClient.setQueryData(key, updatePost));
-
       return { snapshots };
     },
     onError: (err, isReacting, context) => {
-      context?.snapshots?.forEach(({ key, data }) => {
-        queryClient.setQueryData(key, data);
-      });
+      context?.snapshots?.forEach(({ key, data }) => queryClient.setQueryData(key, data));
       toast.error('Failed to react to post');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      if (post.gym_id) {
-        queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
-      }
+      if (post.gym_id) queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
     }
   });
 
   const nudgeMutation = useMutation({
     mutationFn: async () => {
-      const friends = await base44.entities.Friend.filter({
-        user_id: currentUser.id,
-        status: 'accepted'
-      });
-
+      const friends = await base44.entities.Friend.filter({ user_id: currentUser.id, status: 'accepted' });
       const todayDate = new Date().toISOString().split('T')[0];
       const dayOfWeek = new Date().getDay();
       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-
       for (const friend of friends) {
         const friendUser = await base44.entities.User.filter({ id: friend.friend_id });
         if (!friendUser.length) continue;
-
         const friendData = friendUser[0];
-
         const trainingDays = friendData.training_days || [];
         const isRestDay = !trainingDays.includes(adjustedDay);
         const hasNoExercises = !friendData.custom_workout_types?.[adjustedDay]?.exercises?.length;
-
         if (isRestDay || hasNoExercises) continue;
-
-        const friendWorkouts = await base44.entities.WorkoutLog.filter({
-          user_id: friend.friend_id,
-          completed_date: todayDate
-        });
-
+        const friendWorkouts = await base44.entities.WorkoutLog.filter({ user_id: friend.friend_id, completed_date: todayDate });
         if (friendWorkouts.length === 0) {
           await base44.entities.Post.create({
             member_id: friend.friend_id,
             member_name: friendData.full_name || friendData.username || 'User',
             member_avatar: friendData.avatar_url || '',
             content: `${currentUser.full_name || currentUser.username || 'User'} wants you to stop being lazy and get in the gym!`,
-            likes: 0,
-            comments: [],
-            reactions: {}
+            likes: 0, comments: [], reactions: {}
           });
         }
       }
     },
-    onSuccess: () => {
-      toast.success('Friends nudged!');
-      queryClient.invalidateQueries(['posts']);
-    },
-    onError: () => {
-      toast.error('Failed to nudge friends');
-    }
+    onSuccess: () => { toast.success('Friends nudged!'); queryClient.invalidateQueries(['posts']); },
+    onError: () => toast.error('Failed to nudge friends')
   });
 
-  const handleReact = () => {
-    setReacted(!reacted);
-    onLike(post.id, !reacted);
-  };
-
-  const handleSave = () => {
-    setSaved(!saved);
-    if (onSave) onSave(post.id, !saved);
-  };
-
-  const handleAddComment = (commentText) => {
-    onComment(post.id, commentText);
-  };
-
   useEffect(() => {
-    if (contentRef.current && showFullContent) {
-      setContentHeight(contentRef.current.offsetHeight);
-    }
+    if (contentRef.current && showFullContent) setContentHeight(contentRef.current.offsetHeight);
   }, [showFullContent]);
 
-  // Render gym join posts as compact horizontal rectangles
+  // ── Gym join post ────────────────────────────────────────────────────────
   if (isGymJoinPost) {
     return (
       <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`}>
@@ -238,18 +198,11 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2">
-
-          {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-            {post.member_avatar ?
-              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
-              <span className="text-xs font-bold text-white">
-                {post.member_name?.charAt(0)?.toUpperCase()}
-              </span>
-            }
+            {post.member_avatar
+              ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+              : <span className="text-xs font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase()}</span>}
           </div>
-
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-white text-xs truncate">{post.member_name}</p>
             <p className="text-[11px] text-blue-300 truncate">{post.content}</p>
@@ -259,11 +212,211 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
   }
 
+  // ── WORKOUT POST — Strava-style ──────────────────────────────────────────
+  if (isWorkoutPost) {
+    const exercises = post.workout_exercises || [];
+    const userComment = post.content && !post.content.startsWith('💪 Just finished') ? post.content : null;
+    const totalReactions = Object.keys(post.reactions || {}).length;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/20 rounded-xl"
+        style={{
+          background: 'linear-gradient(160deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}>
+
+        {/* ── TOP BAR ── */}
+        <div
+          style={{
+            background: 'linear-gradient(180deg, rgba(20,30,55,0.95) 0%, rgba(14,20,40,0.92) 100%)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+          }}
+          className="px-4 pt-3.5 pb-3">
+
+          {/* Avatar + name + date + menu */}
+          <div className="flex items-center justify-between mb-3">
+            <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+              <div
+                className="flex-shrink-0 rounded-full p-[2px]"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)' }}>
+                <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
+                  {post.member_avatar
+                    ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                    : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  {format(new Date(post.created_date), 'MMM d · h:mm a')}
+                </p>
+              </div>
+            </Link>
+            {isOwner && (
+              <div className="relative">
+                <button onClick={() => setShowMenu(!showMenu)} className="text-slate-600 hover:text-slate-300 p-1 transition-colors">
+                  <MoreHorizontal className="w-5 h-5" />
+                </button>
+                {showMenu && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                    <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
+                      <button
+                        onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium">
+                        <Trash2 className="w-4 h-4" /> Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Workout name */}
+          <p className="text-lg font-black text-white tracking-tight leading-tight mb-2.5" style={{ letterSpacing: '-0.02em' }}>
+            {post.workout_name}
+          </p>
+
+          {/* Stat pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {post.workout_duration && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                <Clock className="w-3 h-3 text-blue-400" />
+                <span className="text-[11px] font-bold text-blue-300">{post.workout_duration}</span>
+              </div>
+            )}
+            {exercises.length > 0 && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.2)' }}>
+                <Dumbbell className="w-3 h-3 text-orange-400" />
+                <span className="text-[11px] font-bold text-orange-300">{exercises.length} exercises</span>
+              </div>
+            )}
+            {post.workout_volume && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(250,204,21,0.10)', border: '1px solid rgba(250,204,21,0.18)' }}>
+                <Zap className="w-3 h-3 text-yellow-400" />
+                <span className="text-[11px] font-bold text-yellow-300">{post.workout_volume}</span>
+              </div>
+            )}
+          </div>
+
+          {/* User comment */}
+          {userComment && (
+            <p className="mt-2.5 text-sm text-slate-300 leading-relaxed italic">"{userComment}"</p>
+          )}
+        </div>
+
+        {/* ── PHOTO (centre-cropped to 70%) ── */}
+        {post.image_url && (
+          <div className="relative w-full overflow-hidden" style={{ height: 'min(70vw, 310px)', maxHeight: 310 }}>
+            <img
+              src={post.image_url}
+              alt="workout"
+              style={{
+                position: 'absolute', left: 0, right: 0,
+                width: '100%', height: '143%', top: '-21.5%',
+                objectFit: 'cover', objectPosition: 'center center',
+              }}
+            />
+            <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to bottom, rgba(14,20,40,0.55), transparent)' }} />
+            <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 32, background: 'linear-gradient(to top, rgba(10,15,30,0.6), transparent)' }} />
+
+            {/* 🔥 reaction overlaid on photo */}
+            {currentUser && (
+              <button
+                onClick={() => reactMutation.mutate(!hasReacted)}
+                disabled={reactMutation.isPending}
+                className="absolute bottom-3 right-3 flex items-center gap-1.5 transition-transform active:scale-90"
+                style={{
+                  background: 'rgba(0,0,0,0.52)',
+                  backdropFilter: 'blur(8px)',
+                  border: hasReacted ? '1px solid rgba(249,115,22,0.5)' : '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 999,
+                  padding: '6px 11px 6px 8px',
+                }}>
+                <Flame className={`w-4 h-4 ${hasReacted ? 'fill-orange-500 text-orange-500' : 'text-white/80'} transition-colors`} />
+                {totalReactions > 0 && <span className="text-xs font-bold text-white">{totalReactions}</span>}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* No photo — standalone reaction row */}
+        {!post.image_url && currentUser && (
+          <div className="px-4 py-2 flex items-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <button
+              onClick={() => reactMutation.mutate(!hasReacted)}
+              disabled={reactMutation.isPending}
+              className="flex items-center gap-1.5 transition-transform active:scale-90">
+              <Flame className={`w-5 h-5 ${hasReacted ? 'fill-orange-500 text-orange-500' : 'text-slate-400'} transition-colors`} />
+              {totalReactions > 0 && <span className="text-xs font-bold text-slate-400">{totalReactions}</span>}
+            </button>
+          </div>
+        )}
+
+        {/* ── BOTTOM BAR — exercise breakdown ── */}
+        {exercises.length > 0 && (
+          <div
+            style={{
+              background: 'linear-gradient(180deg, rgba(14,20,40,0.92) 0%, rgba(10,15,28,0.97) 100%)',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+            }}
+            className="px-3 pt-3 pb-1">
+
+            {/* Column headers */}
+            <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+              <div />
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+            </div>
+
+            <div className="space-y-2 -mx-2">
+              {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
+                <ExerciseRow key={idx} ex={ex} idx={idx} />
+              ))}
+            </div>
+
+            {exercises.length > PREVIEW_COUNT && (
+              <button
+                onClick={() => setExercisesExpanded(v => !v)}
+                className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
+                {exercisesExpanded
+                  ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                  : <><ChevronDown className="w-3.5 h-3.5" /> +{exercises.length - PREVIEW_COUNT} more exercises</>}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Delete confirmation */}
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-300">This action cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex gap-3 justify-center">
+              <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }}
+                disabled={deleteMutation.isPending}
+                className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+      </motion.div>
+    );
+  }
+
+  // ── STANDARD POST (completely unchanged) ────────────────────────────────
   return (
-    // FIX 1: Added overflow-x-hidden to prevent horizontal bleed causing lines.
-    // FIX 2: Added min-h-[120px] for text-only posts so the card has real height
-    //        and doesn't collapse, which was causing borders to appear as lines.
-    // FIX 3: Removed conflicting mb-0 on fullWidth — use consistent mb-4 always.
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -273,15 +426,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         fullWidth ? 'w-screen ml-[-50vw] left-[50%] rounded-none' : 'rounded-xl'
       }`}>
 
-      {/* Header - Profile Picture and Name */}
+      {/* Header */}
       <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
         <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all">
-          {post.member_avatar ?
-            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
-            <span className="text-sm font-bold text-white">
-              {post.member_name?.charAt(0)?.toUpperCase()}
-            </span>
-          }
+          {post.member_avatar
+            ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+            : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase()}</span>}
         </div>
         <span className="text-sm font-semibold text-white">{post.member_name}</span>
       </Link>
@@ -290,12 +440,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       {isOwner &&
         <div className="absolute top-3 right-3 z-20">
           <div className="relative flex items-center gap-2">
-            {post.is_favourite &&
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-            }
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-slate-300 hover:text-white">
+            {post.is_favourite && <Star className="w-5 h-5 fill-amber-400 text-amber-400" />}
+            <button onClick={() => setShowMenu(!showMenu)} className="text-slate-300 hover:text-white">
               <MoreHorizontal className="w-6 h-6" />
             </button>
             {showMenu &&
@@ -303,24 +449,17 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                 <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
                   <button
-                    onClick={() => {
-                      setShowFavouriteConfirm(true);
-                      setShowMenu(false);
-                    }}
+                    onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
                     disabled={updatePostMutation.isPending}
                     className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
                     <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
                     {post.is_favourite ? 'Unfavourite' : 'Favourite'}
                   </button>
                   <button
-                    onClick={() => {
-                      setShowDeleteConfirm(true);
-                      setShowMenu(false);
-                    }}
+                    onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
                     disabled={deleteMutation.isPending}
                     className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
-                    <Trash2 className="w-4 h-4" />
-                    Delete
+                    <Trash2 className="w-4 h-4" /> Delete
                   </button>
                 </div>
               </>
@@ -329,101 +468,61 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         </div>
       }
 
-      {/* Video or Image - Full Size */}
+      {/* Media */}
       {hasMedia &&
-        // FIX 4: Added isolate to create a new stacking context, preventing
-        //        the negative-margin bleed from punching through card boundaries.
-        <div
-          className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%] isolate"
-          onClick={() => showFullContent && setShowFullContent(false)}>
-          {post.video_url ?
-            <video
-              src={post.video_url}
-              className="w-full h-full object-cover"
-              controls
-              playsInline
-              preload="metadata" /> :
-            <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
-          }
+        <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%] isolate" onClick={() => showFullContent && setShowFullContent(false)}>
+          {post.video_url
+            ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
+            : <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />}
         </div>
       }
 
-      {/* Caption Section */}
-      {/* FIX 5: Changed absolute positioning to relative for text-only posts
-          so the card grows to fit its content instead of collapsing to zero height. */}
-      <div className={`${hasMedia ? 'absolute left-0 right-0 bottom-0' : 'relative mt-14'} px-4 z-10 transition-all duration-300 ${
-        showFullContent ? 'py-4' : 'py-2.5'
-      }`}>
+      {/* Caption */}
+      <div className={`${hasMedia ? 'absolute left-0 right-0 bottom-0' : 'relative mt-14'} px-4 z-10 transition-all duration-300 ${showFullContent ? 'py-4' : 'py-2.5'}`}>
         <div ref={contentRef} className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
           <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
-            {post.content && post.content.length > 30 && !showFullContent ?
-              <>
-                {post.content.substring(0, 30)}...{' '}
-                <button
-                  onClick={() => setShowFullContent(true)}
-                  className="text-blue-400 hover:text-blue-300 font-semibold">
-                  more
-                </button>
-              </> :
-              post.content
-            }
+            {post.content && post.content.length > 30 && !showFullContent
+              ? <>{post.content.substring(0, 30)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
+              : post.content}
           </p>
-          {post.weight &&
-            <span className="block mt-1 text-blue-400 font-semibold">
-              💪 {post.weight} lbs
-            </span>
-          }
+          {post.weight && <span className="block mt-1 text-blue-400 font-semibold">💪 {post.weight} lbs</span>}
         </div>
 
-        {/* Reactions in Bottom Right */}
+        {/* Reactions display */}
         {Object.keys(post.reactions || {}).length > 0 && (() => {
           const reactionEntries = Object.entries(post.reactions || {});
           const visibleReactions = reactionEntries.slice(0, 3);
           const overflow = reactionEntries.length - visibleReactions.length;
           return (
-            <button
-              onClick={() => setShowReactionsModal(true)}
-              className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
+            <button onClick={() => setShowReactionsModal(true)} className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {visibleReactions.map(([userId, variant], i) =>
-                  <div
-                    key={userId}
-                    className="relative w-6 h-6"
-                    style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
-                    {variant === 'sunglasses' ?
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div> :
-                      <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
-                    }
+                  <div key={userId} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
+                    {variant === 'sunglasses'
+                      ? <div className="relative w-full h-full flex items-center justify-center">
+                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                   </div>
                 )}
-                {overflow > 0 &&
-                  <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}>
-                    <Plus className="w-3 h-3 text-slate-300" />
-                    <span className="text-xs font-bold text-slate-300">{overflow}</span>
-                  </div>
-                }
+                {overflow > 0 && <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{overflow}</span></div>}
               </div>
             </button>
           );
         })()}
 
         {isNudgePost && isOwner &&
-          <button
-            onClick={() => nudgeMutation.mutate()}
-            disabled={nudgeMutation.isPending}
-            className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+          <button onClick={() => nudgeMutation.mutate()} disabled={nudgeMutation.isPending} className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
             {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
           </button>
         }
 
-        {/* Reaction Button - Streak Icon */}
+        {/* Reaction button */}
         {!isOwnProfile &&
           <motion.button
             onClick={() => reactMutation.mutate(!hasReacted)}
@@ -432,84 +531,56 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             className="absolute left-4 transition-all flex items-center gap-1"
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}>
-            {userStreakVariant === 'sunglasses' ?
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                </svg>
-              </div> :
-              <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-            }
+            {userStreakVariant === 'sunglasses'
+              ? <div className="relative w-12 h-12 flex items-center justify-center">
+                  <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                    <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                    <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                    <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              : <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
           </motion.button>
         }
       </div>
 
       {/* Modals */}
-      <CommentModal
-        open={showComments}
-        onClose={() => setShowComments(false)}
-        post={post}
-        onAddComment={handleAddComment} />
+      <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
+      <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
 
-      <ShareModal
-        open={showShare}
-        onClose={() => setShowShare(false)}
-        post={post} />
-
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
-              Are you sure you want to delete your post? This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogDescription className="text-slate-300">Are you sure you want to delete your post? This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3 justify-center">
             <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate();
-                setShowDeleteConfirm(false);
-              }}
-              disabled={deleteMutation.isPending}
-              className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
+            <AlertDialogAction onClick={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} disabled={deleteMutation.isPending} className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Favourite Confirmation Dialog */}
       <AlertDialog open={showFavouriteConfirm} onOpenChange={setShowFavouriteConfirm}>
         <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-300">
-              {post.is_favourite ?
-                'This post will no longer appear as your favourite on your profile.' :
-                'This post will appear as your favourite on your profile for others to see.'}
+              {post.is_favourite ? 'This post will no longer appear as your favourite on your profile.' : 'This post will appear as your favourite on your profile for others to see.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3 justify-center">
             <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
-                setShowFavouriteConfirm(false);
-              }}
-              disabled={updatePostMutation.isPending}
-              className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
+            <AlertDialogAction onClick={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} disabled={updatePostMutation.isPending} className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
               {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Reactions Modal */}
       <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
         <DialogContent className="max-w-lg fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
           <DialogHeader>
@@ -521,17 +592,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               return (
                 <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
                   <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                    {variant === 'sunglasses' ?
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div> :
-                      <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
-                    }
+                    {variant === 'sunglasses'
+                      ? <div className="relative w-full h-full flex items-center justify-center">
+                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />}
                   </div>
                   <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
                 </div>
@@ -540,7 +610,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           </div>
         </DialogContent>
       </Dialog>
-
     </motion.div>
   );
 }
