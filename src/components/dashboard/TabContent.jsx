@@ -176,14 +176,6 @@ export default function TabContent({
           </div>
         </Card>
 
-        <LeaderboardSection
-          view={leaderboardView}
-          setView={setLeaderboardView}
-          checkInLeaderboard={checkInLeaderboard}
-          streakLeaderboard={streakLeaderboard}
-          progressLeaderboard={[]}
-        />
-
         {/* Active Challenges */}
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
