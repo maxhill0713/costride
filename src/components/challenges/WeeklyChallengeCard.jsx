@@ -108,7 +108,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               <span className="text-[11px] font-bold text-slate-500">{progress}%</span>
             </div>
             <button onClick={() => setShowStats(!showStats)} className="w-full">
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+             <div className="h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
