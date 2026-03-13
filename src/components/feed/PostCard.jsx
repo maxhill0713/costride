@@ -408,7 +408,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
-    const SUMMARY_WIDTH = '85%';
+    const SUMMARY_WIDTH = '92%';
     const PANEL_HEIGHT = 'min(78vw, 346px)';
 
     const userComment = (() => {
@@ -506,12 +506,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           {hasPhoto ? (
             <div ref={swipePanelRef} className="relative overflow-hidden" style={{ height: PANEL_HEIGHT }}
               onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; touchCurrentX.current = e.touches[0].clientX; setIsDragging(false); setDragOffset(0); }}
-              onTouchMove={(e) => { if (touchStartX.current === null) return; const dx = e.touches[0].clientX - touchStartX.current; const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > dy) { setIsDragging(true); touchCurrentX.current = e.touches[0].clientX; const rawOffset = dx; const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.84; const minDrag = slide === 0 ? -window.innerWidth * 0.84 : 0; setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset))); } }}
+              onTouchMove={(e) => { if (touchStartX.current === null) return; const dx = e.touches[0].clientX - touchStartX.current; const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > dy) { setIsDragging(true); touchCurrentX.current = e.touches[0].clientX; const rawOffset = dx; const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.88; const minDrag = slide === 0 ? -window.innerWidth * 0.88 : 0; setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset))); } }}
               onTouchEnd={(e) => { if (touchStartX.current === null) return; const dx = e.changedTouches[0].clientX - touchStartX.current; const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > 40 && Math.abs(dx) > dy) { setSlide(dx < 0 ? 1 : 0); } touchStartX.current = null; touchStartY.current = null; touchCurrentX.current = null; setIsDragging(false); setDragOffset(0); }}>
-              <div className="absolute top-0 h-full overflow-hidden" style={{ left: '8%', width: '84%', borderRadius: '8px', transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`, transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)', willChange: 'transform' }}>
+              <div className="absolute top-0 h-full overflow-hidden" style={{ left: '2%', width: '88%', borderRadius: '8px', transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`, transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)', willChange: 'transform' }}>
                 <img src={post.image_url} alt="workout" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
               </div>
-              <div className="absolute top-0 h-full overflow-hidden" style={{ width: SUMMARY_WIDTH, left: '3%', transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '100%' : '0%'})`, transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)', willChange: 'transform' }}>
+              <div className="absolute top-0 h-full overflow-hidden" style={{ width: SUMMARY_WIDTH, left: '2%', transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '100%' : '0%'})`, transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)', willChange: 'transform' }}>
                 {exerciseSummaryJSX}
               </div>
             </div>
