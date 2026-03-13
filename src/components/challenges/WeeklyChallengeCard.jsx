@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Users, Clock } from 'lucide-react';
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
@@ -62,10 +61,10 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
 
-        <div className="relative p-4 space-y-4">
+        <div className="relative p-4 space-y-3">
 
           {/* ── Header ── */}
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 mb-1">
             {/* Thumbnail */}
             <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -83,14 +82,13 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             </div>
 
             {/* Days left pill */}
-            {!isExpired && (
+            {!isExpired ? (
               <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <Clock className="w-3 h-3 text-slate-500" />
                 <span className="text-[10px] font-bold text-slate-400">{daysLeft}d</span>
               </div>
-            )}
-            {isExpired && (
+            ) : (
               <span className="flex-shrink-0 text-[10px] font-bold text-slate-600 px-2 py-1 rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 Ended
@@ -100,7 +98,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
 
           {/* ── Progress bar ── */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1.5">
                 <Users className="w-3 h-3 text-slate-500" />
                 <span className="text-[11px] font-bold text-slate-500">{participantCount} joined</span>
@@ -108,7 +106,8 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               <span className="text-[11px] font-bold text-slate-500">{progress}%</span>
             </div>
             <button onClick={() => setShowStats(!showStats)} className="w-full">
-             <div className="h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="h-4 rounded-full overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
@@ -141,7 +140,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           </div>
 
           {/* ── Reward ── */}
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+          <div className="flex items-center gap-3 rounded-xl px-3 py-2"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <UniqueBadge reward={challenge.reward} size="sm" />
             <div className="flex-1 min-w-0">
@@ -152,13 +151,11 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
 
           {/* ── Join button ── */}
           {!isExpired && (
-            <motion.div
-              whileTap={!isParticipant ? { scale: 0.97 } : {}}
-            >
+            <motion.div whileTap={!isParticipant ? { scale: 0.97 } : {}}>
               <button
                 onClick={() => !isParticipant && joinMutation.mutate()}
                 disabled={joinMutation.isPending || isParticipant}
-                className="w-full h-10 rounded-xl font-black text-[13px] transition-all"
+                className="w-full h-9 rounded-xl font-black text-[13px] transition-all"
                 style={isParticipant ? {
                   background: 'rgba(52,211,153,0.1)',
                   border: '1px solid rgba(52,211,153,0.2)',
