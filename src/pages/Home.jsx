@@ -638,6 +638,87 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
+  // ── Social feed helpers ──
+  const calculateFriendStreak = (checkIns) => {
+    if (checkIns.length === 0) return 0;
+    const today = startOfDay(new Date());
+    const lastCI = startOfDay(new Date(checkIns[0].check_in_date));
+    if (differenceInDays(today, lastCI) > 1) return 0;
+    let streak = 1;
+    for (let i = 0; i < checkIns.length - 1; i++) {
+      const cur = startOfDay(new Date(checkIns[i].check_in_date));
+      const nxt = startOfDay(new Date(checkIns[i + 1].check_in_date));
+      const diff = differenceInDays(cur, nxt);
+      if (diff === 1 || diff === 2) streak++; else break;
+    }
+    return streak;
+  };
+
+  const friendsWithActivity = friends.map(friend => {
+    const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id);
+    const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null;
+    return {
+      ...friend,
+      activity: {
+        checkIns: friendCheckIns,
+        streak: calculateFriendStreak(friendCheckIns),
+        lastCheckIn: lastCI,
+        daysSinceCheckIn: lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null,
+        totalCheckIns: friendCheckIns.length,
+      }
+    };
+  }).sort((a, b) => {
+    if (a.activity.daysSinceCheckIn === 0 && b.activity.daysSinceCheckIn !== 0) return -1;
+    if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
+    return (b.activity.streak || 0) - (a.activity.streak || 0);
+  });
+
+  const socialFeedPosts = allPosts.filter(post =>
+    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+    (post.content || post.image_url || post.video_url || post.workout_name) &&
+    !post.gym_join
+  );
+
+  const activityFeed = (() => {
+    const activities = [];
+    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
+    const exerciseNames = { bench_press:'Bench Press', squat:'Squat', deadlift:'Deadlift', overhead_press:'Overhead Press', barbell_row:'Barbell Row', power_clean:'Power Clean' };
+    friendPRs.forEach(lift => {
+      const friend = friends.find(f => f.friend_id === lift.member_id);
+      if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
+        activities.push({ id:`pr-${lift.id}`, type:'pr', friendId:lift.member_id, friendName:friend?.friend_name||lift.member_name, friendAvatar:friend?.friend_avatar, message:`hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise]||lift.exercise}`, timestamp:new Date(lift.created_date), emoji:'🏆' });
+      }
+    });
+    notifications.forEach(n => {
+      const text = (n.message||n.title||'').toLowerCase();
+      if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
+        activities.push({ id:`notif-${n.id}`, type:'notification', message:n.message||n.title, timestamp:new Date(n.created_date) });
+      }
+    });
+    return activities.sort((a,b) => b.timestamp - a.timestamp);
+  })();
+
+  const activityCards = (() => {
+    const cards = [];
+    const lastCI = allCheckIns.filter(c => c.user_id === currentUser?.id)[0];
+    const daysSince = lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null;
+    if (daysSince && daysSince >= 3) cards.push({ id:'nudge-checkin', type:'nudge', title:'Time to Check In', message:`You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji:'⏰' });
+    friendsWithActivity.forEach(friend => {
+      if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id:`inactive-${friend.friend_id}`, type:'friend-inactive', title:`${friend.friend_name} Needs a Nudge`, message:`${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji:'👋' });
+    });
+    if (lastCI && daysSince === 1) cards.push({ id:'streak-danger', type:'streak-warning', title:'Your Streak is at Risk!', message:'You have until midnight to check in and keep your streak alive! ⚠️', emoji:'⚠️' });
+    return cards;
+  })();
+
+  const filteredActivityCards = activityCards.filter(c => !dismissedCardIds.has(c.id));
+  const filteredSearchResults = searchResults.filter(u => !friendIdList.includes(u.id));
+
+  const dismissCard = (id) => {
+    const updated = new Set(dismissedCardIds).add(id);
+    setDismissedCardIds(updated);
+    localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
+  };
+
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
