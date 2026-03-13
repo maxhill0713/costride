@@ -7,7 +7,6 @@ ArrowUpRight, UserPlus, QrCode, Trophy, Send
 } from 'lucide-react';
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
 import PushNotificationPanel from './PushNotificationPanel';
-import { HabitTracker } from './OverviewWidgets';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
 export default function TabMembers({
@@ -354,8 +353,6 @@ export default function TabMembers({
 
         </div>
       </div>
-
-      <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
 
     </div>
   );
