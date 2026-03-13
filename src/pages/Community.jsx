@@ -1,17 +1,17 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { base44 } from '@/api/base44Client'
-import { ChevronRight, Trophy, Users2, TrendingUp, Flame, Zap } from 'lucide-react'
+import { ChevronRight, ChevronDown, Trophy, TrendingUp, Flame } from 'lucide-react'
 
 /* ───────────────── CONFIG ───────────────── */
 
 const LIFTS = [
-  { id: 'bench',    label: 'Bench',    emoji: '💪', color: '#38bdf8', colorRgb: '56,189,248',   keywords: ['bench','bench press','chest press'] },
-  { id: 'squat',    label: 'Squat',    emoji: '🦵', color: '#f59e0b', colorRgb: '245,158,11',   keywords: ['squat','back squat','front squat'] },
-  { id: 'deadlift', label: 'Deadlift', emoji: '🏋️', color: '#f43f5e', colorRgb: '244,63,94',    keywords: ['deadlift','dead lift'] },
-  { id: 'ohp',      label: 'OHP',      emoji: '☝️', color: '#10b981', colorRgb: '16,185,129',   keywords: ['overhead press','ohp','shoulder press','military press'] },
-  { id: 'row',      label: 'Row',      emoji: '🔁', color: '#a78bfa', colorRgb: '167,139,250',  keywords: ['barbell row','bent over row','row'] },
-  { id: 'all',      label: 'All',      emoji: '⚡', color: '#e2e8f0', colorRgb: '226,232,240',  keywords: [] },
+  { id: 'bench',    label: 'Bench Press',    color: '#38bdf8', colorRgb: '56,189,248',   keywords: ['bench','bench press','chest press'] },
+  { id: 'squat',    label: 'Squat',          color: '#f59e0b', colorRgb: '245,158,11',   keywords: ['squat','back squat','front squat'] },
+  { id: 'deadlift', label: 'Deadlift',       color: '#f43f5e', colorRgb: '244,63,94',    keywords: ['deadlift','dead lift'] },
+  { id: 'ohp',      label: 'Overhead Press', color: '#10b981', colorRgb: '16,185,129',   keywords: ['overhead press','ohp','shoulder press','military press'] },
+  { id: 'row',      label: 'Barbell Row',    color: '#a78bfa', colorRgb: '167,139,250',  keywords: ['barbell row','bent over row','row'] },
+  { id: 'all',      label: 'All Lifts',      color: '#e2e8f0', colorRgb: '226,232,240',  keywords: [] },
 ]
 
 const TIME_FILTERS = [
@@ -21,106 +21,218 @@ const TIME_FILTERS = [
 ]
 
 const MEDALS = [
-  { rank:1, color:'#FFD700', colorRgb:'255,215,0',   bg:'linear-gradient(160deg,rgba(60,42,0,0.95),rgba(28,18,0,0.98))',  border:'rgba(255,215,0,0.55)',  pulse:'gold-pulse',   label:'👑', tier:'CHAMP',  avatarRing:'conic-gradient(#FFD700,#FFA500,#FFD700,#FFF0A0,#FFD700)', badgeBg:'linear-gradient(145deg,#FFE566,#CC8800)', glow:'rgba(255,215,0,0.3)',   glowStrong:'rgba(255,215,0,0.6)',   heightExtra:20 },
-  { rank:2, color:'#C8D8EC', colorRgb:'200,216,236', bg:'linear-gradient(160deg,rgba(16,28,52,0.95),rgba(6,12,28,0.98))', border:'rgba(180,205,230,0.48)', pulse:'silver-pulse', label:'🥈', tier:'ELITE',  avatarRing:'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)', badgeBg:'linear-gradient(145deg,#D4E4F4,#6A96BC)', glow:'rgba(180,205,230,0.2)', glowStrong:'rgba(180,205,230,0.45)', heightExtra:6  },
-  { rank:3, color:'#E8904A', colorRgb:'232,144,74',  bg:'linear-gradient(160deg,rgba(48,22,6,0.95),rgba(20,8,2,0.98))',  border:'rgba(215,128,58,0.5)',  pulse:'bronze-pulse', label:'🥉', tier:'PRO',    avatarRing:'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)', badgeBg:'linear-gradient(145deg,#E8904A,#8C4818)', glow:'rgba(215,128,58,0.22)',glowStrong:'rgba(215,128,58,0.45)', heightExtra:0  },
+  { rank:1, color:'#FFD700', colorRgb:'255,215,0',   bg:'linear-gradient(160deg,rgba(60,42,0,0.95),rgba(28,18,0,0.98))',  border:'rgba(255,215,0,0.55)',  pulse:'gold-pulse',   tier:'CHAMP', avatarRing:'conic-gradient(#FFD700,#FFA500,#FFD700,#FFF0A0,#FFD700)', badgeBg:'linear-gradient(145deg,#FFE566,#CC8800)', glow:'rgba(255,215,0,0.3)',   glowStrong:'rgba(255,215,0,0.6)',   heightExtra:20 },
+  { rank:2, color:'#C8D8EC', colorRgb:'200,216,236', bg:'linear-gradient(160deg,rgba(16,28,52,0.95),rgba(6,12,28,0.98))', border:'rgba(180,205,230,0.48)', pulse:'silver-pulse', tier:'ELITE', avatarRing:'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)', badgeBg:'linear-gradient(145deg,#D4E4F4,#6A96BC)', glow:'rgba(180,205,230,0.2)', glowStrong:'rgba(180,205,230,0.45)', heightExtra:6  },
+  { rank:3, color:'#E8904A', colorRgb:'232,144,74',  bg:'linear-gradient(160deg,rgba(48,22,6,0.95),rgba(20,8,2,0.98))',  border:'rgba(215,128,58,0.5)',  pulse:'bronze-pulse', tier:'PRO',   avatarRing:'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)', badgeBg:'linear-gradient(145deg,#E8904A,#8C4818)', glow:'rgba(215,128,58,0.22)',glowStrong:'rgba(215,128,58,0.45)', heightExtra:0  },
 ]
 
 const CSS = `
 @keyframes lb-slide-up { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
 @keyframes lb-card-in  { from{opacity:0;transform:translateY(28px) scale(0.9) rotateX(8deg)} to{opacity:1;transform:translateY(0) scale(1) rotateX(0)} }
 @keyframes lb-row-in   { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:translateX(0)} }
-@keyframes lb-flame    { 0%,100%{transform:scale(1) rotate(-4deg);filter:brightness(1)} 50%{transform:scale(1.25) rotate(4deg);filter:brightness(1.3)} }
 @keyframes lb-shimmer  { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
 @keyframes lb-count-up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes gold-pulse   { 0%,100%{box-shadow:0 0 0 2px rgba(255,196,0,0.5),0 0 20px rgba(255,196,0,0.25)} 50%{box-shadow:0 0 0 4px rgba(255,196,0,0.8),0 0 40px rgba(255,196,0,0.5)} }
 @keyframes silver-pulse { 0%,100%{box-shadow:0 0 0 2px rgba(192,212,232,0.4),0 0 16px rgba(192,212,232,0.18)} 50%{box-shadow:0 0 0 3px rgba(192,212,232,0.65),0 0 28px rgba(192,212,232,0.32)} }
 @keyframes bronze-pulse { 0%,100%{box-shadow:0 0 0 2px rgba(210,120,50,0.42),0 0 16px rgba(210,120,50,0.18)} 50%{box-shadow:0 0 0 3px rgba(210,120,50,0.68),0 0 28px rgba(210,120,50,0.32)} }
 @keyframes lb-badge-pop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.15) rotate(5deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
-@keyframes arc-draw { from{stroke-dashoffset:var(--full)} to{stroke-dashoffset:var(--offset)} }
-@keyframes num-pop  { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
-@keyframes tab-slide { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-@keyframes orb-drift { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(12px,-8px) scale(1.08)} }
+@keyframes arc-draw     { from{stroke-dashoffset:var(--full)} to{stroke-dashoffset:var(--offset)} }
+@keyframes num-pop      { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes dd-open      { from{opacity:0;transform:translateY(-6px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes orb-drift    { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(12px,-8px) scale(1.08)} }
 `
 
 /* ───────────────── HELPERS ───────────────── */
 
-function matchLift(name=''){
+function matchLift(name = '') {
   const lower = name.toLowerCase()
-  for (const lift of LIFTS.filter(l=>l.id!=='all')){
-    if (lift.keywords.some(k=>lower.includes(k))) return lift.id
+  for (const lift of LIFTS.filter(l => l.id !== 'all')) {
+    if (lift.keywords.some(k => lower.includes(k))) return lift.id
   }
   return null
 }
 
-function filterByTime(sets, filter){
+function filterByTime(sets, filter) {
   const now = Date.now()
-  if (filter==='week')  return sets.filter(s=>now-new Date(s.logged_date||s.created_date||0)<7*86400000)
-  if (filter==='month') return sets.filter(s=>now-new Date(s.logged_date||s.created_date||0)<30*86400000)
+  if (filter === 'week')  return sets.filter(s => now - new Date(s.logged_date || s.created_date || 0) < 7 * 86400000)
+  if (filter === 'month') return sets.filter(s => now - new Date(s.logged_date || s.created_date || 0) < 30 * 86400000)
   return sets
 }
 
-function flattenWorkoutLogs(logs, userMap={}){
-  const flat=[]
-  logs.forEach(log=>{
-    const userName=userMap[log.user_id]||log.created_by?.split('@')[0]||'Athlete'
-    ;(log.exercises||[]).forEach(ex=>{
-      const w=parseFloat(ex.weight||0)
-      if(!w)return
-      flat.push({ user_id:log.user_id, user_name:userName, exercise_name:ex.exercise||'', weight:w, unit:'kg', logged_date:log.completed_date||log.created_date })
+function flattenWorkoutLogs(logs, userMap = {}) {
+  const flat = []
+  logs.forEach(log => {
+    const userName = userMap[log.user_id] || log.created_by?.split('@')[0] || 'Athlete'
+    ;(log.exercises || []).forEach(ex => {
+      const w = parseFloat(ex.weight || 0)
+      if (!w) return
+      flat.push({ user_id: log.user_id, user_name: userName, exercise_name: ex.exercise || '', weight: w, unit: 'kg', logged_date: log.completed_date || log.created_date })
     })
   })
   return flat
 }
 
-function buildLeaderboard(sets, liftId){
-  const best={}
-  sets.forEach(s=>{
-    const lId=matchLift(s.exercise_name||'')
-    if(!lId)return
-    if(liftId!=='all'&&lId!==liftId)return
-    const w=s.weight
-    if(!w)return
-    const uid=s.user_id
-    if(!best[uid]||w>best[uid].weight) best[uid]={user_id:uid,user_name:s.user_name||'Athlete',weight:w,unit:'kg'}
+function buildLeaderboard(sets, liftId) {
+  const best = {}
+  sets.forEach(s => {
+    const lId = matchLift(s.exercise_name || '')
+    if (!lId) return
+    if (liftId !== 'all' && lId !== liftId) return
+    const w = s.weight
+    if (!w) return
+    const uid = s.user_id
+    if (!best[uid] || w > best[uid].weight) best[uid] = { user_id: uid, user_name: s.user_name || 'Athlete', weight: w, unit: 'kg' }
   })
-  return Object.values(best).sort((a,b)=>b.weight-a.weight)
+  return Object.values(best).sort((a, b) => b.weight - a.weight)
 }
 
-const ini = n=>(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)
+const ini = n => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+
+/* ───────────────── LIFT DROPDOWN ───────────────── */
+
+function LiftDropdown({ value, onChange, liftMeta }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef()
+
+  useEffect(() => {
+    const fn = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [])
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderRadius: 14,
+          border: 'none',
+          cursor: 'pointer',
+          background: `rgba(${liftMeta.colorRgb}, 0.08)`,
+          outline: `1px solid rgba(${liftMeta.colorRgb}, 0.28)`,
+          fontFamily: "'Outfit', system-ui, sans-serif",
+          transition: 'all 0.2s ease',
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(${liftMeta.colorRgb},0.06)`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: liftMeta.color,
+            boxShadow: `0 0 10px ${liftMeta.color}`,
+            flexShrink: 0,
+            transition: 'background 0.3s ease, box-shadow 0.3s ease',
+          }} />
+          <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>
+            {liftMeta.label}
+          </span>
+        </div>
+        <ChevronDown style={{
+          width: 15, height: 15,
+          color: 'rgba(255,255,255,0.35)',
+          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s ease',
+          flexShrink: 0,
+        }} />
+      </button>
+
+      {/* Menu */}
+      {open && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 6px)',
+          left: 0,
+          right: 0,
+          borderRadius: 16,
+          overflow: 'hidden',
+          background: 'linear-gradient(160deg, rgba(10,18,44,0.99) 0%, rgba(5,8,22,1) 100%)',
+          border: '1px solid rgba(255,255,255,0.09)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.03)',
+          zIndex: 100,
+          animation: 'dd-open 0.18s cubic-bezier(0.34,1.3,0.64,1) both',
+        }}>
+          {LIFTS.map((lift, i) => {
+            const active = lift.id === value
+            return (
+              <button
+                key={lift.id}
+                onClick={() => { onChange(lift.id); setOpen(false) }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  padding: '12px 16px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: active ? `rgba(${lift.colorRgb}, 0.09)` : 'transparent',
+                  borderBottom: i < LIFTS.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  fontFamily: "'Outfit', system-ui, sans-serif",
+                  transition: 'background 0.12s ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                    background: active ? lift.color : 'rgba(255,255,255,0.12)',
+                    boxShadow: active ? `0 0 8px ${lift.color}` : 'none',
+                    transition: 'all 0.2s ease',
+                  }} />
+                  <span style={{
+                    fontSize: 13, fontWeight: active ? 800 : 500,
+                    color: active ? '#fff' : 'rgba(255,255,255,0.38)',
+                    letterSpacing: '-0.01em',
+                    transition: 'color 0.15s ease',
+                  }}>
+                    {lift.label}
+                  </span>
+                </div>
+                {active && (
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: lift.color, boxShadow: `0 0 6px ${lift.color}`, flexShrink: 0 }} />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 /* ───────────────── ARC RING ───────────────── */
 
-function ArcRing({ pct, color, size=120, weight, unit='kg' }){
-  const R = (size-16)/2
-  const circ = 2*Math.PI*R
+function ArcRing({ pct, color, size = 118 }) {
+  const R = (size - 16) / 2
+  const circ = 2 * Math.PI * R
   const filled = circ * 0.75
-  const arc = filled * (1-(pct/100))
-  const id = `arc-${color.replace('#','')}`
+  const arc = filled * (1 - ((pct || 0) / 100))
+  const id = `arc-${color.replace('#', '')}`
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{transform:'rotate(135deg)',flexShrink:0}}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(135deg)', flexShrink: 0 }}>
       <defs>
         <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
-          <stop offset="100%" stopColor={color} stopOpacity="1"/>
+          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity="1" />
         </linearGradient>
       </defs>
-      {/* Track */}
-      <circle cx={size/2} cy={size/2} r={R}
-        fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={8}
-        strokeDasharray={`${filled} ${circ-filled}`}
-        strokeLinecap="round"
+      <circle cx={size / 2} cy={size / 2} r={R}
+        fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={8}
+        strokeDasharray={`${filled} ${circ - filled}`} strokeLinecap="round"
       />
-      {/* Fill */}
-      <circle cx={size/2} cy={size/2} r={R}
+      <circle cx={size / 2} cy={size / 2} r={R}
         fill="none" stroke={`url(#${id})`} strokeWidth={8}
-        strokeDasharray={`${filled-arc} ${circ-(filled-arc)}`}
-        strokeLinecap="round"
+        strokeDasharray={`${filled - arc} ${circ - (filled - arc)}`} strokeLinecap="round"
         style={{
-          '--full': filled,
-          '--offset': arc,
+          '--full': filled, '--offset': arc,
           animation: 'arc-draw 1.1s cubic-bezier(0.34,1.2,0.64,1) 0.2s both',
-          filter:`drop-shadow(0 0 6px ${color}88)`,
+          filter: `drop-shadow(0 0 6px ${color}88)`,
         }}
       />
     </svg>
@@ -129,115 +241,115 @@ function ArcRing({ pct, color, size=120, weight, unit='kg' }){
 
 /* ───────────────── FULLSCREEN LEADERBOARD ───────────────── */
 
-function FullLeaderboard({ leaderboard, liftMeta, currentUserId, onClose, userAvatarMap={} }){
-  const podium   = leaderboard.slice(0,3)
-  const restList = leaderboard.slice(3,10)
-  const maxVal   = leaderboard.length>0 ? Math.max(...leaderboard.map(e=>e.weight),1) : 1
+function FullLeaderboard({ leaderboard, liftMeta, currentUserId, onClose, userAvatarMap = {} }) {
+  const podium   = leaderboard.slice(0, 3)
+  const restList = leaderboard.slice(3, 10)
+  const maxVal   = leaderboard.length > 0 ? Math.max(...leaderboard.map(e => e.weight), 1) : 1
 
   return (
     <>
       <style>{CSS}</style>
       <div style={{
-        position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
-        display:'flex',flexDirection:'column',
-        background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
-        animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
-        overflow:'hidden',
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+        display: 'flex', flexDirection: 'column',
+        background: 'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
+        animation: 'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
+        overflow: 'hidden',
       }}>
-        <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px'}}/>
-        <div style={{position:'absolute',top:'10%',left:'20%',width:260,height:260,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.06) 0%,transparent 70%)',pointerEvents:'none',animation:'orb-drift 10s ease-in-out infinite'}}/>
-        <div style={{position:'absolute',top:'50%',right:'10%',width:180,height:180,borderRadius:'50%',background:`radial-gradient(circle,rgba(${liftMeta.colorRgb},0.06) 0%,transparent 70%)`,pointerEvents:'none',animation:'orb-drift 8s ease-in-out infinite 2s'}}/>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div style={{ position: 'absolute', top: '10%', left: '20%', width: 260, height: 260, borderRadius: '50%', background: 'radial-gradient(circle,rgba(255,215,0,0.06) 0%,transparent 70%)', pointerEvents: 'none', animation: 'orb-drift 10s ease-in-out infinite' }} />
 
         {/* Header */}
-        <div style={{flexShrink:0,padding:'18px 16px 12px',borderBottom:'1px solid rgba(255,255,255,0.05)',position:'relative',zIndex:2}}>
-          <button onClick={onClose} style={{position:'absolute',top:14,left:16,width:36,height:36,borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(30,40,80,0.9)',border:'1px solid rgba(255,255,255,0.15)',borderBottom:'3px solid rgba(0,0,0,0.55)',cursor:'pointer'}}>
-            <ChevronRight style={{width:17,height:17,color:'rgba(255,255,255,0.7)',transform:'rotate(180deg)'}}/>
+        <div style={{ flexShrink: 0, padding: '18px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: 14, left: 16, width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,40,80,0.9)', border: '1px solid rgba(255,255,255,0.15)', borderBottom: '3px solid rgba(0,0,0,0.55)', cursor: 'pointer' }}>
+            <ChevronRight style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.7)', transform: 'rotate(180deg)' }} />
           </button>
-          <div style={{textAlign:'center'}}>
-            <div style={{display:'inline-flex',alignItems:'center',gap:6,marginBottom:4}}>
-              <Trophy style={{width:14,height:14,color:'#FFD700',filter:'drop-shadow(0 0 8px rgba(255,215,0,0.7))'}}/>
-              <span style={{fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.28em',color:'rgba(255,215,0,0.65)'}}>Strength Rankings</span>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <Trophy style={{ width: 14, height: 14, color: '#FFD700', filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.7))' }} />
+              <span style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.28em', color: 'rgba(255,215,0,0.65)' }}>Strength Rankings</span>
             </div>
-            <h2 style={{fontSize:26,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.04em'}}>{liftMeta.label} Leaderboard</h2>
+            <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.04em' }}>{liftMeta.label}</h2>
           </div>
         </div>
 
         {/* Body */}
-        <div style={{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',position:'relative',zIndex:2}}>
-          {leaderboard.length===0 ? (
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:280,gap:16}}>
-              <Trophy style={{width:40,height:40,color:'rgba(255,255,255,0.08)'}}/>
-              <p style={{fontSize:15,fontWeight:800,color:'rgba(255,255,255,0.2)',margin:0}}>No Rankings Yet</p>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', position: 'relative', zIndex: 2 }}>
+          {leaderboard.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 280, gap: 12 }}>
+              <Trophy style={{ width: 36, height: 36, color: 'rgba(255,255,255,0.08)' }} />
+              <p style={{ fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.2)', margin: 0 }}>No Rankings Yet</p>
             </div>
           ) : (<>
-            <div style={{padding:'12px 16px 8px',display:'flex',alignItems:'flex-end',justifyContent:'center',gap:6,perspective:800}}>
-              {[{data:podium[1],mIdx:1},{data:podium[0],mIdx:0},{data:podium[2],mIdx:2}]
-                .filter(p=>p.data)
-                .map(({data,mIdx},colIdx)=>{
-                  const M=MEDALS[mIdx], isFirst=mIdx===0, cardW=isFirst?116:94, avatarSz=isFirst?50:38
-                  const isMe=data.user_id===currentUserId
+            {/* Podium */}
+            <div style={{ padding: '12px 16px 8px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 6, perspective: 800 }}>
+              {[{ data: podium[1], mIdx: 1 }, { data: podium[0], mIdx: 0 }, { data: podium[2], mIdx: 2 }]
+                .filter(p => p.data)
+                .map(({ data, mIdx }, colIdx) => {
+                  const M = MEDALS[mIdx], isFirst = mIdx === 0, cardW = isFirst ? 116 : 94, avatarSz = isFirst ? 50 : 38
+                  const isMe = data.user_id === currentUserId
                   return (
-                    <div key={mIdx} style={{width:cardW,borderRadius:18,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.border}`,backdropFilter:'blur(40px)',boxShadow:`0 16px 48px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.08)`,animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,marginBottom:M.heightExtra}}>
-                      <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${M.color},${M.glowStrong},${M.color},transparent)`,zIndex:3}}/>
-                      <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none'}}>
-                        <div style={{position:'absolute',top:0,bottom:0,width:'25%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)',animation:`lb-shimmer 4s ease-in-out infinite`,animationDelay:`${mIdx*0.8}s`}}/>
+                    <div key={mIdx} style={{ width: cardW, borderRadius: 18, overflow: 'hidden', position: 'relative', background: M.bg, border: `1.5px solid ${M.border}`, backdropFilter: 'blur(40px)', boxShadow: `0 16px 48px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.08)`, animation: `lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx * 0.08}s both`, marginBottom: M.heightExtra }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${M.color},${M.glowStrong},${M.color},transparent)`, zIndex: 3 }} />
+                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+                        <div style={{ position: 'absolute', top: 0, bottom: 0, width: '25%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)', animation: `lb-shimmer 4s ease-in-out infinite`, animationDelay: `${mIdx * 0.8}s` }} />
                       </div>
-                      <div style={{position:'absolute',top:0,left:0,width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',background:M.badgeBg,borderRadius:'0 0 9px 0',zIndex:4}}>
-                        <span style={{fontSize:10,fontWeight:900,color:'rgba(0,0,0,0.7)'}}>{mIdx+1}</span>
+                      <div style={{ position: 'absolute', top: 0, left: 0, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', background: M.badgeBg, borderRadius: '0 0 9px 0', zIndex: 4 }}>
+                        <span style={{ fontSize: 10, fontWeight: 900, color: 'rgba(0,0,0,0.7)' }}>{M.rank}</span>
                       </div>
-                      {isFirst&&<div style={{position:'absolute',top:5,right:7,fontSize:14,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4}}>🔥</div>}
-                      <div style={{display:'flex',justifyContent:'center',paddingTop:isFirst?16:13,paddingBottom:3,zIndex:2,position:'relative'}}>
-                        <span style={{fontSize:6,fontWeight:900,letterSpacing:'0.2em',color:M.color,opacity:0.7,textTransform:'uppercase',background:`rgba(${M.colorRgb},0.1)`,border:`1px solid rgba(${M.colorRgb},0.2)`,padding:'1px 6px',borderRadius:99}}>{M.tier}</span>
+                      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: isFirst ? 16 : 13, paddingBottom: 3, zIndex: 2, position: 'relative' }}>
+                        <span style={{ fontSize: 6, fontWeight: 900, letterSpacing: '0.2em', color: M.color, opacity: 0.7, textTransform: 'uppercase', background: `rgba(${M.colorRgb},0.1)`, border: `1px solid rgba(${M.colorRgb},0.2)`, padding: '1px 6px', borderRadius: 99 }}>{M.tier}</span>
                       </div>
-                      <div style={{display:'flex',justifyContent:'center',paddingBottom:4,zIndex:2,position:'relative'}}>
-                        <div style={{position:'relative'}}>
-                          <div style={{width:avatarSz+6,height:avatarSz+6,borderRadius:'50%',background:M.avatarRing,animation:`${M.pulse} 2.5s ease-in-out infinite`,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                            <div style={{width:avatarSz,height:avatarSz,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,color:M.color,background:M.bg,border:'2px solid rgba(0,0,0,0.3)',fontSize:isFirst?17:12}}>
-                              {userAvatarMap[data.user_id]?<img src={userAvatarMap[data.user_id]} alt={data.user_name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:null}
-                              <span style={{display:userAvatarMap[data.user_id]?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:isFirst?17:12}}>{ini(data.user_name)}</span>
+                      <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4, zIndex: 2, position: 'relative' }}>
+                        <div style={{ position: 'relative' }}>
+                          <div style={{ width: avatarSz + 6, height: avatarSz + 6, borderRadius: '50%', background: M.avatarRing, animation: `${M.pulse} 2.5s ease-in-out infinite`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: avatarSz, height: avatarSz, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: M.color, background: M.bg, border: '2px solid rgba(0,0,0,0.3)', fontSize: isFirst ? 17 : 12 }}>
+                              {userAvatarMap[data.user_id] ? <img src={userAvatarMap[data.user_id]} alt={data.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                              <span style={{ display: userAvatarMap[data.user_id] ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: isFirst ? 17 : 12 }}>{ini(data.user_name)}</span>
                             </div>
                           </div>
-                          <div style={{position:'absolute',bottom:-2,right:-2,width:17,height:17,borderRadius:'50%',background:'rgba(6,10,24,0.9)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,boxShadow:`0 0 0 2px ${M.color}`,animation:'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both',zIndex:5}}>{M.label}</div>
+                          <div style={{ position: 'absolute', bottom: -2, right: -2, width: 17, height: 17, borderRadius: '50%', background: 'rgba(6,10,24,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: M.color, boxShadow: `0 0 0 2px ${M.color}`, animation: 'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both', zIndex: 5 }}>{M.rank}</div>
                         </div>
                       </div>
-                      <p style={{color:isMe?'#38bdf8':'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?11:9,lineHeight:1.2,padding:'0 6px 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',position:'relative',zIndex:2}}>{isMe?'You':data.user_name||'—'}</p>
-                      <div style={{textAlign:'center',padding:`2px 8px ${isFirst?13:9}px`,position:'relative',zIndex:2}}>
-                        <p style={{fontSize:isFirst?20:15,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 24px ${M.glowStrong}`,letterSpacing:'-0.03em',animation:'lb-count-up 0.5s ease 0.2s both'}}>{data.weight}kg</p>
-                        <p style={{fontSize:6,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.16em',color:`rgba(${M.colorRgb},0.45)`,marginTop:1}}>personal best</p>
+                      <p style={{ color: isMe ? '#38bdf8' : '#fff', fontWeight: 900, textAlign: 'center', fontSize: isFirst ? 11 : 9, lineHeight: 1.2, padding: '0 6px 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', position: 'relative', zIndex: 2 }}>{isMe ? 'You' : data.user_name || '—'}</p>
+                      <div style={{ textAlign: 'center', padding: `2px 8px ${isFirst ? 13 : 9}px`, position: 'relative', zIndex: 2 }}>
+                        <p style={{ fontSize: isFirst ? 20 : 15, fontWeight: 900, color: M.color, lineHeight: 1, textShadow: `0 0 24px ${M.glowStrong}`, letterSpacing: '-0.03em', animation: 'lb-count-up 0.5s ease 0.2s both' }}>{data.weight}kg</p>
+                        <p style={{ fontSize: 6, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', color: `rgba(${M.colorRgb},0.45)`, marginTop: 1 }}>personal best</p>
                       </div>
                     </div>
                   )
                 })}
             </div>
 
-            {restList.length>0&&(
-              <div style={{display:'flex',flexDirection:'column',gap:4,padding:'4px 12px 20px'}}>
-                {restList.map((entry,i)=>{
-                  const globalRank=i+4, pct=Math.max(4,Math.round((entry.weight/maxVal)*100))
-                  const isMe=entry.user_id===currentUserId
-                  const opacities=[1,0.88,0.76,0.65,0.55,0.46,0.38]
-                  const o=opacities[i]||0.38
+            {/* Rows 4–10 */}
+            {restList.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 12px 20px' }}>
+                {restList.map((entry, i) => {
+                  const globalRank = i + 4, pct = Math.max(4, Math.round((entry.weight / maxVal) * 100))
+                  const isMe = entry.user_id === currentUserId
+                  const opacities = [1, 0.88, 0.76, 0.65, 0.55, 0.46, 0.38]
+                  const o = opacities[i] || 0.38
                   return (
-                    <div key={entry.user_id||i} style={{borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,position:'relative',overflow:'hidden',background:isMe?'rgba(56,189,248,0.08)':'linear-gradient(135deg,rgba(15,24,58,0.82),rgba(8,14,36,0.92))',border:`1px solid ${isMe?'rgba(56,189,248,0.3)':'rgba(255,255,255,0.06)'}`,borderLeft:`3px solid ${isMe?'#38bdf8':'rgba(255,255,255,0.06)'}`,boxShadow:'0 2px 12px rgba(0,0,0,0.35)'}}>
-                      <div style={{width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${o*0.7})`}}>{globalRank}</div>
-                      <div style={{width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:isMe?'rgba(56,189,248,0.2)':'rgba(255,255,255,0.06)',border:`2px solid ${isMe?'#38bdf8':'rgba(255,255,255,0.1)'}`,color:isMe?'#38bdf8':'rgba(255,255,255,0.6)'}}>
-                        {userAvatarMap[entry.user_id]?<img src={userAvatarMap[entry.user_id]} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:null}
-                        <span style={{display:userAvatarMap[entry.user_id]?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:12}}>{ini(entry.user_name)}</span>
+                    <div key={entry.user_id || i} style={{ borderRadius: 14, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, animation: `lb-row-in 0.28s ease ${(i + 3) * 0.04}s both`, background: isMe ? 'rgba(56,189,248,0.08)' : 'linear-gradient(135deg,rgba(15,24,58,0.82),rgba(8,14,36,0.92))', border: `1px solid ${isMe ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)'}`, borderLeft: `3px solid ${isMe ? '#38bdf8' : 'rgba(255,255,255,0.06)'}`, boxShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 9, flexShrink: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${o * 0.7})` }}>{globalRank}</div>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, background: isMe ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.06)', border: `2px solid ${isMe ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`, color: isMe ? '#38bdf8' : 'rgba(255,255,255,0.6)' }}>
+                        {userAvatarMap[entry.user_id] ? <img src={userAvatarMap[entry.user_id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                        <span style={{ display: userAvatarMap[entry.user_id] ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12 }}>{ini(entry.user_name)}</span>
                       </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:13,fontWeight:700,color:isMe?'#fff':`rgba(255,255,255,${o*0.92})`,margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{isMe?'You':entry.user_name||'—'}</p>
-                        <div style={{height:2,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden'}}>
-                          <div style={{height:'100%',borderRadius:99,width:`${pct}%`,background:`rgba(${liftMeta.colorRgb},${o*0.55})`,transition:'width 0.6s ease'}}/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: isMe ? '#fff' : `rgba(255,255,255,${o * 0.92})`, margin: '0 0 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{isMe ? 'You' : entry.user_name || '—'}</p>
+                        <div style={{ height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', borderRadius: 99, width: `${pct}%`, background: `rgba(${liftMeta.colorRgb},${o * 0.55})`, transition: 'width 0.6s ease' }} />
                         </div>
                       </div>
-                      <div style={{flexShrink:0,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',fontSize:13,fontWeight:800,color:`rgba(255,255,255,${o*0.9})`}}>{entry.weight}kg</div>
+                      <div style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 800, color: `rgba(255,255,255,${o * 0.9})` }}>{entry.weight}kg</div>
                     </div>
                   )
                 })}
               </div>
             )}
 
-            <p style={{textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',paddingBottom:16}}>Ranked by personal best · Real-time</p>
+            <p style={{ textAlign: 'center', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.08)', paddingBottom: 16 }}>Ranked by personal best · Real-time</p>
           </>)}
         </div>
       </div>
@@ -247,54 +359,54 @@ function FullLeaderboard({ leaderboard, liftMeta, currentUserId, onClose, userAv
 
 /* ───────────────── MAIN ───────────────── */
 
-export default function Community(){
+export default function Community() {
   const [activeLift, setActiveLift] = useState('bench')
   const [timeFilter, setTimeFilter] = useState('week')
   const [lbOpen,     setLbOpen]     = useState(false)
 
-  const {data:currentUser} = useQuery({ queryKey:['currentUser'], queryFn:()=>base44.auth.me(), staleTime:5*60*1000 })
-  const {data:gymMemberships=[]} = useQuery({ queryKey:['gymMemberships',currentUser?.id], queryFn:()=>base44.entities.GymMembership.filter({user_id:currentUser.id,status:'active'}), enabled:!!currentUser, staleTime:5*60*1000 })
-  const {data:workoutLogs=[], isLoading} = useQuery({ queryKey:['communityWorkoutLogs'], queryFn:()=>base44.entities.WorkoutLog.list(), staleTime:3*60*1000 })
-  const {data:users=[]} = useQuery({ queryKey:['allUsers'], queryFn:()=>base44.entities.User.list(), staleTime:10*60*1000 })
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 })
+  const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }), enabled: !!currentUser, staleTime: 5 * 60 * 1000 })
+  const { data: workoutLogs = [], isLoading } = useQuery({ queryKey: ['communityWorkoutLogs'], queryFn: () => base44.entities.WorkoutLog.list(), staleTime: 3 * 60 * 1000 })
+  const { data: users = [] } = useQuery({ queryKey: ['allUsers'], queryFn: () => base44.entities.User.list(), staleTime: 10 * 60 * 1000 })
 
-  const userMap = useMemo(()=>{
-    const m={}
-    users.forEach(u=>{m[u.id]=u.full_name||u.email?.split('@')[0]||'Athlete'})
-    if(currentUser) m[currentUser.id]=currentUser.full_name||currentUser.email?.split('@')[0]||'You'
+  const userMap = useMemo(() => {
+    const m = {}
+    users.forEach(u => { m[u.id] = u.full_name || u.email?.split('@')[0] || 'Athlete' })
+    if (currentUser) m[currentUser.id] = currentUser.full_name || currentUser.email?.split('@')[0] || 'You'
     return m
-  },[users,currentUser])
+  }, [users, currentUser])
 
-  const userAvatarMap = useMemo(()=>{
-    const m={}
-    users.forEach(u=>{if(u.avatar_url||u.profile_picture||u.photo_url)m[u.id]=u.avatar_url||u.profile_picture||u.photo_url})
-    if(currentUser?.avatar_url||currentUser?.profile_picture||currentUser?.photo_url) m[currentUser.id]=currentUser.avatar_url||currentUser.profile_picture||currentUser.photo_url
+  const userAvatarMap = useMemo(() => {
+    const m = {}
+    users.forEach(u => { if (u.avatar_url || u.profile_picture || u.photo_url) m[u.id] = u.avatar_url || u.profile_picture || u.photo_url })
+    if (currentUser?.avatar_url || currentUser?.profile_picture || currentUser?.photo_url) m[currentUser.id] = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url
     return m
-  },[users,currentUser])
+  }, [users, currentUser])
 
-  const allSets      = useMemo(()=>flattenWorkoutLogs(workoutLogs,userMap),[workoutLogs,userMap])
-  const filteredSets = useMemo(()=>filterByTime(allSets,timeFilter),[allSets,timeFilter])
-  const leaderboard  = useMemo(()=>buildLeaderboard(filteredSets,activeLift),[filteredSets,activeLift])
+  const allSets      = useMemo(() => flattenWorkoutLogs(workoutLogs, userMap), [workoutLogs, userMap])
+  const filteredSets = useMemo(() => filterByTime(allSets, timeFilter), [allSets, timeFilter])
+  const leaderboard  = useMemo(() => buildLeaderboard(filteredSets, activeLift), [filteredSets, activeLift])
 
-  const myEntry = leaderboard.find(l=>l.user_id===currentUser?.id)
-  const myRank  = myEntry ? leaderboard.indexOf(myEntry)+1 : null
-  const myPct   = myRank&&leaderboard.length>1 ? Math.round(((leaderboard.length-myRank)/(leaderboard.length-1))*100) : null
+  const myEntry = leaderboard.find(l => l.user_id === currentUser?.id)
+  const myRank  = myEntry ? leaderboard.indexOf(myEntry) + 1 : null
+  const myPct   = myRank && leaderboard.length > 1 ? Math.round(((leaderboard.length - myRank) / (leaderboard.length - 1)) * 100) : null
 
-  const allTimeBest = useMemo(()=>(
-    allSets.filter(s=>s.user_id===currentUser?.id&&(activeLift==='all'?!!matchLift(s.exercise_name||''):matchLift(s.exercise_name||'')===activeLift))
-      .reduce((b,s)=>Math.max(b,s.weight||0),0)
-  ),[allSets,currentUser?.id,activeLift])
+  const allTimeBest = useMemo(() => (
+    allSets.filter(s => s.user_id === currentUser?.id && (activeLift === 'all' ? !!matchLift(s.exercise_name || '') : matchLift(s.exercise_name || '') === activeLift))
+      .reduce((b, s) => Math.max(b, s.weight || 0), 0)
+  ), [allSets, currentUser?.id, activeLift])
 
-  const todayLifters = useMemo(()=>new Set(allSets.filter(s=>Date.now()-new Date(s.logged_date||0)<86400000).map(s=>s.user_id)).size,[allSets])
-  const topThree     = leaderboard.slice(0,3)
-  const gymName      = gymMemberships[0]?.gym_name||'Community'
-  const liftMeta     = LIFTS.find(l=>l.id===activeLift)||LIFTS[0]
+  const todayLifters = useMemo(() => new Set(allSets.filter(s => Date.now() - new Date(s.logged_date || 0) < 86400000).map(s => s.user_id)).size, [allSets])
+
+  const gymName  = gymMemberships[0]?.gym_name || 'Community'
+  const liftMeta = LIFTS.find(l => l.id === activeLift) || LIFTS[0]
 
   if (lbOpen) return (
     <FullLeaderboard
       leaderboard={leaderboard}
       liftMeta={liftMeta}
       currentUserId={currentUser?.id}
-      onClose={()=>setLbOpen(false)}
+      onClose={() => setLbOpen(false)}
       userAvatarMap={userAvatarMap}
     />
   )
@@ -303,186 +415,153 @@ export default function Community(){
     <>
       <style>{CSS}</style>
       <div style={{
-        minHeight:'100vh',
-        background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
-        fontFamily:"'Outfit',system-ui,sans-serif",
-        color:'#e2e8f0',
-        padding:'20px 16px 40px',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
+        fontFamily: "'Outfit',system-ui,sans-serif",
+        color: '#e2e8f0',
+        padding: '20px 16px 40px',
       }}>
         {/* Page header */}
-        <div style={{marginBottom:20}}>
-          <p style={{fontSize:11,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.2em',color:'rgba(255,255,255,0.3)',margin:'0 0 4px'}}>{gymName}</p>
-          <h1 style={{fontSize:30,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',margin:0,lineHeight:1}}>Lift Rankings</h1>
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.28)', margin: '0 0 4px' }}>{gymName}</p>
+          <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>Lift Rankings</h1>
         </div>
 
-        {/* ─── THE ONE CARD ─── */}
+        {/* ─── ONE CARD ─── */}
         <div style={{
-          borderRadius:28,
-          overflow:'hidden',
-          background:'linear-gradient(160deg,rgba(12,20,48,0.96) 0%,rgba(6,10,26,0.99) 100%)',
-          border:'1px solid rgba(255,255,255,0.07)',
-          backdropFilter:'blur(40px)',
-          WebkitBackdropFilter:'blur(40px)',
-          boxShadow:`0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(${liftMeta.colorRgb},0.08), inset 0 1px 0 rgba(255,255,255,0.06)`,
-          position:'relative',
-          transition:'box-shadow 0.4s ease',
+          borderRadius: 28,
+          background: 'linear-gradient(160deg,rgba(12,20,48,0.96) 0%,rgba(6,10,26,0.99) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(${liftMeta.colorRgb},0.08), inset 0 1px 0 rgba(255,255,255,0.06)`,
+          position: 'relative',
+          overflow: 'visible',
+          transition: 'box-shadow 0.4s ease',
         }}>
 
-          {/* Color accent top bar */}
-          <div style={{height:3,background:`linear-gradient(90deg,transparent 0%,rgba(${liftMeta.colorRgb},0.6) 20%,${liftMeta.color} 50%,rgba(${liftMeta.colorRgb},0.6) 80%,transparent 100%)`,transition:'background 0.4s ease'}}/>
+          {/* Accent bar */}
+          <div style={{ height: 3, borderRadius: '28px 28px 0 0', background: `linear-gradient(90deg,transparent 0%,rgba(${liftMeta.colorRgb},0.5) 20%,${liftMeta.color} 50%,rgba(${liftMeta.colorRgb},0.5) 80%,transparent 100%)`, transition: 'background 0.4s ease' }} />
 
-          {/* Subtle background glow */}
-          <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:300,height:200,borderRadius:'50%',background:`radial-gradient(ellipse,rgba(${liftMeta.colorRgb},0.08) 0%,transparent 70%)`,pointerEvents:'none',transition:'background 0.4s ease'}}/>
+          {/* Background glow */}
+          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 180, borderRadius: '50%', background: `radial-gradient(ellipse,rgba(${liftMeta.colorRgb},0.07) 0%,transparent 70%)`, pointerEvents: 'none', transition: 'background 0.4s ease' }} />
 
-          {/* ── SECTION 1: Lift Tabs ── */}
-          <div style={{padding:'18px 18px 0'}}>
-            <div style={{display:'flex',gap:6,overflowX:'auto',scrollbarWidth:'none',WebkitOverflowScrolling:'touch',paddingBottom:2}}>
-              {LIFTS.map(lift=>{
-                const active=lift.id===activeLift
-                return (
-                  <button key={lift.id} onClick={()=>setActiveLift(lift.id)} style={{
-                    flexShrink:0,
-                    padding:'7px 14px',
-                    borderRadius:99,
-                    border:'none',
-                    cursor:'pointer',
-                    fontSize:12,
-                    fontWeight:800,
-                    display:'flex',
-                    alignItems:'center',
-                    gap:5,
-                    transition:'all 0.2s ease',
-                    background: active ? `rgba(${lift.colorRgb},0.18)` : 'rgba(255,255,255,0.04)',
-                    color: active ? lift.color : 'rgba(255,255,255,0.3)',
-                    outline: active ? `1px solid rgba(${lift.colorRgb},0.4)` : '1px solid rgba(255,255,255,0.06)',
-                    boxShadow: active ? `0 0 16px rgba(${lift.colorRgb},0.15), inset 0 1px 0 rgba(255,255,255,0.1)` : 'none',
-                  }}>
-                    <span style={{fontSize:13}}>{lift.emoji}</span>
-                    {lift.label}
-                  </button>
-                )
-              })}
-            </div>
+          {/* ── 1. Lift Dropdown ── */}
+          <div style={{ padding: '18px 18px 0', position: 'relative', zIndex: 10 }}>
+            <LiftDropdown
+              value={activeLift}
+              onChange={v => { setActiveLift(v); setLbOpen(false) }}
+              liftMeta={liftMeta}
+            />
           </div>
 
-          {/* ── SECTION 2: Hero PB ── */}
-          <div style={{padding:'20px 20px 0',display:'flex',alignItems:'center',gap:16}}>
-            {/* Arc ring + number */}
-            <div style={{position:'relative',flexShrink:0}}>
-              <ArcRing
-                pct={myPct ?? 0}
-                color={liftMeta.color}
-                size={118}
-                weight={myEntry?.weight}
-              />
-              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:0}}>
-                <span style={{fontSize:myEntry?26:18,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,animation:'num-pop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both'}}>
+          {/* ── 2. Hero PB ── */}
+          <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <ArcRing pct={myPct ?? 0} color={liftMeta.color} size={118} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: myEntry ? 26 : 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, animation: 'num-pop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both' }}>
                   {myEntry ? myEntry.weight : '—'}
                 </span>
-                {myEntry && <span style={{fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.3)'}}>kg PB</span>}
+                {myEntry && <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.28)' }}>kg PB</span>}
               </div>
             </div>
-
-            {/* Stats column */}
-            <div style={{flex:1,minWidth:0}}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               {myEntry ? (
                 <>
-                  <div style={{display:'flex',alignItems:'baseline',gap:4,marginBottom:4}}>
-                    <span style={{fontSize:13,fontWeight:900,color:'#fff'}}>
-                      {myPct!==null ? `Top ${100-myPct}%` : 'Ranked'}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 4 }}>
+                    <span style={{ fontSize: 15, fontWeight: 900, color: '#fff' }}>
+                      {myPct !== null ? `Top ${100 - myPct}%` : 'Ranked'}
                     </span>
-                    <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',fontWeight:600}}>in {gymName}</span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontWeight: 600 }}>in {gymName}</span>
                   </div>
-                  <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:8}}>
-                    <div style={{width:6,height:6,borderRadius:'50%',background:liftMeta.color,boxShadow:`0 0 8px ${liftMeta.color}`}}/>
-                    <span style={{fontSize:12,color:'rgba(255,255,255,0.4)',fontWeight:600}}>#{myRank} of {leaderboard.length} athletes</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: liftMeta.color, boxShadow: `0 0 8px ${liftMeta.color}` }} />
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', fontWeight: 600 }}>#{myRank} of {leaderboard.length} athletes</span>
                   </div>
-                  {allTimeBest>0&&allTimeBest!==myEntry.weight&&(
-                    <div style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)'}}>
-                      <TrendingUp style={{width:11,height:11,color:'rgba(255,255,255,0.35)'}}/>
-                      <span style={{fontSize:11,color:'rgba(255,255,255,0.4)',fontWeight:700}}>All-time PB: {allTimeBest}kg</span>
+                  {allTimeBest > 0 && allTimeBest !== myEntry.weight && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <TrendingUp style={{ width: 11, height: 11, color: 'rgba(255,255,255,0.28)' }} />
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', fontWeight: 700 }}>All-time PB: {allTimeBest}kg</span>
                     </div>
                   )}
                 </>
               ) : (
                 <div>
-                  <p style={{fontSize:14,fontWeight:800,color:'rgba(255,255,255,0.5)',margin:'0 0 4px'}}>No {liftMeta.label} logged</p>
-                  <p style={{fontSize:12,color:'rgba(255,255,255,0.2)',margin:0,fontWeight:600}}>Log a lift to appear on the board</p>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.38)', margin: '0 0 4px' }}>No {liftMeta.label} logged</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)', margin: 0, fontWeight: 600 }}>Log a lift to appear on the board</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* ── SECTION 3: Mini leaderboard preview ── */}
-          <div style={{padding:'18px 16px 0'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <Trophy style={{width:13,height:13,color:'#FFD700'}}/>
-                <span style={{fontSize:12,fontWeight:900,color:'rgba(255,255,255,0.7)',letterSpacing:'0.02em'}}>Top Lifters</span>
+          {/* Divider */}
+          <div style={{ margin: '18px 18px 0', height: 1, background: 'rgba(255,255,255,0.05)' }} />
+
+          {/* ── 3. Mini leaderboard ── */}
+          <div style={{ padding: '16px 16px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Trophy style={{ width: 13, height: 13, color: '#FFD700' }} />
+                <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Top Lifters</span>
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                {TIME_FILTERS.map(tf=>(
-                  <button key={tf.id} onClick={()=>setTimeFilter(tf.id)} style={{
-                    padding:'3px 10px',borderRadius:99,border:'none',cursor:'pointer',fontSize:10,fontWeight:800,
-                    background:timeFilter===tf.id?`rgba(${liftMeta.colorRgb},0.15)`:'transparent',
-                    color:timeFilter===tf.id?liftMeta.color:'rgba(255,255,255,0.25)',
-                    outline:timeFilter===tf.id?`1px solid rgba(${liftMeta.colorRgb},0.3)`:'none',
-                    transition:'all 0.2s ease',
+              {/* Time filter */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 1, padding: '2px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                {TIME_FILTERS.map(tf => (
+                  <button key={tf.id} onClick={() => setTimeFilter(tf.id)} style={{
+                    padding: '4px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 800,
+                    background: timeFilter === tf.id ? `rgba(${liftMeta.colorRgb},0.15)` : 'transparent',
+                    color: timeFilter === tf.id ? liftMeta.color : 'rgba(255,255,255,0.22)',
+                    outline: timeFilter === tf.id ? `1px solid rgba(${liftMeta.colorRgb},0.3)` : 'none',
+                    fontFamily: "'Outfit',system-ui,sans-serif",
+                    transition: 'all 0.15s ease',
                   }}>{tf.label}</button>
                 ))}
               </div>
             </div>
 
             {isLoading ? (
-              <div style={{padding:'20px 0',textAlign:'center',color:'rgba(255,255,255,0.15)',fontSize:12,fontWeight:600}}>Loading…</div>
-            ) : leaderboard.length===0 ? (
-              <div style={{padding:'20px 0',textAlign:'center',color:'rgba(255,255,255,0.15)',fontSize:12,fontWeight:600}}>No lifts logged in this period</div>
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'rgba(255,255,255,0.14)', fontSize: 12, fontWeight: 600 }}>Loading…</div>
+            ) : leaderboard.length === 0 ? (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'rgba(255,255,255,0.14)', fontSize: 12, fontWeight: 600 }}>No lifts logged in this period</div>
             ) : (
-              <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                {leaderboard.slice(0,5).map((entry,i)=>{
-                  const M=i<3?MEDALS[i]:null
-                  const isMe=entry.user_id===currentUser?.id
-                  const maxW=leaderboard[0].weight
-                  const pct=Math.max(6,Math.round((entry.weight/maxW)*100))
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {leaderboard.slice(0, 5).map((entry, i) => {
+                  const M = i < 3 ? MEDALS[i] : null
+                  const isMe = entry.user_id === currentUser?.id
+                  const maxW = leaderboard[0].weight
+                  const pct  = Math.max(6, Math.round((entry.weight / maxW) * 100))
                   return (
-                    <div key={entry.user_id||i} style={{
-                      display:'flex',alignItems:'center',gap:10,
-                      padding:'9px 10px',
-                      borderRadius:14,
-                      background: isMe
-                        ? `rgba(${liftMeta.colorRgb},0.07)`
-                        : i===0
-                          ? 'rgba(255,215,0,0.04)'
-                          : 'rgba(255,255,255,0.025)',
-                      border: isMe
-                        ? `1px solid rgba(${liftMeta.colorRgb},0.2)`
-                        : '1px solid rgba(255,255,255,0.04)',
-                      position:'relative',
-                      overflow:'hidden',
+                    <div key={entry.user_id || i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '9px 10px', borderRadius: 14,
+                      background: isMe ? `rgba(${liftMeta.colorRgb},0.07)` : i === 0 ? 'rgba(255,215,0,0.04)' : 'rgba(255,255,255,0.025)',
+                      border: `1px solid ${isMe ? `rgba(${liftMeta.colorRgb},0.2)` : 'rgba(255,255,255,0.04)'}`,
+                      position: 'relative', overflow: 'hidden',
                     }}>
-                      {/* Progress fill behind */}
-                      <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${pct}%`,background: M ? `rgba(${M.colorRgb},0.04)` : `rgba(${liftMeta.colorRgb},0.04)`,borderRadius:'14px 0 0 14px',pointerEvents:'none',transition:'width 0.6s ease'}}/>
+                      {/* Progress bg */}
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: M ? `rgba(${M.colorRgb},0.04)` : `rgba(${liftMeta.colorRgb},0.04)`, borderRadius: '14px 0 0 14px', pointerEvents: 'none', transition: 'width 0.6s ease' }} />
 
-                      {/* Rank badge */}
-                      <div style={{width:24,height:24,borderRadius:8,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:M?13:11,fontWeight:900,background:M?M.badgeBg:'rgba(255,255,255,0.05)',color:M?'rgba(0,0,0,0.7)':'rgba(255,255,255,0.25)',position:'relative',zIndex:1}}>
-                        {M ? M.label : i+1}
+                      {/* Rank */}
+                      <div style={{ width: 24, height: 24, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, background: M ? M.badgeBg : 'rgba(255,255,255,0.05)', color: M ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.22)', position: 'relative', zIndex: 1 }}>
+                        {i + 1}
                       </div>
 
                       {/* Avatar */}
-                      <div style={{width:32,height:32,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,background: isMe ? `rgba(${liftMeta.colorRgb},0.2)` : M ? M.bg : 'rgba(255,255,255,0.06)',border:`1.5px solid ${isMe?liftMeta.color:M?M.color:'rgba(255,255,255,0.08)'}`,color:isMe?liftMeta.color:M?M.color:'rgba(255,255,255,0.5)',position:'relative',zIndex:1}}>
-                        {userAvatarMap[entry.user_id]?<img src={userAvatarMap[entry.user_id]} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:null}
-                        <span style={{display:userAvatarMap[entry.user_id]?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:11}}>{ini(entry.user_name)}</span>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, background: isMe ? `rgba(${liftMeta.colorRgb},0.2)` : M ? M.bg : 'rgba(255,255,255,0.06)', border: `1.5px solid ${isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.08)'}`, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.45)', position: 'relative', zIndex: 1 }}>
+                        {userAvatarMap[entry.user_id] ? <img src={userAvatarMap[entry.user_id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                        <span style={{ display: userAvatarMap[entry.user_id] ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 11 }}>{ini(entry.user_name)}</span>
                       </div>
 
                       {/* Name */}
-                      <div style={{flex:1,minWidth:0,position:'relative',zIndex:1}}>
-                        <p style={{fontSize:13,fontWeight:isMe?800:700,color:isMe?'#fff':M?M.color:'rgba(255,255,255,0.7)',margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                          {isMe?'You':entry.user_name||'—'}
+                      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: isMe ? 800 : 600, color: isMe ? '#fff' : M ? M.color : 'rgba(255,255,255,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {isMe ? 'You' : entry.user_name || '—'}
                         </p>
                       </div>
 
-                      {/* Weight pill */}
-                      <div style={{flexShrink:0,fontSize:13,fontWeight:900,color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.5)',position:'relative',zIndex:1,letterSpacing:'-0.02em'}}>
+                      {/* Weight */}
+                      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 900, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.4)', position: 'relative', zIndex: 1, letterSpacing: '-0.02em' }}>
                         {entry.weight}kg
                       </div>
                     </div>
@@ -492,67 +571,65 @@ export default function Community(){
             )}
           </div>
 
-          {/* ── SECTION 4: Stats row ── */}
-          <div style={{margin:'18px 16px 0',display:'grid',gridTemplateColumns:'1fr 1px 1fr',alignItems:'center',padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.05)'}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <div style={{width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${liftMeta.colorRgb},0.12)`,flexShrink:0}}>
-                <Flame style={{width:14,height:14,color:liftMeta.color}}/>
+          {/* Divider */}
+          <div style={{ margin: '16px 18px 0', height: 1, background: 'rgba(255,255,255,0.05)' }} />
+
+          {/* ── 4. Stats ── */}
+          <div style={{ margin: '0 16px', padding: '14px 4px', display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.1)`, flexShrink: 0 }}>
+                <Flame style={{ width: 14, height: 14, color: liftMeta.color }} />
               </div>
               <div>
-                <p style={{fontSize:20,fontWeight:900,color:'#fff',margin:0,lineHeight:1,letterSpacing:'-0.03em'}}>{todayLifters}</p>
-                <p style={{fontSize:10,color:'rgba(255,255,255,0.3)',margin:'2px 0 0',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em'}}>Active today</p>
+                <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{todayLifters}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', margin: '2px 0 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Active today</p>
               </div>
             </div>
-            <div style={{width:1,height:32,background:'rgba(255,255,255,0.07)'}}/>
-            <div style={{display:'flex',alignItems:'center',gap:10,paddingLeft:16}}>
-              <div style={{width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,215,0,0.1)',flexShrink:0}}>
-                <Trophy style={{width:14,height:14,color:'#FFD700'}}/>
+            <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.07)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,215,0,0.09)', flexShrink: 0 }}>
+                <Trophy style={{ width: 14, height: 14, color: '#FFD700' }} />
               </div>
               <div>
-                <p style={{fontSize:20,fontWeight:900,color:'#fff',margin:0,lineHeight:1,letterSpacing:'-0.03em'}}>{leaderboard.length}</p>
-                <p style={{fontSize:10,color:'rgba(255,255,255,0.3)',margin:'2px 0 0',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em'}}>On board</p>
+                <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{leaderboard.length}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', margin: '2px 0 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>On board</p>
               </div>
             </div>
           </div>
 
-          {/* ── SECTION 5: Full leaderboard CTA ── */}
-          <div style={{padding:'14px 16px 18px'}}>
+          {/* ── 5. CTA ── */}
+          <div style={{ padding: '0 16px 18px' }}>
             <button
-              onClick={()=>setLbOpen(true)}
+              onClick={() => setLbOpen(true)}
               style={{
-                width:'100%',
-                padding:'14px 20px',
-                borderRadius:16,
-                border:'none',
-                cursor:'pointer',
-                display:'flex',
-                alignItems:'center',
-                justifyContent:'space-between',
-                background:`linear-gradient(135deg,rgba(${liftMeta.colorRgb},0.14),rgba(${liftMeta.colorRgb},0.06))`,
-                outline:`1px solid rgba(${liftMeta.colorRgb},0.25)`,
-                transition:'all 0.2s ease',
-                boxShadow:`0 4px 20px rgba(${liftMeta.colorRgb},0.1),inset 0 1px 0 rgba(255,255,255,0.06)`,
+                width: '100%', padding: '14px 20px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: `linear-gradient(135deg,rgba(${liftMeta.colorRgb},0.13),rgba(${liftMeta.colorRgb},0.05))`,
+                outline: `1px solid rgba(${liftMeta.colorRgb},0.22)`,
+                boxShadow: `0 4px 20px rgba(${liftMeta.colorRgb},0.08),inset 0 1px 0 rgba(255,255,255,0.05)`,
+                fontFamily: "'Outfit',system-ui,sans-serif",
+                transition: 'transform 0.1s ease',
               }}
-              onMouseDown={e=>e.currentTarget.style.transform='translateY(2px)'}
-              onMouseUp={e=>e.currentTarget.style.transform=''}
-              onMouseLeave={e=>e.currentTarget.style.transform=''}
-              onTouchStart={e=>e.currentTarget.style.transform='translateY(2px)'}
-              onTouchEnd={e=>e.currentTarget.style.transform=''}
+              onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+              onMouseUp={e => e.currentTarget.style.transform = ''}
+              onMouseLeave={e => e.currentTarget.style.transform = ''}
+              onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
+              onTouchEnd={e => e.currentTarget.style.transform = ''}
             >
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <div style={{width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${liftMeta.colorRgb},0.15)`,border:`1px solid rgba(${liftMeta.colorRgb},0.25)`}}>
-                  <Trophy style={{width:15,height:15,color:liftMeta.color}}/>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.14)`, border: `1px solid rgba(${liftMeta.colorRgb},0.22)` }}>
+                  <Trophy style={{ width: 15, height: 15, color: liftMeta.color }} />
                 </div>
-                <div style={{textAlign:'left'}}>
-                  <p style={{fontSize:13,fontWeight:900,color:'#fff',margin:0,lineHeight:1}}>Full Leaderboard</p>
-                  <p style={{fontSize:10,color:'rgba(255,255,255,0.3)',margin:'3px 0 0',fontWeight:600}}>Top {leaderboard.length} athletes ranked</p>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontSize: 13, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1 }}>Full Leaderboard</p>
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0', fontWeight: 600 }}>{leaderboard.length} athletes ranked</p>
                 </div>
               </div>
-              <ChevronRight style={{width:16,height:16,color:liftMeta.color,opacity:0.7}}/>
+              <ChevronRight style={{ width: 16, height: 16, color: liftMeta.color, opacity: 0.6 }} />
             </button>
           </div>
 
-        </div>{/* end card */}
+        </div>
       </div>
     </>
   )
