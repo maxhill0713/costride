@@ -826,7 +826,7 @@ export default function GymCommunity() {
                   </div>
                 )}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard} />
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 {upcomingEvents.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
