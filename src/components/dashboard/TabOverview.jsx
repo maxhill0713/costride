@@ -12,7 +12,7 @@ import {
 import {
   Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip, AttendanceHeatmap
 } from './DashboardPrimitives';
-import { HabitTracker, CultureRadar, StreakCelebrations, GymSetupChecklist, SmartNudges, InviteToClasses } from './OverviewWidgets';
+import { StreakCelebrations, GymSetupChecklist, SmartNudges, InviteToClasses } from './OverviewWidgets';
 
 export default function TabOverview({
   // stats
