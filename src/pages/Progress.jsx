@@ -45,11 +45,13 @@ function SubPage({ title, onBack, action, children }) {
 function GoalsPage({ currentUser, onBack }) {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const queryClient = useQueryClient();
+
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
+
   const createGoalMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create(data),
     onMutate: async (data) => {
@@ -61,6 +63,7 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, data, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); setShowAddGoal(false); },
   });
+
   const updateGoalMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
     onMutate: async ({ id, data }) => {
@@ -72,6 +75,7 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, v, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.prev); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
   });
+
   const deleteGoalMutation = useMutation({
     mutationFn: (id) => base44.entities.Goal.delete(id),
     onMutate: async (id) => {
@@ -83,8 +87,10 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, id, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
   });
+
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
+
   return (
     <SubPage title="Goals" onBack={onBack} action={
       <button onClick={() => setShowAddGoal(true)} className={btnCyan}><Plus className="w-3.5 h-3.5" />New Goal</button>
@@ -210,7 +216,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
 
   return (
     <SubPage title="Rank" onBack={onBack}>
-      {/* Showcase */}
       {equippedBadgeDetails.length > 0 && (
         <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border border-amber-400/40 shadow-lg mb-4">
           <h3 className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5">
@@ -232,8 +237,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           </div>
         </div>
       )}
-
-      {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -241,7 +244,7 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
             Earned ({earnedBadges.length})
           </h3>
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-            {earnedBadges.map((badge, index) => {
+            {earnedBadges.map((badge) => {
               const isEquipped = equippedBadges.includes(badge.id);
               return (
                 <button
@@ -268,8 +271,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           </div>
         </div>
       )}
-
-      {/* Locked Badges */}
       {lockedBadges.length > 0 && (
         <div>
           <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
@@ -388,11 +389,7 @@ function CommunityIllustration() {
 function RankIllustration() {
   return (
     <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
-      <polygon
-        points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28"
-        fill="url(#ri1)"
-        opacity="0.92"
-      />
+      <polygon points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28" fill="url(#ri1)" opacity="0.92" />
       <circle cx="60" cy="37" r="9" fill="white" opacity="0.12" />
       <circle cx="60" cy="37" r="5" fill="white" opacity="0.2" />
       <path d="M51,64 L46,82 L60,73 L74,82 L69,64" fill="url(#ri4)" opacity="0.85" />
@@ -434,6 +431,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     onMouseLeave: () => setPressed(false), onTouchStart: () => setPressed(true),
     onTouchEnd: () => setPressed(false), onTouchCancel: () => setPressed(false),
   };
+
   const inner = (
     <div
       className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
@@ -463,25 +461,18 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       </div>
       {/* Content */}
       <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
-            <Icon className="w-4 h-4" style={{ color: iconColor }} />
-          </div>
-          <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
-        </div>
+        <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
         {description && (
           <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
         )}
       </div>
-      {/* Arrow chip bottom-right */}
+      {/* Bare arrow — bottom right */}
       <div className="absolute bottom-3 right-3">
-        <div className="w-6 h-6 rounded-full flex items-center justify-center"
-          style={{ background: iconBg, border: `1px solid ${accentBorder}` }}>
-          <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
-        </div>
+        <ChevronRight className="w-4 h-4" style={{ color: iconColor, opacity: 0.6 }} />
       </div>
     </div>
   );
+
   if (As === 'link') return <Link to={href} className="block" {...events}>{inner}</Link>;
   return <button className="w-full" onClick={onClick} {...events}>{inner}</button>;
 }
@@ -489,6 +480,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
 // ─── Main Hub ──────────────────────────────────────────────────────────────────
 export default function Progress() {
   const [view, setView] = useState('hub');
+
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
