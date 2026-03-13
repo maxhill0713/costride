@@ -149,20 +149,7 @@ export default function PushNotificationPanel({
         {/* ── Send to chips ── */}
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Send to</div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[
-              { id: 'atRisk', label: `At-risk (${atRiskMembers.length})` },
-              { id: 'all',    label: `All (${allMembers.length})` },
-            ].map(opt => (
-              <button key={opt.id} onClick={() => setTarget(opt.id)} style={{
-                padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                border: `1px solid ${target === opt.id ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                background: target === opt.id ? 'rgba(20,184,166,0.1)' : 'transparent',
-                color: target === opt.id ? '#2dd4bf' : '#64748b',
-                transition: 'all 0.15s',
-              }}>{opt.label}</button>
-            ))}
-          </div>
+
         </div>
 
         {/* ── Message mode chips ── */}
