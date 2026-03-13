@@ -215,17 +215,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   // ── WORKOUT POST — Strava-style ──────────────────────────────────────────
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
-    // Strip auto-generated prefix, keep only what the user typed
-    const userComment = (() => {
-      if (!post.content) return null;
-      const lines = post.content.split('\n');
-      const kept = lines.filter(line => {
-        if (line.startsWith('💪 Just finished')) return false;
-        if (/\d+x\d+/.test(line)) return false;
-        return true;
-      });
-      return kept.join('\n').trim() || null;
-    })();
+    const userComment = post.content?.trim() || null;
     const totalReactions = Object.keys(post.reactions || {}).length;
 
     return (
