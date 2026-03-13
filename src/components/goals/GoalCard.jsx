@@ -276,18 +276,9 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
       <div className="relative p-5 space-y-4">
 
         {/* ── HEADER ── */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div
-              className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${isCompleted ? 'from-green-500 to-emerald-600' : cfg.grad} flex items-center justify-center flex-shrink-0`}
-              style={{ boxShadow: `0 3px 10px ${a(rgb, 0.25)}` }}
-            >
-              {isCompleted
-                ? <CheckCircle2 className="w-5 h-5 text-white" strokeWidth={2.5} />
-                : <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
-              }
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
+         <div className="flex items-start justify-between gap-3">
+           <div className="flex items-start gap-3 flex-1 min-w-0">
+             <div className="flex-1 min-w-0 pt-0.5">
               <p className="text-[15px] font-black text-white leading-tight truncate">{goal.title}</p>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span
