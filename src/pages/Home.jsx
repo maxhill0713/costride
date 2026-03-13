@@ -1454,7 +1454,7 @@ export default function Home() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {friendSearchQuery.length >= 2 && (
+              {friendSearchQuery.length >= 1 && (
                 filteredSearchResults.length === 0
                   ? <p className="text-center text-slate-400 text-sm py-8">No users found</p>
                   : filteredSearchResults.map(user => (
