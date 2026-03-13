@@ -217,9 +217,17 @@ export default function TabMembers({
           </div>
         </Card>
 
+        {/* Push Notifications — same width as members card */}
+        <PushNotificationPanel
+          atRiskMembers={atRiskMembersList}
+          allMembers={allMemberships}
+          selectedGym={selectedGym}
+          memberLastCheckIn={memberLastCheckIn}
+        />
+        </div>{/* end left column */}
+
         {/* ── Right Sidebar ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* spacer to push sidebar content down — removed, sidebar starts at top */}
           {/* Alerts */}
           <Card style={{ padding: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
