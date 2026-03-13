@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 // ─── Habit Formation Tracker ──────────────────────────────────────────────────
 export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Date() }) => {
