@@ -324,13 +324,6 @@ export default function TabMembers({
             </div>
           </Card>
 
-          {/* Push Notifications */}
-          <PushNotificationPanel
-            atRiskMembers={atRiskMembersList}
-            allMembers={allMemberships}
-            selectedGym={selectedGym}
-            memberLastCheckIn={memberLastCheckIn}
-          />
         </div>{/* end right sidebar */}
       </div>{/* end top grid */}
 
