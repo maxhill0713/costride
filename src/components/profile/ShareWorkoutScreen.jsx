@@ -214,9 +214,16 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         likes: 0, comments: [], reactions: {},
         is_system_generated: false,
         allow_gym_repost: false,
-        // ── Fields consumed by GymPostCard Strava layout ──
+        // ── Fields consumed by GymPostCard / PostCard Strava layout ──
         workout_name: workoutName || null,
-        workout_exercises: exercises || [],
+        workout_exercises: (exercises || []).map(ex => {
+          const rawName = ex.name || ex.title || ex.exercise_name || ex.exercise || '';
+          const displayName = rawName
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+          const { sets, reps, weight } = parseEx(ex);
+          return { name: displayName || 'Exercise', sets, reps, weight };
+        }),
         workout_volume: volumeStr,
       });
 
