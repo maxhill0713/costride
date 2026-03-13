@@ -265,9 +265,9 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  // ── CHANGED: added || post.workout_name so workout posts without a comment still appear ──
+  // ── CHANGED: also include current user's own posts in the feed ──
   const friendPosts = allPosts.filter((post) =>
-    friendIds.includes(post.member_id) && (
+    (friendIds.includes(post.member_id) || post.member_id === currentUser?.id) && (
       post.content || post.image_url || post.video_url || post.workout_name) &&
     !post.gym_join
   );
@@ -610,7 +610,7 @@ export default function Friends() {
           </div>
         )}
 
-        {/* Friend Posts */}
+        {/* Friend Posts (including your own) */}
         {friendPosts.length > 0 && (
           <div className="space-y-3 mt-0">
             {friendPosts.map((post) => (
@@ -619,6 +619,7 @@ export default function Friends() {
                 post={post}
                 fullWidth={true}
                 currentUser={currentUser}
+                isOwnProfile={post.member_id === currentUser?.id}
                 onLike={() => {}}
                 onComment={() => {}}
                 onSave={() => {}}
