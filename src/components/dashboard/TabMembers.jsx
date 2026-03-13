@@ -346,6 +346,12 @@ export default function TabMembers({
             </div>
           </Card>
 
+          <LeaderboardSection
+            checkInLeaderboard={checkInLeaderboard}
+            streakLeaderboard={streakLeaderboard}
+            progressLeaderboard={[]}
+          />
+
         </div>
       </div>
 
