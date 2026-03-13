@@ -219,23 +219,23 @@ export default function Community() {
   // All-time personal best
   const myAllTimeBest = useMemo(() => {
     const mySets = allSets.filter(s => s.user_id === currentUser?.id);
-    const liftSets = mySets.filter(s => activeLift==='all' ? matchLift(s.exercise_name||s.exercise||s.name||'') : matchLift(s.exercise_name||s.exercise||s.name||'')===activeLift);
-    return liftSets.reduce((best,s) => Math.max(best, parseFloat(s.weight||0)), 0);
+    const liftSets = mySets.filter(s => activeLift==='all' ? matchLift(s.exercise||'') : matchLift(s.exercise||'')===activeLift);
+    return liftSets.reduce((best,s) => Math.max(best, s.weight||0), 0);
   }, [allSets, currentUser?.id, activeLift]);
 
   // Community activity stats
   const todayLifters = useMemo(() => {
-    const today = new Set(allSets.filter(s => Date.now()-new Date(s.logged_date||s.created_date||0)<86400000).map(s=>s.user_id));
+    const today = new Set(allSets.filter(s => Date.now()-new Date(s.logged_date||0)<86400000).map(s=>s.user_id));
     return today.size;
   }, [allSets]);
 
   const avgWeight = useMemo(() => {
-    const w = filteredSets.filter(s => activeLift==='all'?matchLift(s.exercise_name||''):matchLift(s.exercise_name||'')||activeLift===matchLift(s.exercise_name||'')).map(s=>parseFloat(s.weight||0)).filter(Boolean);
+    const w = filteredSets.filter(s => activeLift==='all' ? !!matchLift(s.exercise||'') : matchLift(s.exercise||'')===activeLift).map(s=>s.weight).filter(Boolean);
     return w.length ? Math.round(w.reduce((a,b)=>a+b,0)/w.length) : 0;
   }, [filteredSets, activeLift]);
 
   const topThisWeek = useMemo(() => {
-    const w7 = filterByTime(allSets,'week').filter(s => activeLift==='all'?matchLift(s.exercise_name||''):matchLift(s.exercise_name||'')||activeLift===matchLift(s.exercise_name||'')).map(s=>parseFloat(s.weight||0));
+    const w7 = filterByTime(allSets,'week').filter(s => activeLift==='all' ? !!matchLift(s.exercise||'') : matchLift(s.exercise||'')===activeLift).map(s=>s.weight).filter(Boolean);
     return w7.length ? Math.max(...w7) : 0;
   }, [allSets, activeLift]);
 
