@@ -72,6 +72,27 @@ export default function TabMembers({
   const handleFilterChange = (f) => { setMemberFilter(f); setMemberPage(1); };
   const handleSearch       = (v) => { setMemberSearch(v); setMemberPage(1); };
 
+  const weekAgoLB = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weeklyCI = checkIns.filter(c => new Date(c.check_in_date) >= weekAgoLB);
+  const checkInLeaderboard = Object.values(
+    weeklyCI.reduce((acc, c) => {
+      const id = c.user_id;
+      if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: avatarMap[id] || null, count: 0 };
+      acc[id].count++;
+      return acc;
+    }, {})
+  ).sort((a, b) => b.count - a.count).slice(0, 10);
+
+  const streakLeaderboard = Object.values(
+    checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: avatarMap[id] || null }; return acc; }, {})
+  ).map(item => {
+    const uci = checkIns.filter(c => c.user_id === item.userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+    let streak = uci.length > 0 ? 1 : 0;
+    let cur = uci.length > 0 ? new Date(uci[0].check_in_date) : null;
+    if (cur) { cur.setHours(0,0,0,0); for (let i = 1; i < uci.length; i++) { const d = new Date(uci[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; } }
+    return { ...item, streak };
+  }).sort((a, b) => b.streak - a.streak).slice(0, 10);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
