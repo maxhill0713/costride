@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, TrendingUp, Calendar, ChevronRight, UserPlus, Users, Search, UserMinus, X, CheckCircle } from 'lucide-react';
+import { Dumbbell, TrendingUp, Calendar, ChevronRight, UserPlus, Users, Search, MoreVertical, X, CheckCircle, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
@@ -398,6 +398,8 @@ export default function Home() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [confirmRemoveFriend, setConfirmRemoveFriend] = useState(null);
+  const [friendMenuOpen, setFriendMenuOpen] = useState(null);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
@@ -1421,14 +1423,28 @@ export default function Home() {
                     const u = friendUsersList.find(u => u.id === friend.friend_id);
                     const name = u?.full_name || friend.friend_name;
                     return (
-                      <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2">
+                      <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                         <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setShowFriendsModal(false)}>
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                           </div>
                           <p className="font-semibold text-white text-xs truncate">{name}</p>
                         </Link>
-                        <Button variant="ghost" size="icon" onClick={() => removeFriendMutation.mutate(friend.friend_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"><UserMinus className="w-3 h-3" /></Button>
+                        <div className="relative flex-shrink-0">
+                          <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(friendMenuOpen === friend.id ? null : friend.id); }} className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          {friendMenuOpen === friend.id && (
+                            <>
+                              <div className="fixed inset-0 z-[10001]" onClick={() => setFriendMenuOpen(null)} />
+                              <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
+                                <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); const u2 = friendUsersList.find(u => u.id === friend.friend_id); setConfirmRemoveFriend({ id: friend.friend_id, name: u2?.full_name || friend.friend_name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
+                                  Remove
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -1473,6 +1489,30 @@ export default function Home() {
               )}
             </div>
           </Card>
+        </>
+      )}
+
+      {/* ── Confirm Remove Friend ── */}
+      {confirmRemoveFriend && (
+        <>
+          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setConfirmRemoveFriend(null)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+            <h3 className="text-xl font-black text-white mb-2">Remove {confirmRemoveFriend.name}?</h3>
+            <p className="text-slate-300 text-sm mb-6">Are you sure you want to remove them as a friend? You'll no longer see each other's activity.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmRemoveFriend(null)}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                Cancel
+              </button>
+              <button
+                onClick={() => { removeFriendMutation.mutate(confirmRemoveFriend.id); setConfirmRemoveFriend(null); }}
+                disabled={removeFriendMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+                {removeFriendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Remove'}
+              </button>
+            </div>
+          </div>
         </>
       )}
 
