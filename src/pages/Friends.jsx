@@ -265,9 +265,10 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
+  // ── CHANGED: added || post.workout_name so workout posts without a comment still appear ──
   const friendPosts = allPosts.filter((post) =>
     friendIds.includes(post.member_id) && (
-      post.content || post.image_url || post.video_url) &&
+      post.content || post.image_url || post.video_url || post.workout_name) &&
     !post.gym_join
   );
 
@@ -445,7 +446,6 @@ export default function Friends() {
   const filteredActivityFeed = activityFeed;
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
-  // Duolingo-style card config: bold, solid, chunky
   const getCardAccentConfig = (card) => {
     const configs = {
       'nudge':           { bg: '#1e293b', border: '#334155', bottomBorder: '#0f172a', icon: '⏰', dot: '#f97316' },
@@ -481,7 +481,7 @@ export default function Friends() {
 
       <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-6">
 
-        {/* ── Redesigned Activity Nudge Cards ── */}
+        {/* Activity Nudge Cards */}
         {filteredActivityCards.length > 0 && (
           <div className="space-y-3 mb-6">
             {filteredActivityCards.map((card) => {
@@ -498,7 +498,6 @@ export default function Friends() {
                   }}
                   className="relative overflow-hidden"
                 >
-                  {/* Dismiss button */}
                   <button
                     onClick={() => {
                       const updated = new Set(dismissedCardIds).add(card.id);
@@ -512,10 +511,7 @@ export default function Friends() {
                   </button>
 
                   <div className="px-4 py-4 flex items-center gap-4">
-                    {/* Large emoji */}
                     <span className="text-3xl select-none flex-shrink-0 leading-none">{cfg.icon}</span>
-
-                    {/* Text */}
                     <div className="flex-1 min-w-0 pr-4">
                       <p className="font-extrabold text-white text-[14px] leading-tight tracking-tight">
                         {card.title}
@@ -555,7 +551,6 @@ export default function Friends() {
                 >
                   <div className="p-3">
                     <div className="flex items-center gap-3">
-                      {/* Profile Photo */}
                       <Link
                         to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
                         className="flex-shrink-0"
@@ -575,7 +570,6 @@ export default function Friends() {
                         )}
                       </Link>
 
-                      {/* Activity Content */}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-white leading-tight">
                           <span className="font-semibold">{activity.friendName}</span>
@@ -663,7 +657,6 @@ export default function Friends() {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
-                {/* Friend Requests */}
                 {friendRequests
                   .filter((req) => {
                     const requesterUser = allUsers.find((u) => u.id === req.user_id);
@@ -719,7 +712,6 @@ export default function Friends() {
                     );
                   })}
 
-                {/* Friends List */}
                 {friends.length === 0 && friendRequests.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 ) : (
@@ -757,9 +749,6 @@ export default function Friends() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                              {activity.streak >= 7 && (
-                                <div className="flex items-center gap-0.5 mt-0.5" />
-                              )}
                             </div>
                           </Link>
                           <Button
