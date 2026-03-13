@@ -35,7 +35,7 @@ export default function TabContent({
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
 
       {/* ── LEFT: FEED ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -62,17 +62,19 @@ export default function TabContent({
         </div>
 
         {/* Posts Feed */}
-        {posts.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
-            ))}
-          </div>
-        ) : (
-          <Card style={{ padding: 20, textAlign: 'center' }}>
-            <Empty icon={MessageSquarePlus} label="No posts yet"/>
-          </Card>
-        )}
+        <div style={{ maxWidth: '50%' }}>
+          {posts.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
+              ))}
+            </div>
+          ) : (
+            <Card style={{ padding: 20, textAlign: 'center' }}>
+              <Empty icon={MessageSquarePlus} label="No posts yet"/>
+            </Card>
+          )}
+        </div>
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
