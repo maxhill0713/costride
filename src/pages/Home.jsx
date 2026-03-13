@@ -423,8 +423,7 @@ export default function Home() {
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
-  // ── Track whether a circle button just opened a bubble (to block the dismiss) ──
-  const justOpenedCircle = useRef(false);
+
 
   // ── Sticky header scroll logic ───────────────────────────────────────────
   const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
@@ -474,23 +473,7 @@ export default function Home() {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
-  // ── Dismiss bubble on outside tap — but NOT on the same event that opened it ──
-  useEffect(() => {
-    if (activeCircleDay === null) return;
 
-    const dismiss = (e) => {
-      // If this event was the one that just opened the bubble, skip it
-      if (justOpenedCircle.current) {
-        justOpenedCircle.current = false;
-        return;
-      }
-      if (e.target.closest('[data-circle-btn]') || e.target.closest('[data-bubble]')) return;
-      setActiveCircleDay(null);
-    };
-
-    document.addEventListener('pointerdown', dismiss);
-    return () => document.removeEventListener('pointerdown', dismiss);
-  }, [activeCircleDay]);
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -1090,6 +1073,13 @@ export default function Home() {
             const todayDay = todayDow === 0 ? 7 : todayDow;
             return (
               <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible' }}>
+                {/* Transparent full-screen overlay to catch outside taps and dismiss bubble */}
+                {activeCircleDay !== null && (
+                  <div
+                    onClick={() => setActiveCircleDay(null)}
+                    style={{ position: 'fixed', inset: 0, zIndex: 199 }}
+                  />
+                )}
                 {allDays.map((day, i) => {
                   const done = loggedDays.has(day);
                   const bounce = justLoggedDay === day;
@@ -1154,23 +1144,16 @@ export default function Home() {
                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
                   return (
-                    <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible' }}>
+                    <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 200 }}>
                       {isTodayCircle && (
                         <div style={{ position: 'absolute', width: size + 14, height: size + 14, borderRadius: '50%', border: '3px solid rgba(148,163,184,0.45)', background: 'rgba(148,163,184,0.08)', animation: 'todayRingPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
                       )}
                       <button
                         data-circle-btn="true"
-                        onPointerDown={(e) => {
-                          // Mark that this pointerdown opened (or toggled) a bubble
-                          // so the dismiss listener skips this exact event
-                          justOpenedCircle.current = true;
-                          setPressedDay(day);
-                        }}
+                        onPointerDown={() => setPressedDay(day)}
                         onPointerUp={() => setPressedDay(null)}
                         onPointerLeave={() => setPressedDay(null)}
-                        onClick={() => {
-                          setActiveCircleDay((prev) => prev === day ? null : day);
-                        }}
+                        onClick={() => setActiveCircleDay((prev) => prev === day ? null : day)}
                         style={{
                           width: size, height: size, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
