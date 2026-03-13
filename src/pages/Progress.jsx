@@ -574,7 +574,7 @@ export default function Progress() {
       glowColor: 'rgba(16,185,129,0.35)',
       illustration: CommunityIllustration,
       isLink: true,
-      href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
+      href: createPageUrl('Community'),
     },
     {
       id: 'rank',
