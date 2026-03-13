@@ -184,25 +184,8 @@ export default function TabOverview({
           </Card>
         </div>
 
-        {/* Streaks, Activity, Insights, Invite */}
+        {/* Activity, Insights */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Card style={{ padding: 20 }}>
-            <SectionTitle>Top Streaks</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {streaks.length === 0 && <Empty icon={Flame} label="No streaks yet"/>}
-              {streaks.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${['#f59e0b','#94a3b8','#b45309'][i] || '#374151'}, ${['#ef4444','#64748b','#92400e'][i] || '#1f2937'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14 }}>
-                    {i < 3 ? ['🥇','🥈','🥉'][i] : <span style={{fontSize:11,color:'#fff',fontWeight:800}}>{i+1}</span>}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: i === 0 ? '#f59e0b' : i === 1 ? '#10b981' : '#60a5fa' }}>{s.streak} day streak</span>
-                </div>
-              ))}
-            </div>
-          </Card>
           <Card style={{ padding: 20 }}>
             <SectionTitle>Recent Activity</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

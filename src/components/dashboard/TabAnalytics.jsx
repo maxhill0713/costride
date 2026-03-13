@@ -114,74 +114,7 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
               </div>
             )}
           </Card>
-          {false && <Card style={{ padding: 20 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>REMOVED</div>
-            {(() => {
-              const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-              const slots = ['6AM','12PM','6PM','9PM'];
-              const slotHours = [[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22]];
-              const grid = {};
-              checkIns.forEach(c => {
-                const d = new Date(c.check_in_date);
-                const dow = (d.getDay() + 6) % 7;
-                const h = d.getHours();
-                const slot = slotHours.findIndex(s => s.includes(h));
-                if (slot === -1) return;
-                const key = `${dow}-${slot}`;
-                grid[key] = (grid[key] || 0) + 1;
-              });
-              const max = Math.max(...Object.values(grid), 1);
-              const getColor = (v) => {
-                if (!v) return 'rgba(255,255,255,0.04)';
-                const t = v / max;
-                if (t < 0.2) return 'rgba(6,182,212,0.15)';
-                if (t < 0.4) return 'rgba(6,182,212,0.3)';
-                if (t < 0.6) return 'rgba(6,182,212,0.5)';
-                if (t < 0.8) return 'rgba(6,182,212,0.75)';
-                return 'rgba(6,182,212,0.95)';
-              };
-              return (
-                <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '36px repeat(7,1fr)', gap: 4, marginBottom: 6 }}>
-                    <div/>{days.map(d => <div key={d} style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', textAlign: 'center' }}>{d}</div>)}
-                  </div>
-                  {slots.map((slot, si) => (
-                    <div key={slot} style={{ display: 'grid', gridTemplateColumns: '36px repeat(7,1fr)', gap: 4, marginBottom: 4 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', display: 'flex', alignItems: 'center' }}>{slot}</div>
-                      {days.map((_, di) => {
-                        const v = grid[`${di}-${si}`] || 0;
-                        return <div key={di} title={`${days[di]} ${slot}: ${v} check-ins`} style={{ height: 20, borderRadius: 4, background: getColor(v) }}/>;
-                      })}
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
-                    <span style={{ fontSize: 10, color: 'var(--text3)' }}>Low</span>
-                    {[0.04, 0.2, 0.4, 0.6, 0.8, 1.0].map((t, i) => (
-                      <div key={i} style={{ width: 14, height: 14, borderRadius: 3, background: t < 0.1 ? 'rgba(255,255,255,0.04)' : `rgba(6,182,212,${t})` }}/>
-                    ))}
-                    <span style={{ fontSize: 10, color: 'var(--text3)' }}>High</span>
-                  </div>
-                </div>
-              );
-            })()}
-          </Card>
-          <Card style={{ padding: 20 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>Peak Hours</div>
-            {peakHours.length === 0 ? <Empty icon={Clock} label="No check-in data yet"/> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-                {peakHours.map((h, i) => (
-                  <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: i===0?'#f59e0b':'var(--text3)', width: 20, textAlign: 'right', flexShrink: 0 }}>#{i+1}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 38, flexShrink: 0 }}>{h.label}</span>
-                    <div style={{ flex: 1, height: 7, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
-                      <div style={{ height: '100%', width: `${h.pct}%`, borderRadius: 99, background: i===0?'linear-gradient(90deg,#f59e0b,#ef4444)':'linear-gradient(90deg,#8b5cf6,#ec4899)', transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)' }}/>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: i===0?'#fbbf24':'var(--text2)', width: 24, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+
         </div>
       </div>
 
