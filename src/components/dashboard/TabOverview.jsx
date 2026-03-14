@@ -126,9 +126,15 @@ function ChallengeCard({ challenge, now }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function TabContent({
-  events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
+export default function TabOverview({
+  events = [], challenges = [], polls = [], posts = [], userPosts = [], checkIns = [], ci30 = [], avatarMap = {},
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [],
+  // legacy Overview props (ignored but accepted to avoid errors)
+  todayCI, yesterdayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate,
+  newSignUps, monthChangePct, ciPrev30, atRisk, sparkData, monthGrowthData,
+  cancelledEst, peakLabel, peakEndLabel, peakEntry, satVsAvg, monthCiPer,
+  streaks, recentActivity, chartDays, chartRange, setChartRange,
+  priorities, selectedGym, setTab,
 }) {
   const [activeFilter, setActiveFilter] = useState('gym');
 
