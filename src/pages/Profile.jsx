@@ -155,7 +155,7 @@ export default function Profile() {
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
-  const filteredPosts = userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true);
+  const filteredPosts = userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true && !post.is_hidden);
   const friendCount = friends.length;
   const canPost = !!(postContent.trim() || postImage || postVideo);
 

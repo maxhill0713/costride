@@ -715,7 +715,8 @@ export default function Home() {
   const socialFeedPosts = allPosts.filter(post =>
     (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
     (post.content || post.image_url || post.video_url || post.workout_name) &&
-    !post.gym_join
+    !post.gym_join &&
+    !post.is_hidden
   );
 
   const activityFeed = (() => {

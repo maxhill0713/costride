@@ -255,16 +255,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.Post.delete(post.id),
+    mutationFn: () => base44.entities.Post.update(post.id, { is_hidden: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
       if (post.gym_id) queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
-      toast.success('Post deleted');
+      toast.success('Post removed');
       if (onDelete) onDelete(post.id);
     },
-    onError: () => toast.error('Failed to delete post')
+    onError: () => toast.error('Failed to remove post')
   });
 
   const updatePostMutation = useMutation({
