@@ -63,6 +63,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
       <Route path="/ModeratorDashboard" element={<LayoutWrapper currentPageName="ModeratorDashboard"><ModeratorDashboard /></LayoutWrapper>} />
+      <Route path="/NotificationsHub" element={<LayoutWrapper currentPageName="NotificationsHub"><NotificationsHub /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
