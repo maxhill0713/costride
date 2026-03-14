@@ -178,8 +178,27 @@ function getDifficultyLabel(gymClass) {
 }
 
 function getScheduleDays(gymClass) {
-  const s = (gymClass.schedule || '').toLowerCase();
-  return DAYS.filter(d => s.includes(d.toLowerCase()));
+  const schedule = gymClass.schedule;
+  if (!schedule) return [];
+  // schedule is an array of {day, time} objects
+  if (Array.isArray(schedule)) {
+    return DAYS.filter(d => schedule.some(s => (s.day || '').toLowerCase().includes(d.toLowerCase())));
+  }
+  // fallback: if it's a string
+  if (typeof schedule === 'string') {
+    return DAYS.filter(d => schedule.toLowerCase().includes(d.toLowerCase()));
+  }
+  return [];
+}
+
+function getScheduleLabel(gymClass) {
+  const schedule = gymClass.schedule;
+  if (!schedule) return null;
+  if (Array.isArray(schedule) && schedule.length > 0) {
+    return schedule.map(s => `${s.day}${s.time ? ' ' + s.time : ''}`).join(', ');
+  }
+  if (typeof schedule === 'string') return schedule;
+  return null;
 }
 
 // ── ClassCard component ───────────────────────────────────────────────────────
