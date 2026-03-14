@@ -1,17 +1,210 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { format, subDays } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, Dumbbell } from 'lucide-react';
+import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Dumbbell } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
-import PostCard from '../feed/PostCard';
 
+// ── Feed post card ────────────────────────────────────────────────────────────
+function FeedCard({ post }) {
+  const likes    = post.likes?.length || 0;
+  const comments = post.comments?.length || 0;
+  const hasImage = post.image_url || post.media_url;
+  const content  = post.content || post.title || '';
+
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Avatar name={post.author_name || post.gym_name || 'G'} size={30}/>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {post.author_name || post.gym_name || 'GymPost'}
+          </div>
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text3)', flexShrink: 0 }}>
+          {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
+        </span>
+        <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)', flexShrink: 0 }}/>
+      </div>
+      {content && (
+        <div style={{ padding: '0 14px 10px' }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', margin: 0, lineHeight: 1.4 }}>
+            {post.title || content.split('\n')[0]}
+          </p>
+          {post.title && content !== post.title && (
+            <p style={{ fontSize: 12, color: 'var(--text2)', margin: '4px 0 0', lineHeight: 1.5 }}>{content}</p>
+          )}
+        </div>
+      )}
+      {hasImage && (
+        <div style={{ overflow: 'hidden' }}>
+          <img
+            src={post.image_url || post.media_url}
+            alt=""
+            style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+            onError={e => e.currentTarget.parentElement.style.display = 'none'}
+          />
+        </div>
+      )}
+      <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: likes > 0 ? '#f87171' : 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <Heart style={{ width: 14, height: 14 }}/> {likes}
+        </button>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: comments > 0 ? '#38bdf8' : 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <MessageCircle style={{ width: 14, height: 14 }}/> {comments}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Event card ────────────────────────────────────────────────────────────────
+function EventCard({ event, now }) {
+  const evDate   = new Date(event.event_date);
+  const diffDays = Math.floor((evDate - now) / 86400000);
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(16,185,129,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Calendar style={{ width: 14, height: 14, color: '#34d399' }}/>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 5, padding: '1px 7px' }}>Event</span>
+          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: diffDays <= 2 ? '#f87171' : '#34d399', background: diffDays <= 2 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', borderRadius: 4, padding: '2px 6px' }}>
+            {diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `${diffDays}d`}
+          </span>
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', margin: '0 0 4px' }}>{event.title}</p>
+        {event.description && (
+          <p style={{ fontSize: 12, color: 'var(--text2)', margin: '0 0 8px', lineHeight: 1.4 }}>{event.description}</p>
+        )}
+        <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>{format(evDate, 'MMM d, h:mm a')}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Challenge card ────────────────────────────────────────────────────────────
+function ChallengeCard({ challenge, now }) {
+  const start     = new Date(challenge.start_date), end = new Date(challenge.end_date);
+  const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
+  const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
+  const remaining = Math.max(0, totalDays - elapsed);
+  const pct       = Math.min(100, Math.round((elapsed / totalDays) * 100));
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(245,158,11,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: 90, background: 'linear-gradient(135deg,#1a1033,#3b1a5e,#6d28d9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Trophy style={{ width: 30, height: 30, color: 'rgba(245,158,11,0.6)' }}/>
+        <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 4, padding: '2px 7px' }}>Challenge</span>
+        <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: remaining <= 3 ? '#f87171' : 'var(--text3)', background: 'rgba(0,0,0,0.35)', borderRadius: 4, padding: '2px 7px' }}>{remaining}d left</span>
+      </div>
+      <div style={{ padding: '10px 14px 12px' }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 6px' }}>{challenge.title}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>👥 {challenge.participants?.length || 0} joined</span>
+        </div>
+        <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Class card ────────────────────────────────────────────────────────────────
+function ClassCard({ gymClass }) {
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(14,165,233,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(14,165,233,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Dumbbell style={{ width: 14, height: 14, color: '#38bdf8' }}/>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', borderRadius: 5, padding: '1px 7px' }}>Class</span>
+          {gymClass.schedule && (
+            <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text3)' }}>{gymClass.schedule}</span>
+          )}
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', margin: '0 0 4px' }}>{gymClass.name || gymClass.title}</p>
+        {gymClass.coach_name && (
+          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>with {gymClass.coach_name}</p>
+        )}
+        {gymClass.description && (
+          <p style={{ fontSize: 12, color: 'var(--text2)', margin: '6px 0 0', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{gymClass.description}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Poll card ─────────────────────────────────────────────────────────────────
+function PollCard({ poll }) {
+  const votes = poll.voters?.length || 0;
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(139,92,246,0.15)', padding: '12px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <BarChart2 style={{ width: 13, height: 13, color: '#a78bfa' }}/>
+        <span style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 5, padding: '1px 7px' }}>Poll</span>
+      </div>
+      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 8px' }}>{poll.title}</p>
+      <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>{votes} {votes === 1 ? 'vote' : 'votes'}</div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [], classes = [],
 }) {
-  const allPosts = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
+  const [activeFilter, setActiveFilter] = useState('gym');
+
+  const allPosts        = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  const gymPosts        = allPosts.filter(p => !p.user_id || p.gym_id || p.member_id);
+  const memberPosts     = allPosts.filter(p => p.user_id && !p.gym_id);
+  const upcomingEvents  = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
-  const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+  const totalChalPart   = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+
+  const FILTERS = [
+    { id: 'members',    label: 'Member Posts' },
+    { id: 'gym',        label: 'Gym Posts' },
+    { id: 'challenges', label: 'Challenges' },
+    { id: 'classes',    label: 'Classes' },
+    { id: 'polls',      label: 'Polls' },
+  ];
+
+  const feedItems = useMemo(() => {
+    switch (activeFilter) {
+      case 'members':    return { posts: memberPosts,     events: [], challenges: [], polls: [], classes: [] };
+      case 'gym':        return { posts: gymPosts,        events: [], challenges: [], polls: [], classes: [] };
+      case 'challenges': return { posts: [],              events: [], challenges: activeChallenges, polls: [], classes: [] };
+      case 'classes':    return { posts: [],              events: [], challenges: [], polls: [], classes: classes };
+      case 'polls':      return { posts: [],              events: [], challenges: [], polls: polls, classes: [] };
+      default:           return { posts: allPosts,        events: upcomingEvents, challenges: activeChallenges, polls: polls, classes: classes };
+    }
+  }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
+
+  const flatFeedItems = useMemo(() => {
+    const items = [
+      ...feedItems.posts.map(p => ({ type: 'post',      data: p, date: new Date(p.created_date || 0) })),
+      ...feedItems.events.map(e => ({ type: 'event',     data: e, date: new Date(e.event_date || 0) })),
+      ...feedItems.challenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date || 0) })),
+      ...feedItems.polls.map(p => ({ type: 'poll',      data: p, date: new Date(p.created_date || 0) })),
+      ...feedItems.classes.map(c => ({ type: 'class',     data: c, date: new Date(c.created_date || 0) })),
+    ];
+    return items.sort((a, b) => b.date - a.date);
+  }, [feedItems]);
+
+  const col1 = flatFeedItems.filter((_, i) => i % 2 === 0);
+  const col2 = flatFeedItems.filter((_, i) => i % 2 === 1);
+
+  const renderItem = (item, i) => {
+    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}/>;
+    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data} now={now}/>;
+    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now}/>;
+    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}/>;
+    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}/>;
+    return null;
+  };
 
   const milestones = useMemo(() => {
     const acc = {}, userIdByName = {};
@@ -22,7 +215,7 @@ export default function TabContent({
     });
     return Object.entries(acc)
       .map(([name, total]) => {
-        const next = [10, 25, 50, 100, 200, 500].find(n => n > total) || null;
+        const next   = [10, 25, 50, 100, 200, 500].find(n => n > total) || null;
         const recent = ci30.filter(c => c.user_name === name).length;
         return { name, total, next, toNext: next ? next - total : 0, recent, user_id: userIdByName[name] };
       })
@@ -33,11 +226,10 @@ export default function TabContent({
 
   const topPost = useMemo(() => {
     if (!allPosts.length) return null;
-    return [...allPosts].sort((a, b) => {
-      const scoreA = (a.likes?.length || 0) + (a.comments?.length || 0);
-      const scoreB = (b.likes?.length || 0) + (b.comments?.length || 0);
-      return scoreB - scoreA;
-    })[0];
+    return [...allPosts].sort((a, b) =>
+      ((b.likes?.length || 0) + (b.comments?.length || 0)) -
+      ((a.likes?.length || 0) + (a.comments?.length || 0))
+    )[0];
   }, [allPosts]);
 
   const engagementScore = useMemo(() => {
@@ -89,14 +281,14 @@ export default function TabContent({
   }, [allMemberships, ci30, activeChallenges, polls]);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(260px, 22%, 320px)', gap: 16, height: '100%', maxWidth: '100%' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) clamp(260px,22%,320px)', gap: 16, height: '100%', maxWidth: '100%' }}>
 
-      {/* ── LEFT: action cards + posts feed ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* ── LEFT ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', minHeight: 0 }}>
 
         {/* Action cards */}
         <div style={{ flexShrink: 0, paddingBottom: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
             {[
               { icon: MessageSquarePlus, label: 'New Post',      sub: 'Share with members',                grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post') },
               { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)', border: 'rgba(16,185,129,0.3)',  iconBg: 'rgba(16,185,129,0.2)',  iconColor: '#6ee7b7', fn: () => openModal('event') },
@@ -105,40 +297,80 @@ export default function TabContent({
               { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,           grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)', iconBg: 'rgba(139,92,246,0.2)', iconColor: '#c4b5fd', fn: () => openModal('poll') },
             ].map(({ icon: Icon, label, sub, grad, border, iconBg, iconColor, fn }, i) => (
               <div key={i} onClick={fn}
-                style={{ borderRadius: 16, padding: '20px 18px 18px', cursor: 'pointer', background: grad, border: `1px solid ${border}`, position: 'relative', overflow: 'hidden', transition: 'transform 0.18s, box-shadow 0.18s', minHeight: 110 }}
+                style={{ borderRadius: 14, padding: '16px 14px', cursor: 'pointer', background: grad, border: `1px solid ${border}`, position: 'relative', overflow: 'hidden', transition: 'transform 0.18s, box-shadow 0.18s', minHeight: 96 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,0.5)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
-                <div style={{ position: 'absolute', bottom: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: iconColor, opacity: 0.12, filter: 'blur(20px)' }}/>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                  <Icon style={{ width: 17, height: 17, color: iconColor }}/>
+                <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: iconColor, opacity: 0.12, filter: 'blur(16px)' }}/>
+                <div style={{ width: 30, height: 30, borderRadius: 9, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                  <Icon style={{ width: 15, height: 15, color: iconColor }}/>
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 4, letterSpacing: '-0.02em' }}>{label}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>{sub}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 2, letterSpacing: '-0.02em' }}>{label}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{sub}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Posts feed — scrolls */}
-        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4, minWidth: 0 }}>
-          <div style={{ maxWidth: '100%', width: '100%' }}>
-            {allPosts.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {allPosts.map((post) => (
-                  <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
-                ))}
-              </div>
-            ) : (
-              <Card style={{ padding: 20, textAlign: 'center' }}>
-                <Empty icon={MessageSquarePlus} label="No posts yet"/>
-              </Card>
-            )}
+        {/* Feed header + filter tabs */}
+        <div style={{ flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0, padding: '0 2px' }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Feed</span>
+            <button
+              onClick={() => openModal('post')}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+              <Plus style={{ width: 11, height: 11 }}/> New Post
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', marginTop: 10, marginBottom: 12, gap: 0 }}>
+            {FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setActiveFilter(f.id)}
+                style={{
+                  padding: '7px 16px', fontSize: 12,
+                  fontWeight: activeFilter === f.id ? 700 : 500,
+                  color: activeFilter === f.id ? 'var(--text1)' : 'var(--text3)',
+                  background: 'none', border: 'none',
+                  borderBottom: activeFilter === f.id ? '2px solid #a78bfa' : '2px solid transparent',
+                  cursor: 'pointer', transition: 'all 0.15s', marginBottom: -1, whiteSpace: 'nowrap',
+                }}>
+                {f.label}
+              </button>
+            ))}
+            <button
+              onClick={() => openModal('post')}
+              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 11, fontWeight: 600, cursor: 'pointer', marginBottom: 1 }}>
+              <Plus style={{ width: 10, height: 10 }}/> New Post
+            </button>
           </div>
         </div>
 
+        {/* Two-column feed — only this scrolls */}
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          {flatFeedItems.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start', paddingBottom: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {col1.map((item, i) => renderItem(item, i))}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {col2.map((item, i) => renderItem(item, i))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50%', gap: 12 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageSquarePlus style={{ width: 20, height: 20, color: 'rgba(14,165,233,0.4)' }}/>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500, margin: 0 }}>Nothing here yet</p>
+              <button onClick={() => openModal('post')} style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>
+                Create first post
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── RIGHT: sidebar ── */}
+      {/* ── RIGHT SIDEBAR — identical to original ── */}
       <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minWidth: 280 }}>
 
         {/* Engagement Score */}
@@ -174,7 +406,7 @@ export default function TabContent({
           <div style={{ display: 'flex', gap: 4, height: 40, alignItems: 'flex-end' }}>
             {cadenceData.map((d, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{ width: '100%', height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32), borderRadius: 3, background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg, #38bdf8, #0ea5e9)', transition: 'height 0.4s ease' }}/>
+                <div style={{ width: '100%', height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32), borderRadius: 3, background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg,#38bdf8,#0ea5e9)', transition: 'height 0.4s ease' }}/>
               </div>
             ))}
           </div>
@@ -227,7 +459,7 @@ export default function TabContent({
                 <Heart style={{ width: 11, height: 11 }}/> {topPost.likes?.length || 0}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>
-                <MessageSquarePlus style={{ width: 11, height: 11 }}/> {topPost.comments?.length || 0}
+                <MessageCircle style={{ width: 11, height: 11 }}/> {topPost.comments?.length || 0}
               </div>
               <div style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>
                 {topPost.created_date ? format(new Date(topPost.created_date), 'MMM d') : ''}
@@ -273,9 +505,7 @@ export default function TabContent({
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avatar name={m.user_name || m.user_id || '?'} size={26} src={avatarMap[m.user_id] || null}/>
                   <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</span>
-                  <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>
-                    Reach
-                  </button>
+                  <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
                 </div>
               ))}
             </div>
@@ -360,7 +590,7 @@ export default function TabContent({
             </button>
           </div>
           {activeChallenges.length > 0 ? activeChallenges.slice(0, 1).map(ch => {
-            const start = new Date(ch.start_date), end = new Date(ch.end_date);
+            const start     = new Date(ch.start_date), end = new Date(ch.end_date);
             const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
             const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
             const remaining = Math.max(0, totalDays - elapsed);
