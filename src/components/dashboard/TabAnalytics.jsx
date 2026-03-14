@@ -336,7 +336,7 @@ export default function TabAnalytics({
   const trendColor = monthChangePct > 0 ? '#10b981' : monthChangePct < 0 ? '#ef4444' : '#64748b';
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 292px', gap: 18, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 292px', gap: 18, alignItems: 'start' }}>
 
       {/* ── LEFT COLUMN ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
