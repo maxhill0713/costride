@@ -3,14 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ChevronLeft, ChevronRight, Search, LogOut, Trash2 } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ChevronLeft, ChevronRight, Search, LogOut, Trash2, Loader2 } from 'lucide-react';
 
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)';
 
 const SETTINGS_LIST = [
   { name: 'Account', page: 'AccountSettings', icon: '🔐', sub: 'Password, email & security', iconBg: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(185,28,28,0.3))', keywords: ['account', 'security'] },
-  { name: 'Profile', page: 'ProfileSettings', icon: '👤', sub: 'Avatar, banner & bio', iconBg: 'linear-gradient(135deg, rgba(96,165,250,0.2), rgba(37,99,235,0.3))', keywords: ['profile'] },
+  { name: 'Profile', page: 'ProfileSettings', icon: '👤', sub: 'Avatar, banner & name', iconBg: 'linear-gradient(135deg, rgba(96,165,250,0.2), rgba(37,99,235,0.3))', keywords: ['profile'] },
   { name: 'Privacy', page: 'PrivacySettings', icon: '🔒', sub: 'Visibility & profile control', iconBg: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(5,150,105,0.3))', keywords: ['privacy'] },
   { name: 'Notifications', page: 'NotificationSettings', icon: '🔔', sub: 'Alerts, push & email', iconBg: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(180,83,9,0.3))', keywords: ['notifications'] },
   { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨', sub: 'Theme, units & language', iconBg: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(109,40,217,0.3))', keywords: ['appearance'] },
@@ -18,14 +17,11 @@ const SETTINGS_LIST = [
   { name: 'Help & Support', page: 'HelpSupport', icon: '❓', sub: 'FAQ, contact & feedback', iconBg: 'linear-gradient(135deg, rgba(148,163,184,0.15), rgba(71,85,105,0.3))', keywords: ['help', 'support'] },
 ];
 
-// Each entry maps keywords to a specific section id inside a sub-page.
-// The `section` value must match the id you add to the card in that sub-page (see AccountSettings.jsx).
 const DEEP_LINKS = [
   { keywords: ['password', 'change password', 'current password', 'new password', 'reset password'], page: 'AccountSettings', section: 'password', label: 'Change Password', icon: '🔑', parent: 'Account' },
   { keywords: ['email', 'email address', 'account email'], page: 'AccountSettings', section: 'email', label: 'Email Address', icon: '✉️', parent: 'Account' },
   { keywords: ['avatar', 'profile picture', 'photo', 'picture', 'profile photo'], page: 'ProfileSettings', section: 'avatar', label: 'Profile Picture', icon: '📷', parent: 'Profile' },
   { keywords: ['banner', 'cover photo', 'cover image', 'hero'], page: 'ProfileSettings', section: 'banner', label: 'Banner Image', icon: '🖼️', parent: 'Profile' },
-  { keywords: ['bio', 'about', 'about me', 'description'], page: 'ProfileSettings', section: 'bio', label: 'Bio', icon: '📝', parent: 'Profile' },
   { keywords: ['name', 'display name', 'username', 'full name'], page: 'ProfileSettings', section: 'name', label: 'Display Name', icon: '👤', parent: 'Profile' },
   { keywords: ['dark mode', 'light mode', 'theme', 'color scheme'], page: 'AppearanceSettings', section: 'theme', label: 'Theme', icon: '🌙', parent: 'Appearance' },
   { keywords: ['unit', 'units', 'metric', 'imperial', 'kg', 'lbs', 'pounds', 'kilograms'], page: 'AppearanceSettings', section: 'units', label: 'Units', icon: '📏', parent: 'Appearance' },
@@ -119,10 +115,45 @@ function PressButton({ onClick, children, textColor = '#94a3b8' }) {
   );
 }
 
+// Matches the ConfirmDialog style from PostCard exactly
+function DeleteAccountDialog({ open, onClose, onConfirm, isPending, isGymOwner }) {
+  if (!open) return null;
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">⚠️ Delete Account?</h3>
+        <p className="text-slate-300 text-sm mb-6">
+          This will permanently delete your account and all data including check-ins, posts, progress
+          {isGymOwner ? ', and all gyms you own' : ''}. This action cannot be undone.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Delete Permanently'}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Settings() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -143,17 +174,25 @@ export default function Settings() {
     },
   });
 
+  const handleDeleteAccount = async () => {
+    setDeletePending(true);
+    try {
+      await base44.functions.invoke('deleteUserAccount');
+      base44.auth.logout();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      setDeletePending(false);
+    }
+  };
+
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return { deepLinks: [], pages: [] };
-
     const deepLinks = DEEP_LINKS.filter(d =>
       d.keywords.some(k => k.includes(q) || q.includes(k)) ||
       d.label.toLowerCase().includes(q) ||
       d.parent.toLowerCase().includes(q)
     );
-
-    // Only show top-level page results if no deep link covers that page
     const deepLinkPages = new Set(deepLinks.map(d => d.page));
     const pages = SETTINGS_LIST.filter(s =>
       !deepLinkPages.has(s.page) && (
@@ -161,7 +200,6 @@ export default function Settings() {
         s.keywords.some(k => k.includes(q))
       )
     );
-
     return { deepLinks, pages };
   }, [searchQuery]);
 
@@ -185,118 +223,93 @@ export default function Settings() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)', color: '#fff', fontFamily: 'inherit' }}>
+    <>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)', color: '#fff', fontFamily: 'inherit' }}>
 
-      {/* ── Sticky Header ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
-        <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link to={createPageUrl('Profile')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
-            <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
-          </Link>
-          <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>Settings</span>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 40px' }}>
-
-        {/* ── Search ── */}
-        <div style={{ position: 'relative', marginBottom: 20 }}>
-          <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#94a3b8', pointerEvents: 'none' }} />
-          <input
-            type="text"
-            placeholder="Search settings…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '9px 16px 9px 40px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
-          />
+        {/* ── Sticky Header ── */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
+          <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link to={createPageUrl('Profile')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
+              <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
+            </Link>
+            <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>Settings</span>
+          </div>
         </div>
 
-        {/* ── Search Results ── */}
-        {isSearching ? (
-          !hasResults ? (
-            <p style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>No settings found</p>
+        <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 40px' }}>
+
+          {/* ── Search ── */}
+          <div style={{ position: 'relative', marginBottom: 20 }}>
+            <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#94a3b8', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Search settings…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: '100%', padding: '9px 16px 9px 40px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+            />
+          </div>
+
+          {/* ── Search Results ── */}
+          {isSearching ? (
+            !hasResults ? (
+              <p style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>No settings found</p>
+            ) : (
+              <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+                {allResults.map((result, i) => {
+                  const isLast = i === allResults.length - 1;
+                  if (result.isPage) return <SettingRow key={result.page} setting={result} isLast={isLast} />;
+                  return <DeepLinkRow key={`${result.page}-${result.section}`} result={result} isLast={isLast} onNavigate={() => handleDeepLink(result)} />;
+                })}
+              </div>
+            )
           ) : (
-            <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-              {allResults.map((result, i) => {
-                const isLast = i === allResults.length - 1;
-                if (result.isPage) {
-                  return <SettingRow key={result.page} setting={result} isLast={isLast} />;
-                }
+            <>
+              {GROUPS.map((group) => {
+                const rows = group.pages.map(page => SETTINGS_LIST.find(s => s.page === page)).filter(Boolean);
                 return (
-                  <DeepLinkRow
-                    key={`${result.page}-${result.section}`}
-                    result={result}
-                    isLast={isLast}
-                    onNavigate={() => handleDeepLink(result)}
-                  />
+                  <div key={group.label} style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#475569', padding: '0 4px', marginBottom: 8 }}>
+                      {group.label}
+                    </div>
+                    <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+                      {rows.map((setting, i) => (
+                        <SettingRow key={setting.page} setting={setting} isLast={i === rows.length - 1} />
+                      ))}
+                    </div>
+                  </div>
                 );
               })}
-            </div>
-          )
-        ) : (
-          <>
-            {GROUPS.map((group) => {
-              const rows = group.pages.map(page => SETTINGS_LIST.find(s => s.page === page)).filter(Boolean);
-              return (
-                <div key={group.label} style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#475569', padding: '0 4px', marginBottom: 8 }}>
-                    {group.label}
-                  </div>
-                  <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-                    {rows.map((setting, i) => (
-                      <SettingRow key={setting.page} setting={setting} isLast={i === rows.length - 1} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
 
-            {/* ── Danger Zone ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-              <PressButton onClick={() => { if (confirm('Are you sure you want to logout?')) { base44.auth.logout(); } }}>
-                <LogOut style={{ width: 15, height: 15 }} />
-                Log Out
-              </PressButton>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <div>
-                    <PressButton textColor="#ef4444">
-                      <Trash2 style={{ width: 15, height: 15 }} />
-                      Delete Account
-                    </PressButton>
-                  </div>
-                </AlertDialogTrigger>
-                <AlertDialogContent style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.95) 0%, rgba(8,10,20,0.98) 100%)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 20, color: '#fff' }}>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle style={{ color: '#fff', fontWeight: 900 }}>⚠️ Delete Account?</AlertDialogTitle>
-                    <AlertDialogDescription style={{ color: '#94a3b8' }}>
-                      This will permanently delete your account and all data including check-ins, posts, progress{currentUser.account_type === 'gym_owner' ? ', and all gyms you own' : ''}. This cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel style={{ borderRadius: 12 }}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      style={{ background: 'linear-gradient(to bottom, #ef4444, #dc2626)', color: '#fff', borderRadius: 12, fontWeight: 800 }}
-                      onClick={async () => {
-                        try { await base44.functions.invoke('deleteUserAccount'); base44.auth.logout(); }
-                        catch (error) { console.error('Failed to delete account:', error); }
-                      }}
-                    >
-                      Delete Permanently
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+              {/* ── Danger Zone ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+                <PressButton onClick={() => { if (confirm('Are you sure you want to logout?')) { base44.auth.logout(); } }}>
+                  <LogOut style={{ width: 15, height: 15 }} />
+                  Log Out
+                </PressButton>
+                <PressButton textColor="#ef4444" onClick={() => setShowDeleteDialog(true)}>
+                  <Trash2 style={{ width: 15, height: 15 }} />
+                  Delete Account
+                </PressButton>
+              </div>
 
-            <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#1e3a5f', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 28 }}>
-              CoStride
-            </p>
-          </>
-        )}
+              <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#1e3a5f', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 28 }}>
+                CoStride
+              </p>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      <DeleteAccountDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteAccount}
+        isPending={deletePending}
+        isGymOwner={currentUser?.account_type === 'gym_owner'}
+      />
+    </>
   );
 }
