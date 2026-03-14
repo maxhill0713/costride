@@ -231,7 +231,7 @@ export default function GymOwnerDashboard() {
     ),
     content: (
       <TabContentComponent
-        events={events} challenges={challenges} polls={polls} posts={posts}
+        events={events} challenges={challenges} polls={polls} posts={posts} classes={classes}
         checkIns={checkIns} ci30={ci30} avatarMap={avatarMap}
         leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView}
         openModal={openModal} now={now}
