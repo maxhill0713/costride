@@ -1053,7 +1053,7 @@ export default function Home() {
                   </div>
                 </Card>
               </Link>
-            </div>
+            </motion.div>
           )}
 
           {/* ── Weekly workout circles ── */}
