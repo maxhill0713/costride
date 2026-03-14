@@ -218,6 +218,8 @@ function PollCard({ poll, onDelete }) {
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [], classes = [],
+  onDeletePost = () => {}, onDeleteEvent = () => {}, onDeleteChallenge = () => {},
+  onDeleteClass = () => {}, onDeletePoll = () => {},
 }) {
   const [activeFilter, setActiveFilter] = useState('gym');
 
