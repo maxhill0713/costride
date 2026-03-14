@@ -32,29 +32,8 @@ export default function TabOverview({
       {/* ── LEFT ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {/* KPI row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
-          <Card style={{ padding: '20px 20px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Today's Check-ins</div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text1)', lineHeight: 1, letterSpacing: '-0.04em' }} className="anim-pop">{todayCI}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                  {yesterdayCI === 0
-                    ? <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>{todayCI > 0 ? 'No data yesterday' : 'No check-ins yet'}</span>
-                    : todayVsYest > 0
-                      ? <><ArrowUpRight style={{width:13,height:13,color:'var(--green)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--green)'}}>+{todayVsYest}% vs yesterday</span></>
-                      : todayVsYest < 0
-                        ? <><TrendingDown style={{width:13,height:13,color:'var(--red)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--red)'}}>{todayVsYest}% vs yesterday</span></>
-                        : <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>Same as yesterday</span>
-                  }
-                </div>
-              </div>
-              <Sparkline data={sparkData} color="#10b981"/>
-            </div>
-            <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(16,185,129,0.15)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(100,(todayCI/Math.max(activeThisWeek/7,1))*100)}%`, background: 'linear-gradient(90deg,#10b981,#06b6d4)', borderRadius: 99 }}/>
-            </div>
-          </Card>
+        <TodaySnapshot checkIns={checkIns} posts={posts} polls={polls} challenges={challenges} classes={classes} allMemberships={allMemberships} todayCI={todayCI} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
           <Card style={{ padding: '20px 20px 16px' }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Active Members</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
