@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -37,7 +37,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CARD_STYLE = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
@@ -46,7 +46,6 @@ const CARD_STYLE = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-// ─── Dialog animation — same speed/easing as JoinWithCodeModal ────────────────
 const DIALOG_ANIM = `
   @keyframes gcDialogIn {
     0%   { transform: translate(-50%, calc(-50% + 22px)) scale(0.93); opacity: 0; }
@@ -129,67 +128,409 @@ const LBOARD_ANIM = `
 `;
 
 const MEDALS = [
-  {
-    rank: 1,
-    color: '#FFD700', colorRgb: '255,215,0',
-    cardBorder: 'rgba(255,215,0,0.55)', cardBorderDim: 'rgba(255,215,0,0.15)',
-    glow: 'rgba(255,215,0,0.3)', glowStrong: 'rgba(255,215,0,0.6)',
-    bg: 'linear-gradient(160deg,rgba(60,42,0,0.95) 0%,rgba(28,18,0,0.98) 100%)',
-    avatarRing: 'conic-gradient(#FFD700,#FFA500,#FFD700,#FFF0A0,#FFD700)',
-    badgeBg: 'linear-gradient(145deg,#FFE566,#CC8800)',
-    badgeText: 'rgba(80,40,0,0.9)',
-    pulse: 'lb-gold-pulse',
-    shine: 'rgba(255,225,80,0.22)',
-    insetGlow: 'rgba(255,215,0,0.14)',
-    label: '👑', tierLabel: 'CHAMPION', tierColor: '#FFD700',
-    heightExtra: 20,
-  },
-  {
-    rank: 2,
-    color: '#C8D8EC', colorRgb: '200,216,236',
-    cardBorder: 'rgba(180,205,230,0.48)', cardBorderDim: 'rgba(180,205,230,0.12)',
-    glow: 'rgba(180,205,230,0.2)', glowStrong: 'rgba(180,205,230,0.45)',
-    bg: 'linear-gradient(160deg,rgba(16,28,52,0.95) 0%,rgba(6,12,28,0.98) 100%)',
-    avatarRing: 'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)',
-    badgeBg: 'linear-gradient(145deg,#D4E4F4,#6A96BC)',
-    badgeText: 'rgba(10,30,60,0.85)',
-    pulse: 'lb-silver-pulse',
-    shine: 'rgba(200,220,240,0.14)',
-    insetGlow: 'rgba(180,205,230,0.09)',
-    label: '🥈', tierLabel: 'ELITE', tierColor: '#C8D8EC',
-    heightExtra: 6,
-  },
-  {
-    rank: 3,
-    color: '#E8904A', colorRgb: '232,144,74',
-    cardBorder: 'rgba(215,128,58,0.5)', cardBorderDim: 'rgba(215,128,58,0.14)',
-    glow: 'rgba(215,128,58,0.22)', glowStrong: 'rgba(215,128,58,0.45)',
-    bg: 'linear-gradient(160deg,rgba(48,22,6,0.95) 0%,rgba(20,8,2,0.98) 100%)',
-    avatarRing: 'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)',
-    badgeBg: 'linear-gradient(145deg,#E8904A,#8C4818)',
-    badgeText: 'rgba(50,15,0,0.85)',
-    pulse: 'lb-bronze-pulse',
-    shine: 'rgba(218,140,72,0.15)',
-    insetGlow: 'rgba(215,128,58,0.1)',
-    label: '🥉', tierLabel: 'PRO', tierColor: '#E8904A',
-    heightExtra: 0,
-  },
+  { rank:1,color:'#FFD700',colorRgb:'255,215,0',cardBorder:'rgba(255,215,0,0.55)',cardBorderDim:'rgba(255,215,0,0.15)',glow:'rgba(255,215,0,0.3)',glowStrong:'rgba(255,215,0,0.6)',bg:'linear-gradient(160deg,rgba(60,42,0,0.95) 0%,rgba(28,18,0,0.98) 100%)',avatarRing:'conic-gradient(#FFD700,#FFA500,#FFD700,#FFF0A0,#FFD700)',badgeBg:'linear-gradient(145deg,#FFE566,#CC8800)',badgeText:'rgba(80,40,0,0.9)',pulse:'lb-gold-pulse',shine:'rgba(255,225,80,0.22)',insetGlow:'rgba(255,215,0,0.14)',label:'👑',tierLabel:'CHAMPION',tierColor:'#FFD700',heightExtra:20 },
+  { rank:2,color:'#C8D8EC',colorRgb:'200,216,236',cardBorder:'rgba(180,205,230,0.48)',cardBorderDim:'rgba(180,205,230,0.12)',glow:'rgba(180,205,230,0.2)',glowStrong:'rgba(180,205,230,0.45)',bg:'linear-gradient(160deg,rgba(16,28,52,0.95) 0%,rgba(6,12,28,0.98) 100%)',avatarRing:'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)',badgeBg:'linear-gradient(145deg,#D4E4F4,#6A96BC)',badgeText:'rgba(10,30,60,0.85)',pulse:'lb-silver-pulse',shine:'rgba(200,220,240,0.14)',insetGlow:'rgba(180,205,230,0.09)',label:'🥈',tierLabel:'ELITE',tierColor:'#C8D8EC',heightExtra:6 },
+  { rank:3,color:'#E8904A',colorRgb:'232,144,74',cardBorder:'rgba(215,128,58,0.5)',cardBorderDim:'rgba(215,128,58,0.14)',glow:'rgba(215,128,58,0.22)',glowStrong:'rgba(215,128,58,0.45)',bg:'linear-gradient(160deg,rgba(48,22,6,0.95) 0%,rgba(20,8,2,0.98) 100%)',avatarRing:'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)',badgeBg:'linear-gradient(145deg,#E8904A,#8C4818)',badgeText:'rgba(50,15,0,0.85)',pulse:'lb-bronze-pulse',shine:'rgba(218,140,72,0.15)',insetGlow:'rgba(215,128,58,0.1)',label:'🥉',tierLabel:'PRO',tierColor:'#E8904A',heightExtra:0 },
 ];
 
 const NAV_ROW = [
-  { rankOpacity: 1,    nameOpacity: 0.92, barOpacity: 0.55, pillOpacity: 0.9  },
-  { rankOpacity: 0.88, nameOpacity: 0.82, barOpacity: 0.48, pillOpacity: 0.8  },
-  { rankOpacity: 0.76, nameOpacity: 0.72, barOpacity: 0.40, pillOpacity: 0.7  },
-  { rankOpacity: 0.65, nameOpacity: 0.62, barOpacity: 0.34, pillOpacity: 0.6  },
-  { rankOpacity: 0.55, nameOpacity: 0.52, barOpacity: 0.28, pillOpacity: 0.52 },
-  { rankOpacity: 0.46, nameOpacity: 0.44, barOpacity: 0.22, pillOpacity: 0.44 },
-  { rankOpacity: 0.38, nameOpacity: 0.36, barOpacity: 0.18, pillOpacity: 0.38 },
+  { rankOpacity:1,nameOpacity:0.92,barOpacity:0.55,pillOpacity:0.9 },
+  { rankOpacity:0.88,nameOpacity:0.82,barOpacity:0.48,pillOpacity:0.8 },
+  { rankOpacity:0.76,nameOpacity:0.72,barOpacity:0.40,pillOpacity:0.7 },
+  { rankOpacity:0.65,nameOpacity:0.62,barOpacity:0.34,pillOpacity:0.6 },
+  { rankOpacity:0.55,nameOpacity:0.52,barOpacity:0.28,pillOpacity:0.52 },
+  { rankOpacity:0.46,nameOpacity:0.44,barOpacity:0.22,pillOpacity:0.44 },
+  { rankOpacity:0.38,nameOpacity:0.36,barOpacity:0.18,pillOpacity:0.38 },
 ];
+
+// ── Class type config ─────────────────────────────────────────────────────────
+const CLASS_TYPE_CONFIG = {
+  hiit:     { label:'HIIT',      emoji:'⚡', grad:'linear-gradient(135deg,#7f1d1d,#dc2626)', border:'rgba(239,68,68,0.4)',   accent:'#f87171', accentDim:'rgba(239,68,68,0.15)'  },
+  yoga:     { label:'Yoga',      emoji:'🧘', grad:'linear-gradient(135deg,#064e3b,#059669)', border:'rgba(16,185,129,0.4)',  accent:'#34d399', accentDim:'rgba(16,185,129,0.15)' },
+  strength: { label:'Strength',  emoji:'🏋️', grad:'linear-gradient(135deg,#1e1b4b,#4f46e5)', border:'rgba(99,102,241,0.4)', accent:'#818cf8', accentDim:'rgba(99,102,241,0.15)' },
+  cardio:   { label:'Cardio',    emoji:'🏃', grad:'linear-gradient(135deg,#4c0519,#e11d48)', border:'rgba(244,63,94,0.4)',   accent:'#fb7185', accentDim:'rgba(244,63,94,0.15)'  },
+  spin:     { label:'Spin',      emoji:'🚴', grad:'linear-gradient(135deg,#0c1a3a,#0ea5e9)', border:'rgba(14,165,233,0.4)',  accent:'#38bdf8', accentDim:'rgba(14,165,233,0.15)' },
+  boxing:   { label:'Boxing',    emoji:'🥊', grad:'linear-gradient(135deg,#431407,#ea580c)', border:'rgba(234,88,12,0.4)',   accent:'#fb923c', accentDim:'rgba(234,88,12,0.15)'  },
+  pilates:  { label:'Pilates',   emoji:'🌸', grad:'linear-gradient(135deg,#2d1657,#9333ea)', border:'rgba(168,85,247,0.4)',  accent:'#c084fc', accentDim:'rgba(168,85,247,0.15)' },
+  default:  { label:'Class',     emoji:'🎯', grad:'linear-gradient(135deg,#0c1a3a,#0369a1)', border:'rgba(14,165,233,0.35)', accent:'#38bdf8', accentDim:'rgba(14,165,233,0.12)' },
+};
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function getClassType(gymClass) {
+  const name = (gymClass.name || gymClass.title || '').toLowerCase();
+  if (name.includes('hiit') || name.includes('interval')) return 'hiit';
+  if (name.includes('yoga') || name.includes('zen')) return 'yoga';
+  if (name.includes('strength') || name.includes('weight') || name.includes('lift') || name.includes('power')) return 'strength';
+  if (name.includes('cardio') || name.includes('aerobic') || name.includes('zumba')) return 'cardio';
+  if (name.includes('spin') || name.includes('cycle') || name.includes('bike')) return 'spin';
+  if (name.includes('box') || name.includes('mma') || name.includes('kickbox')) return 'boxing';
+  if (name.includes('pilates') || name.includes('barre')) return 'pilates';
+  return 'default';
+}
+
+function getDifficultyLabel(gymClass) {
+  const d = (gymClass.difficulty || gymClass.level || '').toLowerCase();
+  if (d.includes('hard') || d.includes('adv') || d.includes('expert')) return { label:'Advanced', dots:3, color:'#f87171' };
+  if (d.includes('med') || d.includes('inter')) return { label:'Intermediate', dots:2, color:'#fbbf24' };
+  if (d.includes('easy') || d.includes('begin') || d.includes('beginner')) return { label:'Beginner', dots:1, color:'#34d399' };
+  return null;
+}
+
+function getScheduleDays(gymClass) {
+  const s = (gymClass.schedule || '').toLowerCase();
+  return DAYS.filter(d => s.includes(d.toLowerCase()));
+}
+
+// ── ClassCard component ───────────────────────────────────────────────────────
+function GymClassCard({ gymClass, isOwner, onDelete, index = 0 }) {
+  const typeKey = getClassType(gymClass);
+  const cfg = CLASS_TYPE_CONFIG[typeKey];
+  const difficulty = getDifficultyLabel(gymClass);
+  const scheduleDays = getScheduleDays(gymClass);
+  const capacity = gymClass.capacity || gymClass.max_participants || null;
+  const enrolled = gymClass.enrolled || gymClass.participants_count || 0;
+  const fillPct = capacity ? Math.min(100, Math.round((enrolled / capacity) * 100)) : null;
+  const isFull = fillPct !== null && fillPct >= 100;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        borderRadius: 20,
+        overflow: 'hidden',
+        border: `1px solid ${cfg.border}`,
+        background: 'linear-gradient(135deg,rgba(10,14,30,0.96),rgba(6,8,18,0.99))',
+        boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)`,
+      }}
+    >
+      {/* Accent strip */}
+      <div style={{ height: 3, background: cfg.grad }} />
+
+      <div style={{ padding: '14px 14px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          {/* Icon */}
+          <div style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: cfg.grad, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: 22,
+            boxShadow: `0 4px 16px ${cfg.accentDim}`,
+          }}>
+            {cfg.emoji}
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+              <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: cfg.accent, background: cfg.accentDim, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>
+                {cfg.label}
+              </span>
+              {difficulty && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  {[1,2,3].map(d => (
+                    <div key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: d <= difficulty.dots ? difficulty.color : 'rgba(255,255,255,0.1)' }} />
+                  ))}
+                  <span style={{ fontSize: 9, color: difficulty.color, fontWeight: 700 }}>{difficulty.label}</span>
+                </div>
+              )}
+            </div>
+            <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              {gymClass.name || gymClass.title}
+            </h3>
+            {(gymClass.instructor || gymClass.coach_name) && (
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '3px 0 0', fontWeight: 600 }}>
+                with {gymClass.instructor || gymClass.coach_name}
+              </p>
+            )}
+          </div>
+
+          {isOwner && (
+            <button
+              onClick={() => onDelete && onDelete(gymClass.id)}
+              style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', flexShrink: 0, cursor: 'pointer' }}>
+              <Trash2 style={{ width: 13, height: 13, color: '#f87171' }} />
+            </button>
+          )}
+        </div>
+
+        {gymClass.description && (
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', margin: '10px 0 0', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {gymClass.description}
+          </p>
+        )}
+
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+          {gymClass.duration_minutes && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '3px 8px' }}>
+              <Clock style={{ width: 10, height: 10 }} /> {gymClass.duration_minutes}min
+            </div>
+          )}
+          {gymClass.location && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '3px 8px' }}>
+              <MapPin style={{ width: 10, height: 10 }} /> {gymClass.location}
+            </div>
+          )}
+          {gymClass.schedule && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.accent, background: cfg.accentDim, borderRadius: 8, padding: '3px 8px' }}>
+              <Timer style={{ width: 10, height: 10 }} /> {gymClass.schedule}
+            </div>
+          )}
+        </div>
+
+        {/* Schedule day pills */}
+        {scheduleDays.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+            {DAYS.map(d => {
+              const active = scheduleDays.includes(d);
+              return (
+                <div key={d} style={{
+                  width: 30, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 9, fontWeight: 900, letterSpacing: '0.05em',
+                  background: active ? cfg.accentDim : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${active ? cfg.border : 'rgba(255,255,255,0.07)'}`,
+                  color: active ? cfg.accent : 'rgba(255,255,255,0.2)',
+                  textTransform: 'uppercase',
+                }}>
+                  {d}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Capacity bar */}
+        {fillPct !== null && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)' }}>Capacity</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: isFull ? '#f87171' : cfg.accent }}>
+                {isFull ? 'FULL' : `${enrolled}/${capacity}`}
+              </span>
+            </div>
+            <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${fillPct}%`, borderRadius: 99, background: isFull ? '#ef4444' : cfg.grad, transition: 'width 0.6s ease' }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Featured class banner ─────────────────────────────────────────────────────
+function FeaturedClassBanner({ gymClass, isOwner }) {
+  const typeKey = getClassType(gymClass);
+  const cfg = CLASS_TYPE_CONFIG[typeKey];
+  return (
+    <div style={{
+      borderRadius: 20, overflow: 'hidden', position: 'relative',
+      minHeight: 130,
+      background: cfg.grad,
+      border: `1px solid ${cfg.border}`,
+      boxShadow: `0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)`,
+    }}>
+      {/* Noise overlay */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.08, backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundSize: '120px 120px', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: -20, left: '40%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+
+      <div style={{ position: 'relative', padding: '16px 16px 14px', display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' }}>
+          {cfg.emoji}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>
+            ✨ Featured Class
+          </div>
+          <h2 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+            {gymClass.name || gymClass.title}
+          </h2>
+          {(gymClass.instructor || gymClass.coach_name) && (
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: '4px 0 0', fontWeight: 600 }}>
+              with {gymClass.instructor || gymClass.coach_name}
+            </p>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0, alignItems: 'flex-end' }}>
+          {gymClass.duration_minutes && (
+            <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Clock style={{ width: 10, height: 10 }} />{gymClass.duration_minutes}min
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Classes Tab Content ───────────────────────────────────────────────────────
+function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
+  const [activeDay, setActiveDay] = useState('all');
+  const [activeType, setActiveType] = useState('all');
+
+  const allTypes = React.useMemo(() => {
+    const seen = new Set();
+    classes.forEach(c => { const t = getClassType(c); seen.add(t); });
+    return [...seen];
+  }, [classes]);
+
+  const filteredClasses = React.useMemo(() => {
+    return classes.filter(c => {
+      const typeMatch = activeType === 'all' || getClassType(c) === activeType;
+      const dayMatch = activeDay === 'all' || getScheduleDays(c).includes(activeDay) || (activeDay !== 'all' && !(c.schedule));
+      return typeMatch && (activeDay === 'all' ? true : getScheduleDays(c).includes(activeDay) || !c.schedule);
+    }).filter(c => {
+      if (activeType !== 'all' && getClassType(c) !== activeType) return false;
+      if (activeDay !== 'all' && c.schedule) {
+        return getScheduleDays(c).includes(activeDay);
+      }
+      return true;
+    });
+  }, [classes, activeDay, activeType]);
+
+  const featuredClass = classes[0] || null;
+
+  const typeFilters = [
+    { id: 'all', label: 'All', emoji: '🗂️' },
+    ...allTypes.map(t => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' })),
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="space-y-3"
+    >
+      {/* Owner manage button */}
+      {showOwnerControls && (
+        <button
+          onClick={onManage}
+          style={{
+            width: '100%', borderRadius: 16, padding: '13px 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: 'linear-gradient(135deg,rgba(99,102,241,0.2),rgba(14,165,233,0.15))',
+            border: '1px solid rgba(99,102,241,0.3)',
+            color: '#a5b4fc', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+          }}>
+          <Plus style={{ width: 16, height: 16 }} /> Manage Classes
+        </button>
+      )}
+
+      {classes.length === 0 ? (
+        <div style={{
+          borderRadius: 20, padding: '48px 24px', textAlign: 'center',
+          background: 'linear-gradient(135deg,rgba(10,14,30,0.9),rgba(6,8,18,0.95))',
+          border: '1px dashed rgba(255,255,255,0.08)',
+        }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🎯</div>
+          <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>No classes scheduled</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', margin: 0 }}>Check back soon for new classes</p>
+        </div>
+      ) : (
+        <>
+          {/* Featured */}
+          <FeaturedClassBanner gymClass={featuredClass} isOwner={showOwnerControls} />
+
+          {/* Stats strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+            {[
+              { label: 'Total Classes', value: classes.length, icon: '🎯', color: '#818cf8' },
+              { label: 'Instructors', value: new Set(classes.map(c => c.instructor || c.coach_name).filter(Boolean)).size || '—', icon: '👨‍🏫', color: '#34d399' },
+              { label: 'Weekly Sessions', value: classes.filter(c => c.schedule).length, icon: '📅', color: '#fbbf24' },
+            ].map((s, i) => (
+              <div key={i} style={{ borderRadius: 14, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: s.color, lineHeight: 1, letterSpacing: '-0.04em' }}>{s.value}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Type filter pills */}
+          {typeFilters.length > 1 && (
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+              {typeFilters.map(f => {
+                const active = activeType === f.id;
+                const cfg = CLASS_TYPE_CONFIG[f.id] || {};
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => setActiveType(f.id)}
+                    style={{
+                      flexShrink: 0,
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '6px 12px', borderRadius: 99, fontSize: 11, fontWeight: 800,
+                      background: active ? (cfg.accentDim || 'rgba(255,255,255,0.1)') : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${active ? (cfg.border || 'rgba(255,255,255,0.3)') : 'rgba(255,255,255,0.08)'}`,
+                      color: active ? (cfg.accent || '#fff') : 'rgba(255,255,255,0.4)',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                    <span style={{ fontSize: 12 }}>{f.emoji}</span> {f.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Day filter */}
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+              onClick={() => setActiveDay('all')}
+              style={{
+                padding: '5px 10px', borderRadius: 99, fontSize: 10, fontWeight: 800,
+                background: activeDay === 'all' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${activeDay === 'all' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                color: activeDay === 'all' ? '#fff' : 'rgba(255,255,255,0.3)',
+                cursor: 'pointer', flexShrink: 0,
+              }}>
+              All Days
+            </button>
+            {DAYS.map(d => (
+              <button
+                key={d}
+                onClick={() => setActiveDay(d === activeDay ? 'all' : d)}
+                style={{
+                  flex: 1, padding: '5px 0', borderRadius: 99, fontSize: 10, fontWeight: 900,
+                  background: activeDay === d ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${activeDay === d ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                  color: activeDay === d ? '#a5b4fc' : 'rgba(255,255,255,0.3)',
+                  cursor: 'pointer',
+                }}>
+                {d}
+              </button>
+            ))}
+          </div>
+
+          {/* Class list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {filteredClasses.length === 0 ? (
+              <div style={{ borderRadius: 16, padding: '28px 16px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.07)' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', margin: 0 }}>No classes match this filter</p>
+              </div>
+            ) : (
+              filteredClasses.map((gymClass, i) => (
+                <GymClassCard
+                  key={gymClass.id}
+                  gymClass={gymClass}
+                  isOwner={showOwnerControls}
+                  onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this class?')) onDelete(id); } : null}
+                  index={i}
+                />
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
+}
 
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
-
   const tabs = [
     { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins' },
     { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', accentRgb:'249,115,22',  unit:'day streak' },
@@ -197,10 +538,10 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   ];
   const current = tabs.find(t => t.id === view);
   const getData = () => {
-    if (view==='checkins') return { list:checkInLeaderboard, getVal:m=>m.count,    fmt:v=>`${v}`,    unit:'check-ins'  };
-    if (view==='streaks')  return { list:streakLeaderboard,  getVal:m=>m.streak,   fmt:v=>`${v}d`,   unit:'day streak' };
+    if (view==='checkins') return { list:checkInLeaderboard, getVal:m=>m.count, fmt:v=>`${v}`, unit:'check-ins' };
+    if (view==='streaks')  return { list:streakLeaderboard, getVal:m=>m.streak, fmt:v=>`${v}d`, unit:'day streak' };
     const progressList = timeframe==='week' ? progressLeaderboardWeek : timeframe==='month' ? progressLeaderboardMonth : progressLeaderboardAllTime;
-    return                        { list:progressList, getVal:m=>m.increase, fmt:v=>`+${v}kg`, unit:'kg gained'  };
+    return { list:progressList, getVal:m=>m.increase, fmt:v=>`+${v}kg`, unit:'kg gained' };
   };
   const { list, getVal, fmt, unit } = getData();
   const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
@@ -211,15 +552,8 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   if (!open) return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
-        style={{
-          background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)',
-          border:'1px solid rgba(255,215,0,0.18)',
-          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
-          boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)',
-        }}>
+      <button onClick={() => setOpen(true)} className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
+        style={{ background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)', border:'1px solid rgba(255,215,0,0.18)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ position:'absolute',top:0,left:0,right:0,bottom:0,overflow:'hidden',pointerEvents:'none',borderRadius:'inherit' }}>
           <div style={{ position:'absolute',top:0,bottom:0,width:'30%',background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)',animation:'lb-shimmer 3.5s ease-in-out infinite' }}/>
         </div>
@@ -239,7 +573,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           </div>
           {podium.length>0 && (
             <div style={{ display:'flex',alignItems:'center',marginRight:4 }}>
-              {podium.map((m,i)=>(
+              {podium.map((m,i) => (
                 <div key={i} style={{ width:32,height:32,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].bg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,marginLeft:i===0?0:-10,zIndex:3-i,boxShadow:`0 0 12px ${MEDALS[i].glow},0 2px 8px rgba(0,0,0,0.4)`,flexShrink:0 }}>
                   {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
                   <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900 }}>{initials(m.userName)}</span>
@@ -258,18 +592,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <div style={{
-        position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
-        display:'flex',flexDirection:'column',
-        background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
-        animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
-        overflow:'hidden',
-      }}>
+      <div style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,display:'flex',flexDirection:'column',background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',overflow:'hidden' }}>
         <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px',opacity:0.8 }}/>
         <div style={{ position:'absolute',top:'8%',left:'15%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 12s ease-in-out infinite' }}/>
         <div style={{ position:'absolute',top:'40%',right:'5%',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,rgba(${current.accentRgb},0.06) 0%,transparent 70%)`,pointerEvents:'none',animation:'lb-orb-drift 9s ease-in-out infinite 3s' }}/>
         <div style={{ position:'absolute',left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.15),transparent)`,pointerEvents:'none',animation:'lb-scan-line 8s linear infinite',zIndex:1 }}/>
-
         <div style={{ flexShrink:0,paddingTop:18,paddingLeft:16,paddingRight:16,paddingBottom:12,borderBottom:'1px solid rgba(255,255,255,0.05)',position:'relative',zIndex:2 }}>
           <button onClick={() => setOpen(false)}
             onMouseDown={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
@@ -288,7 +615,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
             <h2 style={{ fontSize:26,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.04em',lineHeight:1 }}>Leaderboard</h2>
           </div>
           <div style={{ display:'flex',justifyContent:'center',gap:6,marginBottom:10 }}>
-            {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf,label])=>{
+            {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf,label]) => {
               const active = timeframe===tf;
               return (
                 <button key={tf} onClick={() => setTimeframe(tf)}
@@ -297,22 +624,12 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   onMouseLeave={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
                   onTouchStart={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom=`1px solid rgba(0,0,0,0.4)`;}}
                   onTouchEnd={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
-                  style={{
-                    padding:'5px 14px',borderRadius:99,fontSize:11,fontWeight:800,
-                    background: active ? `rgba(${current.accentRgb},0.18)` : 'rgba(20,28,60,0.8)',
-                    border: `1px solid ${active ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`,
-                    borderBottom: active ? `3px solid rgba(${current.accentRgb},0.6)` : '3px solid rgba(0,0,0,0.5)',
-                    color: active ? current.accent : 'rgba(255,255,255,0.35)',
-                    boxShadow: active
-                      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15),0 0 12px rgba(${current.accentRgb},0.2)`
-                      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)',
-                    transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
-                  }}>{label}</button>
+                  style={{ padding:'5px 14px',borderRadius:99,fontSize:11,fontWeight:800,background:active?`rgba(${current.accentRgb},0.18)`:'rgba(20,28,60,0.8)',border:`1px solid ${active?`rgba(${current.accentRgb},0.5)`:'rgba(255,255,255,0.1)'}`,borderBottom:active?`3px solid rgba(${current.accentRgb},0.6)`:'3px solid rgba(0,0,0,0.5)',color:active?current.accent:'rgba(255,255,255,0.35)',boxShadow:active?`0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15),0 0 12px rgba(${current.accentRgb},0.2)`:'0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)',transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>{label}</button>
               );
             })}
           </div>
           <div style={{ display:'flex',gap:6,padding:4 }}>
-            {tabs.map(({id,label,icon:Icon,accent,accentRgb})=>{
+            {tabs.map(({id,label,icon:Icon,accent,accentRgb}) => {
               const active = view===id;
               return (
                 <button key={id} onClick={() => setView(id)}
@@ -321,25 +638,13 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   onMouseLeave={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
                   onTouchStart={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
                   onTouchEnd={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
-                  style={{
-                    flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,
-                    padding:'8px 4px',borderRadius:12,fontSize:11,fontWeight:800,
-                    background: active ? `rgba(${accentRgb},0.2)` : 'rgba(20,28,60,0.75)',
-                    border: `1px solid ${active ? `rgba(${accentRgb},0.5)` : 'rgba(255,255,255,0.09)'}`,
-                    borderBottom: active ? `3px solid rgba(${accentRgb},0.55)` : '3px solid rgba(0,0,0,0.5)',
-                    color: active ? accent : 'rgba(255,255,255,0.3)',
-                    boxShadow: active
-                      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18),0 0 14px rgba(${accentRgb},0.18)`
-                      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
-                    transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
-                  }}>
+                  style={{ flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'8px 4px',borderRadius:12,fontSize:11,fontWeight:800,background:active?`rgba(${accentRgb},0.2)`:'rgba(20,28,60,0.75)',border:`1px solid ${active?`rgba(${accentRgb},0.5)`:'rgba(255,255,255,0.09)'}`,borderBottom:active?`3px solid rgba(${accentRgb},0.55)`:'3px solid rgba(0,0,0,0.5)',color:active?accent:'rgba(255,255,255,0.3)',boxShadow:active?`0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18),0 0 14px rgba(${accentRgb},0.18)`:'0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
                   <Icon style={{ width:12,height:12 }}/>{label}
                 </button>
               );
             })}
           </div>
         </div>
-
         <div style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',position:'relative',zIndex:2 }}>
           {list.length===0 ? (
             <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:280,gap:16 }}>
@@ -361,14 +666,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   const cardW = isFirst ? 116 : 94;
                   const avatarSz = isFirst ? 50 : 38;
                   return (
-                    <div key={mIdx} style={{
-                      width:cardW, borderRadius:18, overflow:'hidden', position:'relative',
-                      background:M.bg, border:`1.5px solid ${M.cardBorder}`,
-                      backdropFilter:'blur(40px)', WebkitBackdropFilter:'blur(40px)',
-                      boxShadow:`0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,
-                      animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,
-                      marginBottom:M.heightExtra, transformOrigin:'bottom center',
-                    }}>
+                    <div key={mIdx} style={{ width:cardW,borderRadius:18,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.cardBorder}`,backdropFilter:'blur(40px)',WebkitBackdropFilter:'blur(40px)',boxShadow:`0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,marginBottom:M.heightExtra,transformOrigin:'bottom center' }}>
                       <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent 0%,${M.color} 40%,${M.glowStrong} 50%,${M.color} 60%,transparent 100%)`,zIndex:3 }}/>
                       <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% 0%,${M.insetGlow} 0%,transparent 55%)` }}/>
                       <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
@@ -377,9 +675,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       <div style={{ position:'absolute',top:0,left:0,width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',background:M.badgeBg,borderRadius:'0 0 9px 0',zIndex:4,boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                         <span style={{ fontSize:10,fontWeight:900,color:M.badgeText }}>{mIdx+1}</span>
                       </div>
-                      {isFirst && (
-                        <div style={{ position:'absolute',top:5,right:7,fontSize:14,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4,filter:'drop-shadow(0 0 6px rgba(255,150,0,0.7))' }}>🔥</div>
-                      )}
+                      {isFirst && (<div style={{ position:'absolute',top:5,right:7,fontSize:14,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4,filter:'drop-shadow(0 0 6px rgba(255,150,0,0.7))' }}>🔥</div>)}
                       <div style={{ display:'flex',justifyContent:'center',paddingTop:isFirst?16:13,paddingBottom:3,position:'relative',zIndex:2 }}>
                         <span style={{ fontSize:6,fontWeight:900,letterSpacing:'0.2em',color:M.tierColor,opacity:0.7,textTransform:'uppercase',background:`rgba(${M.colorRgb},0.1)`,border:`1px solid rgba(${M.colorRgb},0.2)`,padding:'1px 6px',borderRadius:99 }}>{M.tierLabel}</span>
                       </div>
@@ -403,7 +699,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   );
                 })}
             </div>
-
             {restList.length > 0 && (
               <div style={{ display:'flex',flexDirection:'column',gap:4,padding:'4px 12px 20px' }}>
                 {restList.map((m,i) => {
@@ -411,22 +706,12 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   const pct = Math.max(4, Math.round((getVal(m)/maxVal)*100));
                   const R = NAV_ROW[i] || NAV_ROW[NAV_ROW.length-1];
                   return (
-                    <div key={m.userId||i}
-                      style={{
-                        borderRadius:14, padding:'10px 12px', display:'flex', alignItems:'center', gap:10,
-                        animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,
-                        position:'relative', overflow:'hidden',
-                        background:'linear-gradient(135deg,rgba(15,24,58,0.82) 0%,rgba(8,14,36,0.92) 100%)',
-                        border:'1px solid rgba(255,255,255,0.06)',
-                        borderTop:'1px solid rgba(255,255,255,0.09)',
-                        boxShadow:'0 2px 12px rgba(0,0,0,0.35)',
-                        backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
-                      }}>
-                      <div style={{ position:'absolute',left:0,top:'18%',bottom:'18%',width:2,borderRadius:99,background:`rgba(${current.accentRgb},${R.rankOpacity * 0.35})`,pointerEvents:'none' }}/>
-                      <div style={{ width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity * 0.7})`,letterSpacing:'-0.02em' }}>{globalRank}</div>
-                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:'rgba(255,255,255,0.06)',border:`1px solid rgba(255,255,255,${R.rankOpacity * 0.12})` }}>
+                    <div key={m.userId||i} style={{ borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,position:'relative',overflow:'hidden',background:'linear-gradient(135deg,rgba(15,24,58,0.82) 0%,rgba(8,14,36,0.92) 100%)',border:'1px solid rgba(255,255,255,0.06)',borderTop:'1px solid rgba(255,255,255,0.09)',boxShadow:'0 2px 12px rgba(0,0,0,0.35)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)' }}>
+                      <div style={{ position:'absolute',left:0,top:'18%',bottom:'18%',width:2,borderRadius:99,background:`rgba(${current.accentRgb},${R.rankOpacity*0.35})`,pointerEvents:'none' }}/>
+                      <div style={{ width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity*0.7})`,letterSpacing:'-0.02em' }}>{globalRank}</div>
+                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:'rgba(255,255,255,0.06)',border:`1px solid rgba(255,255,255,${R.rankOpacity*0.12})` }}>
                         {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
-                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity * 0.6})` }}>{initials(m.userName)}</span>
+                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity*0.6})` }}>{initials(m.userName)}</span>
                       </div>
                       <div style={{ flex:1,minWidth:0 }}>
                         <p style={{ fontSize:13,fontWeight:700,color:`rgba(255,255,255,${R.nameOpacity})`,margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',letterSpacing:'-0.01em' }}>{m.userName||'—'}</p>
@@ -434,16 +719,13 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`rgba(${current.accentRgb},${R.barOpacity})`,transition:'width 0.6s ease' }}/>
                         </div>
                       </div>
-                      <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.05)',border:`1px solid rgba(255,255,255,${R.pillOpacity * 0.1})`,fontSize:13,fontWeight:800,color:`rgba(255,255,255,${R.pillOpacity * 0.9})`,letterSpacing:'-0.02em' }}>{fmt(getVal(m))}</div>
+                      <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.05)',border:`1px solid rgba(255,255,255,${R.pillOpacity*0.1})`,fontSize:13,fontWeight:800,color:`rgba(255,255,255,${R.pillOpacity*0.9})`,letterSpacing:'-0.02em' }}>{fmt(getVal(m))}</div>
                     </div>
                   );
                 })}
               </div>
             )}
-
-            <p style={{ textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',paddingBottom:10 }}>
-              Ranked by {unit} · Updates in real-time
-            </p>
+            <p style={{ textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',paddingBottom:10 }}>Ranked by {unit} · Updates in real-time</p>
           </>)}
         </div>
       </div>
@@ -467,8 +749,7 @@ function RippleButton({ onClick, children, className, style }) {
   const [ripples, setRipples] = React.useState([]);
   const handleClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const id = Date.now();
     setRipples(r => [...r, { id, x, y }]);
     setTimeout(() => setRipples(r => r.filter(r => r.id !== id)), 600);
@@ -477,7 +758,7 @@ function RippleButton({ onClick, children, className, style }) {
   return (
     <button onClick={handleClick} className={className} style={{ ...style, position:'relative', overflow:'hidden' }}>
       {ripples.map(({ id, x, y }) => (
-        <span key={id} style={{ position:'absolute', left:x, top:y, width:4, height:4, borderRadius:'50%', background:'rgba(255,255,255,0.45)', transform:'translate(-50%,-50%) scale(0)', animation:'costride-ripple 0.55s ease-out forwards', pointerEvents:'none' }} />
+        <span key={id} style={{ position:'absolute',left:x,top:y,width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,0.45)',transform:'translate(-50%,-50%) scale(0)',animation:'costride-ripple 0.55s ease-out forwards',pointerEvents:'none' }} />
       ))}
       {children}
       <style>{`@keyframes costride-ripple { to { transform: translate(-50%,-50%) scale(60); opacity: 0; } }`}</style>
@@ -490,7 +771,6 @@ export default function GymCommunity() {
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
 
-  // ── Inject dialog animation (same speed as JoinWithCodeModal) ──────────────
   useEffect(() => {
     const id = 'gym-community-dialog-anim';
     if (!document.getElementById(id)) {
@@ -500,7 +780,6 @@ export default function GymCommunity() {
       document.head.appendChild(tag);
     }
   }, []);
-
   useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
@@ -527,23 +806,22 @@ export default function GymCommunity() {
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
-  const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
-
-  const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: lifts = [] } = useQuery({ queryKey: ['lifts', gymId], queryFn: () => base44.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 100), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
-  const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000 });
-  const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5*60*1000, gcTime: 10*60*1000 });
+  const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
+  const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: lifts = [] } = useQuery({ queryKey: ['lifts', gymId], queryFn: () => base44.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 100), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
+  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
+  const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10*60*1000, gcTime: 30*60*1000 });
+  const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
 
   const leaderboardUserIds = React.useMemo(() => {
     const seen = new Set();
@@ -559,8 +837,8 @@ export default function GymCommunity() {
       return results.filter(r => r.status === 'fulfilled' && r.value != null).map(r => r.value);
     },
     enabled: leaderboardUserIds.length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
+    staleTime: 10*60*1000,
+    gcTime: 20*60*1000,
   });
 
   const memberAvatarMap = React.useMemo(() => {
@@ -571,100 +849,78 @@ export default function GymCommunity() {
     return map;
   }, [members, leaderboardUsers, currentUser]);
 
-  const createEventMutation = useMutation({ mutationFn: (eventData) => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async (eventData) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); const tempEvent = { ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 }; queryClient.setQueryData(['events', gymId], (old = []) => [tempEvent, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
-  const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
-  const updateEquipmentMutation = useMutation({ mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
-  const createRewardMutation = useMutation({ mutationFn: (rewardData) => base44.entities.Reward.create(rewardData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const deleteRewardMutation = useMutation({ mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const claimRewardMutation = useMutation({ mutationFn: ({ rewardId, userId, currentClaimed }) => base44.entities.Reward.update(rewardId, { claimed_by: [...currentClaimed, userId] }), onMutate: async ({ rewardId, userId, currentClaimed }) => { await queryClient.cancelQueries({ queryKey: ['rewards', gymId] }); const previous = queryClient.getQueryData(['rewards', gymId]); queryClient.setQueryData(['rewards', gymId], (old = []) => old.map((r) => r.id === rewardId ? { ...r, claimed_by: [...currentClaimed, userId] } : r)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['rewards', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const createClassMutation = useMutation({ mutationFn: (classData) => base44.entities.GymClass.create(classData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
-  const deleteClassMutation = useMutation({ mutationFn: (classId) => base44.entities.GymClass.delete(classId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
-  const createCoachMutation = useMutation({ mutationFn: (coachData) => base44.entities.Coach.create(coachData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const deleteCoachMutation = useMutation({ mutationFn: (coachId) => base44.entities.Coach.delete(coachId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const deleteChallengeMutation = useMutation({ mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId), onMutate: async (challengeId) => { await queryClient.cancelQueries({ queryKey: ['challenges', gymId] }); const previous = queryClient.getQueryData(['challenges', gymId]); queryClient.setQueryData(['challenges', gymId], (old = []) => old.filter((c) => c.id !== challengeId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['challenges', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); } });
-  const deleteEventMutation = useMutation({ mutationFn: (eventId) => base44.entities.Event.delete(eventId), onMutate: async (eventId) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.filter((e) => e.id !== eventId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
-  const votePollMutation = useMutation({ mutationFn: async ({ pollId, optionId }) => { const poll = polls.find((p) => p.id === pollId); const updatedOptions = poll.options.map((opt) => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt); const updatedVoters = [...(poll.voters || []), currentUser.id]; await base44.entities.Poll.update(pollId, { options: updatedOptions, voters: updatedVoters }); }, onMutate: async ({ pollId, optionId }) => { await queryClient.cancelQueries({ queryKey: ['polls', gymId] }); const previous = queryClient.getQueryData(['polls', gymId]); queryClient.setQueryData(['polls', gymId], (old = []) => old.map((p) => p.id === pollId ? { ...p, voters: [...(p.voters || []), currentUser.id], options: p.options.map((opt) => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt) } : p)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['polls', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['polls', gymId] }); } });
+  const createEventMutation = useMutation({ mutationFn: eventData => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async eventData => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => [{ ...eventData, id:`temp-${Date.now()}`, gym_id:gymId, gym_name:gym?.name, attendees:0 }, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
+  const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
+  const updateEquipmentMutation = useMutation({ mutationFn: equipment => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
+  const createRewardMutation = useMutation({ mutationFn: rewardData => base44.entities.Reward.create(rewardData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
+  const deleteRewardMutation = useMutation({ mutationFn: rewardId => base44.entities.Reward.delete(rewardId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
+  const createClassMutation = useMutation({ mutationFn: classData => base44.entities.GymClass.create(classData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
+  const deleteClassMutation = useMutation({ mutationFn: classId => base44.entities.GymClass.delete(classId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
+  const createCoachMutation = useMutation({ mutationFn: coachData => base44.entities.Coach.create(coachData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
+  const deleteCoachMutation = useMutation({ mutationFn: coachId => base44.entities.Coach.delete(coachId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
+  const deleteChallengeMutation = useMutation({ mutationFn: challengeId => base44.entities.Challenge.delete(challengeId), onMutate: async challengeId => { await queryClient.cancelQueries({ queryKey: ['challenges', gymId] }); const previous = queryClient.getQueryData(['challenges', gymId]); queryClient.setQueryData(['challenges', gymId], (old=[]) => old.filter(c => c.id !== challengeId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['challenges', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); } });
+  const deleteEventMutation = useMutation({ mutationFn: eventId => base44.entities.Event.delete(eventId), onMutate: async eventId => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => old.filter(e => e.id !== eventId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
+  const votePollMutation = useMutation({ mutationFn: async ({ pollId, optionId }) => { const poll = polls.find(p => p.id === pollId); const updatedOptions = poll.options.map(opt => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt); await base44.entities.Poll.update(pollId, { options: updatedOptions, voters: [...(poll.voters || []), currentUser.id] }); }, onMutate: async ({ pollId, optionId }) => { await queryClient.cancelQueries({ queryKey: ['polls', gymId] }); const previous = queryClient.getQueryData(['polls', gymId]); queryClient.setQueryData(['polls', gymId], (old=[]) => old.map(p => p.id === pollId ? { ...p, voters: [...(p.voters || []), currentUser.id], options: p.options.map(opt => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt) } : p)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['polls', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['polls', gymId] }); } });
   const updateCoachMutation = useMutation({ mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const createChallengeMutation = useMutation({ mutationFn: (challengeData) => { const fullData = { ...challengeData, gym_id: gymId, gym_name: gym?.name }; return base44.entities.Challenge.create(fullData); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); setShowCreateChallenge(false); }, onError: (error) => { console.error('Challenge creation failed:', error); } });
-  const updateGalleryMutation = useMutation({ mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManagePhotos(false); } });
-  const updateHeroImageMutation = useMutation({ mutationFn: (image_url) => base44.entities.Gym.update(gymId, { image_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditHeroImage(false); } });
-  const updateGymLogoMutation = useMutation({ mutationFn: (logo_url) => base44.entities.Gym.update(gymId, { logo_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditGymLogo(false); } });
-  const banMemberMutation = useMutation({ mutationFn: (userId) => { const currentBanned = gym?.banned_members || []; return base44.entities.Gym.update(gymId, { banned_members: [...currentBanned, userId] }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
-  const unbanMemberMutation = useMutation({ mutationFn: (userId) => { const currentBanned = gym?.banned_members || []; return base44.entities.Gym.update(gymId, { banned_members: currentBanned.filter((id) => id !== userId) }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
+  const createChallengeMutation = useMutation({ mutationFn: challengeData => base44.entities.Challenge.create({ ...challengeData, gym_id: gymId, gym_name: gym?.name }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); setShowCreateChallenge(false); } });
+  const updateGalleryMutation = useMutation({ mutationFn: gallery => base44.entities.Gym.update(gymId, { gallery }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManagePhotos(false); } });
+  const updateHeroImageMutation = useMutation({ mutationFn: image_url => base44.entities.Gym.update(gymId, { image_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditHeroImage(false); } });
+  const updateGymLogoMutation = useMutation({ mutationFn: logo_url => base44.entities.Gym.update(gymId, { logo_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditGymLogo(false); } });
+  const banMemberMutation = useMutation({ mutationFn: userId => base44.entities.Gym.update(gymId, { banned_members: [...(gym?.banned_members || []), userId] }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
+  const unbanMemberMutation = useMutation({ mutationFn: userId => base44.entities.Gym.update(gymId, { banned_members: (gym?.banned_members || []).filter(id => id !== userId) }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
   const joinGhostGymMutation = useMutation({ mutationFn: async () => { await base44.entities.GymMembership.create({ user_id: currentUser.id, user_name: currentUser.full_name, user_email: currentUser.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] }); window.location.href = createPageUrl('Home'); } });
-  const joinChallengeMutation = useMutation({ mutationFn: async (challenge) => { const currentParticipants = challenge.participants || []; await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] }); await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }); }, onMutate: async (challenge) => { await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]); queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [...old, { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]); return { previous }; }, onError: (err, challenge, context) => { queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); queryClient.invalidateQueries({ queryKey: ['challenges'] }); queryClient.invalidateQueries({ queryKey: ['activeChallenges'] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' }); } });
-  const claimBonusMutation = useMutation({ mutationFn: ({ bonusType, offerDetails }) => base44.entities.ClaimedBonus.create({ user_id: currentUser.id, gym_id: gymId, bonus_type: bonusType, offer_details: offerDetails }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'reward', title: '🎁 Bonus Claimed!', message: 'Your gym bonus has been claimed successfully', icon: '🎉' }); } });
-
-  const hasClaimedBonus = (bonusType) => claimedBonuses.some((b) => b.bonus_type === bonusType);
-  const hasjoinedChallenge = (challengeId) => challengeParticipants.some((p) => p.challenge_id === challengeId);
-  const calculateCurrentStreak = (userCheckIns) => { if (userCheckIns.length === 0) return 0; const sorted = [...userCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date)); let streak = 1; let cur = new Date(sorted[0].check_in_date); cur.setHours(0,0,0,0); for (let i = 1; i < sorted.length; i++) { const d = new Date(sorted[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; } return streak; };
-  const meetsRequirement = (requirement) => { if (!currentUser) return false; const userCheckIns = checkIns.filter((c) => c.user_id === currentUser.id); switch (requirement) { case 'first_visit': return userCheckIns.length >= 1; case 'visits_3': return userCheckIns.length >= 3; case 'visits_5': return userCheckIns.length >= 5; case 'visits_10': case 'check_ins_10': return userCheckIns.length >= 10; case 'visits_25': return userCheckIns.length >= 25; case 'visits_50': case 'check_ins_50': return userCheckIns.length >= 50; case 'visits_100': return userCheckIns.length >= 100; case 'streak_7': return calculateCurrentStreak(userCheckIns) >= 7; case 'streak_30': return calculateCurrentStreak(userCheckIns) >= 30; case 'streak_90': return calculateCurrentStreak(userCheckIns) >= 90; default: return true; } };
+  const joinChallengeMutation = useMutation({ mutationFn: async challenge => { const currentParticipants = challenge.participants || []; await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] }); await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }); }, onMutate: async challenge => { await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]); queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old=[]) => [...old, { id:`temp-${challenge.id}`, user_id:currentUser.id, challenge_id:challenge.id, challenge_title:challenge.title, progress:0, completed:false }]); return { previous }; }, onError: (err, challenge, context) => { queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); queryClient.invalidateQueries({ queryKey: ['challenges'] }); queryClient.invalidateQueries({ queryKey: ['activeChallenges'] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' }); } });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
   const isGhostGym = gym && !gym.admin_id && !gym.owner_email;
-  const currentCoach = currentUser && coaches.find((c) => c.user_email === currentUser.email);
+  const currentCoach = currentUser && coaches.find(c => c.user_email === currentUser.email);
   const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
   const isMember = !!gymMembership || isGymOwner;
   const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCheckIns = checkIns.filter((c) => new Date(c.check_in_date) >= weekAgo);
-  const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
+  const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+  const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
+  const upcomingEvents = events.filter(e => { const d = new Date(e.event_date); return d >= now && d <= new Date(now.getTime() + 7*86400000); }).slice(0, 2);
 
   const checkInLeaderboard = Object.values(
     weeklyCheckIns.reduce((acc, c) => {
       const id = c.user_id;
-      if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null, count: 0 };
+      if (!acc[id]) acc[id] = { userId:id, userName:c.user_name, userAvatar:memberAvatarMap[id]||null, count:0 };
       acc[id].count++;
       return acc;
     }, {})
-  ).sort((a, b) => b.count - a.count).slice(0, 10);
+  ).sort((a,b) => b.count-a.count).slice(0,10);
 
   const calcUserStreak = (userId) => {
-    const uci = checkIns.filter(c => c.user_id === userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-    if (uci.length === 0) return 0;
-    let streak = 1; let cur = new Date(uci[0].check_in_date); cur.setHours(0,0,0,0);
-    for (let i = 1; i < uci.length; i++) { const d = new Date(uci[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; }
+    const uci = checkIns.filter(c => c.user_id === userId).sort((a,b) => new Date(b.check_in_date)-new Date(a.check_in_date));
+    if (!uci.length) return 0;
+    let streak = 1, cur = new Date(uci[0].check_in_date); cur.setHours(0,0,0,0);
+    for (let i=1;i<uci.length;i++) { const d=new Date(uci[i].check_in_date); d.setHours(0,0,0,0); const diff=Math.floor((cur-d)/86400000); if (diff===1){streak++;cur=d;}else if(diff>1)break; }
     return streak;
   };
 
   const streakLeaderboard = Object.values(
-    checkIns.reduce((acc, c) => {
-      const id = c.user_id;
-      if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null };
-      return acc;
-    }, {})
-  ).map(item => ({ ...item, streak: calcUserStreak(item.userId) }))
-   .sort((a, b) => b.streak - a.streak).slice(0, 10);
+    checkIns.reduce((acc,c) => { const id=c.user_id; if (!acc[id]) acc[id]={userId:id,userName:c.user_name,userAvatar:memberAvatarMap[id]||null}; return acc; }, {})
+  ).map(item => ({ ...item, streak:calcUserStreak(item.userId) })).sort((a,b) => b.streak-a.streak).slice(0,10);
 
   const calculateProgressLeaderboard = (timeFilterDays) => {
-    const cutoffDate = timeFilterDays === null ? new Date(0) : new Date(now.getTime() - timeFilterDays * 86400000);
+    const cutoffDate = timeFilterDays===null ? new Date(0) : new Date(now.getTime()-timeFilterDays*86400000);
     const userMaxWeights = {};
-    const userPrevMaxWeights = {};
-    
     lifts.forEach(lift => {
       const liftDate = new Date(lift.lift_date);
       if (liftDate >= cutoffDate) {
         const key = `${lift.member_id}-${lift.exercise}`;
-        if (!userMaxWeights[key]) userMaxWeights[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, prevMax: 0 };
-        if (lift.weight_lbs > userMaxWeights[key].maxWeight) { userMaxWeights[key].prevMax = userMaxWeights[key].maxWeight; userMaxWeights[key].maxWeight = lift.weight_lbs; }
+        if (!userMaxWeights[key]) userMaxWeights[key]={ userId:lift.member_id, userName:lift.member_name, userAvatar:memberAvatarMap[lift.member_id]||null, exercise:lift.exercise, maxWeight:lift.weight_lbs, prevMax:0 };
+        if (lift.weight_lbs > userMaxWeights[key].maxWeight) { userMaxWeights[key].prevMax=userMaxWeights[key].maxWeight; userMaxWeights[key].maxWeight=lift.weight_lbs; }
       }
     });
-    
     return Object.values(userMaxWeights)
-      .map(item => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, increase: item.maxWeight - item.prevMax }))
+      .map(item => ({ userId:item.userId, userName:item.userName, userAvatar:item.userAvatar||null, increase:item.maxWeight-item.prevMax }))
       .filter(item => item.increase > 0)
-      .reduce((acc, item) => {
-        const existing = acc.find(a => a.userId === item.userId);
-        if (existing) existing.increase += item.increase;
-        else acc.push(item);
-        return acc;
-      }, [])
-      .sort((a, b) => b.increase - a.increase)
-      .slice(0, 10);
+      .reduce((acc,item) => { const ex=acc.find(a=>a.userId===item.userId); if(ex) ex.increase+=item.increase; else acc.push(item); return acc; }, [])
+      .sort((a,b) => b.increase-a.increase).slice(0,10);
   };
 
-  const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
   const progressLeaderboardWeek = calculateProgressLeaderboard(7);
   const progressLeaderboardMonth = calculateProgressLeaderboard(30);
   const progressLeaderboardAllTime = calculateProgressLeaderboard(null);
@@ -685,24 +941,24 @@ export default function GymCommunity() {
           <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
               {gym.image_url
-                ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" />
-                : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
+                ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" style={{ opacity:0.55 }} loading="eager" fetchPriority="high" />
+                : <div className="w-full h-full" style={{ background:'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
               }
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
+              <div className="absolute inset-0" style={{ background:'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
+              <div className="absolute inset-0" style={{ background:'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
             </div>
-            <div className="relative z-10 px-4 pt-4 pb-0" style={{ minHeight: '140px' }}>
+            <div className="relative z-10 px-4 pt-4 pb-0" style={{ minHeight:'140px' }}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 mr-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>{gym.name}</h1>
+                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length>28?'text-base':gym.name.length>18?'text-lg':'text-xl'}`}>{gym.name}</h1>
                     {gym.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym.city}</p>
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)' }}>
                       <Users className="w-3 h-3 text-white/70" />
-                      <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
+                      <span className="text-[11px] font-bold text-white">{gym?.members_count||0} members</span>
                     </div>
                   </div>
                 </div>
@@ -723,27 +979,30 @@ export default function GymCommunity() {
                     </button>
                   )}
                   {isCoach && !isGymOwner && (
-                    <div className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ background: 'rgba(59,130,246,0.7)' }}>🎓 Coach</div>
+                    <div className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ background:'rgba(59,130,246,0.7)' }}>🎓 Coach</div>
                   )}
                 </div>
               </div>
             </div>
-            <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
               <TabsList className="w-full flex justify-around bg-transparent px-3 py-2 h-auto gap-1.5">
-                <TabsTrigger value="home" className={tabTriggerClass}><Home className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
+                <TabsTrigger value="home"       className={tabTriggerClass}><Home   className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
                 <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
-                <TabsTrigger value="events" className={tabTriggerClass}><Calendar className="w-3.5 h-3.5" /><span>Events</span></TabsTrigger>
+                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell className="w-3.5 h-3.5" /><span>Classes</span></TabsTrigger>
+                <TabsTrigger value="events"     className={tabTriggerClass}><Calendar className="w-3.5 h-3.5" /><span>Events</span></TabsTrigger>
               </TabsList>
             </div>
           </div>
 
           <div className="max-w-4xl mx-auto px-3 md:px-4 pt-3 pb-28 space-y-3 w-full overflow-hidden">
+
+            {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
+              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {isGhostGym && !isMember && !showOwnerControls && (
-                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
+                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
-                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending} className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}>
+                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending} className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg, #7c3aed, #db2777)' }}>
                       {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                     </button>
                   </div>
@@ -751,26 +1010,26 @@ export default function GymCommunity() {
                 {!isMember && !isGhostGym && !showOwnerControls && (
                   <div className="space-y-2">
                     <div className="flex gap-2">
-                      <RippleButton onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
+                      <RippleButton onClick={() => { setJoinPanel(p => p==='code'?null:'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
                         className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{ background: joinPanel === 'code' ? 'linear-gradient(135deg,#1d4ed8,#1e40af)' : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))', border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`, boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)', transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)' }}>
-                        <span style={{ fontSize: 16 }}>🔑</span><span>Join with Code</span>
-                        <span style={{ display: 'inline-block', transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
+                        style={{ background:joinPanel==='code'?'linear-gradient(135deg,#1d4ed8,#1e40af)':'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))', border:`1px solid ${joinPanel==='code'?'rgba(59,130,246,0.6)':'rgba(59,130,246,0.3)'}`, boxShadow:joinPanel==='code'?'0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)':'0 2px 0 0 rgba(0,0,0,0.4)', color:joinPanel==='code'?'#fff':'rgba(147,197,253,0.9)', transform:joinPanel==='code'?'translateY(2px)':'translateY(0)' }}>
+                        <span style={{ fontSize:16 }}>🔑</span><span>Join with Code</span>
+                        <span style={{ display:'inline-block', transform:joinPanel==='code'?'rotate(180deg)':'rotate(0deg)', transition:'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize:11, opacity:0.7 }}>▼</span>
                       </RippleButton>
-                      <RippleButton onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
+                      <RippleButton onClick={() => { setJoinPanel(p => p==='primary'?null:'primary'); setPrimaryConfirmed(false); }}
                         className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{ background: joinPanel === 'primary' ? 'linear-gradient(135deg,#b45309,#92400e)' : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))', border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`, boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)', transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)' }}>
-                        <span style={{ fontSize: 16 }}>⭐</span><span>Set Primary</span>
-                        <span style={{ display: 'inline-block', transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
+                        style={{ background:joinPanel==='primary'?'linear-gradient(135deg,#b45309,#92400e)':'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))', border:`1px solid ${joinPanel==='primary'?'rgba(251,191,36,0.55)':'rgba(251,191,36,0.25)'}`, boxShadow:joinPanel==='primary'?'0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)':'0 2px 0 0 rgba(0,0,0,0.4)', color:joinPanel==='primary'?'#fff':'rgba(253,230,138,0.9)', transform:joinPanel==='primary'?'translateY(2px)':'translateY(0)' }}>
+                        <span style={{ fontSize:16 }}>⭐</span><span>Set Primary</span>
+                        <span style={{ display:'inline-block', transform:joinPanel==='primary'?'rotate(180deg)':'rotate(0deg)', transition:'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize:11, opacity:0.7 }}>▼</span>
                       </RippleButton>
                     </div>
-                    <SlidePanel open={joinPanel === 'code'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border: '1px solid rgba(59,130,246,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                    <SlidePanel open={joinPanel==='code'}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background:'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border:'1px solid rgba(59,130,246,0.25)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
                         <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
-                        <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
+                        <p className="text-[11px] mb-3" style={{ color:'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
                         {joinCodeSuccess ? (
                           <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background:'rgba(16,185,129,0.15)', border:'2px solid rgba(16,185,129,0.4)' }}>✓</div>
                             <p className="text-sm font-black text-emerald-400">You're in!</p>
                             <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
                           </div>
@@ -779,34 +1038,34 @@ export default function GymCommunity() {
                             <div className="flex gap-2">
                               <input value={joinCode} onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }} placeholder="e.g. GYM-XK29" maxLength={10}
                                 className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
-                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }} />
+                                style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${joinCodeError?'rgba(239,68,68,0.6)':'rgba(59,130,246,0.25)'}`, letterSpacing:'0.08em' }} />
                               <button onClick={() => { if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; } setJoinCodeSuccess(true); }}
                                 className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>Join</button>
+                                style={{ background:'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow:'0 3px 0 0 #1e3a8a' }}>Join</button>
                             </div>
                             {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
                           </>
                         )}
                       </div>
                     </SlidePanel>
-                    <SlidePanel open={joinPanel === 'primary'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                    <SlidePanel open={joinPanel==='primary'}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background:'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border:'1px solid rgba(251,191,36,0.2)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
                         {primaryConfirmed ? (
                           <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background:'rgba(251,191,36,0.15)', border:'2px solid rgba(251,191,36,0.4)' }}>⭐</div>
                             <p className="text-sm font-black text-yellow-400">{gym?.name} is now your primary gym!</p>
                             <p className="text-xs text-slate-400">Your stats and check-ins will be tracked here</p>
                           </div>
                         ) : (
                           <>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background:'rgba(251,191,36,0.12)', border:'1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
                               <div>
                                 <p className="text-[13px] font-black text-white leading-tight">Set as your home gym</p>
-                                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
+                                <p className="text-[11px] mt-0.5" style={{ color:'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
                               </div>
                             </div>
-                            <button onClick={() => setPrimaryConfirmed(true)} className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
+                            <button onClick={() => setPrimaryConfirmed(true)} className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg,#d97706,#b45309)', boxShadow:'0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
                               ⭐ Confirm — Set {gym?.name} as Primary
                             </button>
                           </>
@@ -817,8 +1076,8 @@ export default function GymCommunity() {
                 )}
                 {polls.length > 0 && (
                   <div className="space-y-3">
-                    {polls.map((poll) => (
-                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
+                    {polls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? optionId => votePollMutation.mutate({ pollId:poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
                     ))}
                   </div>
                 )}
@@ -827,12 +1086,12 @@ export default function GymCommunity() {
                 {upcomingEvents.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div>
                       <h3 className="text-[13px] font-black text-white">This Week</h3>
                     </div>
                     <div className="space-y-2">
-                      {upcomingEvents.map((event) => (
-                        <WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null} disabled={showOwnerControls} />
+                      {upcomingEvents.map(event => (
+                        <WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? eventId => { const e=events.find(e=>e.id===eventId); rsvpMutation.mutate({ eventId, currentAttendees:e.attendees||0 }); } : null} disabled={showOwnerControls} />
                       ))}
                     </div>
                   </div>
@@ -840,12 +1099,12 @@ export default function GymCommunity() {
                 {gymChallenges.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}><Trophy className="w-3.5 h-3.5 text-purple-400" /></div>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(167,139,250,0.15)' }}><Trophy className="w-3.5 h-3.5 text-purple-400" /></div>
                       <h3 className="text-[13px] font-black text-white">New Challenges</h3>
                     </div>
                     <div className="space-y-2">
-                      {gymChallenges.slice(0, 1).map((challenge) => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={hasjoinedChallenge(challenge.id)} onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
+                      {gymChallenges.slice(0,1).map(challenge => (
+                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
                       ))}
                     </div>
                   </div>
@@ -853,74 +1112,59 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-
-
+            {/* ── CHALLENGES ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
+              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {showOwnerControls && (
-                  <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border: '1px solid rgba(59,130,246,0.3)' }}>
+                  <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background:'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border:'1px solid rgba(59,130,246,0.3)' }}>
                     <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
                   </button>
                 )}
                 {gymChallenges.length > 0
-                  ? gymChallenges.map((challenge) => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={hasjoinedChallenge(challenge.id)} onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} />))
+                  ? gymChallenges.map(challenge => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? id => { if(window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} />))
                   : (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>)
                 }
               </motion.div>
             </TabsContent>
 
+            {/* ── CLASSES (new) ── */}
+            <TabsContent value="classes" className="space-y-3 mt-0 w-full">
+              <ClassesTabContent
+                classes={classes}
+                showOwnerControls={showOwnerControls}
+                onManage={() => setShowManageClasses(true)}
+                onDelete={id => deleteClassMutation.mutate(id)}
+              />
+            </TabsContent>
+
+            {/* ── EVENTS ── */}
             <TabsContent value="events" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
+              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}><Target className="w-3.5 h-3.5 text-purple-400" /></div><h3 className="text-[13px] font-black text-white">Classes</h3></div>
-                    {showOwnerControls && <button onClick={() => setShowManageClasses(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
+                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div><h3 className="text-[13px] font-black text-white">Upcoming Events</h3></div>
+                    {showOwnerControls && <button onClick={() => setShowCreateEvent(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform" style={{ background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)' }}><Plus className="w-3 h-3" />Create</button>}
                   </div>
                   <div className="px-3 pb-4">
-                    {classes.length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No classes scheduled</p></div>
-                      : <div className="space-y-2">{classes.map((gymClass) => (
-                          <div key={gymClass.id} className="flex items-start gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))' }}><Target className="w-5 h-5 text-purple-300" /></div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-white text-[13px] mb-0.5 truncate">{gymClass.name}</h4>
-                              <p className="text-xs text-slate-500 mb-1.5 truncate">{gymClass.description}</p>
-                              <div className="flex flex-wrap gap-1">
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-purple-300" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)' }}>{gymClass.instructor}</span>
-                                {gymClass.duration_minutes && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-300" style={{ background: 'rgba(255,255,255,0.07)' }}>{gymClass.duration_minutes}min</span>}
-                              </div>
-                            </div>
-                            {showOwnerControls && <button onClick={() => { if (window.confirm('Delete this class?')) deleteClassMutation.mutate(gymClass.id); }} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}><Trash2 className="w-4 h-4 text-red-400" /></button>}
-                          </div>
-                        ))}</div>
+                    {events.filter(e => new Date(e.event_date) >= now).length === 0
+                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor:'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No upcoming events</p></div>
+                      : <div className="space-y-2">{events.filter(e => new Date(e.event_date) >= now).slice(0,5).map(event => (<EventCard key={event.id} event={event} onRSVP={eventId => { const e=events.find(e=>e.id===eventId); rsvpMutation.mutate({ eventId, currentAttendees:e.attendees||0 }); }} isOwner={showOwnerControls} onDelete={showOwnerControls ? eventId => { if(window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />))}</div>
                     }
                   </div>
                 </div>
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div><h3 className="text-[13px] font-black text-white">Upcoming Events</h3></div>
-                    {showOwnerControls && <button onClick={() => setShowCreateEvent(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}><Plus className="w-3 h-3" />Create</button>}
-                  </div>
-                  <div className="px-3 pb-4">
-                    {events.filter((e) => new Date(e.event_date) >= now).length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No upcoming events</p></div>
-                      : <div className="space-y-2">{events.filter((e) => new Date(e.event_date) >= now).slice(0, 5).map((event) => (<EventCard key={event.id} event={event} onRSVP={(eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); }} isOwner={showOwnerControls} onDelete={showOwnerControls ? (eventId) => { if (window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />))}</div>
-                    }
-                  </div>
-                </div>
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(96,165,250,0.15)' }}><GraduationCap className="w-3.5 h-3.5 text-blue-400" /></div><h3 className="text-[13px] font-black text-white">Coaches</h3></div>
-                    {showOwnerControls && <button onClick={() => setShowManageCoaches(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
+                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(96,165,250,0.15)' }}><GraduationCap className="w-3.5 h-3.5 text-blue-400" /></div><h3 className="text-[13px] font-black text-white">Coaches</h3></div>
+                    {showOwnerControls && <button onClick={() => setShowManageCoaches(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
                   </div>
                   <div className="px-3 pb-4">
                     {coaches.length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><GraduationCap className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No coaches listed</p></div>
-                      : <div className="space-y-2">{coaches.slice(0, 5).map((coach) => {
+                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor:'rgba(255,255,255,0.06)' }}><GraduationCap className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No coaches listed</p></div>
+                      : <div className="space-y-2">{coaches.slice(0,5).map(coach => {
                           const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
                           return (
-                            <div key={coach.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
+                            <div key={coach.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background:'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
                                 {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" /> : <span className="text-base font-black text-white">{coach.name.charAt(0)}</span>}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -928,16 +1172,16 @@ export default function GymCommunity() {
                                   <h4 className="font-bold text-white text-[13px] truncate">{coach.name}</h4>
                                   {coach.rating && <div className="flex items-center gap-0.5"><Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" /><span className="text-[10px] font-bold text-slate-300">{coach.rating}</span></div>}
                                 </div>
-                                {coach.specialties?.length > 0 && (<div className="flex flex-wrap gap-1">{coach.specialties.slice(0, 2).map((s, i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background: 'rgba(59,130,246,0.12)' }}>{s}</span>)}</div>)}
+                                {coach.specialties?.length > 0 && (<div className="flex flex-wrap gap-1">{coach.specialties.slice(0,2).map((s,i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background:'rgba(59,130,246,0.12)' }}>{s}</span>)}</div>)}
                               </div>
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(59,130,246,0.1)' }}><Mail className="w-3.5 h-3.5 text-blue-400" /></button>
+                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background:'rgba(59,130,246,0.1)' }}><Mail className="w-3.5 h-3.5 text-blue-400" /></button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-3 bg-slate-800 border-slate-700">
                                   <div className="flex items-center gap-2">
                                     <a href={`mailto:${coach.user_email}`} className="text-blue-400 text-xs font-medium break-all flex-1">{coach.user_email}</a>
-                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors"><Copy className={`w-3.5 h-3.5 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} /></button>
+                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors"><Copy className={`w-3.5 h-3.5 ${copiedCoachId===coach.id?'text-green-400':'text-slate-400'}`} /></button>
                                   </div>
                                 </PopoverContent>
                               </Popover>
@@ -949,20 +1193,21 @@ export default function GymCommunity() {
                 </div>
               </motion.div>
             </TabsContent>
+
           </div>
         </Tabs>
 
-        <CreateEventModal open={showCreateEvent} onClose={() => setShowCreateEvent(false)} onSave={(data) => createEventMutation.mutate(data)} gym={gym} isLoading={createEventMutation.isPending} />
-        <ManageEquipmentModal open={showManageEquipment} onClose={() => setShowManageEquipment(false)} equipment={gym?.equipment || []} onSave={(equipment) => updateEquipmentMutation.mutate(equipment)} isLoading={updateEquipmentMutation.isPending} />
-        <ManageRewardsModal open={showManageRewards} onClose={() => setShowManageRewards(false)} rewards={rewards} onCreateReward={(data) => createRewardMutation.mutate(data)} onDeleteReward={(id) => deleteRewardMutation.mutate(id)} gym={gym} isLoading={createRewardMutation.isPending} />
-        <ManageClassesModal open={showManageClasses} onClose={() => setShowManageClasses(false)} classes={classes} onCreateClass={(data) => createClassMutation.mutate(data)} onDeleteClass={(id) => deleteClassMutation.mutate(id)} gym={gym} isLoading={createClassMutation.isPending} />
-        <ManageCoachesModal open={showManageCoaches} onClose={() => setShowManageCoaches(false)} coaches={coaches} onCreateCoach={(data) => createCoachMutation.mutate(data)} onDeleteCoach={(id) => deleteCoachMutation.mutate(id)} onUpdateCoach={(coachId, data) => updateCoachMutation.mutate({ coachId, data })} gym={gym} isLoading={createCoachMutation.isPending} />
-        <ManageGymPhotosModal open={showManagePhotos} onClose={() => setShowManagePhotos(false)} gallery={gym?.gallery || []} onSave={(gallery) => updateGalleryMutation.mutate(gallery)} isLoading={updateGalleryMutation.isPending} />
-        <EditHeroImageModal open={showEditHeroImage} onClose={() => setShowEditHeroImage(false)} currentImageUrl={gym?.image_url} onSave={(image_url) => updateHeroImageMutation.mutate(image_url)} isLoading={updateHeroImageMutation.isPending} />
-        <EditGymLogoModal open={showEditGymLogo} onClose={() => setShowEditGymLogo(false)} currentLogoUrl={gym?.logo_url} onSave={(logo_url) => updateGymLogoMutation.mutate(logo_url)} isLoading={updateGymLogoMutation.isPending} />
-        <ManageMembersModal open={showManageMembers} onClose={() => setShowManageMembers(false)} gym={gym} onBanMember={(userId) => banMemberMutation.mutate(userId)} onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)} />
+        <CreateEventModal open={showCreateEvent} onClose={() => setShowCreateEvent(false)} onSave={data => createEventMutation.mutate(data)} gym={gym} isLoading={createEventMutation.isPending} />
+        <ManageEquipmentModal open={showManageEquipment} onClose={() => setShowManageEquipment(false)} equipment={gym?.equipment||[]} onSave={equipment => updateEquipmentMutation.mutate(equipment)} isLoading={updateEquipmentMutation.isPending} />
+        <ManageRewardsModal open={showManageRewards} onClose={() => setShowManageRewards(false)} rewards={rewards} onCreateReward={data => createRewardMutation.mutate(data)} onDeleteReward={id => deleteRewardMutation.mutate(id)} gym={gym} isLoading={createRewardMutation.isPending} />
+        <ManageClassesModal open={showManageClasses} onClose={() => setShowManageClasses(false)} classes={classes} onCreateClass={data => createClassMutation.mutate(data)} onDeleteClass={id => deleteClassMutation.mutate(id)} gym={gym} isLoading={createClassMutation.isPending} />
+        <ManageCoachesModal open={showManageCoaches} onClose={() => setShowManageCoaches(false)} coaches={coaches} onCreateCoach={data => createCoachMutation.mutate(data)} onDeleteCoach={id => deleteCoachMutation.mutate(id)} onUpdateCoach={(coachId,data) => updateCoachMutation.mutate({ coachId, data })} gym={gym} isLoading={createCoachMutation.isPending} />
+        <ManageGymPhotosModal open={showManagePhotos} onClose={() => setShowManagePhotos(false)} gallery={gym?.gallery||[]} onSave={gallery => updateGalleryMutation.mutate(gallery)} isLoading={updateGalleryMutation.isPending} />
+        <EditHeroImageModal open={showEditHeroImage} onClose={() => setShowEditHeroImage(false)} currentImageUrl={gym?.image_url} onSave={image_url => updateHeroImageMutation.mutate(image_url)} isLoading={updateHeroImageMutation.isPending} />
+        <EditGymLogoModal open={showEditGymLogo} onClose={() => setShowEditGymLogo(false)} currentLogoUrl={gym?.logo_url} onSave={logo_url => updateGymLogoMutation.mutate(logo_url)} isLoading={updateGymLogoMutation.isPending} />
+        <ManageMembersModal open={showManageMembers} onClose={() => setShowManageMembers(false)} gym={gym} onBanMember={userId => banMemberMutation.mutate(userId)} onUnbanMember={userId => unbanMemberMutation.mutate(userId)} />
         <UpgradeMembershipModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} currentUser={currentUser} />
-        <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
+        <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={data => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
       </div>
     </PullToRefresh>
