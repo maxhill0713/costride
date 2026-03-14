@@ -987,7 +987,7 @@ export default function Home() {
           )}
 
           {memberGym?.id && (
-            <div whileTap={{ scale: 0.97, y: 2 }}>
+            <motion.div whileTap={{ scale: 0.97, y: 2 }}>
               <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
                 <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-200 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
                   {memberGym?.image_url ? (
