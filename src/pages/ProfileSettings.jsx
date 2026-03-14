@@ -3,11 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { User, Camera, ChevronLeft } from 'lucide-react';
+import { Camera, ChevronLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 function useSectionHighlight() {
@@ -51,9 +49,7 @@ export default function ProfileSettings() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [nameTimeout, setNameTimeout] = useState(null);
-  const [bioTimeout, setBioTimeout] = useState(null);
   const [localFullName, setLocalFullName] = useState('');
-  const [localBio, setLocalBio] = useState('');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -63,7 +59,6 @@ export default function ProfileSettings() {
   React.useEffect(() => {
     if (currentUser) {
       setLocalFullName(currentUser.full_name || '');
-      setLocalBio(currentUser.bio || '');
     }
   }, []);
 
@@ -177,27 +172,6 @@ export default function ProfileSettings() {
                 }}
                 placeholder="Your full name"
                 className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-            </div>
-          </Card>
-        </SectionCard>
-
-        {/* Bio — id: section-bio */}
-        <SectionCard sectionId="bio" highlightedSection={highlightedSection}>
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
-              <Textarea
-                value={localBio}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setLocalBio(newValue);
-                  clearTimeout(bioTimeout);
-                  setBioTimeout(setTimeout(() => updateSettingsMutation.mutate({ bio: newValue }), 800));
-                }}
-                placeholder="Tell people a little about yourself"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
-                rows={3}
               />
             </div>
           </Card>
