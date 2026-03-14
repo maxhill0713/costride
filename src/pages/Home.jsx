@@ -1076,7 +1076,10 @@ export default function Home() {
                 {/* Transparent full-screen overlay behind everything to catch outside taps */}
                 {activeCircleDay !== null && (
                   <div
-                    onPointerDown={() => setActiveCircleDay(null)}
+                    onPointerDown={(e) => {
+                      if (e.target.closest('[data-bubble]') || e.target.closest('[data-circle-btn]')) return;
+                      setActiveCircleDay(null);
+                    }}
                     style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
                 )}
@@ -1268,8 +1271,7 @@ export default function Home() {
                                 {done && !isRestDay && workoutLog && (
                                   <button
                                     data-bubble="true"
-                                    onPointerDown={(e) => e.stopPropagation()}
-                                    onPointerUp={async (e) => {
+                                    onPointerDown={async (e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
                                       try {
@@ -1284,8 +1286,7 @@ export default function Home() {
                                 {showViewWorkout && (
                                   <button
                                     data-bubble="true"
-                                    onPointerDown={(e) => e.stopPropagation()}
-                                    onPointerUp={(e) => {
+                                    onPointerDown={(e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
                                       setViewWorkoutDay(day);
