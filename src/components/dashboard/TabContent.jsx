@@ -1,108 +1,206 @@
 import React, { useMemo, useState } from 'react';
 import { format, subDays } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Bookmark, MoreHorizontal, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Image as ImageIcon } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 
-// ── Compact post card ─────────────────────────────────────────────────────────
-function CompactPost({ post, index }) {
-  const [expanded, setExpanded] = useState(false);
+// ── Feed post card ────────────────────────────────────────────────────────────
+function FeedCard({ post }) {
+  const [showAll, setShowAll] = useState(false);
   const likes    = post.likes?.length || 0;
   const comments = post.comments?.length || 0;
   const hasImage = post.image_url || post.media_url;
-  const preview  = post.content?.split('\n')[0] || post.title || 'Post';
-  const isLong   = preview.length > 80;
+  const content  = post.content || post.title || '';
+  const isLong   = content.length > 120;
 
   return (
-    <div
-      style={{
-        borderRadius: 12,
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        overflow: 'hidden',
-        transition: 'border-color 0.15s',
-      }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-    >
-      {/* Image strip */}
-      {hasImage && (
-        <div style={{ height: 120, overflow: 'hidden', position: 'relative' }}>
-          <img
-            src={post.image_url || post.media_url}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={e => e.currentTarget.parentElement.style.display = 'none'}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 60%)' }}/>
+    <div style={{
+      borderRadius: 12,
+      background: 'var(--card2)',
+      border: '1px solid var(--border)',
+      overflow: 'hidden',
+      breakInside: 'avoid',
+      marginBottom: 12,
+    }}>
+      {/* Header */}
+      <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Avatar name={post.author_name || post.gym_name || 'G'} size={28}/>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>
+            {post.author_name || post.gym_name || 'GymPost'}
+          </span>
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+          {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
+        </span>
+        <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)' }}/>
+      </div>
+
+      {/* Title */}
+      {(post.title || content) && (
+        <div style={{ padding: '0 14px 8px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: 0, marginBottom: 4 }}>
+            {post.title || content.split('\n')[0]}
+          </p>
+          {post.title && content && (
+            <p style={{
+              fontSize: 12, color: 'var(--text2)', margin: 0, lineHeight: 1.5,
+              display: showAll ? 'block' : '-webkit-box',
+              WebkitLineClamp: showAll ? 'unset' : 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: showAll ? 'visible' : 'hidden',
+            }}>
+              {content}
+            </p>
+          )}
+          {isLong && !post.title && (
+            <>
+              <p style={{
+                fontSize: 12, color: 'var(--text2)', margin: 0, lineHeight: 1.5,
+                display: showAll ? 'block' : '-webkit-box',
+                WebkitLineClamp: showAll ? 'unset' : 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: showAll ? 'visible' : 'hidden',
+              }}>
+                {content}
+              </p>
+              <button
+                onClick={() => setShowAll(v => !v)}
+                style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0 0', display: 'block' }}>
+                {showAll ? 'Show less' : 'Load More'}
+              </button>
+            </>
+          )}
         </div>
       )}
 
-      <div style={{ padding: '12px 14px' }}>
-        {/* Author row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <Avatar name={post.author_name || post.gym_name || '?'} size={24}/>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', flex: 1 }}>
-            {post.author_name || post.gym_name || 'Gym Post'}
+      {/* Image */}
+      {hasImage && (
+        <div style={{ overflow: 'hidden', maxHeight: 220 }}>
+          <img
+            src={post.image_url || post.media_url}
+            alt=""
+            style={{ width: '100%', objectFit: 'cover', display: 'block' }}
+            onError={e => e.currentTarget.parentElement.style.display = 'none'}
+          />
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: likes > 0 ? '#f87171' : 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <Heart style={{ width: 13, height: 13 }}/> {likes}
+        </button>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: comments > 0 ? '#38bdf8' : 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <MessageCircle style={{ width: 13, height: 13 }}/> {comments}
+        </button>
+        {post.post_type && (
+          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {post.post_type}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--text3)' }}>
-            {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Event card ────────────────────────────────────────────────────────────────
+function EventCard({ event, now }) {
+  const evDate   = new Date(event.event_date);
+  const diffDays = Math.floor((evDate - now) / 86400000);
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(16,185,129,0.15)', overflow: 'hidden', marginBottom: 12, breakInside: 'avoid' }}>
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Calendar style={{ width: 13, height: 13, color: '#34d399' }}/>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 5, padding: '1px 6px' }}>Event</span>
+          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: diffDays <= 2 ? '#f87171' : '#34d399', background: diffDays <= 2 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', borderRadius: 4, padding: '1px 5px' }}>
+            {diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `${diffDays}d`}
           </span>
         </div>
-
-        {/* Content */}
-        <p
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: 'var(--text1)',
-            lineHeight: 1.55,
-            margin: 0,
-            marginBottom: 10,
-            display: expanded ? 'block' : '-webkit-box',
-            WebkitLineClamp: expanded ? 'unset' : 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: expanded ? 'visible' : 'hidden',
-          }}
-        >
-          {post.content || post.title || ''}
-        </p>
-
-        {isLong && (
-          <button
-            onClick={() => setExpanded(e => !e)}
-            style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 10 }}
-          >
-            {expanded ? 'Show less' : 'Read more'}
-          </button>
+        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 4px' }}>{event.title}</p>
+        {event.description && (
+          <p style={{ fontSize: 11, color: 'var(--text2)', margin: '0 0 8px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{event.description}</p>
         )}
+        <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>{format(evDate, 'MMM d, h:mm a')}</div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Footer */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: likes > 0 ? '#f87171' : 'var(--text3)' }}>
-            <Heart style={{ width: 11, height: 11 }}/> {likes}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: comments > 0 ? '#38bdf8' : 'var(--text3)' }}>
-            <MessageCircle style={{ width: 11, height: 11 }}/> {comments}
-          </div>
-          {post.post_type && (
-            <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5, background: 'rgba(255,255,255,0.05)', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {post.post_type}
-            </span>
-          )}
+// ── Challenge card ────────────────────────────────────────────────────────────
+function ChallengeCard({ challenge, now }) {
+  const start     = new Date(challenge.start_date), end = new Date(challenge.end_date);
+  const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
+  const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
+  const remaining = Math.max(0, totalDays - elapsed);
+  const pct       = Math.min(100, Math.round((elapsed / totalDays) * 100));
+  return (
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(245,158,11,0.15)', overflow: 'hidden', marginBottom: 12, breakInside: 'avoid' }}>
+      <div style={{ height: 80, background: 'linear-gradient(135deg,#1a1033,#3b1a5e,#6d28d9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Trophy style={{ width: 28, height: 28, color: 'rgba(245,158,11,0.6)' }}/>
+        <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 4, padding: '1px 6px' }}>Challenge</span>
+        <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: remaining <= 3 ? '#f87171' : 'var(--text3)', background: 'rgba(0,0,0,0.3)', borderRadius: 4, padding: '1px 6px' }}>{remaining}d left</span>
+      </div>
+      <div style={{ padding: '10px 14px 12px' }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 6px' }}>{challenge.title}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>👥 {challenge.participants?.length || 0} joined</span>
+        </div>
+        <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
         </div>
       </div>
     </div>
   );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [],
 }) {
+  const [activeFilter, setActiveFilter] = useState('all');
+
   const allPosts = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  const gymPosts    = allPosts.filter(p => p.member_id || p.gym_id);
+  const memberPosts = allPosts.filter(p => p.user_id && !p.gym_id);
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+
+  const FILTERS = [
+    { id: 'all',        label: 'All',          count: allPosts.length + upcomingEvents.length + activeChallenges.length },
+    { id: 'gym',        label: 'Gym Posts',    count: allPosts.length },
+    { id: 'members',    label: 'Member Posts', count: memberPosts.length },
+    { id: 'events',     label: 'Events',       count: upcomingEvents.length },
+    { id: 'challenges', label: 'Challenges',   count: activeChallenges.length },
+  ];
+
+  const feedItems = useMemo(() => {
+    switch (activeFilter) {
+      case 'gym':        return { posts: gymPosts,    events: [], challenges: [] };
+      case 'members':    return { posts: memberPosts, events: [], challenges: [] };
+      case 'events':     return { posts: [], events: upcomingEvents, challenges: [] };
+      case 'challenges': return { posts: [], events: [], challenges: activeChallenges };
+      default:           return { posts: allPosts, events: upcomingEvents, challenges: activeChallenges };
+    }
+  }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges]);
+
+  // Interleave all feed items for the 'all' view
+  const flatFeedItems = useMemo(() => {
+    const items = [
+      ...feedItems.posts.map(p => ({ type: 'post', data: p, date: new Date(p.created_date || 0) })),
+      ...feedItems.events.map(e => ({ type: 'event', data: e, date: new Date(e.event_date || 0) })),
+      ...feedItems.challenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date || 0) })),
+    ];
+    return items.sort((a, b) => b.date - a.date);
+  }, [feedItems]);
+
+  // Split into two columns
+  const col1 = flatFeedItems.filter((_, i) => i % 2 === 0);
+  const col2 = flatFeedItems.filter((_, i) => i % 2 === 1);
 
   const milestones = useMemo(() => {
     const acc = {}, userIdByName = {};
@@ -208,33 +306,88 @@ export default function TabContent({
           </div>
         </div>
 
-        {/* Feed header */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)' }}>Feed</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 6, padding: '1px 7px' }}>{allPosts.length}</span>
-          </div>
-          <button
+        {/* Composer */}
+        <div style={{ flexShrink: 0, marginBottom: 10 }}>
+          <div
             onClick={() => openModal('post')}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-            <Plus style={{ width: 11, height: 11 }}/> New Post
-          </button>
-        </div>
-
-        {/* Posts feed — only this scrolls */}
-        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: 2 }}>
-          {allPosts.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 24 }}>
-              {allPosts.map((post, i) => (
-                <CompactPost key={post.id || i} post={post} index={i}/>
+            style={{ borderRadius: 10, background: 'var(--card)', border: '1px solid var(--border)', padding: '10px 14px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <Avatar name="G" size={28}/>
+              <span style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500 }}>What's happening in your gym?</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                { icon: ImageIcon, label: 'Image',     color: '#38bdf8', bg: 'rgba(14,165,233,0.1)',  border: 'rgba(14,165,233,0.2)' },
+                { icon: Calendar,  label: 'Event',     color: '#34d399', bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.2)', fn: () => openModal('event') },
+                { icon: Trophy,    label: 'Challenge', color: '#fbbf24', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)', fn: () => openModal('challenge') },
+              ].map(({ icon: Icon, label, color, bg, border, fn }, i) => (
+                <button
+                  key={i}
+                  onClick={e => { e.stopPropagation(); fn && fn(); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: bg, border: `1px solid ${border}`, color, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                  <Icon style={{ width: 12, height: 12 }}/> {label}
+                </button>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, overflowX: 'auto', paddingBottom: 2 }}>
+          {FILTERS.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 12px', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
+                fontSize: 11, fontWeight: 700, transition: 'all 0.15s',
+                background: activeFilter === f.id ? 'rgba(14,165,233,0.15)' : 'rgba(255,255,255,0.04)',
+                border: activeFilter === f.id ? '1px solid rgba(14,165,233,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                color: activeFilter === f.id ? '#38bdf8' : 'var(--text3)',
+              }}>
+              {f.label}
+              {f.count > 0 && (
+                <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 5px', borderRadius: 4, background: activeFilter === f.id ? 'rgba(14,165,233,0.2)' : 'rgba(255,255,255,0.06)', color: activeFilter === f.id ? '#38bdf8' : 'var(--text3)' }}>
+                  {f.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Two-column feed — only this scrolls */}
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          {flatFeedItems.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start' }}>
+              {/* Column 1 */}
+              <div>
+                {col1.map((item, i) => {
+                  if (item.type === 'post')      return <FeedCard key={item.data.id || i} post={item.data}/>;
+                  if (item.type === 'event')     return <EventCard key={item.data.id || i} event={item.data} now={now}/>;
+                  if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now}/>;
+                  return null;
+                })}
+              </div>
+              {/* Column 2 */}
+              <div>
+                {col2.map((item, i) => {
+                  if (item.type === 'post')      return <FeedCard key={item.data.id || i} post={item.data}/>;
+                  if (item.type === 'event')     return <EventCard key={item.data.id || i} event={item.data} now={now}/>;
+                  if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now}/>;
+                  return null;
+                })}
+              </div>
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50%', gap: 12 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MessageSquarePlus style={{ width: 20, height: 20, color: 'rgba(14,165,233,0.4)' }}/>
               </div>
-              <p style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500, margin: 0 }}>No posts yet</p>
+              <p style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500, margin: 0 }}>Nothing here yet</p>
               <button onClick={() => openModal('post')} style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>
                 Create first post
               </button>
@@ -386,28 +539,6 @@ export default function TabContent({
             </div>
           </Card>
         )}
-
-        {/* Recent Posts */}
-        <Card style={{ padding: 14, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Recent Posts</div>
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 7px', borderRadius: 6, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 9, height: 9 }}/>
-            </button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {posts.length > 0 ? posts.slice(0, 3).map((post) => (
-              <div key={post.id}
-                style={{ padding: '7px 8px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
-                {post.content?.split('\n')[0] || post.title || 'Post'}
-              </div>
-            )) : (
-              <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '10px 0' }}>No posts yet</div>
-            )}
-          </div>
-        </Card>
 
         {/* Upcoming Events */}
         <Card style={{ padding: 14, flexShrink: 0 }}>
