@@ -572,14 +572,3 @@ export default function TabAnalytics({
     </div>
   );
 }
-
-// ── Radar tooltip ─────────────────────────────────────────────────────────────
-function RadarTip({ active, payload }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="custom-tooltip">
-      <p style={{ color: 'var(--text2)', fontSize: 11, fontWeight: 700 }}>{payload[0].payload.subject}</p>
-      <p style={{ color: '#a78bfa', fontWeight: 800, fontSize: 13 }}>{Math.round(payload[0].value)}%</p>
-    </div>
-  );
-}
