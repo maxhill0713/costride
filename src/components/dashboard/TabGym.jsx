@@ -54,6 +54,20 @@ export default function TabGym({ selectedGym, classes, coaches, openModal }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <Card style={{ padding: 20 }}>
+          <SectionTitle action={() => openModal('heroPhoto')} actionLabel="Edit">Hero Photo</SectionTitle>
+          {selectedGym?.image_url ? (
+            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 160 }}>
+              <img src={selectedGym.image_url} alt="Gym" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <button onClick={() => openModal('heroPhoto')} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.3)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0)'} />
+            </div>
+          ) : (
+            <div onClick={() => openModal('heroPhoto')} style={{ padding: '24px', borderRadius: 12, border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', color: 'var(--text3)', fontSize: 12, fontWeight: 600 }}>
+              <ImageIcon style={{ width: 16, height: 16 }}/> Add Hero Photo
+            </div>
+          )}
+        </Card>
+
+        <Card style={{ padding: 20 }}>
           <SectionTitle action={() => openModal('photos')} actionLabel="Manage">Photo Gallery</SectionTitle>
           {selectedGym?.gallery?.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 6 }}>
