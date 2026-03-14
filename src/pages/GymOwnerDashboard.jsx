@@ -288,6 +288,12 @@ const GRADIENT_OVERRIDE = `
 export default function GymOwnerDashboard() {
   const [tab, setTab]               = useState('overview');
   const [collapsed, setCollapsed]   = useState(false);
+  const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen]       = useState(false);
   const [modal, setModal]           = useState(null);
