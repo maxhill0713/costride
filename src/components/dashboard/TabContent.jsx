@@ -196,13 +196,14 @@ function ClassCard({ gymClass }) {
 }
 
 // ── Poll card ─────────────────────────────────────────────────────────────────
-function PollCard({ poll }) {
+function PollCard({ poll, onDelete }) {
   const votes = poll.voters?.length || 0;
   return (
     <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(139,92,246,0.15)', padding: '12px 14px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <BarChart2 style={{ width: 13, height: 13, color: '#a78bfa' }}/>
         <span style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 5, padding: '1px 7px' }}>Poll</span>
+        <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(poll.id)}/></div>
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 8px' }}>{poll.title}</p>
       <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>{votes} {votes === 1 ? 'vote' : 'votes'}</div>
