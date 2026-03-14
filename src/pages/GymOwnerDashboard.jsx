@@ -383,10 +383,12 @@ export default function GymOwnerDashboard() {
               <Plus style={{ width: 14, height: 14 }}/> New Post
             </button>
             <div style={{ position: 'relative' }}>
-              <button style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text2)', cursor: 'pointer', position: 'relative' }}>
-                <Bell style={{ width: 15, height: 15 }}/>
-                {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid var(--sidebar)' }}/>}
-              </button>
+              <Link to={createPageUrl('NotificationsHub')}>
+                <button style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text2)', cursor: 'pointer', position: 'relative' }}>
+                  <Bell style={{ width: 15, height: 15 }}/>
+                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid var(--sidebar)' }}/>}
+                </button>
+              </Link>
             </div>
             <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
               <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
