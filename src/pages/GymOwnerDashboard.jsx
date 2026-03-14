@@ -46,14 +46,14 @@ const NAV = [
 // Overrides: make all cards/panels use frosted glass so the gradient bleeds through
 const GRADIENT_OVERRIDE = `
   .dash-root {
-    --bg:      #07101f;
-    --sidebar: #080e1c;
-    --card:    #0c1526;
-    --card2:   #0a1220;
-    --border:  rgba(255, 255, 255, 0.07);
+    --bg:      #060c18;
+    --sidebar: #0d1829;
+    --card:    #111f35;
+    --card2:   #0f1c30;
+    --border:  rgba(255, 255, 255, 0.09);
     --text1:   #f1f5f9;
     --text2:   #94a3b8;
-    --text3:   #475569;
+    --text3:   #4a5568;
     --cyan:    #38bdf8;
     --green:   #34d399;
     --red:     #f87171;
@@ -193,7 +193,7 @@ export default function GymOwnerDashboard() {
   ].filter(Boolean).slice(0, 4);
 
   const Splash = ({ children }) => (
-    <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#07101f' }}>
+    <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#060c18' }}>
       <div style={{ background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 40, maxWidth: 400, width: '100%', textAlign: 'center' }}>{children}</div>
     </div>
   );
@@ -216,7 +216,7 @@ export default function GymOwnerDashboard() {
       style={{
         display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative',
         // Professional deep navy
-        background: '#07101f',
+        background: '#060c18',
       }}
     >
       <style>{DASH_STYLE}</style>
@@ -225,12 +225,12 @@ export default function GymOwnerDashboard() {
       {/* ─── SIDEBAR ──────────────────────────────────────────────────────── */}
       <aside style={{
         width: collapsed ? 64 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
-        background: '#080e1c',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
+        background: '#0d1829',
+        borderRight: '1px solid rgba(255,255,255,0.09)',
         display: 'flex', flexDirection: 'column',
         transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}>
-        <div style={{ padding: collapsed ? '16px 0' : '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+        <div style={{ padding: collapsed ? '16px 0' : '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.09)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#0ea5e9,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
               <Dumbbell style={{ width: 17, height: 17, color: '#fff' }}/>
@@ -286,7 +286,7 @@ export default function GymOwnerDashboard() {
           </div>
         )}
 
-        <div style={{ padding: '0 8px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 10, flexShrink: 0 }}>
+        <div style={{ padding: '0 8px 14px', borderTop: '1px solid rgba(255,255,255,0.09)', paddingTop: 10, flexShrink: 0 }}>
           {[
             { icon: Eye,   label: 'View Gym Page', to: createPageUrl('GymCommunity')+'?id='+selectedGym?.id },
             { icon: Users, label: 'Member View',   to: createPageUrl('Home') },
@@ -313,8 +313,8 @@ export default function GymOwnerDashboard() {
           height: 56, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px',
-          background: '#080e1c',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          background: '#0d1829',
+          borderBottom: '1px solid rgba(255,255,255,0.09)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <button onClick={() => setCollapsed(o=>!o)} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', cursor: 'pointer' }}>
@@ -355,7 +355,7 @@ export default function GymOwnerDashboard() {
               <Link to={createPageUrl('NotificationsHub')}>
                 <button style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', cursor: 'pointer', position: 'relative' }}>
                   <Bell style={{ width: 15, height: 15 }}/>
-                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #080e1c' }}/>}
+                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #0d1829' }}/>}
                 </button>
               </Link>
             </div>
