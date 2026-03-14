@@ -397,7 +397,7 @@ export default function TabAnalytics({
               <Flame style={{ width: 14, height: 14, color: '#22d3ee' }}/>
             </div>
           </div>
-          <HeatmapChart checkIns={checkIns}/>
+          <HeatmapChart gymId={gymId}/>
         </Card>
 
         {/* Peak hours */}
