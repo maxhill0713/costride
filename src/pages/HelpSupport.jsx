@@ -101,11 +101,11 @@ export default function HelpSupport() {
   const generalFaqs = [
     {
       q: 'How do I join a gym?',
-      a: 'Tap the Gyms tab and search for your gym by name, or ask your gym owner for their invite code and enter it on the Gyms page. Once you join, you\'ll see the gym\'s community feed and be able to check in.',
+      a: 'Tap the Gyms tab to browse or search for your gym. To join with an invite code, tap the "Join with Code" button in the top right of the Gyms page and enter the code your gym owner shared with you. Once you join, you\'ll see the gym\'s community feed.',
     },
     {
       q: 'How do I check in to the gym?',
-      a: 'On the Home page, tap the blue Check In button at the top. You must be a member of a gym for this button to appear. Each day you can only check in once.',
+      a: 'On the Home page, tap the blue Check In button at the top. This button only appears if you\'re a member of a gym and haven\'t already checked in today — it disappears once you\'ve checked in for the day.',
     },
     {
       q: 'How do I log a workout?',
