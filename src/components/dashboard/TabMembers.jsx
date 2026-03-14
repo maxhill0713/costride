@@ -533,21 +533,25 @@ export default function TabMembers({
           </div>
 
           {/* Sort row */}
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {['Engaged','Active','At Risk','New','Beginner'].map(tag => (
-                <button key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text3)', cursor: 'pointer' }}>
-                  {tag} <ChevronDown style={{ width: 9, height: 9 }}/>
-                </button>
-              ))}
-            </div>
-            <div style={{ flex: 1 }}/>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)' }}>
-              <Bell style={{ width: 10, height: 10, color: 'var(--cyan)' }}/>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)' }}>Click a member to notify</span>
-            </div>
-            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>Sort by</span>
-            <select className="sort-select" value={memberSort} onChange={e => setMemberSort(e.target.value)}>
+          <div style={{ padding: isMobile ? '10px 12px' : '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+            {!isMobile && (
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['Engaged','Active','At Risk','New','Beginner'].map(tag => (
+                  <button key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text3)', cursor: 'pointer' }}>
+                    {tag} <ChevronDown style={{ width: 9, height: 9 }}/>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: isMobile ? 'auto' : 0 }}/>
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)' }}>
+                <Bell style={{ width: 10, height: 10, color: 'var(--cyan)' }}/>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)' }}>Click a member to notify</span>
+              </div>
+            )}
+            <span style={{ fontSize: isMobile ? 10 : 11, color: 'var(--text3)', fontWeight: 600 }}>Sort</span>
+            <select className="sort-select" value={memberSort} onChange={e => setMemberSort(e.target.value)} style={{ fontSize: isMobile ? 11 : 12 }}>
               <option value="recentlyActive">Recently Active</option>
               <option value="mostVisits">Most Visits</option>
               <option value="newest">Newest First</option>
