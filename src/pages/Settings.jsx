@@ -331,6 +331,11 @@ export default function Settings() {
         </div>
       </div>
 
+      <LogoutDialog
+        open={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+      />
+
       <DeleteAccountDialog
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
