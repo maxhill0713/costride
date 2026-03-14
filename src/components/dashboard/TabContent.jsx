@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { format, subDays } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart } from 'lucide-react';
+import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, Dumbbell } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 import PostCard from '../feed/PostCard';
 
