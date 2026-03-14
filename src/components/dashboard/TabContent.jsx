@@ -474,10 +474,7 @@ export default function TabContent({
       </div>
     </div>
   );
-}import React, { useMemo } from 'react';
-import { format } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight } from 'lucide-react';
-import { Card, SectionTitle, Empty, Avatar } from './DashboardPrimitives';
+}
 import PostCard from '../feed/PostCard';
 
 export default function TabContent({
