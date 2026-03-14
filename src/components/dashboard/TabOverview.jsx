@@ -10,7 +10,7 @@ import {
   Pencil, Calendar, Activity, Sparkles, MoreHorizontal
 } from 'lucide-react';
 import {
-  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip
+  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip, TodaySnapshot
 } from './DashboardPrimitives';
 import { StreakCelebrations, GymSetupChecklist, SmartNudges } from './OverviewWidgets';
 
