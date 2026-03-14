@@ -348,12 +348,12 @@ export const HealthScore = ({ score, label, sub }) => {
 };
 
 // ─── Today's Snapshot ─────────────────────────────────────────────────────────
-export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenges = [], classes = [], allMemberships = [] }) => {
+export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenges = [], classes = [], allMemberships = [], todayCI }) => {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
 
-  const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
+  const checkInsToday = todayCI ?? checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
 
   const interactions = [
     ...posts.filter(p => new Date(p.created_date) >= todayStart),
