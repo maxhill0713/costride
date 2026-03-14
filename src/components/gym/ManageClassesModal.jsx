@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Calendar, Trash2, Plus, Clock, Edit, X, Check, MapPin, Users, Dumbbell, ChevronDown } from 'lucide-react';
+import { Calendar, Trash2, Plus, Clock, Edit, X, Check, MapPin, Users, Dumbbell, ChevronDown, ImageIcon, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAYS_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
