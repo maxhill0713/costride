@@ -614,17 +614,19 @@ export default function TabMembers({
           )}
 
           {/* Table header */}
-          <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
-            </div>
-            {[{ label: 'Member', icon: ChevronUp }, { label: 'Status' }, { label: 'Last Visit', icon: ChevronUp }, { label: 'Membership' }, { label: 'Risk Level' }].map((col, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col.label}</span>
-                {col.icon && <col.icon style={{ width: 9, height: 9, color: 'var(--text3)' }}/>}
+          {!isMobile && (
+            <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
               </div>
-            ))}
-          </div>
+              {[{ label: 'Member', icon: ChevronUp }, { label: 'Status' }, { label: 'Last Visit', icon: ChevronUp }, { label: 'Membership' }, { label: 'Risk Level' }].map((col, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col.label}</span>
+                  {col.icon && <col.icon style={{ width: 9, height: 9, color: 'var(--text3)' }}/>}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Table body */}
           <div style={{ minHeight: 300 }}>
