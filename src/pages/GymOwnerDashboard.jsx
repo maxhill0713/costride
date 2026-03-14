@@ -47,17 +47,104 @@ const NAV = [
 const GRADIENT_OVERRIDE = `
   .dash-root {
     --bg:      #060c18;
-    --sidebar: #0d1829;
-    --card:    #111f35;
-    --card2:   #0f1c30;
-    --border:  rgba(255, 255, 255, 0.12);
-    --text1:   #f1f5f9;
+    --sidebar: #0a1628;
+    --card:    #0f1e32;
+    --card2:   #0d1b2e;
+    --border:  rgba(255,255,255,0.10);
+    --text1:   #f0f4f8;
     --text2:   #94a3b8;
     --text3:   #64748b;
     --cyan:    #38bdf8;
     --green:   #34d399;
     --red:     #f87171;
   }
+
+  /* ── Card top-edge accent ── */
+  .dash-root .card-hover {
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  .dash-root .card-hover::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 14px; right: 14px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.28), transparent);
+    pointer-events: none;
+    border-radius: 0;
+  }
+
+  /* ── Nav items ── */
+  .dash-root .nav-item {
+    border-left: 3px solid transparent !important;
+    border-radius: 0 9px 9px 0 !important;
+    padding-left: 9px !important;
+    transition: all 0.14s ease !important;
+  }
+  .dash-root .nav-item:not(.active) {
+    color: #8b9eb8 !important;
+  }
+  .dash-root .nav-item:not(.active):hover {
+    color: #c2d4e8 !important;
+    background: rgba(255,255,255,0.05) !important;
+    border-left-color: rgba(56,189,248,0.2) !important;
+  }
+  .dash-root .nav-item.active {
+    background: rgba(56,189,248,0.1) !important;
+    color: #38bdf8 !important;
+    border-left-color: #38bdf8 !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── Quick action buttons ── */
+  .dash-root .qa-btn {
+    border-left: 2px solid transparent !important;
+    transition: all 0.14s ease !important;
+  }
+  .dash-root .qa-btn:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-left-color: rgba(56,189,248,0.45) !important;
+    transform: translateX(2px);
+  }
+
+  /* ── Priority rows ── */
+  .dash-root .priority-row {
+    border-left: 2px solid transparent !important;
+    border-radius: 10px !important;
+    transition: all 0.14s ease !important;
+  }
+  .dash-root .priority-row:hover {
+    background: rgba(255,255,255,0.04) !important;
+    border-left-color: rgba(56,189,248,0.35) !important;
+  }
+
+  /* ── Filter tabs ── */
+  .dash-root .filter-tab {
+    color: #8b9eb8 !important;
+    transition: all 0.14s ease !important;
+  }
+  .dash-root .filter-tab:hover {
+    color: #c2d4e8 !important;
+  }
+  .dash-root .filter-tab.active {
+    color: #38bdf8 !important;
+    background: rgba(56,189,248,0.1) !important;
+    border-color: rgba(56,189,248,0.25) !important;
+  }
+
+  /* ── Member rows ── */
+  .dash-root .member-row {
+    transition: background 0.12s ease !important;
+  }
+  .dash-root .member-row:hover {
+    background: rgba(255,255,255,0.03) !important;
+    cursor: pointer;
+  }
+
+  /* ── Scrollbar ── */
+  .dash-root ::-webkit-scrollbar { width: 5px; height: 5px; }
+  .dash-root ::-webkit-scrollbar-track { background: transparent; }
+  .dash-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+  .dash-root ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 `;
 
 export default function GymOwnerDashboard() {
@@ -221,71 +308,36 @@ export default function GymOwnerDashboard() {
     >
       <style>{DASH_STYLE}</style>
       <style>{GRADIENT_OVERRIDE}</style>
-      <style>{`
-        /* Visible card top accent lines */
-        .dash-root .card-hover {
-          position: relative;
-          overflow: hidden;
-        }
-        .dash-root .card-hover::after {
-          content: '';
-          position: absolute;
-          top: 0; left: 16px; right: 16px; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
-          pointer-events: none;
-        }
-        /* Quick action buttons — coloured left border on hover */
-        .dash-root .qa-btn {
-          border-left: 2px solid transparent !important;
-          transition: border-color 0.15s, background 0.15s !important;
-        }
-        .dash-root .qa-btn:hover {
-          border-left-color: rgba(56,189,248,0.5) !important;
-          background: rgba(255,255,255,0.07) !important;
-        }
-        /* Nav items — visible on hover */
-        .dash-root .nav-item:not(.active):hover {
-          color: #94a3b8 !important;
-          background: rgba(255,255,255,0.04) !important;
-        }
-        /* Priority rows */
-        .dash-root .priority-row {
-          border-left: 2px solid transparent;
-          transition: border-color 0.15s;
-        }
-        .dash-root .priority-row:hover {
-          border-left-color: rgba(56,189,248,0.35);
-        }
-      `}</style>
 
       {/* ─── SIDEBAR ──────────────────────────────────────────────────────── */}
       <aside style={{
-        width: collapsed ? 64 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
-        background: '#0d1829',
-        borderRight: '1px solid rgba(255,255,255,0.09)',
+        width: collapsed ? 60 : 224, flexShrink: 0, height: '100%', overflow: 'hidden',
+        background: '#0a1628',
+        borderRight: '1px solid rgba(255,255,255,0.08)',
         display: 'flex', flexDirection: 'column',
         transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}>
-        <div style={{ padding: collapsed ? '16px 0' : '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.09)', flexShrink: 0 }}>
+        {/* Logo / gym name */}
+        <div style={{ padding: collapsed ? '18px 0' : '18px 14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#0ea5e9,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
-              <Dumbbell style={{ width: 17, height: 17, color: '#fff' }}/>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#0ea5e9,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 18px rgba(14,165,233,0.35)' }}>
+              <Dumbbell style={{ width: 16, height: 16, color: '#fff' }}/>
             </div>
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>{selectedGym?.name || 'Dashboard'}</div>
-                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Gym Owner</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>{selectedGym?.name || 'Dashboard'}</div>
+                <div style={{ fontSize: 10, color: '#38bdf8', fontWeight: 600, letterSpacing: '0.04em', marginTop: 1 }}>GYM OWNER</div>
               </div>
             )}
           </div>
           {!collapsed && approvedGyms.length > 1 && (
             <div style={{ position: 'relative', marginTop: 10 }}>
-              <button onClick={() => setGymOpen(o=>!o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={() => setGymOpen(o=>!o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedGym?.name}</span>
                 <ChevronDown style={{ width: 12, height: 12, flexShrink: 0, transform: gymOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}/>
               </button>
               {gymOpen && (
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '110%', borderRadius: 10, overflow: 'hidden', background: 'rgba(2,6,23,0.95)', backdropFilter: 'blur(16px)', border: '1px solid rgba(56,189,248,0.25)', zIndex: 20 }}>
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '110%', borderRadius: 10, overflow: 'hidden', background: '#060c18', border: '1px solid rgba(56,189,248,0.2)', zIndex: 20, boxShadow: '0 12px 32px rgba(0,0,0,0.5)' }}>
                   {approvedGyms.map(g => <button key={g.id} onClick={() => { setSelectedGym(g); setGymOpen(false); }} style={{ width: '100%', textAlign: 'left', padding: '9px 12px', fontSize: 12, fontWeight: 600, background: selectedGym?.id===g.id?'rgba(56,189,248,0.1)':'transparent', color: selectedGym?.id===g.id?'#38bdf8':'#94a3b8', border: 'none', cursor: 'pointer' }}>{g.name}</button>)}
                 </div>
               )}
@@ -293,114 +345,168 @@ export default function GymOwnerDashboard() {
           )}
         </div>
 
-        <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '12px 0 12px', overflowY: 'auto' }}>
+          {!collapsed && <div style={{ fontSize: 9, fontWeight: 800, color: '#334155', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 16px', marginBottom: 6 }}>Menu</div>}
           {NAV.map(item => {
             const active = tab === item.id;
             return (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`nav-item ${active ? 'active' : ''}`}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '10px 0' : '9px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: active ? 'rgba(56,189,248,0.1)' : 'transparent', color: active ? '#38bdf8' : '#64748b', fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', marginBottom: 2, borderRadius: 9, transition: 'all 0.15s' }}>
-                <item.icon style={{ width: 17, height: 17, flexShrink: 0 }}/>
-                {!collapsed && <span>{item.label}</span>}
-                {!collapsed && active && <div style={{ marginLeft: 'auto', width: 5, height: 5, borderRadius: '50%', background: '#38bdf8' }}/>}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center',
+                  gap: collapsed ? 0 : 10,
+                  padding: collapsed ? '11px 0' : '9px 14px',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  border: 'none', cursor: 'pointer', marginBottom: 1,
+                  fontSize: 13,
+                }}>
+                <item.icon style={{ width: 16, height: 16, flexShrink: 0 }}/>
+                {!collapsed && <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>}
+                {!collapsed && active && (
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8', flexShrink: 0 }}/>
+                )}
               </button>
             );
           })}
         </nav>
 
+        {/* Retention Pro upsell */}
         {!collapsed && (
-          <div style={{ padding: '0 8px 10px', flexShrink: 0 }}>
+          <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
             <Link to={createPageUrl('Plus')}>
-              <div style={{ padding: '12px 14px', borderRadius: 12, background: 'linear-gradient(135deg,rgba(139,92,246,0.18),rgba(236,72,153,0.1))', border: '1px solid rgba(139,92,246,0.25)', cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <Crown style={{ width: 13, height: 13, color: '#a78bfa' }}/>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#f1f5f9' }}>Retention Pro</span>
+              <div style={{ padding: '11px 13px', borderRadius: 11, background: 'linear-gradient(135deg,rgba(139,92,246,0.16),rgba(236,72,153,0.08))', border: '1px solid rgba(139,92,246,0.22)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)' }}/>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
+                  <Crown style={{ width: 12, height: 12, color: '#a78bfa' }}/>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>Retention Pro</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#9b7de0' }}>From £49.99/mo</div>
+                <div style={{ fontSize: 10, color: '#9b7de0', fontWeight: 600 }}>Unlock advanced analytics · From £49.99/mo</div>
               </div>
             </Link>
           </div>
         )}
 
-        <div style={{ padding: '0 8px 14px', borderTop: '1px solid rgba(255,255,255,0.09)', paddingTop: 10, flexShrink: 0 }}>
-          {[
-            { icon: Eye,   label: 'View Gym Page', to: createPageUrl('GymCommunity')+'?id='+selectedGym?.id },
-            { icon: Users, label: 'Member View',   to: createPageUrl('Home') },
-          ].map((l,i) => (
-            <Link key={i} to={l.to}>
-              <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '9px 0' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: '#64748b', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 8, marginBottom: 2 }}>
-                <l.icon style={{ width: 15, height: 15, flexShrink: 0 }}/>
-                {!collapsed && <span>{l.label}</span>}
-              </button>
-            </Link>
-          ))}
-          <button onClick={() => base44.auth.logout()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '9px 0' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: '#f87171', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 8 }}>
-            <LogOut style={{ width: 15, height: 15, flexShrink: 0 }}/>
-            {!collapsed && <span>Log Out</span>}
-          </button>
+        {/* Bottom utility links */}
+        <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {!collapsed && (
+            <div style={{ padding: '10px 10px 4px' }}>
+              <div style={{ fontSize: 9, fontWeight: 800, color: '#334155', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, paddingLeft: 4 }}>Links</div>
+              {[
+                { icon: Eye,   label: 'View Gym Page', to: createPageUrl('GymCommunity')+'?id='+selectedGym?.id },
+                { icon: Users, label: 'Member View',   to: createPageUrl('Home') },
+              ].map((l,i) => (
+                <Link key={i} to={l.to}>
+                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: '7px 8px', border: 'none', background: 'transparent', color: '#8b9eb8', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 8, marginBottom: 1, transition: 'color 0.12s' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#c2d4e8'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#8b9eb8'}>
+                    <l.icon style={{ width: 14, height: 14, flexShrink: 0 }}/>
+                    <span>{l.label}</span>
+                  </button>
+                </Link>
+              ))}
+            </div>
+          )}
+          {collapsed && (
+            <div style={{ padding: '8px 0' }}>
+              {[
+                { icon: Eye, to: createPageUrl('GymCommunity')+'?id='+selectedGym?.id },
+                { icon: Users, to: createPageUrl('Home') },
+              ].map((l,i) => (
+                <Link key={i} to={l.to}>
+                  <button style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '9px 0', border: 'none', background: 'transparent', color: '#64748b', cursor: 'pointer' }}>
+                    <l.icon style={{ width: 15, height: 15 }}/>
+                  </button>
+                </Link>
+              ))}
+            </div>
+          )}
+          <div style={{ padding: collapsed ? '4px 0 14px' : '0 10px 14px' }}>
+            <button onClick={() => base44.auth.logout()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: collapsed ? '9px 0' : '7px 8px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: '#f87171', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 8, transition: 'opacity 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              <LogOut style={{ width: 14, height: 14, flexShrink: 0 }}/>
+              {!collapsed && <span>Log Out</span>}
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* ─── MAIN ─────────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
-        {/* Frosted header */}
+        {/* ─── HEADER ───────────────────────────────────────────────────── */}
         <header style={{
-          height: 56, flexShrink: 0,
+          height: 58, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 22px',
-          background: '#0d1829',
-          borderBottom: '1px solid rgba(255,255,255,0.09)',
+          padding: '0 24px',
+          background: '#0a1628',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          position: 'relative',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <button onClick={() => setCollapsed(o=>!o)} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', cursor: 'pointer' }}>
-              <Menu style={{ width: 15, height: 15 }}/>
+          {/* subtle bottom gradient line */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.15) 30%, rgba(56,189,248,0.15) 70%, transparent 100%)', pointerEvents: 'none' }}/>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button onClick={() => setCollapsed(o=>!o)} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#8b9eb8', cursor: 'pointer', transition: 'all 0.12s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#f0f4f8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#8b9eb8'; }}>
+              <Menu style={{ width: 14, height: 14 }}/>
             </button>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {tab === 'members' ? 'Members' : tab === 'content' ? 'Content' : tab === 'analytics' ? 'Analytics' : selectedGym?.name || 'Dashboard'}
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                {tab === 'members' ? 'Members' : tab === 'content' ? 'Content' : tab === 'analytics' ? 'Analytics' : tab === 'gym' ? 'Settings' : selectedGym?.name || 'Dashboard'}
               </div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 11, color: '#4a6080', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
                 {tab === 'members'
-                  ? <span>{allMemberships.length} members · {selectedGym?.name}</span>
-                  : <>{format(now, 'EEEE, d MMMM yyyy')} <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sun style={{ width: 11, height: 11 }}/> 18°C</span></>
+                  ? <><span style={{ color: '#38bdf8', fontWeight: 700 }}>{allMemberships.length}</span><span> members · {selectedGym?.name}</span></>
+                  : <>{format(now, 'EEEE, d MMMM yyyy')} <span style={{ color: '#334155' }}>·</span> <Sun style={{ width: 10, height: 10 }}/> <span>18°C</span></>
                 }
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             {selectedGym?.join_code && (
-              <button onClick={() => setShowPoster(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', color: '#34d399', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
-                <QrCode style={{ width: 13, height: 13 }}/>
-                <span style={{ fontFamily: 'monospace', letterSpacing: '0.15em', fontSize: 13 }}>{selectedGym.join_code}</span>
-                <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.7 }}>· Flyer</span>
+              <button onClick={() => setShowPoster(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 9, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.22)', color: '#34d399', fontSize: 11, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.02em' }}>
+                <QrCode style={{ width: 12, height: 12 }}/>
+                <span style={{ fontFamily: 'monospace', letterSpacing: '0.14em' }}>{selectedGym.join_code}</span>
+                <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.65, letterSpacing: 0 }}>· Flyer</span>
               </button>
             )}
             {atRisk > 0 && (
-              <button onClick={() => setTab('members')} style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <AlertTriangle style={{ width: 12, height: 12 }}/>{atRisk} at risk
+              <button onClick={() => setTab('members')} style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <AlertTriangle style={{ width: 11, height: 11 }}/>{atRisk} at risk
               </button>
             )}
-            <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.22)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-              <QrCode style={{ width: 14, height: 14 }}/> Scan QR
+            <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(56,189,248,0.09)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(56,189,248,0.16)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(56,189,248,0.09)'}>
+              <QrCode style={{ width: 13, height: 13 }}/> Scan QR
             </button>
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', color: '#f1f5f9', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 14, height: 14 }}/> New Post
+            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(255,255,255,0.06)', color: '#f0f4f8', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}>
+              <Plus style={{ width: 13, height: 13 }}/> New Post
             </button>
-            <div style={{ position: 'relative' }}>
-              <Link to={createPageUrl('NotificationsHub')}>
-                <button style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', cursor: 'pointer', position: 'relative' }}>
-                  <Bell style={{ width: 15, height: 15 }}/>
-                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #0d1829' }}/>}
-                </button>
-              </Link>
-            </div>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
-              <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+            {/* Bell */}
+            <Link to={createPageUrl('NotificationsHub')}>
+              <button style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#8b9eb8', cursor: 'pointer', position: 'relative', transition: 'all 0.12s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#f0f4f8'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#8b9eb8'; }}>
+                <Bell style={{ width: 14, height: 14 }}/>
+                {atRisk > 0 && <div style={{ position: 'absolute', top: 7, right: 7, width: 6, height: 6, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #0a1628' }}/>}
+              </button>
+            </Link>
+            {/* User */}
+            <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px 5px 6px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.09)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+              <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', boxShadow: '0 0 10px rgba(14,165,233,0.3)' }}>
                 {(currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase()}
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>{(currentUser?.full_name || currentUser?.email || 'User').split(' ')[0]}</span>
-              <ChevronDown style={{ width: 12, height: 12, color: '#475569' }}/>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{(currentUser?.full_name || currentUser?.email || 'User').split(' ')[0]}</span>
+              <ChevronDown style={{ width: 11, height: 11, color: '#4a6080' }}/>
             </button>
           </div>
         </header>
