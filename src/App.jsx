@@ -7,7 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
-import Layout from './layout';
+import Layout from './Layout';
 import Home from './pages/Home';
 import Gyms from './pages/Gyms';
 import Progress from './pages/Progress';
