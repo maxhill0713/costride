@@ -870,7 +870,8 @@ export default function TabMembers({
             streakLeaderboard={streakLeaderboard}
             progressLeaderboard={[]}
           />
-        </div>}
+        </div>
+        )}
 
         {/* Mobile sidebar — below table */}
         {isMobile && (
