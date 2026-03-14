@@ -346,3 +346,73 @@ export const HealthScore = ({ score, label, sub }) => {
     </div>
   );
 };
+
+// ─── Today's Snapshot ─────────────────────────────────────────────────────────
+export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenges = [], classes = [], allMemberships = [] }) => {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+
+  const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
+
+  const interactions = [
+    ...posts.filter(p => new Date(p.created_date) >= todayStart),
+    ...polls.flatMap(p => (p.voters || []).filter(() => new Date(p.created_date) >= todayStart)),
+    ...challenges.flatMap(c => (c.participants || []).filter(() => new Date(c.start_date) >= todayStart)),
+  ].length;
+
+  const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+  const classesToday = classes.filter(c => {
+    const s = typeof c.schedule === 'string'
+      ? c.schedule.toLowerCase()
+      : JSON.stringify(c.schedule || '').toLowerCase();
+    return s.includes(todayDay.toLowerCase());
+  }).length;
+
+  const activeUserIds = new Set(checkIns.filter(c => new Date(c.check_in_date) >= sevenDaysAgo).map(c => c.user_id));
+  const inactive = allMemberships.filter(m => !activeUserIds.has(m.user_id)).length;
+
+  const stats = [
+    { label: 'Check-ins Today', value: checkInsToday, icon: Flame,         color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   border: 'rgba(245,158,11,0.2)',   glow: 'rgba(245,158,11,0.15)',   trend: checkInsToday > 0 ? '+active' : 'quiet day' },
+    { label: 'Interactions',    value: interactions,  icon: Zap,           color: '#00d4ff', bg: 'rgba(0,212,255,0.1)',     border: 'rgba(0,212,255,0.18)',   glow: 'rgba(0,212,255,0.12)',    trend: 'posts · polls · joins' },
+    { label: 'Classes Running', value: classesToday,  icon: Activity,      color: '#10b981', bg: 'rgba(16,185,129,0.1)',   border: 'rgba(16,185,129,0.18)',  glow: 'rgba(16,185,129,0.12)',   trend: 'scheduled today' },
+    { label: 'Inactive 7d+',    value: inactive,      icon: AlertTriangle, color: inactive > 0 ? '#ef4444' : '#10b981', bg: inactive > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', border: inactive > 0 ? 'rgba(239,68,68,0.18)' : 'rgba(16,185,129,0.18)', glow: inactive > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)', trend: inactive > 0 ? 'need re-engaging' : 'all active' },
+  ];
+
+  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()];
+  const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  return (
+    <div style={{ borderRadius: 18, background: 'var(--card)', border: '1px solid var(--border)', padding: '18px 18px 16px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(0,212,255,0.04)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Sparkles style={{ width: 15, height: 15, color: '#00d4ff' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', lineHeight: 1 }}>Today's Snapshot</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500, marginTop: 2 }}>{dayName}, {dateStr}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        {stats.map(({ label, value, icon: Icon, color, bg, border, glow, trend }) => (
+          <div key={label} style={{ borderRadius: 14, background: bg, border: `1px solid ${border}`, padding: '12px 12px 10px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', bottom: -10, right: -10, width: 60, height: 60, borderRadius: '50%', background: glow, filter: 'blur(16px)', pointerEvents: 'none' }} />
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+              <Icon style={{ width: 13, height: 13, color }} />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 4 }}>{value}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text1)', lineHeight: 1.2, marginBottom: 3 }}>{label}</div>
+            <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trend}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
