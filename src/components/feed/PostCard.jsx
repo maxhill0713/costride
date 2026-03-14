@@ -481,7 +481,15 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                   <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
                 </div>
               </Link>
-              {renderMenu(null)}
+              {renderMenu(
+                isOwner ? (
+                  <button onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }} disabled={updatePostMutation.isPending}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
+                    <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
+                    {post.is_favourite ? 'Unfavourite' : 'Favourite'}
+                  </button>
+                ) : null
+              )}
             </div>
             <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
             <div className="flex items-center">
