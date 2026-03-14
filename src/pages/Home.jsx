@@ -855,8 +855,8 @@ export default function Home() {
             objectFit: 'contain',
             filter: workoutLoggedToday
               ? 'drop-shadow(0 0 1px rgba(255,150,0,0.3))'
-              : 'drop-shadow(0 0 1px rgba(255,150,0,0.3)) saturate(0) brightness(1.8) sepia(1) hue-rotate(5deg) saturate(3) brightness(0.85)',
-            opacity: workoutLoggedToday ? 1 : 0.55,
+              : 'drop-shadow(0 0 1px rgba(255,150,0,0.15)) saturate(0.35) brightness(0.75)',
+            opacity: workoutLoggedToday ? 1 : 0.6,
           }} />
         <span
           className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
