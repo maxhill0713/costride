@@ -535,6 +535,25 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
+  // Fetch posts from all gyms the user is a member of
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+  const { data: gymPostsRaw = [] } = useQuery({
+    queryKey: ['gymMemberPosts', currentUser?.id, memberGymIds.join(',')],
+    queryFn: async () => {
+      if (!memberGymIds.length) return [];
+      const results = await Promise.all(
+        memberGymIds.map(gymId =>
+          base44.entities.Post.filter({ member_id: gymId, is_hidden: false }, '-created_date', 10)
+        )
+      );
+      return results.flat();
+    },
+    enabled: !!currentUser && memberGymIds.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }),
