@@ -519,7 +519,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
           </div>
         </>
       )}
-    </motion.div>
+    </div>
   );
 }
 
