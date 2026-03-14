@@ -7,7 +7,7 @@ import {
 import {
   TrendingUp, TrendingDown, ArrowUpRight, ArrowRight, Zap, Star,
   CheckCircle, Trophy, BarChart2, UserPlus, QrCode, MessageSquarePlus,
-  Pencil, Calendar, Activity, Sparkles, MoreHorizontal
+  Pencil, Calendar, Activity, Sparkles, MoreHorizontal, Flame
 } from 'lucide-react';
 import {
   Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip
