@@ -508,25 +508,23 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; touchCurrentX.current = e.touches[0].clientX; setIsDragging(false); setDragOffset(0); }}
               onTouchMove={(e) => { if (touchStartX.current === null) return; const dx = e.touches[0].clientX - touchStartX.current; const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > dy) { setIsDragging(true); touchCurrentX.current = e.touches[0].clientX; const rawOffset = dx; const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.92; const minDrag = slide === 0 ? -window.innerWidth * 0.92 : 0; setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset))); } }}
               onTouchEnd={(e) => { if (touchStartX.current === null) return; const dx = e.changedTouches[0].clientX - touchStartX.current; const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > 40 && Math.abs(dx) > dy) { setSlide(dx < 0 ? 1 : 0); } touchStartX.current = null; touchStartY.current = null; touchCurrentX.current = null; setIsDragging(false); setDragOffset(0); }}>
-              {/* Single track — both panels slide together so gap is always constant */}
+              {/* Single track slides both panels together — no overlap ever */}
+              {/* Track starts at left:0, photo is inset 5% inside it, summary follows immediately after */}
               <div style={{
                 position: 'absolute', top: 0, height: '100%',
-                display: 'flex', flexDirection: 'row', alignItems: 'stretch',
-                gap: '5%',
-                left: '5%',
-                width: '200%',
+                left: 0, width: '200%',
                 transform: isDragging
-                  ? `translateX(calc(${slide === 0 ? '0%' : '-47.5%'} + ${dragOffset * 0.5}px))`
-                  : slide === 0 ? 'translateX(0%)' : 'translateX(-47.5%)',
+                  ? `translateX(calc(${slide === 0 ? '0px' : '-45%'} + ${dragOffset * 0.5}px))`
+                  : slide === 0 ? 'translateX(0%)' : 'translateX(-45%)',
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
               }}>
-                {/* Photo panel — 45% of track = 90% of card width */}
-                <div style={{ width: '45%', height: '100%', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                {/* Photo — 5% inset from left, 45% of track wide = 90% of card, right edge at 50% of track = 100% of card */}
+                <div style={{ position: 'absolute', top: 0, height: '100%', left: '5%', width: '45%', borderRadius: '8px', overflow: 'hidden' }}>
                   <img src={post.image_url} alt="workout" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
                 </div>
-                {/* Summary panel — 45% of track = 90% of card width */}
-                <div style={{ width: '45%', height: '100%', flexShrink: 0, overflow: 'hidden' }}>
+                {/* Summary — starts at 52% of track = 4% off right edge of card (peeks 4% on first slide) */}
+                <div style={{ position: 'absolute', top: 0, height: '100%', left: '52%', width: '45%', overflow: 'hidden' }}>
                   {exerciseSummaryJSX}
                 </div>
               </div>
