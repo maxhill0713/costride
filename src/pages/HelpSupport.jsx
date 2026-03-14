@@ -113,7 +113,7 @@ export default function HelpSupport() {
     },
     {
       q: 'How do I set up a workout split?',
-      a: 'On the Home page, tap "Start Building" on the workout card, or go to Progress → Workout Split. From there you can create a weekly training schedule and assign exercises to each day.',
+      a: 'On the Home page, if you haven\'t set up a split yet, tap "Start Building" on the workout card. This opens the split builder where you can assign workout days and exercises for each day of the week. Once created, the Today\'s Workout card will show your scheduled exercises for the day.',
     },
   ];
 
