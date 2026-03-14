@@ -100,7 +100,7 @@ function EventCard({ event, now, onDelete }) {
 }
 
 // ── Challenge card ────────────────────────────────────────────────────────────
-function ChallengeCard({ challenge, now }) {
+function ChallengeCard({ challenge, now, onDelete }) {
   const start     = new Date(challenge.start_date), end = new Date(challenge.end_date);
   const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
   const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
@@ -112,6 +112,7 @@ function ChallengeCard({ challenge, now }) {
         <Trophy style={{ width: 30, height: 30, color: 'rgba(245,158,11,0.6)' }}/>
         <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 4, padding: '2px 7px' }}>Challenge</span>
         <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: remaining <= 3 ? '#f87171' : 'var(--text3)', background: 'rgba(0,0,0,0.35)', borderRadius: 4, padding: '2px 7px' }}>{remaining}d left</span>
+        <div style={{ position: 'absolute', bottom: 8, right: 8 }}><DeleteBtn onDelete={() => onDelete(challenge.id)}/></div>
       </div>
       <div style={{ padding: '10px 14px 12px' }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 6px' }}>{challenge.title}</p>
