@@ -766,8 +766,8 @@ export default function TabMembers({
           </div>
         </Card>
 
-        {/* ── Right Sidebar ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* ── Right Sidebar — Hidden on mobile, shown below on desktop ── */}
+        {!isMobile && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Alerts */}
           <Card style={{ padding: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
