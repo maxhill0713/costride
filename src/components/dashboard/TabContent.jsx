@@ -3,8 +3,24 @@ import { format, subDays } from 'date-fns';
 import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Dumbbell } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 
+// ── Delete button ─────────────────────────────────────────────────────────────
+function DeleteBtn({ onDelete }) {
+  const [confirm, setConfirm] = useState(false);
+  if (confirm) return (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <button onClick={() => setConfirm(false)} style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer' }}>Cancel</button>
+      <button onClick={onDelete} style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer' }}>Delete</button>
+    </div>
+  );
+  return (
+    <button onClick={() => setConfirm(true)} style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 6, cursor: 'pointer', flexShrink: 0 }}>
+      <Trash2 style={{ width: 11, height: 11, color: '#f87171' }}/>
+    </button>
+  );
+}
+
 // ── Feed post card ────────────────────────────────────────────────────────────
-function FeedCard({ post }) {
+function FeedCard({ post, onDelete }) {
   const likes    = post.likes?.length || 0;
   const comments = post.comments?.length || 0;
   const hasImage = post.image_url || post.media_url;
@@ -22,7 +38,7 @@ function FeedCard({ post }) {
         <span style={{ fontSize: 11, color: 'var(--text3)', flexShrink: 0 }}>
           {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
         </span>
-        <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)', flexShrink: 0 }}/>
+        <DeleteBtn onDelete={() => onDelete(post.id)}/>
       </div>
       {content && (
         <div style={{ padding: '0 14px 10px' }}>
