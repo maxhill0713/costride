@@ -135,7 +135,7 @@ function ChallengeCard({ challenge, now, onDelete }) {
       <div style={{ padding: '10px 14px 12px' }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 6px' }}>{challenge.title}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 11, color: 'var(--text3)' }}>👥 {challenge.participants?.length || 0} joined</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{challenge.participants?.length || 0} participants</span>
         </div>
         <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
@@ -147,14 +147,14 @@ function ChallengeCard({ challenge, now, onDelete }) {
 
 // ── Class type config (mirrors GymCommunity) ──────────────────────────────────
 const CLASS_TYPE_CONFIG_DASH = {
-  hiit:     { color:'#f87171', bg:'rgba(239,68,68,0.12)',   border:'rgba(239,68,68,0.25)',   label:'HIIT',     emoji:'⚡' },
-  yoga:     { color:'#34d399', bg:'rgba(16,185,129,0.12)',  border:'rgba(16,185,129,0.25)',  label:'Yoga',     emoji:'🧘' },
-  strength: { color:'#818cf8', bg:'rgba(99,102,241,0.12)',  border:'rgba(99,102,241,0.25)',  label:'Strength', emoji:'🏋️' },
-  cardio:   { color:'#fb7185', bg:'rgba(244,63,94,0.12)',   border:'rgba(244,63,94,0.25)',   label:'Cardio',   emoji:'🏃' },
-  spin:     { color:'#38bdf8', bg:'rgba(14,165,233,0.12)',  border:'rgba(14,165,233,0.25)',  label:'Spin',     emoji:'🚴' },
-  boxing:   { color:'#fb923c', bg:'rgba(234,88,12,0.12)',   border:'rgba(234,88,12,0.25)',   label:'Boxing',   emoji:'🥊' },
-  pilates:  { color:'#c084fc', bg:'rgba(168,85,247,0.12)',  border:'rgba(168,85,247,0.25)',  label:'Pilates',  emoji:'🌸' },
-  default:  { color:'#38bdf8', bg:'rgba(14,165,233,0.10)',  border:'rgba(14,165,233,0.2)',   label:'Class',    emoji:'🎯' },
+  hiit:     { color:'#f87171', bg:'rgba(239,68,68,0.12)',   border:'rgba(239,68,68,0.25)',   label:'HIIT' },
+  yoga:     { color:'#34d399', bg:'rgba(16,185,129,0.12)',  border:'rgba(16,185,129,0.25)',  label:'Yoga' },
+  strength: { color:'#818cf8', bg:'rgba(99,102,241,0.12)',  border:'rgba(99,102,241,0.25)',  label:'Strength' },
+  cardio:   { color:'#fb7185', bg:'rgba(244,63,94,0.12)',   border:'rgba(244,63,94,0.25)',   label:'Cardio' },
+  spin:     { color:'#38bdf8', bg:'rgba(14,165,233,0.12)',  border:'rgba(14,165,233,0.25)',  label:'Spin' },
+  boxing:   { color:'#fb923c', bg:'rgba(234,88,12,0.12)',   border:'rgba(234,88,12,0.25)',   label:'Boxing' },
+  pilates:  { color:'#c084fc', bg:'rgba(168,85,247,0.12)',  border:'rgba(168,85,247,0.25)',  label:'Pilates' },
+  default:  { color:'#38bdf8', bg:'rgba(14,165,233,0.10)',  border:'rgba(14,165,233,0.2)',   label:'Class' },
 };
 const CLASS_IMAGES_DASH = {
   hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
@@ -192,7 +192,7 @@ function ClassCard({ gymClass, onDelete }) {
         <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,12,28,0.85) 100%)' }} />
         <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px', backdropFilter: 'blur(6px)' }}>
-          {cfg.emoji} {cfg.label}
+          {cfg.label}
         </div>
       </div>
       {/* Content */}
