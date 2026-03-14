@@ -108,7 +108,14 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
 
 // ── Improved Heatmap ──────────────────────────────────────────────────────────
 
-function HeatmapChart({ checkIns }) {
+function HeatmapChart({ gymId }) {
+  const { data: heatmapCheckIns = [] } = useQuery({
+    queryKey: ['heatmapCheckIns', gymId],
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 5000),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const slotConfig = [
     { label: '6–8a',  hours: [6, 7] },
