@@ -869,7 +869,44 @@ export default function TabMembers({
             streakLeaderboard={streakLeaderboard}
             progressLeaderboard={[]}
           />
-        </div>
+        </div>}
+
+        {/* Mobile sidebar — below table */}
+        {isMobile && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {/* Alerts */}
+            <Card style={{ padding: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Alerts</div>
+              {atRisk > 0 && (
+                <div style={{ padding: '8px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 6 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171' }}>{atRisk} At Risk</div>
+                  <div style={{ fontSize: 8, color: 'var(--text3)' }}>10+ days inactive</div>
+                </div>
+              )}
+              {atRisk === 0 && (
+                <div style={{ padding: '8px', borderRadius: 8, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <CheckCircle style={{ width: 11, height: 11, color: '#10b981' }}/>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: '#34d399' }}>All active!</span>
+                </div>
+              )}
+            </Card>
+
+            {/* Growth */}
+            <Card style={{ padding: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Growth</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                <TrendingUp style={{ width: 11, height: 11, color: '#34d399' }}/>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>{retentionRate}%</span>
+              </div>
+              <div style={{ fontSize: 8, color: 'var(--text3)' }}>Retention rate</div>
+              {weeklyChangePct !== undefined && (
+                <div style={{ fontSize: 8, color: weeklyChangePct >= 0 ? '#34d399' : '#f87171', fontWeight: 600, marginTop: 4 }}>
+                  {weeklyChangePct >= 0 ? '+' : ''}{weeklyChangePct}% this week
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
