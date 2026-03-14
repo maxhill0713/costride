@@ -28,11 +28,9 @@ export const DASH_STYLE = `
   }
   .dash-root { font-family: 'Outfit', sans-serif !important; }
   .dash-root * { font-family: 'Outfit', sans-serif !important; }
-
   .dash-root ::-webkit-scrollbar { width: 4px; height: 4px; }
   .dash-root ::-webkit-scrollbar-track { background: transparent; }
   .dash-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
-
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fade-in-up {
     from { opacity: 0; transform: translateY(10px); }
@@ -45,15 +43,12 @@ export const DASH_STYLE = `
   }
   .anim-fade-up { animation: fade-in-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
   .anim-pop     { animation: number-pop 0.5s cubic-bezier(0.22,1,0.36,1) both; }
-
   .card-hover { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
   .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important; }
-
   .nav-item { transition: background 0.15s, color 0.15s; border-radius: 10px; }
   .nav-item:hover { background: rgba(255,255,255,0.05); }
   .nav-item.active { background: rgba(0,212,255,0.1); color: var(--cyan) !important; }
   .nav-item.active svg { color: var(--cyan) !important; }
-
   .pill-btn {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 7px 14px; border-radius: 99px; font-size: 12px; font-weight: 700;
@@ -62,16 +57,13 @@ export const DASH_STYLE = `
   .pill-btn:hover { filter: brightness(1.15); }
   .pill-btn.primary { background: rgba(0,212,255,0.15); color: var(--cyan); border-color: rgba(0,212,255,0.3); }
   .pill-btn.ghost   { background: rgba(255,255,255,0.07); color: var(--text1); border-color: rgba(255,255,255,0.1); }
-
   .custom-tooltip {
     background: rgba(10,14,26,0.97); border: 1px solid rgba(0,212,255,0.3);
     border-radius: 10px; padding: 9px 13px; font-size: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   }
-
   .hm-cell { border-radius: 3px; transition: transform 0.1s; }
   .hm-cell:hover { transform: scale(1.3); z-index: 10; position: relative; }
-
   .priority-row {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 12px; border-radius: 10px;
@@ -79,7 +71,6 @@ export const DASH_STYLE = `
     transition: background 0.15s; cursor: pointer;
   }
   .priority-row:hover { background: rgba(255,255,255,0.06); }
-
   .qa-btn {
     display: flex; align-items: center; gap: 10px;
     padding: 11px 14px; border-radius: 12px;
@@ -88,13 +79,10 @@ export const DASH_STYLE = `
   }
   .qa-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.13); transform: translateY(-1px); }
   .qa-btn:active { transform: translateY(0); }
-
   .ring-svg { transform: rotate(-90deg); }
   .ring-track { fill: none; stroke: rgba(255,255,255,0.07); }
   .ring-progress { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1); }
-
   .recharts-dot { r: 4 !important; }
-
   .member-row {
     display: grid;
     grid-template-columns: 36px 1fr 140px 130px 170px 100px;
@@ -105,7 +93,6 @@ export const DASH_STYLE = `
   }
   .member-row:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
   .member-row-selected { background: rgba(14,165,233,0.07) !important; border-color: rgba(14,165,233,0.2) !important; }
-
   .filter-tab {
     padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
     cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
@@ -114,14 +101,12 @@ export const DASH_STYLE = `
   .filter-tab:hover { background: rgba(255,255,255,0.05); color: var(--text2); }
   .filter-tab.active { background: rgba(14,165,233,0.12); color: #38bdf8; border-color: rgba(14,165,233,0.25); }
   .filter-tab.active-red { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.25); }
-
   .sort-select {
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
     color: var(--text2); border-radius: 8px; padding: 6px 10px; font-size: 12px;
     font-family: 'Outfit', sans-serif; font-weight: 600; cursor: pointer; outline: none;
   }
   .sort-select option { background: #0d1121; }
-
   .search-input {
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
     color: var(--text1); border-radius: 8px; padding: 7px 12px 7px 32px;
@@ -130,7 +115,6 @@ export const DASH_STYLE = `
   }
   .search-input:focus { border-color: rgba(14,165,233,0.4); width: 220px; }
   .search-input::placeholder { color: var(--text3); }
-
   .page-btn {
     width: 28px; height: 28px; border-radius: 7px; font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -140,13 +124,11 @@ export const DASH_STYLE = `
   .page-btn:hover { background: rgba(255,255,255,0.08); color: var(--text1); }
   .page-btn.active { background: rgba(14,165,233,0.18); border-color: rgba(14,165,233,0.4); color: #38bdf8; }
   .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
   .alert-card {
     padding: 13px 14px; border-radius: 12px;
     background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
     margin-bottom: 10px;
   }
-
   .chip {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;
@@ -291,15 +273,15 @@ export const AttendanceHeatmap = ({ checkIns }) => {
 
 export const StatusChip = ({ status }) => {
   const map = {
-    'Engaged':       { bg: 'rgba(16,185,129,0.14)',  color: '#34d399', border: 'rgba(16,185,129,0.3)' },
-    'At Risk':       { bg: 'rgba(239,68,68,0.14)',   color: '#f87171', border: 'rgba(239,68,68,0.3)' },
-    'Payment Failed':{ bg: 'rgba(245,158,11,0.14)',  color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
-    'New':           { bg: 'rgba(14,165,233,0.14)',  color: '#38bdf8', border: 'rgba(14,165,233,0.3)' },
-    'Beginner':      { bg: 'rgba(139,92,246,0.14)',  color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
-    'Banned':        { bg: 'rgba(239,68,68,0.1)',    color: '#f87171', border: 'rgba(239,68,68,0.2)' },
-    'Super Active':  { bg: 'rgba(16,185,129,0.14)',  color: '#34d399', border: 'rgba(16,185,129,0.3)' },
-    'Active':        { bg: 'rgba(14,165,233,0.14)',  color: '#38bdf8', border: 'rgba(14,165,233,0.3)' },
-    'Casual':        { bg: 'rgba(245,158,11,0.14)',  color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
+    'Engaged':        { bg: 'rgba(16,185,129,0.14)',  color: '#34d399', border: 'rgba(16,185,129,0.3)' },
+    'At Risk':        { bg: 'rgba(239,68,68,0.14)',   color: '#f87171', border: 'rgba(239,68,68,0.3)' },
+    'Payment Failed': { bg: 'rgba(245,158,11,0.14)',  color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
+    'New':            { bg: 'rgba(14,165,233,0.14)',  color: '#38bdf8', border: 'rgba(14,165,233,0.3)' },
+    'Beginner':       { bg: 'rgba(139,92,246,0.14)',  color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
+    'Banned':         { bg: 'rgba(239,68,68,0.1)',    color: '#f87171', border: 'rgba(239,68,68,0.2)' },
+    'Super Active':   { bg: 'rgba(16,185,129,0.14)',  color: '#34d399', border: 'rgba(16,185,129,0.3)' },
+    'Active':         { bg: 'rgba(14,165,233,0.14)',  color: '#38bdf8', border: 'rgba(14,165,233,0.3)' },
+    'Casual':         { bg: 'rgba(245,158,11,0.14)',  color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
   };
   const s = map[status] || map['New'];
   return (
@@ -343,6 +325,144 @@ export const HealthScore = ({ score, label, sub }) => {
       </div>
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text1)', marginTop: 4, textAlign: 'center' }}>{label}</div>
       <div style={{ fontSize: 10, color: 'var(--text3)', textAlign: 'center' }}>{sub}</div>
+    </div>
+  );
+};
+
+// ─── Today's Snapshot ─────────────────────────────────────────────────────────
+export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenges = [], classes = [], allMemberships = [] }) => {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+
+  const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
+
+  const interactions = [
+    ...posts.filter(p => new Date(p.created_date) >= todayStart),
+    ...polls.flatMap(p => (p.voters || []).filter(() => new Date(p.created_date) >= todayStart)),
+    ...challenges.flatMap(c => (c.participants || []).filter(() => new Date(c.start_date) >= todayStart)),
+  ].length;
+
+  const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+  const classesToday = classes.filter(c => {
+    const s = (c.schedule || '').toLowerCase();
+    return s.includes(todayDay.toLowerCase());
+  }).length;
+
+  const activeUserIds = new Set(checkIns.filter(c => new Date(c.check_in_date) >= sevenDaysAgo).map(c => c.user_id));
+  const inactive = allMemberships.filter(m => !activeUserIds.has(m.user_id)).length;
+
+  const stats = [
+    {
+      label: 'Check-ins Today',
+      value: checkInsToday,
+      icon: Flame,
+      color: '#f59e0b',
+      bg: 'rgba(245,158,11,0.12)',
+      border: 'rgba(245,158,11,0.2)',
+      glow: 'rgba(245,158,11,0.15)',
+      trend: checkInsToday > 0 ? '+active' : 'quiet day',
+    },
+    {
+      label: 'Interactions',
+      value: interactions,
+      icon: Zap,
+      color: '#00d4ff',
+      bg: 'rgba(0,212,255,0.1)',
+      border: 'rgba(0,212,255,0.18)',
+      glow: 'rgba(0,212,255,0.12)',
+      trend: 'posts · polls · joins',
+    },
+    {
+      label: 'Classes Running',
+      value: classesToday,
+      icon: Activity,
+      color: '#10b981',
+      bg: 'rgba(16,185,129,0.1)',
+      border: 'rgba(16,185,129,0.18)',
+      glow: 'rgba(16,185,129,0.12)',
+      trend: 'scheduled today',
+    },
+    {
+      label: 'Inactive 7d+',
+      value: inactive,
+      icon: AlertTriangle,
+      color: inactive > 0 ? '#ef4444' : '#10b981',
+      bg: inactive > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+      border: inactive > 0 ? 'rgba(239,68,68,0.18)' : 'rgba(16,185,129,0.18)',
+      glow: inactive > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
+      trend: inactive > 0 ? 'need re-engaging' : 'all active',
+    },
+  ];
+
+  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()];
+  const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  return (
+    <div style={{
+      borderRadius: 18,
+      background: 'var(--card)',
+      border: '1px solid var(--border)',
+      padding: '18px 18px 16px',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Subtle background glow */}
+      <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(0,212,255,0.04)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Sparkles style={{ width: 15, height: 15, color: '#00d4ff' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', lineHeight: 1 }}>Today's Snapshot</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500, marginTop: 2 }}>{dayName}, {dateStr}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
+        </div>
+      </div>
+
+      {/* Stat grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        {stats.map(({ label, value, icon: Icon, color, bg, border, glow, trend }) => (
+          <div key={label} style={{
+            borderRadius: 14,
+            background: bg,
+            border: `1px solid ${border}`,
+            padding: '12px 12px 10px',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Glow blob */}
+            <div style={{ position: 'absolute', bottom: -10, right: -10, width: 60, height: 60, borderRadius: '50%', background: glow, filter: 'blur(16px)', pointerEvents: 'none' }} />
+
+            {/* Icon */}
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+              <Icon style={{ width: 13, height: 13, color }} />
+            </div>
+
+            {/* Value */}
+            <div style={{ fontSize: 28, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 4 }}>
+              {value}
+            </div>
+
+            {/* Label */}
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text1)', lineHeight: 1.2, marginBottom: 3 }}>
+              {label}
+            </div>
+
+            {/* Trend */}
+            <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {trend}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
