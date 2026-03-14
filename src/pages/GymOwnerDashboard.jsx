@@ -50,10 +50,10 @@ const GRADIENT_OVERRIDE = `
     --sidebar: #0d1829;
     --card:    #111f35;
     --card2:   #0f1c30;
-    --border:  rgba(255, 255, 255, 0.09);
+    --border:  rgba(255, 255, 255, 0.12);
     --text1:   #f1f5f9;
     --text2:   #94a3b8;
-    --text3:   #4a5568;
+    --text3:   #64748b;
     --cyan:    #38bdf8;
     --green:   #34d399;
     --red:     #f87171;
@@ -221,6 +221,42 @@ export default function GymOwnerDashboard() {
     >
       <style>{DASH_STYLE}</style>
       <style>{GRADIENT_OVERRIDE}</style>
+      <style>{`
+        /* Visible card top accent lines */
+        .dash-root .card-hover {
+          position: relative;
+          overflow: hidden;
+        }
+        .dash-root .card-hover::after {
+          content: '';
+          position: absolute;
+          top: 0; left: 16px; right: 16px; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
+          pointer-events: none;
+        }
+        /* Quick action buttons — coloured left border on hover */
+        .dash-root .qa-btn {
+          border-left: 2px solid transparent !important;
+          transition: border-color 0.15s, background 0.15s !important;
+        }
+        .dash-root .qa-btn:hover {
+          border-left-color: rgba(56,189,248,0.5) !important;
+          background: rgba(255,255,255,0.07) !important;
+        }
+        /* Nav items — visible on hover */
+        .dash-root .nav-item:not(.active):hover {
+          color: #94a3b8 !important;
+          background: rgba(255,255,255,0.04) !important;
+        }
+        /* Priority rows */
+        .dash-root .priority-row {
+          border-left: 2px solid transparent;
+          transition: border-color 0.15s;
+        }
+        .dash-root .priority-row:hover {
+          border-left-color: rgba(56,189,248,0.35);
+        }
+      `}</style>
 
       {/* ─── SIDEBAR ──────────────────────────────────────────────────────── */}
       <aside style={{
@@ -238,7 +274,7 @@ export default function GymOwnerDashboard() {
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>{selectedGym?.name || 'Dashboard'}</div>
-                <div style={{ fontSize: 10, color: '#475569', fontWeight: 500 }}>Gym Owner</div>
+                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Gym Owner</div>
               </div>
             )}
           </div>
@@ -263,7 +299,7 @@ export default function GymOwnerDashboard() {
             return (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`nav-item ${active ? 'active' : ''}`}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '10px 0' : '9px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: active ? 'rgba(56,189,248,0.1)' : 'transparent', color: active ? '#38bdf8' : '#475569', fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', marginBottom: 2, borderRadius: 9, transition: 'all 0.15s' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '10px 0' : '9px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: active ? 'rgba(56,189,248,0.1)' : 'transparent', color: active ? '#38bdf8' : '#64748b', fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', marginBottom: 2, borderRadius: 9, transition: 'all 0.15s' }}>
                 <item.icon style={{ width: 17, height: 17, flexShrink: 0 }}/>
                 {!collapsed && <span>{item.label}</span>}
                 {!collapsed && active && <div style={{ marginLeft: 'auto', width: 5, height: 5, borderRadius: '50%', background: '#38bdf8' }}/>}
@@ -292,7 +328,7 @@ export default function GymOwnerDashboard() {
             { icon: Users, label: 'Member View',   to: createPageUrl('Home') },
           ].map((l,i) => (
             <Link key={i} to={l.to}>
-              <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '9px 0' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: '#475569', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 8, marginBottom: 2 }}>
+              <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: collapsed ? '9px 0' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: '#64748b', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 8, marginBottom: 2 }}>
                 <l.icon style={{ width: 15, height: 15, flexShrink: 0 }}/>
                 {!collapsed && <span>{l.label}</span>}
               </button>
@@ -321,10 +357,10 @@ export default function GymOwnerDashboard() {
               <Menu style={{ width: 15, height: 15 }}/>
             </button>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', lineHeight: 1 }}>
+              <div style={{ fontSize: 16, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.03em', lineHeight: 1 }}>
                 {tab === 'members' ? 'Members' : tab === 'content' ? 'Content' : tab === 'analytics' ? 'Analytics' : selectedGym?.name || 'Dashboard'}
               </div>
-              <div style={{ fontSize: 11, color: '#475569', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {tab === 'members'
                   ? <span>{allMemberships.length} members · {selectedGym?.name}</span>
                   : <>{format(now, 'EEEE, d MMMM yyyy')} <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sun style={{ width: 11, height: 11 }}/> 18°C</span></>
