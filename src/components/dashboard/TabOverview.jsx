@@ -7,10 +7,10 @@ import {
 import {
   TrendingUp, TrendingDown, ArrowUpRight, ArrowRight, Zap, Star,
   CheckCircle, Trophy, BarChart2, UserPlus, QrCode, MessageSquarePlus,
-  Pencil, Calendar, Activity, Sparkles, MoreHorizontal
+  Pencil, Calendar, Activity, Sparkles, MoreHorizontal, Flame, AlertTriangle
 } from 'lucide-react';
 import {
-  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip, TodaySnapshot
+  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip
 } from './DashboardPrimitives';
 import { StreakCelebrations, GymSetupChecklist, SmartNudges } from './OverviewWidgets';
 
@@ -27,13 +27,61 @@ export default function TabOverview({
   // actions
   openModal, setTab,
 }) {
+  // ── Snapshot stats (computed inline) ─────────────────────────────────────────
+  const todayStart   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+  const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
+  const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+  const classesToday = classes.filter(c => (c.schedule || '').toLowerCase().includes(todayDay.toLowerCase())).length;
+  const activeUserIds = new Set(checkIns.filter(c => new Date(c.check_in_date) >= sevenDaysAgo).map(c => c.user_id));
+  const inactive = allMemberships.filter(m => !activeUserIds.has(m.user_id)).length;
+  const interactions = [
+    ...posts.filter(p => new Date(p.created_date) >= todayStart),
+    ...polls.flatMap(p => (p.voters || []).filter(() => new Date(p.created_date) >= todayStart)),
+    ...challenges.flatMap(c => (c.participants || []).filter(() => new Date(c.start_date) >= todayStart)),
+  ].length;
+
+  const snapshotStats = [
+    { label: 'Check-ins',    value: checkInsToday, color: '#f59e0b', icon: Flame,         sub: 'today' },
+    { label: 'Interactions', value: interactions,  color: '#00d4ff', icon: Zap,           sub: 'posts & polls' },
+    { label: 'Classes',      value: classesToday,  color: '#10b981', icon: Activity,      sub: 'running today' },
+    { label: 'Inactive 7d+', value: inactive,      color: inactive > 0 ? '#ef4444' : '#10b981', icon: AlertTriangle, sub: inactive > 0 ? 're-engage' : 'all active' },
+  ];
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 18, alignItems: 'start' }}>
+
       {/* ── LEFT ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        {/* KPI row */}
-        <TodaySnapshot checkIns={checkIns} posts={posts} polls={polls} challenges={challenges} classes={classes} allMemberships={allMemberships} todayCI={todayCI} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+
+        {/* KPI row — 4 cards, snapshot is first */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+
+          {/* ── Today's Snapshot ── */}
+          <Card style={{ padding: '18px 16px 16px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 5px #10b981' }}/>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 14, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Today's Snapshot
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {snapshotStats.map(({ label, value, color, icon: Icon, sub }) => (
+                <div key={label} style={{ padding: '9px 10px', borderRadius: 10, background: `${color}12`, border: `1px solid ${color}28`, position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', bottom: -6, right: -6, width: 30, height: 30, borderRadius: '50%', background: `${color}22`, filter: 'blur(8px)', pointerEvents: 'none' }}/>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 5 }}>
+                    <Icon style={{ width: 10, height: 10, color, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', letterSpacing: '0.04em', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 500, marginTop: 2 }}>{sub}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* ── Active Members ── */}
           <Card style={{ padding: '20px 20px 16px' }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Active Members</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -42,13 +90,15 @@ export default function TabOverview({
                   {activeThisWeek}<span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text3)' }}> / {totalMembers}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                  <ArrowUpRight style={{width:13,height:13,color:'var(--cyan)'}}/>
-                  <span style={{fontSize:12,fontWeight:700,color:'var(--cyan)'}}>{retentionRate}% engagement</span>
+                  <ArrowUpRight style={{ width: 13, height: 13, color: 'var(--cyan)' }}/>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--cyan)' }}>{retentionRate}% engagement</span>
                 </div>
               </div>
               <RingChart pct={retentionRate} size={56} stroke={5} color="#0ea5e9"/>
             </div>
           </Card>
+
+          {/* ── Monthly Growth ── */}
           <Card style={{ padding: '20px 20px 16px' }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Monthly Growth</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
@@ -59,32 +109,33 @@ export default function TabOverview({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
                   {ciPrev30.length === 0
-                    ? <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>No prior month data</span>
+                    ? <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text3)' }}>No prior month data</span>
                     : monthChangePct > 0
-                      ? <><ArrowUpRight style={{width:13,height:13,color:'var(--green)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--green)'}}>+{monthChangePct}% vs last month</span></>
+                      ? <><ArrowUpRight style={{ width: 13, height: 13, color: 'var(--green)' }}/><span style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>+{monthChangePct}% vs last month</span></>
                       : monthChangePct < 0
-                        ? <><TrendingDown style={{width:13,height:13,color:'var(--red)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--red)'}}>{monthChangePct}% vs last month</span></>
-                        : <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>Same as last month</span>
+                        ? <><TrendingDown style={{ width: 13, height: 13, color: 'var(--red)' }}/><span style={{ fontSize: 12, fontWeight: 700, color: 'var(--red)' }}>{monthChangePct}% vs last month</span></>
+                        : <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text3)' }}>Same as last month</span>
                   }
                 </div>
               </div>
-              <Sparkline data={monthGrowthData.map(d=>d.value)} color="#10b981"/>
+              <Sparkline data={monthGrowthData.map(d => d.value)} color="#10b981"/>
             </div>
           </Card>
+
+          {/* ── At-Risk Members ── */}
           <Card style={{ padding: '20px 20px 16px' }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>At-Risk Members</div>
             <div>
               <div style={{ fontSize: 36, fontWeight: 800, color: atRisk > 0 ? '#ef4444' : 'var(--text1)', lineHeight: 1, letterSpacing: '-0.04em' }} className="anim-pop">{atRisk}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
-                <span style={{fontSize:12,fontWeight:600,color:'var(--text2)'}}>{atRisk > 0 ? '14+ days' : 'All members'} inactive</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{atRisk > 0 ? '14+ days' : 'All members'} inactive</span>
               </div>
             </div>
-            <Sparkline data={[...sparkData].map((v,i,a)=>Math.max(0,a[a.length-1-i])).reverse()} color="#ef4444" height={32}/>
+            <Sparkline data={[...sparkData].map((v, i, a) => Math.max(0, a[a.length - 1 - i])).reverse()} color="#ef4444" height={32}/>
           </Card>
         </div>
 
         {/* Chart */}
-
         <Card style={{ padding: '20px 20px 14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
@@ -94,7 +145,8 @@ export default function TabOverview({
             <div style={{ display: 'flex', gap: 6 }}>
               {[7, 30, 90].map(r => (
                 <button key={r} onClick={() => setChartRange(r)}
-                  style={{ fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, cursor: 'pointer', transition: 'all 0.15s',
+                  style={{
+                    fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, cursor: 'pointer', transition: 'all 0.15s',
                     background: chartRange === r ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
                     color: chartRange === r ? 'var(--cyan)' : 'var(--text3)',
                     border: `1px solid ${chartRange === r ? 'rgba(0,212,255,0.35)' : 'rgba(255,255,255,0.07)'}`,
@@ -123,56 +175,59 @@ export default function TabOverview({
         </Card>
 
         {/* Member Growth */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
-          <Card style={{ padding: 20 }}>
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', marginBottom: 2 }}>Member Growth</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: '#10b981', letterSpacing: '-0.04em' }}>+{newSignUps}</span>
-                <span style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>this month</span>
-              </div>
+        <Card style={{ padding: 20 }}>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', marginBottom: 2 }}>Member Growth</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: '#10b981', letterSpacing: '-0.04em' }}>+{newSignUps}</span>
+              <span style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>this month</span>
             </div>
-            <ResponsiveContainer width="100%" height={110}>
-              <BarChart data={monthGrowthData} barSize={20} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.4}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 10, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
-                <YAxis hide/>
-                <Tooltip content={({ active, payload, label }) => active && payload?.length ? <div className="custom-tooltip"><p style={{color:'var(--text2)',marginBottom:2,fontSize:10}}>{label}</p><p style={{color:'var(--green)',fontWeight:700}}>{payload[0].value} active</p></div> : null} cursor={{ fill: 'rgba(255,255,255,0.04)' }}/>
-                <Bar dataKey="value" fill="url(#barGrad)" radius={[4,4,0,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 10, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-              {[
-                { label: 'New Members', value: newSignUps, color: 'var(--text1)' },
-                { label: 'Cancelled',   value: cancelledEst, color: '#ef4444' },
-                { label: 'Retention',   value: `${retentionRate}%`, color: '#10b981', arrow: true },
-              ].map((s,i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</span>
-                    {s.arrow && <ArrowUpRight style={{width:12,height:12,color:'var(--green)'}}/>}
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2, fontWeight: 500 }}>{s.label}</div>
+          </div>
+          <ResponsiveContainer width="100%" height={110}>
+            <BarChart data={monthGrowthData} barSize={20} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
+              <defs>
+                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.4}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 10, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
+              <YAxis hide/>
+              <Tooltip
+                content={({ active, payload, label }) => active && payload?.length
+                  ? <div className="custom-tooltip"><p style={{ color: 'var(--text2)', marginBottom: 2, fontSize: 10 }}>{label}</p><p style={{ color: 'var(--green)', fontWeight: 700 }}>{payload[0].value} active</p></div>
+                  : null}
+                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              />
+              <Bar dataKey="value" fill="url(#barGrad)" radius={[4, 4, 0, 0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 10, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            {[
+              { label: 'New Members', value: newSignUps,          color: 'var(--text1)' },
+              { label: 'Cancelled',   value: cancelledEst,        color: '#ef4444' },
+              { label: 'Retention',   value: `${retentionRate}%`, color: '#10b981', arrow: true },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</span>
+                  {s.arrow && <ArrowUpRight style={{ width: 12, height: 12, color: 'var(--green)' }}/>}
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2, fontWeight: 500 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
 
-        {/* Activity, Insights */}
+        {/* Activity + Insights */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Card style={{ padding: 20 }}>
             <SectionTitle>Recent Activity</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {recentActivity.length === 0 && <Empty icon={Activity} label="No activity yet"/>}
-              {recentActivity.slice(0,5).map((a, i) => {
+              {recentActivity.slice(0, 5).map((a, i) => {
                 const minsAgo = Math.floor((now - new Date(a.time)) / 60000);
-                const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo/60)}h ago` : `${Math.floor(minsAgo/1440)}d ago`;
+                const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo / 60)}h ago` : `${Math.floor(minsAgo / 1440)}d ago`;
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Avatar name={a.name} size={30} src={avatarMap[a.user_id] || null}/>
@@ -189,32 +244,33 @@ export default function TabOverview({
               })}
             </div>
           </Card>
+
           <Card style={{ padding: 20 }}>
             <SectionTitle action={() => setTab('analytics')} actionLabel="View all">Insights</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {peakLabel && (
                 <div style={{ padding: '11px 13px', borderRadius: 12, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                    <Zap style={{width:13,height:13,color:'#a78bfa'}}/>
-                    <span style={{fontSize:12,fontWeight:700,color:'var(--text1)'}}>Peak: {peakLabel}–{peakEndLabel} today</span>
+                    <Zap style={{ width: 13, height: 13, color: '#a78bfa' }}/>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>Peak: {peakLabel}–{peakEndLabel} today</span>
                   </div>
-                  <span style={{fontSize:11,color:'var(--text3)'}}>Expect {Math.round((peakEntry?.[1]||0)*1.1)}+ visits</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)' }}>Expect {Math.round((peakEntry?.[1] || 0) * 1.1)}+ visits</span>
                 </div>
               )}
               {satVsAvg !== 0 && (
                 <div style={{ padding: '11px 13px', borderRadius: 12, background: satVsAvg >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.1)', border: `1px solid ${satVsAvg >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                    <Star style={{width:13,height:13,color:satVsAvg>=0?'#34d399':'#fbbf24'}}/>
-                    <span style={{fontSize:12,fontWeight:700,color:'var(--text1)'}}>Sat attendance <span style={{color:satVsAvg>=0?'#34d399':'#f87171'}}>{satVsAvg >= 0 ? '+':''}{satVsAvg}%</span></span>
+                    <Star style={{ width: 13, height: 13, color: satVsAvg >= 0 ? '#34d399' : '#fbbf24' }}/>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>Sat attendance <span style={{ color: satVsAvg >= 0 ? '#34d399' : '#f87171' }}>{satVsAvg >= 0 ? '+' : ''}{satVsAvg}%</span></span>
                   </div>
-                  {satVsAvg < 0 && <button onClick={()=>openModal('challenge')} style={{fontSize:11,color:'#fbbf24',background:'none',border:'none',cursor:'pointer',padding:0}}>→ Start challenge</button>}
+                  {satVsAvg < 0 && <button onClick={() => openModal('challenge')} style={{ fontSize: 11, color: '#fbbf24', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>→ Start challenge</button>}
                 </div>
               )}
               {monthChangePct !== 0 && (
                 <div style={{ padding: '11px 13px', borderRadius: 12, background: monthChangePct >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${monthChangePct >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingUp style={{width:13,height:13,color:monthChangePct>=0?'#34d399':'#f87171'}}/>
-                    <span style={{fontSize:12,fontWeight:700,color:'var(--text1)'}}>Monthly check-ins <span style={{color:monthChangePct>=0?'#34d399':'#f87171'}}>{monthChangePct>=0?'+':''}{monthChangePct}%</span></span>
+                    <TrendingUp style={{ width: 13, height: 13, color: monthChangePct >= 0 ? '#34d399' : '#f87171' }}/>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>Monthly check-ins <span style={{ color: monthChangePct >= 0 ? '#34d399' : '#f87171' }}>{monthChangePct >= 0 ? '+' : ''}{monthChangePct}%</span></span>
                   </div>
                 </div>
               )}
@@ -223,9 +279,7 @@ export default function TabOverview({
               )}
             </div>
           </Card>
-
         </div>
-
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
@@ -238,8 +292,8 @@ export default function TabOverview({
           {priorities.length === 0 ? (
             <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircle style={{width:14,height:14,color:'#10b981'}}/>
-                <span style={{fontSize:12,fontWeight:600,color:'#34d399'}}>All clear — great work!</span>
+                <CheckCircle style={{ width: 14, height: 14, color: '#10b981' }}/>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#34d399' }}>All clear — great work!</span>
               </div>
             </div>
           ) : (
@@ -286,10 +340,10 @@ export default function TabOverview({
           <SectionTitle action={() => setTab('members')} actionLabel="All">Engagement</SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
-              { label: 'Super Active', sub: '12+ visits', val: monthCiPer.filter(v=>v>=12).length, color: '#10b981', pct: totalMembers > 0 ? (monthCiPer.filter(v=>v>=12).length / totalMembers) * 100 : 0 },
-              { label: 'Active',       sub: '4–11 visits',val: monthCiPer.filter(v=>v>=4&&v<12).length, color: '#0ea5e9', pct: totalMembers > 0 ? (monthCiPer.filter(v=>v>=4&&v<12).length / totalMembers) * 100 : 0 },
-              { label: 'At Risk',      sub: '14+ days away',val: atRisk, color: '#ef4444', pct: totalMembers > 0 ? (atRisk / totalMembers) * 100 : 0 },
-            ].map((s,i) => (
+              { label: 'Super Active', sub: '12+ visits',   val: monthCiPer.filter(v => v >= 12).length,          color: '#10b981', pct: totalMembers > 0 ? (monthCiPer.filter(v => v >= 12).length / totalMembers) * 100 : 0 },
+              { label: 'Active',       sub: '4–11 visits',  val: monthCiPer.filter(v => v >= 4 && v < 12).length, color: '#0ea5e9', pct: totalMembers > 0 ? (monthCiPer.filter(v => v >= 4 && v < 12).length / totalMembers) * 100 : 0 },
+              { label: 'At Risk',      sub: '14+ days away', val: atRisk,                                          color: '#ef4444', pct: totalMembers > 0 ? (atRisk / totalMembers) * 100 : 0 },
+            ].map((s, i) => (
               <div key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{s.label} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>{s.sub}</span></span>
