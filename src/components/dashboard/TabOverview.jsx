@@ -189,13 +189,13 @@ export default function TabOverview({
   const chartMax   = Math.max(...chartDays.map(d => d.value), 1);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 18, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 18, alignItems: 'start' }}>
 
       {/* ── LEFT ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
         {/* KPI row — 4 cards, Monthly Growth replaced by In the Gym Now */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 14 }}>
 
           {/* Today's Check-ins — accent tracks data direction */}
           <KpiCard
