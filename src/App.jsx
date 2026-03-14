@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import Community from './pages/Community'
 import ModeratorDashboard from './pages/ModeratorDashboard'
 import NotificationsHub from './pages/NotificationsHub'
+import PostArchive from './pages/PostArchive'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
       <Route path="/ModeratorDashboard" element={<LayoutWrapper currentPageName="ModeratorDashboard"><ModeratorDashboard /></LayoutWrapper>} />
       <Route path="/NotificationsHub" element={<LayoutWrapper currentPageName="NotificationsHub"><NotificationsHub /></LayoutWrapper>} />
+      <Route path="/PostArchive" element={<LayoutWrapper currentPageName="PostArchive"><PostArchive /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

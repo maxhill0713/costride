@@ -11,6 +11,7 @@ const SETTINGS_LIST = [
   { name: 'Account', page: 'AccountSettings', icon: '🔐', sub: 'Password, email & security', iconBg: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(185,28,28,0.3))', keywords: ['account', 'security'] },
   { name: 'Profile', page: 'ProfileSettings', icon: '👤', sub: 'Avatar, banner & name', iconBg: 'linear-gradient(135deg, rgba(96,165,250,0.2), rgba(37,99,235,0.3))', keywords: ['profile'] },
   { name: 'Privacy', page: 'PrivacySettings', icon: '🔒', sub: 'Visibility & profile control', iconBg: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(5,150,105,0.3))', keywords: ['privacy'] },
+  { name: 'Archive', page: 'PostArchive', icon: '🗂️', sub: 'All posts you\'ve ever made', iconBg: 'linear-gradient(135deg, rgba(148,163,184,0.2), rgba(71,85,105,0.3))', keywords: ['archive', 'posts', 'hidden'] },
   { name: 'Notifications', page: 'NotificationSettings', icon: '🔔', sub: 'Alerts, push & email', iconBg: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(180,83,9,0.3))', keywords: ['notifications'] },
   { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨', sub: 'Theme, units & language', iconBg: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(109,40,217,0.3))', keywords: ['appearance'] },
   { name: 'Subscriptions', page: 'SubscriptionSettings', icon: '💳', sub: 'Plan, billing & payment', iconBg: 'linear-gradient(135deg, rgba(251,113,133,0.2), rgba(190,18,60,0.3))', keywords: ['subscriptions'], badge: { label: 'PRO', style: { background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' } } },
@@ -34,7 +35,7 @@ const DEEP_LINKS = [
 ];
 
 const GROUPS = [
-  { label: 'Account', pages: ['AccountSettings', 'ProfileSettings', 'PrivacySettings'] },
+  { label: 'Account', pages: ['AccountSettings', 'ProfileSettings', 'PrivacySettings', 'PostArchive'] },
   { label: 'Preferences', pages: ['NotificationSettings', 'AppearanceSettings'] },
   { label: 'Billing', pages: ['SubscriptionSettings'] },
   { label: 'Support', pages: ['HelpSupport'] },
