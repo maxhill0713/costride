@@ -115,6 +115,36 @@ function PressButton({ onClick, children, textColor = '#94a3b8' }) {
   );
 }
 
+function LogoutDialog({ open, onClose, onConfirm }) {
+  if (!open) return null;
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Log Out?</h3>
+        <p className="text-slate-300 text-sm mb-6">
+          You'll be signed out of your account and will need to log back in to continue.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // Matches the ConfirmDialog style from PostCard exactly
 function DeleteAccountDialog({ open, onClose, onConfirm, isPending, isGymOwner }) {
   if (!open) return null;
@@ -152,6 +182,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
 
@@ -285,7 +316,7 @@ export default function Settings() {
 
               {/* ── Danger Zone ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <PressButton onClick={() => { if (confirm('Are you sure you want to logout?')) { base44.auth.logout(); } }}>
+                <PressButton onClick={() => setShowLogoutDialog(true)}>
                   <LogOut style={{ width: 15, height: 15 }} />
                   Log Out
                 </PressButton>
@@ -303,6 +334,11 @@ export default function Settings() {
         </div>
       </div>
 
+      <LogoutDialog
+        open={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={() => base44.auth.logout()}
+      />
       <DeleteAccountDialog
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
