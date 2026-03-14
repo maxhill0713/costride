@@ -760,12 +760,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
-                      let sets = '-', reps = '-';
-                      if (ex.sets) sets = ex.sets;
-                      else if (ex.setsReps || ex.sets_reps) { const p = String(ex.setsReps || ex.sets_reps || '').toLowerCase().split(/\s*x\s*/); sets = p[0] || '-'; }
-                      if (ex.reps) reps = ex.reps;
-                      else if (ex.setsReps || ex.sets_reps) { const p = String(ex.setsReps || ex.sets_reps || '').toLowerCase().split(/\s*x\s*/); reps = p[1] || '-'; }
+                      const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
+
+                      // Parse setsReps string ("3x10", "3X10") into parts
+                      const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
+                      const srParts = setsRepsStr ? setsRepsStr.split(/\s*[xX]\s*/) : [];
+
+                      const sets = ex.sets ?? ex.set_count ?? ex.num_sets ?? srParts[0] ?? '-';
+                      const reps = ex.reps ?? ex.rep_count ?? ex.num_reps ?? srParts[1] ?? '-';
                       const weight = rawWeight ?? '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
