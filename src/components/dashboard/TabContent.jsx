@@ -224,14 +224,6 @@ export default function TabContent({
       .slice(0, 4);
   }, [checkIns, ci30]);
 
-  const topPost = useMemo(() => {
-    if (!allPosts.length) return null;
-    return [...allPosts].sort((a, b) =>
-      ((b.likes?.length || 0) + (b.comments?.length || 0)) -
-      ((a.likes?.length || 0) + (a.comments?.length || 0))
-    )[0];
-  }, [allPosts]);
-
   const engagementScore = useMemo(() => {
     const postEng  = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0);
     const pollEng  = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
@@ -313,15 +305,8 @@ export default function TabContent({
 
         {/* Feed header + filter tabs */}
         <div style={{ flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0, padding: '0 2px' }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Feed</span>
-            <button
-              onClick={() => openModal('post')}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 11, height: 11 }}/> New Post
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', marginTop: 10, marginBottom: 12, gap: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', marginBottom: 12, gap: 0 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', padding: '7px 16px 7px 2px', marginBottom: -1 }}>Feed</span>
             {FILTERS.map(f => (
               <button
                 key={f.id}
@@ -337,16 +322,11 @@ export default function TabContent({
                 {f.label}
               </button>
             ))}
-            <button
-              onClick={() => openModal('post')}
-              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text2)', fontSize: 11, fontWeight: 600, cursor: 'pointer', marginBottom: 1 }}>
-              <Plus style={{ width: 10, height: 10 }}/> New Post
-            </button>
           </div>
         </div>
 
-        {/* Two-column feed — only this scrolls */}
-        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+        {/* Two-column feed — scrolls vertically only */}
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
           {flatFeedItems.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start', paddingBottom: 24 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -370,7 +350,7 @@ export default function TabContent({
         </div>
       </div>
 
-      {/* ── RIGHT SIDEBAR — identical to original ── */}
+      {/* ── RIGHT SIDEBAR ── */}
       <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minWidth: 280 }}>
 
         {/* Engagement Score */}
@@ -442,32 +422,6 @@ export default function TabContent({
           </Card>
         )}
 
-        {/* Top Post */}
-        {topPost && (
-          <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Top Post</div>
-              <Heart style={{ width: 13, height: 13, color: '#f87171' }}/>
-            </div>
-            <div style={{ padding: 10, borderRadius: 9, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 8 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {topPost.content?.split('\n')[0] || topPost.title || 'Post'}
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#f87171' }}>
-                <Heart style={{ width: 11, height: 11 }}/> {topPost.likes?.length || 0}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>
-                <MessageCircle style={{ width: 11, height: 11 }}/> {topPost.comments?.length || 0}
-              </div>
-              <div style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>
-                {topPost.created_date ? format(new Date(topPost.created_date), 'MMM d') : ''}
-              </div>
-            </div>
-          </Card>
-        )}
-
         {/* Poll Participation Rate */}
         {pollParticipationRate !== null && (
           <Card style={{ padding: 16, flexShrink: 0 }}>
@@ -534,32 +488,6 @@ export default function TabContent({
           </div>
         </Card>
 
-        {/* Upcoming Events */}
-        <Card style={{ padding: 16, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Upcoming Events</div>
-            <button onClick={() => openModal('event')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 10, height: 10 }}/>
-            </button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {upcomingEvents.length > 0 ? upcomingEvents.slice(0, 3).map((ev) => {
-              const evDate = new Date(ev.event_date);
-              return (
-                <div key={ev.id}
-                  style={{ padding: '8px', borderRadius: 8, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4 }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(16,185,129,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(16,185,129,0.04)'}>
-                  <div style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{ev.title}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>{format(evDate, 'MMM d, h:mm a')}</div>
-                </div>
-              );
-            }) : (
-              <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No events</div>
-            )}
-          </div>
-        </Card>
-
         {/* Content Stats */}
         <Card style={{ padding: 16, flexShrink: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Stats</div>
@@ -579,76 +507,6 @@ export default function TabContent({
               </div>
             ))}
           </div>
-        </Card>
-
-        {/* Active Challenges */}
-        <Card style={{ padding: 0, overflow: 'hidden', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Challenges</div>
-            <button onClick={() => openModal('challenge')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-              + Active
-            </button>
-          </div>
-          {activeChallenges.length > 0 ? activeChallenges.slice(0, 1).map(ch => {
-            const start     = new Date(ch.start_date), end = new Date(ch.end_date);
-            const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
-            const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
-            const remaining = Math.max(0, totalDays - elapsed);
-            const pct       = Math.min(100, Math.round((elapsed / totalDays) * 100));
-            return (
-              <div key={ch.id}>
-                <div style={{ margin: '0 12px', borderRadius: 12, overflow: 'hidden', height: 100, background: 'linear-gradient(135deg,#1a1033,#3b1a5e,#6d28d9)', position: 'relative', marginBottom: 10 }}>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Trophy style={{ width: 32, height: 32, color: 'rgba(245,158,11,0.6)' }}/>
-                  </div>
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 10px', background: 'linear-gradient(0deg,rgba(0,0,0,0.7),transparent)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{ch.title}</div>
-                  </div>
-                </div>
-                <div style={{ padding: '0 16px 14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>👥 {ch.participants?.length || 0} participants</span>
-                    <span style={{ fontSize: 11, color: remaining <= 3 ? '#f87171' : 'var(--text3)' }}>{remaining} days remaining</span>
-                  </div>
-                  <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
-                  </div>
-                </div>
-              </div>
-            );
-          }) : (
-            <div style={{ padding: '0 16px 16px' }}>
-              <Empty icon={Trophy} label="No active challenges"/>
-              <button onClick={() => openModal('challenge')} style={{ width: '100%', marginTop: 8, padding: '9px', borderRadius: 9, background: 'rgba(245,158,11,0.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>+ Create Challenge</button>
-            </div>
-          )}
-        </Card>
-
-        {/* Active Polls */}
-        <Card style={{ padding: 16, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Active Polls</div>
-            <button onClick={() => openModal('poll')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>+ New</button>
-          </div>
-          {polls.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {polls.slice(0, 4).map((poll) => {
-                const votes    = poll.voters?.length || 0;
-                const maxVotes = Math.max(...polls.map(p => p.voters?.length || 0), 1);
-                return (
-                  <div key={poll.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{poll.title}</span>
-                    <div style={{ width: 60, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden', flexShrink: 0 }}>
-                      <div style={{ height: '100%', width: `${(votes / maxVotes) * 100}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#a78bfa)', transition: 'width 0.6s ease' }}/>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text1)', width: 16, textAlign: 'right', flexShrink: 0 }}>{votes}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <Empty icon={BarChart2} label="No active polls"/>
-          )}
         </Card>
 
         {/* Milestones */}
