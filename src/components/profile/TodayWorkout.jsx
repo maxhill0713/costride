@@ -21,7 +21,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
   const workoutTypes = currentUser?.custom_workout_types || {};
   const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  // Build list of all configured workout days (skip rest days with no exercises)
   const workoutDays = Object.entries(workoutTypes)
     .map(([dayKey, workout]) => ({
       dayKey: parseInt(dayKey),
@@ -31,7 +30,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
     }))
     .filter(d => d.exercises.length > 0)
     .sort((a, b) => {
-      // Active day always first
       if (a.dayKey === activeDayKey) return -1;
       if (b.dayKey === activeDayKey) return 1;
       return a.dayKey - b.dayKey;
@@ -39,23 +37,15 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed z-[10005] bg-slate-950/70 backdrop-blur-sm"
         style={{ top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' }}
         onClick={onClose}
       />
-
-      {/* Modal */}
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/90 backdrop-blur-xl border border-slate-700/40 rounded-3xl shadow-2xl shadow-black/60 text-white overflow-hidden">
-
-        {/* Header */}
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-xl font-black text-white tracking-tight text-center">Switch Workout</h3>
-
         </div>
-
-        {/* Workout list */}
         <div className="px-3 pb-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
           {workoutDays.length === 0 && (
             <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
@@ -77,14 +67,11 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
                       {wd.name}
                     </p>
                   </div>
-
                 </div>
               </button>
             );
           })}
         </div>
-
-
       </div>
     </>
   );
@@ -108,7 +95,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [frozenDuration, setFrozenDuration] = useState(0);
   const [summaryLog, setSummaryLog] = useState(null);
 
-  // ── Overridden day key (null = use today's actual day) ───────────────────
   const [overrideDayKey, setOverrideDayKey] = useState(null);
 
   const queryClient = useQueryClient();
@@ -149,14 +135,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const dayOfWeek = today.getDay();
   const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
 
-  // The day key actually being displayed (today or overridden)
   const activeDayKey = overrideDayKey !== null ? overrideDayKey : adjustedDay;
   const isOverridden = overrideDayKey !== null && overrideDayKey !== adjustedDay;
 
   const getTodayWorkout = () => {
     if (!currentUser?.custom_workout_types) return null;
 
-    // If using an override, ignore rest-day check for today's actual day
     if (overrideDayKey !== null) {
       const workout = currentUser.custom_workout_types[overrideDayKey];
       if (!workout) return null;
@@ -292,7 +276,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         user_name: currentUser.full_name || currentUser.username || 'User',
         workout_name: todayWorkout.name,
         workout_type: todayWorkout.name,
-        day_of_week: activeDayKey,   // log against the selected day
+        day_of_week: activeDayKey,
         exercises: todayWorkout.exercises,
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
@@ -408,7 +392,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </motion.button>
             </div>
 
-            {/* ── Tappable workout title — opens switcher ── */}
             <motion.button
               onClick={(e) => { e.stopPropagation(); setShowSwitcher(true); }}
               whileTap={{ scale: 0.95 }}
@@ -419,10 +402,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 style={{ fontSize: '16.5px' }}>
                 {todayWorkout.name.length > 28 ? todayWorkout.name.substring(0, 28) + '…' : todayWorkout.name}
               </h2>
-              {/* Small swap indicator */}
-
             </motion.button>
-
           </div>
 
           {showInfo && (
@@ -687,7 +667,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           )}
         </AnimatePresence>
 
-        {/* Modals */}
+        {/* Modals that are fine inside the card (they use fixed positioning internally) */}
         <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
         <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
         <WorkoutSummaryModal
@@ -701,92 +681,124 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           onCancel={() => setShowSummary(false)}
           isLoading={logWorkoutMutation.isPending}
         />
+      </Card>
 
-        {/* Workout Summary Modal */}
-        <AnimatePresence>
-          {summaryLog && (
+      {/* ── Workout Summary Modal — outside Card so fixed positioning covers full screen ── */}
+      <AnimatePresence>
+        {summaryLog && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setSummaryLog(null)}
+            style={{
+              position: 'fixed',
+              top: '-100px',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10005,
+              background: 'rgba(0,0,0,0.7)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '120px 16px 32px',
+            }}>
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setSummaryLog(null)}
-              className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
+              initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto">
 
-                <div className="mb-6">
-                  <h3 className="text-4xl font-black text-white mb-2">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
-                  <p className="text-base text-slate-400 font-medium">
-                    {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+              <div className="mb-5">
+                <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
+                <p className="text-sm text-slate-400 font-medium">
+                  {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+                </p>
+              </div>
+
+              {summaryLog.check_in_time && summaryLog.completed_date && (
+                <div className="mb-4 p-3 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+                  <p className="text-xs text-orange-300/80 font-bold uppercase tracking-wide mb-1">Total Time at Gym</p>
+                  <p className="text-xl font-black text-orange-300">
+                    {(() => {
+                      const checkIn = new Date(summaryLog.check_in_time);
+                      const checkOut = new Date(summaryLog.completed_date);
+                      const diffMs = checkOut - checkIn;
+                      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                      const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    })()}
                   </p>
                 </div>
+              )}
 
-                {summaryLog.check_in_time && summaryLog.completed_date && (
-                  <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
-                    <p className="text-sm text-orange-300/80 font-bold uppercase tracking-wide mb-2">Total Time at Gym</p>
-                    <p className="text-3xl font-black text-orange-300">
-                      {(() => {
-                        const checkIn = new Date(summaryLog.check_in_time);
-                        const checkOut = new Date(summaryLog.completed_date);
-                        const diffMs = checkOut - checkIn;
-                        const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                      })()}
-                    </p>
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {[
+                  { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
+                  { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
+                  { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
+                    <p className="text-sm font-black text-blue-300">{stat.value}</p>
+                    <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
                   </div>
-                )}
+                ))}
+              </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  {[
-                    { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
-                    { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
-                    { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                      <p className="text-lg font-black text-blue-300">{stat.value}</p>
-                      <p className="text-xs text-slate-500 font-bold mt-2">{stat.label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {summaryLog.exercises?.length > 0 && (
-                  <div className="space-y-3 mb-6">
-                    <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
-                    <div className="space-y-3">
-                      {summaryLog.exercises.map((ex, idx) => {
-                        const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                        const weight = ex.weight_kg || ex.weight;
-                        const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
-                        const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
-                        return (
-                          <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
-                            <span className="text-white font-semibold text-base">{exName}</span>
-                            <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
+              {summaryLog.exercises?.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
+                  <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+                    <div />
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+                  </div>
+                  <div className="space-y-2 -mx-2">
+                    {summaryLog.exercises.map((ex, idx) => {
+                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                      const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
+                      let sets = '-', reps = '-';
+                      if (ex.sets) sets = ex.sets;
+                      else if (ex.setsReps || ex.sets_reps) { const p = String(ex.setsReps || ex.sets_reps || '').toLowerCase().split(/\s*x\s*/); sets = p[0] || '-'; }
+                      if (ex.reps) reps = ex.reps;
+                      else if (ex.setsReps || ex.sets_reps) { const p = String(ex.setsReps || ex.sets_reps || '').toLowerCase().split(/\s*x\s*/); reps = p[1] || '-'; }
+                      const weight = rawWeight ?? '-';
+                      return (
+                        <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+                          <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{sets}</div>
+                          <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
+                          <div className="ml-3 pr-3">
+                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                              {weight}<span className="text-[10px] font-bold">kg</span>
+                            </div>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
-                {summaryLog.notes && (
-                  <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-                    <p className="text-sm font-bold text-slate-500 uppercase mb-3">Notes</p>
-                    <p className="text-base text-slate-300 leading-relaxed">{summaryLog.notes}</p>
-                  </div>
-                )}
+              {summaryLog.notes && (
+                <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-2">Notes</p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{summaryLog.notes}</p>
+                </div>
+              )}
 
-                {!summaryLog.exercises?.length && !summaryLog.notes && (
-                  <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
-                )}
-              </motion.div>
+              {!summaryLog.exercises?.length && !summaryLog.notes && (
+                <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
+              )}
             </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Workout Switcher Modal — rendered outside Card so z-index stacks correctly */}
       <WorkoutSwitcherModal
