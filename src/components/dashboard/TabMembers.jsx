@@ -505,11 +505,11 @@ export default function TabMembers({
         {/* ── Members Table ── */}
         <Card style={{ overflow: 'hidden' }}>
           {/* Filter bar */}
-          <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => openModal('members')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(14,165,233,0.9),rgba(6,182,212,0.85))', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-              <Plus style={{ width: 13, height: 13 }}/> Add Member
+          <div style={{ padding: isMobile ? '12px 12px 10px' : '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
+            <button onClick={() => openModal('members')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '6px 10px' : '7px 14px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(14,165,233,0.9),rgba(6,182,212,0.85))', color: '#fff', border: 'none', fontSize: isMobile ? 11 : 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+              <Plus style={{ width: isMobile ? 11 : 13, height: isMobile ? 11 : 13 }}/> {!isMobile && 'Add'} Member
             </button>
-            <div style={{ display: 'flex', gap: 2 }}>
+            <div style={{ display: isMobile ? 'none' : 'flex', gap: 2 }}>
               {[
                 { id: 'all',      label: 'All Members', count: filterCounts.all },
                 { id: 'active',   label: 'Active',       count: filterCounts.active },
@@ -525,10 +525,10 @@ export default function TabMembers({
                 </button>
               ))}
             </div>
-            <div style={{ flex: 1 }}/>
-            <div style={{ position: 'relative' }}>
+            <div style={{ flex: 1, minWidth: isMobile ? 120 : 200 }}/>
+            <div style={{ position: 'relative', width: isMobile ? 140 : 'auto' }}>
               <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: 'var(--text3)' }}/>
-              <input className="search-input" placeholder="Search members…" value={memberSearch} onChange={e => handleSearch(e.target.value)}/>
+              <input className="search-input" placeholder={isMobile ? 'Search…' : 'Search members…'} value={memberSearch} onChange={e => handleSearch(e.target.value)} style={{ width: '100%', fontSize: isMobile ? 11 : 12 }}/>
             </div>
           </div>
 
