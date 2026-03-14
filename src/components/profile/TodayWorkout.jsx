@@ -464,11 +464,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05, duration: 0.2 }}
                     className="grid grid-cols-[1fr_44px_12px_44px_auto_auto] gap-1 mb-1.5 items-end">
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center"></div>
+                    <div></div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2">Weight</div>
                     <div className="w-6"></div>
                   </motion.div>
 
@@ -544,14 +544,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
                             )}
                           </div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-6" style={{ width: '36px' }}>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                             {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                           </div>
-                          <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-6">×</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-5" style={{ width: '36px' }}>
+                          <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                             {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                           </div>
-                          <div className="flex items-center gap- ml-4">
+                          <div className="flex items-center gap- ml-1">
                             <div className="flex items-center gap-2">
                               <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
                                 {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
