@@ -383,36 +383,27 @@ export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenge
   const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
-    <div style={{ borderRadius: 18, background: 'var(--card)', border: '1px solid var(--border)', padding: '18px 18px 16px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(0,212,255,0.04)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles style={{ width: 15, height: 15, color: '#00d4ff' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', lineHeight: 1 }}>Today's Snapshot</div>
-            <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500, marginTop: 2 }}>{dayName}, {dateStr}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
-          <span style={{ fontSize: 10, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
-        </div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-        {stats.map(({ label, value, icon: Icon, color, bg, border, glow, trend }) => (
-          <div key={label} style={{ borderRadius: 14, background: bg, border: `1px solid ${border}`, padding: '12px 12px 10px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', bottom: -10, right: -10, width: 60, height: 60, borderRadius: '50%', background: glow, filter: 'blur(16px)', pointerEvents: 'none' }} />
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-              <Icon style={{ width: 13, height: 13, color }} />
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      {stats.map(({ label, value, icon: Icon, color, bg, border, glow, trend }) => (
+        <div key={label} style={{ borderRadius: 16, background: 'var(--card)', border: '1px solid var(--border)', padding: '20px 20px 16px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', bottom: -10, right: -10, width: 80, height: 80, borderRadius: '50%', background: glow, filter: 'blur(20px)', pointerEvents: 'none' }} />
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 36, fontWeight: 800, color, lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 6, background: bg, border: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon style={{ width: 11, height: 11, color }} />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>{trend}</span>
+              </div>
             </div>
-            <div style={{ fontSize: 28, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 4 }}>{value}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text1)', lineHeight: 1.2, marginBottom: 3 }}>{label}</div>
-            <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trend}</div>
           </div>
-        ))}
-      </div>
+          <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: `${bg}`, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: '100%', background: color, opacity: 0.5, borderRadius: 99 }}/>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
