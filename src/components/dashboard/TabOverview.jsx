@@ -71,25 +71,22 @@ export default function TabOverview({
             </div>
           </Card>
           <Card style={{ padding: '20px 20px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Monthly Growth</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 12, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Engagement Score</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{ fontSize: 32, fontWeight: 800, color: newSignUps > 0 ? '#10b981' : 'var(--text1)', lineHeight: 1, letterSpacing: '-0.04em' }} className="anim-pop">{newSignUps > 0 ? '+' : ''}{newSignUps}</span>
-                  <span style={{ fontSize: 13, color: 'var(--text3)', fontWeight: 500 }}>this month</span>
+                <div style={{ fontSize: 36, fontWeight: 800, color: '#f59e0b', lineHeight: 1, letterSpacing: '-0.04em' }} className="anim-pop">
+                  {(posts?.reduce((sum, p) => sum + (p.likes?.length || 0) + (p.comments?.length || 0) + Object.keys(p.reactions || {}).length, 0) || 0) + (polls?.reduce((sum, p) => sum + (p.voters?.length || 0), 0) || 0) + (challenges?.reduce((sum, c) => sum + (c.participants?.length || 0), 0) || 0)}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                  {ciPrev30.length === 0
-                    ? <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>No prior month data</span>
-                    : monthChangePct > 0
-                      ? <><ArrowUpRight style={{width:13,height:13,color:'var(--green)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--green)'}}>+{monthChangePct}% vs last month</span></>
-                      : monthChangePct < 0
-                        ? <><TrendingDown style={{width:13,height:13,color:'var(--red)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--red)'}}>{monthChangePct}% vs last month</span></>
-                        : <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>Same as last month</span>
-                  }
+                  <Flame style={{width:13,height:13,color:'#f59e0b'}}/>
+                  <span style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>Total interactions</span>
                 </div>
               </div>
-              <Sparkline data={monthGrowthData.map(d=>d.value)} color="#10b981"/>
+              <div style={{textAlign:'right',fontSize:11,color:'var(--text3)',fontWeight:600,lineHeight:1.4}}>
+                <div>{posts?.length || 0} posts</div>
+                <div>{polls?.length || 0} polls</div>
+                <div>{challenges?.length || 0} challenges</div>
+              </div>
             </div>
           </Card>
           <Card style={{ padding: '20px 20px 16px' }}>
