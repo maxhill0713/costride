@@ -535,25 +535,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
-
-  // Fetch posts from all gyms the user is a member of
-  const memberGymIds = gymMemberships.map(m => m.gym_id);
-  const { data: gymPostsRaw = [] } = useQuery({
-    queryKey: ['gymMemberPosts', currentUser?.id, memberGymIds.join(',')],
-    queryFn: async () => {
-      if (!memberGymIds.length) return [];
-      const results = await Promise.all(
-        memberGymIds.map(gymId =>
-          base44.entities.Post.filter({ member_id: gymId, is_hidden: false }, '-created_date', 10)
-        )
-      );
-      return results.flat();
-    },
-    enabled: !!currentUser && memberGymIds.length > 0,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    placeholderData: (prev) => prev,
-  });
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }),
@@ -738,17 +719,11 @@ export default function Home() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  const socialFeedPosts = [
-    ...allPosts.filter(post =>
-      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
-      (post.content || post.image_url || post.video_url || post.workout_name) &&
-      !post.gym_join
-    ),
-    ...gymPostsRaw.filter(post =>
-      (post.content || post.image_url || post.video_url) && !post.is_hidden
-    ),
-  ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-   .filter((post, idx, arr) => arr.findIndex(p => p.id === post.id) === idx); // deduplicate
+  const socialFeedPosts = allPosts.filter(post =>
+    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+    (post.content || post.image_url || post.video_url || post.workout_name) &&
+    !post.gym_join
+  );
 
   const activityFeed = (() => {
     const activities = [];
@@ -1101,7 +1076,7 @@ export default function Home() {
                 {/* Transparent full-screen overlay behind everything to catch outside taps */}
                 {activeCircleDay !== null && (
                   <div
-                    onClick={() => setActiveCircleDay(null)}
+                    onPointerDown={() => setActiveCircleDay(null)}
                     style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
                 )}
@@ -1294,7 +1269,7 @@ export default function Home() {
                                   <button
                                     data-bubble="true"
                                     onPointerDown={(e) => e.stopPropagation()}
-                                    onClick={async (e) => {
+                                    onPointerUp={async (e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
                                       try {
@@ -1302,11 +1277,6 @@ export default function Home() {
                                         setSummaryLog(logs[0] || workoutLog);
                                       } catch { setSummaryLog(workoutLog); }
                                     }}
-                                    onMouseDown={(e) => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
-                                    onMouseUp={(e) => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = ''}
-                                    onTouchStart={(e) => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
-                                    onTouchEnd={(e) => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
                                     style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
                                     View Summary
                                   </button>
@@ -1315,12 +1285,11 @@ export default function Home() {
                                   <button
                                     data-bubble="true"
                                     onPointerDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => { e.stopPropagation(); setActiveCircleDay(null); setViewWorkoutDay(day); }}
-                                    onMouseDown={(e) => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = '0 0px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'; }}
-                                    onMouseUp={(e) => { e.stopPropagation(); e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-                                    onTouchStart={(e) => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = '0 0px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'; }}
-                                    onTouchEnd={(e) => { e.stopPropagation(); e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+                                    onPointerUp={(e) => {
+                                      e.stopPropagation();
+                                      setActiveCircleDay(null);
+                                      setViewWorkoutDay(day);
+                                    }}
                                     style={viewWorkoutBtnStyle}>
                                     View Workout
                                   </button>
@@ -1340,7 +1309,7 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {/* ── Social Feed ── */}
-          {(friends.length > 0 || socialFeedPosts.length > 0) && (
+          {friends.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 pt-1">
                 <FriendsIcon className="w-4 h-4 text-cyan-400" />
