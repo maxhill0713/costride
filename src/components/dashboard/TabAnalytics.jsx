@@ -148,9 +148,21 @@ function KpiCard({ icon: Icon, label, value, valueSuffix, unit, color, trend, ri
 
 // ── Heatmap ───────────────────────────────────────────────────────────────────
 function HeatmapChart({ gymId }) {
+  const [weeks, setWeeks] = React.useState(4);
+
   const { data: heatmapCheckIns = [] } = useQuery({
-    queryKey: ['heatmapCheckIns', gymId],
-    queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 5000),
+    queryKey: ['heatmapCheckIns', gymId, weeks],
+    queryFn: () => {
+      if (weeks === 0) {
+        return base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 5000);
+      }
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - weeks * 7);
+      return base44.entities.CheckIn.filter(
+        { gym_id: gymId, check_in_date: { $gte: cutoff.toISOString() } },
+        '-check_in_date', 5000
+      );
+    },
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
   });
