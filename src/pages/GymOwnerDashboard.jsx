@@ -115,6 +115,10 @@ export default function GymOwnerDashboard() {
   const deleteGymM       = useMutation({ mutationFn: () => base44.entities.Gym.delete(selectedGym.id), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); } });
   const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); } });
   const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); } });
+  const deletePostM      = useMutation({ mutationFn: id => base44.entities.Post.delete(id),      onSuccess: () => inv('posts') });
+  const deleteEventM     = useMutation({ mutationFn: id => base44.entities.Event.delete(id),     onSuccess: () => inv('events') });
+  const deleteChallengeM = useMutation({ mutationFn: id => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges') });
+  const deletePollM      = useMutation({ mutationFn: id => base44.entities.Poll.delete(id),      onSuccess: () => inv('polls') });
 
   const memberUserIds = useMemo(() => { const s = new Set(); checkIns.forEach(c => { if (c.user_id) s.add(c.user_id); }); allMemberships.forEach(m => { if (m.user_id) s.add(m.user_id); }); return [...s].slice(0, 100); }, [checkIns, allMemberships]);
   const { data: memberUsers = [] } = useQuery({ queryKey: ['memberUsers', selectedGym?.id, memberUserIds.length], queryFn: async () => { if (!memberUserIds.length) return []; const r = await Promise.allSettled(memberUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(x => x?.[0] || null))); return r.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value); }, enabled: memberUserIds.length > 0 && on, staleTime: 10 * 60 * 1000 });
