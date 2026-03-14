@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { format, subDays, isWithinInterval } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Users, Heart, Eye } from 'lucide-react';
+import { format, subDays } from 'date-fns';
+import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 import PostCard from '../feed/PostCard';
 
@@ -30,8 +30,6 @@ export default function TabContent({
       .sort((a, b) => a.toNext - b.toNext)
       .slice(0, 4);
   }, [checkIns, ci30]);
-
-  // ── Derived content analytics ──────────────────────────────────────────────
 
   const topPost = useMemo(() => {
     if (!allPosts.length) return null;
@@ -66,10 +64,7 @@ export default function TabContent({
       const day   = subDays(now, 6 - i);
       const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
       const end   = new Date(start.getTime() + 86400000);
-      const count = allPosts.filter(p => {
-        const d = new Date(p.created_date);
-        return d >= start && d < end;
-      }).length;
+      const count = allPosts.filter(p => { const d = new Date(p.created_date); return d >= start && d < end; }).length;
       return { label: format(day, 'EEE'), count };
     });
   }, [allPosts, now]);
@@ -94,10 +89,10 @@ export default function TabContent({
   }, [allMemberships, ci30, activeChallenges, polls]);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, height: 'calc(100vh - 56px - 44px)', minHeight: 0 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(260px, 22%, 320px)', gap: 16, height: '100%', maxWidth: '100%' }}>
 
-      {/* ── LEFT ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', minHeight: 0 }}>
+      {/* ── LEFT: action cards + posts feed ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
         {/* Action cards */}
         <div style={{ flexShrink: 0, paddingBottom: 12 }}>
@@ -123,11 +118,11 @@ export default function TabContent({
           </div>
         </div>
 
-        {/* Posts feed — only this scrolls */}
-        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4, minHeight: 0 }}>
-          <div style={{ maxWidth: '50%' }}>
+        {/* Posts feed — scrolls */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4, minWidth: 0 }}>
+          <div style={{ maxWidth: '100%', width: '100%' }}>
             {allPosts.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {allPosts.map((post) => (
                   <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
                 ))}
@@ -142,10 +137,10 @@ export default function TabContent({
 
       </div>
 
-      {/* ── RIGHT SIDEBAR — never scrolls ── */}
-      <div style={{ height: '100%', overflowY: 'hidden', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* ── RIGHT: sidebar ── */}
+      <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minWidth: 280 }}>
 
-        {/* 1. Engagement Score */}
+        {/* Engagement Score */}
         <Card style={{ padding: 16, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Engagement Score</div>
@@ -160,7 +155,7 @@ export default function TabContent({
               { label: 'Likes',        val: allPosts.reduce((s, p) => s + (p.likes?.length || 0), 0),    color: '#f87171' },
               { label: 'Comments',     val: allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
               { label: 'Poll votes',   val: polls.reduce((s, p) => s + (p.voters?.length || 0), 0),      color: '#a78bfa' },
-              { label: 'In challenge', val: totalChalPart,                                                color: '#fbbf24' },
+              { label: 'In challenge', val: totalChalPart,                                                 color: '#fbbf24' },
             ].map((s, i) => (
               <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
                 {s.val} {s.label}
@@ -169,7 +164,7 @@ export default function TabContent({
           </div>
         </Card>
 
-        {/* 2. Content Cadence */}
+        {/* Posting Cadence */}
         <Card style={{ padding: 16, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Posting Cadence</div>
@@ -178,13 +173,7 @@ export default function TabContent({
           <div style={{ display: 'flex', gap: 4, height: 40, alignItems: 'flex-end' }}>
             {cadenceData.map((d, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{
-                  width: '100%',
-                  height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32),
-                  borderRadius: 3,
-                  background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg, #38bdf8, #0ea5e9)',
-                  transition: 'height 0.4s ease',
-                }}/>
+                <div style={{ width: '100%', height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32), borderRadius: 3, background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg, #38bdf8, #0ea5e9)', transition: 'height 0.4s ease' }}/>
               </div>
             ))}
           </div>
@@ -198,12 +187,10 @@ export default function TabContent({
           </div>
         </Card>
 
-        {/* 3. Content Mix */}
+        {/* Content Mix */}
         {contentMix && (
           <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Content Mix</div>
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 10 }}>Content Mix</div>
             <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 10 }}>
               {contentMix.filter(c => c.pct > 0).map((c, i) => (
                 <div key={i} style={{ width: `${c.pct}%`, background: c.color, borderRadius: 99, transition: 'width 0.6s ease' }}/>
@@ -222,7 +209,7 @@ export default function TabContent({
           </Card>
         )}
 
-        {/* 4. Top Post */}
+        {/* Top Post */}
         {topPost && (
           <Card style={{ padding: 16, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -248,7 +235,7 @@ export default function TabContent({
           </Card>
         )}
 
-        {/* 5. Poll Participation Rate */}
+        {/* Poll Participation Rate */}
         {pollParticipationRate !== null && (
           <Card style={{ padding: 16, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -262,13 +249,7 @@ export default function TabContent({
               <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 3 }}>of members voting</span>
             </div>
             <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%',
-                width: `${pollParticipationRate}%`,
-                borderRadius: 99,
-                background: pollParticipationRate >= 50 ? 'linear-gradient(90deg,#10b981,#34d399)' : pollParticipationRate >= 25 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : 'linear-gradient(90deg,#dc2626,#f87171)',
-                transition: 'width 0.8s ease',
-              }}/>
+              <div style={{ height: '100%', width: `${pollParticipationRate}%`, borderRadius: 99, background: pollParticipationRate >= 50 ? 'linear-gradient(90deg,#10b981,#34d399)' : pollParticipationRate >= 25 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : 'linear-gradient(90deg,#dc2626,#f87171)', transition: 'width 0.8s ease' }}/>
             </div>
             <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6, fontWeight: 500 }}>
               {pollParticipationRate < 25 ? 'Low — try shorter, punchier polls' : pollParticipationRate < 50 ? 'Decent — pin polls to your feed' : 'Great engagement on polls!'}
@@ -276,7 +257,7 @@ export default function TabContent({
           </Card>
         )}
 
-        {/* 6. Unreached Members */}
+        {/* Unreached Members */}
         {unreachedMembers.length > 0 && (
           <Card style={{ padding: 16, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -291,9 +272,7 @@ export default function TabContent({
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avatar name={m.user_name || m.user_id || '?'} size={26} src={avatarMap[m.user_id] || null}/>
                   <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</span>
-                  <button
-                    onClick={() => openModal('post')}
-                    style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>
+                  <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>
                     Reach
                   </button>
                 </div>
@@ -380,7 +359,7 @@ export default function TabContent({
             </button>
           </div>
           {activeChallenges.length > 0 ? activeChallenges.slice(0, 1).map(ch => {
-            const start     = new Date(ch.start_date), end = new Date(ch.end_date);
+            const start = new Date(ch.start_date), end = new Date(ch.end_date);
             const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
             const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
             const remaining = Math.max(0, totalDays - elapsed);
