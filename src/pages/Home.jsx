@@ -417,6 +417,7 @@ export default function Home() {
   const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
+  const [bubblePos, setBubblePos] = useState(null); // { left, top } in viewport coords
   const [summaryLog, setSummaryLog] = useState(null);
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
@@ -1079,6 +1080,7 @@ export default function Home() {
                     onPointerDown={(e) => {
                       if (e.target.closest('[data-bubble]') || e.target.closest('[data-circle-btn]')) return;
                       setActiveCircleDay(null);
+                      setBubblePos(null);
                     }}
                     style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
@@ -1153,10 +1155,42 @@ export default function Home() {
                       )}
                       <button
                         data-circle-btn="true"
-                        onPointerDown={() => setPressedDay(day)}
+                        onPointerDown={(e) => {
+                          setPressedDay(day);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setBubblePos({
+                            buttonCenterX: rect.left + rect.width / 2,
+                            buttonBottom: rect.bottom,
+                            day,
+                            workoutLog: workoutLog || null,
+                            done,
+                            isRestDay,
+                            isMissed,
+                            isPastOrTodayRestDay,
+                            isTodayCircle,
+                            showViewWorkout,
+                            hasBubbleBtn,
+                            popupLabel: (() => {
+                              if (isRestDay) return 'Rest Day';
+                              if (isMissed) return 'No Workout';
+                              if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
+                              if (done) return 'Workout';
+                              const customTypes = currentUser?.custom_workout_types;
+                              const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
+                              return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
+                            })(),
+                            dateLabel: done && workoutLog?.completed_date
+                              ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
+                              : (() => { const mon = startOfWeek(new Date(), { weekStartsOn: 1 }); const sd = new Date(mon); sd.setDate(mon.getDate() + (day - 1)); return sd.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }); })(),
+                            solidColor: isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535',
+                          });
+                        }}
                         onPointerUp={() => {
                           if (pressedDay === day) {
-                            setActiveCircleDay((prev) => prev === day ? null : day);
+                            setActiveCircleDay((prev) => {
+                              if (prev === day) { setBubblePos(null); return null; }
+                              return day;
+                            });
                           }
                           setPressedDay(null);
                         }}
@@ -1218,92 +1252,89 @@ export default function Home() {
                         )}
                       </button>
                       <AnimatePresence>
-                        {activeCircleDay === day && (() => {
-                          const ARROW_H = 7;
-                          const ARROW_W = 13;
-                          const RADIUS = 14;
-                          const SVG_H = BUBBLE_H + ARROW_H;
-                          const SLOT = size + 8;
-                          const circleCenterInRow = i * SLOT + size / 2;
-                          const rowWidth = 7 * SLOT - 8;
-                          const idealBubbleLeft = circleCenterInRow - BUBBLE_W / 2;
-                          const clampedBubbleLeft = Math.max(0, Math.min(idealBubbleLeft, rowWidth - BUBBLE_W));
-                          const bubbleOffsetFromCircle = clampedBubbleLeft - i * SLOT;
-                          const arrowInBubble = circleCenterInRow - clampedBubbleLeft;
-                          const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
-                          const arrowL = arrowTip - ARROW_W / 2;
-                          const arrowR = arrowTip + ARROW_W / 2;
-                          const solidColor = isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
-                          const path = [
-                            `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
-                            `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
-                            `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
-                            `L ${BUBBLE_W} ${SVG_H - RADIUS}`, `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
-                            `L ${RADIUS} ${SVG_H}`, `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
-                            `L 0 ${ARROW_H + RADIUS}`, `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`, `Z`,
-                          ].join(' ');
-                          return (
-                            <motion.div
-                              data-bubble="true"
-                              initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
-                              animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
-                              exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
-                              transition={{ duration: 0.32, ease: [0.34, 1.3, 0.64, 1] }}
-                              style={{ position: 'absolute', top: size + 2, left: bubbleOffsetFromCircle, width: BUBBLE_W, height: SVG_H, zIndex: 200, pointerEvents: 'auto', transformOrigin: `${arrowTip}px top` }}>
-                              <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}>
-                                <path d={path} fill={solidColor} />
-                              </svg>
-                              <div style={{ position: 'absolute', top: ARROW_H + 8, left: 14, right: 14, bottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <span style={{ fontSize: 19.3, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', lineHeight: 1.25, textShadow: '0 1px 3px rgba(0,0,0,0.35)', whiteSpace: 'nowrap', overflow: 'visible', textOverflow: 'ellipsis', textAlign: 'center', width: '100%', display: 'block', flexShrink: 0 }}>
-                                  {getPopupLabel()}
-                                </span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1, textAlign: 'center', marginTop: 5 }}>
-                                  {done && workoutLog?.completed_date ?
-                                    new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) :
-                                    (() => {
-                                      const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-                                      const slotDate = new Date(monday);
-                                      slotDate.setDate(monday.getDate() + (day - 1));
-                                      return slotDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-                                    })()
-                                  }
-                                </span>
-                                {done && !isRestDay && workoutLog && (
-                                  <button
-                                    data-bubble="true"
-                                    onPointerDown={async (e) => {
-                                      e.stopPropagation();
-                                      setActiveCircleDay(null);
-                                      try {
-                                        const logs = await base44.entities.WorkoutLog.filter({ id: workoutLog.id });
-                                        setSummaryLog(logs[0] || workoutLog);
-                                      } catch { setSummaryLog(workoutLog); }
-                                    }}
-                                    style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
-                                    View Summary
-                                  </button>
-                                )}
-                                {showViewWorkout && (
-                                  <button
-                                    data-bubble="true"
-                                    onPointerDown={(e) => {
-                                      e.stopPropagation();
-                                      setActiveCircleDay(null);
-                                      setViewWorkoutDay(day);
-                                    }}
-                                    style={viewWorkoutBtnStyle}>
-                                    View Workout
-                                  </button>
-                                )}
-                              </div>
-                            </motion.div>
-                          );
-                        })()}
                       </AnimatePresence>
                     </div>
                   );
                 })}
               </div>
+            );
+          })()}
+
+          {/* ── Fixed bubble — rendered outside the circles row so it's never clipped ── */}
+          {activeCircleDay !== null && bubblePos && (() => {
+            const ARROW_H = 7;
+            const ARROW_W = 13;
+            const RADIUS = 14;
+            const BUBBLE_W = 274;
+            const BUBBLE_H = bubblePos.hasBubbleBtn ? 118 : 78;
+            const SVG_H = BUBBLE_H + ARROW_H;
+
+            const screenW = window.innerWidth;
+            const rawLeft = bubblePos.buttonCenterX - BUBBLE_W / 2;
+            const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
+            const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(bubblePos.buttonCenterX - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
+            const arrowL = arrowTip - ARROW_W / 2;
+            const arrowR = arrowTip + ARROW_W / 2;
+            const bubbleTop = bubblePos.buttonBottom + 4;
+
+            const path = [
+              `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
+              `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
+              `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
+              `L ${BUBBLE_W} ${SVG_H - RADIUS}`, `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
+              `L ${RADIUS} ${SVG_H}`, `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
+              `L 0 ${ARROW_H + RADIUS}`, `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`, `Z`,
+            ].join(' ');
+
+            return (
+              <motion.div
+                key={bubblePos.day}
+                initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
+                animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
+                exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
+                transition={{ duration: 0.32, ease: [0.34, 1.3, 0.64, 1] }}
+                style={{ position: 'fixed', top: bubbleTop, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999, pointerEvents: 'auto', transformOrigin: `${arrowTip}px top` }}>
+                <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}>
+                  <path d={path} fill={bubblePos.solidColor} />
+                </svg>
+                <div style={{ position: 'absolute', top: ARROW_H + 8, left: 14, right: 14, bottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={{ fontSize: 19.3, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', lineHeight: 1.25, textShadow: '0 1px 3px rgba(0,0,0,0.35)', whiteSpace: 'nowrap', overflow: 'visible', textOverflow: 'ellipsis', textAlign: 'center', width: '100%', display: 'block', flexShrink: 0 }}>
+                    {bubblePos.popupLabel}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1, textAlign: 'center', marginTop: 5 }}>
+                    {bubblePos.dateLabel}
+                  </span>
+                  {bubblePos.done && !bubblePos.isRestDay && bubblePos.workoutLog && (
+                    <button
+                      onPointerDown={async (e) => {
+                        e.stopPropagation();
+                        const wl = bubblePos.workoutLog;
+                        setActiveCircleDay(null);
+                        setBubblePos(null);
+                        try {
+                          const logs = await base44.entities.WorkoutLog.filter({ id: wl.id });
+                          setSummaryLog(logs[0] || wl);
+                        } catch { setSummaryLog(wl); }
+                      }}
+                      style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
+                      View Summary
+                    </button>
+                  )}
+                  {bubblePos.showViewWorkout && (
+                    <button
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        const d = bubblePos.day;
+                        setActiveCircleDay(null);
+                        setBubblePos(null);
+                        setViewWorkoutDay(d);
+                      }}
+                      style={viewWorkoutBtnStyle}>
+                      View Workout
+                    </button>
+                  )}
+                </div>
+              </motion.div>
             );
           })()}
 
