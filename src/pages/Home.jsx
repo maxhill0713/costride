@@ -738,11 +738,17 @@ export default function Home() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  const socialFeedPosts = allPosts.filter(post =>
-    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
-    (post.content || post.image_url || post.video_url || post.workout_name) &&
-    !post.gym_join
-  );
+  const socialFeedPosts = [
+    ...allPosts.filter(post =>
+      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+      (post.content || post.image_url || post.video_url || post.workout_name) &&
+      !post.gym_join
+    ),
+    ...gymPostsRaw.filter(post =>
+      (post.content || post.image_url || post.video_url) && !post.is_hidden
+    ),
+  ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+   .filter((post, idx, arr) => arr.findIndex(p => p.id === post.id) === idx); // deduplicate
 
   const activityFeed = (() => {
     const activities = [];
