@@ -342,7 +342,7 @@ export default function TabAnalytics({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* KPI row — Overview-style cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
           <KpiCard
             icon={Activity}
             label="Daily Avg"
