@@ -356,8 +356,8 @@ export default function GymOwnerDashboard() {
               <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {tab === 'members'
                   ? <span>{allMemberships.length} members · {selectedGym?.name}</span>
-                  : <>{format(now, 'EEEE, d MMMM yyyy')} <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sun style={{ width: 11, height: 11 }}/> 18°C</span></>
-                }
+                      : <>{format(now, 'EEEE, d MMMM yyyy')} <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sun style={{ width: 11, height: 11 }}/> 18°C</span></>
+                    }
               </div>
             </div>
           </div>
