@@ -313,7 +313,7 @@ export default function Settings() {
 
               {/* ── Danger Zone ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <PressButton onClick={() => { if (confirm('Are you sure you want to logout?')) { base44.auth.logout(); } }}>
+                <PressButton onClick={() => setShowLogoutDialog(true)}>
                   <LogOut style={{ width: 15, height: 15 }} />
                   Log Out
                 </PressButton>
