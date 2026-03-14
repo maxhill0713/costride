@@ -18,6 +18,7 @@ import ManageRewardsModal    from '../components/gym/ManageRewardsModal';
 import ManageClassesModal    from '../components/gym/ManageClassesModal';
 import ManageCoachesModal    from '../components/gym/ManageCoachesModal';
 import ManageGymPhotosModal  from '../components/gym/ManageGymPhotosModal';
+import EditGymPhotoModal     from '../components/gym/EditGymPhotoModal';
 import ManageMembersModal    from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import ManageEquipmentModal  from '../components/gym/ManageEquipmentModal';
@@ -407,6 +408,7 @@ export default function GymOwnerDashboard() {
       <ManageRewardsModal    open={modal==='rewards'}    onClose={closeModal} rewards={rewards}   onCreateReward={d=>createRewardM.mutate(d)}  onDeleteReward={id=>deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending}/>
       <ManageClassesModal    open={modal==='classes'}    onClose={closeModal} classes={classes}   onCreateClass={d=>createClassM.mutate(d)}    onUpdateClass={(id,data)=>updateClassM.mutate({id,data})} onDeleteClass={id=>deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending||updateClassM.isPending}/>
       <ManageCoachesModal    open={modal==='coaches'}    onClose={closeModal} coaches={coaches}   onCreateCoach={d=>createCoachM.mutate(d)}    onDeleteCoach={id=>deleteCoachM.mutate(id)}  gym={selectedGym} isLoading={createCoachM.isPending}/>
+      <EditGymPhotoModal     open={modal==='heroPhoto'}  onClose={closeModal} gym={selectedGym}   onSave={url=>updateGymM.mutate({image_url:url})} isLoading={updateGymM.isPending}/>
       <ManageGymPhotosModal  open={modal==='photos'}     onClose={closeModal} gallery={selectedGym?.gallery||[]} onSave={g=>updateGalleryM.mutate(g)} isLoading={updateGalleryM.isPending}/>
       <ManageMembersModal    open={modal==='members'}    onClose={closeModal} gym={selectedGym}   onBanMember={id=>banMemberM.mutate(id)}      onUnbanMember={id=>unbanMemberM.mutate(id)}/>
       <CreateGymOwnerPostModal open={modal==='post'}     onClose={closeModal} gym={selectedGym}   onSuccess={()=>inv('posts')}/>
