@@ -73,7 +73,7 @@ function FeedCard({ post, onDelete }) {
 }
 
 // ── Event card ────────────────────────────────────────────────────────────────
-function EventCard({ event, now }) {
+function EventCard({ event, now, onDelete }) {
   const evDate   = new Date(event.event_date);
   const diffDays = Math.floor((evDate - now) / 86400000);
   return (
@@ -84,9 +84,10 @@ function EventCard({ event, now }) {
             <Calendar style={{ width: 14, height: 14, color: '#34d399' }}/>
           </div>
           <span style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 5, padding: '1px 7px' }}>Event</span>
-          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: diffDays <= 2 ? '#f87171' : '#34d399', background: diffDays <= 2 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', borderRadius: 4, padding: '2px 6px' }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: diffDays <= 2 ? '#f87171' : '#34d399', background: diffDays <= 2 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', borderRadius: 4, padding: '2px 6px' }}>
             {diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `${diffDays}d`}
           </span>
+          <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(event.id)}/></div>
         </div>
         <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', margin: '0 0 4px' }}>{event.title}</p>
         {event.description && (
