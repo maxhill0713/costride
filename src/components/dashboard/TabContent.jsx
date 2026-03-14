@@ -264,11 +264,11 @@ export default function TabContent({
   const col2 = flatFeedItems.filter((_, i) => i % 2 === 1);
 
   const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}/>;
-    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data} now={now}/>;
-    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now}/>;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}/>;
-    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}/>;
+    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}      onDelete={onDeletePost}/>;
+    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     now={now} onDelete={onDeleteEvent}/>;
+    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now} onDelete={onDeleteChallenge}/>;
+    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}/>;
+    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass}/>;
     return null;
   };
 
