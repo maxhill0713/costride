@@ -355,38 +355,143 @@ function TodayStrip({ classes, bookedIds, onBook }) {
           const spotsLeft = capacity ? capacity - enrolled : null;
           const isFull    = spotsLeft !== null && spotsLeft <= 0;
           return (
+// Gradient backgrounds per class type
+const TYPE_CARD_GRAD = {
+  hiit:     'linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 50%, #1a0505 100%)',
+  yoga:     'linear-gradient(135deg, #031a10 0%, #063320 50%, #021a10 100%)',
+  strength: 'linear-gradient(135deg, #080b1f 0%, #0f1540 50%, #080b1f 100%)',
+  cardio:   'linear-gradient(135deg, #1a0510 0%, #2d0a1c 50%, #1a0510 100%)',
+  spin:     'linear-gradient(135deg, #040d1a 0%, #071a33 50%, #040d1a 100%)',
+  boxing:   'linear-gradient(135deg, #150800 0%, #2a1200 50%, #150800 100%)',
+  pilates:  'linear-gradient(135deg, #0f0520 0%, #1e0a40 50%, #0f0520 100%)',
+  default:  'linear-gradient(135deg, #060c1f 0%, #0a1535 50%, #060c1f 100%)',
+};
+
+function TodayStrip({ classes, bookedIds, onBook }) {
+  const todayName = DAYS_SHORT[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+  const todayClasses = classes.filter(c => {
+    const days = getScheduleDays(c);
+    return days.length === 0 || days.includes(todayName);
+  }).slice(0, 8);
+
+  if (todayClasses.length === 0) return null;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          Today's Classes
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.25)' }}>
+          {todayClasses.length} scheduled
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+        {todayClasses.map(c => {
+          const typeKey = getClassType(c);
+          const cfg = CLASS_TYPE_CONFIG[typeKey];
+          const grad = TYPE_CARD_GRAD[typeKey] || TYPE_CARD_GRAD.default;
+          const booked = bookedIds.has(c.id);
+          const capacity  = c.capacity || c.max_participants || null;
+          const enrolled  = c.enrolled  || c.participants_count || 0;
+          const spotsLeft = capacity ? capacity - enrolled : null;
+          const isFull    = spotsLeft !== null && spotsLeft <= 0;
+          const isHot     = spotsLeft !== null && spotsLeft <= 3 && !isFull;
+
+          return (
             <div key={c.id} style={{
-              flexShrink: 0, width: 150,
-              borderRadius: 16,
-              background: booked ? cfg.bg : 'rgba(14,18,36,0.97)',
-              border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.09)'}`,
-              padding: '12px 12px 10px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-            }}>
-              <div style={{ fontSize: 20, marginBottom: 6 }}>{cfg.emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 2 }}>{c.name || c.title}</div>
-              {(c.instructor || c.coach_name) && <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 600, marginBottom: 6 }}>{c.instructor || c.coach_name}</div>}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
-                {c.schedule && <span style={{ fontSize: 9, fontWeight: 700, color: cfg.color }}>{c.schedule}</span>}
-                {c.location && <><span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>•</span><span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</span></>}
+              flexShrink: 0, width: 168, borderRadius: 20, background: grad,
+              border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.08)'}`,
+              boxShadow: booked ? `0 0 0 1px ${cfg.border}, 0 8px 32px rgba(0,0,0,0.5)` : '0 8px 32px rgba(0,0,0,0.45)',
+              overflow: 'hidden', position: 'relative', cursor: isFull ? 'default' : 'pointer',
+            }} onClick={() => !isFull && onBook(c.id)}>
+
+              {/* Colour accent top bar */}
+              <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}cc, ${cfg.color}44)` }} />
+
+              {/* Large decorative emoji */}
+              <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 52, lineHeight: 1, opacity: 0.18, filter: 'blur(1px)', pointerEvents: 'none', userSelect: 'none' }}>
+                {cfg.emoji}
               </div>
-              {spotsLeft !== null && !isFull && spotsLeft <= 5 && (
-                <div style={{ fontSize: 9, fontWeight: 800, color: spotsLeft <= 2 ? '#f87171' : '#fbbf24', marginBottom: 6 }}>
-                  {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left
+
+              {/* Booked / hot / full badge */}
+              {(booked || isHot || isFull) && (
+                <div style={{
+                  position: 'absolute', top: 11, right: 10, fontSize: 9, fontWeight: 900,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: booked ? '#34d399' : isFull ? '#f87171' : '#fbbf24',
+                  background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)',
+                  border: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(239,68,68,0.3)' : 'rgba(251,191,36,0.3)'}`,
+                  borderRadius: 6, padding: '2px 7px',
+                }}>
+                  {booked ? '✓ Booked' : isFull ? 'Full' : '🔥 Hot'}
                 </div>
               )}
-              <button
-                onClick={() => !isFull && onBook(c.id)}
-                disabled={isFull}
-                style={{
-                  width: '100%', padding: '7px', borderRadius: 9, fontSize: 11, fontWeight: 800, cursor: isFull ? 'default' : 'pointer', border: 'none',
-                  background: booked ? 'rgba(16,185,129,0.2)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
+
+              <div style={{ padding: '12px 14px 0' }}>
+                {/* Type chip */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: '2px 8px' }}>
+                  {cfg.emoji} {cfg.label}
+                </div>
+
+                {/* Name */}
+                <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.2, marginBottom: 4 }}>
+                  {c.name || c.title}
+                </div>
+
+                {/* Instructor */}
+                {(c.instructor || c.coach_name) && (
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600, marginBottom: 10 }}>
+                    {c.instructor || c.coach_name}
+                  </div>
+                )}
+
+                {/* Meta */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
+                  {c.schedule && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Clock style={{ width: 10, height: 10, color: cfg.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{c.schedule}</span>
+                      {c.duration_minutes && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>· {c.duration_minutes}min</span>}
+                    </div>
+                  )}
+                  {c.location && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <MapPin style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</span>
+                    </div>
+                  )}
+                  {spotsLeft !== null && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Users style={{ width: 10, height: 10, color: isFull ? '#f87171' : isHot ? '#fbbf24' : 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: isFull ? '#f87171' : isHot ? '#fbbf24' : 'rgba(255,255,255,0.45)' }}>
+                        {isFull ? 'Class full' : `${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Book button */}
+              <div style={{ padding: '0 10px 12px' }}>
+                <div style={{
+                  padding: '9px 0', borderRadius: 12, textAlign: 'center', fontSize: 12, fontWeight: 800,
+                  background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
                   color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
                   outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
+                  letterSpacing: '-0.01em',
                 }}>
-                {booked ? '✓ Booked' : isFull ? 'Full' : 'Book Spot'}
-              </button>
+                  {booked ? '✓ Booked' : isFull ? 'Class Full' : 'Book Spot'}
+                </div>
+              </div>
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
           );
         })}
       </div>
