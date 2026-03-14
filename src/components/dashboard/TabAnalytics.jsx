@@ -280,6 +280,13 @@ export default function TabAnalytics({
 }) {
   const now = new Date();
 
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
   const weekTrend = Array.from({ length: 12 }, (_, i) => {
     const s = subDays(now, (11 - i) * 7);
     const e = subDays(now, (10 - i) * 7);
