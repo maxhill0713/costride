@@ -1,13 +1,138 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { format, subDays, isWithinInterval } from 'date-fns';
 import {
-Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
-ArrowUpRight, UserPlus, QrCode, Trophy, Send
+  Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
+  Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
+  ArrowUpRight, UserPlus, QrCode, Trophy, Send, Bell, X, Check
 } from 'lucide-react';
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
-import PushNotificationPanel from './PushNotificationPanel';
+import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
+
+const PRESET_MESSAGES = [
+  { id: 'miss',      emoji: '👋', label: 'We miss you',    body: (g, n) => `Hey ${n}! We haven't seen you at ${g} in a while. Come back and keep your progress going — your gym family misses you.` },
+  { id: 'offer',     emoji: '🎁', label: 'Special offer',  body: (g, n) => `Good news ${n}! Come into ${g} this week and bring a guest for free. We'd love to see you back.` },
+  { id: 'challenge', emoji: '🏆', label: 'New challenge',  body: (g, n) => `Hey ${n}, ${g} has a fresh challenge waiting for you. Join in and hit a new PB!` },
+  { id: 'nudge',     emoji: '💪', label: 'Friendly nudge', body: (g, n) => `Just a friendly nudge ${n} — it's been a while! Your spot at ${g} is waiting.` },
+];
+
+// ── Inline push panel shown when a member row is expanded ─────────────────────
+function MemberPushPanel({ member, gymName, gymId, onClose }) {
+  const [selectedPreset, setSelectedPreset] = useState('miss');
+  const [customMsg, setCustomMsg] = useState('');
+  const [mode, setMode] = useState('preset');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const message = mode === 'preset'
+    ? PRESET_MESSAGES.find(p => p.id === selectedPreset)?.body(gymName, member.name.split(' ')[0]) || ''
+    : customMsg;
+
+  const handleSend = async () => {
+    if (!message.trim() || sending) return;
+    setSending(true);
+    try {
+      await base44.functions.invoke('sendPushNotification', {
+        gym_id: gymId,
+        gym_name: gymName,
+        target: 'specific',
+        message: message.trim(),
+        member_ids: [member.user_id],
+      });
+      setSent(true);
+      setTimeout(() => { setSent(false); onClose(); }, 2000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div style={{
+      margin: '0 0 2px 0',
+      padding: '14px 16px',
+      background: 'rgba(0,212,255,0.04)',
+      borderBottom: '1px solid rgba(0,212,255,0.12)',
+      borderLeft: '3px solid rgba(0,212,255,0.4)',
+      animation: 'fade-in-up 0.2s ease both',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <Bell style={{ width: 12, height: 12, color: 'var(--cyan)' }}/>
+          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)' }}>Push notification → {member.name.split(' ')[0]}</span>
+        </div>
+        <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer' }}>
+          <X style={{ width: 11, height: 11, color: 'var(--text3)' }}/>
+        </button>
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
+        {[{ id: 'preset', label: 'Preset' }, { id: 'custom', label: 'Custom' }].map(m => (
+          <button key={m.id} onClick={() => setMode(m.id)} style={{
+            padding: '4px 12px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+            background: mode === m.id ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${mode === m.id ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
+            color: mode === m.id ? 'var(--cyan)' : 'var(--text3)',
+          }}>{m.label}</button>
+        ))}
+      </div>
+
+      {mode === 'preset' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 10 }}>
+          {PRESET_MESSAGES.map(p => (
+            <button key={p.id} onClick={() => setSelectedPreset(p.id)} style={{
+              padding: '7px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+              background: selectedPreset === p.id ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${selectedPreset === p.id ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
+              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.12s',
+            }}>
+              <span style={{ fontSize: 13 }}>{p.emoji}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: selectedPreset === p.id ? 'var(--cyan)' : 'var(--text2)' }}>{p.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <textarea
+          value={customMsg}
+          onChange={e => setCustomMsg(e.target.value)}
+          placeholder={`Write a message to ${member.name.split(' ')[0]}…`}
+          rows={2}
+          style={{
+            width: '100%', boxSizing: 'border-box', marginBottom: 10,
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
+            borderRadius: 8, padding: '8px 10px', fontSize: 11, color: 'var(--text1)',
+            resize: 'none', outline: 'none', fontFamily: "'Outfit', sans-serif", lineHeight: 1.5,
+          }}
+          onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.35)'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
+        />
+      )}
+
+      {/* Preview */}
+      {message && (
+        <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, fontStyle: 'italic' }}>
+          "{message}"
+        </div>
+      )}
+
+      <button
+        onClick={handleSend}
+        disabled={!message.trim() || sending || sent}
+        style={{
+          width: '100%', padding: '8px', borderRadius: 8, border: 'none', cursor: message.trim() && !sending && !sent ? 'pointer' : 'default',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          fontSize: 12, fontWeight: 800, transition: 'all 0.15s',
+          background: sent ? 'rgba(16,185,129,0.15)' : message.trim() ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+          color: sent ? '#34d399' : message.trim() ? 'var(--cyan)' : 'var(--text3)',
+          outline: `1px solid ${sent ? 'rgba(16,185,129,0.3)' : message.trim() ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
+        }}>
+        {sent ? <><Check style={{ width: 12, height: 12 }}/> Sent!</> : sending ? 'Sending…' : <><Send style={{ width: 12, height: 12 }}/> Send to {member.name.split(' ')[0]}</>}
+      </button>
+    </div>
+  );
+}
 
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
@@ -17,6 +142,10 @@ export default function TabMembers({
   memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
   openModal, now,
 }) {
+  const [expandedMember, setExpandedMember] = useState(null);
+
+  const gymName = selectedGym?.name || 'Your Gym';
+
   const memberRows = useMemo(() => allMemberships.map(m => {
     const userCheckIns = checkIns.filter(c => c.user_id === m.user_id);
     const visits30 = ci30.filter(c => c.user_id === m.user_id).length;
@@ -32,7 +161,14 @@ export default function TabMembers({
     if (daysSince >= 14) statusTag = 'At Risk';
     if (isBanned) statusTag = 'Banned';
     let lastVisitDisplay = 'Never';
-    if (lastVisit) { if (daysSince === 0) lastVisitDisplay = 'Today'; else if (daysSince === 1) lastVisitDisplay = '1 day ago'; else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`; else if (daysSince < 14) lastVisitDisplay = '1 week ago'; else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince/7)} weeks ago`; else lastVisitDisplay = format(new Date(lastVisit), 'd MMM'); }
+    if (lastVisit) {
+      if (daysSince === 0) lastVisitDisplay = 'Today';
+      else if (daysSince === 1) lastVisitDisplay = '1 day ago';
+      else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`;
+      else if (daysSince < 14) lastVisitDisplay = '1 week ago';
+      else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
+      else lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
+    }
     const plan = m.plan || m.membership_type || m.type || 'Standard';
     return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned, avatar_url: avatarMap[m.user_id] || null };
   }), [allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym?.banned_members, avatarMap]);
@@ -94,14 +230,9 @@ export default function TabMembers({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* ═══════════════════════════════════════════════════════
-          TOP ROW — Members table (1fr)  |  Sidebar (268px)
-      ═══════════════════════════════════════════════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
 
-        {/* ── Left Column: Members Table + Push Notifications ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {/* ── Members Table ── */}
         <Card style={{ overflow: 'hidden' }}>
           {/* Filter bar */}
           <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -130,6 +261,7 @@ export default function TabMembers({
               <input className="search-input" placeholder="Search members…" value={memberSearch} onChange={e => handleSearch(e.target.value)}/>
             </div>
           </div>
+
           {/* Sort row */}
           <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -140,6 +272,11 @@ export default function TabMembers({
               ))}
             </div>
             <div style={{ flex: 1 }}/>
+            {/* Hint */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)' }}>
+              <Bell style={{ width: 10, height: 10, color: 'var(--cyan)' }}/>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)' }}>Click a member to notify</span>
+            </div>
             <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>Sort by</span>
             <select className="sort-select" value={memberSort} onChange={e => setMemberSort(e.target.value)}>
               <option value="recentlyActive">Recently Active</option>
@@ -149,6 +286,7 @@ export default function TabMembers({
               <option value="name">Name A–Z</option>
             </select>
           </div>
+
           {/* Table header */}
           <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -161,6 +299,7 @@ export default function TabMembers({
               </div>
             ))}
           </div>
+
           {/* Table body */}
           <div style={{ minHeight: 300 }}>
             {paginated.length === 0 ? (
@@ -168,41 +307,79 @@ export default function TabMembers({
                 <Empty icon={Users} label={memberSearch ? 'No members match your search' : 'No members in this filter'}/>
               </div>
             ) : (
-              paginated.map((m, idx) => (
-                <div key={m.id || idx}
-                  className={`member-row ${selectedRows.has(m.id) ? 'member-row-selected' : ''}`}
-                  style={{ borderBottom: idx < paginated.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', borderRadius: 0 }}
-                  onClick={() => toggleRow(m.id)}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
-                    <input type="checkbox" checked={selectedRows.has(m.id)} onChange={() => toggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                    <Avatar name={m.name} size={34} src={m.avatar_url || m.member_avatar}/>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {m.visits30 > 0 ? <span style={{ color: m.tier === 'Super Active' ? '#34d399' : m.tier === 'Active' ? '#38bdf8' : 'var(--text3)' }}>{m.tier}</span> : 'Member'}
+              paginated.map((m, idx) => {
+                const isExpanded = expandedMember === m.id;
+                return (
+                  <div key={m.id || idx}>
+                    {/* Member row */}
+                    <div
+                      className={`member-row ${isExpanded ? 'member-row-selected' : ''}`}
+                      style={{
+                        borderBottom: !isExpanded && idx < paginated.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                        borderRadius: 0,
+                        borderLeft: isExpanded ? '3px solid rgba(0,212,255,0.4)' : '3px solid transparent',
+                        transition: 'border-color 0.15s',
+                      }}
+                      onClick={() => setExpandedMember(isExpanded ? null : m.id)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
+                        <input type="checkbox" checked={selectedRows.has(m.id)} onChange={() => toggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                        <div style={{ position: 'relative' }}>
+                          <Avatar name={m.name} size={34} src={m.avatar_url || m.member_avatar}/>
+                          {m.daysSince >= 14 && (
+                            <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: '50%', background: '#ef4444', border: '2px solid var(--card)' }}/>
+                          )}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: isExpanded ? 'var(--cyan)' : 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.15s' }}>{m.name}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
+                            {isExpanded
+                              ? <span style={{ color: 'var(--cyan)', fontWeight: 700 }}>Click to collapse</span>
+                              : m.visits30 > 0
+                                ? <span style={{ color: m.tier === 'Super Active' ? '#34d399' : m.tier === 'Active' ? '#38bdf8' : 'var(--text3)' }}>{m.tier}</span>
+                                : 'Click to send notification'
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div><StatusChip status={m.statusTag}/></div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? '#34d399' : m.daysSince <= 3 ? 'var(--text1)' : m.daysSince >= 14 ? '#f87171' : 'var(--text2)' }}>
+                          {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 500, fontSize: 11, color: 'var(--text3)' }}>visits</span></> : '—'}
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.lastVisitDisplay}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
+                          {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}` : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}` : 'Active member'}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <RiskBadge risk={m.risk}/>
+                        <div style={{ width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isExpanded ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isExpanded ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`, transition: 'all 0.15s', flexShrink: 0 }}>
+                          <Bell style={{ width: 11, height: 11, color: isExpanded ? 'var(--cyan)' : 'var(--text3)' }}/>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Inline push panel */}
+                    {isExpanded && (
+                      <MemberPushPanel
+                        member={m}
+                        gymName={gymName}
+                        gymId={selectedGym?.id}
+                        onClose={() => setExpandedMember(null)}
+                      />
+                    )}
                   </div>
-                  <div><StatusChip status={m.statusTag}/></div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? '#34d399' : m.daysSince <= 3 ? 'var(--text1)' : m.daysSince >= 14 ? '#f87171' : 'var(--text2)' }}>
-                      {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 500, fontSize: 11, color: 'var(--text3)' }}>visits</span></> : '—'}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.lastVisitDisplay}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
-                      {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}` : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}` : 'Active member'}
-                    </div>
-                  </div>
-                  <div><RiskBadge risk={m.risk}/></div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
+
           {/* Pagination */}
           <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -238,17 +415,9 @@ export default function TabMembers({
           </div>
         </Card>
 
-        {/* Push Notifications — same width as members card */}
-        <PushNotificationPanel
-          atRiskMembers={atRiskMembersList}
-          allMembers={allMemberships}
-          selectedGym={selectedGym}
-          memberLastCheckIn={memberLastCheckIn}
-        />
-        </div>
-
         {/* ── Right Sidebar ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
           {/* Alerts */}
           <Card style={{ padding: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
@@ -350,10 +519,8 @@ export default function TabMembers({
             streakLeaderboard={streakLeaderboard}
             progressLeaderboard={[]}
           />
-
         </div>
       </div>
-
     </div>
   );
 }
