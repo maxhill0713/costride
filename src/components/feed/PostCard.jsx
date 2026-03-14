@@ -574,6 +574,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         <ConfirmDialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Post?" description="This action cannot be undone." confirmLabel="Delete"
           confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
           onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} isPending={deleteMutation.isPending} />
+        <ConfirmDialog open={showFavouriteConfirm} onClose={() => setShowFavouriteConfirm(false)}
+          title={post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}
+          description={post.is_favourite ? 'This post will no longer appear as your favourite on your profile.' : 'This post will appear as your favourite on your profile for others to see.'}
+          confirmLabel={post.is_favourite ? 'Remove' : 'Add to Favourites'}
+          confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+          onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} isPending={updatePostMutation.isPending} />
         <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
       </>
     );
