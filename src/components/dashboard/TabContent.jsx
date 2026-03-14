@@ -475,12 +475,6 @@ export default function TabContent({
     </div>
   );
 }
-import PostCard from '../feed/PostCard';
-
-export default function TabContent({
-  events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
-  openModal, now, leaderboardView, setLeaderboardView,
-}) {
   const allPosts = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
