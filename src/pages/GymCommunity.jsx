@@ -291,9 +291,9 @@ function GymClassCard({ gymClass, isOwner, onDelete, index = 0 }) {
               <MapPin style={{ width: 10, height: 10 }} /> {gymClass.location}
             </div>
           )}
-          {gymClass.schedule && (
+          {getScheduleLabel(gymClass) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.accent, background: cfg.accentDim, borderRadius: 8, padding: '3px 8px' }}>
-              <Timer style={{ width: 10, height: 10 }} /> {gymClass.schedule}
+              <Timer style={{ width: 10, height: 10 }} /> {getScheduleLabel(gymClass)}
             </div>
           )}
         </div>
