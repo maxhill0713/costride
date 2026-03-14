@@ -143,402 +143,248 @@ const NAV_ROW = [
   { rankOpacity:0.38,nameOpacity:0.36,barOpacity:0.18,pillOpacity:0.38 },
 ];
 
-// ── Class type config ─────────────────────────────────────────────────────────
+// ── Class helpers ─────────────────────────────────────────────────────────────
 const CLASS_TYPE_CONFIG = {
-  hiit:     { label:'HIIT',      emoji:'⚡', grad:'linear-gradient(135deg,#7f1d1d,#dc2626)', border:'rgba(239,68,68,0.4)',   accent:'#f87171', accentDim:'rgba(239,68,68,0.15)'  },
-  yoga:     { label:'Yoga',      emoji:'🧘', grad:'linear-gradient(135deg,#064e3b,#059669)', border:'rgba(16,185,129,0.4)',  accent:'#34d399', accentDim:'rgba(16,185,129,0.15)' },
-  strength: { label:'Strength',  emoji:'🏋️', grad:'linear-gradient(135deg,#1e1b4b,#4f46e5)', border:'rgba(99,102,241,0.4)', accent:'#818cf8', accentDim:'rgba(99,102,241,0.15)' },
-  cardio:   { label:'Cardio',    emoji:'🏃', grad:'linear-gradient(135deg,#4c0519,#e11d48)', border:'rgba(244,63,94,0.4)',   accent:'#fb7185', accentDim:'rgba(244,63,94,0.15)'  },
-  spin:     { label:'Spin',      emoji:'🚴', grad:'linear-gradient(135deg,#0c1a3a,#0ea5e9)', border:'rgba(14,165,233,0.4)',  accent:'#38bdf8', accentDim:'rgba(14,165,233,0.15)' },
-  boxing:   { label:'Boxing',    emoji:'🥊', grad:'linear-gradient(135deg,#431407,#ea580c)', border:'rgba(234,88,12,0.4)',   accent:'#fb923c', accentDim:'rgba(234,88,12,0.15)'  },
-  pilates:  { label:'Pilates',   emoji:'🌸', grad:'linear-gradient(135deg,#2d1657,#9333ea)', border:'rgba(168,85,247,0.4)',  accent:'#c084fc', accentDim:'rgba(168,85,247,0.15)' },
-  default:  { label:'Class',     emoji:'🎯', grad:'linear-gradient(135deg,#0c1a3a,#0369a1)', border:'rgba(14,165,233,0.35)', accent:'#38bdf8', accentDim:'rgba(14,165,233,0.12)' },
+  hiit:     { label:'HIIT',     emoji:'⚡', color:'#f87171', bg:'rgba(239,68,68,0.12)',   border:'rgba(239,68,68,0.25)'   },
+  yoga:     { label:'Yoga',     emoji:'🧘', color:'#34d399', bg:'rgba(16,185,129,0.12)',  border:'rgba(16,185,129,0.25)'  },
+  strength: { label:'Strength', emoji:'🏋️', color:'#818cf8', bg:'rgba(99,102,241,0.12)',  border:'rgba(99,102,241,0.25)'  },
+  cardio:   { label:'Cardio',   emoji:'🏃', color:'#fb7185', bg:'rgba(244,63,94,0.12)',   border:'rgba(244,63,94,0.25)'   },
+  spin:     { label:'Spin',     emoji:'🚴', color:'#38bdf8', bg:'rgba(14,165,233,0.12)',  border:'rgba(14,165,233,0.25)'  },
+  boxing:   { label:'Boxing',   emoji:'🥊', color:'#fb923c', bg:'rgba(234,88,12,0.12)',   border:'rgba(234,88,12,0.25)'   },
+  pilates:  { label:'Pilates',  emoji:'🌸', color:'#c084fc', bg:'rgba(168,85,247,0.12)',  border:'rgba(168,85,247,0.25)'  },
+  default:  { label:'Class',    emoji:'🎯', color:'#38bdf8', bg:'rgba(14,165,233,0.10)',  border:'rgba(14,165,233,0.2)'   },
 };
+const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
-function getClassType(gymClass) {
-  const name = (gymClass.name || gymClass.title || '').toLowerCase();
-  if (name.includes('hiit') || name.includes('interval')) return 'hiit';
-  if (name.includes('yoga') || name.includes('zen')) return 'yoga';
-  if (name.includes('strength') || name.includes('weight') || name.includes('lift') || name.includes('power')) return 'strength';
-  if (name.includes('cardio') || name.includes('aerobic') || name.includes('zumba')) return 'cardio';
-  if (name.includes('spin') || name.includes('cycle') || name.includes('bike')) return 'spin';
-  if (name.includes('box') || name.includes('mma') || name.includes('kickbox')) return 'boxing';
-  if (name.includes('pilates') || name.includes('barre')) return 'pilates';
+function getClassType(c) {
+  const n = (c.name || c.title || '').toLowerCase();
+  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
+  if (n.includes('yoga') || n.includes('zen')) return 'yoga';
+  if (n.includes('strength') || n.includes('weight') || n.includes('lift') || n.includes('power')) return 'strength';
+  if (n.includes('cardio') || n.includes('aerobic') || n.includes('zumba')) return 'cardio';
+  if (n.includes('spin') || n.includes('cycle') || n.includes('bike')) return 'spin';
+  if (n.includes('box') || n.includes('mma') || n.includes('kickbox')) return 'boxing';
+  if (n.includes('pilates') || n.includes('barre')) return 'pilates';
   return 'default';
 }
 
-function getDifficultyLabel(gymClass) {
-  const d = (gymClass.difficulty || gymClass.level || '').toLowerCase();
-  if (d.includes('hard') || d.includes('adv') || d.includes('expert')) return { label:'Advanced', dots:3, color:'#f87171' };
-  if (d.includes('med') || d.includes('inter')) return { label:'Intermediate', dots:2, color:'#fbbf24' };
-  if (d.includes('easy') || d.includes('begin') || d.includes('beginner')) return { label:'Beginner', dots:1, color:'#34d399' };
-  return null;
+function getScheduleDays(c) {
+  const s = (c.schedule || '').toLowerCase();
+  return DAYS_SHORT.filter(d => s.includes(d.toLowerCase()));
 }
 
-function getScheduleDays(gymClass) {
-  const schedule = gymClass.schedule;
-  if (!schedule) return [];
-  // schedule is an array of {day, time} objects
-  if (Array.isArray(schedule)) {
-    return DAYS.filter(d => schedule.some(s => (s.day || '').toLowerCase().includes(d.toLowerCase())));
-  }
-  // fallback: if it's a string
-  if (typeof schedule === 'string') {
-    return DAYS.filter(d => schedule.toLowerCase().includes(d.toLowerCase()));
-  }
-  return [];
-}
-
-function getScheduleLabel(gymClass) {
-  const schedule = gymClass.schedule;
-  if (!schedule) return null;
-  if (Array.isArray(schedule) && schedule.length > 0) {
-    return schedule.map(s => `${s.day}${s.time ? ' ' + s.time : ''}`).join(', ');
-  }
-  if (typeof schedule === 'string') return schedule;
-  return null;
-}
-
-// ── ClassCard component ───────────────────────────────────────────────────────
-function GymClassCard({ gymClass, isOwner, onDelete, index = 0 }) {
-  const typeKey = getClassType(gymClass);
-  const cfg = CLASS_TYPE_CONFIG[typeKey];
-  const difficulty = getDifficultyLabel(gymClass);
+// ── Single class card ─────────────────────────────────────────────────────────
+function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
+  const cfg = CLASS_TYPE_CONFIG[getClassType(gymClass)];
   const scheduleDays = getScheduleDays(gymClass);
   const capacity = gymClass.capacity || gymClass.max_participants || null;
   const enrolled = gymClass.enrolled || gymClass.participants_count || 0;
-  const fillPct = capacity ? Math.min(100, Math.round((enrolled / capacity) * 100)) : null;
-  const isFull = fillPct !== null && fillPct >= 100;
+  const spotsLeft = capacity ? capacity - enrolled : null;
+  const isFull = spotsLeft !== null && spotsLeft <= 0;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        borderRadius: 20,
-        overflow: 'hidden',
-        border: `1px solid ${cfg.border}`,
-        background: 'linear-gradient(135deg,rgba(10,14,30,0.96),rgba(6,8,18,0.99))',
-        boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)`,
-      }}
-    >
-      {/* Accent strip */}
-      <div style={{ height: 3, background: cfg.grad }} />
-
-      <div style={{ padding: '14px 14px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          {/* Icon */}
-          <div style={{
-            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-            background: cfg.grad, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 22,
-            boxShadow: `0 4px 16px ${cfg.accentDim}`,
-          }}>
-            {cfg.emoji}
-          </div>
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-              <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: cfg.accent, background: cfg.accentDim, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>
-                {cfg.label}
-              </span>
-              {difficulty && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  {[1,2,3].map(d => (
-                    <div key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: d <= difficulty.dots ? difficulty.color : 'rgba(255,255,255,0.1)' }} />
-                  ))}
-                  <span style={{ fontSize: 9, color: difficulty.color, fontWeight: 700 }}>{difficulty.label}</span>
-                </div>
-              )}
-            </div>
-            <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-              {gymClass.name || gymClass.title}
-            </h3>
-            {(gymClass.instructor || gymClass.coach_name) && (
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '3px 0 0', fontWeight: 600 }}>
-                with {gymClass.instructor || gymClass.coach_name}
-              </p>
-            )}
-          </div>
-
-          {isOwner && (
-            <button
-              onClick={() => onDelete && onDelete(gymClass.id)}
-              style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', flexShrink: 0, cursor: 'pointer' }}>
-              <Trash2 style={{ width: 13, height: 13, color: '#f87171' }} />
-            </button>
-          )}
-        </div>
-
-        {gymClass.description && (
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', margin: '10px 0 0', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {gymClass.description}
-          </p>
-        )}
-
-        {/* Meta row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-          {gymClass.duration_minutes && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '3px 8px' }}>
-              <Clock style={{ width: 10, height: 10 }} /> {gymClass.duration_minutes}min
-            </div>
-          )}
-          {gymClass.location && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '3px 8px' }}>
-              <MapPin style={{ width: 10, height: 10 }} /> {gymClass.location}
-            </div>
-          )}
-          {getScheduleLabel(gymClass) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.accent, background: cfg.accentDim, borderRadius: 8, padding: '3px 8px' }}>
-              <Timer style={{ width: 10, height: 10 }} /> {getScheduleLabel(gymClass)}
-            </div>
-          )}
-        </div>
-
-        {/* Schedule day pills */}
-        {scheduleDays.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
-            {DAYS.map(d => {
-              const active = scheduleDays.includes(d);
-              return (
-                <div key={d} style={{
-                  width: 30, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 9, fontWeight: 900, letterSpacing: '0.05em',
-                  background: active ? cfg.accentDim : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? cfg.border : 'rgba(255,255,255,0.07)'}`,
-                  color: active ? cfg.accent : 'rgba(255,255,255,0.2)',
-                  textTransform: 'uppercase',
-                }}>
-                  {d}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Capacity bar */}
-        {fillPct !== null && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)' }}>Capacity</span>
-              <span style={{ fontSize: 10, fontWeight: 800, color: isFull ? '#f87171' : cfg.accent }}>
-                {isFull ? 'FULL' : `${enrolled}/${capacity}`}
-              </span>
-            </div>
-            <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${fillPct}%`, borderRadius: 99, background: isFull ? '#ef4444' : cfg.grad, transition: 'width 0.6s ease' }} />
-            </div>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Featured class banner ─────────────────────────────────────────────────────
-function FeaturedClassBanner({ gymClass, isOwner }) {
-  const typeKey = getClassType(gymClass);
-  const cfg = CLASS_TYPE_CONFIG[typeKey];
   return (
     <div style={{
-      borderRadius: 20, overflow: 'hidden', position: 'relative',
-      minHeight: 130,
-      background: cfg.grad,
-      border: `1px solid ${cfg.border}`,
-      boxShadow: `0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)`,
+      borderRadius: 18,
+      background: 'rgba(12,16,32,0.95)',
+      border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.07)'}`,
+      overflow: 'hidden',
+      boxShadow: booked ? `0 0 0 1px ${cfg.border}, 0 8px 24px rgba(0,0,0,0.4)` : '0 2px 12px rgba(0,0,0,0.3)',
+      transition: 'box-shadow 0.2s',
     }}>
-      {/* Noise overlay */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.08, backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundSize: '120px 120px', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -20, left: '40%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-
-      <div style={{ position: 'relative', padding: '16px 16px 14px', display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' }}>
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px 0' }}>
+        <div style={{ width: 46, height: 46, borderRadius: 14, flexShrink: 0, background: cfg.bg, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
           {cfg.emoji}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>
-            ✨ Featured Class
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</span>
+            {booked && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34d399', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 5, padding: '2px 7px' }}>✓ Booked</span>}
           </div>
-          <h2 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {gymClass.name || gymClass.title}
-          </h2>
+          </div>
           {(gymClass.instructor || gymClass.coach_name) && (
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: '4px 0 0', fontWeight: 600 }}>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2, fontWeight: 600 }}>
               with {gymClass.instructor || gymClass.coach_name}
-            </p>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0, alignItems: 'flex-end' }}>
-          {gymClass.duration_minutes && (
-            <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Clock style={{ width: 10, height: 10 }} />{gymClass.duration_minutes}min
             </div>
           )}
         </div>
+        {isOwner && (
+          <button onClick={() => onDelete && onDelete(gymClass.id)} style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', flexShrink: 0, cursor: 'pointer' }}>
+            <Trash2 style={{ width: 12, height: 12, color: '#f87171' }} />
+          </button>
+        )}
       </div>
+
+      {gymClass.description && (
+        <p style={{ margin: '8px 14px 0', fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {gymClass.description}
+        </p>
+      )}
+
+      {/* Meta chips */}
+      <div style={{ display: 'flex', gap: 6, padding: '10px 14px 0', flexWrap: 'wrap' }}>
+        {gymClass.duration_minutes && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '3px 8px' }}>
+            <Clock style={{ width: 10, height: 10 }} /> {gymClass.duration_minutes}min
+          </div>
+        )}
+        {gymClass.schedule && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 7, padding: '3px 8px' }}>
+            <Timer style={{ width: 10, height: 10 }} /> {gymClass.schedule}
+          </div>
+        )}
+        {gymClass.location && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '3px 8px' }}>
+            <MapPin style={{ width: 10, height: 10 }} /> {gymClass.location}
+          </div>
+        )}
+        {spotsLeft !== null && !isFull && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.5)', background: spotsLeft <= 3 ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.05)', border: `1px solid ${spotsLeft <= 3 ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 7, padding: '3px 8px' }}>
+            <Users style={{ width: 10, height: 10 }} /> {spotsLeft} spots left
+          </div>
+        )}
+        {isFull && <div style={{ fontSize: 11, fontWeight: 800, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 7, padding: '3px 8px' }}>FULL</div>}
+      </div>
+
+      {/* Day pills */}
+      {scheduleDays.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, padding: '8px 14px 0' }}>
+          {DAYS_SHORT.map(d => {
+            const on = scheduleDays.includes(d);
+            return (
+              <div key={d} style={{ flex: 1, textAlign: 'center', padding: '4px 0', borderRadius: 7, fontSize: 9, fontWeight: 900, background: on ? cfg.bg : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? cfg.border : 'rgba(255,255,255,0.06)'}`, color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Book / owner spacer */}
+      {!isOwner ? (
+        <div style={{ padding: '12px 14px 14px' }}>
+          <button
+            onClick={() => !isFull && !booked && onBook && onBook(gymClass.id)}
+            disabled={isFull}
+            style={{
+              width: '100%', padding: '11px', borderRadius: 12, fontSize: 13, fontWeight: 800,
+              cursor: isFull ? 'default' : 'pointer', border: 'none',
+              background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
+              color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
+              outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
+              transition: 'all 0.15s',
+            }}>
+            {booked ? '✓ Booked — tap to cancel' : isFull ? 'Class Full' : `Book ${gymClass.name || 'Class'}`}
+          </button>
+        </div>
+      ) : <div style={{ height: 14 }} />}
     </div>
   );
 }
 
-// ── Classes Tab Content ───────────────────────────────────────────────────────
+// ── Classes tab ───────────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
-  const [activeDay, setActiveDay] = useState('all');
   const [activeType, setActiveType] = useState('all');
+  const [activeDay,  setActiveDay]  = useState('all');
+  const [bookedIds,  setBookedIds]  = useState(new Set());
 
   const allTypes = React.useMemo(() => {
     const seen = new Set();
-    classes.forEach(c => { const t = getClassType(c); seen.add(t); });
+    classes.forEach(c => seen.add(getClassType(c)));
     return [...seen];
   }, [classes]);
 
-  const filteredClasses = React.useMemo(() => {
-    return classes.filter(c => {
-      const typeMatch = activeType === 'all' || getClassType(c) === activeType;
-      const dayMatch = activeDay === 'all' || getScheduleDays(c).includes(activeDay) || (activeDay !== 'all' && !(c.schedule));
-      return typeMatch && (activeDay === 'all' ? true : getScheduleDays(c).includes(activeDay) || !c.schedule);
-    }).filter(c => {
-      if (activeType !== 'all' && getClassType(c) !== activeType) return false;
-      if (activeDay !== 'all' && c.schedule) {
-        return getScheduleDays(c).includes(activeDay);
-      }
-      return true;
-    });
-  }, [classes, activeDay, activeType]);
+  const filtered = React.useMemo(() => classes.filter(c => {
+    if (activeType !== 'all' && getClassType(c) !== activeType) return false;
+    if (activeDay !== 'all') {
+      const days = getScheduleDays(c);
+      if (days.length > 0 && !days.includes(activeDay)) return false;
+    }
+    return true;
+  }), [classes, activeType, activeDay]);
 
-  const featuredClass = classes[0] || null;
+  const handleBook = id => setBookedIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
-  const typeFilters = [
-    { id: 'all', label: 'All', emoji: '🗂️' },
-    ...allTypes.map(t => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' })),
-  ];
-
-  return (
-    <div className="space-y-3">
-      {/* Owner manage button */}
+  if (classes.length === 0) return (
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}>
       {showOwnerControls && (
-        <button
-          onClick={onManage}
-          style={{
-            width: '100%', borderRadius: 16, padding: '13px 16px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: 'linear-gradient(135deg,rgba(99,102,241,0.2),rgba(14,165,233,0.15))',
-            border: '1px solid rgba(99,102,241,0.3)',
-            color: '#a5b4fc', fontSize: 13, fontWeight: 800, cursor: 'pointer',
-          }}>
-          <Plus style={{ width: 16, height: 16 }} /> Manage Classes
+        <button onClick={onManage} style={{ width:'100%', borderRadius:14, padding:'13px', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+          <Plus style={{ width:15, height:15 }} /> Add Classes
         </button>
       )}
+      <div style={{ borderRadius:20, padding:'52px 24px', textAlign:'center', background:'rgba(12,16,32,0.8)', border:'1px dashed rgba(255,255,255,0.07)' }}>
+        <div style={{ fontSize:40, marginBottom:12 }}>🏋️</div>
+        <p style={{ fontSize:15, fontWeight:800, color:'rgba(255,255,255,0.35)', margin:'0 0 6px' }}>No classes yet</p>
+        <p style={{ fontSize:12, color:'rgba(255,255,255,0.2)', margin:0 }}>Classes will appear here once added</p>
+      </div>
+    </motion.div>
+  );
 
-      {classes.length === 0 ? (
-        <div style={{
-          borderRadius: 20, padding: '48px 24px', textAlign: 'center',
-          background: 'linear-gradient(135deg,rgba(10,14,30,0.9),rgba(6,8,18,0.95))',
-          border: '1px dashed rgba(255,255,255,0.08)',
-        }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🎯</div>
-          <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>No classes scheduled</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', margin: 0 }}>Check back soon for new classes</p>
+  return (
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div>
+          <div style={{ fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'-0.03em' }}>Classes</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', fontWeight:600, marginTop:1 }}>{classes.length} class{classes.length!==1?'es':''} available</div>
+        </div>
+        {showOwnerControls && (
+          <button onClick={onManage} style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:11, background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', fontSize:12, fontWeight:800, cursor:'pointer' }}>
+            <Plus style={{ width:13, height:13 }} /> Manage
+          </button>
+        )}
+      </div>
+
+      {/* Type filter */}
+      <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', paddingBottom:2 }}>
+        {[{ id:'all', label:'All', emoji:'🗂️', color:'rgba(255,255,255,0.7)', bg:'rgba(255,255,255,0.08)', border:'rgba(255,255,255,0.15)' },
+          ...allTypes.map(t => ({ id:t, ...CLASS_TYPE_CONFIG[t] }))
+        ].map(f => {
+          const active = activeType === f.id;
+          return (
+            <button key={f.id} onClick={() => setActiveType(f.id)} style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, padding:'6px 13px', borderRadius:99, fontSize:12, fontWeight:800, cursor:'pointer', background:active?f.bg:'rgba(255,255,255,0.04)', border:`1px solid ${active?f.border:'rgba(255,255,255,0.07)'}`, color:active?f.color:'rgba(255,255,255,0.35)', transition:'all 0.15s' }}>
+              <span>{f.emoji}</span> {f.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Day filter */}
+      <div style={{ display:'flex', gap:5 }}>
+        {['All', ...DAYS_SHORT].map(d => {
+          const val = d==='All' ? 'all' : d;
+          const active = activeDay === val;
+          return (
+            <button key={d} onClick={() => setActiveDay(active && val!=='all' ? 'all' : val)} style={{ flex:d==='All'?'none':1, padding:d==='All'?'6px 10px':'6px 0', borderRadius:9, fontSize:10, fontWeight:900, cursor:'pointer', background:active?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.04)', border:`1px solid ${active?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.06)'}`, color:active?'#fff':'rgba(255,255,255,0.3)', textAlign:'center' }}>{d}</button>
+          );
+        })}
+      </div>
+
+      {/* Cards */}
+      {filtered.length === 0 ? (
+        <div style={{ borderRadius:14, padding:'28px 16px', textAlign:'center', background:'rgba(255,255,255,0.02)', border:'1px dashed rgba(255,255,255,0.06)' }}>
+          <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.25)', margin:0 }}>No classes match this filter</p>
         </div>
       ) : (
-        <>
-          {/* Featured */}
-          <FeaturedClassBanner gymClass={featuredClass} isOwner={showOwnerControls} />
-
-          {/* Stats strip */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-            {[
-              { label: 'Total Classes', value: classes.length, icon: '🎯', color: '#818cf8' },
-              { label: 'Instructors', value: new Set(classes.map(c => c.instructor || c.coach_name).filter(Boolean)).size || '—', icon: '👨‍🏫', color: '#34d399' },
-              { label: 'Weekly Sessions', value: classes.filter(c => c.schedule).length, icon: '📅', color: '#fbbf24' },
-            ].map((s, i) => (
-              <div key={i} style={{ borderRadius: 14, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
-                <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: s.color, lineHeight: 1, letterSpacing: '-0.04em' }}>{s.value}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Type filter pills */}
-          {typeFilters.length > 1 && (
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-              {typeFilters.map(f => {
-                const active = activeType === f.id;
-                const cfg = CLASS_TYPE_CONFIG[f.id] || {};
-                return (
-                  <button
-                    key={f.id}
-                    onClick={() => setActiveType(f.id)}
-                    style={{
-                      flexShrink: 0,
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      padding: '6px 12px', borderRadius: 99, fontSize: 11, fontWeight: 800,
-                      background: active ? (cfg.accentDim || 'rgba(255,255,255,0.1)') : 'rgba(255,255,255,0.05)',
-                      border: `1px solid ${active ? (cfg.border || 'rgba(255,255,255,0.3)') : 'rgba(255,255,255,0.08)'}`,
-                      color: active ? (cfg.accent || '#fff') : 'rgba(255,255,255,0.4)',
-                      cursor: 'pointer', transition: 'all 0.15s',
-                    }}>
-                    <span style={{ fontSize: 12 }}>{f.emoji}</span> {f.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Day filter */}
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button
-              onClick={() => setActiveDay('all')}
-              style={{
-                padding: '5px 10px', borderRadius: 99, fontSize: 10, fontWeight: 800,
-                background: activeDay === 'all' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${activeDay === 'all' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                color: activeDay === 'all' ? '#fff' : 'rgba(255,255,255,0.3)',
-                cursor: 'pointer', flexShrink: 0,
-              }}>
-              All Days
-            </button>
-            {DAYS.map(d => (
-              <button
-                key={d}
-                onClick={() => setActiveDay(d === activeDay ? 'all' : d)}
-                style={{
-                  flex: 1, padding: '5px 0', borderRadius: 99, fontSize: 10, fontWeight: 900,
-                  background: activeDay === d ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${activeDay === d ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`,
-                  color: activeDay === d ? '#a5b4fc' : 'rgba(255,255,255,0.3)',
-                  cursor: 'pointer',
-                }}>
-                {d}
-              </button>
-            ))}
-          </div>
-
-          {/* Class list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {filteredClasses.length === 0 ? (
-              <div style={{ borderRadius: 16, padding: '28px 16px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.07)' }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', margin: 0 }}>No classes match this filter</p>
-              </div>
-            ) : (
-              filteredClasses.map((gymClass, i) => (
-                <GymClassCard
-                  key={gymClass.id}
-                  gymClass={gymClass}
-                  isOwner={showOwnerControls}
-                  onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this class?')) onDelete(id); } : null}
-                  index={i}
-                />
-              ))
-            )}
-          </div>
-        </>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {filtered.map(gymClass => (
+            <ClassCard
+              key={gymClass.id}
+              gymClass={gymClass}
+              isOwner={showOwnerControls}
+              booked={bookedIds.has(gymClass.id)}
+              onBook={handleBook}
+              onDelete={showOwnerControls ? id => { if(window.confirm('Delete this class?')) onDelete(id); } : null}
+            />
+          ))}
+        </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -1142,7 +988,7 @@ export default function GymCommunity() {
             </TabsContent>
 
             {/* ── CLASSES (new) ── */}
-            <TabsContent value="classes" className="mt-0 w-full">
+            <TabsContent value="classes" className="space-y-3 mt-0 w-full">
               <ClassesTabContent
                 classes={classes}
                 showOwnerControls={showOwnerControls}
