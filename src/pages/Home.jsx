@@ -417,14 +417,12 @@ export default function Home() {
   const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
-  const [bubblePos, setBubblePos] = useState(null); // { left, top } in viewport coords
+  const [bubblePos, setBubblePos] = useState(null);
   const [summaryLog, setSummaryLog] = useState(null);
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
-
-
 
   // ── Sticky header scroll logic ───────────────────────────────────────────
   const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
@@ -442,10 +440,8 @@ export default function Home() {
       requestAnimationFrame(() => {
         const currentY = window.scrollY;
         const delta = lastScrollY.current - currentY;
-
         const atTop = currentY <= INLINE_HEADER_HEIGHT;
         setIsAtTop(atTop);
-
         if (atTop) {
           setStickyHeaderVisible(true);
         } else if (delta > SCROLL_UP_TRIGGER) {
@@ -453,14 +449,12 @@ export default function Home() {
         } else if (delta < -4) {
           setStickyHeaderVisible(false);
         }
-
         lastScrollY.current = currentY;
         scrollTicking.current = false;
       });
     };
 
     setStickyHeaderVisible(true);
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -473,8 +467,6 @@ export default function Home() {
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
-
-
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -801,6 +793,7 @@ export default function Home() {
       base44.auth.updateMe({ streak_variant: variant });
     }
   };
+
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const todayCount = todayCheckInsForQuery.length;
@@ -1074,7 +1067,6 @@ export default function Home() {
             const todayDay = todayDow === 0 ? 7 : todayDow;
             return (
               <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
-                {/* Transparent full-screen overlay behind everything to catch outside taps */}
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1139,15 +1131,6 @@ export default function Home() {
                     if (isRestDay || done || isPreJoin) return 'none';
                     return 'dayWiggle 2.4s ease-in-out infinite';
                   };
-                  const getPopupLabel = () => {
-                    if (isRestDay) return 'Rest Day';
-                    if (isMissed) return 'No Workout';
-                    if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
-                    if (done) return 'Workout';
-                    const customTypes = currentUser?.custom_workout_types;
-                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
-                    return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
-                  };
                   return (
                     <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
                       {isTodayCircle && (
@@ -1210,7 +1193,6 @@ export default function Home() {
                           WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                           touchAction: 'manipulation',
                         }}>
-
                         {isRestDay ? (
                           isPastOrTodayRestDay ? (
                             <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
@@ -1260,7 +1242,7 @@ export default function Home() {
             );
           })()}
 
-          {/* ── Fixed bubble — rendered outside the circles row so it's never clipped ── */}
+          {/* ── Fixed bubble ── */}
           {activeCircleDay !== null && bubblePos && (() => {
             const ARROW_H = 7;
             const ARROW_W = 13;
@@ -1628,7 +1610,7 @@ export default function Home() {
         </>
       )}
 
-      {/* Workout Summary Modal */}
+      {/* ── Workout Summary Modal ── */}
       <AnimatePresence>
         {summaryLog && (
           <motion.div
@@ -1641,7 +1623,8 @@ export default function Home() {
               transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
               onClick={(e) => e.stopPropagation()}
               className={modalPanelClass}>
-              <div className="mb-5">
+              {/* ── CHANGED: added text-center to centre title and date ── */}
+              <div className="mb-5 text-center">
                 <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
                 <p className="text-sm text-slate-400 font-medium">
                   {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
@@ -1733,7 +1716,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* View Workout Modal */}
+      {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
@@ -1755,7 +1738,8 @@ export default function Home() {
                 transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
                 onClick={(e) => e.stopPropagation()}
                 className={modalPanelClass}>
-                <div className="mb-5">
+                {/* ── CHANGED: added text-center to centre title and date ── */}
+                <div className="mb-5 text-center">
                   <h3 className="text-2xl font-black text-white mb-2">{workoutName}</h3>
                   <p className="text-sm text-slate-400 font-medium mt-2">{formattedDate}</p>
                 </div>
