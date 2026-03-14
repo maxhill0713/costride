@@ -38,7 +38,7 @@ const DIFFICULTIES = [
 const EMPTY_FORM = {
   name: '', description: '', instructor: '', class_type: 'other',
   duration_minutes: 45, difficulty: 'all_levels',
-  max_capacity: 20, location: '', schedule: [],
+  max_capacity: 20, location: '', schedule: [], image_url: '',
 };
 
 function Field({ label, children }) {
