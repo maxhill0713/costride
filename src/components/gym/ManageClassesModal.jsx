@@ -445,6 +445,11 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
                   <ScheduleBuilder schedule={form.schedule} onChange={v => set('schedule', v)} />
                 </Field>
 
+                {/* Image */}
+                <Field label="Class Image">
+                  <ImageUploader value={form.image_url} onChange={v => set('image_url', v)} />
+                </Field>
+
                 {/* Save + Cancel */}
                 <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
                   <button
