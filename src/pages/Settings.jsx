@@ -137,33 +137,14 @@ function SettingRow({ setting, isLast }) {
   );
 }
 
-function PressButton({ onClick, children, variant = 'danger' }) {
+function PressButton({ onClick, children, textColor = '#94a3b8' }) {
   const [pressed, setPressed] = useState(false);
-
-  const styles = {
-    danger: {
-      bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #dc2626 100%)',
-      shadow: '0 4px 0 0 #7f1d1d, 0 6px 20px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.2)',
-      shadowBg: '#7f1d1d',
-      color: '#fff',
-      border: 'none',
-    },
-    ghost: {
-      bg: 'linear-gradient(to bottom, #1e293b 0%, #0f172a 60%, #0a0f1e 100%)',
-      shadow: '0 4px 0 0 #0f172a, 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-      shadowBg: '#0f172a',
-      color: '#ef4444',
-      border: '1px solid rgba(239,68,68,0.25)',
-    },
-  };
-
-  const s = styles[variant];
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 14,
-        background: s.shadowBg,
+        background: '#0a0f1a',
         transform: 'translateY(4px)',
       }} />
       <button
@@ -176,15 +157,17 @@ function PressButton({ onClick, children, variant = 'danger' }) {
           position: 'relative', zIndex: 1,
           width: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          padding: '14px 20px',
+          padding: '13px 20px',
           borderRadius: 14,
-          border: s.border,
-          background: s.bg,
-          color: s.color,
-          fontSize: 15, fontWeight: 800,
+          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(to bottom, #1e2535 0%, #151c2a 50%, #0f1520 100%)',
+          color: textColor,
+          fontSize: 14, fontWeight: 700,
           letterSpacing: '-0.01em',
           cursor: 'pointer',
-          boxShadow: pressed ? 'none' : s.shadow,
+          boxShadow: pressed
+            ? 'none'
+            : '0 4px 0 0 #0a0f1a, 0 6px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
           transform: pressed ? 'translateY(4px)' : 'translateY(0)',
           transition: 'transform 0.08s ease, box-shadow 0.08s ease',
           WebkitTapHighlightColor: 'transparent',
@@ -259,17 +242,8 @@ export default function Settings() {
         padding: '10px 16px',
       }}>
         <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link to={createPageUrl('Profile')} style={{ textDecoration: 'none' }}>
-            <div style={{
-              width: 36, height: 36,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderBottom: '3px solid rgba(0,0,0,0.4)',
-              borderRadius: 10, cursor: 'pointer',
-            }}>
-              <ChevronLeft style={{ width: 18, height: 18, color: '#94a3b8' }} />
-            </div>
+          <Link to={createPageUrl('Profile')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
+            <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
           </Link>
           <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>
             Settings
@@ -283,7 +257,7 @@ export default function Settings() {
         <div style={{ position: 'relative', marginBottom: 20 }}>
           <Search style={{
             position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            width: 15, height: 15, color: '#475569', pointerEvents: 'none',
+            width: 15, height: 15, color: '#94a3b8', pointerEvents: 'none',
           }} />
           <input
             type="text"
@@ -292,18 +266,18 @@ export default function Settings() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '11px 16px 11px 40px',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: 14,
+              padding: '9px 16px 9px 40px',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 12,
               color: '#fff',
               fontSize: 14,
               outline: 'none',
               fontFamily: 'inherit',
               transition: 'border-color 0.2s',
             }}
-            onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.4)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
+            onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
           />
         </div>
 
@@ -356,22 +330,21 @@ export default function Settings() {
             {/* ── Danger Zone ── */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
               <PressButton
-                variant="danger"
                 onClick={() => {
                   if (confirm('Are you sure you want to logout?')) {
                     base44.auth.logout();
                   }
                 }}
               >
-                <LogOut style={{ width: 16, height: 16 }} />
+                <LogOut style={{ width: 15, height: 15 }} />
                 Log Out
               </PressButton>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <div>
-                    <PressButton variant="ghost">
-                      <Trash2 style={{ width: 16, height: 16 }} />
+                    <PressButton textColor="#ef4444">
+                      <Trash2 style={{ width: 15, height: 15 }} />
                       Delete Account
                     </PressButton>
                   </div>
