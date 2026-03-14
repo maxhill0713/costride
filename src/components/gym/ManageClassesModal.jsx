@@ -281,6 +281,51 @@ function ClassRow({ gymClass, onEdit, onDelete }) {
   );
 }
 
+// ── Image uploader ────────────────────────────────────────────────────────────
+function ImageUploader({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const result = await base44.integrations.Core.UploadFile({ file });
+    onChange(result.file_url);
+    setUploading(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {value ? (
+        <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', height: 130 }}>
+          <img src={value} alt="Class" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <button
+            onClick={() => onChange('')}
+            style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 8, background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <X style={{ width: 13, height: 13, color: '#fff' }} />
+          </button>
+        </div>
+      ) : (
+        <label style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+          height: 100, borderRadius: 14, cursor: uploading ? 'default' : 'pointer',
+          background: 'rgba(255,255,255,0.03)', border: '1.5px dashed rgba(255,255,255,0.15)',
+          transition: 'all 0.15s',
+        }}>
+          {uploading
+            ? <Loader2 style={{ width: 22, height: 22, color: '#a78bfa', animation: 'spin 1s linear infinite' }} />
+            : <ImageIcon style={{ width: 22, height: 22, color: 'rgba(255,255,255,0.3)' }} />
+          }
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)' }}>
+            {uploading ? 'Uploading...' : 'Upload image'}
+          </span>
+          <input type="file" accept="image/*" onChange={handleFile} disabled={uploading} style={{ display: 'none' }} />
+        </label>
+      )}
+    </div>
+  );
+}
+
 // ── Main modal ────────────────────────────────────────────────────────────────
 export default function ManageClassesModal({ open, onClose, classes = [], onCreateClass, onDeleteClass, onUpdateClass, gym, isLoading }) {
   const [view, setView] = useState('list'); // 'list' | 'form'
