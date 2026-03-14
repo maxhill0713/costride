@@ -447,6 +447,75 @@ export default function GymOwnerDashboard() {
     gym:      <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
   };
 
+  if (isMobile) return (
+    <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#060c18', overflow: 'hidden' }}>
+      <style>{DASH_STYLE}</style>
+      <style>{GRADIENT_OVERRIDE}</style>
+
+      {/* ─── MOBILE HEADER ── */}
+      <header style={{ flexShrink: 0, background: '#080f1e', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg,#0ea5e9,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Dumbbell style={{ width: 14, height: 14, color: '#fff' }}/>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.02em', lineHeight: 1 }}>{selectedGym?.name || 'Dashboard'}</div>
+            <div style={{ fontSize: 9, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>Gym Owner</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {atRisk > 0 && (
+            <button onClick={() => setTab('members')} style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 99, fontSize: 10, fontWeight: 700, padding: '4px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <AlertTriangle style={{ width: 9, height: 9 }}/>{atRisk}
+            </button>
+          )}
+          <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.16)', color: '#38bdf8', cursor: 'pointer' }}>
+            <QrCode style={{ width: 14, height: 14 }}/>
+          </button>
+          <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: '#f0f4f8', cursor: 'pointer' }}>
+            <Plus style={{ width: 14, height: 14 }}/>
+          </button>
+        </div>
+      </header>
+
+      {/* ─── MOBILE CONTENT ── */}
+      <main style={{ flex: 1, overflow: 'auto', padding: '14px 12px 8px', WebkitOverflowScrolling: 'touch' }}>
+        {tabContent[tab] || tabContent.overview}
+      </main>
+
+      {/* ─── MOBILE BOTTOM NAV ── */}
+      <nav style={{ flexShrink: 0, background: '#080f1e', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {NAV.map(item => {
+          const active = tab === item.id;
+          return (
+            <button key={item.id} onClick={() => setTab(item.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 4px 8px', border: 'none', background: 'transparent', cursor: 'pointer', color: active ? '#38bdf8' : '#3a5070', transition: 'color 0.12s' }}>
+              <item.icon style={{ width: 18, height: 18 }}/>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.04em' }}>{item.label}</span>
+              {active && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }}/>}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* ─── MODALS ── */}
+      <ManageRewardsModal    open={modal==='rewards'}    onClose={closeModal} rewards={rewards}   onCreateReward={d=>createRewardM.mutate(d)}  onDeleteReward={id=>deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending}/>
+      <ManageClassesModal    open={modal==='classes'}    onClose={closeModal} classes={classes}   onCreateClass={d=>createClassM.mutate(d)}    onUpdateClass={(id,data)=>updateClassM.mutate({id,data})} onDeleteClass={id=>deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending||updateClassM.isPending}/>
+      <ManageCoachesModal    open={modal==='coaches'}    onClose={closeModal} coaches={coaches}   onCreateCoach={d=>createCoachM.mutate(d)}    onDeleteCoach={id=>deleteCoachM.mutate(id)}  gym={selectedGym} isLoading={createCoachM.isPending}/>
+      <EditGymPhotoModal     open={modal==='heroPhoto'}  onClose={closeModal} gym={selectedGym}   onSave={url=>updateGymM.mutate({image_url:url})} isLoading={updateGymM.isPending}/>
+      <ManageGymPhotosModal  open={modal==='photos'}     onClose={closeModal} gallery={selectedGym?.gallery||[]} onSave={g=>updateGalleryM.mutate(g)} isLoading={updateGalleryM.isPending}/>
+      <ManageMembersModal    open={modal==='members'}    onClose={closeModal} gym={selectedGym}   onBanMember={id=>banMemberM.mutate(id)}      onUnbanMember={id=>unbanMemberM.mutate(id)}/>
+      <CreateGymOwnerPostModal open={modal==='post'}     onClose={closeModal} gym={selectedGym}   onSuccess={()=>inv('posts')}/>
+      <CreateEventModal      open={modal==='event'}      onClose={closeModal} onSave={d=>createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending}/>
+      <CreateChallengeModal  open={modal==='challenge'}  onClose={closeModal} gyms={gyms}         onSave={d=>createChallengeM.mutate(d)}       isLoading={createChallengeM.isPending}/>
+      <QRScanner             open={modal==='qrScanner'}  onClose={closeModal}/>
+      <ManageEquipmentModal  open={modal==='equipment'}  onClose={closeModal} equipment={selectedGym?.equipment||[]} onSave={e=>updateGymM.mutate({equipment:e})} isLoading={updateGymM.isPending}/>
+      <ManageAmenitiesModal  open={modal==='amenities'}  onClose={closeModal} amenities={selectedGym?.amenities||[]} onSave={a=>updateGymM.mutate({amenities:a})} isLoading={updateGymM.isPending}/>
+      <EditBasicInfoModal    open={modal==='editInfo'}   onClose={closeModal} gym={selectedGym}   onSave={d=>updateGymM.mutate(d)} isLoading={updateGymM.isPending}/>
+      <CreatePollModal       open={modal==='poll'}       onClose={closeModal} onSave={d=>createPollM.mutate(d)} isLoading={createPollM.isPending}/>
+      <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)}/>
+    </div>
+  );
+
   return (
     <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#060c18' }}>
       <style>{DASH_STYLE}</style>
