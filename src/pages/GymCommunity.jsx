@@ -169,15 +169,8 @@ function getClassType(c) {
 }
 
 function getScheduleDays(c) {
-  const schedule = c.schedule;
-  if (!schedule) return [];
-  if (Array.isArray(schedule)) {
-    return DAYS_SHORT.filter(d => schedule.some(s => (s.day || '').toLowerCase().includes(d.toLowerCase())));
-  }
-  if (typeof schedule === 'string') {
-    return DAYS_SHORT.filter(d => schedule.toLowerCase().includes(d.toLowerCase()));
-  }
-  return [];
+  const s = (c.schedule || '').toLowerCase();
+  return DAYS_SHORT.filter(d => s.includes(d.toLowerCase()));
 }
 
 // ── Single class card ─────────────────────────────────────────────────────────
@@ -185,106 +178,211 @@ function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
   const cfg = CLASS_TYPE_CONFIG[getClassType(gymClass)];
   const scheduleDays = getScheduleDays(gymClass);
   const capacity = gymClass.capacity || gymClass.max_participants || null;
-  const enrolled = gymClass.enrolled || gymClass.participants_count || 0;
+  const enrolled  = gymClass.enrolled || gymClass.participants_count || 0;
   const spotsLeft = capacity ? capacity - enrolled : null;
-  const isFull = spotsLeft !== null && spotsLeft <= 0;
+  const isFull    = spotsLeft !== null && spotsLeft <= 0;
+  const fillPct   = capacity ? Math.min(100, Math.round((enrolled / capacity) * 100)) : null;
+  const isPopular = fillPct !== null && fillPct >= 65;
 
   return (
     <div style={{
-      borderRadius: 18,
-      background: 'rgba(12,16,32,0.95)',
-      border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.07)'}`,
+      borderRadius: 20,
+      background: booked
+        ? `linear-gradient(135deg, rgba(12,18,34,0.98), rgba(8,12,24,0.99))`
+        : 'linear-gradient(135deg, rgba(14,18,36,0.97), rgba(8,12,24,0.99))',
+      border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.08)'}`,
       overflow: 'hidden',
-      boxShadow: booked ? `0 0 0 1px ${cfg.border}, 0 8px 24px rgba(0,0,0,0.4)` : '0 2px 12px rgba(0,0,0,0.3)',
-      transition: 'box-shadow 0.2s',
+      boxShadow: booked
+        ? `0 0 0 1px ${cfg.border}, 0 12px 40px rgba(0,0,0,0.5)`
+        : '0 4px 20px rgba(0,0,0,0.35)',
     }}>
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px 0' }}>
-        <div style={{ width: 46, height: 46, borderRadius: 14, flexShrink: 0, background: cfg.bg, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
-          {cfg.emoji}
+      {/* Coloured top bar */}
+      <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)` }} />
+
+      <div style={{ padding: '16px 16px 0' }}>
+        {/* Row 1: icon + name + delete */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{
+            width: 50, height: 50, borderRadius: 15, flexShrink: 0,
+            background: cfg.bg, border: `1px solid ${cfg.border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+          }}>{cfg.emoji}</div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+              <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</span>
+              {isPopular && !isFull && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fb923c', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.25)', borderRadius: 5, padding: '2px 7px' }}>🔥 Popular</span>}
+              {booked && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34d399', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 5, padding: '2px 7px' }}>✓ Booked</span>}
+              {isFull && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 5, padding: '2px 7px' }}>Full</span>}
+            </div>
+
+            {/* Title */}
+            <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+              {gymClass.name || gymClass.title}
+            </div>
+            {(gymClass.instructor || gymClass.coach_name) && (
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 3, fontWeight: 600 }}>
+                {gymClass.instructor || gymClass.coach_name}
+              </div>
+            )}
+          </div>
+
+          {isOwner && (
+            <button onClick={() => onDelete && onDelete(gymClass.id)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', flexShrink: 0, cursor: 'pointer' }}>
+              <Trash2 style={{ width: 13, height: 13, color: '#f87171' }} />
+            </button>
+          )}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</span>
-            {booked && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34d399', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 5, padding: '2px 7px' }}>✓ Booked</span>}
-          </div>
-          <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {gymClass.name || gymClass.title}
-          </div>
-          {(gymClass.instructor || gymClass.coach_name) && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2, fontWeight: 600 }}>
-              with {gymClass.instructor || gymClass.coach_name}
+
+        {/* Info grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', marginTop: 14 }}>
+          {gymClass.schedule && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Clock style={{ width: 12, height: 12, color: cfg.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{gymClass.schedule}</span>
+            </div>
+          )}
+          {gymClass.duration_minutes && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Timer style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>{gymClass.duration_minutes} min</span>
+            </div>
+          )}
+          {gymClass.location && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gymClass.location}</span>
+            </div>
+          )}
+          {capacity !== null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Users style={{ width: 12, height: 12, color: isFull ? '#f87171' : spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: isFull ? '#f87171' : spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.55)' }}>
+                {isFull ? 'Class full' : `${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left`}
+              </span>
             </div>
           )}
         </div>
-        {isOwner && (
-          <button onClick={() => onDelete && onDelete(gymClass.id)} style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', flexShrink: 0, cursor: 'pointer' }}>
-            <Trash2 style={{ width: 12, height: 12, color: '#f87171' }} />
-          </button>
+
+        {/* Spots bar */}
+        {fillPct !== null && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{enrolled} / {capacity} spots filled</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: isFull ? '#f87171' : fillPct >= 65 ? '#fbbf24' : cfg.color }}>{fillPct}%</span>
+            </div>
+            <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${fillPct}%`, borderRadius: 99, background: isFull ? '#ef4444' : fillPct >= 65 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : `linear-gradient(90deg,${cfg.color}aa,${cfg.color})`, transition: 'width 0.6s ease' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Day pills */}
+        {scheduleDays.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 12 }}>
+            {DAYS_SHORT.map(d => {
+              const on = scheduleDays.includes(d);
+              return <div key={d} style={{ flex: 1, textAlign: 'center', padding: '5px 0', borderRadius: 8, fontSize: 9, fontWeight: 900, background: on ? cfg.bg : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? cfg.border : 'rgba(255,255,255,0.06)'}`, color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>;
+            })}
+          </div>
+        )}
+
+        {/* Description */}
+        {gymClass.description && (
+          <p style={{ margin: '12px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {gymClass.description}
+          </p>
         )}
       </div>
 
-      {gymClass.description && (
-        <p style={{ margin: '8px 14px 0', fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {gymClass.description}
-        </p>
-      )}
-
-      {/* Meta chips */}
-      <div style={{ display: 'flex', gap: 6, padding: '10px 14px 0', flexWrap: 'wrap' }}>
-        {gymClass.duration_minutes && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '3px 8px' }}>
-            <Clock style={{ width: 10, height: 10 }} /> {gymClass.duration_minutes}min
-          </div>
-        )}
-        {gymClass.schedule && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 7, padding: '3px 8px' }}>
-            <Timer style={{ width: 10, height: 10 }} /> {gymClass.schedule}
-          </div>
-        )}
-        {gymClass.location && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '3px 8px' }}>
-            <MapPin style={{ width: 10, height: 10 }} /> {gymClass.location}
-          </div>
-        )}
-        {spotsLeft !== null && !isFull && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.5)', background: spotsLeft <= 3 ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.05)', border: `1px solid ${spotsLeft <= 3 ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 7, padding: '3px 8px' }}>
-            <Users style={{ width: 10, height: 10 }} /> {spotsLeft} spots left
-          </div>
-        )}
-        {isFull && <div style={{ fontSize: 11, fontWeight: 800, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 7, padding: '3px 8px' }}>FULL</div>}
-      </div>
-
-      {/* Day pills */}
-      {scheduleDays.length > 0 && (
-        <div style={{ display: 'flex', gap: 4, padding: '8px 14px 0' }}>
-          {DAYS_SHORT.map(d => {
-            const on = scheduleDays.includes(d);
-            return (
-              <div key={d} style={{ flex: 1, textAlign: 'center', padding: '4px 0', borderRadius: 7, fontSize: 9, fontWeight: 900, background: on ? cfg.bg : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? cfg.border : 'rgba(255,255,255,0.06)'}`, color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Book / owner spacer */}
-      {!isOwner ? (
-        <div style={{ padding: '12px 14px 14px' }}>
+      {/* Book button */}
+      {!isOwner && (
+        <div style={{ padding: '14px 16px 16px' }}>
           <button
-            onClick={() => !isFull && !booked && onBook && onBook(gymClass.id)}
+            onClick={() => !isFull && onBook && onBook(gymClass.id)}
             disabled={isFull}
             style={{
-              width: '100%', padding: '11px', borderRadius: 12, fontSize: 13, fontWeight: 800,
-              cursor: isFull ? 'default' : 'pointer', border: 'none',
-              background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
+              width: '100%', padding: '13px', borderRadius: 14,
+              fontSize: 14, fontWeight: 800, cursor: isFull ? 'default' : 'pointer',
+              border: 'none', letterSpacing: '-0.01em',
+              background: booked
+                ? 'rgba(16,185,129,0.12)'
+                : isFull
+                  ? 'rgba(255,255,255,0.04)'
+                  : `linear-gradient(135deg, ${cfg.color}22, ${cfg.color}14)`,
               color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
               outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
-              transition: 'all 0.15s',
+              transition: 'all 0.18s',
             }}>
-            {booked ? '✓ Booked — tap to cancel' : isFull ? 'Class Full' : `Book ${gymClass.name || 'Class'}`}
+            {booked ? '✓ Booked — tap to cancel' : isFull ? 'Class Full' : 'Book Spot'}
           </button>
         </div>
-      ) : <div style={{ height: 14 }} />}
+      )}
+      {isOwner && <div style={{ height: 16 }} />}
+    </div>
+  );
+}
+
+// ── Today's quick-book strip ──────────────────────────────────────────────────
+function TodayStrip({ classes, bookedIds, onBook }) {
+  const todayName = DAYS_SHORT[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+  const todayClasses = classes.filter(c => {
+    const days = getScheduleDays(c);
+    return days.length === 0 || days.includes(todayName);
+  }).slice(0, 6);
+
+  if (todayClasses.length === 0) return null;
+
+  return (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+        Today's Classes
+      </div>
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+        {todayClasses.map(c => {
+          const cfg = CLASS_TYPE_CONFIG[getClassType(c)];
+          const booked = bookedIds.has(c.id);
+          const capacity = c.capacity || c.max_participants || null;
+          const enrolled  = c.enrolled || c.participants_count || 0;
+          const spotsLeft = capacity ? capacity - enrolled : null;
+          const isFull    = spotsLeft !== null && spotsLeft <= 0;
+          return (
+            <div key={c.id} style={{
+              flexShrink: 0, width: 150,
+              borderRadius: 16,
+              background: booked ? cfg.bg : 'rgba(14,18,36,0.97)',
+              border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.09)'}`,
+              padding: '12px 12px 10px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>{cfg.emoji}</div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 2 }}>{c.name || c.title}</div>
+              {(c.instructor || c.coach_name) && <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 600, marginBottom: 6 }}>{c.instructor || c.coach_name}</div>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+                {c.schedule && <span style={{ fontSize: 9, fontWeight: 700, color: cfg.color }}>{c.schedule}</span>}
+                {c.location && <><span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>•</span><span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</span></>}
+              </div>
+              {spotsLeft !== null && !isFull && spotsLeft <= 5 && (
+                <div style={{ fontSize: 9, fontWeight: 800, color: spotsLeft <= 2 ? '#f87171' : '#fbbf24', marginBottom: 6 }}>
+                  {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left
+                </div>
+              )}
+              <button
+                onClick={() => !isFull && onBook(c.id)}
+                disabled={isFull}
+                style={{
+                  width: '100%', padding: '7px', borderRadius: 9, fontSize: 11, fontWeight: 800, cursor: isFull ? 'default' : 'pointer', border: 'none',
+                  background: booked ? 'rgba(16,185,129,0.2)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
+                  color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
+                  outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
+                }}>
+                {booked ? '✓ Booked' : isFull ? 'Full' : 'Book Spot'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -316,81 +414,116 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     return next;
   });
 
-  if (classes.length === 0) return (
-    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}>
-      {showOwnerControls && (
-        <button onClick={onManage} style={{ width:'100%', borderRadius:14, padding:'13px', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer' }}>
-          <Plus style={{ width:15, height:15 }} /> Add Classes
-        </button>
-      )}
-      <div style={{ borderRadius:20, padding:'52px 24px', textAlign:'center', background:'rgba(12,16,32,0.8)', border:'1px dashed rgba(255,255,255,0.07)' }}>
-        <div style={{ fontSize:40, marginBottom:12 }}>🏋️</div>
-        <p style={{ fontSize:15, fontWeight:800, color:'rgba(255,255,255,0.35)', margin:'0 0 6px' }}>No classes yet</p>
-        <p style={{ fontSize:12, color:'rgba(255,255,255,0.2)', margin:0 }}>Classes will appear here once added</p>
-      </div>
-    </motion.div>
-  );
-
   return (
-    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} style={{ display:'flex', flexDirection:'column', gap:16 }}>
 
-      {/* Header */}
+      {/* ── Page header ── */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div>
-          <div style={{ fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'-0.03em' }}>Classes</div>
-          <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', fontWeight:600, marginTop:1 }}>{classes.length} class{classes.length!==1?'es':''} available</div>
+          <div style={{ fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.04em', lineHeight:1 }}>Classes</div>
+          <div style={{ fontSize:12, color:'rgba(255,255,255,0.35)', fontWeight:600, marginTop:4 }}>Find and book upcoming gym classes</div>
         </div>
         {showOwnerControls && (
-          <button onClick={onManage} style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:11, background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', fontSize:12, fontWeight:800, cursor:'pointer' }}>
-            <Plus style={{ width:13, height:13 }} /> Manage
+          <button onClick={onManage} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:12, background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+            <Plus style={{ width:14, height:14 }} /> Manage
           </button>
         )}
       </div>
 
-      {/* Type filter */}
-      <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', paddingBottom:2 }}>
-        {[{ id:'all', label:'All', emoji:'🗂️', color:'rgba(255,255,255,0.7)', bg:'rgba(255,255,255,0.08)', border:'rgba(255,255,255,0.15)' },
-          ...allTypes.map(t => ({ id:t, ...CLASS_TYPE_CONFIG[t] }))
-        ].map(f => {
-          const active = activeType === f.id;
-          return (
-            <button key={f.id} onClick={() => setActiveType(f.id)} style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, padding:'6px 13px', borderRadius:99, fontSize:12, fontWeight:800, cursor:'pointer', background:active?f.bg:'rgba(255,255,255,0.04)', border:`1px solid ${active?f.border:'rgba(255,255,255,0.07)'}`, color:active?f.color:'rgba(255,255,255,0.35)', transition:'all 0.15s' }}>
-              <span>{f.emoji}</span> {f.label}
+      {classes.length === 0 ? (
+        /* ── Empty state ── */
+        <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center', background:'rgba(12,16,32,0.8)', border:'1px dashed rgba(255,255,255,0.08)' }}>
+          <div style={{ width:64, height:64, borderRadius:20, background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.2)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px', fontSize:28 }}>🏋️</div>
+          <div style={{ fontSize:16, fontWeight:900, color:'rgba(255,255,255,0.4)', marginBottom:8 }}>No classes scheduled</div>
+          <div style={{ fontSize:13, color:'rgba(255,255,255,0.22)', lineHeight:1.5 }}>Check another day or ask your<br/>gym to add classes.</div>
+          {showOwnerControls && (
+            <button onClick={onManage} style={{ marginTop:20, padding:'10px 24px', borderRadius:12, background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+              + Add Classes
             </button>
-          );
-        })}
-      </div>
-
-      {/* Day filter */}
-      <div style={{ display:'flex', gap:5 }}>
-        {['All', ...DAYS_SHORT].map(d => {
-          const val = d==='All' ? 'all' : d;
-          const active = activeDay === val;
-          return (
-            <button key={d} onClick={() => setActiveDay(active && val!=='all' ? 'all' : val)} style={{ flex:d==='All'?'none':1, padding:d==='All'?'6px 10px':'6px 0', borderRadius:9, fontSize:10, fontWeight:900, cursor:'pointer', background:active?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.04)', border:`1px solid ${active?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.06)'}`, color:active?'#fff':'rgba(255,255,255,0.3)', textAlign:'center' }}>{d}</button>
-          );
-        })}
-      </div>
-
-      {/* Cards */}
-      {filtered.length === 0 ? (
-        <div style={{ borderRadius:14, padding:'28px 16px', textAlign:'center', background:'rgba(255,255,255,0.02)', border:'1px dashed rgba(255,255,255,0.06)' }}>
-          <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.25)', margin:0 }}>No classes match this filter</p>
+          )}
         </div>
-      ) : (
-        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-          {filtered.map(gymClass => (
-            <ClassCard
-              key={gymClass.id}
-              gymClass={gymClass}
-              isOwner={showOwnerControls}
-              booked={bookedIds.has(gymClass.id)}
-              onBook={handleBook}
-              onDelete={showOwnerControls ? id => { if(window.confirm('Delete this class?')) onDelete(id); } : null}
-            />
-          ))}
+      ) : (<>
+
+        {/* ── Today strip ── */}
+        <TodayStrip classes={classes} bookedIds={bookedIds} onBook={handleBook} />
+
+        {/* ── Divider ── */}
+        <div style={{ height:1, background:'rgba(255,255,255,0.06)', borderRadius:99 }} />
+
+        {/* ── Type filter ── */}
+        <div style={{ display:'flex', gap:8, overflowX:'auto', scrollbarWidth:'none', paddingBottom:2 }}>
+          {[{ id:'all', label:'All Classes', emoji:'🗂️', color:'rgba(255,255,255,0.75)', bg:'rgba(255,255,255,0.1)', border:'rgba(255,255,255,0.18)' },
+            ...allTypes.map(t => ({ id:t, ...CLASS_TYPE_CONFIG[t] }))
+          ].map(f => {
+            const active = activeType === f.id;
+            return (
+              <button key={f.id} onClick={() => setActiveType(f.id)} style={{
+                flexShrink:0, display:'flex', alignItems:'center', gap:6,
+                padding:'8px 15px', borderRadius:99, fontSize:13, fontWeight:800, cursor:'pointer',
+                background:active ? f.bg : 'rgba(255,255,255,0.04)',
+                border:`1px solid ${active ? f.border : 'rgba(255,255,255,0.07)'}`,
+                color:active ? f.color : 'rgba(255,255,255,0.35)',
+                transition:'all 0.15s',
+                boxShadow: active ? `0 2px 12px ${f.bg}` : 'none',
+              }}>
+                <span style={{ fontSize:14 }}>{f.emoji}</span>
+                {f.label}
+                {active && f.id !== 'all' && (
+                  <span style={{ background:'rgba(0,0,0,0.25)', borderRadius:99, padding:'1px 6px', fontSize:10, fontWeight:900 }}>
+                    {classes.filter(c => getClassType(c) === f.id).length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-      )}
+
+        {/* ── Day selector ── */}
+        <div style={{ borderRadius:16, background:'rgba(12,16,32,0.8)', border:'1px solid rgba(255,255,255,0.07)', padding:'4px', display:'flex', gap:2 }}>
+          {['All', ...DAYS_SHORT].map(d => {
+            const val = d === 'All' ? 'all' : d;
+            const active = activeDay === val;
+            return (
+              <button key={d} onClick={() => setActiveDay(active && val !== 'all' ? 'all' : val)} style={{
+                flex:1, padding:'9px 0', borderRadius:12, fontSize:11, fontWeight:900,
+                cursor:'pointer', border:'none',
+                background:active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color:active ? '#fff' : 'rgba(255,255,255,0.3)',
+                transition:'all 0.15s',
+                textAlign:'center',
+                boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.1)' : 'none',
+              }}>{d}</button>
+            );
+          })}
+        </div>
+
+        {/* ── Results count ── */}
+        <div style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.3)', letterSpacing:'0.06em' }}>
+          {filtered.length} class{filtered.length !== 1 ? 'es' : ''} {activeDay !== 'all' ? `on ${activeDay}` : 'available'}
+        </div>
+
+        {/* ── Class cards ── */}
+        {filtered.length === 0 ? (
+          <div style={{ borderRadius:18, padding:'36px 20px', textAlign:'center', background:'rgba(12,16,32,0.7)', border:'1px dashed rgba(255,255,255,0.06)' }}>
+            <div style={{ fontSize:28, marginBottom:10 }}>📭</div>
+            <div style={{ fontSize:14, fontWeight:800, color:'rgba(255,255,255,0.3)', marginBottom:6 }}>No classes scheduled for {activeDay === 'all' ? 'this filter' : activeDay}</div>
+            <div style={{ fontSize:12, color:'rgba(255,255,255,0.18)', lineHeight:1.5 }}>Check another day or ask your gym to add classes.</div>
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {filtered.map(gymClass => (
+              <ClassCard
+                key={gymClass.id}
+                gymClass={gymClass}
+                isOwner={showOwnerControls}
+                booked={bookedIds.has(gymClass.id)}
+                onBook={handleBook}
+                onDelete={showOwnerControls ? id => { if(window.confirm('Delete this class?')) onDelete(id); } : null}
+              />
+            ))}
+          </div>
+        )}
+      </>)}
     </motion.div>
   );
 }
