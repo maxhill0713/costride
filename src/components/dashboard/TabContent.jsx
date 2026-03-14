@@ -109,26 +109,68 @@ function ChallengeCard({ challenge, now }) {
   );
 }
 
+// ── Class type config (mirrors GymCommunity) ──────────────────────────────────
+const CLASS_TYPE_CONFIG_DASH = {
+  hiit:     { color:'#f87171', bg:'rgba(239,68,68,0.12)',   border:'rgba(239,68,68,0.25)',   label:'HIIT',     emoji:'⚡' },
+  yoga:     { color:'#34d399', bg:'rgba(16,185,129,0.12)',  border:'rgba(16,185,129,0.25)',  label:'Yoga',     emoji:'🧘' },
+  strength: { color:'#818cf8', bg:'rgba(99,102,241,0.12)',  border:'rgba(99,102,241,0.25)',  label:'Strength', emoji:'🏋️' },
+  cardio:   { color:'#fb7185', bg:'rgba(244,63,94,0.12)',   border:'rgba(244,63,94,0.25)',   label:'Cardio',   emoji:'🏃' },
+  spin:     { color:'#38bdf8', bg:'rgba(14,165,233,0.12)',  border:'rgba(14,165,233,0.25)',  label:'Spin',     emoji:'🚴' },
+  boxing:   { color:'#fb923c', bg:'rgba(234,88,12,0.12)',   border:'rgba(234,88,12,0.25)',   label:'Boxing',   emoji:'🥊' },
+  pilates:  { color:'#c084fc', bg:'rgba(168,85,247,0.12)',  border:'rgba(168,85,247,0.25)',  label:'Pilates',  emoji:'🌸' },
+  default:  { color:'#38bdf8', bg:'rgba(14,165,233,0.10)',  border:'rgba(14,165,233,0.2)',   label:'Class',    emoji:'🎯' },
+};
+const CLASS_IMAGES_DASH = {
+  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
+  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
+  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
+  cardio:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
+  spin:     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
+  boxing:   'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&q=80',
+  pilates:  'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80',
+  default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
+};
+function getClassTypeDash(c) {
+  const n = (c.class_type || c.name || '').toLowerCase();
+  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
+  if (n.includes('yoga') || n.includes('flow') || n.includes('vinyasa')) return 'yoga';
+  if (n.includes('strength') || n.includes('lift') || n.includes('barbell') || n.includes('weight')) return 'strength';
+  if (n.includes('cardio') || n.includes('run') || n.includes('aerobic')) return 'cardio';
+  if (n.includes('spin') || n.includes('cycle') || n.includes('bike')) return 'spin';
+  if (n.includes('box') || n.includes('mma') || n.includes('kickbox')) return 'boxing';
+  if (n.includes('pilates') || n.includes('barre')) return 'pilates';
+  return 'default';
+}
+
 // ── Class card ────────────────────────────────────────────────────────────────
 function ClassCard({ gymClass }) {
+  const typeKey = getClassTypeDash(gymClass);
+  const cfg = CLASS_TYPE_CONFIG_DASH[typeKey] || CLASS_TYPE_CONFIG_DASH.default;
+  const img = gymClass.image_url || CLASS_IMAGES_DASH[typeKey] || CLASS_IMAGES_DASH.default;
+  const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
   return (
-    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(14,165,233,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '12px 14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(14,165,233,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Dumbbell style={{ width: 14, height: 14, color: '#38bdf8' }}/>
-          </div>
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', borderRadius: 5, padding: '1px 7px' }}>Class</span>
-          {gymClass.schedule && (
-            <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text3)' }}>{gymClass.schedule}</span>
-          )}
+    <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(160deg, #0d1535 0%, #080c1e 100%)', border: `1px solid rgba(255,255,255,0.08)`, boxShadow: '0 4px 20px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' }}>
+      {/* Image */}
+      <div style={{ position: 'relative', height: 110, overflow: 'hidden', flexShrink: 0 }}>
+        <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,12,28,0.85) 100%)' }} />
+        <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px', backdropFilter: 'blur(6px)' }}>
+          {cfg.emoji} {cfg.label}
         </div>
-        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1)', margin: '0 0 4px' }}>{gymClass.name || gymClass.title}</p>
-        {gymClass.coach_name && (
-          <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>with {gymClass.coach_name}</p>
-        )}
-        {gymClass.description && (
-          <p style={{ fontSize: 12, color: 'var(--text2)', margin: '6px 0 0', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{gymClass.description}</p>
+      </div>
+      {/* Content */}
+      <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{gymClass.name || gymClass.title}</div>
+        {gymClass.duration_minutes && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{gymClass.duration_minutes} min</div>}
+        {gymClass.description && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{gymClass.description}</div>}
+        {(gymClass.instructor || gymClass.coach_name) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+            <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${cfg.color}22`, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 900, color: cfg.color, flexShrink: 0 }}>
+              {initials(gymClass.instructor || gymClass.coach_name)}
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>{gymClass.instructor || gymClass.coach_name}</span>
+          </div>
         )}
       </div>
     </div>
