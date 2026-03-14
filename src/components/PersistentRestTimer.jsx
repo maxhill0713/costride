@@ -4,10 +4,25 @@ import { Clock, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PULSE_CSS = `
-  @keyframes timer-pulse {
-    0%   { opacity: 1; }
-    50%  { opacity: 0.35; }
-    100% { opacity: 1; }
+  @keyframes timer-bg-pulse {
+    0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
+    50%       { background: linear-gradient(to bottom, #1d4ed8, #1e40af, #172554); }
+  }
+  @keyframes timer-bar-bg-pulse {
+    0%, 100% { background: linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%); }
+    50%       { background: linear-gradient(90deg, #1d4ed8 0%, #172554 100%); }
+  }
+  @keyframes timer-text-pulse {
+    0%, 100% { color: rgba(252,165,165,0.9); }
+    50%       { color: rgba(147,197,253,0.75); }
+  }
+  @keyframes timer-stop-pulse {
+    0%, 100% { background: linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9)); box-shadow: 0 3px 0 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,0.15); }
+    50%       { background: linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(37,99,235,0.9)); box-shadow: 0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15); }
+  }
+  @keyframes timer-stroke-pulse {
+    0%, 100% { stroke: #fca5a5; }
+    50%       { stroke: #60a5fa; }
   }
 `;
 
@@ -21,17 +36,14 @@ function injectPulseStyles() {
 
 export default function PersistentRestTimer({ isActive, restTimer, initialRestTime, onTimerStateChange, onTimerValueChange }) {
   const [expanded, setExpanded] = useState(false);
-  // Track when timer hit 0 so we can hold the finished state for 10s
   const finishedAtRef = useRef(null);
   const [showFinished, setShowFinished] = useState(false);
-  // Sub-second progress for smooth circle animation
   const [smoothProgress, setSmoothProgress] = useState(1);
   const rafRef = useRef(null);
   const lastTickRef = useRef(null);
 
   useEffect(() => { injectPulseStyles(); }, []);
 
-  // When isActive goes false (timer stopped by user) clear finished hold too
   useEffect(() => {
     if (!isActive) {
       setExpanded(false);
@@ -40,8 +52,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     }
   }, [isActive]);
 
-  // Detect when restTimer reaches 0 and start the 10s hold
-  const t = typeof restTimer === 'number' ? restTimer : 0;
+  const t     = typeof restTimer === 'number' ? restTimer : 0;
   const total = initialRestTime || 90;
 
   useEffect(() => {
@@ -58,53 +69,44 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     }
   }, [t, isActive]);
 
-  // Smooth sub-second circle progress via requestAnimationFrame
+  // Smooth circle arc via RAF
   useEffect(() => {
     if (!isActive || t === 0) {
-      // Snap to current value when stopped or finished
       setSmoothProgress(t / total);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       return;
     }
-
-    // Each time restTimer ticks down, record the wall-clock time of that tick
     lastTickRef.current = Date.now();
-
     const animate = () => {
       if (!lastTickRef.current) return;
-      const elapsed = (Date.now() - lastTickRef.current) / 1000; // seconds since last tick
-      // interpolate from t towards t-1 as elapsed goes 0→1
+      const elapsed = (Date.now() - lastTickRef.current) / 1000;
       const interpolated = Math.max(0, t - elapsed);
       setSmoothProgress(interpolated / total);
       rafRef.current = requestAnimationFrame(animate);
     };
-
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [t, isActive, total]);
 
   if (!isActive && !showFinished) return null;
 
-  const radius       = 90;
+  const radius        = 90;
   const circumference = 2 * Math.PI * radius;
-  const dashOffset   = circumference * (1 - smoothProgress);
-  const formatTime   = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
+  const dashOffset    = circumference * (1 - smoothProgress);
+  const formatTime    = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
   const isWarning  = t > 0 && t <= 10;
   const isFinished = t === 0;
+  const isPulsing  = isWarning || isFinished;
 
-  // Pulse style — same timing/feel for both bar and fullscreen
-  const pulseStyle = (isWarning || isFinished)
-    ? { animation: 'timer-pulse 2.2s ease-in-out infinite' }
-    : {};
+  const PULSE_DURATION = '2.2s ease-in-out infinite';
 
-  // Background colours
-  const bgBlue = 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
-  const bgRed  = 'linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a)';
-  const bgNormal = (isWarning || isFinished) ? bgRed : bgBlue;
-
-  const accentColour = (isWarning || isFinished) ? '#fca5a5' : '#60a5fa';
-  const textColour   = (isWarning || isFinished) ? 'rgba(252,165,165,0.85)' : 'rgba(147,197,253,0.7)';
+  // Static (non-pulsing) colours
+  const staticBg      = 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
+  const staticBarBg   = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
+  const staticAccent  = '#60a5fa';
+  const staticText    = 'rgba(147,197,253,0.75)';
+  const staticStroke  = '#60a5fa';
 
   return (
     <>
@@ -119,66 +121,63 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             style={{
               position: 'fixed', inset: 0, zIndex: 50,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: bgNormal,
-              ...pulseStyle,
+              background: staticBg,
+              animation: isPulsing ? `timer-bg-pulse ${PULSE_DURATION}` : 'none',
             }}>
 
-            {/* Close chevron — only while timer is running */}
             {!isFinished && (
               <button
                 onClick={() => setExpanded(false)}
-                className="absolute top-12 right-6 w-10 h-10 flex items-center justify-center text-white"
-                style={{ animation: 'none', opacity: 1 }}>
-                <ChevronDown className="w-6 h-6" />
+                style={{ position: 'absolute', top: 48, right: 24, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <ChevronDown style={{ width: 24, height: 24 }} />
               </button>
             )}
 
             {/* Title */}
-            <p
-              className="text-2xl font-bold uppercase tracking-widest mb-10"
-              style={{ color: textColour, ...pulseStyle }}>
+            <p style={{
+              fontSize: 24, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
+              marginBottom: 40, color: staticText,
+              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+            }}>
               {isFinished ? 'Timer Finished' : 'Rest Timer'}
             </p>
 
-            {/* Circle — uses smoothProgress for continuous arc movement */}
-            <div className="relative flex items-center justify-center w-56 h-56">
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
+            {/* Circle */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 224, height: 224 }}>
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
                 <circle
-                  cx="100" cy="100" r={radius}
-                  fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
-                <circle
-                  cx="100" cy="100" r={radius}
-                  fill="none"
-                  stroke={accentColour}
-                  strokeWidth="10"
-                  strokeLinecap="round"
+                  cx="100" cy="100" r={radius} fill="none"
+                  stroke={staticStroke}
+                  strokeWidth="10" strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={dashOffset}
-                  /* No CSS transition — RAF handles smoothness */
-                  style={{ transition: 'stroke 0.4s ease' }} />
+                  style={{
+                    transition: 'stroke 0.4s ease',
+                    animation: isPulsing ? `timer-stroke-pulse ${PULSE_DURATION}` : 'none',
+                  }} />
               </svg>
-              <span
-                className="font-black text-6xl tabular-nums z-10"
-                style={{ color: '#fff', ...pulseStyle }}>
+              <span style={{
+                color: '#fff', fontWeight: 900, fontSize: 60, fontVariantNumeric: 'tabular-nums',
+                position: 'relative', zIndex: 10,
+                animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+              }}>
                 {formatTime(t)}
               </span>
             </div>
 
-            {/* Stop button — never pulses */}
+            {/* Stop button — pulses with everything else */}
             <button
               onClick={() => {
-                onTimerStateChange(false);
-                onTimerValueChange('');
-                setExpanded(false);
-                setShowFinished(false);
-                finishedAtRef.current = null;
+                onTimerStateChange(false); onTimerValueChange('');
+                setExpanded(false); setShowFinished(false); finishedAtRef.current = null;
               }}
-              className="mt-14 px-10 py-4 rounded-2xl text-white font-bold text-lg active:translate-y-1 transition-all duration-100"
               style={{
+                marginTop: 56, padding: '16px 40px', borderRadius: 16,
+                color: '#fff', fontWeight: 700, fontSize: 18, border: 'none', cursor: 'pointer',
                 background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
                 boxShadow: '0 4px 0 0 #1a3fa8',
-                animation: 'none',
-                opacity: 1,
+                animation: isPulsing ? `timer-stop-pulse ${PULSE_DURATION}` : 'none',
               }}>
               Stop
             </button>
@@ -191,59 +190,67 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         <div
           onClick={() => { if (!isFinished) setExpanded(true); }}
           style={{
-            position: 'fixed',
-            left: 0, right: 0,
+            position: 'fixed', left: 0, right: 0,
             bottom: 'calc(79px + env(safe-area-inset-bottom))',
-            zIndex: 400,
-            borderRadius: 0,
-            padding: '14px 14px',
-            minHeight: 68,
+            zIndex: 400, borderRadius: 0, padding: '14px 14px', minHeight: 68,
             cursor: isFinished ? 'default' : 'pointer',
-            // Same gradient treatment as fullscreen
-            background: bgNormal,
-            ...pulseStyle,
-            borderTop: `1px solid ${(isWarning || isFinished) ? 'rgba(239,68,68,0.5)' : 'rgba(37,99,235,0.5)'}`,
+            background: staticBarBg,
+            animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
+            borderTop: `1px solid ${isPulsing ? 'rgba(239,68,68,0.5)' : 'rgba(37,99,235,0.5)'}`,
             boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           }}>
-          <div className="flex items-center justify-between gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
 
             {/* Label */}
-            <span
-              className="text-[15px] font-bold uppercase tracking-wider"
-              style={{ color: textColour, ...pulseStyle }}>
+            <span style={{
+              fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+              color: staticText,
+              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+            }}>
               {isFinished ? 'Timer Finished' : 'Rest Timer'}
             </span>
 
-            {/* Clock + countdown — hidden when finished */}
+            {/* Clock + countdown */}
             {!isFinished && (
-              <div className="flex items-center gap-3" style={pulseStyle}>
-                <Clock className="w-6 h-6 flex-shrink-0" style={{ color: accentColour }} />
-                <span className="font-black text-4xl tabular-nums" style={{ color: accentColour }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Clock style={{
+                  width: 24, height: 24, flexShrink: 0, color: staticAccent,
+                  animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+                }} />
+                <span style={{
+                  fontWeight: 900, fontSize: 36, fontVariantNumeric: 'tabular-nums',
+                  color: staticAccent,
+                  animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+                }}>
                   {formatTime(t)}
                 </span>
               </div>
             )}
 
-            {/* Stop button — never pulses */}
-            <Button
+            {/* Stop button — pulses with bar */}
+            <button
               onClick={(e) => {
                 e.stopPropagation();
-                onTimerStateChange(false);
-                onTimerValueChange('');
-                setShowFinished(false);
-                finishedAtRef.current = null;
+                onTimerStateChange(false); onTimerValueChange('');
+                setShowFinished(false); finishedAtRef.current = null;
               }}
-              className="inline-flex items-center justify-center h-10 text-xs font-bold px-5 py-2 rounded-lg text-white border border-transparent active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu"
               style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                height: 40, padding: '8px 20px', borderRadius: 8,
+                color: '#fff', fontWeight: 700, fontSize: 12, border: 'none', cursor: 'pointer',
                 background: 'linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(37,99,235,0.9))',
-                boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
-                animation: 'none',
-                opacity: 1,
-              }}>
+                boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
+                animation: isPulsing ? `timer-stop-pulse ${PULSE_DURATION}` : 'none',
+                transition: 'transform 0.1s ease',
+              }}
+              onMouseDown={e => e.currentTarget.style.transform = 'translateY(3px) scale(0.95)'}
+              onMouseUp={e => e.currentTarget.style.transform = ''}
+              onMouseLeave={e => e.currentTarget.style.transform = ''}
+              onTouchStart={e => e.currentTarget.style.transform = 'translateY(3px) scale(0.95)'}
+              onTouchEnd={e => e.currentTarget.style.transform = ''}>
               Stop
-            </Button>
+            </button>
           </div>
         </div>
       )}
