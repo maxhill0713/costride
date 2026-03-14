@@ -257,7 +257,7 @@ function RadarTip({ active, payload }) {
 
 export default function TabAnalytics({
   checkIns, ci30, totalMembers, monthCiPer, monthChangePct,
-  monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk,
+  monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
 }) {
   const now = new Date();
 
