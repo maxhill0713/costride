@@ -38,11 +38,11 @@ export default function TabGym({ selectedGym, classes, coaches, openModal }) {
         position: 'relative',
       }}>
         {/* Background image strip */}
-        <div style={{ height: 100, position: 'relative', background: 'linear-gradient(135deg, #0a1628 0%, #0d2248 50%, #0a1628 100%)', overflow: 'hidden' }}>
+        <div style={{ height: 200, position: 'relative', background: 'linear-gradient(135deg, #0a1628 0%, #0d2248 50%, #0a1628 100%)', overflow: 'hidden' }}>
           {selectedGym?.image_url && (
-            <img src={selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }}/>
+            <img src={selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}/>
           )}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 0%, rgba(17,24,39,0.85) 100%)' }}/>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(17,24,39,0.75) 100%)' }}/>
           {/* Edit hero button */}
           <button onClick={() => openModal('heroPhoto')} style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
             <Camera style={{ width: 12, height: 12 }}/> Edit Hero
