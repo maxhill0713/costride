@@ -3,26 +3,51 @@ import { format, subDays, isWithinInterval } from 'date-fns';
 import {
   Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
   Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
-  ArrowUpRight, UserPlus, QrCode, Trophy, Send, Bell, X, Check
+  ArrowUpRight, UserPlus, QrCode, Trophy, Send, Bell, X, Check,
+  MessageSquare, Zap, Clock, Gift, Flame
 } from 'lucide-react';
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
 const PRESET_MESSAGES = [
-  { id: 'miss',      emoji: '👋', label: 'We miss you',    body: (g, n) => `Hey ${n}! We haven't seen you at ${g} in a while. Come back and keep your progress going — your gym family misses you.` },
-  { id: 'offer',     emoji: '🎁', label: 'Special offer',  body: (g, n) => `Good news ${n}! Come into ${g} this week and bring a guest for free. We'd love to see you back.` },
-  { id: 'challenge', emoji: '🏆', label: 'New challenge',  body: (g, n) => `Hey ${n}, ${g} has a fresh challenge waiting for you. Join in and hit a new PB!` },
-  { id: 'nudge',     emoji: '💪', label: 'Friendly nudge', body: (g, n) => `Just a friendly nudge ${n} — it's been a while! Your spot at ${g} is waiting.` },
+  {
+    id: 'miss',
+    label: "We miss you",
+    sublabel: "Re-engagement",
+    accentColor: '#38bdf8',
+    body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.`,
+  },
+  {
+    id: 'offer',
+    label: "Bring a guest",
+    sublabel: "Special offer",
+    accentColor: '#a78bfa',
+    body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.`,
+  },
+  {
+    id: 'challenge',
+    label: "New challenge",
+    sublabel: "Motivation",
+    accentColor: '#f59e0b',
+    body: (g, n) => `${n}, a new challenge has just launched at ${g}. It's a great chance to push yourself and hit a new personal best.`,
+  },
+  {
+    id: 'nudge',
+    label: "Friendly reminder",
+    sublabel: "Check-in nudge",
+    accentColor: '#34d399',
+    body: (g, n) => `Just checking in, ${n}. Your spot at ${g} is ready whenever you are — consistency is everything.`,
+  },
 ];
 
-// ── Inline push panel shown when a member row is expanded ─────────────────────
+// ── Single member push panel ───────────────────────────────────────────────────
 function MemberPushPanel({ member, gymName, gymId, onClose }) {
   const [selectedPreset, setSelectedPreset] = useState('miss');
-  const [customMsg, setCustomMsg] = useState('');
-  const [mode, setMode] = useState('preset');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [customMsg, setCustomMsg]           = useState('');
+  const [mode, setMode]                     = useState('preset');
+  const [sending, setSending]               = useState(false);
+  const [sent, setSent]                     = useState(false);
 
   const message = mode === 'preset'
     ? PRESET_MESSAGES.find(p => p.id === selectedPreset)?.body(gymName, member.name.split(' ')[0]) || ''
@@ -33,87 +58,106 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
     setSending(true);
     try {
       await base44.functions.invoke('sendPushNotification', {
-        gym_id: gymId,
-        gym_name: gymName,
-        target: 'specific',
-        message: message.trim(),
+        gym_id: gymId, gym_name: gymName,
+        target: 'specific', message: message.trim(),
         member_ids: [member.user_id],
       });
       setSent(true);
       setTimeout(() => { setSent(false); onClose(); }, 2000);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSending(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setSending(false); }
   };
+
+  const activePreset = PRESET_MESSAGES.find(p => p.id === selectedPreset);
 
   return (
     <div style={{
-      margin: '0 0 2px 0',
-      padding: '14px 16px',
-      background: 'rgba(0,212,255,0.04)',
-      borderBottom: '1px solid rgba(0,212,255,0.12)',
-      borderLeft: '3px solid rgba(0,212,255,0.4)',
-      animation: 'fade-in-up 0.2s ease both',
+      margin: '0',
+      padding: '16px 18px 18px',
+      background: 'linear-gradient(180deg, rgba(14,165,233,0.05) 0%, rgba(0,0,0,0) 100%)',
+      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      borderLeft: '3px solid rgba(14,165,233,0.5)',
+      animation: 'fade-in-up 0.18s ease both',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Bell style={{ width: 12, height: 12, color: 'var(--cyan)' }}/>
-          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)' }}>Push notification → {member.name.split(' ')[0]}</span>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(14,165,233,0.15)', border: '1px solid rgba(14,165,233,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Bell style={{ width: 11, height: 11, color: '#38bdf8' }}/>
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>
+              Push Notification
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500 }}>
+              Sending to {member.name.split(' ')[0]}
+            </div>
+          </div>
         </div>
-        <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer' }}>
+        <button onClick={onClose} style={{ width: 24, height: 24, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
           <X style={{ width: 11, height: 11, color: 'var(--text3)' }}/>
         </button>
       </div>
 
       {/* Mode toggle */}
-      <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
-        {[{ id: 'preset', label: 'Preset' }, { id: 'custom', label: 'Custom' }].map(m => (
+      <div style={{ display: 'flex', gap: 4, marginBottom: 12, padding: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)', width: 'fit-content' }}>
+        {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
           <button key={m.id} onClick={() => setMode(m.id)} style={{
-            padding: '4px 12px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer',
-            background: mode === m.id ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${mode === m.id ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
-            color: mode === m.id ? 'var(--cyan)' : 'var(--text3)',
+            padding: '4px 14px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s',
+            background: mode === m.id ? 'rgba(14,165,233,0.18)' : 'transparent',
+            border: `1px solid ${mode === m.id ? 'rgba(14,165,233,0.3)' : 'transparent'}`,
+            color: mode === m.id ? '#38bdf8' : 'var(--text3)',
           }}>{m.label}</button>
         ))}
       </div>
 
       {mode === 'preset' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 10 }}>
-          {PRESET_MESSAGES.map(p => (
-            <button key={p.id} onClick={() => setSelectedPreset(p.id)} style={{
-              padding: '7px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
-              background: selectedPreset === p.id ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${selectedPreset === p.id ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
-              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.12s',
-            }}>
-              <span style={{ fontSize: 13 }}>{p.emoji}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: selectedPreset === p.id ? 'var(--cyan)' : 'var(--text2)' }}>{p.label}</span>
-            </button>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 12 }}>
+          {PRESET_MESSAGES.map(p => {
+            const isActive = selectedPreset === p.id;
+            return (
+              <button key={p.id} onClick={() => setSelectedPreset(p.id)} style={{
+                padding: '9px 11px', borderRadius: 9, cursor: 'pointer', textAlign: 'left',
+                background: isActive ? `rgba(${p.accentColor === '#38bdf8' ? '56,189,248' : p.accentColor === '#a78bfa' ? '167,139,250' : p.accentColor === '#f59e0b' ? '245,158,11' : '52,211,153'},0.08)` : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${isActive ? p.accentColor + '55' : 'rgba(255,255,255,0.07)'}`,
+                transition: 'all 0.12s',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: isActive ? p.accentColor : 'var(--text1)', marginBottom: 2 }}>{p.label}</div>
+                <div style={{ fontSize: 9, fontWeight: 600, color: isActive ? p.accentColor + 'bb' : 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.sublabel}</div>
+              </button>
+            );
+          })}
         </div>
       ) : (
         <textarea
           value={customMsg}
           onChange={e => setCustomMsg(e.target.value)}
           placeholder={`Write a message to ${member.name.split(' ')[0]}…`}
-          rows={2}
+          rows={3}
           style={{
-            width: '100%', boxSizing: 'border-box', marginBottom: 10,
+            width: '100%', boxSizing: 'border-box', marginBottom: 12,
             background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
-            borderRadius: 8, padding: '8px 10px', fontSize: 11, color: 'var(--text1)',
-            resize: 'none', outline: 'none', fontFamily: "'Outfit', sans-serif", lineHeight: 1.5,
+            borderRadius: 9, padding: '9px 11px', fontSize: 11, color: 'var(--text1)',
+            resize: 'none', outline: 'none', fontFamily: "'Outfit', sans-serif", lineHeight: 1.6,
+            transition: 'border-color 0.15s',
           }}
-          onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.35)'}
+          onFocus={e => e.target.style.borderColor = 'rgba(14,165,233,0.4)'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
         />
       )}
 
-      {/* Preview */}
+      {/* Preview bubble */}
       {message && (
-        <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, fontStyle: 'italic' }}>
-          "{message}"
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Preview</div>
+          <div style={{
+            padding: '10px 12px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+            fontSize: 11, color: 'var(--text2)', lineHeight: 1.6,
+            borderLeft: `3px solid ${activePreset?.accentColor || '#38bdf8'}`,
+          }}>
+            {message}
+          </div>
         </div>
       )}
 
@@ -121,15 +165,213 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
         onClick={handleSend}
         disabled={!message.trim() || sending || sent}
         style={{
-          width: '100%', padding: '8px', borderRadius: 8, border: 'none', cursor: message.trim() && !sending && !sent ? 'pointer' : 'default',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          width: '100%', padding: '9px', borderRadius: 9, border: 'none',
+          cursor: message.trim() && !sending && !sent ? 'pointer' : 'default',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
           fontSize: 12, fontWeight: 800, transition: 'all 0.15s',
-          background: sent ? 'rgba(16,185,129,0.15)' : message.trim() ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
-          color: sent ? '#34d399' : message.trim() ? 'var(--cyan)' : 'var(--text3)',
-          outline: `1px solid ${sent ? 'rgba(16,185,129,0.3)' : message.trim() ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
+          background: sent
+            ? 'rgba(52,211,153,0.15)'
+            : message.trim()
+              ? 'linear-gradient(135deg, rgba(14,165,233,0.2), rgba(56,189,248,0.12))'
+              : 'rgba(255,255,255,0.04)',
+          color: sent ? '#34d399' : message.trim() ? '#38bdf8' : 'var(--text3)',
+          border: `1px solid ${sent ? 'rgba(52,211,153,0.3)' : message.trim() ? 'rgba(14,165,233,0.35)' : 'rgba(255,255,255,0.07)'}`,
         }}>
-        {sent ? <><Check style={{ width: 12, height: 12 }}/> Sent!</> : sending ? 'Sending…' : <><Send style={{ width: 12, height: 12 }}/> Send to {member.name.split(' ')[0]}</>}
+        {sent
+          ? <><Check style={{ width: 12, height: 12 }}/> Sent successfully</>
+          : sending
+            ? 'Sending…'
+            : <><Send style={{ width: 12, height: 12 }}/> Send to {member.name.split(' ')[0]}</>
+        }
       </button>
+    </div>
+  );
+}
+
+// ── Bulk push panel shown above the table when multiple rows are selected ──────
+function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSuccess }) {
+  const [selectedPreset, setSelectedPreset] = useState('miss');
+  const [customMsg, setCustomMsg]           = useState('');
+  const [mode, setMode]                     = useState('preset');
+  const [sending, setSending]               = useState(false);
+  const [sent, setSent]                     = useState(false);
+
+  const members     = memberRows.filter(m => selectedRows.has(m.id));
+  const memberCount = members.length;
+
+  const buildPreviewMsg = (preset, name) =>
+    PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, name) || '';
+
+  const message = mode === 'preset'
+    ? buildPreviewMsg(selectedPreset, members[0]?.name.split(' ')[0] || 'there')
+    : customMsg;
+
+  const handleSend = async () => {
+    if (!message.trim() || sending) return;
+    setSending(true);
+    try {
+      const memberIds = members.map(m => m.user_id);
+      if (mode === 'preset') {
+        // Send personalised per-member messages
+        await Promise.all(members.map(m =>
+          base44.functions.invoke('sendPushNotification', {
+            gym_id: gymId, gym_name: gymName,
+            target: 'specific',
+            message: buildPreviewMsg(selectedPreset, m.name.split(' ')[0]),
+            member_ids: [m.user_id],
+          })
+        ));
+      } else {
+        await base44.functions.invoke('sendPushNotification', {
+          gym_id: gymId, gym_name: gymName,
+          target: 'specific', message: message.trim(),
+          member_ids: memberIds,
+        });
+      }
+      setSent(true);
+      setTimeout(() => { setSent(false); onSuccess(); onClose(); }, 2200);
+    } catch (e) { console.error(e); }
+    finally { setSending(false); }
+  };
+
+  const activePreset = PRESET_MESSAGES.find(p => p.id === selectedPreset);
+
+  return (
+    <div style={{
+      margin: '0 0 2px 0',
+      padding: '16px 18px 18px',
+      background: 'linear-gradient(180deg, rgba(167,139,250,0.06) 0%, rgba(0,0,0,0) 100%)',
+      borderBottom: '2px solid rgba(167,139,250,0.2)',
+      borderLeft: '3px solid rgba(167,139,250,0.55)',
+      animation: 'fade-in-up 0.18s ease both',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Users style={{ width: 12, height: 12, color: '#a78bfa' }}/>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>
+              Bulk Push Notification
+            </div>
+            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 600 }}>
+              {memberCount} {memberCount === 1 ? 'member' : 'members'} selected
+              {mode === 'preset' && <span style={{ color: 'var(--text3)', fontWeight: 500 }}> · personalised per name</span>}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {/* Member avatar stack */}
+          <div style={{ display: 'flex' }}>
+            {members.slice(0, 4).map((m, i) => (
+              <div key={m.id} style={{ marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i, border: '2px solid var(--card)', borderRadius: '50%' }}>
+                <Avatar name={m.name} size={22} src={m.avatar_url || m.member_avatar}/>
+              </div>
+            ))}
+            {memberCount > 4 && (
+              <div style={{ marginLeft: -8, width: 22, height: 22, borderRadius: '50%', background: 'rgba(167,139,250,0.25)', border: '2px solid var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 8, fontWeight: 800, color: '#a78bfa' }}>+{memberCount - 4}</span>
+              </div>
+            )}
+          </div>
+          <button onClick={onClose} style={{ width: 24, height: 24, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
+            <X style={{ width: 11, height: 11, color: 'var(--text3)' }}/>
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {/* Left: message builder */}
+        <div>
+          {/* Mode toggle */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 10, padding: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)', width: 'fit-content' }}>
+            {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
+              <button key={m.id} onClick={() => setMode(m.id)} style={{
+                padding: '4px 14px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s',
+                background: mode === m.id ? 'rgba(167,139,250,0.18)' : 'transparent',
+                border: `1px solid ${mode === m.id ? 'rgba(167,139,250,0.3)' : 'transparent'}`,
+                color: mode === m.id ? '#a78bfa' : 'var(--text3)',
+              }}>{m.label}</button>
+            ))}
+          </div>
+
+          {mode === 'preset' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+              {PRESET_MESSAGES.map(p => {
+                const isActive = selectedPreset === p.id;
+                return (
+                  <button key={p.id} onClick={() => setSelectedPreset(p.id)} style={{
+                    padding: '9px 10px', borderRadius: 9, cursor: 'pointer', textAlign: 'left',
+                    background: isActive ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isActive ? 'rgba(167,139,250,0.35)' : 'rgba(255,255,255,0.07)'}`,
+                    transition: 'all 0.12s',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: isActive ? '#a78bfa' : 'var(--text1)', marginBottom: 2 }}>{p.label}</div>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: isActive ? 'rgba(167,139,250,0.7)' : 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.sublabel}</div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <textarea
+              value={customMsg}
+              onChange={e => setCustomMsg(e.target.value)}
+              placeholder={`Write a message to all ${memberCount} members…`}
+              rows={4}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
+                borderRadius: 9, padding: '9px 11px', fontSize: 11, color: 'var(--text1)',
+                resize: 'none', outline: 'none', fontFamily: "'Outfit', sans-serif", lineHeight: 1.6,
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={e => e.target.style.borderColor = 'rgba(167,139,250,0.4)'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
+            />
+          )}
+        </div>
+
+        {/* Right: preview + send */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Preview {mode === 'preset' ? `(for ${members[0]?.name.split(' ')[0] || 'member'})` : ''}
+          </div>
+          <div style={{
+            flex: 1, padding: '10px 12px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+            fontSize: 11, color: message ? 'var(--text2)' : 'var(--text3)', lineHeight: 1.6,
+            borderLeft: `3px solid ${message ? (activePreset?.accentColor || '#a78bfa') : 'rgba(255,255,255,0.1)'}`,
+            fontStyle: message ? 'normal' : 'italic',
+          }}>
+            {message || 'Select a template or write a message…'}
+          </div>
+
+          <button
+            onClick={handleSend}
+            disabled={!message.trim() || sending || sent}
+            style={{
+              width: '100%', padding: '10px', borderRadius: 9, border: 'none',
+              cursor: message.trim() && !sending && !sent ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              fontSize: 12, fontWeight: 800, transition: 'all 0.15s',
+              background: sent
+                ? 'rgba(52,211,153,0.15)'
+                : message.trim()
+                  ? 'linear-gradient(135deg, rgba(167,139,250,0.22), rgba(139,92,246,0.14))'
+                  : 'rgba(255,255,255,0.04)',
+              color: sent ? '#34d399' : message.trim() ? '#a78bfa' : 'var(--text3)',
+              border: `1px solid ${sent ? 'rgba(52,211,153,0.3)' : message.trim() ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.07)'}`,
+            }}>
+            {sent
+              ? <><Check style={{ width: 13, height: 13 }}/> Sent to {memberCount} members</>
+              : sending
+                ? `Sending to ${memberCount} members…`
+                : <><Send style={{ width: 13, height: 13 }}/> Send to {memberCount} {memberCount === 1 ? 'member' : 'members'}</>
+            }
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -143,31 +385,35 @@ export default function TabMembers({
   openModal, now,
 }) {
   const [expandedMember, setExpandedMember] = useState(null);
-
+  const [showBulkPanel, setShowBulkPanel]   = useState(false);
   const gymName = selectedGym?.name || 'Your Gym';
 
   const memberRows = useMemo(() => allMemberships.map(m => {
     const userCheckIns = checkIns.filter(c => c.user_id === m.user_id);
-    const visits30 = ci30.filter(c => c.user_id === m.user_id).length;
-    const lastVisit = memberLastCheckIn[m.user_id];
-    const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
-    const isBanned = (selectedGym?.banned_members || []).includes(m.user_id);
-    const name = userCheckIns[0]?.user_name || m.user_name || 'Member';
+    const visits30     = ci30.filter(c => c.user_id === m.user_id).length;
+    const lastVisit    = memberLastCheckIn[m.user_id];
+    const daysSince    = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
+    const isBanned     = (selectedGym?.banned_members || []).includes(m.user_id);
+    const name         = userCheckIns[0]?.user_name || m.user_name || 'Member';
+
     let tier = 'New';
     if (visits30 >= 15) tier = 'Super Active'; else if (visits30 >= 8) tier = 'Active'; else if (visits30 >= 1) tier = 'Casual';
+
     let risk = 'Low';
     if (daysSince >= 21) risk = 'High'; else if (daysSince >= 14) risk = 'Medium';
+
     let statusTag = tier === 'Super Active' || tier === 'Active' ? 'Engaged' : tier === 'New' ? 'New' : 'Casual';
     if (daysSince >= 14) statusTag = 'At Risk';
     if (isBanned) statusTag = 'Banned';
+
     let lastVisitDisplay = 'Never';
     if (lastVisit) {
       if (daysSince === 0) lastVisitDisplay = 'Today';
       else if (daysSince === 1) lastVisitDisplay = '1 day ago';
-      else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`;
+      else if (daysSince < 7)  lastVisitDisplay = `${daysSince} days ago`;
       else if (daysSince < 14) lastVisitDisplay = '1 week ago';
       else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
-      else lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
+      else                     lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
     }
     const plan = m.plan || m.membership_type || m.type || 'Standard';
     return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned, avatar_url: avatarMap[m.user_id] || null };
@@ -192,6 +438,7 @@ export default function TabMembers({
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
   const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
+
   const gymHealthScore = Math.min(100, Math.max(0, Math.round(retentionRate * 0.6 + (100 - Math.min(100, (atRisk / Math.max(totalMembers, 1)) * 100)) * 0.4)));
 
   const filterCounts = {
@@ -203,12 +450,27 @@ export default function TabMembers({
   };
 
   const toggleRow          = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); };
-  const toggleAll          = () => { if (selectedRows.size === paginated.length) setSelectedRows(new Set()); else setSelectedRows(new Set(paginated.map(m => m.id))); };
+  const toggleAll          = () => {
+    if (selectedRows.size === paginated.length) {
+      setSelectedRows(new Set());
+      setShowBulkPanel(false);
+    } else {
+      setSelectedRows(new Set(paginated.map(m => m.id)));
+    }
+  };
   const handleFilterChange = (f) => { setMemberFilter(f); setMemberPage(1); };
   const handleSearch       = (v) => { setMemberSearch(v); setMemberPage(1); };
 
+  // Close bulk panel when deselecting all
+  const handleToggleRow = (id) => {
+    const s = new Set(selectedRows);
+    s.has(id) ? s.delete(id) : s.add(id);
+    setSelectedRows(s);
+    if (s.size === 0) setShowBulkPanel(false);
+  };
+
   const weekAgoLB = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCI = checkIns.filter(c => new Date(c.check_in_date) >= weekAgoLB);
+  const weeklyCI  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgoLB);
   const checkInLeaderboard = Object.values(
     weeklyCI.reduce((acc, c) => {
       const id = c.user_id;
@@ -272,7 +534,6 @@ export default function TabMembers({
               ))}
             </div>
             <div style={{ flex: 1 }}/>
-            {/* Hint */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)' }}>
               <Bell style={{ width: 10, height: 10, color: 'var(--cyan)' }}/>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--cyan)' }}>Click a member to notify</span>
@@ -286,6 +547,59 @@ export default function TabMembers({
               <option value="name">Name A–Z</option>
             </select>
           </div>
+
+          {/* ── Bulk action bar (appears when rows are selected) ── */}
+          {selectedRows.size > 0 && (
+            <div style={{
+              padding: '10px 16px',
+              background: 'linear-gradient(90deg, rgba(167,139,250,0.08) 0%, rgba(139,92,246,0.04) 100%)',
+              borderBottom: '1px solid rgba(167,139,250,0.2)',
+              display: 'flex', alignItems: 'center', gap: 10,
+              animation: 'fade-in-up 0.15s ease both',
+            }}>
+              {/* Avatar stack */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {memberRows.filter(m => selectedRows.has(m.id)).slice(0, 3).map((m, i) => (
+                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: '2px solid var(--card)', borderRadius: '50%' }}>
+                    <Avatar name={m.name} size={20} src={m.avatar_url || m.member_avatar}/>
+                  </div>
+                ))}
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>
+                {selectedRows.size} {selectedRows.size === 1 ? 'member' : 'members'} selected
+              </span>
+              <div style={{ flex: 1 }}/>
+              <button
+                onClick={() => setSelectedRows(new Set())}
+                style={{ padding: '5px 11px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: 'var(--text3)' }}>
+                Clear
+              </button>
+              <button
+                onClick={() => setShowBulkPanel(v => !v)}
+                style={{
+                  padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: showBulkPanel ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.12)',
+                  border: `1px solid rgba(167,139,250,${showBulkPanel ? '0.45' : '0.3'})`,
+                  color: '#a78bfa', transition: 'all 0.12s',
+                }}>
+                <Bell style={{ width: 11, height: 11 }}/>
+                {showBulkPanel ? 'Hide panel' : `Notify ${selectedRows.size} ${selectedRows.size === 1 ? 'member' : 'members'}`}
+              </button>
+            </div>
+          )}
+
+          {/* ── Bulk push panel ── */}
+          {showBulkPanel && selectedRows.size > 0 && (
+            <BulkPushPanel
+              selectedRows={selectedRows}
+              memberRows={memberRows}
+              gymName={gymName}
+              gymId={selectedGym?.id}
+              onClose={() => setShowBulkPanel(false)}
+              onSuccess={() => setSelectedRows(new Set())}
+            />
+          )}
 
           {/* Table header */}
           <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
@@ -309,21 +623,25 @@ export default function TabMembers({
             ) : (
               paginated.map((m, idx) => {
                 const isExpanded = expandedMember === m.id;
+                const isSelected = selectedRows.has(m.id);
                 return (
                   <div key={m.id || idx}>
-                    {/* Member row */}
                     <div
                       className={`member-row ${isExpanded ? 'member-row-selected' : ''}`}
                       style={{
                         borderBottom: !isExpanded && idx < paginated.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                         borderRadius: 0,
-                        borderLeft: isExpanded ? '3px solid rgba(0,212,255,0.4)' : '3px solid transparent',
-                        transition: 'border-color 0.15s',
+                        borderLeft: isExpanded ? '3px solid rgba(0,212,255,0.4)' : isSelected ? '3px solid rgba(167,139,250,0.4)' : '3px solid transparent',
+                        background: isSelected && !isExpanded ? 'rgba(167,139,250,0.04)' : undefined,
+                        transition: 'border-color 0.15s, background 0.15s',
                       }}
-                      onClick={() => setExpandedMember(isExpanded ? null : m.id)}
+                      onClick={() => {
+                        setExpandedMember(isExpanded ? null : m.id);
+                        if (showBulkPanel) setShowBulkPanel(false);
+                      }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
-                        <input type="checkbox" checked={selectedRows.has(m.id)} onChange={() => toggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
+                        <input type="checkbox" checked={isSelected} onChange={() => handleToggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#a78bfa', cursor: 'pointer' }}/>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                         <div style={{ position: 'relative' }}>
@@ -365,7 +683,7 @@ export default function TabMembers({
                       </div>
                     </div>
 
-                    {/* Inline push panel */}
+                    {/* Inline single-member push panel */}
                     {isExpanded && (
                       <MemberPushPanel
                         member={m}
@@ -417,7 +735,6 @@ export default function TabMembers({
 
         {/* ── Right Sidebar ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
           {/* Alerts */}
           <Card style={{ padding: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
