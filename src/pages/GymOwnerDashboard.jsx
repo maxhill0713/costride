@@ -239,6 +239,11 @@ export default function GymOwnerDashboard() {
         checkIns={checkIns} ci30={ci30} avatarMap={avatarMap}
         leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView}
         openModal={openModal} now={now}
+        onDeletePost={id => deletePostM.mutate(id)}
+        onDeleteEvent={id => deleteEventM.mutate(id)}
+        onDeleteChallenge={id => deleteChallengeM.mutate(id)}
+        onDeleteClass={id => deleteClassM.mutate(id)}
+        onDeletePoll={id => deletePollM.mutate(id)}
       />
     ),
     analytics: (
