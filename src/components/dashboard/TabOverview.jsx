@@ -33,8 +33,12 @@ export default function TabOverview({
   const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
   const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
   const classesToday = classes.filter(c => {
-    const s = typeof c.schedule === 'string' ? c.schedule : JSON.stringify(c.schedule || '');
-    return s.toLowerCase().includes(todayDay.toLowerCase());
+    try {
+      const s = typeof c.schedule === 'string' ? c.schedule : JSON.stringify(c.schedule || '');
+      return s.toLowerCase().includes(todayDay.toLowerCase());
+    } catch {
+      return false;
+    }
   }).length;
   const activeUserIds = new Set(checkIns.filter(c => new Date(c.check_in_date) >= sevenDaysAgo).map(c => c.user_id));
   const inactive = allMemberships.filter(m => !activeUserIds.has(m.user_id)).length;
