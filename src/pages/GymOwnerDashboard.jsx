@@ -253,6 +253,7 @@ export default function GymOwnerDashboard() {
         monthCiPer={monthCiPer} monthChangePct={monthChangePct}
         monthGrowthData={monthGrowthData} retentionRate={retentionRate}
         activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk}
+        gymId={selectedGym?.id}
       />
     ),
     gym: (
