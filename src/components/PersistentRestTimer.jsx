@@ -66,7 +66,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         <div
           className="fixed left-0 right-0 z-[400] bg-gradient-to-r from-blue-700/95 to-blue-900/95 backdrop-blur-2xl border border-blue-600/50 shadow-2xl shadow-blue-900/20 cursor-pointer"
           style={{
-            bottom: 'calc(4rem + env(safe-area-inset-bottom))',
+            bottom: 'calc(79px + env(safe-area-inset-bottom))',
             borderRadius: 0,
             padding: '14px 14px',
             minHeight: 68,
