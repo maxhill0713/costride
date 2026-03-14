@@ -32,7 +32,7 @@ export default function TabContent({
   }, [checkIns, ci30]);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, height: 'calc(100vh - 56px - 44px)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 16, height: 'calc(100vh - 56px - 44px)', maxWidth: '100%' }}>
 
       {/* ── LEFT: action cards fixed + posts scroll ── */}
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -62,8 +62,8 @@ export default function TabContent({
         </div>
 
         {/* Posts feed — only this scrolls */}
-        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
-          <div style={{ maxWidth: '50%' }}>
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4, minWidth: 0 }}>
+          <div style={{ maxWidth: '100%', width: '100%' }}>
             {allPosts.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {allPosts.map((post) => (
@@ -81,7 +81,7 @@ export default function TabContent({
       </div>
 
       {/* ── RIGHT: sidebar — never scrolls ── */}
-      <div style={{ height: '100%', overflowY: 'hidden', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minWidth: 280 }}>
 
         {/* Recent Posts */}
         <Card style={{ padding: 16, flexShrink: 0 }}>
