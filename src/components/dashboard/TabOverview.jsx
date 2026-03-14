@@ -32,12 +32,7 @@ export default function TabOverview({
   const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
   const checkInsToday = checkIns.filter(c => new Date(c.check_in_date) >= todayStart).length;
   const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
-  const classesToday = classes.filter(c => {
-    const s = typeof c.schedule === 'string'
-      ? c.schedule.toLowerCase()
-      : JSON.stringify(c.schedule || '').toLowerCase();
-    return s.includes(todayDay.toLowerCase());
-  }).length;
+  const classesToday = classes.filter(c => (c.schedule || '').toLowerCase().includes(todayDay.toLowerCase())).length;
   const activeUserIds = new Set(checkIns.filter(c => new Date(c.check_in_date) >= sevenDaysAgo).map(c => c.user_id));
   const inactive = allMemberships.filter(m => !activeUserIds.has(m.user_id)).length;
   const interactions = [
@@ -63,24 +58,35 @@ export default function TabOverview({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
 
           {/* ── Today's Snapshot ── */}
-          <Card style={{ padding: '18px 16px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 5px #10b981' }}/>
-              <span style={{ fontSize: 9, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
+          <Card style={{ padding: '20px 20px 16px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Today's Snapshot</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 5px #10b981' }}/>
+                <span style={{ fontSize: 9, fontWeight: 800, color: '#34d399', letterSpacing: '0.06em' }}>LIVE</span>
+              </div>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 14, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Today's Snapshot
+            {/* Big number — check-ins today */}
+            <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text1)', lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 6 }} className="anim-pop">
+              {checkInsToday}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {snapshotStats.map(({ label, value, color, icon: Icon, sub }) => (
-                <div key={label} style={{ padding: '9px 10px', borderRadius: 10, background: `${color}12`, border: `1px solid ${color}28`, position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', bottom: -6, right: -6, width: 30, height: 30, borderRadius: '50%', background: `${color}22`, filter: 'blur(8px)', pointerEvents: 'none' }}/>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 5 }}>
-                    <Icon style={{ width: 10, height: 10, color, flexShrink: 0 }}/>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', letterSpacing: '0.04em', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 }}>
+              <Flame style={{ width: 12, height: 12, color: '#f59e0b' }}/>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>check-ins today</span>
+            </div>
+            {/* Secondary stats */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+              {[
+                { icon: Zap,           label: 'Interactions',  value: interactions, color: '#00d4ff' },
+                { icon: Activity,      label: 'Classes today', value: classesToday,  color: '#10b981' },
+                { icon: AlertTriangle, label: 'Inactive 7d+',  value: inactive,      color: inactive > 0 ? '#ef4444' : '#10b981' },
+              ].map(({ icon: Icon, label, value, color }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon style={{ width: 11, height: 11, color, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>{label}</span>
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 500, marginTop: 2 }}>{sub}</div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color }}>{value}</span>
                 </div>
               ))}
             </div>
