@@ -1128,7 +1128,7 @@ export default function GymCommunity() {
             </TabsContent>
 
             {/* ── CLASSES (new) ── */}
-            <TabsContent value="classes" className="space-y-3 mt-0 w-full">
+            <TabsContent value="classes" className="space-y-3 mt-0 w-full" asChild>
               <ClassesTabContent
                 classes={classes}
                 showOwnerControls={showOwnerControls}
