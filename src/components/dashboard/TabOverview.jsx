@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
