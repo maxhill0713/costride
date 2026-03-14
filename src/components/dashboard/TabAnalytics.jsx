@@ -130,7 +130,7 @@ function HeatmapChart({ gymId }) {
 
   const grid = useMemo(() => {
     const mat = Array.from({ length: 7 }, () => Array(slotConfig.length).fill(0));
-    checkIns.forEach(c => {
+    heatmapCheckIns.forEach(c => {
       const d   = new Date(c.check_in_date);
       const dow = (d.getDay() + 6) % 7;
       const h   = d.getHours();
