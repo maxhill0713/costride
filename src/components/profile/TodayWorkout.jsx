@@ -99,18 +99,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const queryClient = useQueryClient();
 
-  const timerPresets = [
-    { label: '10s', value: 10 },
-    { label: '30s', value: 30 },
-    { label: '45s', value: 45 },
-    { label: '60s', value: 60 },
-    { label: '90s', value: 90 },
-    { label: '2m', value: 120 },
-    { label: '3m', value: 180 },
-    { label: '5m', value: 300 },
-    { label: '10m', value: 600 },
-  ];
-
   React.useEffect(() => {
     let interval;
     if (workoutStartTime && !showSummary) {
@@ -136,7 +124,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
 
   const activeDayKey = overrideDayKey !== null ? overrideDayKey : adjustedDay;
-  const isOverridden = overrideDayKey !== null && overrideDayKey !== adjustedDay;
 
   const getTodayWorkout = () => {
     if (!currentUser?.custom_workout_types) return null;
@@ -365,6 +352,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       </Card>
     );
   }
+
+  // ── Fixed timer time display — always the same size regardless of active state ──
+  const timerDisplay = (() => {
+    const t = parseInt(restTimer) || 90;
+    return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`;
+  })();
 
   return (
     <>
@@ -602,39 +595,66 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </Button>
                   )}
 
-                  {/* Rest Timer & Tools */}
+                  {/* ── Rest Timer & Tools ── */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
+
+                      {/*
+                        Timer display box — fixed at height:51px always.
+                        When active: shows countdown. When inactive: shows set time.
+                        The dropdown for adjusting time is only shown when inactive.
+                      */}
                       <div className="relative" style={{ flex: '0 0 auto', width: '49%' }}>
                         <button
-                          onClick={() => setShowTimerOptions(!showTimerOptions)}
-                          className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden"
-                          style={{ height: '51px' }}>
+                          onClick={() => { if (!isTimerActive) setShowTimerOptions(!showTimerOptions); }}
+                          style={{ height: '51px' }}
+                          className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
                           <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                           <span className="text-blue-300 font-black text-2xl tabular-nums leading-none">
-                            {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
+                            {timerDisplay}
                           </span>
                         </button>
-                        {showTimerOptions && (
+
+                        {/* Adjust dropdown — only available when timer is NOT running */}
+                        {showTimerOptions && !isTimerActive && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
                             <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
-                              <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(Math.max(10, v - 10)); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">−</button>
-                              <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(v + 10); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">+</button>
+                              <button
+                                onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(Math.max(10, v - 10)); }}
+                                className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
+                                −
+                              </button>
+                              <button
+                                onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(v + 10); }}
+                                className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
+                                +
+                              </button>
                             </div>
                           </>
                         )}
                       </div>
+
+                      {/*
+                        Go / Stop button — fixed at height:51px always.
+                        Width is also locked so switching label doesn't resize it.
+                      */}
                       <button
                         onClick={() => {
-                          if (!isTimerActive) { const time = parseInt(restTimer) || 90; setRestTimer(time); setInitialRestTime(time); }
+                          if (!isTimerActive) {
+                            setShowTimerOptions(false);
+                            const time = parseInt(restTimer) || 90;
+                            setRestTimer(time);
+                            setInitialRestTime(time);
+                          }
                           setIsTimerActive(!isTimerActive);
                         }}
-                        className="text-sm font-bold px-5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu flex-shrink-0"
-                        style={{ height: '51px' }}>
+                        style={{ height: '51px', width: '64px', flexShrink: 0 }}
+                        className="text-sm font-bold rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         {isTimerActive ? 'Stop' : 'Go'}
                       </button>
                     </div>
+
                     <div className="flex items-center gap-2.5 mr-1">
                       <Button onClick={() => setShowCalculator(true)} size="icon" variant="ghost" className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all" title="Plate Calculator">
                         <Calculator className="w-3.5 h-3.5" />
@@ -667,7 +687,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           )}
         </AnimatePresence>
 
-        {/* Modals that are fine inside the card (they use fixed positioning internally) */}
         <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
         <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
         <WorkoutSummaryModal
@@ -683,7 +702,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         />
       </Card>
 
-      {/* ── Workout Summary Modal — outside Card so fixed positioning covers full screen ── */}
+      {/* Workout Summary Modal */}
       <AnimatePresence>
         {summaryLog && (
           <motion.div
@@ -711,7 +730,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto">
 
-              <div className="mb-5">
+              <div className="mb-5 text-center">
                 <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
                 <p className="text-sm text-slate-400 font-medium">
                   {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
@@ -761,11 +780,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
                       const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
-
-                      // Parse setsReps string ("3x10", "3X10") into parts
                       const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
                       const srParts = setsRepsStr ? setsRepsStr.split(/\s*[xX]\s*/) : [];
-
                       const sets = ex.sets ?? ex.set_count ?? ex.num_sets ?? srParts[0] ?? '-';
                       const reps = ex.reps ?? ex.rep_count ?? ex.num_reps ?? srParts[1] ?? '-';
                       const weight = rawWeight ?? '-';
@@ -802,7 +818,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         )}
       </AnimatePresence>
 
-      {/* Workout Switcher Modal — rendered outside Card so z-index stacks correctly */}
       <WorkoutSwitcherModal
         open={showSwitcher}
         onClose={() => setShowSwitcher(false)}
