@@ -206,6 +206,21 @@ function HeatmapChart({ gymId }) {
   };
   return (
     <div>
+      {/* Range selector */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {[{ label: '4W', val: 4 }, { label: '12W', val: 12 }, { label: 'All', val: 0 }].map(opt => (
+          <button key={opt.val} onClick={() => setWeeks(opt.val)} style={{
+            fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 99, cursor: 'pointer',
+            background: weeks === opt.val ? 'rgba(6,182,212,0.18)' : 'rgba(255,255,255,0.05)',
+            color: weeks === opt.val ? '#22d3ee' : '#64748b',
+            border: `1px solid ${weeks === opt.val ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.08)'}`,
+            transition: 'all 0.15s',
+          }}>{opt.label}</button>
+        ))}
+        <span style={{ fontSize: 10, color: '#475569', fontWeight: 500, alignSelf: 'center', marginLeft: 4 }}>
+          {heatmapCheckIns.length} check-ins
+        </span>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: `50px repeat(${slotConfig.length}, 1fr)`, gap: 4, marginBottom: 6 }}>
         <div/>
         {slotConfig.map(s => (
