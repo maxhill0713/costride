@@ -332,29 +332,6 @@ function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
 }
 
 // ── Today's quick-book strip ──────────────────────────────────────────────────
-function TodayStrip({ classes, bookedIds, onBook }) {
-  const todayName = DAYS_SHORT[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
-  const todayClasses = classes.filter(c => {
-    const days = getScheduleDays(c);
-    return days.length === 0 || days.includes(todayName);
-  }).slice(0, 6);
-
-  if (todayClasses.length === 0) return null;
-
-  return (
-    <div>
-      <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
-        Today's Classes
-      </div>
-      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-        {todayClasses.map(c => {
-          const cfg = CLASS_TYPE_CONFIG[getClassType(c)];
-          const booked = bookedIds.has(c.id);
-          const capacity = c.capacity || c.max_participants || null;
-          const enrolled  = c.enrolled || c.participants_count || 0;
-          const spotsLeft = capacity ? capacity - enrolled : null;
-          const isFull    = spotsLeft !== null && spotsLeft <= 0;
-          return (
 // Gradient backgrounds per class type
 const TYPE_CARD_GRAD = {
   hiit:     'linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 50%, #1a0505 100%)',
