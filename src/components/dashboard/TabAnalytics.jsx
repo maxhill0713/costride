@@ -3,17 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { subDays, format, isWithinInterval } from 'date-fns';
 import {
-  Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown,
-  Calendar, Clock, Flame
+  Activity, TrendingUp, TrendingDown, Users, Zap, ArrowUpRight,
+  Calendar, Clock, Flame, CheckCircle
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, CartesianGrid,
   XAxis, YAxis, Tooltip, BarChart, Bar, RadarChart,
-  Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+  Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Cell
 } from 'recharts';
 
-// ── Shared primitives ────────────────────────────────────────────────────────
-
+// ── Shared card shell ─────────────────────────────────────────────────────────
 const Card = ({ children, style = {}, accentColor }) => (
   <div style={{
     background: 'var(--card)',
@@ -37,47 +36,66 @@ const Card = ({ children, style = {}, accentColor }) => (
 const SectionLabel = ({ children }) => (
   <div style={{
     fontSize: 9, fontWeight: 800, letterSpacing: '0.1em',
-    textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 4,
+    textTransform: 'uppercase', color: '#64748b', marginBottom: 4,
   }}>{children}</div>
 );
 
+const Empty = ({ icon: Icon, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', gap: 8 }}>
+    <Icon style={{ width: 26, height: 26, color: '#475569', opacity: 0.5 }}/>
+    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{label}</span>
+  </div>
+);
+
+// ── Shared axis tick style ─────────────────────────────────────────────────────
+const tickStyle = { fill: '#64748b', fontSize: 10, fontFamily: 'DM Sans, system-ui' };
+
+// ── Custom tooltips ───────────────────────────────────────────────────────────
 const ChartTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="custom-tooltip">
-      <p style={{ color: 'var(--text3)', marginBottom: 2, fontSize: 10 }}>{label}</p>
-      <p style={{ color: 'var(--cyan)', fontWeight: 700, fontSize: 13 }}>{payload[0].value}</p>
+    <div style={{ background: 'rgba(6,12,24,0.97)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 10, padding: '9px 13px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+      <p style={{ color: '#8ba0b8', marginBottom: 3, fontSize: 10, fontWeight: 600 }}>{label}</p>
+      <p style={{ color: '#38bdf8', fontWeight: 800, fontSize: 14, margin: 0 }}>{payload[0].value}</p>
     </div>
   );
 };
 
-const Empty = ({ icon: Icon, label }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', gap: 8 }}>
-    <Icon style={{ width: 26, height: 26, color: 'var(--text3)', opacity: 0.35 }}/>
-    <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>{label}</span>
-  </div>
-);
+const RadarTip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: 'rgba(6,12,24,0.97)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 10, padding: '9px 13px' }}>
+      <p style={{ color: '#94a3b8', fontSize: 11, fontWeight: 700, margin: '0 0 3px' }}>{payload[0].payload.subject}</p>
+      <p style={{ color: '#a78bfa', fontWeight: 800, fontSize: 14, margin: 0 }}>{Math.round(payload[0].value)}%</p>
+    </div>
+  );
+};
 
-// ── KPI card ─────────────────────────────────────────────────────────────────
-
-function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
+// ── KPI card — matches Overview style exactly ─────────────────────────────────
+function KpiCard({ icon: Icon, label, value, valueSuffix, unit, color, trend, ring, sparkData, footerBar }) {
   return (
     <div style={{
-      borderRadius: 16, padding: '18px 18px 16px',
-      background: 'var(--card)', border: '1px solid var(--border)',
+      borderRadius: 16, padding: '18px 20px 16px',
+      background: 'var(--card)', border: '1px solid rgba(255,255,255,0.07)',
       position: 'relative', overflow: 'hidden',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+      display: 'flex', flexDirection: 'column', gap: 0,
+      boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
     }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', bottom: -20, right: -20, width: 80, height: 80,
+        borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(28px)', pointerEvents: 'none',
+      }}/>
+      {/* Top border accent */}
       <div style={{
         position: 'absolute', top: 0, left: 16, right: 16, height: 1,
         background: `linear-gradient(90deg, transparent, ${color}55, transparent)`,
+        pointerEvents: 'none',
       }}/>
-      <div style={{
-        position: 'absolute', bottom: -18, right: -18, width: 72, height: 72,
-        borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(22px)',
-      }}/>
+
+      {/* Label + icon */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <SectionLabel>{label}</SectionLabel>
+        <span style={{ fontSize: 9, fontWeight: 800, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
         <div style={{
           width: 28, height: 28, borderRadius: 8,
           background: `${color}18`, border: `1px solid ${color}28`,
@@ -86,28 +104,49 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
           <Icon style={{ width: 13, height: 13, color }}/>
         </div>
       </div>
-      <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--text1)', letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, marginBottom: 8 }}>{unit}</div>
-      {trend !== null && trend !== undefined && (
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 3,
-          padding: '3px 8px', borderRadius: 99,
-          background: trend >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-        }}>
-          {trend >= 0
-            ? <ArrowUpRight style={{ width: 10, height: 10, color: '#10b981' }}/>
-            : <TrendingDown style={{ width: 10, height: 10, color: '#ef4444' }}/>}
-          <span style={{ fontSize: 10, fontWeight: 700, color: trend >= 0 ? '#34d399' : '#f87171' }}>
-            {Math.abs(trend)}%
-          </span>
+
+      {/* Value */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+            <span style={{ fontSize: 36, fontWeight: 900, color: '#f0f4f8', lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</span>
+            {valueSuffix && <span style={{ fontSize: 16, fontWeight: 600, color: '#94a3b8', letterSpacing: '-0.02em' }}>{valueSuffix}</span>}
+          </div>
+          {/* Unit / sub */}
+          <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 6 }}>{unit}</div>
+          {/* Trend badge */}
+          {trend !== null && trend !== undefined && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              marginTop: 6, padding: '2px 7px', borderRadius: 99,
+              background: trend >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+            }}>
+              {trend >= 0
+                ? <ArrowUpRight style={{ width: 10, height: 10, color: '#10b981' }}/>
+                : <TrendingDown style={{ width: 10, height: 10, color: '#ef4444' }}/>}
+              <span style={{ fontSize: 10, fontWeight: 700, color: trend >= 0 ? '#34d399' : '#f87171' }}>
+                {Math.abs(trend)}%
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Footer bar */}
+      {footerBar != null && (
+        <div style={{ height: 3, borderRadius: 99, background: `${color}18`, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', borderRadius: 99, width: `${Math.min(100, footerBar)}%`,
+            background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+            transition: 'width 0.8s cubic-bezier(0.22,1,0.36,1)',
+          }}/>
         </div>
       )}
     </div>
   );
 }
 
-// ── Improved Heatmap ──────────────────────────────────────────────────────────
-
+// ── Heatmap ───────────────────────────────────────────────────────────────────
 function HeatmapChart({ gymId }) {
   const { data: heatmapCheckIns = [] } = useQuery({
     queryKey: ['heatmapCheckIns', gymId],
@@ -115,11 +154,10 @@ function HeatmapChart({ gymId }) {
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
   });
-
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const slotConfig = [
-    { label: '6–8a',  hours: [6, 7] },
-    { label: '8–10a', hours: [8, 9] },
+    { label: '6–8a',  hours: [6, 7]   },
+    { label: '8–10a', hours: [8, 9]   },
     { label: '10–12', hours: [10, 11] },
     { label: '12–2p', hours: [12, 13] },
     { label: '2–4p',  hours: [14, 15] },
@@ -127,7 +165,6 @@ function HeatmapChart({ gymId }) {
     { label: '6–8p',  hours: [18, 19] },
     { label: '8–10p', hours: [20, 21] },
   ];
-
   const grid = useMemo(() => {
     const mat = Array.from({ length: 7 }, () => Array(slotConfig.length).fill(0));
     heatmapCheckIns.forEach(c => {
@@ -139,14 +176,11 @@ function HeatmapChart({ gymId }) {
     });
     return mat;
   }, [heatmapCheckIns]);
-
   const maxVal = Math.max(...grid.flat(), 1);
-
   let peakDay = 0, peakSlot = 0;
   grid.forEach((row, di) => row.forEach((val, si) => {
     if (val > grid[peakDay][peakSlot]) { peakDay = di; peakSlot = si; }
   }));
-
   const getCellStyle = (val, di, si) => {
     const pct    = val / maxVal;
     const isPeak = di === peakDay && si === peakSlot && val > 0;
@@ -158,45 +192,33 @@ function HeatmapChart({ gymId }) {
     if (pct < 0.8)  return { bg: 'rgba(14,165,233,0.68)', border: 'rgba(14,165,233,0.72)', shadow: '0 0 8px rgba(14,165,233,0.2)' };
     return { bg: 'rgba(14,165,233,0.9)', border: 'rgba(14,165,233,0.95)', shadow: '0 0 10px rgba(14,165,233,0.3)' };
   };
-
   return (
     <div>
-      {/* Slot headers */}
       <div style={{ display: 'grid', gridTemplateColumns: `50px repeat(${slotConfig.length}, 1fr)`, gap: 4, marginBottom: 6 }}>
         <div/>
         {slotConfig.map(s => (
-          <div key={s.label} style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textAlign: 'center', letterSpacing: '0.02em' }}>
+          <div key={s.label} style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textAlign: 'center', letterSpacing: '0.02em' }}>
             {s.label}
           </div>
         ))}
       </div>
-
-      {/* Rows */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {days.map((day, di) => (
           <div key={day} style={{ display: 'grid', gridTemplateColumns: `50px repeat(${slotConfig.length}, 1fr)`, gap: 4, alignItems: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)' }}>{day}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>{day}</div>
             {grid[di].map((val, si) => {
               const { bg, border, shadow } = getCellStyle(val, di, si);
               const isPeak = di === peakDay && si === peakSlot && val > 0;
               return (
                 <div key={si} title={val > 0 ? `${day} ${slotConfig[si].label}: ${val} check-ins` : undefined} style={{
-                  height: 36, borderRadius: 8,
-                  background: bg,
-                  border: `1px solid ${border}`,
-                  boxShadow: shadow,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  height: 36, borderRadius: 8, background: bg, border: `1px solid ${border}`,
+                  boxShadow: shadow, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'opacity 0.15s',
                 }}>
                   {val > 0 && (
                     <span style={{
-                      fontSize: val >= 100 ? 8 : val >= 10 ? 9 : 10,
-                      fontWeight: 800,
-                      color: isPeak
-                        ? 'rgba(255,255,255,0.95)'
-                        : val / maxVal > 0.45
-                          ? 'rgba(255,255,255,0.9)'
-                          : 'rgba(255,255,255,0.6)',
+                      fontSize: val >= 100 ? 8 : val >= 10 ? 9 : 10, fontWeight: 800,
+                      color: isPeak ? 'rgba(255,255,255,0.95)' : val / maxVal > 0.45 ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.65)',
                       letterSpacing: '-0.02em',
                     }}>{val}</span>
                   )}
@@ -206,55 +228,25 @@ function HeatmapChart({ gymId }) {
           </div>
         ))}
       </div>
-
-      {/* Footer */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '5px 10px', borderRadius: 8,
-          background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
-        }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
           <Flame style={{ width: 11, height: 11, color: '#fbbf24' }}/>
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>
-            Peak: {days[peakDay]} {slotConfig[peakSlot]?.label}
-          </span>
-          <span style={{ fontSize: 9, color: 'rgba(245,158,11,0.7)', fontWeight: 600 }}>
-            · {grid[peakDay][peakSlot]} visits
-          </span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>Peak: {days[peakDay]} {slotConfig[peakSlot]?.label}</span>
+          <span style={{ fontSize: 9, color: 'rgba(245,158,11,0.7)', fontWeight: 600 }}>· {grid[peakDay][peakSlot]} visits</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>Low</span>
+          <span style={{ fontSize: 9, color: '#64748b', fontWeight: 600 }}>Low</span>
           {[0.03, 0.12, 0.28, 0.48, 0.68, 0.9].map((op, i) => (
-            <div key={i} style={{
-              width: 18, height: 10, borderRadius: 3,
-              background: op === 0.03 ? 'rgba(255,255,255,0.03)' : `rgba(14,165,233,${op})`,
-              border: '1px solid rgba(255,255,255,0.05)',
-            }}/>
+            <div key={i} style={{ width: 18, height: 10, borderRadius: 3, background: op === 0.03 ? 'rgba(255,255,255,0.03)' : `rgba(14,165,233,${op})`, border: '1px solid rgba(255,255,255,0.05)' }}/>
           ))}
-          <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>High</span>
+          <span style={{ fontSize: 9, color: '#64748b', fontWeight: 600 }}>High</span>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Radar tooltip ─────────────────────────────────────────────────────────────
-
-function RadarTip({ active, payload }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="custom-tooltip">
-      <p style={{ color: 'var(--text2)', fontSize: 11, fontWeight: 700 }}>{payload[0].payload.subject}</p>
-      <p style={{ color: '#a78bfa', fontWeight: 800, fontSize: 13 }}>{Math.round(payload[0].value)}%</p>
-    </div>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
-
 export default function TabAnalytics({
   checkIns, ci30, totalMembers, monthCiPer, monthChangePct,
   monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
@@ -280,10 +272,10 @@ export default function TabAnalytics({
       return { label: h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`, count, pct: (count / hourMax) * 100 };
     });
 
-  const dayAcc     = {};
+  const dayAcc      = {};
   checkIns.forEach(c => { const d = new Date(c.check_in_date).getDay(); dayAcc[d] = (dayAcc[d] || 0) + 1; });
-  const dayMax     = Math.max(...Object.values(dayAcc), 1);
-  const dayNames   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayMax      = Math.max(...Object.values(dayAcc), 1);
+  const dayNames    = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const busiestDays = dayNames.map((name, idx) => ({ name, count: dayAcc[idx] || 0 })).sort((a, b) => b.count - a.count);
 
   const dailyAvg   = Math.round(ci30.length / 30);
@@ -306,33 +298,67 @@ export default function TabAnalytics({
     { subject: 'Engagement',   A: totalMembers > 0 ? Math.round(((superActive + active) / totalMembers) * 100) : 0 },
   ];
 
+  // Monthly change accent colour matches data direction
+  const trendColor = monthChangePct > 0 ? '#10b981' : monthChangePct < 0 ? '#ef4444' : '#64748b';
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 292px', gap: 18, alignItems: 'start' }}>
 
       {/* ── LEFT COLUMN ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* KPI row */}
+        {/* KPI row — Overview-style cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-          <KpiCard icon={Activity}   label="Daily Avg"      value={dailyAvg}  unit="check-ins / day"  color="#0ea5e9" trend={monthChangePct}/>
-          <KpiCard icon={TrendingUp} label="Monthly Change" value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month" color={monthChangePct >= 0 ? '#10b981' : '#ef4444'} trend={monthChangePct}/>
-          <KpiCard icon={Users}      label="Avg / Member"   value={avgPerMem} unit="visits this month" color="#a78bfa" trend={null}/>
-          <KpiCard icon={Zap}        label="Return Rate"    value={`${returnRate}%`} unit="of all check-ins" color="#f59e0b" trend={null}/>
+          <KpiCard
+            icon={Activity}
+            label="Daily Avg"
+            value={dailyAvg}
+            unit="check-ins / day"
+            color="#0ea5e9"
+            trend={monthChangePct}
+            footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0}
+          />
+          <KpiCard
+            icon={TrendingUp}
+            label="Monthly Change"
+            value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`}
+            unit="vs last month"
+            color={trendColor}
+            trend={monthChangePct}
+          />
+          <KpiCard
+            icon={Users}
+            label="Avg / Member"
+            value={avgPerMem}
+            unit="visits this month"
+            color="#a78bfa"
+            trend={null}
+            footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0}
+          />
+          <KpiCard
+            icon={Zap}
+            label="Return Rate"
+            value={`${returnRate}%`}
+            unit="of all check-ins"
+            color="#f59e0b"
+            trend={null}
+            footerBar={returnRate}
+          />
         </div>
 
-        {/* Weekly trend */}
+        {/* Weekly trend — AreaChart kept, both axes added */}
         <Card accentColor="#3b82f6" style={{ padding: '20px 20px 14px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Weekly Check-in Trend</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>12-week rolling view</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.02em' }}>Weekly Check-in Trend</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>12-week rolling view</div>
             </div>
             <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 10, fontWeight: 700, color: '#60a5fa' }}>
               {weekTrend.reduce((s, d) => s + d.value, 0)} total
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={195}>
-            <AreaChart data={weekTrend} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={205}>
+            <AreaChart data={weekTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%"   stopColor="#3b82f6" stopOpacity={0.4}/>
@@ -340,20 +366,32 @@ export default function TabAnalytics({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false}/>
-              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false} interval={2}/>
-              <YAxis tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false} width={24}/>
+              <XAxis
+                dataKey="label"
+                tick={tickStyle}
+                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                tickLine={false}
+                interval={2}
+              />
+              <YAxis
+                tick={tickStyle}
+                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                tickLine={false}
+                width={28}
+                allowDecimals={false}
+              />
               <Tooltip content={<ChartTip/>} cursor={{ stroke: 'rgba(59,130,246,0.2)', strokeWidth: 1, strokeDasharray: '4 4' }}/>
               <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#wtGrad)" dot={false} activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}/>
             </AreaChart>
           </ResponsiveContainer>
         </Card>
 
-        {/* Member Growth — in main column */}
+        {/* Member Growth — both axes */}
         <Card accentColor="#10b981" style={{ padding: '20px 20px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Member Growth</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Monthly new sign-up trend</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.02em' }}>Member Growth</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Monthly new sign-up trend</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', fontSize: 10, fontWeight: 700, color: '#34d399' }}>
@@ -365,7 +403,7 @@ export default function TabAnalytics({
             </div>
           </div>
           <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={monthGrowthData} barSize={22} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
+            <BarChart data={monthGrowthData} barSize={22} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="mgBarMain" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%"   stopColor="#10b981" stopOpacity={0.9}/>
@@ -373,13 +411,27 @@ export default function TabAnalytics({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 10, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false} width={24}/>
+              <XAxis
+                dataKey="label"
+                tick={tickStyle}
+                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={tickStyle}
+                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                tickLine={false}
+                width={28}
+                allowDecimals={false}
+              />
               <Tooltip
                 content={({ active, payload, label }) => active && payload?.length
-                  ? <div className="custom-tooltip"><p style={{ color: 'var(--text2)', marginBottom: 2, fontSize: 10 }}>{label}</p><p style={{ color: '#10b981', fontWeight: 700 }}>{payload[0].value} active</p></div>
+                  ? <div style={{ background: 'rgba(6,12,24,0.97)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 10, padding: '9px 13px' }}>
+                      <p style={{ color: '#8ba0b8', marginBottom: 3, fontSize: 10, fontWeight: 600 }}>{label}</p>
+                      <p style={{ color: '#10b981', fontWeight: 800, fontSize: 14, margin: 0 }}>{payload[0].value} active</p>
+                    </div>
                   : null}
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
               />
               <Bar dataKey="value" fill="url(#mgBarMain)" radius={[5, 5, 0, 0]}/>
             </BarChart>
@@ -390,8 +442,8 @@ export default function TabAnalytics({
         <Card accentColor="#06b6d4" style={{ padding: '20px 20px 18px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Traffic Heatmap</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Check-in density by day and time</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.02em' }}>Traffic Heatmap</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Check-in density by day and time</div>
             </div>
             <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Flame style={{ width: 14, height: 14, color: '#22d3ee' }}/>
@@ -400,12 +452,12 @@ export default function TabAnalytics({
           <HeatmapChart gymId={gymId}/>
         </Card>
 
-        {/* Peak hours */}
+        {/* Peak Hours */}
         <Card accentColor="#f59e0b" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Peak Hours</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Top 8 busiest time slots</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.02em' }}>Peak Hours</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Top 8 busiest time slots</div>
             </div>
             <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Clock style={{ width: 14, height: 14, color: '#fbbf24' }}/>
@@ -415,8 +467,8 @@ export default function TabAnalytics({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {peakHours.map((h, i) => (
                 <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', color: i === 0 ? '#fbbf24' : 'var(--text3)', width: 18, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 36, flexShrink: 0 }}>{h.label}</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', color: i === 0 ? '#fbbf24' : '#64748b', width: 18, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', width: 36, flexShrink: 0 }}>{h.label}</span>
                   <div style={{ flex: 1, height: 6, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
                     <div style={{
                       height: '100%', width: `${h.pct}%`, borderRadius: 99,
@@ -424,21 +476,20 @@ export default function TabAnalytics({
                       transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
                     }}/>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: i === 0 ? '#fbbf24' : 'var(--text2)', width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: i === 0 ? '#fbbf24' : '#94a3b8', width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
                 </div>
               ))}
             </div>
           )}
         </Card>
-
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* 30-Day Snapshot — no "active members" row, covered by engagement breakdown */}
+        {/* 30-Day Snapshot */}
         <Card accentColor="#0ea5e9" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>30-Day Snapshot</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 14 }}>30-Day Snapshot</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
               { label: 'Total check-ins', value: ci30.length,         color: '#38bdf8' },
@@ -451,7 +502,7 @@ export default function TabAnalytics({
                 padding: '10px 0',
                 borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
               }}>
-                <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text3)' }}>{s.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: '#94a3b8' }}>{s.label}</span>
                 <span style={{
                   fontSize: 14, fontWeight: 800, color: s.color,
                   background: `${s.color}12`, border: `1px solid ${s.color}25`,
@@ -464,12 +515,12 @@ export default function TabAnalytics({
 
         {/* Gym Health Radar */}
         <Card accentColor="#a78bfa" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 2 }}>Gym Health Radar</div>
-          <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>6-metric performance overview</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 2 }}>Gym Health Radar</div>
+          <div style={{ fontSize: 10, color: '#64748b', marginBottom: 4 }}>6-metric performance overview</div>
           <ResponsiveContainer width="100%" height={190}>
             <RadarChart data={radarData} margin={{ top: 4, right: 10, bottom: 4, left: 10 }}>
               <PolarGrid stroke="rgba(255,255,255,0.07)" radialLines={false}/>
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 9, fontFamily: 'Outfit', fontWeight: 700 }}/>
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 9, fontFamily: 'DM Sans, system-ui', fontWeight: 700 }}/>
               <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false}/>
               <Radar dataKey="A" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} strokeWidth={2}/>
               <Tooltip content={<RadarTip/>}/>
@@ -479,7 +530,7 @@ export default function TabAnalytics({
 
         {/* Busiest Days */}
         <Card accentColor="#f59e0b" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>Busiest Days</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 14 }}>Busiest Days</div>
           {busiestDays.every(d => d.count === 0) ? <Empty icon={Calendar} label="No data yet"/> : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {busiestDays.map(({ name, count }, rank) => {
@@ -487,8 +538,8 @@ export default function TabAnalytics({
                 const isTop = rank === 0;
                 return (
                   <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 9, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text3)', width: 18, textAlign: 'right', flexShrink: 0 }}>#{rank + 1}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 30, flexShrink: 0 }}>{name}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, color: isTop ? '#fbbf24' : '#64748b', width: 18, textAlign: 'right', flexShrink: 0 }}>#{rank + 1}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', width: 30, flexShrink: 0 }}>{name}</span>
                     <div style={{ flex: 1, height: 5, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
                       <div style={{
                         height: '100%', width: `${pct}%`, borderRadius: 99,
@@ -496,7 +547,7 @@ export default function TabAnalytics({
                         transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
                       }}/>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text2)', width: 22, textAlign: 'right', flexShrink: 0 }}>{count}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: isTop ? '#fbbf24' : '#94a3b8', width: 22, textAlign: 'right', flexShrink: 0 }}>{count}</span>
                   </div>
                 );
               })}
@@ -504,9 +555,9 @@ export default function TabAnalytics({
           )}
         </Card>
 
-        {/* Engagement breakdown — single source for member activity tiers */}
+        {/* Engagement Breakdown */}
         <Card accentColor="#8b5cf6" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>Engagement Breakdown</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 14 }}>Engagement Breakdown</div>
           {totalMembers > 0 && (
             <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 1, marginBottom: 14 }}>
               {[
@@ -535,12 +586,12 @@ export default function TabAnalytics({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0 }}/>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>{s.label}</span>
-                      <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 500 }}>{s.sub}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#d4e4f4' }}>{s.label}</span>
+                      <span style={{ fontSize: 9, color: '#64748b', fontWeight: 500 }}>{s.sub}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ fontSize: 12, fontWeight: 800, color: s.color }}>{s.val}</span>
-                      <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, minWidth: 26, textAlign: 'right' }}>{Math.round(pct)}%</span>
+                      <span style={{ fontSize: 9, color: '#64748b', fontWeight: 600, minWidth: 26, textAlign: 'right' }}>{Math.round(pct)}%</span>
                     </div>
                   </div>
                   <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
@@ -555,7 +606,6 @@ export default function TabAnalytics({
             })}
           </div>
         </Card>
-
       </div>
     </div>
   );
