@@ -475,7 +475,6 @@ export default function TabContent({
     </div>
   );
 }
-  const allPosts = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
