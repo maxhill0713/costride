@@ -161,7 +161,7 @@ function getClassTypeDash(c) {
 }
 
 // ── Class card ────────────────────────────────────────────────────────────────
-function ClassCard({ gymClass }) {
+function ClassCard({ gymClass, onDelete }) {
   const typeKey = getClassTypeDash(gymClass);
   const cfg = CLASS_TYPE_CONFIG_DASH[typeKey] || CLASS_TYPE_CONFIG_DASH.default;
   const img = gymClass.image_url || CLASS_IMAGES_DASH[typeKey] || CLASS_IMAGES_DASH.default;
