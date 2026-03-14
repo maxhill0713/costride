@@ -1340,7 +1340,7 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {/* ── Social Feed ── */}
-          {friends.length > 0 && (
+          {(friends.length > 0 || socialFeedPosts.length > 0) && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 pt-1">
                 <FriendsIcon className="w-4 h-4 text-cyan-400" />
