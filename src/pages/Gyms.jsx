@@ -135,8 +135,30 @@ return results.filter(Boolean);
   });
 const updateGymImageMutation = useMutation({
     mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
+    onMutate: async ({ gymId, image_url }) => {
+      // Cancel any outgoing queries to prevent race conditions
+      await queryClient.cancelQueries({ queryKey: ['gyms'] });
+      
+      // Snapshot previous data
+      const previous = queryClient.getQueryData(['gyms']);
+      
+      // Optimistically update the cache with the new image
+      queryClient.setQueryData(['gyms'], (old = []) =>
+        old.map((gym) => gym.id === gymId ? { ...gym, image_url } : gym)
+      );
+      
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      // Revert to previous data on error
+      if (context?.previous) {
+        queryClient.setQueryData(['gyms'], context.previous);
+      }
+    },
     onSuccess: () => {
+      // Re-validate to sync with server
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['memberGyms'] });
       setEditingGym(null);
     }
   });
