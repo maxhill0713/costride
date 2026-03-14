@@ -180,6 +180,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
 
   const { data: currentUser } = useQuery({
