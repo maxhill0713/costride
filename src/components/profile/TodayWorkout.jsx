@@ -396,7 +396,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               onClick={(e) => { e.stopPropagation(); if (!alreadyLoggedToday) setShowSwitcher(true); }}
               whileTap={!alreadyLoggedToday ? { scale: 0.95 } : {}}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className={`flex-1 flex items-center justify-center gap-1 group${alreadyLoggedToday ? ' cursor-default' : ''}`}
+              className={`flex-1 flex items-center justify-center gap-1 group${alreadyLoggedToday ? ' cursor-default' : ''}`}>
               <h2
                 className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight leading-tight"
                 style={{ fontSize: '16.5px' }}>
