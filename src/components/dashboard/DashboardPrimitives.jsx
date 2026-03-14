@@ -345,7 +345,7 @@ export const TodaySnapshot = ({ checkIns = [], posts = [], polls = [], challenge
 
   const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
   const classesToday = classes.filter(c => {
-    const s = (c.schedule || '').toLowerCase();
+    const s = typeof c.schedule === 'string' ? c.schedule.toLowerCase() : JSON.stringify(c.schedule || '').toLowerCase();
     return s.includes(todayDay.toLowerCase());
   }).length;
 
