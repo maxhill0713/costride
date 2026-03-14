@@ -1,21 +1,39 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { format, subDays } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Dumbbell, Trash2 } from 'lucide-react';
+import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Dumbbell, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 
-// ── Delete button ─────────────────────────────────────────────────────────────
+// ── 3-dot menu delete button ──────────────────────────────────────────────────
 function DeleteBtn({ onDelete }) {
-  const [confirm, setConfirm] = useState(false);
-  if (confirm) return (
-    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-      <button onClick={() => setConfirm(false)} style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer' }}>Cancel</button>
-      <button onClick={onDelete} style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer' }}>Delete</button>
-    </div>
-  );
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
   return (
-    <button onClick={() => setConfirm(true)} style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 6, cursor: 'pointer', flexShrink: 0 }}>
-      <Trash2 style={{ width: 11, height: 11, color: '#f87171' }}/>
-    </button>
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 6, cursor: 'pointer' }}>
+        <MoreHorizontal style={{ width: 13, height: 13, color: 'rgba(255,255,255,0.5)' }}/>
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: '#1a1f36', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+            <Trash2 style={{ width: 12, height: 12 }}/> Delete
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
