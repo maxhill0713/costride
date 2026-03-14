@@ -32,7 +32,7 @@ export default function TabContent({
   }, [checkIns, ci30]);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 16, height: 'calc(100vh - 56px - 44px)', maxWidth: '100%' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(260px, 22%, 320px)', gap: 16, height: '100%', maxWidth: '100%' }}>
 
       {/* ── LEFT: action cards fixed + posts scroll ── */}
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>

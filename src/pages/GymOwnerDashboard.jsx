@@ -387,8 +387,8 @@ export default function GymOwnerDashboard() {
           </div>
         </header>
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: '22px 22px 32px' }}>
-          <div style={{ maxWidth: 1400 }}>
+        <main style={{ flex: 1, overflow: 'hidden', padding: '22px 22px 32px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: tab === 'content' ? '100%' : 1600, overflowY: tab === 'content' ? 'hidden' : 'auto' }}>
             {tabContent[tab] || tabContent.overview}
           </div>
         </main>
