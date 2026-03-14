@@ -295,7 +295,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
       name: c.name || '', description: c.description || '', instructor: c.instructor || '',
       class_type: c.class_type || 'other', duration_minutes: c.duration_minutes || 45,
       difficulty: c.difficulty || 'all_levels', max_capacity: c.max_capacity || 20,
-      location: c.location || '', schedule: c.schedule || [],
+      location: c.location || '', schedule: c.schedule || [], image_url: c.image_url || '',
     });
     setEditingClass(c);
     setView('form');
