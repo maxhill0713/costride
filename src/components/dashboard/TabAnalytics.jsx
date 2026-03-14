@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { subDays, format, isWithinInterval } from 'date-fns';
 import {
   Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown,
-  Calendar, Clock, BarChart2, Flame
+  Calendar, Clock, Flame
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, CartesianGrid,
@@ -56,7 +56,7 @@ const Empty = ({ icon: Icon, label }) => (
   </div>
 );
 
-// ── KPI card (matches TabOverview treatment) ─────────────────────────────────
+// ── KPI card ─────────────────────────────────────────────────────────────────
 
 function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
   return (
@@ -66,17 +66,14 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
       position: 'relative', overflow: 'hidden',
       boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
     }}>
-      {/* top accent */}
       <div style={{
         position: 'absolute', top: 0, left: 16, right: 16, height: 1,
         background: `linear-gradient(90deg, transparent, ${color}55, transparent)`,
       }}/>
-      {/* ambient glow */}
       <div style={{
         position: 'absolute', bottom: -18, right: -18, width: 72, height: 72,
         borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(22px)',
       }}/>
-
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <SectionLabel>{label}</SectionLabel>
         <div style={{
@@ -87,18 +84,12 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
           <Icon style={{ width: 13, height: 13, color }}/>
         </div>
       </div>
-
-      <div style={{
-        fontSize: 34, fontWeight: 900, color: 'var(--text1)',
-        letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 6,
-      }}>{value}</div>
-
+      <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--text1)', letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
       <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, marginBottom: 8 }}>{unit}</div>
-
       {trend !== null && trend !== undefined && (
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 3,
-          padding: '3px 8px', borderRadius: 99, width: 'fit-content',
+          padding: '3px 8px', borderRadius: 99,
           background: trend >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
         }}>
           {trend >= 0
@@ -113,78 +104,126 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend }) {
   );
 }
 
-// ── Day×Hour Heatmap ─────────────────────────────────────────────────────────
+// ── Improved Heatmap ──────────────────────────────────────────────────────────
 
 function HeatmapChart({ checkIns }) {
-  const days  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const slots = ['6a', '8a', '10a', '12p', '2p', '4p', '6p', '8p'];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const slotConfig = [
+    { label: '6–8a',  hours: [6, 7] },
+    { label: '8–10a', hours: [8, 9] },
+    { label: '10–12', hours: [10, 11] },
+    { label: '12–2p', hours: [12, 13] },
+    { label: '2–4p',  hours: [14, 15] },
+    { label: '4–6p',  hours: [16, 17] },
+    { label: '6–8p',  hours: [18, 19] },
+    { label: '8–10p', hours: [20, 21] },
+  ];
 
   const grid = useMemo(() => {
-    // Build day(0=Mon…6=Sun) × slot(0=6am…7=8pm) matrix
-    const mat = Array.from({ length: 7 }, () => Array(8).fill(0));
+    const mat = Array.from({ length: 7 }, () => Array(slotConfig.length).fill(0));
     checkIns.forEach(c => {
-      const d = new Date(c.check_in_date);
-      const dow = (d.getDay() + 6) % 7; // 0=Mon
-      const h = d.getHours();
-      const slot = [6, 8, 10, 12, 14, 16, 18, 20].findIndex(s => h >= s && h < s + 2);
-      if (slot >= 0) mat[dow][slot]++;
+      const d   = new Date(c.check_in_date);
+      const dow = (d.getDay() + 6) % 7;
+      const h   = d.getHours();
+      const si  = slotConfig.findIndex(s => s.hours.includes(h));
+      if (si >= 0) mat[dow][si]++;
     });
     return mat;
   }, [checkIns]);
 
   const maxVal = Math.max(...grid.flat(), 1);
 
-  const cellColor = (val) => {
-    const pct = val / maxVal;
-    if (pct === 0)    return 'rgba(255,255,255,0.04)';
-    if (pct < 0.25)  return 'rgba(14,165,233,0.15)';
-    if (pct < 0.5)   return 'rgba(14,165,233,0.35)';
-    if (pct < 0.75)  return 'rgba(14,165,233,0.6)';
-    return 'rgba(14,165,233,0.9)';
-  };
+  let peakDay = 0, peakSlot = 0;
+  grid.forEach((row, di) => row.forEach((val, si) => {
+    if (val > grid[peakDay][peakSlot]) { peakDay = di; peakSlot = si; }
+  }));
 
-  const textColor = (val) => {
-    const pct = val / maxVal;
-    if (pct === 0)   return 'transparent';
-    if (pct < 0.25) return 'rgba(255,255,255,0.3)';
-    return 'rgba(255,255,255,0.85)';
+  const getCellStyle = (val, di, si) => {
+    const pct    = val / maxVal;
+    const isPeak = di === peakDay && si === peakSlot && val > 0;
+    if (isPeak) return { bg: 'linear-gradient(135deg,rgba(245,158,11,0.85),rgba(239,68,68,0.65))', border: 'rgba(245,158,11,0.6)', shadow: '0 0 12px rgba(245,158,11,0.25)' };
+    if (val === 0) return { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.05)', shadow: 'none' };
+    if (pct < 0.2)  return { bg: 'rgba(14,165,233,0.12)', border: 'rgba(14,165,233,0.2)',  shadow: 'none' };
+    if (pct < 0.4)  return { bg: 'rgba(14,165,233,0.28)', border: 'rgba(14,165,233,0.32)', shadow: 'none' };
+    if (pct < 0.6)  return { bg: 'rgba(14,165,233,0.48)', border: 'rgba(14,165,233,0.52)', shadow: '0 0 6px rgba(14,165,233,0.15)' };
+    if (pct < 0.8)  return { bg: 'rgba(14,165,233,0.68)', border: 'rgba(14,165,233,0.72)', shadow: '0 0 8px rgba(14,165,233,0.2)' };
+    return { bg: 'rgba(14,165,233,0.9)', border: 'rgba(14,165,233,0.95)', shadow: '0 0 10px rgba(14,165,233,0.3)' };
   };
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <div style={{ minWidth: 400 }}>
-        {/* Hour headers */}
-        <div style={{ display: 'grid', gridTemplateColumns: '44px repeat(8, 1fr)', gap: 3, marginBottom: 4 }}>
-          <div/>
-          {slots.map(s => (
-            <div key={s} style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textAlign: 'center', letterSpacing: '0.04em' }}>{s}</div>
-          ))}
-        </div>
-        {/* Rows */}
-        {days.map((day, di) => (
-          <div key={day} style={{ display: 'grid', gridTemplateColumns: '44px repeat(8, 1fr)', gap: 3, marginBottom: 3 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', display: 'flex', alignItems: 'center' }}>{day}</div>
-            {grid[di].map((val, si) => (
-              <div key={si} style={{
-                height: 28, borderRadius: 6,
-                background: cellColor(val),
-                border: '1px solid rgba(255,255,255,0.04)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'background 0.2s',
-                cursor: val > 0 ? 'default' : 'default',
-              }}>
-                {val > 0 && (
-                  <span style={{ fontSize: 9, fontWeight: 800, color: textColor(val) }}>{val}</span>
-                )}
-              </div>
-            ))}
+    <div>
+      {/* Slot headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: `50px repeat(${slotConfig.length}, 1fr)`, gap: 4, marginBottom: 6 }}>
+        <div/>
+        {slotConfig.map(s => (
+          <div key={s.label} style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textAlign: 'center', letterSpacing: '0.02em' }}>
+            {s.label}
           </div>
         ))}
-        {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+      </div>
+
+      {/* Rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {days.map((day, di) => (
+          <div key={day} style={{ display: 'grid', gridTemplateColumns: `50px repeat(${slotConfig.length}, 1fr)`, gap: 4, alignItems: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)' }}>{day}</div>
+            {grid[di].map((val, si) => {
+              const { bg, border, shadow } = getCellStyle(val, di, si);
+              const isPeak = di === peakDay && si === peakSlot && val > 0;
+              return (
+                <div key={si} title={val > 0 ? `${day} ${slotConfig[si].label}: ${val} check-ins` : undefined} style={{
+                  height: 36, borderRadius: 8,
+                  background: bg,
+                  border: `1px solid ${border}`,
+                  boxShadow: shadow,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'opacity 0.15s',
+                }}>
+                  {val > 0 && (
+                    <span style={{
+                      fontSize: val >= 100 ? 8 : val >= 10 ? 9 : 10,
+                      fontWeight: 800,
+                      color: isPeak
+                        ? 'rgba(255,255,255,0.95)'
+                        : val / maxVal > 0.45
+                          ? 'rgba(255,255,255,0.9)'
+                          : 'rgba(255,255,255,0.6)',
+                      letterSpacing: '-0.02em',
+                    }}>{val}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 10px', borderRadius: 8,
+          background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
+        }}>
+          <Flame style={{ width: 11, height: 11, color: '#fbbf24' }}/>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>
+            Peak: {days[peakDay]} {slotConfig[peakSlot]?.label}
+          </span>
+          <span style={{ fontSize: 9, color: 'rgba(245,158,11,0.7)', fontWeight: 600 }}>
+            · {grid[peakDay][peakSlot]} visits
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>Low</span>
-          {[0.04, 0.15, 0.35, 0.6, 0.9].map((op, i) => (
-            <div key={i} style={{ width: 16, height: 10, borderRadius: 3, background: op === 0.04 ? 'rgba(255,255,255,0.04)' : `rgba(14,165,233,${op})` }}/>
+          {[0.03, 0.12, 0.28, 0.48, 0.68, 0.9].map((op, i) => (
+            <div key={i} style={{
+              width: 18, height: 10, borderRadius: 3,
+              background: op === 0.03 ? 'rgba(255,255,255,0.03)' : `rgba(14,165,233,${op})`,
+              border: '1px solid rgba(255,255,255,0.05)',
+            }}/>
           ))}
           <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>High</span>
         </div>
@@ -193,17 +232,17 @@ function HeatmapChart({ checkIns }) {
   );
 }
 
-// ── Radar engagement chart ────────────────────────────────────────────────────
+// ── Radar tooltip ─────────────────────────────────────────────────────────────
 
-const RadarTip = ({ active, payload }) => {
+function RadarTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="custom-tooltip">
       <p style={{ color: 'var(--text2)', fontSize: 11, fontWeight: 700 }}>{payload[0].payload.subject}</p>
-      <p style={{ color: '#a78bfa', fontWeight: 800, fontSize: 13 }}>{payload[0].value}%</p>
+      <p style={{ color: '#a78bfa', fontWeight: 800, fontSize: 13 }}>{Math.round(payload[0].value)}%</p>
     </div>
   );
-};
+}
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -232,43 +271,31 @@ export default function TabAnalytics({
       return { label: h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`, count, pct: (count / hourMax) * 100 };
     });
 
-  const dayAcc = {};
+  const dayAcc     = {};
   checkIns.forEach(c => { const d = new Date(c.check_in_date).getDay(); dayAcc[d] = (dayAcc[d] || 0) + 1; });
   const dayMax     = Math.max(...Object.values(dayAcc), 1);
   const dayNames   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const busiestDays = dayNames.map((name, idx) => ({ name, count: dayAcc[idx] || 0 })).sort((a, b) => b.count - a.count);
 
-  const dailyAvg  = Math.round(ci30.length / 30);
-  const avgPerMem = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
+  const dailyAvg   = Math.round(ci30.length / 30);
+  const avgPerMem  = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
   const returnRate = checkIns.length > 0
     ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100)
     : 0;
 
-  // Radar data — normalise each metric to 0-100
   const superActive = monthCiPer.filter(v => v >= 15).length;
   const active      = monthCiPer.filter(v => v >= 8 && v < 15).length;
   const casual      = monthCiPer.filter(v => v >= 1 && v < 8).length;
-  const inactive    = totalMembers - monthCiPer.length;
+  const inactive    = Math.max(0, totalMembers - monthCiPer.length);
 
   const radarData = [
-    { subject: 'Retention',   A: retentionRate },
-    { subject: 'Daily Avg',   A: Math.min(100, (dailyAvg / Math.max(totalMembers, 1)) * 100) },
-    { subject: 'Super Active',A: totalMembers > 0 ? Math.round((superActive / totalMembers) * 100) : 0 },
-    { subject: 'Return Rate', A: returnRate },
-    { subject: 'Growth',      A: Math.min(100, Math.max(0, 50 + monthChangePct)) },
-    { subject: 'Engagement',  A: totalMembers > 0 ? Math.round(((superActive + active) / totalMembers) * 100) : 0 },
+    { subject: 'Retention',    A: retentionRate },
+    { subject: 'Daily Avg',    A: Math.min(100, (dailyAvg / Math.max(totalMembers, 1)) * 100) },
+    { subject: 'Super Active', A: totalMembers > 0 ? Math.round((superActive / totalMembers) * 100) : 0 },
+    { subject: 'Return Rate',  A: returnRate },
+    { subject: 'Growth',       A: Math.min(100, Math.max(0, 50 + monthChangePct)) },
+    { subject: 'Engagement',   A: totalMembers > 0 ? Math.round(((superActive + active) / totalMembers) * 100) : 0 },
   ];
-
-  // 30-day check-in sparkline
-  const ciDailyLine = Array.from({ length: 30 }, (_, i) => {
-    const day = subDays(now, 29 - i);
-    const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-    const end   = new Date(start.getTime() + 86400000);
-    return {
-      label: format(day, 'MMM d'),
-      value: ci30.filter(c => { const d = new Date(c.check_in_date); return d >= start && d < end; }).length,
-    };
-  });
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 292px', gap: 18, alignItems: 'start' }}>
@@ -278,13 +305,13 @@ export default function TabAnalytics({
 
         {/* KPI row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-          <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}                                        unit="check-ins / day"  color="#0ea5e9" trend={monthChangePct}/>
-          <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month"    color={monthChangePct >= 0 ? '#10b981' : '#ef4444'} trend={monthChangePct}/>
-          <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}                                       unit="visits this month" color="#a78bfa" trend={null}/>
-          <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`}                                unit="of all check-ins"  color="#f59e0b" trend={null}/>
+          <KpiCard icon={Activity}   label="Daily Avg"      value={dailyAvg}  unit="check-ins / day"  color="#0ea5e9" trend={monthChangePct}/>
+          <KpiCard icon={TrendingUp} label="Monthly Change" value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month" color={monthChangePct >= 0 ? '#10b981' : '#ef4444'} trend={monthChangePct}/>
+          <KpiCard icon={Users}      label="Avg / Member"   value={avgPerMem} unit="visits this month" color="#a78bfa" trend={null}/>
+          <KpiCard icon={Zap}        label="Return Rate"    value={`${returnRate}%`} unit="of all check-ins" color="#f59e0b" trend={null}/>
         </div>
 
-        {/* Weekly trend + 30-day line — stacked */}
+        {/* Weekly trend */}
         <Card accentColor="#3b82f6" style={{ padding: '20px 20px 14px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
@@ -312,47 +339,52 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </Card>
 
-        {/* 30-day daily line */}
-        <Card accentColor="#0ea5e9" style={{ padding: '20px 20px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+        {/* Member Growth — in main column */}
+        <Card accentColor="#10b981" style={{ padding: '20px 20px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Daily Check-ins — Last 30 Days</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Per-day attendance breakdown</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Member Growth</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Monthly new sign-up trend</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', fontSize: 10, fontWeight: 700, color: '#34d399' }}>
-                {ci30.length} total
+                +{newSignUps} this month
               </div>
-              <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)', fontSize: 10, fontWeight: 700, color: '#38bdf8' }}>
-                {dailyAvg} / day
+              <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', fontSize: 10, fontWeight: 700, color: '#f87171' }}>
+                {retentionRate}% retention
               </div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={ciDailyLine} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={monthGrowthData} barSize={22} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
               <defs>
-                <linearGradient id="ciDailyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#0ea5e9" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0}/>
+                <linearGradient id="mgBarMain" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="#10b981" stopOpacity={0.9}/>
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.3}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false} interval={6}/>
+              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 10, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
               <YAxis tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false} width={24}/>
-              <Tooltip content={<ChartTip/>} cursor={{ stroke: 'rgba(14,165,233,0.2)', strokeWidth: 1, strokeDasharray: '4 4' }}/>
-              <Area type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} fill="url(#ciDailyGrad)" dot={false} activeDot={{ r: 4, fill: '#0ea5e9', stroke: '#fff', strokeWidth: 2 }}/>
-            </AreaChart>
+              <Tooltip
+                content={({ active, payload, label }) => active && payload?.length
+                  ? <div className="custom-tooltip"><p style={{ color: 'var(--text2)', marginBottom: 2, fontSize: 10 }}>{label}</p><p style={{ color: '#10b981', fontWeight: 700 }}>{payload[0].value} active</p></div>
+                  : null}
+                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              />
+              <Bar dataKey="value" fill="url(#mgBarMain)" radius={[5, 5, 0, 0]}/>
+            </BarChart>
           </ResponsiveContainer>
         </Card>
 
         {/* Heatmap */}
         <Card accentColor="#06b6d4" style={{ padding: '20px 20px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Traffic Heatmap</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Check-ins by day and time slot</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Check-in density by day and time</div>
             </div>
-            <div style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Flame style={{ width: 14, height: 14, color: '#22d3ee' }}/>
             </div>
           </div>
@@ -366,40 +398,28 @@ export default function TabAnalytics({
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Peak Hours</div>
               <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Top 8 busiest time slots</div>
             </div>
-            <div style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Clock style={{ width: 14, height: 14, color: '#fbbf24' }}/>
             </div>
           </div>
-          {peakHours.length === 0
-            ? <Empty icon={Clock} label="No check-in data yet"/>
-            : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {peakHours.map((h, i) => (
-                  <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{
-                      fontSize: 9, fontWeight: 800, letterSpacing: '0.04em',
-                      color: i === 0 ? '#fbbf24' : 'var(--text3)',
-                      width: 18, textAlign: 'right', flexShrink: 0,
-                    }}>#{i + 1}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 36, flexShrink: 0 }}>{h.label}</span>
-                    <div style={{ flex: 1, height: 6, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
-                      <div style={{
-                        height: '100%', width: `${h.pct}%`, borderRadius: 99,
-                        background: i === 0
-                          ? 'linear-gradient(90deg,#f59e0b,#ef4444)'
-                          : 'linear-gradient(90deg,#6366f1,#8b5cf6)',
-                        transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
-                      }}/>
-                    </div>
-                    <span style={{
-                      fontSize: 12, fontWeight: 800,
-                      color: i === 0 ? '#fbbf24' : 'var(--text2)',
-                      width: 22, textAlign: 'right', flexShrink: 0,
-                    }}>{h.count}</span>
+          {peakHours.length === 0 ? <Empty icon={Clock} label="No check-in data yet"/> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {peakHours.map((h, i) => (
+                <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', color: i === 0 ? '#fbbf24' : 'var(--text3)', width: 18, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 36, flexShrink: 0 }}>{h.label}</span>
+                  <div style={{ flex: 1, height: 6, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+                    <div style={{
+                      height: '100%', width: `${h.pct}%`, borderRadius: 99,
+                      background: i === 0 ? 'linear-gradient(90deg,#f59e0b,#ef4444)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)',
+                      transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
+                    }}/>
                   </div>
-                ))}
-              </div>
-            )}
+                  <span style={{ fontSize: 12, fontWeight: 800, color: i === 0 ? '#fbbf24' : 'var(--text2)', width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
 
       </div>
@@ -407,18 +427,15 @@ export default function TabAnalytics({
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* 30-Day Snapshot */}
+        {/* 30-Day Snapshot — no "active members" row, covered by engagement breakdown */}
         <Card accentColor="#0ea5e9" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>
-            30-Day Snapshot
-          </div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>30-Day Snapshot</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
-              { label: 'Total check-ins', value: ci30.length,          color: '#38bdf8' },
-              { label: 'Active members',  value: activeThisMonth,      color: '#34d399' },
-              { label: 'New sign-ups',    value: newSignUps,           color: '#c4b5fd' },
-              { label: 'At-risk members', value: atRisk,               color: atRisk > 0 ? '#f87171' : '#34d399' },
-              { label: 'Retention rate',  value: `${retentionRate}%`,  color: retentionRate >= 70 ? '#34d399' : '#fbbf24' },
+              { label: 'Total check-ins', value: ci30.length,         color: '#38bdf8' },
+              { label: 'New sign-ups',    value: newSignUps,          color: '#c4b5fd' },
+              { label: 'At-risk members', value: atRisk,              color: atRisk > 0 ? '#f87171' : '#34d399' },
+              { label: 'Retention rate',  value: `${retentionRate}%`, color: retentionRate >= 70 ? '#34d399' : '#fbbf24' },
             ].map((s, i, arr) => (
               <div key={s.label} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -454,64 +471,54 @@ export default function TabAnalytics({
         {/* Busiest Days */}
         <Card accentColor="#f59e0b" style={{ padding: 18 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>Busiest Days</div>
-          {busiestDays.every(d => d.count === 0)
-            ? <Empty icon={Calendar} label="No data yet"/>
-            : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {busiestDays.map(({ name, count }, rank) => {
-                  const pct   = (count / dayMax) * 100;
-                  const isTop = rank === 0;
-                  return (
-                    <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text3)', width: 18, textAlign: 'right', flexShrink: 0 }}>#{rank + 1}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 30, flexShrink: 0 }}>{name}</span>
-                      <div style={{ flex: 1, height: 5, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
-                        <div style={{
-                          height: '100%', width: `${pct}%`, borderRadius: 99,
-                          background: isTop
-                            ? 'linear-gradient(90deg,#f59e0b,#ef4444)'
-                            : 'linear-gradient(90deg,#0ea5e9,#06b6d4)',
-                          transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
-                        }}/>
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text2)', width: 22, textAlign: 'right', flexShrink: 0 }}>{count}</span>
+          {busiestDays.every(d => d.count === 0) ? <Empty icon={Calendar} label="No data yet"/> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {busiestDays.map(({ name, count }, rank) => {
+                const pct   = (count / dayMax) * 100;
+                const isTop = rank === 0;
+                return (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text3)', width: 18, textAlign: 'right', flexShrink: 0 }}>#{rank + 1}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', width: 30, flexShrink: 0 }}>{name}</span>
+                    <div style={{ flex: 1, height: 5, borderRadius: 99, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`, borderRadius: 99,
+                        background: isTop ? 'linear-gradient(90deg,#f59e0b,#ef4444)' : 'linear-gradient(90deg,#0ea5e9,#06b6d4)',
+                        transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
+                      }}/>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <span style={{ fontSize: 12, fontWeight: 800, color: isTop ? '#fbbf24' : 'var(--text2)', width: 22, textAlign: 'right', flexShrink: 0 }}>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
 
-        {/* Engagement breakdown */}
+        {/* Engagement breakdown — single source for member activity tiers */}
         <Card accentColor="#8b5cf6" style={{ padding: 18 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 14 }}>Engagement Breakdown</div>
-
-          {/* Stacked bar */}
           {totalMembers > 0 && (
             <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 1, marginBottom: 14 }}>
               {[
                 { val: superActive, color: '#10b981' },
                 { val: active,      color: '#0ea5e9' },
                 { val: casual,      color: '#a78bfa' },
-                { val: Math.max(0, inactive), color: '#f59e0b' },
-              ].filter(s => s.val > 0).map((s, i) => (
+                { val: inactive,    color: '#f59e0b' },
+              ].filter(s => s.val > 0).map((s, i, arr) => (
                 <div key={i} style={{
-                  flex: s.val, height: '100%',
-                  background: s.color,
-                  opacity: 0.85,
-                  borderRadius: i === 0 ? '99px 0 0 99px' : i === 3 ? '0 99px 99px 0' : 0,
-                  transition: 'flex 0.8s ease',
+                  flex: s.val, height: '100%', background: s.color, opacity: 0.85,
+                  borderRadius: i === 0 ? '99px 0 0 99px' : i === arr.length - 1 ? '0 99px 99px 0' : 0,
                 }}/>
               ))}
             </div>
           )}
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { label: 'Super Active', sub: '15+ visits', val: superActive,           color: '#10b981' },
-              { label: 'Active',       sub: '8–14',       val: active,                color: '#0ea5e9' },
-              { label: 'Casual',       sub: '1–7',        val: casual,                color: '#a78bfa' },
-              { label: 'Inactive',     sub: '0 visits',   val: Math.max(0, inactive), color: '#f59e0b' },
+              { label: 'Super Active', sub: '15+ visits', val: superActive, color: '#10b981' },
+              { label: 'Active',       sub: '8–14',       val: active,      color: '#0ea5e9' },
+              { label: 'Casual',       sub: '1–7',        val: casual,      color: '#a78bfa' },
+              { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: '#f59e0b' },
             ].map((s, i) => {
               const pct = totalMembers > 0 ? (s.val / totalMembers) * 100 : 0;
               return (
@@ -538,34 +545,6 @@ export default function TabAnalytics({
               );
             })}
           </div>
-        </Card>
-
-        {/* Member Growth chart */}
-        <Card accentColor="#10b981" style={{ padding: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 2 }}>Member Growth</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 12 }}>
-            <span style={{ fontSize: 26, fontWeight: 900, color: '#10b981', letterSpacing: '-0.04em' }}>+{newSignUps}</span>
-            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>this month</span>
-          </div>
-          <ResponsiveContainer width="100%" height={90}>
-            <BarChart data={monthGrowthData} barSize={14} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
-              <defs>
-                <linearGradient id="mgBar3" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#10b981" stopOpacity={0.9}/>
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.3}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
-              <YAxis hide/>
-              <Tooltip
-                content={({ active, payload, label }) => active && payload?.length
-                  ? <div className="custom-tooltip"><p style={{ color: 'var(--text2)', marginBottom: 2, fontSize: 10 }}>{label}</p><p style={{ color: '#10b981', fontWeight: 700 }}>{payload[0].value} active</p></div>
-                  : null}
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-              />
-              <Bar dataKey="value" fill="url(#mgBar3)" radius={[4, 4, 0, 0]}/>
-            </BarChart>
-          </ResponsiveContainer>
         </Card>
 
       </div>
