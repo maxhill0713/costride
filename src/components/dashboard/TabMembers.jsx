@@ -723,11 +723,13 @@ export default function TabMembers({
           </div>
 
           {/* Pagination */}
-          <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input type="checkbox" style={{ width: 13, height: 13, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
-              <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>+ {sorted.length} of {totalMembers}</span>
-            </div>
+          <div style={{ padding: isMobile ? '10px 12px' : '10px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 10, flexWrap: isMobile ? 'wrap' : 'nowrap', fontSize: isMobile ? 10 : 11 }}>
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input type="checkbox" style={{ width: 13, height: 13, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
+                <span style={{ color: 'var(--text3)', fontWeight: 600 }}>+ {sorted.length} of {totalMembers}</span>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 4 }}>
               <button className="page-btn" disabled={memberPage <= 1} onClick={() => setMemberPage(p => Math.max(1, p - 1))}>
                 <ChevronLeft style={{ width: 12, height: 12 }}/>
@@ -736,24 +738,31 @@ export default function TabMembers({
                 <ChevronRight style={{ width: 12, height: 12 }}/>
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 3 }}>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let page = i + 1;
-                if (totalPages > 5) {
-                  if (memberPage <= 3) page = i + 1;
-                  else if (memberPage >= totalPages - 2) page = totalPages - 4 + i;
-                  else page = memberPage - 2 + i;
-                }
-                return <button key={page} className={`page-btn ${memberPage === page ? 'active' : ''}`} onClick={() => setMemberPage(page)}>{page}</button>;
-              })}
-            </div>
-            <div style={{ flex: 1 }}/>
-            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>Display</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>{memberPageSize}</span>
-              <ChevronDown style={{ width: 10, height: 10, color: 'var(--text3)' }}/>
-            </div>
-            <span style={{ fontSize: 11, color: 'var(--text3)' }}>of {sorted.length}</span>
+            {!isMobile && (
+              <div style={{ display: 'flex', gap: 3 }}>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let page = i + 1;
+                  if (totalPages > 5) {
+                    if (memberPage <= 3) page = i + 1;
+                    else if (memberPage >= totalPages - 2) page = totalPages - 4 + i;
+                    else page = memberPage - 2 + i;
+                  }
+                  return <button key={page} className={`page-btn ${memberPage === page ? 'active' : ''}`} onClick={() => setMemberPage(page)}>{page}</button>;
+                })}
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: isMobile ? '100%' : 'auto' }}/>
+            {!isMobile && (
+              <>
+                <span style={{ color: 'var(--text3)', fontWeight: 600 }}>Display</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text2)' }}>{memberPageSize}</span>
+                  <ChevronDown style={{ width: 10, height: 10, color: 'var(--text3)' }}/>
+                </div>
+                <span style={{ color: 'var(--text3)' }}>of {sorted.length}</span>
+              </>
+            )}
+            <span style={{ fontSize: isMobile ? 9 : 11, color: 'var(--text3)' }}>Page {memberPage} of {totalPages}</span>
           </div>
         </Card>
 
