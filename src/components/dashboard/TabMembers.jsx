@@ -386,6 +386,14 @@ export default function TabMembers({
 }) {
   const [expandedMember, setExpandedMember] = useState(null);
   const [showBulkPanel, setShowBulkPanel]   = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  
+  React.useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  
   const gymName = selectedGym?.name || 'Your Gym';
 
   const memberRows = useMemo(() => allMemberships.map(m => {
