@@ -509,17 +509,17 @@ export default function TabMembers({
             <button onClick={() => openModal('members')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '6px 10px' : '7px 14px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(14,165,233,0.9),rgba(6,182,212,0.85))', color: '#fff', border: 'none', fontSize: isMobile ? 11 : 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
               <Plus style={{ width: isMobile ? 11 : 13, height: isMobile ? 11 : 13 }}/> {!isMobile && 'Add'} Member
             </button>
-            <div style={{ display: isMobile ? 'none' : 'flex', gap: 2 }}>
+            <div style={{ display: isMobile ? 'flex' : 'flex', gap: 2, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
               {[
-                { id: 'all',      label: 'All Members', count: filterCounts.all },
-                { id: 'active',   label: 'Active',       count: filterCounts.active },
-                { id: 'inactive', label: 'Inactive',     count: filterCounts.inactive },
-                { id: 'atRisk',   label: 'At Risk',      count: filterCounts.atRisk, danger: true },
-                { id: 'new',      label: 'New',          count: filterCounts.new },
+                { id: 'all',      label: isMobile ? 'All' : 'All Members', count: filterCounts.all },
+                { id: 'active',   label: 'Active',    count: filterCounts.active },
+                { id: 'inactive', label: 'Inactive',  count: filterCounts.inactive },
+                { id: 'atRisk',   label: isMobile ? `⚠️ ${filterCounts.atRisk}` : 'At Risk', count: filterCounts.atRisk, danger: true },
+                { id: 'new',      label: 'New',       count: filterCounts.new },
               ].map(f => (
-                <button key={f.id} className={`filter-tab ${memberFilter === f.id ? (f.danger ? 'active-red' : 'active') : ''}`} onClick={() => handleFilterChange(f.id)}>
+                <button key={f.id} className={`filter-tab ${memberFilter === f.id ? (f.danger ? 'active-red' : 'active') : ''}`} onClick={() => handleFilterChange(f.id)} style={{ fontSize: isMobile ? 10 : undefined, padding: isMobile ? '4px 8px' : undefined }}>
                   {f.label}
-                  {f.danger && f.count > 0 && (
+                  {!isMobile && f.danger && f.count > 0 && (
                     <span style={{ marginLeft: 4, background: '#ef4444', color: '#fff', borderRadius: 99, padding: '0 5px', fontSize: 9, fontWeight: 800 }}>{f.count}</span>
                   )}
                 </button>
