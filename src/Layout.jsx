@@ -1,259 +1,225 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Clock, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { createPageUrl } from './utils';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
-const PULSE_CSS = `
-  @keyframes timer-bg-pulse {
-    0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
-    50%       { background: linear-gradient(to bottom, #1d4ed8, #1e40af, #172554); }
-  }
-  @keyframes timer-bar-bg-pulse {
-    0%, 100% { background: linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%); }
-    50%       { background: linear-gradient(90deg, #1d4ed8 0%, #172554 100%); }
-  }
-  @keyframes timer-text-pulse {
-    0%, 100% { color: rgba(252,165,165,0.9); }
-    50%       { color: rgba(147,197,253,0.75); }
-  }
-  @keyframes timer-stop-pulse {
-    0%, 100% { background: linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9)); box-shadow: 0 3px 0 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,0.15); }
-    50%       { background: linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(37,99,235,0.9)); box-shadow: 0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15); }
-  }
-  @keyframes timer-stroke-pulse {
-    0%, 100% { stroke: #fca5a5; }
-    50%       { stroke: #60a5fa; }
-  }
-`;
+import PageTransition from './components/PageTransition';
+import ErrorBoundary from './components/ErrorBoundary';
+import PersistentRestTimer from './components/PersistentRestTimer';
+import { TimerProvider } from './components/TimerContext';
 
-function injectPulseStyles() {
-  if (document.getElementById('timer-pulse-css')) return;
-  const s = document.createElement('style');
-  s.id = 'timer-pulse-css';
-  s.textContent = PULSE_CSS;
-  document.head.appendChild(s);
-}
+export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const [tabHistory, setTabHistory] = useState({});
+  const [lastTabPage, setLastTabPage] = useState({});
+  const [restTimer, setRestTimer] = useState('');
+  const [initialRestTime, setInitialRestTime] = useState(90);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
-export default function PersistentRestTimer({ isActive, restTimer, initialRestTime, onTimerStateChange, onTimerValueChange }) {
-  const [expanded, setExpanded] = useState(false);
-  const finishedAtRef = useRef(null);
-  const [showFinished, setShowFinished] = useState(false);
-  const [smoothProgress, setSmoothProgress] = useState(1);
-  const rafRef = useRef(null);
-  const lastTickRef = useRef(null);
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me().catch(() => ({
+      id: 'guest',
+      full_name: 'Guest',
+      email: 'guest@example.com',
+      account_type: 'user'
+    })),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
 
-  useEffect(() => { injectPulseStyles(); }, []);
-
+  // Preserve tab navigation history
   useEffect(() => {
-    if (!isActive) {
-      setExpanded(false);
-      setShowFinished(false);
-      finishedAtRef.current = null;
+    const currentTab = navItems.find((item) => item.page === currentPageName);
+    if (currentTab) {
+      setTabHistory((prev) => ({
+        ...prev,
+        [currentTab.page]: location.pathname + location.search
+      }));
+      setLastTabPage((prev) => ({
+        ...prev,
+        [currentTab.page]: currentPageName
+      }));
     }
-  }, [isActive]);
+  }, [currentPageName, location]);
 
-  const t     = typeof restTimer === 'number' ? restTimer : 0;
-  const total = initialRestTime || 90;
+  // Hide navigation on onboarding, signup pages, and gym owner dashboard (has its own nav)
+  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || currentPageName === 'GymOwnerDashboard';
 
-  useEffect(() => {
-    if (t === 0 && isActive && finishedAtRef.current === null) {
-      finishedAtRef.current = Date.now();
-      setShowFinished(true);
-      const timeout = setTimeout(() => {
-        setShowFinished(false);
-        onTimerStateChange(false);
-        onTimerValueChange('');
-        finishedAtRef.current = null;
-      }, 10000);
-      return () => clearTimeout(timeout);
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
+    enabled: !!currentUser && currentUser.id !== 'guest',
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000
+  });
+
+  const unreadCount = notifications.length;
+
+  const isGymOwner = currentUser?.account_type === 'gym_owner';
+
+  // Rest timer effect
+  React.useEffect(() => {
+    let interval;
+    if (isTimerActive && restTimer > 0) {
+      interval = setInterval(() => {
+        setRestTimer((t) => t - 1);
+      }, 1000);
+    } else if (restTimer === 0 && isTimerActive) {
+      setIsTimerActive(false);
+      // Vibrate and play sound when timer completes
+      if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      // Play beep sound
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURU=');
+      audio.play().catch(() => {});
     }
-  }, [t, isActive]);
+    return () => clearInterval(interval);
+  }, [isTimerActive, restTimer]);
 
-  // Smooth circle arc via RAF
-  useEffect(() => {
-    if (!isActive || t === 0) {
-      setSmoothProgress(t / total);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      return;
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser && currentUser.id !== 'guest',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
+  });
+
+  const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
+
+  const navItems = isGymOwner ? [
+  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
+  { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' }] :
+  [
+  { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
+  { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
+  { name: 'Progress', icon: BarChart3, page: 'Progress', color: 'text-green-500' },
+  { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+  { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' }];
+
+
+  // Get preserved link for tab
+  const getTabLink = (item) => {
+    return tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
+  };
+
+  // Handle tab click - do nothing if already on that tab; scroll to top if already on Home
+  const handleTabClick = (item, e) => {
+    if (currentPageName === item.page) {
+      e.preventDefault();
+      if (item.page === 'Home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
-    lastTickRef.current = Date.now();
-    const animate = () => {
-      if (!lastTickRef.current) return;
-      const elapsed = (Date.now() - lastTickRef.current) / 1000;
-      const interpolated = Math.max(0, t - elapsed);
-      setSmoothProgress(interpolated / total);
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [t, isActive, total]);
-
-  if (!isActive && !showFinished) return null;
-
-  const radius        = 90;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset    = circumference * (1 - smoothProgress);
-  const formatTime    = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
-
-  const isWarning  = t > 0 && t <= 10;
-  const isFinished = t === 0;
-  const isPulsing  = isWarning || isFinished;
-
-  const PULSE_DURATION = '2.2s ease-in-out infinite';
-
-  // Static (non-pulsing) colours
-  const staticBg      = 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
-  const staticBarBg   = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
-  const staticAccent  = '#60a5fa';
-  const staticText    = 'rgba(147,197,253,0.75)';
-  const staticStroke  = '#60a5fa';
+  };
 
   return (
-    <>
-      {/* ── Fullscreen expanded timer ── */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 50,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: staticBg,
-              animation: isPulsing ? `timer-bg-pulse ${PULSE_DURATION}` : 'none',
-            }}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
+      {/* Bottom Navigation for Mobile */}
+      {!hideNavigation &&
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex justify-around items-start pt-1 h-[79px] px-2">
+          {navItems.map((item) => {
+            const isActive = currentPageName === item.page;
 
-            {!isFinished && (
-              <button
-                onClick={() => setExpanded(false)}
-                style={{ position: 'absolute', top: 48, right: 24, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <ChevronDown style={{ width: 24, height: 24 }} />
-              </button>
-            )}
+            return (
+              <Link
+                key={item.page}
+                to={getTabLink(item)}
+                onClick={(e) => {
+                  handleTabClick(item, e);
+                  if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
+                }}
+                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl"
+                style={{ transition: 'transform 60ms ease-in-out' }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
+                onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
-            {/* Title */}
-            <p style={{
-              fontSize: 24, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
-              marginBottom: 40, color: staticText,
-              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-            }}>
-              {isFinished ? 'Timer Finished' : 'Rest Timer'}
-            </p>
+                <div className="relative">
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  {item.badge > 0 &&
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                       {item.badge > 9 ? '9+' : item.badge}
+                     </div>
+                  }
+                </div>
+                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+              </Link>);
 
-            {/* Circle */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 224, height: 224 }}>
-              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
-                <circle
-                  cx="100" cy="100" r={radius} fill="none"
-                  stroke={staticStroke}
-                  strokeWidth="10" strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={dashOffset}
-                  style={{
-                    transition: 'stroke 0.4s ease',
-                    animation: isPulsing ? `timer-stroke-pulse ${PULSE_DURATION}` : 'none',
-                  }} />
-              </svg>
-              <span style={{
-                color: '#fff', fontWeight: 900, fontSize: 60, fontVariantNumeric: 'tabular-nums',
-                position: 'relative', zIndex: 10,
-                animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-              }}>
-                {formatTime(t)}
-              </span>
-            </div>
-
-            {/* Stop button — pulses with everything else */}
-            <button
-              onClick={() => {
-                onTimerStateChange(false); onTimerValueChange('');
-                setExpanded(false); setShowFinished(false); finishedAtRef.current = null;
-              }}
-              style={{
-                marginTop: 56, padding: '16px 40px', borderRadius: 16,
-                color: '#fff', fontWeight: 700, fontSize: 18, border: 'none', cursor: 'pointer',
-                background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
-                boxShadow: '0 4px 0 0 #1a3fa8',
-                animation: isPulsing ? `timer-stop-pulse ${PULSE_DURATION}` : 'none',
-              }}>
-              Stop
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Persistent bar ── */}
-      {!expanded && (
-        <div
-          onClick={() => { if (!isFinished) setExpanded(true); }}
-          style={{
-            position: 'fixed', left: 0, right: 0,
-            bottom: 'calc(79px + env(safe-area-inset-bottom))',
-            zIndex: 400, borderRadius: 0, padding: '14px 14px', minHeight: 68,
-            cursor: isFinished ? 'default' : 'pointer',
-            background: staticBarBg,
-            animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
-            borderTop: `1px solid ${isPulsing ? 'rgba(239,68,68,0.5)' : 'rgba(37,99,235,0.5)'}`,
-            boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-
-            {/* Label */}
-            <span style={{
-              fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-              color: staticText,
-              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-            }}>
-              {isFinished ? 'Timer Finished' : 'Rest Timer'}
-            </span>
-
-            {/* Clock + countdown */}
-            {!isFinished && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Clock style={{
-                  width: 24, height: 24, flexShrink: 0, color: staticAccent,
-                  animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-                }} />
-                <span style={{
-                  fontWeight: 900, fontSize: 36, fontVariantNumeric: 'tabular-nums',
-                  color: staticAccent,
-                  animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-                }}>
-                  {formatTime(t)}
-                </span>
+          })}
               </div>
-            )}
+              </nav>
+      }
 
-            {/* Stop button — pulses with bar */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onTimerStateChange(false); onTimerValueChange('');
-                setShowFinished(false); finishedAtRef.current = null;
-              }}
-              style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                height: 40, padding: '8px 20px', borderRadius: 8,
-                color: '#fff', fontWeight: 700, fontSize: 12, border: 'none', cursor: 'pointer',
-                background: 'linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(37,99,235,0.9))',
-                boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
-                animation: isPulsing ? `timer-stop-pulse ${PULSE_DURATION}` : 'none',
-                transition: 'transform 0.1s ease',
-              }}
-              onMouseDown={e => e.currentTarget.style.transform = 'translateY(3px) scale(0.95)'}
-              onMouseUp={e => e.currentTarget.style.transform = ''}
-              onMouseLeave={e => e.currentTarget.style.transform = ''}
-              onTouchStart={e => e.currentTarget.style.transform = 'translateY(3px) scale(0.95)'}
-              onTouchEnd={e => e.currentTarget.style.transform = ''}>
-              Stop
-            </button>
+              {/* Side Navigation for Desktop */}
+            {!hideNavigation &&
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
+        <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
+          <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
+            <span className="text-2xl font-black text-white">G</span>
           </div>
-        </div>
-      )}
-    </>
-  );
+        </Link>
+        
+        <div className="flex flex-col gap-3">
+          {navItems.map((item) => {
+            const isActive = currentPageName === item.page;
+
+            return (
+              <Link
+                key={item.page}
+                to={getTabLink(item)}
+                onClick={(e) => handleTabClick(item, e)}
+                className={`
+                  relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
+                  ${isActive ?
+                `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-600 ${item.color.replace('text-', 'to-')}-700 text-white shadow-md scale-110` :
+                'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'}
+                `}>
+
+                <div className="relative">
+                  <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+                  {item.badge > 0 &&
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </div>
+                  }
+                </div>
+                {isActive &&
+                <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />
+                }
+              </Link>);
+
+          })}
+            </div>
+            </nav>
+      }
+
+            {/* Main Content */}
+            <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))' }}>
+              <ErrorBoundary>
+                <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
+                  <PageTransition key={currentPageName}>
+                    {children}
+                  </PageTransition>
+                </TimerProvider>
+              </ErrorBoundary>
+            </main>
+
+            {/* Persistent Rest Timer */}
+            <PersistentRestTimer
+        isActive={isTimerActive}
+        restTimer={restTimer}
+        initialRestTime={initialRestTime}
+        onTimerStateChange={setIsTimerActive}
+        onTimerValueChange={setRestTimer} />
+
+            </div>);
+
 }
