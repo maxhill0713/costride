@@ -169,8 +169,15 @@ function getClassType(c) {
 }
 
 function getScheduleDays(c) {
-  const s = (c.schedule || '').toLowerCase();
-  return DAYS_SHORT.filter(d => s.includes(d.toLowerCase()));
+  const schedule = c.schedule;
+  if (!schedule) return [];
+  if (Array.isArray(schedule)) {
+    return DAYS_SHORT.filter(d => schedule.some(s => (s.day || '').toLowerCase().includes(d.toLowerCase())));
+  }
+  if (typeof schedule === 'string') {
+    return DAYS_SHORT.filter(d => schedule.toLowerCase().includes(d.toLowerCase()));
+  }
+  return [];
 }
 
 // ── Single class card ─────────────────────────────────────────────────────────
