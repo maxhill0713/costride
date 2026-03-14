@@ -70,7 +70,7 @@ function CheckInButton({ gym, onCheckInSuccess }) {
         user_name: me.full_name,
         gym_id: gym.id,
         gym_name: gym.name,
-        check_in_date: new Date().toISOString().split('T')[0],
+        check_in_date: new Date().toISOString(),
       });
     },
     onSuccess: () => {
