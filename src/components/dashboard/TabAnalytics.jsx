@@ -138,7 +138,7 @@ function HeatmapChart({ gymId }) {
       if (si >= 0) mat[dow][si]++;
     });
     return mat;
-  }, [checkIns]);
+  }, [heatmapCheckIns]);
 
   const maxVal = Math.max(...grid.flat(), 1);
 
