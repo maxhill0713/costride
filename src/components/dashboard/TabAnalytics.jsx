@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { subDays, format, isWithinInterval } from 'date-fns';
 import {
   Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown,
