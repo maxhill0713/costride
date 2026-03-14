@@ -46,23 +46,17 @@ const NAV = [
 // Overrides: make all cards/panels use frosted glass so the gradient bleeds through
 const GRADIENT_OVERRIDE = `
   .dash-root {
-    --bg:      transparent;
-    --sidebar: rgba(2, 6, 23, 0.55);
-    --card:    rgba(15, 23, 42, 0.55);
-    --card2:   rgba(15, 23, 42, 0.45);
-    --border:  rgba(255, 255, 255, 0.08);
+    --bg:      #07101f;
+    --sidebar: #080e1c;
+    --card:    #0c1526;
+    --card2:   #0a1220;
+    --border:  rgba(255, 255, 255, 0.07);
     --text1:   #f1f5f9;
     --text2:   #94a3b8;
     --text3:   #475569;
     --cyan:    #38bdf8;
     --green:   #34d399;
     --red:     #f87171;
-  }
-  .dash-root .card-hover {
-    background: rgba(15, 23, 42, 0.55) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
   }
 `;
 
@@ -199,7 +193,7 @@ export default function GymOwnerDashboard() {
   ].filter(Boolean).slice(0, 4);
 
   const Splash = ({ children }) => (
-    <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #020617 0%, #0f172a 40%, #172554 70%, #020617 100%)' }}>
+    <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#07101f' }}>
       <div style={{ background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 40, maxWidth: 400, width: '100%', textAlign: 'center' }}>{children}</div>
     </div>
   );
@@ -221,8 +215,8 @@ export default function GymOwnerDashboard() {
       className="dash-root"
       style={{
         display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative',
-        // ← The Home page gradient
-        background: 'linear-gradient(135deg, #020617 0%, #0f172a 35%, #172554 65%, #020617 100%)',
+        // Professional deep navy
+        background: '#07101f',
       }}
     >
       <style>{DASH_STYLE}</style>
@@ -231,8 +225,7 @@ export default function GymOwnerDashboard() {
       {/* ─── SIDEBAR ──────────────────────────────────────────────────────── */}
       <aside style={{
         width: collapsed ? 64 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
-        background: 'rgba(2, 6, 23, 0.62)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        background: '#080e1c',
         borderRight: '1px solid rgba(255,255,255,0.07)',
         display: 'flex', flexDirection: 'column',
         transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
@@ -320,8 +313,7 @@ export default function GymOwnerDashboard() {
           height: 56, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px',
-          background: 'rgba(2, 6, 23, 0.5)',
-          backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+          background: '#080e1c',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -363,7 +355,7 @@ export default function GymOwnerDashboard() {
               <Link to={createPageUrl('NotificationsHub')}>
                 <button style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8', cursor: 'pointer', position: 'relative' }}>
                   <Bell style={{ width: 15, height: 15 }}/>
-                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #020617' }}/>}
+                  {atRisk > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #080e1c' }}/>}
                 </button>
               </Link>
             </div>
