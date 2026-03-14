@@ -398,12 +398,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="space-y-3"
-    >
+    <div className="space-y-3">
       {/* Owner manage button */}
       {showOwnerControls && (
         <button
