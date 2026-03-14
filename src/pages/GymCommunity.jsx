@@ -486,7 +486,7 @@ const CLASS_IMAGES = {
 function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
   const cfg = CLASS_TYPE_CONFIG[getClassType(gymClass)];
   const typeKey = getClassType(gymClass);
-  const img = CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
+  const img = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
   const capacity = gymClass.capacity || gymClass.max_participants || null;
   const enrolled  = gymClass.enrolled || gymClass.participants_count || 0;
   const spotsLeft = capacity ? capacity - enrolled : null;
