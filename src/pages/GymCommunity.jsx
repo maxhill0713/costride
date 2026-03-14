@@ -469,12 +469,6 @@ function TodayStrip({ classes, bookedIds, onBook }) {
     </div>
   );
 }
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 // ── Classes tab ───────────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
