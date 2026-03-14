@@ -372,7 +372,7 @@ export default function TabOverview({
         </Card>
 
         {/* Activity + Insights */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
           <Card style={{ padding: 20, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 16, right: 16, height: 1, background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent)', pointerEvents: 'none' }}/>
             <SectionTitle>Recent Activity</SectionTitle>
