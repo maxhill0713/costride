@@ -120,7 +120,7 @@ export default function HelpSupport() {
   const streakFaqs = [
     {
       q: 'How does the streak work?',
-      a: 'Your streak goes up by one each day you log a workout. If you miss a training day without logging anything, your streak resets to zero. Rest days are different — if a day is marked as a rest day in your split, it won\'t increase your streak but it also won\'t break it. So you\'re safe to take your planned rest days without losing your progress.',
+      a: 'Your streak increases by one each day you log a workout using the Today\'s Workout card on the Home page. If you miss a training day from your split without logging, your streak resets to zero. Rest days are different — if a day is marked as a rest day in your workout split, it won\'t increase your streak but it also won\'t break it. Note: simply checking in to the gym does not count towards your streak — you must log a workout.',
     },
     {
       q: 'How do I change my streak icon?',
