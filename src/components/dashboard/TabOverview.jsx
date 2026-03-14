@@ -137,6 +137,13 @@ export default function TabOverview({
   openModal, setTab,
 }) {
 
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
   // ── In the gym now: check-ins in last 2 hours ─────────────────────────────
   const inGymNow = checkIns.filter(c => {
     const diff = (now - new Date(c.check_in_date)) / 60000;
