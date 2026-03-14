@@ -643,56 +643,66 @@ export default function TabMembers({
                     <div
                       className={`member-row ${isExpanded ? 'member-row-selected' : ''}`}
                       style={{
+                        padding: isMobile ? '10px 12px' : '14px',
                         borderBottom: !isExpanded && idx < paginated.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                         borderRadius: 0,
                         borderLeft: isExpanded ? '3px solid rgba(0,212,255,0.4)' : isSelected ? '3px solid rgba(167,139,250,0.4)' : '3px solid transparent',
                         background: isSelected && !isExpanded ? 'rgba(167,139,250,0.04)' : undefined,
                         transition: 'border-color 0.15s, background 0.15s',
+                        display: isMobile ? 'block' : 'flex',
+                        alignItems: isMobile ? 'unset' : 'center',
+                        gap: isMobile ? 0 : 10,
                       }}
                       onClick={() => {
                         setExpandedMember(isExpanded ? null : m.id);
                         if (showBulkPanel) setShowBulkPanel(false);
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
+                      <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
                         <input type="checkbox" checked={isSelected} onChange={() => handleToggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#a78bfa', cursor: 'pointer' }}/>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 10, minWidth: 0, flex: isMobile ? 1 : 'auto', marginBottom: isMobile ? 8 : 0 }}>
                         <div style={{ position: 'relative' }}>
-                          <Avatar name={m.name} size={34} src={m.avatar_url || m.member_avatar}/>
+                          <Avatar name={m.name} size={isMobile ? 32 : 34} src={m.avatar_url || m.member_avatar}/>
                           {m.daysSince >= 14 && (
                             <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: '50%', background: '#ef4444', border: '2px solid var(--card)' }}/>
                           )}
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: isExpanded ? 'var(--cyan)' : 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.15s' }}>{m.name}</div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: isMobile ? 12 : 13, fontWeight: 700, color: isExpanded ? 'var(--cyan)' : 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.15s' }}>{m.name}</div>
                           <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
                             {isExpanded
                               ? <span style={{ color: 'var(--cyan)', fontWeight: 700 }}>Click to collapse</span>
                               : m.visits30 > 0
                                 ? <span style={{ color: m.tier === 'Super Active' ? '#34d399' : m.tier === 'Active' ? '#38bdf8' : 'var(--text3)' }}>{m.tier}</span>
-                                : 'Click to send notification'
+                                : 'Tap to notify'
                             }
                           </div>
                         </div>
                       </div>
-                      <div><StatusChip status={m.statusTag}/></div>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? '#34d399' : m.daysSince <= 3 ? 'var(--text1)' : m.daysSince >= 14 ? '#f87171' : 'var(--text2)' }}>
-                          {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 500, fontSize: 11, color: 'var(--text3)' }}>visits</span></> : '—'}
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.lastVisitDisplay}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
-                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
-                          {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}` : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}` : 'Active member'}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <RiskBadge risk={m.risk}/>
-                        <div style={{ width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isExpanded ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isExpanded ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`, transition: 'all 0.15s', flexShrink: 0 }}>
-                          <Bell style={{ width: 11, height: 11, color: isExpanded ? 'var(--cyan)' : 'var(--text3)' }}/>
+                      <div style={{ display: isMobile ? 'inline-flex' : 'flex', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 8 : 0, alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
+                        <div style={{ flex: isMobile ? 1 : 'auto' }}><StatusChip status={m.statusTag}/></div>
+                        {!isMobile && (
+                          <>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? '#34d399' : m.daysSince <= 3 ? 'var(--text1)' : m.daysSince >= 14 ? '#f87171' : 'var(--text2)' }}>
+                                {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 500, fontSize: 11, color: 'var(--text3)' }}>visits</span></> : '—'}
+                              </div>
+                              <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.lastVisitDisplay}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
+                              <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
+                                {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}` : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}` : 'Active member'}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <RiskBadge risk={m.risk}/>
+                          <div style={{ width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isExpanded ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isExpanded ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`, transition: 'all 0.15s', flexShrink: 0 }}>
+                            <Bell style={{ width: 11, height: 11, color: isExpanded ? 'var(--cyan)' : 'var(--text3)' }}/>
+                          </div>
                         </div>
                       </div>
                     </div>
