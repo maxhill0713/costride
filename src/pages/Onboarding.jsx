@@ -5,27 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Building2, User,
-  Search, Camera, CheckCircle2, MapPin
+  Search, Camera, MapPin
 } from 'lucide-react';
 
 const LOGO_URL =
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
 
 const C = {
-  bg: '#f8faff',
-  card: '#ffffff',
-  border: '#e2e8f0',
-  text: '#0f172a',
-  sub: '#64748b',
-  muted: '#94a3b8',
-  blue: '#2563eb',
-  blueMid: '#3b82f6',
-  blueLight: '#dbeafe',
-  blueDark: '#1d4ed8',
-  green: '#16a34a',
-  greenLight: '#dcfce7',
-  greenBorder: '#86efac',
-  greenDark: '#15803d',
+  bg: '#f8faff', card: '#ffffff', border: '#e2e8f0', text: '#0f172a', sub: '#64748b', muted: '#94a3b8',
+  blue: '#2563eb', blueMid: '#3b82f6', blueLight: '#dbeafe', blueDark: '#1d4ed8',
+  green: '#16a34a', greenLight: '#dcfce7', greenBorder: '#86efac', greenDark: '#15803d',
 };
 
 const DEFAULT_SPLITS = [
@@ -80,10 +69,9 @@ const DEFAULT_SPLITS = [
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-purple-500 to-purple-600', cyan: 'from-cyan-500 to-cyan-600', green: 'from-green-500 to-green-600', orange: 'from-orange-500 to-orange-600', pink: 'from-pink-500 to-pink-600' };
 
-// ─── Progress bar ────────────────────────────────────────────────────────────
+// ─── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
-  // steps 2–8 each fill one of 7 segments; step 9 = 100%
-  const pct = Math.min(((step - 1) / 7) * 100, 100);
+  const pct = Math.min(((step - 1) / 9) * 100, 100);
   return (
     <div style={{ width: '100%', height: 16, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
       <div style={{ height: '100%', borderRadius: 99, background: `linear-gradient(to right, ${C.blueMid}, #38bdf8)`, width: `${pct}%`, transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
@@ -91,7 +79,7 @@ function ProgressBar({ step }) {
   );
 }
 
-// ─── Primary Duolingo button ─────────────────────────────────────────────────
+// ─── Primary Duolingo button ──────────────────────────────────────────────────
 function PrimaryButton({ onClick, disabled, children }) {
   const [pressed, setPressed] = useState(false);
   return (
@@ -123,16 +111,12 @@ function PrimaryButton({ onClick, disabled, children }) {
   );
 }
 
-// ─── Small inline action button (Join / + Add) — subtle flat style ───────────
-// The 3D shadow was too heavy at small size; using a flatter pill instead.
+// ─── Small inline action button ───────────────────────────────────────────────
 function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) {
   const [pressed, setPressed] = useState(false);
   const isGreen = color === 'green';
-  const activeBg = isGreen
-    ? 'linear-gradient(to bottom, #22c55e, #16a34a)'
-    : `linear-gradient(to bottom, ${C.blueMid}, ${C.blue})`;
+  const activeBg = isGreen ? 'linear-gradient(to bottom, #22c55e, #16a34a)' : `linear-gradient(to bottom, ${C.blueMid}, ${C.blue})`;
   const activeBorder = isGreen ? '#15803d' : C.blueDark;
-
   return (
     <button
       onMouseDown={() => !disabled && !loading && setPressed(true)}
@@ -143,22 +127,16 @@ function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) 
       onTouchCancel={() => setPressed(false)}
       disabled={disabled || loading}
       style={{
-        flexShrink: 0,
-        padding: '9px 16px',
-        borderRadius: 10,
+        flexShrink: 0, padding: '9px 16px', borderRadius: 10,
         border: `1.5px solid ${disabled || loading ? C.border : activeBorder}`,
         background: disabled || loading ? '#f1f5f9' : activeBg,
         color: disabled || loading ? C.muted : '#fff',
-        fontWeight: 800, fontSize: 13,
-        cursor: disabled || loading ? 'not-allowed' : 'pointer',
-        opacity: pressed ? 0.82 : 1,
-        transform: pressed ? 'scale(0.97)' : 'scale(1)',
+        fontWeight: 800, fontSize: 13, cursor: disabled || loading ? 'not-allowed' : 'pointer',
+        opacity: pressed ? 0.82 : 1, transform: pressed ? 'scale(0.97)' : 'scale(1)',
         transition: 'opacity 0.08s ease, transform 0.08s ease',
-        WebkitTapHighlightColor: 'transparent',
-        userSelect: 'none', outline: 'none',
+        WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-        whiteSpace: 'nowrap',
-        minWidth: 64,
+        whiteSpace: 'nowrap', minWidth: 64,
       }}
     >
       {loading ? <Spinner size={13} color={C.blueMid} /> : children}
@@ -166,13 +144,8 @@ function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) 
   );
 }
 
-// ─── Page shell ───────────────────────────────────────────────────────────────
 function PageShell({ children }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {children}
-    </div>
-  );
+  return <div style={{ position: 'fixed', inset: 0, background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>{children}</div>;
 }
 
 function SlidePane({ visible, dir, children }) {
@@ -191,7 +164,6 @@ function BackButton({ onClick }) {
   );
 }
 
-// ─── Spinner ─────────────────────────────────────────────────────────────────
 function Spinner({ size = 16, color = C.blueMid }) {
   useEffect(() => {
     if (document.getElementById('ob-spin-style')) return;
@@ -200,12 +172,9 @@ function Spinner({ size = 16, color = C.blueMid }) {
     s.textContent = '@keyframes ob-spin { to { transform: rotate(360deg); } }';
     document.head.appendChild(s);
   }, []);
-  return (
-    <div style={{ width: size, height: size, borderRadius: '50%', border: `2px solid ${color}30`, borderTopColor: color, animation: 'ob-spin 0.7s linear infinite', flexShrink: 0 }} />
-  );
+  return <div style={{ width: size, height: size, borderRadius: '50%', border: `2px solid ${color}30`, borderTopColor: color, animation: 'ob-spin 0.7s linear infinite', flexShrink: 0 }} />;
 }
 
-// ─── Joined gym card (shared between code + search paths) ────────────────────
 function JoinedGymCard({ gym, onSwitch, switching }) {
   return (
     <div style={{ flexShrink: 0 }}>
@@ -230,18 +199,13 @@ function JoinedGymCard({ gym, onSwitch, switching }) {
           )}
         </div>
       </div>
-      <button
-        onClick={onSwitch}
-        disabled={switching}
-        style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '14px 0 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, width: '100%', textAlign: 'center', opacity: switching ? 0.5 : 1 }}
-      >
+      <button onClick={onSwitch} disabled={switching} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '14px 0 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, width: '100%', textAlign: 'center', opacity: switching ? 0.5 : 1 }}>
         {switching ? 'Switching…' : 'Switch gym'}
       </button>
     </div>
   );
 }
 
-// ─── Split detail sheet ───────────────────────────────────────────────────────
 function SplitDetailSheet({ split, onClose }) {
   if (!split) return null;
   return (
@@ -254,9 +218,7 @@ function SplitDetailSheet({ split, onClose }) {
           <p style={{ color: C.text, fontWeight: 900, fontSize: 20, margin: '0 0 2px' }}>{split.name}</p>
           <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px' }}>{split.description}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-            {split.days.map(d => (
-              <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 8, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
-            ))}
+            {split.days.map(d => <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 8, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>)}
           </div>
           <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, margin: 0 }}>{split.blurb}</p>
         </div>
@@ -274,15 +236,72 @@ function SplitDetailSheet({ split, onClose }) {
                   <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0 }}>{wt.name}</p>
                 </div>
                 <div style={{ borderTop: `1px solid ${C.border}`, padding: '6px 14px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {(wt.exercises || []).map((ex, idx) => (
-                    <p key={idx} style={{ color: C.text, fontSize: 13, margin: 0, padding: '3px 0' }}>{ex.exercise}</p>
-                  ))}
+                  {(wt.exercises || []).map((ex, idx) => <p key={idx} style={{ color: C.text, fontSize: 13, margin: 0, padding: '3px 0' }}>{ex.exercise}</p>)}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Demo button helpers (How To Use pages) ───────────────────────────────────
+function CheckInDemo() {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: 18, background: '#15803d', transform: 'translateY(5px)' }} />
+      <button
+        onMouseDown={() => setPressed(true)}
+        onMouseUp={() => setPressed(false)}
+        onMouseLeave={() => setPressed(false)}
+        onTouchStart={() => setPressed(true)}
+        onTouchEnd={() => setPressed(false)}
+        onTouchCancel={() => setPressed(false)}
+        style={{
+          position: 'relative', zIndex: 1, width: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '16px 24px', borderRadius: 18, border: 'none',
+          background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
+          color: '#fff', fontSize: 17, fontWeight: 900, letterSpacing: '-0.01em',
+          cursor: 'pointer', userSelect: 'none', outline: 'none',
+          transform: pressed ? 'translateY(5px)' : 'translateY(0)',
+          boxShadow: pressed ? 'none' : '0 5px 0 0 #15803d, 0 8px 24px rgba(22,163,74,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >Check In</button>
+    </div>
+  );
+}
+
+function LogWorkoutDemo() {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: '#1a3fa8', transform: 'translateY(3px)' }} />
+      <button
+        onMouseDown={() => setPressed(true)}
+        onMouseUp={() => setPressed(false)}
+        onMouseLeave={() => setPressed(false)}
+        onTouchStart={() => setPressed(true)}
+        onTouchEnd={() => setPressed(false)}
+        onTouchCancel={() => setPressed(false)}
+        style={{
+          position: 'relative', zIndex: 1, width: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '14px 24px', borderRadius: 9, border: 'none',
+          background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)',
+          color: '#fff', fontSize: 14, fontWeight: 800,
+          cursor: 'pointer', userSelect: 'none', outline: 'none',
+          transform: pressed ? 'translateY(3px)' : 'translateY(0)',
+          boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, 0 6px 20px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >Log Workout</button>
     </div>
   );
 }
@@ -302,7 +321,6 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [animDir, setAnimDir] = useState('forward');
   const [visible, setVisible] = useState(true);
-
   const [selectedAccountType, setSelectedAccountType] = useState(null);
   const [gymJoinMode, setGymJoinMode] = useState('code');
   const [gymCode, setGymCode] = useState('');
@@ -328,7 +346,6 @@ export default function Onboarding() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
   });
 
-  // Debounced gym search
   useEffect(() => {
     if (gymJoinMode !== 'search' || gymSearch.trim().length < 2) { setGymSearchResults([]); setGymPlacesResults([]); return; }
     setIsGymSearching(true);
@@ -349,7 +366,6 @@ export default function Onboarding() {
     return () => clearTimeout(timer);
   }, [gymSearch, gymJoinMode]);
 
-  // Join via search result (existing DB gym)
   const joinGymMutation = useMutation({
     mutationFn: async (gym) => {
       const me = await base44.auth.me();
@@ -363,22 +379,11 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
-  // Join via Google Places (creates gym via backend function to bypass RLS)
   const createAndJoinGymMutation = useMutation({
     mutationFn: async (place) => {
       const addressParts = place.address.split(',');
       const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : place.address;
-      const gymData = {
-        name: place.name,
-        address: place.address,
-        city,
-        google_place_id: place.place_id,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        type: gymType,
-        claim_status: 'unclaimed',
-        image_url: place.photo_url || null,
-      };
+      const gymData = { name: place.name, address: place.address, city, google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude, type: gymType, claim_status: 'unclaimed', image_url: place.photo_url || null };
       const res = await base44.functions.invoke('addGym', { gymData });
       const gym = res.data.gym;
       const me = await base44.auth.me();
@@ -388,7 +393,6 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
-  // Join via code — looks up gym by join_code field, then creates membership
   const joinByCodeMutation = useMutation({
     mutationFn: async (code) => {
       const gyms = await base44.entities.Gym.filter({ join_code: code.toUpperCase() });
@@ -402,18 +406,10 @@ export default function Onboarding() {
       if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
       return gym;
     },
-    onSuccess: (gym) => {
-      setGymCodeError('');
-      setJoinedGym(gym);
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    },
-    onError: (err) => {
-      setGymCodeError(err.message || 'Invalid code — please try again');
-    },
+    onSuccess: (gym) => { setGymCodeError(''); setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
+    onError: (err) => { setGymCodeError(err.message || 'Invalid code — please try again'); },
   });
 
-  // Leave gym (used by Switch gym)
   const leaveGymForSwitchMutation = useMutation({
     mutationFn: async (gymId) => {
       const me = await base44.auth.me();
@@ -421,27 +417,18 @@ export default function Onboarding() {
       if (memberships.length > 0) await base44.entities.GymMembership.delete(memberships[0].id);
       if (me.primary_gym_id === gymId) await base44.auth.updateMe({ primary_gym_id: null });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
   function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setDemoBubbleDay(null); setDemoBubblePos(null); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
-  // Splash auto-advance
   useEffect(() => {
     if (step === 0) { const t = setTimeout(() => goTo(1, 'forward'), 2000); return () => clearTimeout(t); }
   }, [step]);
 
   function handleSwitchGym() {
     const gymId = joinedGym?.id;
-    setJoinedGym(null);
-    setGymSearch('');
-    setGymCode('');
-    setGymCodeError('');
-    setGymSearchResults([]);
-    setGymPlacesResults([]);
+    setJoinedGym(null); setGymSearch(''); setGymCode(''); setGymCodeError(''); setGymSearchResults([]); setGymPlacesResults([]);
     if (gymId) leaveGymForSwitchMutation.mutate(gymId);
   }
 
@@ -520,7 +507,6 @@ export default function Onboarding() {
   // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
     const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
-
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
@@ -530,8 +516,6 @@ export default function Onboarding() {
               <ProgressBar step={2} />
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 16px', flexShrink: 0 }}>Let's Join Your Community</h1>
-
-            {/* Switcher — hidden once joined */}
             {!joinedGym && (
               <div style={{ position: 'relative', display: 'flex', background: '#e2eaf4', borderRadius: 16, padding: 5, marginBottom: 16, flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.08)' }}>
                 <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 2px 0 0 #cbd5e1, 0 1px 4px rgba(0,0,0,0.08)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'code' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
@@ -542,57 +526,24 @@ export default function Onboarding() {
                 ))}
               </div>
             )}
-
-            {/* Input — hidden once joined */}
             {!joinedGym && (
               <div style={{ flexShrink: 0 }}>
                 {gymJoinMode === 'code' ? (
-                  /* ── Enter Code ── */
                   <div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
-                      <input
-                        type="text"
-                        value={gymCode}
-                        onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }}
-                        placeholder="e.g. GYM-ABCD"
-                        maxLength={12}
-                        onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }}
-                        style={{ flex: 1, fontSize: 18, padding: '13px 14px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
-                      />
-                      <ActionButton
-                        onClick={() => joinByCodeMutation.mutate(gymCode.trim())}
-                        disabled={gymCode.trim().length < 3}
-                        loading={joinByCodeMutation.isPending}
-                        color="blue"
-                      >
-                        Join
-                      </ActionButton>
+                      <input type="text" value={gymCode} onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }} placeholder="e.g. GYM-ABCD" maxLength={12} onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }} style={{ flex: 1, fontSize: 18, padding: '13px 14px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                      <ActionButton onClick={() => joinByCodeMutation.mutate(gymCode.trim())} disabled={gymCode.trim().length < 3} loading={joinByCodeMutation.isPending} color="blue">Join</ActionButton>
                     </div>
-                    {gymCodeError && (
-                      <p style={{ color: '#ef4444', fontSize: 12, margin: '6px 0 0', textAlign: 'center', fontWeight: 600 }}>{gymCodeError}</p>
-                    )}
+                    {gymCodeError && <p style={{ color: '#ef4444', fontSize: 12, margin: '6px 0 0', textAlign: 'center', fontWeight: 600 }}>{gymCodeError}</p>}
                     <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
                   </div>
                 ) : (
-                  /* ── Find Gym ── */
                   <div>
                     <div style={{ position: 'relative' }}>
                       <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1, pointerEvents: 'none' }} />
-                      <input
-                        type="text"
-                        value={gymSearch}
-                        onChange={e => setGymSearch(e.target.value)}
-                        placeholder="Search gyms near you…"
-                        onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }}
-                        style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
-                      />
-                      {isGymSearching && (
-                        <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}>
-                          <Spinner size={16} color={C.blueMid} />
-                        </div>
-                      )}
+                      <input type="text" value={gymSearch} onChange={e => setGymSearch(e.target.value)} placeholder="Search gyms near you…" onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }} style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                      {isGymSearching && <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}><Spinner size={16} color={C.blueMid} /></div>}
                     </div>
-
                     {gymSearchResults.length > 0 && (
                       <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                         {gymSearchResults.map((gym, i) => (
@@ -607,7 +558,6 @@ export default function Onboarding() {
                         ))}
                       </div>
                     )}
-
                     {gymPlacesResults.length > 0 && (
                       <div style={{ marginTop: 8 }}>
                         <p style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Add from Google Maps</p>
@@ -625,7 +575,6 @@ export default function Onboarding() {
                         </div>
                       </div>
                     )}
-
                     {!isGymSearching && gymSearch.length >= 2 && gymSearchResults.length === 0 && gymPlacesResults.length === 0 && (
                       <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, padding: 16, textAlign: 'center' }}>
                         <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>No gyms found — try a different search</p>
@@ -635,16 +584,7 @@ export default function Onboarding() {
                 )}
               </div>
             )}
-
-            {/* Joined gym card — same for both code and search paths */}
-            {joinedGym && (
-              <JoinedGymCard
-                gym={joinedGym}
-                onSwitch={handleSwitchGym}
-                switching={leaveGymForSwitchMutation.isPending}
-              />
-            )}
-
+            {joinedGym && <JoinedGymCard gym={joinedGym} onSwitch={handleSwitchGym} switching={leaveGymForSwitchMutation.isPending} />}
             <div style={{ flex: 1 }} />
             <div style={{ flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(3, 'forward')} disabled={!joinedGym}>Continue</PrimaryButton>
@@ -669,8 +609,7 @@ export default function Onboarding() {
               <ProgressBar step={3} />
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 3px', flexShrink: 0 }}>Pick Your Workout</h1>
-            <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px', flexShrink: 0 }}>Choose a training split, press to preview.</p>
-
+            <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px', flexShrink: 0 }}>Choose a training split. Tap the arrow to preview.</p>
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {DEFAULT_SPLITS.map(split => {
                 const isSelected = selectedSplit?.id === split.id;
@@ -703,7 +642,6 @@ export default function Onboarding() {
                 );
               })}
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 12, flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(4, 'forward')} disabled={!selectedSplit}>Continue</PrimaryButton>
               <button onClick={() => goTo(4, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600 }}>
@@ -731,9 +669,7 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 28px', flexShrink: 0 }}>What's your name?</h1>
             <div style={{ flexShrink: 0 }}>
-              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.slice(0, 30))} placeholder="Name" maxLength={30}
-                onFocus={e => { e.target.scrollIntoView = () => {}; }}
-                style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.slice(0, 30))} placeholder="Name" maxLength={30} onFocus={e => { e.target.scrollIntoView = () => {}; }} style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
             </div>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={() => goTo(5, 'forward')} disabled={displayName.trim().length < 2}>Continue</PrimaryButton>
@@ -804,7 +740,6 @@ export default function Onboarding() {
             </p>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={() => goTo(7, 'forward')} disabled={trainingDays.length === 0}>Continue</PrimaryButton>
-
           </div>
         </SlidePane>
       </PageShell>
@@ -812,7 +747,7 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 7 — HOW TO USE THE APP
+  // STEP 7 — HOW TO USE: CHECK IN
   // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
     return (
@@ -823,150 +758,13 @@ export default function Onboarding() {
               <BackButton onClick={() => goTo(6, 'back')} />
               <ProgressBar step={7} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 18px', flexShrink: 0 }}>How to use the app</h1>
-
-            {/* Scrollable content */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
-
-              {/* ── Check-in button block ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-
-                {/* Exact replica of CheckInButton from Home.jsx — idle/default state, full-width, green */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                  {/* bottom shadow layer */}
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 18, background: '#15803d', transform: 'translateY(5px)' }} />
-                  <div style={{
-                    position: 'relative', zIndex: 1,
-                    width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                    padding: '16px 24px',
-                    borderRadius: 18,
-                    cursor: 'default',
-                    userSelect: 'none',
-                    background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
-                    boxShadow: '0 5px 0 0 #15803d, 0 8px 28px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}>
-                    <span style={{ fontSize: 17, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.01em' }}>
-                      Check In
-                    </span>
-                  </div>
-                </div>
-
-                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
-                  This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
-                </p>
-              </div>
-
-              {/* divider */}
-              <div style={{ height: 1, background: C.border, flexShrink: 0 }} />
-
-              {/* ── Log Workout button block ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-
-                {/* Exact replica of Log Workout button from TodayWorkout.jsx */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                  {/* bottom shadow layer */}
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-                  <div style={{
-                    position: 'relative', zIndex: 1,
-                    width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    padding: '8px 12px', height: 32,
-                    borderRadius: 8,
-                    cursor: 'default',
-                    userSelect: 'none',
-                    fontSize: 10, fontWeight: 700, letterSpacing: '0em',
-                    color: '#ffffff',
-                    background: 'linear-gradient(to bottom, #1d4ed8, #1e40af 40%, #1e3a8a)',
-                    boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}>
-                    Log Workout
-                  </div>
-                </div>
-
-                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
-                  Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
-                </p>
-              </div>
-
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+              <CheckInDemo />
+              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+                This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
+              </p>
             </div>
-
-            <div style={{ paddingTop: 14, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
-            </div>
-
-          </div>
-        </SlidePane>
-      </PageShell>
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // STEP 7 — HOW TO USE THE APP (check-in + log workout)
-  // ══════════════════════════════════════════════════════════════════════
-  if (step === 7) {
-    return (
-      <PageShell>
-        <SlidePane visible={visible} dir={animDir}>
-          <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(6, 'back')} />
-              <ProgressBar step={7} />
-            </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 6px', flexShrink: 0 }}>How to use the app</h1>
-
-            {/* Scrollable content */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-
-              {/* ── Check-in button block ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, paddingTop: 28 }}>
-                {/* Full-width green Duolingo-style Check In button — non-functional demo */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 18, background: '#15803d', transform: 'translateY(5px)' }} />
-                  <div style={{
-                    position: 'relative', zIndex: 1, width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '16px 24px', borderRadius: 18,
-                    cursor: 'default', userSelect: 'none',
-                    background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
-                    boxShadow: '0 5px 0 0 #15803d, inset 0 1px 0 rgba(255,255,255,0.2)',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}>
-                    <span style={{ fontSize: 17, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Check In</span>
-                  </div>
-                </div>
-                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
-                  This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
-                </p>
-              </div>
-
-              {/* ── Log Workout button block ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, paddingTop: 36 }}>
-                {/* Full-width dark-blue Log Workout button matching TodayWorkout.jsx */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-                  <div style={{
-                    position: 'relative', zIndex: 1, width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '11px 12px', borderRadius: 9,
-                    cursor: 'default', userSelect: 'none',
-                    fontSize: 13, fontWeight: 800, color: '#fff',
-                    background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)',
-                    boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}>
-                    Log Workout
-                  </div>
-                </div>
-                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
-                  Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
-                </p>
-              </div>
-
-            </div>
-
             <div style={{ paddingTop: 14, flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
             </div>
@@ -977,22 +775,46 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 8 — WORKOUT DOTS EXPLAINER
+  // STEP 8 — HOW TO USE: LOG WORKOUT
   // ══════════════════════════════════════════════════════════════════════
   if (step === 8) {
-    // Example dot config — fixed for illustration purposes
-    // Mon=1 blue(logged workout), Tue=2 red(missed), Wed=3 green(logged rest),
-    // Thu=4 blue(logged workout), Fri=5 dark(future workout), Sat=6 dark(future workout), Sun=7 dark(future rest)
-    const DEMO_DAYS = [
-      { day: 1, label: 'Mon', type: 'logged',     isRest: false, isMissed: false, isFutureRest: false },
-      { day: 2, label: 'Tue', type: 'missed',     isRest: false, isMissed: true,  isFutureRest: false },
-      { day: 3, label: 'Wed', type: 'restDone',   isRest: true,  isMissed: false, isFutureRest: false },
-      { day: 4, label: 'Thu', type: 'logged',     isRest: false, isMissed: false, isFutureRest: false },
-      { day: 5, label: 'Fri', type: 'future',     isRest: false, isMissed: false, isFutureRest: false },
-      { day: 6, label: 'Sat', type: 'future',     isRest: false, isMissed: false, isFutureRest: false },
-      { day: 7, label: 'Sun', type: 'futureRest', isRest: true,  isMissed: false, isFutureRest: true  },
-    ];
+    return (
+      <PageShell>
+        <SlidePane visible={visible} dir={animDir}>
+          <div style={inner}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
+              <BackButton onClick={() => goTo(7, 'back')} />
+              <ProgressBar step={8} />
+            </div>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+              <LogWorkoutDemo />
+              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+                Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
+              </p>
+            </div>
+            <div style={{ paddingTop: 14, flexShrink: 0 }}>
+              <PrimaryButton onClick={() => goTo(9, 'forward')}>Continue</PrimaryButton>
+            </div>
+          </div>
+        </SlidePane>
+      </PageShell>
+    );
+  }
 
+  // ══════════════════════════════════════════════════════════════════════
+  // STEP 9 — WEEKLY DOTS EXPLAINER
+  // ══════════════════════════════════════════════════════════════════════
+  if (step === 9) {
+    const DEMO_DAYS = [
+      { day: 1, type: 'logged',     label: 'Mon' },
+      { day: 2, type: 'missed',     label: 'Tue' },
+      { day: 3, type: 'restDone',   label: 'Wed' },
+      { day: 4, type: 'logged',     label: 'Thu' },
+      { day: 5, type: 'future',     label: 'Fri' },
+      { day: 6, type: 'future',     label: 'Sat' },
+      { day: 7, type: 'futureRest', label: 'Sun' },
+    ];
     const getDotStyle = (d) => {
       if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
       if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: '0 4px 0 0 #991b1b', icon: 'x' };
@@ -1001,84 +823,36 @@ export default function Onboarding() {
       if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'leafOutline' };
       return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
     };
-
-    const getBubbleColor = (d) => {
-      if (d.type === 'logged')     return '#3b82f6';
-      if (d.type === 'missed')     return '#dc2626';
-      if (d.type === 'restDone')   return '#16a34a';
-      if (d.type === 'future')     return '#263244';
-      if (d.type === 'futureRest') return '#1e2535';
-      return '#263244';
-    };
-
-    const getDemoLabel = (d) => {
-      if (d.type === 'logged')     return d.day === 1 ? 'Chest' : 'Upper A';
-      if (d.type === 'missed')     return 'No Workout';
-      if (d.type === 'restDone')   return 'Rest Day';
-      if (d.type === 'future')     return d.day === 5 ? 'Push A' : 'Pull A';
-      if (d.type === 'futureRest') return 'Rest Day';
-      return d.label;
-    };
-
-    const getDemoDate = (d) => {
-      const labels = ['Monday 17 Mar', 'Tuesday 18 Mar', 'Wednesday 19 Mar', 'Thursday 20 Mar', 'Friday 21 Mar', 'Saturday 22 Mar', 'Sunday 23 Mar'];
-      return labels[d.day - 1];
-    };
-
+    const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
+    const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || d.label);
+    const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
     const hasViewSummary = (d) => d.type === 'logged';
     const hasViewWorkout = (d) => d.type === 'future';
-
-    // Bubble geometry
-    const BUBBLE_W = 260;
-    const ARROW_H = 7;
-    const ARROW_W = 13;
-    const RADIUS = 13;
+    const BUBBLE_W = 260, ARROW_H = 7, ARROW_W = 13, RADIUS = 13;
 
     const renderBubble = () => {
       if (demoBubbleDay === null || !demoBubblePos) return null;
       const d = DEMO_DAYS[demoBubbleDay - 1];
-      const BUBBLE_H = (hasViewSummary(d) || hasViewWorkout(d)) ? 112 : 74;
+      const BUBBLE_H = (hasViewSummary(d) || hasViewWorkout(d)) ? 116 : 74;
       const SVG_H = BUBBLE_H + ARROW_H;
       const screenW = window.innerWidth;
       const rawLeft = demoBubblePos.cx - BUBBLE_W / 2;
       const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
       const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(demoBubblePos.cx - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
-      const arrowL = arrowTip - ARROW_W / 2;
-      const arrowR = arrowTip + ARROW_W / 2;
+      const arrowL = arrowTip - ARROW_W / 2, arrowR = arrowTip + ARROW_W / 2;
       const color = getBubbleColor(d);
-      const path = [
-        `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
-        `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
-        `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
-        `L ${BUBBLE_W} ${SVG_H - RADIUS}`, `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
-        `L ${RADIUS} ${SVG_H}`, `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
-        `L 0 ${ARROW_H + RADIUS}`, `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`, `Z`,
-      ].join(' ');
-
+      const path = [`M ${RADIUS} ${ARROW_H}`,`L ${arrowL} ${ARROW_H}`,`L ${arrowTip} 0`,`L ${arrowR} ${ARROW_H}`,`L ${BUBBLE_W-RADIUS} ${ARROW_H}`,`Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H+RADIUS}`,`L ${BUBBLE_W} ${SVG_H-RADIUS}`,`Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W-RADIUS} ${SVG_H}`,`L ${RADIUS} ${SVG_H}`,`Q 0 ${SVG_H} 0 ${SVG_H-RADIUS}`,`L 0 ${ARROW_H+RADIUS}`,`Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,`Z`].join(' ');
       return (
-        <div
-          style={{ position: 'fixed', top: demoBubblePos.bottom + 4, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999, pointerEvents: 'auto' }}
-          onClick={e => e.stopPropagation()}
-        >
-          <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}>
-            <path d={path} fill={color} />
-          </svg>
+        <div style={{ position: 'fixed', top: demoBubblePos.bottom + 4, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999 }} onClick={e => e.stopPropagation()}>
+          <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}><path d={path} fill={color} /></svg>
           <div style={{ position: 'absolute', top: ARROW_H + 8, left: 12, right: 12, bottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: '0.01em', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>
-              {getDemoLabel(d)}
-            </span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', textAlign: 'center' }}>
-              {getDemoDate(d)}
-            </span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>{getDemoLabel(d)}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>{getDemoDate(d)}</span>
             {hasViewSummary(d) && (
-              <div style={{ marginTop: 6, width: '100%', padding: '6px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', border: 'none', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.6 }}>
-                View Summary
-              </div>
+              <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Summary</div>
             )}
             {hasViewWorkout(d) && (
-              <div style={{ marginTop: 6, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.6 }}>
-                View Workout
-              </div>
+              <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Workout</div>
             )}
           </div>
         </div>
@@ -1090,55 +864,34 @@ export default function Onboarding() {
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(7, 'back')} />
-              <ProgressBar step={8} />
+              <BackButton onClick={() => goTo(8, 'back')} />
+              <ProgressBar step={9} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 8px', flexShrink: 0 }}>Your weekly progress</h1>
-            <p style={{ color: C.sub, fontSize: 13, margin: '0 0 0', flexShrink: 0 }}>Tap any dot to see what it means.</p>
-
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-              {/* Close bubble overlay */}
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 32 }}>
               {demoBubbleDay !== null && (
-                <div
-                  onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }}
-                  style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
-                />
+                <div onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
               )}
-
-              {/* 7-dot row */}
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', padding: '0 4px' }}>
-                {DEMO_DAYS.map((d, i) => {
+                {DEMO_DAYS.map((d) => {
                   const s = getDotStyle(d);
-                  const SIZE = 40;
+                  const SIZE = 42;
                   return (
-                    <div key={d.day} style={{ position: 'relative', flexShrink: 0 }}>
+                    <div key={d.day} style={{ flexShrink: 0 }}>
                       <button
                         onPointerDown={(e) => {
+                          e.currentTarget.style.transform = 'translateY(4px)';
+                          e.currentTarget.style.boxShadow = 'none';
                           const rect = e.currentTarget.getBoundingClientRect();
-                          if (demoBubbleDay === d.day) {
-                            setDemoBubbleDay(null);
-                            setDemoBubblePos(null);
-                          } else {
-                            setDemoBubbleDay(d.day);
-                            setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom });
-                          }
+                          if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
+                          else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
                         }}
-                        style={{
-                          width: SIZE, height: SIZE, borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: s.bg, border: `1px solid ${s.border}`,
-                          boxShadow: s.shadow,
-                          cursor: 'pointer', padding: 0, outline: 'none',
-                          WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                          transition: 'opacity 0.1s ease',
-                        }}
+                        onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                        onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                        style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
                       >
-                        {s.icon === 'check' && (
-                          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        )}
-                        {s.icon === 'x' && (
-                          <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>
-                        )}
+                        {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                        {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
                         {s.icon === 'leaf' && (
                           <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
                             <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
@@ -1147,9 +900,7 @@ export default function Onboarding() {
                             <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
                           </svg>
                         )}
-                        {s.icon === 'empty' && (
-                          <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />
-                        )}
+                        {s.icon === 'empty' && <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
                         {s.icon === 'leafOutline' && (
                           <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
                             <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
@@ -1163,39 +914,24 @@ export default function Onboarding() {
                   );
                 })}
               </div>
-
-              {/* Legend */}
-              <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', paddingLeft: 8, paddingRight: 8 }}>
-                {[
-                  { color: 'linear-gradient(to right, #60a5fa, #3b82f6)', label: 'Workout logged ✓' },
-                  { color: 'linear-gradient(to right, #f87171, #ef4444)', label: 'Workout missed ✗' },
-                  { color: 'linear-gradient(to right, #4ade80, #16a34a)', label: 'Rest day (past or today)' },
-                  { color: 'linear-gradient(to right, #2d3748, #0f172a)', label: 'Upcoming day' },
-                ].map(({ color, label }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                    <span style={{ color: C.sub, fontSize: 12, fontWeight: 600 }}>{label}</span>
-                  </div>
-                ))}
-              </div>
+              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
+                This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
+              </p>
             </div>
-
             <div style={{ paddingTop: 14, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(9, 'forward')}>Continue</PrimaryButton>
+              <PrimaryButton onClick={() => goTo(10, 'forward')}>Continue</PrimaryButton>
             </div>
           </div>
         </SlidePane>
-
-        {/* Demo bubble rendered at fixed position */}
         {renderBubble()}
       </PageShell>
     );
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 9 — WELCOME
+  // STEP 10 — WELCOME
   // ══════════════════════════════════════════════════════════════════════
-  if (step === 9) {
+  if (step === 10) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
