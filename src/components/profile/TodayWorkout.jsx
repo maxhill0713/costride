@@ -696,7 +696,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           exercises={todayWorkout?.exercises}
           lastWorkout={lastWorkout}
           notes={currentUser?.workout_notes?.[todayWorkout?.name] || ''}
-          onConfirm={() => logWorkoutMutation.mutate()}
+          onConfirm={() => { setShowSummary(false); logWorkoutMutation.mutate(); }}
           onCancel={() => setShowSummary(false)}
           isLoading={logWorkoutMutation.isPending}
         />
