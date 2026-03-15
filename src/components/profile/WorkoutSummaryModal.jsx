@@ -112,6 +112,23 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
                 <p className="text-xs text-slate-400 leading-relaxed">{notes}</p>
               </motion.div>
             )}
+
+            {/* Confirm button */}
+            {showConfirmButton && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="pt-2"
+              >
+                <Button
+                  onClick={onConfirm}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl py-3 h-auto text-base shadow-[0_4px_0_0_#1a3fa8] active:shadow-none active:translate-y-[4px] transition-all duration-100 transform-gpu">
+                  {isLoading ? 'Saving...' : 'Save Workout 💪'}
+                </Button>
+              </motion.div>
+            )}
             </div>
             </DialogContent>
             </Dialog>
