@@ -182,6 +182,10 @@ export default function JoinWithCodeModal({ open, onClose, currentUser, gymCount
         join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly'
       });
       await base44.entities.Gym.update(gym.id, { members_count: (gym.members_count || 0) + 1 });
+      // Auto-set as primary gym if user has no primary gym yet
+      if (!currentUser.primary_gym_id) {
+        await base44.auth.updateMe({ primary_gym_id: gym.id });
+      }
       return gym;
     },
     onMutate: async () => {
