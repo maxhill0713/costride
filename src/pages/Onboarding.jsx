@@ -568,28 +568,36 @@ export default function Onboarding() {
 
             {/* Joined gym card — shown once gym is joined, replaces all search UI */}
             {joinedGym && (
-              <div style={{ flexShrink: 0, borderRadius: 18, overflow: 'hidden', border: `1.5px solid ${C.greenBorder}`, boxShadow: '0 3px 0 0 #15803d, 0 6px 20px rgba(22,163,74,0.15)', background: C.card }}>
-                {/* Gym image */}
-                {joinedGym.image_url && (
-                  <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
-                    <img src={joinedGym.image_url} alt={joinedGym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
-                  </div>
-                )}
-                {!joinedGym.image_url && (
-                  <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Building2 size={32} color={C.blueMid} />
-                  </div>
-                )}
-                <div style={{ padding: '12px 16px 14px' }}>
-                  <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: '0 0 4px' }}>{joinedGym.name}</p>
-                  {(joinedGym.address || joinedGym.city) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <MapPin size={12} color={C.muted} />
-                      <p style={{ color: C.sub, fontSize: 12, margin: 0 }}>{joinedGym.address || joinedGym.city}</p>
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ borderRadius: 18, overflow: 'hidden', border: `1.5px solid ${C.greenBorder}`, boxShadow: '0 3px 0 0 #15803d, 0 6px 20px rgba(22,163,74,0.15)', background: C.card }}>
+                  {joinedGym.image_url && (
+                    <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
+                      <img src={joinedGym.image_url} alt={joinedGym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
                     </div>
                   )}
+                  {!joinedGym.image_url && (
+                    <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Building2 size={32} color={C.blueMid} />
+                    </div>
+                  )}
+                  <div style={{ padding: '12px 16px 14px' }}>
+                    <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: '0 0 4px' }}>{joinedGym.name}</p>
+                    {(joinedGym.address || joinedGym.city) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <MapPin size={12} color={C.muted} />
+                        <p style={{ color: C.sub, fontSize: 12, margin: 0 }}>{joinedGym.address || joinedGym.city}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {/* Switch gym button */}
+                <button
+                  onClick={() => { setJoinedGym(null); setGymSearch(''); setGymCode(''); setGymSearchResults([]); setGymPlacesResults([]); }}
+                  style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '10px 0 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, width: '100%', textAlign: 'center' }}
+                >
+                  Switch gym
+                </button>
               </div>
             )}
 
@@ -622,7 +630,7 @@ export default function Onboarding() {
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 3px', flexShrink: 0 }}>Pick Your Workout</h1>
             <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px', flexShrink: 0 }}>Choose a training split, press to preview.</p>
 
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {DEFAULT_SPLITS.map(split => {
                 const isSelected = selectedSplit?.id === split.id;
                 return (
@@ -652,17 +660,16 @@ export default function Onboarding() {
                       }
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', padding: '13px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: C.text, fontWeight: 900, fontSize: 15, margin: '0 0 2px', letterSpacing: '-0.01em' }}>{split.name}</p>
-                        <p style={{ color: C.sub, fontSize: 12, margin: '0 0 7px' }}>{split.description}</p>
-                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        <p style={{ color: C.text, fontWeight: 900, fontSize: 15, margin: '0 0 1px', letterSpacing: '-0.01em' }}>{split.name}</p>
+                        <p style={{ color: C.sub, fontSize: 11, margin: '0 0 5px' }}>{split.description}</p>
+                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                           {split.days.map(d => (
-                            <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
+                            <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
                           ))}
                         </div>
                       </div>
-                      {/* Right chevron zone — tappable for preview */}
                       <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 12, flexShrink: 0 }}>
                         <ChevronRight size={20} color={isSelected ? C.green : C.muted} strokeWidth={2.5} />
                       </div>
@@ -809,24 +816,28 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ paddingTop: 52, marginBottom: 24, flexShrink: 0 }}>
+            {/* Progress bar at top */}
+            <div style={{ paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
               <ProgressBar step={7} />
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, textAlign: 'center' }}>
-              <img src={LOGO_URL} alt="CoStride" style={{ width: 88, height: 88, borderRadius: 24, objectFit: 'cover', boxShadow: '0 8px 32px rgba(37,99,235,0.18)', border: `3px solid ${C.blueLight}` }} />
-              <div>
-                <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 8px', lineHeight: 1.1 }}>
-                  Welcome to{' '}
-                  <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
-                </h1>
-                {displayName && (
-                  <p style={{ color: C.sub, fontSize: 16, margin: '0 0 4px' }}>
-                    You're all set, <strong style={{ color: C.text }}>{displayName}</strong> 👋
-                  </p>
-                )}
-                <p style={{ color: C.muted, fontSize: 14, margin: 0 }}>Your journey starts now. Let's build those streaks.</p>
-              </div>
+
+            {/* Title sits just under the progress bar */}
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 6px', lineHeight: 1.1, flexShrink: 0 }}>
+              Welcome to{' '}
+              <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
+            </h1>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+              {displayName && (
+                <p style={{ color: C.sub, fontSize: 18, margin: 0, fontWeight: 600 }}>
+                  You're all set, <strong style={{ color: C.text }}>{displayName}</strong>,
+                </p>
+              )}
+              <p style={{ color: C.sub, fontSize: 16, margin: 0, lineHeight: 1.5 }}>
+                Your journey starts now. Let's build community and start earning some rewards.
+              </p>
             </div>
+
             <PrimaryButton onClick={handleFinish} disabled={updateMeMutation.isPending}>
               {updateMeMutation.isPending ? 'Setting up…' : 'Get Started'}
             </PrimaryButton>
