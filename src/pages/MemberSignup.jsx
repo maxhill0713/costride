@@ -87,6 +87,11 @@ export default function MemberSignup() {
           join_date: new Date().toISOString().split('T')[0],
           membership_type: 'member'
         });
+        // Auto-set as primary gym if user has no primary gym yet
+        if (!user.primary_gym_id) {
+          await base44.auth.updateMe({ primary_gym_id: gym.id });
+          queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        }
       }
       setJoinedGym(gym);
       setShowJoinSuccess(true);
