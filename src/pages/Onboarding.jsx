@@ -4,8 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
-  ChevronLeft, Building2, User, CheckCircle2,
-  Search, Camera, X, ArrowRight
+  ChevronLeft, ChevronRight, Building2, User, CheckCircle2,
+  Search, Camera, X
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -320,27 +320,14 @@ function SplitDetailSheet({ split, onClose }) {
           width: '100%', maxWidth: 480, margin: '0 auto',
           borderRadius: '24px 24px 0 0', overflow: 'hidden',
           background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
-          maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+          maxHeight: '82vh', display: 'flex', flexDirection: 'column',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 24 }}>{split.icon}</span>
-            <div>
-              <p style={{ color: '#fff', fontWeight: 900, fontSize: 16, margin: 0 }}>{split.name}</p>
-              <p style={{ color: '#94a3b8', fontSize: 11, margin: 0 }}>{split.description}</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(100,116,139,0.2)', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Blurb + days */}
-        <div style={{ padding: '12px 20px', flexShrink: 0 }}>
-          <p style={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.5, margin: '0 0 10px' }}>{split.blurb}</p>
+        {/* Header — no X button, no emoji */}
+        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+          <p style={{ color: '#fff', fontWeight: 900, fontSize: 18, margin: '0 0 2px' }}>{split.name}</p>
+          <p style={{ color: '#94a3b8', fontSize: 12, margin: '0 0 10px' }}>{split.description}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {split.days.map(d => (
               <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 8, color: '#fff' }}>
@@ -348,27 +335,45 @@ function SplitDetailSheet({ split, onClose }) {
               </span>
             ))}
           </div>
+          <p style={{ color: '#64748b', fontSize: 12, lineHeight: 1.5, margin: '10px 0 0' }}>{split.blurb}</p>
         </div>
 
-        {/* Exercise list — scrollable inside sheet only */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '0 20px 24px' }}>
+        {/* Day cards — scrollable inside sheet */}
+        <div style={{ overflowY: 'auto', flex: 1, padding: '12px 16px 24px' }}>
           {split.days.map(day => {
             const wt = split.workouts[day];
             if (!wt) return null;
             const grad = COLOR_GRADIENT_MAP[wt.color] || 'from-blue-500 to-blue-600';
             return (
               <div key={day} style={{ marginBottom: 10, borderRadius: 16, overflow: 'hidden', background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
-                  <div className={`bg-gradient-to-br ${grad}`} style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 9, fontWeight: 900, color: '#fff' }}>{DAY_NAMES[day - 1]}</span>
+                {/* Day header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px 8px' }}>
+                  <div className={`bg-gradient-to-br ${grad}`} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#fff' }}>{DAY_NAMES[day - 1]}</span>
                   </div>
                   <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, margin: 0 }}>{wt.name}</p>
                 </div>
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+
+                {/* Column headers */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '6px 14px 4px', display: 'grid', gridTemplateColumns: '1fr 44px 44px', gap: 6, alignItems: 'center' }}>
+                  <span style={{ color: '#475569', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Exercise</span>
+                  <span style={{ color: '#475569', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'center' }}>Sets</span>
+                  <span style={{ color: '#475569', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'center' }}>Reps</span>
+                </div>
+
+                {/* Exercise rows */}
+                <div style={{ padding: '0 14px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {(wt.exercises || []).map((ex, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ color: '#cbd5e1', fontSize: 12 }}>{ex.exercise}</span>
-                      <span style={{ color: '#64748b', fontSize: 11, fontWeight: 700 }}>{ex.sets}×{ex.reps}</span>
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 44px 44px', gap: 6, alignItems: 'center' }}>
+                      <div style={{ padding: '7px 10px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(71,85,105,0.3)', borderRadius: 8 }}>
+                        <span style={{ color: '#cbd5e1', fontSize: 12 }}>{ex.exercise}</span>
+                      </div>
+                      <div style={{ padding: '7px 4px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(71,85,105,0.3)', borderRadius: 8, textAlign: 'center' }}>
+                        <span style={{ color: '#94a3b8', fontSize: 13, fontWeight: 700 }}>{ex.sets}</span>
+                      </div>
+                      <div style={{ padding: '7px 4px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(71,85,105,0.3)', borderRadius: 8, textAlign: 'center' }}>
+                        <span style={{ color: '#94a3b8', fontSize: 13, fontWeight: 700 }}>{ex.reps}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -660,14 +665,13 @@ export default function Onboarding() {
 
             <div style={{ flex: 1 }} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(3, 'forward')}>Continue</PrimaryButton>
-              <button
+            <div style={{ flexShrink: 0 }}>
+              <PrimaryButton
                 onClick={() => goTo(3, 'forward')}
-                style={{ background: 'none', border: 'none', color: '#475569', fontSize: 14, cursor: 'pointer', padding: '8px 0', WebkitTapHighlightColor: 'transparent' }}
+                disabled={gymJoinMode === 'code' ? gymCode.trim().length < 3 : gymSearch.trim().length < 2}
               >
-                Skip — I'll join a gym later
-              </button>
+                Continue
+              </PrimaryButton>
             </div>
           </div>
         </SlidePane>
@@ -695,7 +699,7 @@ export default function Onboarding() {
               Pick Your Workout
             </h1>
             <p style={{ color: '#94a3b8', fontSize: 13, margin: '0 0 14px', flexShrink: 0 }}>
-              Choose a training split. Tap <span style={{ color: '#60a5fa' }}>View</span> to preview it.
+              Choose a training split, press to preview.
             </p>
 
             {/* Split cards — this section takes remaining space */}
@@ -705,25 +709,24 @@ export default function Onboarding() {
                 return (
                   <div
                     key={split.id}
-                    onClick={() => setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts })}
+                    onClick={() => {
+                      setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts });
+                      setPreviewSplit(split);
+                    }}
                     style={{
                       position: 'relative', borderRadius: 18, cursor: 'pointer',
                       background: 'linear-gradient(135deg, rgba(20,25,50,0.85) 0%, rgba(8,10,20,0.96) 100%)',
-                      border: isSelected ? '1.5px solid rgba(96,165,250,0.55)' : '1px solid rgba(255,255,255,0.07)',
-                      boxShadow: isSelected ? `0 4px 20px rgba(0,0,0,0.4), 0 0 16px ${split.glowColor}` : '0 2px 8px rgba(0,0,0,0.3)',
+                      border: isSelected ? '1.5px solid rgba(34,197,94,0.6)' : '1px solid rgba(255,255,255,0.07)',
+                      boxShadow: isSelected ? '0 4px 20px rgba(0,0,0,0.4), 0 0 16px rgba(34,197,94,0.25)' : '0 2px 8px rgba(0,0,0,0.3)',
                       overflow: 'hidden', flexShrink: 0,
                       transition: 'border 0.2s, box-shadow 0.2s',
                     }}
                   >
                     {/* glow */}
-                    <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 20% 40%, ${split.glowColor} 0%, transparent 55%)`, opacity: isSelected ? 0.18 : 0.07, pointerEvents: 'none', borderRadius: 18 }} />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', position: 'relative' }}>
-                      <span style={{ fontSize: 26, flexShrink: 0 }}>{split.icon}</span>
+                    <div style={{ position: 'absolute', inset: 0, background: isSelected ? 'radial-gradient(ellipse at 20% 40%, rgba(34,197,94,0.2) 0%, transparent 55%)' : `radial-gradient(ellipse at 20% 40%, ${split.glowColor} 0%, transparent 55%)`, opacity: isSelected ? 1 : 0.07, pointerEvents: 'none', borderRadius: 18 }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '12px 14px', position: 'relative' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <p style={{ color: '#fff', fontWeight: 900, fontSize: 15, margin: 0 }}>{split.name}</p>
-                          {isSelected && <CheckCircle2 size={14} color="#60a5fa" />}
-                        </div>
+                        <p style={{ color: '#fff', fontWeight: 900, fontSize: 15, margin: 0 }}>{split.name}</p>
                         <p style={{ color: '#64748b', fontSize: 11, margin: '2px 0 6px' }}>{split.description}</p>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           {split.days.map(d => (
@@ -733,12 +736,7 @@ export default function Onboarding() {
                           ))}
                         </div>
                       </div>
-                      <button
-                        onClick={e => { e.stopPropagation(); setPreviewSplit(split); }}
-                        style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: '#60a5fa', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '5px 10px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        View
-                      </button>
+                      <ChevronRight size={18} color="#475569" style={{ flexShrink: 0 }} />
                     </div>
                   </div>
                 );
@@ -844,7 +842,7 @@ export default function Onboarding() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  position: 'relative', width: 120, height: 120, borderRadius: '50%', overflow: 'hidden',
+                  position: 'relative', width: 180, height: 180, borderRadius: '50%', overflow: 'hidden',
                   border: avatarPreview ? '3px solid rgba(96,165,250,0.6)' : '2px dashed rgba(71,85,105,0.6)',
                   background: avatarPreview ? 'transparent' : 'rgba(15,23,42,0.7)',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -854,20 +852,11 @@ export default function Onboarding() {
                 {avatarPreview
                   ? <img src={avatarPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <Camera size={32} color="#475569" />
-                      <span style={{ color: '#475569', fontSize: 11, fontWeight: 600 }}>Tap to upload</span>
+                      <Camera size={40} color="#475569" />
+                      <span style={{ color: '#475569', fontSize: 12, fontWeight: 600 }}>Tap to upload</span>
                     </div>
                 }
               </button>
-
-              {avatarPreview && (
-                <button
-                  onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: '#ef4444', fontSize: 13, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <X size={14} /> Remove photo
-                </button>
-              )}
 
               <p style={{ color: '#475569', fontSize: 12, textAlign: 'center', maxWidth: 240, lineHeight: 1.5, margin: 0 }}>
                 A photo helps gym members and friends recognise you in the community.
@@ -991,24 +980,7 @@ export default function Onboarding() {
                 </p>
               </div>
 
-              {/* Summary chips */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-                {selectedSplit && (
-                  <span style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, color: '#93c5fd', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                    📋 {selectedSplit.name}
-                  </span>
-                )}
-                {trainingDays.length > 0 && (
-                  <span style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, color: '#67e8f9', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}>
-                    📅 {trainingDays.length}×/week
-                  </span>
-                )}
-                {avatarPreview && (
-                  <span style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, color: '#86efac', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
-                    📸 Photo added
-                  </span>
-                )}
-              </div>
+              {/* no summary chips */}
             </div>
 
             <PrimaryButton onClick={handleFinish} disabled={updateMeMutation.isPending}>
