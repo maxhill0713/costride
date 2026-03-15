@@ -356,6 +356,14 @@ export default function Onboarding() {
 
   function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
+  // Splash auto-advance after 2 seconds
+  useEffect(() => {
+    if (step === 0) {
+      const t = setTimeout(() => goTo(1, 'forward'), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
   function handleAccountTypeContinue() {
     if (!selectedAccountType) return;
     if (selectedAccountType === 'gym_owner') { updateMeMutation.mutate({ account_type: 'gym_owner', onboarding_completed: false }); navigate(createPageUrl('GymSignup')); return; }
