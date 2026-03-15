@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Building2, User,
-  Search, Camera, Loader2, CheckCircle2
+  Search, Camera, Loader2, CheckCircle2, MapPin
 } from 'lucide-react';
 
 const LOGO_URL =
@@ -130,6 +130,42 @@ function PrimaryButton({ onClick, disabled, children }) {
   );
 }
 
+// Small 3D Duolingo-style action button (for Join / + Add)
+function ActionButton({ onClick, disabled, children, color = 'blue' }) {
+  const [pressed, setPressed] = useState(false);
+  const isGreen = color === 'green';
+  const bg = isGreen
+    ? 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)'
+    : `linear-gradient(to bottom, #60a5fa, ${C.blueMid} 40%, ${C.blue})`;
+  const shadow = isGreen ? '#15803d' : C.blueDark;
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: disabled ? '#cbd5e1' : shadow, transform: 'translateY(3px)' }} />
+      <button
+        onMouseDown={() => !disabled && setPressed(true)}
+        onMouseUp={() => { setPressed(false); if (!disabled) onClick?.(); }}
+        onMouseLeave={() => setPressed(false)}
+        onTouchStart={() => !disabled && setPressed(true)}
+        onTouchEnd={() => { setPressed(false); if (!disabled) onClick?.(); }}
+        onTouchCancel={() => setPressed(false)}
+        disabled={disabled}
+        style={{
+          position: 'relative', zIndex: 1,
+          padding: '7px 14px', borderRadius: 10, border: 'none',
+          fontWeight: 800, fontSize: 12,
+          background: disabled ? '#e2e8f0' : bg,
+          color: disabled ? '#94a3b8' : '#fff',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          transform: pressed ? 'translateY(3px)' : 'translateY(0)',
+          boxShadow: pressed || disabled ? 'none' : `0 3px 0 0 ${shadow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
+          WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none', whiteSpace: 'nowrap',
+        }}
+      >{children}</button>
+    </div>
+  );
+}
+
 // White fixed-screen shell
 function PageShell({ children }) {
   return (
@@ -155,19 +191,37 @@ function BackButton({ onClick }) {
   );
 }
 
+// Spinner that actually animates (CSS keyframe injected once)
+function Spinner({ size = 16, color = C.blueMid }) {
+  useEffect(() => {
+    if (document.getElementById('ob-spin-style')) return;
+    const s = document.createElement('style');
+    s.id = 'ob-spin-style';
+    s.textContent = '@keyframes ob-spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(s);
+  }, []);
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      border: `2px solid ${color}30`,
+      borderTopColor: color,
+      animation: 'ob-spin 0.7s linear infinite',
+      flexShrink: 0,
+    }} />
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// SPLIT DETAIL BOTTOM SHEET — white interior
+// SPLIT DETAIL BOTTOM SHEET
 // ─────────────────────────────────────────────────────────────────────────────
 function SplitDetailSheet({ split, onClose }) {
   if (!split) return null;
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }} onClick={onClose}>
       <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', borderRadius: '24px 24px 0 0', overflow: 'hidden', background: C.card, maxHeight: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 -8px 40px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
-        {/* drag handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 6px' }}>
           <div style={{ width: 36, height: 4, borderRadius: 99, background: '#e2e8f0' }} />
         </div>
-        {/* header */}
         <div style={{ padding: '0 20px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
           <p style={{ color: C.text, fontWeight: 900, fontSize: 20, margin: '0 0 2px' }}>{split.name}</p>
           <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px' }}>{split.description}</p>
@@ -178,7 +232,6 @@ function SplitDetailSheet({ split, onClose }) {
           </div>
           <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, margin: 0 }}>{split.blurb}</p>
         </div>
-        {/* day cards */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '12px 16px 32px' }}>
           {split.days.map(day => {
             const wt = split.workouts[day];
@@ -207,8 +260,8 @@ function SplitDetailSheet({ split, onClose }) {
 }
 
 const ACCOUNT_TYPES = [
-  { id: 'personal', title: "I'm a Member", description: 'Track workouts, join challenges, connect with gyms', icon: User, color: 'from-blue-400 to-cyan-500', shadow: 'rgba(59,130,246,0.25)' },
-  { id: 'gym_owner', title: 'I own a Gym', description: 'Register your gym, manage members, create rewards', icon: Building2, color: 'from-purple-400 to-pink-500', shadow: 'rgba(168,85,247,0.25)' },
+  { id: 'personal', title: "I'm a Member", description: 'Track workouts, join challenges, connect with gyms', icon: User, gradient: 'linear-gradient(135deg, #3b82f6, #06b6d4)', shadow: 'rgba(59,130,246,0.3)' },
+  { id: 'gym_owner', title: 'I own a Gym', description: 'Register your gym, manage members, create rewards', icon: Building2, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)', shadow: 'rgba(168,85,247,0.3)' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -314,50 +367,72 @@ export default function Onboarding() {
   const inner = { flex: 1, display: 'flex', flexDirection: 'column', padding: '0 24px 28px', overflow: 'hidden', maxWidth: 480, width: '100%', margin: '0 auto' };
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 0 — SPLASH (dark)
+  // STEP 0 — SPLASH
   // ══════════════════════════════════════════════════════════════════════
   if (step === 0) {
     return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72, paddingTop: 0 }}>
-        {/* top spacer */}
+      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72 }}>
         <div style={{ flex: 1 }} />
-        {/* logo centred */}
+        {/* Logo centred, no glow */}
         <img src={LOGO_URL} alt="CoStride" style={{ width: 96, height: 96, borderRadius: 28, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
         <div style={{ flex: 1 }} />
-        {/* name at the bottom */}
+        {/* CoStride at bottom — "Co" in blue gradient matching home badge, "Stride" in white */}
         <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>
-          Co<span style={{ background: 'linear-gradient(to right, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Stride</span>
+          <span style={{ background: 'linear-gradient(to right, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Co</span>
+          <span style={{ color: '#ffffff' }}>Stride</span>
         </h1>
       </div>
     );
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 1 — ACCOUNT TYPE (light theme, matching rest of member onboarding)
+  // STEP 1 — ACCOUNT TYPE
   // ══════════════════════════════════════════════════════════════════════
   if (step === 1) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 52, paddingBottom: 20, flexShrink: 0 }}>
-              <img src={LOGO_URL} alt="CoStride" style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover', boxShadow: '0 4px 16px rgba(37,99,235,0.15)', border: `2px solid ${C.blueLight}` }} />
-            </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 24px', flexShrink: 0 }}>Choose your account type</h1>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20, flexShrink: 0 }}>
+            {/* No logo — title shifted up */}
+            <div style={{ paddingTop: 60, flexShrink: 0 }} />
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 28px', flexShrink: 0 }}>Choose your account type</h1>
+
+            {/* Account type cards — professional, app-consistent style */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20, flexShrink: 0 }}>
               {ACCOUNT_TYPES.map(type => {
-                const Icon = type.icon; const isSelected = selectedAccountType === type.id;
+                const Icon = type.icon;
+                const isSelected = selectedAccountType === type.id;
                 return (
-                  <button key={type.id} onClick={() => setSelectedAccountType(type.id)} style={{ position: 'relative', padding: 18, borderRadius: 20, background: isSelected ? C.blueLight : C.card, border: isSelected ? `2px solid ${C.blueMid}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? `0 4px 16px rgba(59,130,246,0.15)` : '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', textAlign: 'left', transform: isSelected ? 'scale(1.02)' : 'scale(1)', transition: 'all 0.2s ease', WebkitTapHighlightColor: 'transparent' }}>
-                    <div className={`bg-gradient-to-br ${type.color}`} style={{ width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, boxShadow: `0 4px 12px ${type.shadow}` }}>
-                      <Icon size={22} color="#fff" strokeWidth={2} />
+                  <button
+                    key={type.id}
+                    onClick={() => setSelectedAccountType(type.id)}
+                    style={{
+                      position: 'relative', padding: '22px 16px 18px', borderRadius: 20,
+                      background: isSelected ? C.blueLight : C.card,
+                      border: isSelected ? `2px solid ${C.blueMid}` : `1.5px solid ${C.border}`,
+                      boxShadow: isSelected
+                        ? `0 4px 0 0 ${C.blueDark}, 0 8px 20px rgba(37,99,235,0.15)`
+                        : '0 3px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)',
+                      cursor: 'pointer', textAlign: 'center',
+                      transform: isSelected ? 'translateY(0)' : 'translateY(0)',
+                      transition: 'all 0.18s ease',
+                      WebkitTapHighlightColor: 'transparent',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+                    }}
+                  >
+                    {/* Icon circle */}
+                    <div style={{ width: 52, height: 52, borderRadius: 16, background: type.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${type.shadow}` }}>
+                      <Icon size={24} color="#fff" strokeWidth={2} />
                     </div>
-                    <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>{type.title}</p>
-                    <p style={{ color: C.sub, fontSize: 11, margin: 0, lineHeight: 1.4 }}>{type.description}</p>
+                    <div>
+                      <p style={{ color: C.text, fontWeight: 800, fontSize: 13, margin: '0 0 3px' }}>{type.title}</p>
+                      <p style={{ color: C.sub, fontSize: 11, margin: 0, lineHeight: 1.4 }}>{type.description}</p>
+                    </div>
                   </button>
                 );
               })}
             </div>
+
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={handleAccountTypeContinue} disabled={!selectedAccountType}>Continue</PrimaryButton>
             <p style={{ color: C.muted, fontSize: 11, textAlign: 'center', margin: '12px 0 0' }}>By continuing you agree to CoStride's Terms &amp; Privacy Policy</p>
@@ -368,105 +443,165 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 2 — JOIN YOUR COMMUNITY (light)
+  // STEP 2 — JOIN YOUR COMMUNITY
   // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
     const canContinue = gymJoinMode === 'code' ? gymCode.trim().length >= 3 : !!joinedGym;
+    const isSearching = joinGymMutation.isPending || createAndJoinGymMutation.isPending;
+
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 28, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 24, flexShrink: 0 }}>
               <BackButton onClick={() => goTo(1, 'back')} />
               <ProgressBar step={2} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>Let's Join Your Community</h1>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 16px', flexShrink: 0 }}>Let's Join Your Community</h1>
 
-            {/* switcher */}
-            <div style={{ display: 'flex', background: '#e8eef6', borderRadius: 14, padding: 4, border: `1px solid ${C.border}`, marginBottom: 18, flexShrink: 0 }}>
+            {/* Mode switcher */}
+            <div style={{ display: 'flex', background: '#e8eef6', borderRadius: 14, padding: 4, border: `1px solid ${C.border}`, marginBottom: 16, flexShrink: 0 }}>
               {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
-                <button key={mode} onClick={() => setGymJoinMode(mode)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: gymJoinMode === mode ? C.card : 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: gymJoinMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.18s ease', WebkitTapHighlightColor: 'transparent' }}>
+                <button key={mode} onClick={() => { setGymJoinMode(mode); setJoinedGym(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: gymJoinMode === mode ? C.card : 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: gymJoinMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.18s ease', WebkitTapHighlightColor: 'transparent' }}>
                   {label}
                 </button>
               ))}
             </div>
 
-            <div style={{ flexShrink: 0 }}>
-              {gymJoinMode === 'code' ? (
-                <div>
-                  <p style={{ color: C.sub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Gym Code</p>
-                  <input type="text" value={gymCode} onChange={e => setGymCode(e.target.value.toUpperCase())} placeholder="e.g. GYM-ABCD" maxLength={12}
-                    style={{ fontSize: 20, width: '100%', padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
-                  <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ color: C.sub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Search by name</p>
-                  <div style={{ position: 'relative' }}>
-                    <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1 }} />
-                    <input type="text" value={gymSearch} onChange={e => { setGymSearch(e.target.value); setJoinedGym(null); }} placeholder="Search gyms near you…"
-                      style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
-                    {isGymSearching && <Loader2 size={16} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: C.blueMid, animation: 'spin 1s linear infinite' }} />}
+            {/* Input area — only show when not yet joined */}
+            {!joinedGym && (
+              <div style={{ flexShrink: 0 }}>
+                {gymJoinMode === 'code' ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={gymCode}
+                      onChange={e => setGymCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. GYM-ABCD"
+                      maxLength={12}
+                      // prevent scroll-into-view on iOS
+                      onFocus={e => { e.target.scrollIntoView = () => {}; }}
+                      style={{ fontSize: 20, width: '100%', padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                    <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
                   </div>
-
-                  {joinedGym && (
-                    <div style={{ marginTop: 10, borderRadius: 14, border: `1px solid ${C.greenBorder}`, background: C.greenLight, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <CheckCircle2 size={18} color={C.green} style={{ flexShrink: 0 }} />
-                      <div>
-                        <p style={{ color: C.green, fontWeight: 700, fontSize: 13, margin: 0 }}>Joined {joinedGym.name}!</p>
-                        <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 0' }}>You can add more gyms later from the Gyms page.</p>
-                      </div>
+                ) : (
+                  <div>
+                    {/* Search bar — no label above */}
+                    <div style={{ position: 'relative' }}>
+                      <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1, pointerEvents: 'none' }} />
+                      <input
+                        type="text"
+                        value={gymSearch}
+                        onChange={e => { setGymSearch(e.target.value); }}
+                        placeholder="Search gyms near you…"
+                        // prevent iOS scroll-jump on focus
+                        onFocus={e => { e.target.scrollIntoView = () => {}; }}
+                        style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
+                      />
+                      {isGymSearching && (
+                        <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}>
+                          <Spinner size={16} color={C.blueMid} />
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  {!joinedGym && gymSearchResults.length > 0 && (
-                    <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                      {gymSearchResults.map((gym, i) => (
-                        <button key={gym.id} onClick={() => joinGymMutation.mutate(gym)} disabled={joinGymMutation.isPending}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'none', border: 'none', borderBottom: i < gymSearchResults.length - 1 ? `1px solid ${C.border}` : 'none', cursor: 'pointer', textAlign: 'left' }}>
-                          {gym.image_url ? <img src={gym.image_url} alt={gym.name} style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-                            : <div style={{ width: 40, height: 40, borderRadius: 10, background: C.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={18} color={C.blue} /></div>}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym.name}</p>
-                            <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 0' }}>{gym.city}</p>
-                          </div>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: C.blue, background: C.blueLight, border: '1px solid #bfdbfe', borderRadius: 8, padding: '5px 12px', flexShrink: 0 }}>{joinGymMutation.isPending ? '…' : 'Join'}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {!joinedGym && gymPlacesResults.length > 0 && (
-                    <div style={{ marginTop: 8 }}>
-                      <p style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Add from Google Maps</p>
-                      <div style={{ borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                        {gymPlacesResults.map((place, i) => (
-                          <button key={place.place_id} onClick={() => createAndJoinGymMutation.mutate(place)} disabled={createAndJoinGymMutation.isPending}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'none', border: 'none', borderBottom: i < gymPlacesResults.length - 1 ? `1px solid ${C.border}` : 'none', cursor: 'pointer', textAlign: 'left' }}>
-                            {place.photo_url ? <img src={place.photo_url} alt={place.name} style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-                              : <div style={{ width: 40, height: 40, borderRadius: 10, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={18} color={C.green} /></div>}
+                    {/* DB results */}
+                    {gymSearchResults.length > 0 && (
+                      <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                        {gymSearchResults.map((gym, i) => (
+                          <div key={gym.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderBottom: i < gymSearchResults.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                            {gym.image_url
+                              ? <img src={gym.image_url} alt={gym.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+                              : <div style={{ width: 38, height: 38, borderRadius: 9, background: C.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.blue} /></div>}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.name}</p>
-                              <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                              <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym.name}</p>
+                              <p style={{ color: C.sub, fontSize: 11, margin: '1px 0 0' }}>{gym.city}</p>
                             </div>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: C.green, background: '#dcfce7', border: `1px solid ${C.greenBorder}`, borderRadius: 8, padding: '5px 12px', flexShrink: 0 }}>{createAndJoinGymMutation.isPending ? '…' : '+ Add'}</span>
-                          </button>
+                            <ActionButton onClick={() => joinGymMutation.mutate(gym)} disabled={isSearching} color="blue">
+                              {joinGymMutation.isPending ? <Spinner size={12} color="#fff" /> : 'Join'}
+                            </ActionButton>
+                          </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {!joinedGym && !isGymSearching && gymSearch.length >= 2 && gymSearchResults.length === 0 && gymPlacesResults.length === 0 && (
-                    <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, padding: 16, textAlign: 'center' }}>
-                      <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>No gyms found — try a different search</p>
+                    {/* Google Places results */}
+                    {gymPlacesResults.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <p style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Add from Google Maps</p>
+                        <div style={{ borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                          {gymPlacesResults.map((place, i) => (
+                            <div key={place.place_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderBottom: i < gymPlacesResults.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                              {place.photo_url
+                                ? <img src={place.photo_url} alt={place.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+                                : <div style={{ width: 38, height: 38, borderRadius: 9, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.green} /></div>}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.name}</p>
+                                <p style={{ color: C.sub, fontSize: 11, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                              </div>
+                              <ActionButton onClick={() => createAndJoinGymMutation.mutate(place)} disabled={isSearching} color="green">
+                                {createAndJoinGymMutation.isPending ? <Spinner size={12} color="#fff" /> : '+ Add'}
+                              </ActionButton>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!isGymSearching && gymSearch.length >= 2 && gymSearchResults.length === 0 && gymPlacesResults.length === 0 && (
+                      <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, padding: 16, textAlign: 'center' }}>
+                        <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>No gyms found — try a different search</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Joined gym card — shown once gym is joined, replaces all search UI */}
+            {joinedGym && (
+              <div style={{ flexShrink: 0, borderRadius: 18, overflow: 'hidden', border: `1.5px solid ${C.greenBorder}`, boxShadow: '0 3px 0 0 #15803d, 0 6px 20px rgba(22,163,74,0.15)', background: C.card }}>
+                {/* Gym image */}
+                {joinedGym.image_url && (
+                  <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
+                    <img src={joinedGym.image_url} alt={joinedGym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
+                    {/* Green joined badge */}
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, background: C.green, borderRadius: 20, padding: '4px 10px' }}>
+                      <CheckCircle2 size={12} color="#fff" />
+                      <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>Joined!</span>
+                    </div>
+                  </div>
+                )}
+                {!joinedGym.image_url && (
+                  <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <Building2 size={32} color={C.blueMid} />
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, background: C.green, borderRadius: 20, padding: '4px 10px' }}>
+                      <CheckCircle2 size={12} color="#fff" />
+                      <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>Joined!</span>
+                    </div>
+                  </div>
+                )}
+                <div style={{ padding: '12px 16px 14px' }}>
+                  <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: '0 0 4px' }}>{joinedGym.name}</p>
+                  {(joinedGym.address || joinedGym.city) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <MapPin size={12} color={C.muted} />
+                      <p style={{ color: C.sub, fontSize: 12, margin: 0 }}>{joinedGym.address || joinedGym.city}</p>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div style={{ flex: 1 }} />
-            <PrimaryButton onClick={() => goTo(3, 'forward')} disabled={!canContinue}>Continue</PrimaryButton>
+
+            <div style={{ flexShrink: 0 }}>
+              <PrimaryButton onClick={() => goTo(3, 'forward')} disabled={!canContinue}>Continue</PrimaryButton>
+              <p style={{ color: C.muted, fontSize: 13, textAlign: 'center', margin: '10px 0 0' }}>
+                You can add more gyms later from the Gyms page
+              </p>
+            </div>
           </div>
         </SlidePane>
       </PageShell>
@@ -474,21 +609,21 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 3 — PICK YOUR WORKOUT (light)
+  // STEP 3 — PICK YOUR WORKOUT
   // ══════════════════════════════════════════════════════════════════════
   if (step === 3) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 16, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 12, flexShrink: 0 }}>
               <BackButton onClick={() => goTo(2, 'back')} />
               <ProgressBar step={3} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>Pick Your Workout</h1>
-            <p style={{ color: C.sub, fontSize: 13, margin: '0 0 14px', flexShrink: 0 }}>Choose a training split, press to preview.</p>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 3px', flexShrink: 0 }}>Pick Your Workout</h1>
+            <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px', flexShrink: 0 }}>Choose a training split, press to preview.</p>
 
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
               {DEFAULT_SPLITS.map(split => {
                 const isSelected = selectedSplit?.id === split.id;
                 return (
@@ -497,20 +632,17 @@ export default function Onboarding() {
                     onClick={e => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const relX = e.clientX - rect.left;
-                      const rightThird = rect.width * (2 / 3);
-                      if (relX >= rightThird) {
-                        // right third — open preview
+                      if (relX >= rect.width * (2 / 3)) {
                         setPreviewSplit(split);
                       } else {
-                        // left two thirds — just select/deselect
                         setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts });
                       }
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', padding: '13px 14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '11px 14px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: 0 }}>{split.name}</p>
-                        <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 6px' }}>{split.description}</p>
+                        <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 5px' }}>{split.description}</p>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           {split.days.map(d => (
                             <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
@@ -524,7 +656,7 @@ export default function Onboarding() {
               })}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 14, flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 12, flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(4, 'forward')} disabled={!selectedSplit}>Continue</PrimaryButton>
               <button onClick={() => goTo(4, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600 }}>
                 Skip — I'll create a custom workout later
@@ -538,7 +670,7 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 4 — ENTER YOUR NAME (light)
+  // STEP 4 — ENTER YOUR NAME
   // ══════════════════════════════════════════════════════════════════════
   if (step === 4) {
     return (
@@ -549,12 +681,18 @@ export default function Onboarding() {
               <BackButton onClick={() => goTo(3, 'back')} />
               <ProgressBar step={4} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>What's your name?</h1>
-            <p style={{ color: C.sub, fontSize: 14, margin: '0 0 28px', flexShrink: 0 }}>This is how you'll appear to other members.</p>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 28px', flexShrink: 0 }}>What's your name?</h1>
             <div style={{ flexShrink: 0 }}>
-              <p style={{ color: C.sub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Display Name</p>
-              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.slice(0, 30))} placeholder="e.g. Alex Johnson" maxLength={30} autoFocus
-                style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+              <input
+                type="text"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value.slice(0, 30))}
+                placeholder="Name"
+                maxLength={30}
+                // stop page jumping on focus
+                onFocus={e => { e.target.scrollIntoView = () => {}; }}
+                style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
+              />
             </div>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={() => goTo(5, 'forward')} disabled={displayName.trim().length < 2}>Continue</PrimaryButton>
@@ -565,7 +703,7 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 5 — PROFILE PICTURE (light)
+  // STEP 5 — PROFILE PICTURE
   // ══════════════════════════════════════════════════════════════════════
   if (step === 5) {
     return (
@@ -583,7 +721,7 @@ export default function Onboarding() {
               <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
                 onChange={e => { const f = e.target.files?.[0]; if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); } }} />
               <button onClick={() => fileInputRef.current?.click()}
-                style={{ position: 'relative', width: 180, height: 180, borderRadius: '50%', overflow: 'hidden', border: avatarPreview ? `3px solid ${C.blueMid}` : `2px dashed ${C.muted}`, background: avatarPreview ? 'transparent' : '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', boxShadow: avatarPreview ? `0 4px 20px rgba(59,130,246,0.15)` : 'none', transition: 'all 0.2s ease' }}>
+                style={{ position: 'relative', width: 180, height: 180, borderRadius: '50%', overflow: 'hidden', border: avatarPreview ? `3px solid ${C.blueMid}` : `2px dashed ${C.muted}`, background: avatarPreview ? 'transparent' : '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', boxShadow: avatarPreview ? '0 4px 20px rgba(59,130,246,0.15)' : 'none', transition: 'all 0.2s ease' }}>
                 {avatarPreview
                   ? <img src={avatarPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -610,7 +748,7 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 6 — TRAINING DAYS (light)
+  // STEP 6 — TRAINING DAYS
   // ══════════════════════════════════════════════════════════════════════
   if (step === 6) {
     return (
@@ -648,7 +786,7 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 7 — WELCOME (light)
+  // STEP 7 — WELCOME
   // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
     return (
@@ -659,7 +797,7 @@ export default function Onboarding() {
               <ProgressBar step={7} />
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, textAlign: 'center' }}>
-              <img src={LOGO_URL} alt="CoStride" style={{ width: 88, height: 88, borderRadius: 24, objectFit: 'cover', boxShadow: `0 8px 32px rgba(37,99,235,0.18)`, border: `3px solid ${C.blueLight}` }} />
+              <img src={LOGO_URL} alt="CoStride" style={{ width: 88, height: 88, borderRadius: 24, objectFit: 'cover', boxShadow: '0 8px 32px rgba(37,99,235,0.18)', border: `3px solid ${C.blueLight}` }} />
               <div>
                 <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 8px', lineHeight: 1.1 }}>
                   Welcome to{' '}
