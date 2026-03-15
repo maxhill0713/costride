@@ -111,13 +111,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   }, [workoutStartTime, showSummary]);
 
   React.useEffect(() => {
-    if (showSummary && !frozenDuration) {
-      setFrozenDuration(workoutDuration);
-    }
     if (!showSummary) {
       setFrozenDuration(0);
     }
-  }, [showSummary, workoutDuration, frozenDuration]);
+  }, [showSummary]);
 
   const today = useMemo(() => new Date(), []);
   const dayOfWeek = today.getDay();
