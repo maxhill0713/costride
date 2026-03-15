@@ -82,7 +82,8 @@ const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-pu
 
 // ─── Progress bar ────────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
-  const pct = Math.min(((step - 1) / 5) * 100, 100);
+  // steps 2–7 each fill one of 6 segments; step 8 = 100%
+  const pct = Math.min(((step - 1) / 6) * 100, 100);
   return (
     <div style={{ width: '100%', height: 16, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
       <div style={{ height: '100%', borderRadius: 99, background: `linear-gradient(to right, ${C.blueMid}, #38bdf8)`, width: `${pct}%`, transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
@@ -790,6 +791,7 @@ export default function Onboarding() {
             </p>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={() => goTo(7, 'forward')} disabled={trainingDays.length === 0}>Continue</PrimaryButton>
+
           </div>
         </SlidePane>
       </PageShell>
@@ -797,9 +799,101 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 7 — WELCOME
+  // STEP 7 — HOW TO USE THE APP
   // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
+    return (
+      <PageShell>
+        <SlidePane visible={visible} dir={animDir}>
+          <div style={inner}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
+              <BackButton onClick={() => goTo(6, 'back')} />
+              <ProgressBar step={7} />
+            </div>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 18px', flexShrink: 0 }}>How to use the app</h1>
+
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+              {/* ── Check-in button block ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+
+                {/* Exact replica of CheckInButton from Home.jsx — idle/default state, full-width, green */}
+                <div style={{ position: 'relative', width: '100%' }}>
+                  {/* bottom shadow layer */}
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 18, background: '#15803d', transform: 'translateY(5px)' }} />
+                  <div style={{
+                    position: 'relative', zIndex: 1,
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    padding: '16px 24px',
+                    borderRadius: 18,
+                    cursor: 'default',
+                    userSelect: 'none',
+                    background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
+                    boxShadow: '0 5px 0 0 #15803d, 0 8px 28px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}>
+                    <span style={{ fontSize: 17, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.01em' }}>
+                      Check In
+                    </span>
+                  </div>
+                </div>
+
+                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
+                  This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
+                </p>
+              </div>
+
+              {/* divider */}
+              <div style={{ height: 1, background: C.border, flexShrink: 0 }} />
+
+              {/* ── Log Workout button block ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+
+                {/* Exact replica of Log Workout button from TodayWorkout.jsx */}
+                <div style={{ position: 'relative', width: '100%' }}>
+                  {/* bottom shadow layer */}
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#1a3fa8', transform: 'translateY(3px)' }} />
+                  <div style={{
+                    position: 'relative', zIndex: 1,
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '8px 12px', height: 32,
+                    borderRadius: 8,
+                    cursor: 'default',
+                    userSelect: 'none',
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0em',
+                    color: '#ffffff',
+                    background: 'linear-gradient(to bottom, #1d4ed8, #1e40af 40%, #1e3a8a)',
+                    boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}>
+                    Log Workout
+                  </div>
+                </div>
+
+                <p style={{ color: C.sub, fontSize: 13, lineHeight: 1.55, textAlign: 'center', margin: 0 }}>
+                  Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
+                </p>
+              </div>
+
+            </div>
+
+            <div style={{ paddingTop: 14, flexShrink: 0 }}>
+              <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
+            </div>
+
+          </div>
+        </SlidePane>
+      </PageShell>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // STEP 8 — WELCOME
+  // ══════════════════════════════════════════════════════════════════════
+  if (step === 8) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
