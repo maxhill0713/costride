@@ -309,8 +309,8 @@ function LogWorkoutDemo() {
 // ─── Weekly dots card (used inside carousel) ─────────────────────────────────
 function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDemoBubblePos }) {
   const DEMO_DAYS = [
-    { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' },
-    { day: 4, type: 'logged' }, { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
+    { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' }, { day: 4, type: 'logged' },
+    { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
   ];
   const getDotStyle = (d) => {
     if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
@@ -320,49 +320,64 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
     if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'leafOutline' };
     return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
   };
+
+  const DotIcon = ({ icon }) => {
+    if (icon === 'check') return <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+    if (icon === 'x')     return <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>;
+    if (icon === 'leaf')  return (
+      <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
+        <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+        <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
+        <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
+        <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
+      </svg>
+    );
+    if (icon === 'empty') return <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />;
+    if (icon === 'leafOutline') return (
+      <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
+        <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+        <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+        <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+        <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+      </svg>
+    );
+    return null;
+  };
+
+  const Dot = ({ d }) => {
+    const s = getDotStyle(d);
+    const SIZE = 44;
+    return (
+      <button
+        onPointerDown={(e) => {
+          e.currentTarget.style.transform = 'translateY(4px)';
+          e.currentTarget.style.boxShadow = 'none';
+          const rect = e.currentTarget.getBoundingClientRect();
+          if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
+          else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
+        }}
+        onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+        onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+        style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease', flexShrink: 0 }}
+      >
+        <DotIcon icon={s.icon} />
+      </button>
+    );
+  };
+
+  const row1 = DEMO_DAYS.slice(0, 4); // Mon–Thu
+  const row2 = DEMO_DAYS.slice(4, 7); // Fri–Sun
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', padding: '0 2px' }}>
-        {DEMO_DAYS.map((d) => {
-          const s = getDotStyle(d);
-          const SIZE = 42;
-          return (
-            <div key={d.day} style={{ flexShrink: 0 }}>
-              <button
-                onPointerDown={(e) => {
-                  e.currentTarget.style.transform = 'translateY(4px)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
-                  else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
-                }}
-                onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
-              >
-                {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
-                {s.icon === 'leaf' && (
-                  <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
-                    <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-                    <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
-                    <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
-                    <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
-                  </svg>
-                )}
-                {s.icon === 'empty' && <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
-                {s.icon === 'leafOutline' && (
-                  <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
-                    <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-                    <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                    <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                    <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          );
-        })}
+      {/* S-shape: 4 on top, 3 centred below */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {row1.map(d => <Dot key={d.day} d={d} />)}
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {row2.map(d => <Dot key={d.day} d={d} />)}
+        </div>
       </div>
       <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
         This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
@@ -814,11 +829,11 @@ export default function Onboarding() {
     );
   }
 
+
   // ══════════════════════════════════════════════════════════════════════
   // STEP 7 — HOW TO USE THE APP (carousel)
   // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
-    // ── Carousel card definitions — add more here any time ──
     const CARDS = [
       {
         key: 'checkin',
@@ -849,15 +864,13 @@ export default function Onboarding() {
     ];
 
     const total = CARDS.length;
+    const hasSeenAll = carouselIndex >= total - 1;
 
     const handleCarouselScroll = () => {
       if (!carouselRef.current) return;
-      const scrollLeft = carouselRef.current.scrollLeft;
-      const width = carouselRef.current.offsetWidth;
-      const idx = Math.round(scrollLeft / width);
+      const idx = Math.round(carouselRef.current.scrollLeft / carouselRef.current.offsetWidth);
       if (idx !== carouselIndex) {
         setCarouselIndex(idx);
-        // Close any open dot bubble when swiping away
         setDemoBubbleDay(null);
         setDemoBubblePos(null);
       }
@@ -872,71 +885,41 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 16, flexShrink: 0 }}>
               <BackButton onClick={() => goTo(6, 'back')} />
               <ProgressBar step={7} />
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>How to use the app</h1>
 
-            {/* Carousel dot indicators */}
+            {/* Carousel position dots */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginBottom: 24, flexShrink: 0 }}>
               {CARDS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => scrollToCard(i)}
-                  style={{
-                    width: i === carouselIndex ? 22 : 8,
-                    height: 8, borderRadius: 99, border: 'none', padding: 0,
-                    background: i === carouselIndex ? C.blue : '#cbd5e1',
-                    transition: 'width 0.25s ease, background 0.25s ease',
-                    cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                  }}
-                />
+                <button key={i} onClick={() => scrollToCard(i)} style={{ width: i === carouselIndex ? 22 : 8, height: 8, borderRadius: 99, border: 'none', padding: 0, background: i === carouselIndex ? C.blue : '#cbd5e1', transition: 'width 0.25s ease, background 0.25s ease', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} />
               ))}
             </div>
 
-            {/* Swipeable carousel */}
+            {/* Carousel — no padding, flush with page */}
+            <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
             <div
               ref={carouselRef}
+              className="ob-carousel"
               onScroll={handleCarouselScroll}
-              style={{
-                flex: 1,
-                display: 'flex',
-                overflowX: 'auto',
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                WebkitOverflowScrolling: 'touch',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                gap: 0,
-              }}
+              style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <style>{`
-                .ob-carousel::-webkit-scrollbar { display: none; }
-              `}</style>
-              {CARDS.map((card, i) => (
-                <div
-                  key={card.key}
-                  style={{
-                    minWidth: '100%',
-                    scrollSnapAlign: 'start',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0 2px',
-                    boxSizing: 'border-box',
-                  }}
-                >
+              {CARDS.map((card) => (
+                <div key={card.key} style={{ minWidth: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
                   {card.render()}
                 </div>
               ))}
             </div>
 
-            {/* Continue */}
-            <div style={{ paddingTop: 18, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
+            <div style={{ paddingTop: 18, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <PrimaryButton onClick={() => goTo(8, 'forward')} disabled={!hasSeenAll}>
+                {hasSeenAll ? 'Continue' : 'Swipe to continue →'}
+              </PrimaryButton>
+              <button onClick={() => goTo(8, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent' }}>
+                Skip — I don't need the tutorial
+              </button>
             </div>
           </div>
         </SlidePane>
@@ -1001,7 +984,7 @@ export default function Onboarding() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.6, fontWeight: 500 }}>
                 {displayName
-                  ? <>You're all set, <strong style={{ color: C.text }}>{displayName}</strong>. Your journey starts now. Let's build your community and start earning some rewards.</>
+                  ? <>You're all set, {displayName.trim().split(' ')[0]}. Your journey starts now. Let's build your community and start earning some rewards.</>
                   : "Your journey starts now. Let's build your community and start earning some rewards."
                 }
               </p>
