@@ -247,20 +247,29 @@ export default function Profile() {
         </div>
 
         {/* Badges */}
-        {currentUser?.equipped_badges?.length > 0 && (
-          <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
-            {currentUser.equipped_badges.map((badgeId) => {
-              const badge = badgeDefs.find((b) => b.id === badgeId);
-              if (!badge) return null;
-              return (
-                <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
-                  <span className="text-xs">{badge.icon}</span>
-                </div>
-              );
-            })}
-            <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
-          </button>
-        )}
+        <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
+          {currentUser?.equipped_badges?.length > 0 ? (
+            <>
+              {currentUser.equipped_badges.map((badgeId) => {
+                const badge = badgeDefs.find((b) => b.id === badgeId);
+                if (!badge) return null;
+                return (
+                  <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
+                    <span className="text-xs">{badge.icon}</span>
+                  </div>
+                );
+              })}
+              <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
+            </>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <div className="w-7 h-7 rounded-lg border border-dashed border-slate-600 flex items-center justify-center">
+                <span className="text-slate-600 text-xs">+</span>
+              </div>
+              <span className="text-[10px] text-slate-600">tap to earn badges</span>
+            </div>
+          )}
+        </button>
 
         {/* Action buttons */}
         <div className="flex gap-2">
