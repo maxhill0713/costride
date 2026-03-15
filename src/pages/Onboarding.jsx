@@ -852,25 +852,20 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            {/* Progress bar at top */}
-            <div style={{ paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
-              <ProgressBar step={7} />
+            {/* Title near top, no progress bar */}
+            <div style={{ paddingTop: 44, flexShrink: 0 }}>
+              <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 6px', lineHeight: 1.1 }}>
+                Welcome to{' '}
+                <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
+              </h1>
             </div>
 
-            {/* Title sits just under the progress bar */}
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 6px', lineHeight: 1.1, flexShrink: 0 }}>
-              Welcome to{' '}
-              <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
-            </h1>
-
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
-              {displayName && (
-                <p style={{ color: C.sub, fontSize: 18, margin: 0, fontWeight: 600 }}>
-                  You're all set, <strong style={{ color: C.text }}>{displayName}</strong>,
-                </p>
-              )}
-              <p style={{ color: C.sub, fontSize: 16, margin: 0, lineHeight: 1.5 }}>
-                Your journey starts now. Let's build community and start earning some rewards.
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.6, fontWeight: 500 }}>
+                {displayName
+                  ? <>You're all set, <strong style={{ color: C.text }}>{displayName}</strong>. Your journey starts now. Let's build your community and start earning some rewards.</>
+                  : "Your journey starts now. Let's build your community and start earning some rewards."
+                }
               </p>
             </div>
 
