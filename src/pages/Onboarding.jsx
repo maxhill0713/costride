@@ -340,9 +340,19 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
-  useEffect(() => {
-    if (step === 0) { const t = setTimeout(() => goTo(1, 'forward'), 2000); return () => clearTimeout(t); }
-  }, [step]);
+  const leaveGymForSwitchMutation = useMutation({
+    mutationFn: async (gymId) => {
+      const me = await base44.auth.me();
+      const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: me.id });
+      if (memberships.length > 0) await base44.entities.GymMembership.delete(memberships[0].id);
+      // clear primary_gym_id if it was set to this gym
+      if (me.primary_gym_id === gymId) await base44.auth.updateMe({ primary_gym_id: null });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
+  });
 
   function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
@@ -593,10 +603,28 @@ export default function Onboarding() {
                 </div>
                 {/* Switch gym button */}
                 <button
-                  onClick={() => { setJoinedGym(null); setGymSearch(''); setGymCode(''); setGymSearchResults([]); setGymPlacesResults([]); }}
-                  style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '10px 0 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, width: '100%', textAlign: 'center' }}
+                  onClick={() => {
+                    const gymId = joinedGym.id;
+                    // reset UI immediately so the user isn't blocked
+                    setJoinedGym(null);
+                    setGymSearch('');
+                    setGymCode('');
+                    setGymSearchResults([]);
+                    setGymPlacesResults([]);
+                    // remove the membership from the DB in the background
+                    leaveGymForSwitchMutation.mutate(gymId);
+                  }}
+                  disabled={leaveGymForSwitchMutation.isPending}
+                  style={{
+                    background: 'none', border: 'none', color: C.muted,
+                    fontSize: 13, cursor: 'pointer',
+                    padding: '14px 0 0',
+                    WebkitTapHighlightColor: 'transparent',
+                    fontWeight: 600, width: '100%', textAlign: 'center',
+                    opacity: leaveGymForSwitchMutation.isPending ? 0.5 : 1,
+                  }}
                 >
-                  Switch gym
+                  {leaveGymForSwitchMutation.isPending ? 'Switching…' : 'Switch gym'}
                 </button>
               </div>
             )}
