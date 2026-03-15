@@ -463,7 +463,7 @@ export default function Onboarding() {
   // STEP 2 — JOIN YOUR COMMUNITY
   // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
-    const canContinue = gymJoinMode === 'code' ? gymCode.trim().length >= 3 : !!joinedGym;
+    const canContinue = !!joinedGym;
     const isSearching = joinGymMutation.isPending || createAndJoinGymMutation.isPending;
 
     return (
