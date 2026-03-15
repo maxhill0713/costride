@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
@@ -434,9 +435,92 @@ export default function Onboarding() {
   const [trainingDays, setTrainingDays] = useState([]);
   const fileInputRef = useRef(null);
 
+  // gym search state
+  const [gymSearchResults, setGymSearchResults] = useState([]);
+  const [gymPlacesResults, setGymPlacesResults] = useState([]);
+  const [isGymSearching, setIsGymSearching] = useState(false);
+  const [joinedGym, setJoinedGym] = useState(null);
+  const [gymType, setGymType] = useState('general');
+
   const updateMeMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+  });
+
+  // Debounced gym search (DB + Google Places)
+  useEffect(() => {
+    if (gymJoinMode !== 'search' || gymSearch.trim().length < 2) {
+      setGymSearchResults([]);
+      setGymPlacesResults([]);
+      return;
+    }
+    setIsGymSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const [dbRes, placesRes] = await Promise.allSettled([
+          base44.entities.Gym.filter({ status: 'approved' }, 'name', 50),
+          base44.functions.invoke('searchGymsPlaces', { input: gymSearch }),
+        ]);
+        const q = gymSearch.toLowerCase();
+        const dbGyms = dbRes.status === 'fulfilled'
+          ? dbRes.value.filter(g => g.name?.toLowerCase().includes(q) || g.city?.toLowerCase().includes(q))
+          : [];
+        const places = placesRes.status === 'fulfilled' ? (placesRes.value?.data?.results || []) : [];
+        const existingIds = dbGyms.map(g => g.google_place_id).filter(Boolean);
+        setGymSearchResults(dbGyms.slice(0, 5));
+        setGymPlacesResults(places.filter(p => !existingIds.includes(p.place_id)).slice(0, 3));
+      } catch (e) {
+        console.error('Gym search error', e);
+      } finally {
+        setIsGymSearching(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [gymSearch, gymJoinMode]);
+
+  const joinGymMutation = useMutation({
+    mutationFn: async (gym) => {
+      const me = await base44.auth.me();
+      await base44.entities.GymMembership.create({
+        user_id: me.id, user_name: me.full_name, user_email: me.email,
+        gym_id: gym.id, gym_name: gym.name, status: 'active',
+        join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly',
+      });
+      if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
+      return gym;
+    },
+    onSuccess: (gym) => {
+      setJoinedGym(gym);
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
+  });
+
+  const createAndJoinGymMutation = useMutation({
+    mutationFn: async (place) => {
+      const addressParts = place.address.split(',');
+      const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : place.address;
+      const gym = await base44.entities.Gym.create({
+        name: place.name, address: place.address, city,
+        google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude,
+        type: gymType, status: 'approved', claim_status: 'unclaimed', members_count: 0,
+        image_url: place.photo_url || null,
+      });
+      const me = await base44.auth.me();
+      await base44.entities.GymMembership.create({
+        user_id: me.id, user_name: me.full_name, user_email: me.email,
+        gym_id: gym.id, gym_name: gym.name, status: 'active',
+        join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly',
+      });
+      if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
+      return gym;
+    },
+    onSuccess: (gym) => {
+      setJoinedGym(gym);
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
   });
 
   // ── Splash auto-advance ─────────────────────────────────────────────────
