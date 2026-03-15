@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
-  ChevronLeft, ChevronRight, Building2, User, CheckCircle2,
+  ChevronLeft, ChevronRight, Building2, User,
   Search, Camera, Loader2
 } from 'lucide-react';
 
@@ -93,7 +93,7 @@ const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-pu
 function ProgressBar({ step }) {
   const pct = Math.min(((step - 1) / 5) * 100, 100);
   return (
-    <div style={{ width: '100%', height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: 16, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
       <div style={{ height: '100%', borderRadius: 99, background: `linear-gradient(to right, ${C.blueMid}, #38bdf8)`, width: `${pct}%`, transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
     </div>
   );
@@ -149,8 +149,8 @@ function SlidePane({ visible, dir, children }) {
 
 function BackButton({ onClick }) {
   return (
-    <button onClick={onClick} style={{ width: 36, height: 36, borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.card, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-      <ChevronLeft size={18} color={C.sub} />
+    <button onClick={onClick} style={{ background: 'none', border: 'none', padding: '2px 4px 2px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
+      <ChevronLeft size={28} color={C.sub} strokeWidth={2.5} />
     </button>
   );
 }
@@ -192,24 +192,9 @@ function SplitDetailSheet({ split, onClose }) {
                   </div>
                   <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0 }}>{wt.name}</p>
                 </div>
-                <div style={{ borderTop: `1px solid ${C.border}`, padding: '5px 14px 4px', display: 'grid', gridTemplateColumns: '1fr 44px 44px', gap: 6 }}>
-                  <span style={{ color: C.muted, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Exercise</span>
-                  <span style={{ color: C.muted, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'center' }}>Sets</span>
-                  <span style={{ color: C.muted, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'center' }}>Reps</span>
-                </div>
-                <div style={{ padding: '0 14px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ borderTop: `1px solid ${C.border}`, padding: '6px 14px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {(wt.exercises || []).map((ex, idx) => (
-                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 44px 44px', gap: 6, alignItems: 'center' }}>
-                      <div style={{ padding: '7px 10px', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 8 }}>
-                        <span style={{ color: C.text, fontSize: 12 }}>{ex.exercise}</span>
-                      </div>
-                      <div style={{ padding: '7px 4px', background: C.blueLight, border: '1px solid #bfdbfe', borderRadius: 8, textAlign: 'center' }}>
-                        <span style={{ color: C.blue, fontSize: 13, fontWeight: 800 }}>{ex.sets}</span>
-                      </div>
-                      <div style={{ padding: '7px 4px', background: C.blueLight, border: '1px solid #bfdbfe', borderRadius: 8, textAlign: 'center' }}>
-                        <span style={{ color: C.blue, fontSize: 13, fontWeight: 800 }}>{ex.reps}</span>
-                      </div>
-                    </div>
+                    <p key={idx} style={{ color: C.text, fontSize: 13, margin: 0, padding: '3px 0' }}>{ex.exercise}</p>
                   ))}
                 </div>
               </div>
@@ -333,8 +318,13 @@ export default function Onboarding() {
   // ══════════════════════════════════════════════════════════════════════
   if (step === 0) {
     return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease' }}>
-        <img src={LOGO_URL} alt="CoStride" style={{ width: 88, height: 88, borderRadius: 24, objectFit: 'cover', boxShadow: '0 0 40px rgba(59,130,246,0.4)', border: '1px solid rgba(255,255,255,0.15)' }} />
+      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72, paddingTop: 0 }}>
+        {/* top spacer */}
+        <div style={{ flex: 1 }} />
+        {/* logo centred */}
+        <img src={LOGO_URL} alt="CoStride" style={{ width: 96, height: 96, borderRadius: 28, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
+        <div style={{ flex: 1 }} />
+        {/* name at the bottom */}
         <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>
           Co<span style={{ background: 'linear-gradient(to right, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Stride</span>
         </h1>
@@ -343,40 +333,37 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 1 — ACCOUNT TYPE (dark, unchanged)
+  // STEP 1 — ACCOUNT TYPE (light theme, matching rest of member onboarding)
   // ══════════════════════════════════════════════════════════════════════
   if (step === 1) {
     return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 400, height: 400, background: 'rgba(37,99,235,0.08)', borderRadius: '50%', filter: 'blur(80px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: 400, height: 400, background: 'rgba(88,28,135,0.08)', borderRadius: '50%', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
             <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 52, paddingBottom: 20, flexShrink: 0 }}>
-              <img src={LOGO_URL} alt="CoStride" style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover', boxShadow: '0 0 24px rgba(59,130,246,0.35)', border: '1px solid rgba(255,255,255,0.15)' }} />
+              <img src={LOGO_URL} alt="CoStride" style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover', boxShadow: '0 4px 16px rgba(37,99,235,0.15)', border: `2px solid ${C.blueLight}` }} />
             </div>
-            <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 24px', flexShrink: 0 }}>Choose your account type</h1>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 24px', flexShrink: 0 }}>Choose your account type</h1>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20, flexShrink: 0 }}>
               {ACCOUNT_TYPES.map(type => {
                 const Icon = type.icon; const isSelected = selectedAccountType === type.id;
                 return (
-                  <button key={type.id} onClick={() => setSelectedAccountType(type.id)} style={{ position: 'relative', padding: 18, borderRadius: 20, background: isSelected ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.04)', border: isSelected ? '1.5px solid rgba(96,165,250,0.5)' : '1px solid rgba(255,255,255,0.08)', boxShadow: isSelected ? `0 8px 24px ${type.shadow}` : 'none', cursor: 'pointer', textAlign: 'left', transform: isSelected ? 'scale(1.02)' : 'scale(1)', transition: 'all 0.25s ease', WebkitTapHighlightColor: 'transparent' }}>
-                    {isSelected && <div style={{ position: 'absolute', top: 10, right: 10 }}><CheckCircle2 size={15} color="#60a5fa" /></div>}
+                  <button key={type.id} onClick={() => setSelectedAccountType(type.id)} style={{ position: 'relative', padding: 18, borderRadius: 20, background: isSelected ? C.blueLight : C.card, border: isSelected ? `2px solid ${C.blueMid}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? `0 4px 16px rgba(59,130,246,0.15)` : '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', textAlign: 'left', transform: isSelected ? 'scale(1.02)' : 'scale(1)', transition: 'all 0.2s ease', WebkitTapHighlightColor: 'transparent' }}>
                     <div className={`bg-gradient-to-br ${type.color}`} style={{ width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, boxShadow: `0 4px 12px ${type.shadow}` }}>
                       <Icon size={22} color="#fff" strokeWidth={2} />
                     </div>
-                    <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>{type.title}</p>
-                    <p style={{ color: '#94a3b8', fontSize: 11, margin: 0, lineHeight: 1.4 }}>{type.description}</p>
+                    <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>{type.title}</p>
+                    <p style={{ color: C.sub, fontSize: 11, margin: 0, lineHeight: 1.4 }}>{type.description}</p>
                   </button>
                 );
               })}
             </div>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={handleAccountTypeContinue} disabled={!selectedAccountType}>Continue</PrimaryButton>
-            <p style={{ color: '#475569', fontSize: 11, textAlign: 'center', margin: '12px 0 0' }}>By continuing you agree to CoStride's Terms &amp; Privacy Policy</p>
+            <p style={{ color: C.muted, fontSize: 11, textAlign: 'center', margin: '12px 0 0' }}>By continuing you agree to CoStride's Terms &amp; Privacy Policy</p>
           </div>
         </SlidePane>
-      </div>
+      </PageShell>
     );
   }
 
@@ -393,11 +380,10 @@ export default function Onboarding() {
               <BackButton onClick={() => goTo(1, 'back')} />
               <ProgressBar step={2} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>Let's Join Your Community</h1>
-            <p style={{ color: C.sub, fontSize: 14, margin: '0 0 20px', flexShrink: 0 }}>Find your gym to connect with members and track check-ins.</p>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>Let's Join Your Community</h1>
 
             {/* switcher */}
-            <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: 14, padding: 4, border: `1px solid ${C.border}`, marginBottom: 18, flexShrink: 0 }}>
+            <div style={{ display: 'flex', background: '#e8eef6', borderRadius: 14, padding: 4, border: `1px solid ${C.border}`, marginBottom: 18, flexShrink: 0 }}>
               {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
                 <button key={mode} onClick={() => setGymJoinMode(mode)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: gymJoinMode === mode ? C.card : 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: gymJoinMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.18s ease', WebkitTapHighlightColor: 'transparent' }}>
                   {label}
@@ -507,14 +493,23 @@ export default function Onboarding() {
                 const isSelected = selectedSplit?.id === split.id;
                 return (
                   <div key={split.id}
-                    onClick={() => { setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts }); setPreviewSplit(split); }}
-                    style={{ position: 'relative', borderRadius: 16, cursor: 'pointer', background: isSelected ? C.greenLight : C.card, border: isSelected ? `2px solid ${C.greenBorder}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? '0 2px 12px rgba(22,163,74,0.1)' : '0 1px 4px rgba(0,0,0,0.05)', flexShrink: 0, transition: 'all 0.18s ease' }}>
+                    style={{ position: 'relative', borderRadius: 16, cursor: 'pointer', background: isSelected ? C.greenLight : C.card, border: isSelected ? `2px solid ${C.greenBorder}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? '0 2px 12px rgba(22,163,74,0.1)' : '0 1px 4px rgba(0,0,0,0.05)', flexShrink: 0, transition: 'all 0.18s ease' }}
+                    onClick={e => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const relX = e.clientX - rect.left;
+                      const rightThird = rect.width * (2 / 3);
+                      if (relX >= rightThird) {
+                        // right third — open preview
+                        setPreviewSplit(split);
+                      } else {
+                        // left two thirds — just select/deselect
+                        setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts });
+                      }
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', padding: '13px 14px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: 0 }}>{split.name}</p>
-                          {isSelected && <CheckCircle2 size={15} color={C.green} />}
-                        </div>
+                        <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: 0 }}>{split.name}</p>
                         <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 6px' }}>{split.description}</p>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           {split.days.map(d => (
@@ -603,7 +598,7 @@ export default function Onboarding() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(6, 'forward')}>Continue</PrimaryButton>
+              <PrimaryButton onClick={() => goTo(6, 'forward')} disabled={!avatarPreview}>Continue</PrimaryButton>
               <button onClick={() => goTo(6, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', padding: '8px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600 }}>
                 Skip for now
               </button>
