@@ -319,6 +319,8 @@ export default function Onboarding() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [trainingDays, setTrainingDays] = useState([]);
+  const [demoBubbleDay, setDemoBubbleDay] = useState(null);
+  const [demoBubblePos, setDemoBubblePos] = useState(null);
   const fileInputRef = useRef(null);
 
   const updateMeMutation = useMutation({
@@ -414,7 +416,7 @@ export default function Onboarding() {
     },
   });
 
-  function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
+  function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setDemoBubbleDay(null); setDemoBubblePos(null); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
   // Splash auto-advance
   useEffect(() => {
@@ -971,18 +973,14 @@ export default function Onboarding() {
     // Mon=1 blue(logged workout), Tue=2 red(missed), Wed=3 green(logged rest),
     // Thu=4 blue(logged workout), Fri=5 dark(future workout), Sat=6 dark(future workout), Sun=7 dark(future rest)
     const DEMO_DAYS = [
-      { day: 1, label: 'Mon', type: 'logged',   isRest: false, isMissed: false, isFutureRest: false },
-      { day: 2, label: 'Tue', type: 'missed',   isRest: false, isMissed: true,  isFutureRest: false },
-      { day: 3, label: 'Wed', type: 'restDone', isRest: true,  isMissed: false, isFutureRest: false },
-      { day: 4, label: 'Thu', type: 'logged',   isRest: false, isMissed: false, isFutureRest: false },
-      { day: 5, label: 'Fri', type: 'future',   isRest: false, isMissed: false, isFutureRest: false },
-      { day: 6, label: 'Sat', type: 'future',   isRest: false, isMissed: false, isFutureRest: false },
-      { day: 7, label: 'Sun', type: 'futureRest', isRest: true, isMissed: false, isFutureRest: true },
+      { day: 1, label: 'Mon', type: 'logged',     isRest: false, isMissed: false, isFutureRest: false },
+      { day: 2, label: 'Tue', type: 'missed',     isRest: false, isMissed: true,  isFutureRest: false },
+      { day: 3, label: 'Wed', type: 'restDone',   isRest: true,  isMissed: false, isFutureRest: false },
+      { day: 4, label: 'Thu', type: 'logged',     isRest: false, isMissed: false, isFutureRest: false },
+      { day: 5, label: 'Fri', type: 'future',     isRest: false, isMissed: false, isFutureRest: false },
+      { day: 6, label: 'Sat', type: 'future',     isRest: false, isMissed: false, isFutureRest: false },
+      { day: 7, label: 'Sun', type: 'futureRest', isRest: true,  isMissed: false, isFutureRest: true  },
     ];
-
-    // Bubble state for demo
-    const [demoBubbleDay, setDemoBubbleDay] = React.useState(null);
-    const [demoBubblePos, setDemoBubblePos] = React.useState(null);
 
     const getDotStyle = (d) => {
       if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
