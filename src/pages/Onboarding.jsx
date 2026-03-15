@@ -374,12 +374,11 @@ export default function Onboarding() {
       <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72 }}>
         <div style={{ flex: 1 }} />
         {/* Logo centred, no glow */}
-        <img src={LOGO_URL} alt="CoStride" style={{ width: 96, height: 96, borderRadius: 28, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
+        <img src={LOGO_URL} alt="CoStride" style={{ width: 115, height: 115, borderRadius: 32, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
         <div style={{ flex: 1 }} />
-        {/* CoStride at bottom — "Co" in blue gradient matching home badge, "Stride" in white */}
-        <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>
-          <span style={{ background: 'linear-gradient(to right, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Co</span>
-          <span style={{ color: '#ffffff' }}>Stride</span>
+        {/* CoStride — all white */}
+        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>
+          CoStride
         </h1>
       </div>
     );
@@ -459,14 +458,18 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 16px', flexShrink: 0 }}>Let's Join Your Community</h1>
 
-            {/* Mode switcher */}
-            <div style={{ display: 'flex', background: '#e8eef6', borderRadius: 14, padding: 4, border: `1px solid ${C.border}`, marginBottom: 16, flexShrink: 0 }}>
-              {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
-                <button key={mode} onClick={() => { setGymJoinMode(mode); setJoinedGym(null); }} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: gymJoinMode === mode ? C.card : 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: gymJoinMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.18s ease', WebkitTapHighlightColor: 'transparent' }}>
-                  {label}
-                </button>
-              ))}
-            </div>
+            {/* Mode switcher — hidden once gym is joined */}
+            {!joinedGym && (
+              <div style={{ position: 'relative', display: 'flex', background: '#e2eaf4', borderRadius: 16, padding: 5, marginBottom: 16, flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.08)' }}>
+                {/* sliding pill */}
+                <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 3px 0 0 #cbd5e1, 0 2px 6px rgba(0,0,0,0.1)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'code' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
+                {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
+                  <button key={mode} onClick={() => { setGymJoinMode(mode); setJoinedGym(null); }} style={{ flex: 1, padding: '11px 0', borderRadius: 11, border: 'none', background: 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 800, fontSize: 14, cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.18s ease', WebkitTapHighlightColor: 'transparent', letterSpacing: '-0.01em' }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input area — only show when not yet joined */}
             {!joinedGym && (
@@ -479,14 +482,17 @@ export default function Onboarding() {
                       onChange={e => setGymCode(e.target.value.toUpperCase())}
                       placeholder="e.g. GYM-ABCD"
                       maxLength={12}
-                      // prevent scroll-into-view on iOS
-                      onFocus={e => { e.target.scrollIntoView = () => {}; }}
+                      readOnly={false}
+                      onFocus={e => {
+                        // prevent iOS viewport scroll
+                        e.preventDefault();
+                        setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
+                      }}
                       style={{ fontSize: 20, width: '100%', padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
                     <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
                   </div>
                 ) : (
                   <div>
-                    {/* Search bar — no label above */}
                     <div style={{ position: 'relative' }}>
                       <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1, pointerEvents: 'none' }} />
                       <input
@@ -494,8 +500,10 @@ export default function Onboarding() {
                         value={gymSearch}
                         onChange={e => { setGymSearch(e.target.value); }}
                         placeholder="Search gyms near you…"
-                        // prevent iOS scroll-jump on focus
-                        onFocus={e => { e.target.scrollIntoView = () => {}; }}
+                        onFocus={e => {
+                          e.preventDefault();
+                          setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
+                        }}
                         style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
                       />
                       {isGymSearching && (
@@ -566,20 +574,11 @@ export default function Onboarding() {
                   <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
                     <img src={joinedGym.image_url} alt={joinedGym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
-                    {/* Green joined badge */}
-                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, background: C.green, borderRadius: 20, padding: '4px 10px' }}>
-                      <CheckCircle2 size={12} color="#fff" />
-                      <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>Joined!</span>
-                    </div>
                   </div>
                 )}
                 {!joinedGym.image_url && (
-                  <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Building2 size={32} color={C.blueMid} />
-                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, background: C.green, borderRadius: 20, padding: '4px 10px' }}>
-                      <CheckCircle2 size={12} color="#fff" />
-                      <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>Joined!</span>
-                    </div>
                   </div>
                 )}
                 <div style={{ padding: '12px 16px 14px' }}>
@@ -623,12 +622,26 @@ export default function Onboarding() {
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 3px', flexShrink: 0 }}>Pick Your Workout</h1>
             <p style={{ color: C.sub, fontSize: 13, margin: '0 0 10px', flexShrink: 0 }}>Choose a training split, press to preview.</p>
 
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {DEFAULT_SPLITS.map(split => {
                 const isSelected = selectedSplit?.id === split.id;
                 return (
                   <div key={split.id}
-                    style={{ position: 'relative', borderRadius: 16, cursor: 'pointer', background: isSelected ? C.greenLight : C.card, border: isSelected ? `2px solid ${C.greenBorder}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? '0 2px 12px rgba(22,163,74,0.1)' : '0 1px 4px rgba(0,0,0,0.05)', flexShrink: 0, transition: 'all 0.18s ease' }}
+                    style={{
+                      position: 'relative', borderRadius: 18, cursor: 'pointer', flexShrink: 0,
+                      background: C.card,
+                      border: isSelected ? `2px solid ${C.greenDark}` : `1.5px solid ${C.border}`,
+                      boxShadow: isSelected
+                        ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)`
+                        : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)',
+                      transform: 'translateY(0)',
+                      transition: 'border 0.15s ease, box-shadow 0.15s ease',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                    onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
+                    onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
                     onClick={e => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const relX = e.clientX - rect.left;
@@ -639,17 +652,20 @@ export default function Onboarding() {
                       }
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', padding: '11px 14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '13px 16px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: 0 }}>{split.name}</p>
-                        <p style={{ color: C.sub, fontSize: 11, margin: '2px 0 5px' }}>{split.description}</p>
+                        <p style={{ color: C.text, fontWeight: 900, fontSize: 15, margin: '0 0 2px', letterSpacing: '-0.01em' }}>{split.name}</p>
+                        <p style={{ color: C.sub, fontSize: 12, margin: '0 0 7px' }}>{split.description}</p>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           {split.days.map(d => (
-                            <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
+                            <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
                           ))}
                         </div>
                       </div>
-                      <ChevronRight size={18} color={C.muted} style={{ flexShrink: 0, marginLeft: 8 }} />
+                      {/* Right chevron zone — tappable for preview */}
+                      <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 12, flexShrink: 0 }}>
+                        <ChevronRight size={20} color={isSelected ? C.green : C.muted} strokeWidth={2.5} />
+                      </div>
                     </div>
                   </div>
                 );
