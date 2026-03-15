@@ -695,7 +695,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
         <WorkoutSummaryModal
           isOpen={showSummary}
-          duration={frozenDuration * 1000}
+          duration={frozenDurationRef.current * 1000}
           workoutName={todayWorkout?.name}
           exercises={todayWorkout?.exercises}
           lastWorkout={lastWorkout}
