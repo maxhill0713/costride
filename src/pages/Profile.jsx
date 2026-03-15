@@ -320,118 +320,143 @@ export default function Profile() {
       {/* ── CREATE POST BOTTOM SHEET ── */}
       {showCreatePost &&
       <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end justify-center"
+        className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center px-5"
         onClick={closeCreatePost}>
 
           <div
-          className="w-full max-w-2xl bg-[#0d1220] border-t border-slate-700/50 rounded-t-3xl"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
+          className="w-full max-w-sm flex flex-col gap-4"
           onClick={(e) => e.stopPropagation()}>
 
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-9 h-1 rounded-full bg-slate-700/80" />
-            </div>
+            {/* ── POST CARD PREVIEW (matches ShareWorkoutScreen card) ── */}
+            <div
+              className="w-full overflow-hidden shadow-2xl shadow-black/40 rounded-3xl relative"
+              style={{
+                background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}>
 
-            {/* Header row */}
-            <div className="flex items-center justify-between px-5 py-3">
-              <span className="text-[15px] font-black text-white">New Post</span>
-              <button onClick={closeCreatePost} className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-800 active:scale-90 transition-transform">
-                <X className="w-4 h-4 text-slate-400" />
-              </button>
-            </div>
+              {/* Top shine */}
+              <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-            {/* Composer */}
-            <div className="px-5 pb-2">
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex-shrink-0 flex items-center justify-center">
-                  {currentUser.avatar_url ?
-                <img src={currentUser.avatar_url} className="w-full h-full object-cover" alt="" /> :
-                <span className="text-sm font-black text-white">{displayName?.charAt(0)}</span>
-                }
-                </div>
-                <div className="flex-1 min-h-[90px]">
-                  <Textarea
-                  value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
-                  placeholder="What's your workout win today?"
-                  className="bg-transparent border-none text-white placeholder:text-slate-600 p-0 focus-visible:ring-0 resize-none text-[16px] leading-relaxed w-full min-h-[90px]"
-                  autoFocus />
-
-                </div>
-              </div>
-
-              {/* Media preview */}
-              {(postImage || postVideo || uploading) &&
-            <div className="mt-3 ml-[52px]">
-                  {uploading && <p className="text-xs text-slate-500 animate-pulse py-2">Uploading…</p>}
-                  {postImage &&
-              <div className="relative rounded-2xl overflow-hidden border border-slate-700/50">
-                      <img src={postImage} alt="Preview" className="w-full max-h-52 object-cover" />
-                      <button onClick={() => setPostImage('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    </div>
-              }
-                  {postVideo &&
-              <div className="relative rounded-2xl overflow-hidden border border-slate-700/50">
-                      <video src={postVideo} controls className="w-full max-h-52 bg-black" />
-                      <button onClick={() => setPostVideo('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    </div>
-              }
-                </div>
-            }
-            </div>
-
-            {/* Bottom toolbar */}
-            <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-5 border-t border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <label className="cursor-pointer">
-                  <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
-                    <ImageIcon className="w-5 h-5 text-slate-400" />
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-700 flex-shrink-0 flex items-center justify-center">
+                    {currentUser.avatar_url
+                      ? <img src={currentUser.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <span className="text-sm font-black text-white">{displayName?.charAt(0)}</span>}
                   </div>
-                </label>
-                <label className="cursor-pointer">
-                  <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
-                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
-                    <Video className="w-5 h-5 text-slate-400" />
-                  </div>
-                </label>
-                <label className="cursor-pointer">
-                  <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
-                    <Camera className="w-5 h-5 text-slate-400" />
-                  </div>
-                </label>
-                <button
-                onClick={() => setAllowGymRepost(!allowGymRepost)}
-                className={`w-11 h-11 rounded-2xl border flex items-center justify-center active:scale-90 transition-all ${
-                allowGymRepost ?
-                'bg-blue-600/25 border-blue-500/50 text-blue-400' :
-                'bg-slate-800 border-slate-700/50 text-slate-500'}`
-                }
-                title="Allow gym to share">
-
-                  <Building2 className="w-5 h-5" />
+                  <span className="text-[14px] font-black text-white">{displayName}</span>
+                </div>
+                <button onClick={closeCreatePost} className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 active:scale-90 transition-transform">
+                  <X className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
 
-              <button
-              onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
-              disabled={!canPost || createPostMutation.isPending}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-[14px] transition-all duration-150 transform-gpu ${
-              canPost && !createPostMutation.isPending ?
-              'bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95' :
-              'bg-slate-800 text-slate-600 cursor-not-allowed'}`
-              }>
+              {/* Media area — required */}
+              <div className="mx-4 mb-3 rounded-2xl overflow-hidden" style={{ height: 220 }}>
+                {uploading && (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
+                    <span className="text-slate-400 text-sm font-medium animate-pulse">Uploading…</span>
+                  </div>
+                )}
+                {!uploading && !postImage && !postVideo && (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
+                    <div className="flex gap-3">
+                      <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                        <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                        <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                          <ImageIcon className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-semibold">Photo</span>
+                      </label>
+                      <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                        <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
+                        <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                          <Video className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-semibold">Video</span>
+                      </label>
+                      <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                        <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                        <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                          <Camera className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-semibold">Camera</span>
+                      </label>
+                    </div>
+                    <span className="text-[11px] text-slate-600 font-medium">Add a photo or video to post</span>
+                  </div>
+                )}
+                {!uploading && postImage && (
+                  <div className="relative w-full h-full">
+                    <img src={postImage} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
+                    <button onClick={() => setPostImage('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                      <X className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  </div>
+                )}
+                {!uploading && postVideo && (
+                  <div className="relative w-full h-full">
+                    <video src={postVideo} controls className="w-full h-full object-cover rounded-2xl bg-black" />
+                    <button onClick={() => setPostVideo('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                      <X className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                {createPostMutation.isPending ?
-              <span className="animate-pulse">Posting…</span> :
-              <><Send className="w-4 h-4" />Post</>
-              }
+              {/* Caption — optional */}
+              <div className="relative mx-4 mb-4">
+                <Textarea
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value.slice(0, 200))}
+                  placeholder="Add a caption… (optional)"
+                  rows={2}
+                  maxLength={200}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                />
+                <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${postContent.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
+                  {postContent.length}/200
+                </span>
+              </div>
+
+              {/* Allow gym repost toggle */}
+              <div className="mx-4 mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-slate-500" />
+                  <span className="text-[11px] text-slate-400 font-medium">Allow gym to repost</span>
+                </div>
+                <button
+                  onClick={() => setAllowGymRepost(!allowGymRepost)}
+                  className={`w-10 h-5.5 rounded-full transition-all relative ${allowGymRepost ? 'bg-blue-500' : 'bg-slate-700'}`}
+                  style={{ width: 40, height: 22 }}>
+                  <div className={`absolute top-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-all ${allowGymRepost ? 'left-[19px]' : 'left-[2px]'}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
+                disabled={(!postImage && !postVideo) || createPostMutation.isPending}
+                className={`w-full h-13 font-black text-base rounded-2xl border border-transparent flex items-center justify-center transition-all duration-100 ${
+                  (postImage || postVideo) && !createPostMutation.isPending
+                    ? 'bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_4px_0_0_#1a3fa8,0_8px_20px_rgba(59,130,246,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95'
+                    : 'bg-slate-800/60 text-slate-600 cursor-not-allowed'
+                }`}
+                style={{ height: 52 }}>
+                {createPostMutation.isPending ? 'Posting…' : 'Share Post'}
+              </button>
+              <button
+                onClick={closeCreatePost}
+                className="w-full font-semibold text-slate-400 hover:text-white text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center"
+                style={{ height: 48 }}>
+                Cancel
               </button>
             </div>
           </div>
