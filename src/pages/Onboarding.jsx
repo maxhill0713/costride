@@ -729,16 +729,81 @@ export default function Onboarding() {
                 <div>
                   <p style={{ color: '#64748b', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Search by name</p>
                   <div style={{ position: 'relative' }}>
-                    <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                    <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#64748b', zIndex: 1 }} />
                     <input
                       type="text"
                       value={gymSearch}
-                      onChange={e => setGymSearch(e.target.value)}
+                      onChange={e => { setGymSearch(e.target.value); setJoinedGym(null); }}
                       placeholder="Search gyms near you…"
                       style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(71,85,105,0.5)', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
+                    {isGymSearching && <Loader2 size={16} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#60a5fa', animation: 'spin 1s linear infinite' }} />}
                   </div>
-                  {gymSearch.length > 0 && (
+
+                  {/* Joined confirmation */}
+                  {joinedGym && (
+                    <div style={{ marginTop: 10, borderRadius: 14, border: '1px solid rgba(34,197,94,0.4)', background: 'rgba(16,185,129,0.1)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <CheckCircle2 size={18} color="#34d399" style={{ flexShrink: 0 }} />
+                      <div>
+                        <p style={{ color: '#34d399', fontWeight: 700, fontSize: 13, margin: 0 }}>Joined {joinedGym.name}!</p>
+                        <p style={{ color: '#64748b', fontSize: 11, margin: '2px 0 0' }}>You can add more gyms later from the Gyms page.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DB results */}
+                  {!joinedGym && gymSearchResults.length > 0 && (
+                    <div style={{ marginTop: 8, borderRadius: 14, border: '1px solid rgba(71,85,105,0.3)', background: 'rgba(12,16,32,0.95)', overflow: 'hidden' }}>
+                      {gymSearchResults.map((gym, i) => (
+                        <button key={gym.id} onClick={() => joinGymMutation.mutate(gym)} disabled={joinGymMutation.isPending}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'none', border: 'none', borderBottom: i < gymSearchResults.length - 1 ? '1px solid rgba(71,85,105,0.2)' : 'none', cursor: 'pointer', textAlign: 'left' }}>
+                          {gym.image_url
+                            ? <img src={gym.image_url} alt={gym.name} style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                            : <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <Building2 size={18} color="#60a5fa" />
+                              </div>
+                          }
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym.name}</p>
+                            <p style={{ color: '#64748b', fontSize: 11, margin: '2px 0 0' }}>{gym.city}</p>
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: 8, padding: '4px 10px', flexShrink: 0 }}>
+                            {joinGymMutation.isPending ? '…' : 'Join'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Google Places results (new gyms to add) */}
+                  {!joinedGym && gymPlacesResults.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <p style={{ color: '#475569', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Add from Google Maps</p>
+                      <div style={{ borderRadius: 14, border: '1px solid rgba(71,85,105,0.3)', background: 'rgba(12,16,32,0.95)', overflow: 'hidden' }}>
+                        {gymPlacesResults.map((place, i) => (
+                          <button key={place.place_id} onClick={() => createAndJoinGymMutation.mutate(place)} disabled={createAndJoinGymMutation.isPending}
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'none', border: 'none', borderBottom: i < gymPlacesResults.length - 1 ? '1px solid rgba(71,85,105,0.2)' : 'none', cursor: 'pointer', textAlign: 'left' }}>
+                            {place.photo_url
+                              ? <img src={place.photo_url} alt={place.name} style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                              : <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(34,197,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                  <Building2 size={18} color="#34d399" />
+                                </div>
+                            }
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.name}</p>
+                              <p style={{ color: '#64748b', fontSize: 11, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#34d399', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '4px 10px', flexShrink: 0 }}>
+                              {createAndJoinGymMutation.isPending ? '…' : '+ Add'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No results */}
+                  {!joinedGym && !isGymSearching && gymSearch.length >= 2 && gymSearchResults.length === 0 && gymPlacesResults.length === 0 && (
                     <div style={{ marginTop: 8, borderRadius: 14, border: '1px solid rgba(71,85,105,0.3)', background: 'rgba(12,16,32,0.9)', padding: '16px', textAlign: 'center' }}>
                       <p style={{ color: '#475569', fontSize: 13, margin: 0 }}>No gyms found — try a different search</p>
                     </div>
