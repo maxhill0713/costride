@@ -494,19 +494,33 @@ export default function Onboarding() {
               <div style={{ flexShrink: 0 }}>
                 {gymJoinMode === 'code' ? (
                   <div>
-                    <input
-                      type="text"
-                      value={gymCode}
-                      onChange={e => setGymCode(e.target.value.toUpperCase())}
-                      placeholder="e.g. GYM-ABCD"
-                      maxLength={12}
-                      readOnly={false}
-                      onFocus={e => {
-                        // prevent iOS viewport scroll
-                        e.preventDefault();
-                        setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
-                      }}
-                      style={{ fontSize: 20, width: '100%', padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        type="text"
+                        value={gymCode}
+                        onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }}
+                        placeholder="e.g. GYM-ABCD"
+                        maxLength={12}
+                        readOnly={false}
+                        onFocus={e => {
+                          e.preventDefault();
+                          setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
+                        }}
+                        style={{ fontSize: 18, flex: 1, padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                      <ActionButton
+                        onClick={() => {
+                          if (gymCode.trim().length < 3) return;
+                          joinByCodeMutation.mutate(gymCode.trim());
+                        }}
+                        disabled={gymCode.trim().length < 3 || joinByCodeMutation.isPending}
+                        color="blue"
+                      >
+                        {joinByCodeMutation.isPending ? <Spinner size={12} color="#fff" /> : 'Join'}
+                      </ActionButton>
+                    </div>
+                    {gymCodeError && (
+                      <p style={{ color: '#ef4444', fontSize: 12, margin: '6px 0 0', textAlign: 'center', fontWeight: 600 }}>{gymCodeError}</p>
+                    )}
                     <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
                   </div>
                 ) : (
