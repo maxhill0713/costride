@@ -814,13 +814,21 @@ export default function Onboarding() {
 
             <div style={{ flex: 1 }} />
 
-            <div style={{ flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
               <PrimaryButton
                 onClick={() => goTo(3, 'forward')}
-                disabled={gymJoinMode === 'code' ? gymCode.trim().length < 3 : gymSearch.trim().length < 2}
+                disabled={gymJoinMode === 'code' ? gymCode.trim().length < 3 : false}
               >
-                Continue
+                {joinedGym ? 'Continue' : gymJoinMode === 'search' ? 'Continue' : 'Continue'}
               </PrimaryButton>
+              {gymJoinMode === 'search' && !joinedGym && (
+                <button
+                  onClick={() => goTo(3, 'forward')}
+                  style={{ background: 'none', border: 'none', color: '#475569', fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent' }}
+                >
+                  Skip — I'll find my gym later
+                </button>
+              )}
             </div>
           </div>
         </SlidePane>
