@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Building2, User,
-  Search, Camera, Loader2
+  Search, Camera, Loader2, CheckCircle2
 } from 'lucide-react';
 
 const LOGO_URL =
