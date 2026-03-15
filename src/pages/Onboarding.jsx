@@ -71,7 +71,7 @@ const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-pu
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
-  const pct = Math.min(((step - 1) / 9) * 100, 100);
+  const pct = Math.min(((step - 1) / 7) * 100, 100);
   return (
     <div style={{ width: '100%', height: 16, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
       <div style={{ height: '100%', borderRadius: 99, background: `linear-gradient(to right, ${C.blueMid}, #38bdf8)`, width: `${pct}%`, transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
@@ -306,6 +306,72 @@ function LogWorkoutDemo() {
   );
 }
 
+// ─── Weekly dots card (used inside carousel) ─────────────────────────────────
+function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDemoBubblePos }) {
+  const DEMO_DAYS = [
+    { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' },
+    { day: 4, type: 'logged' }, { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
+  ];
+  const getDotStyle = (d) => {
+    if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
+    if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: '0 4px 0 0 #991b1b', icon: 'x' };
+    if (d.type === 'restDone')   return { bg: 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)', border: 'rgba(74,222,128,0.5)', shadow: '0 3px 0 0 #15803d', icon: 'leaf' };
+    if (d.type === 'future')     return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'empty' };
+    if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'leafOutline' };
+    return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
+  };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', padding: '0 2px' }}>
+        {DEMO_DAYS.map((d) => {
+          const s = getDotStyle(d);
+          const SIZE = 42;
+          return (
+            <div key={d.day} style={{ flexShrink: 0 }}>
+              <button
+                onPointerDown={(e) => {
+                  e.currentTarget.style.transform = 'translateY(4px)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
+                  else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
+                }}
+                onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
+              >
+                {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
+                {s.icon === 'leaf' && (
+                  <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
+                    <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
+                    <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
+                    <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
+                  </svg>
+                )}
+                {s.icon === 'empty' && <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
+                {s.icon === 'leafOutline' && (
+                  <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
+                    <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
+        This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
+      </p>
+    </div>
+  );
+}
+
+
 const ACCOUNT_TYPES = [
   { id: 'personal', title: "I'm a Member", description: 'Track workouts, join challenges, connect with gyms', icon: User, gradient: 'linear-gradient(135deg, #3b82f6, #06b6d4)', shadow: 'rgba(59,130,246,0.3)' },
   { id: 'gym_owner', title: 'I own a Gym', description: 'Register your gym, manage members, create rewards', icon: Building2, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)', shadow: 'rgba(168,85,247,0.3)' },
@@ -339,6 +405,8 @@ export default function Onboarding() {
   const [trainingDays, setTrainingDays] = useState([]);
   const [demoBubbleDay, setDemoBubbleDay] = useState(null);
   const [demoBubblePos, setDemoBubblePos] = useState(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const updateMeMutation = useMutation({
@@ -420,7 +488,7 @@ export default function Onboarding() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
-  function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setDemoBubbleDay(null); setDemoBubblePos(null); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
+  function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setDemoBubbleDay(null); setDemoBubblePos(null); setCarouselIndex(0); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
   useEffect(() => {
     if (step === 0) { const t = setTimeout(() => goTo(1, 'forward'), 2000); return () => clearTimeout(t); }
@@ -747,25 +815,127 @@ export default function Onboarding() {
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 7 — HOW TO USE: CHECK IN
+  // STEP 7 — HOW TO USE THE APP (carousel)
   // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
+    // ── Carousel card definitions — add more here any time ──
+    const CARDS = [
+      {
+        key: 'checkin',
+        render: () => (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+            <CheckInDemo />
+            <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+              This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: 'logworkout',
+        render: () => (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+            <LogWorkoutDemo />
+            <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+              Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: 'dots',
+        render: () => <WeeklyDotsCard demoBubbleDay={demoBubbleDay} setDemoBubbleDay={setDemoBubbleDay} demoBubblePos={demoBubblePos} setDemoBubblePos={setDemoBubblePos} />,
+      },
+    ];
+
+    const total = CARDS.length;
+
+    const handleCarouselScroll = () => {
+      if (!carouselRef.current) return;
+      const scrollLeft = carouselRef.current.scrollLeft;
+      const width = carouselRef.current.offsetWidth;
+      const idx = Math.round(scrollLeft / width);
+      if (idx !== carouselIndex) {
+        setCarouselIndex(idx);
+        // Close any open dot bubble when swiping away
+        setDemoBubbleDay(null);
+        setDemoBubblePos(null);
+      }
+    };
+
+    const scrollToCard = (idx) => {
+      if (!carouselRef.current) return;
+      carouselRef.current.scrollTo({ left: idx * carouselRef.current.offsetWidth, behavior: 'smooth' });
+    };
+
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 16, flexShrink: 0 }}>
               <BackButton onClick={() => goTo(6, 'back')} />
               <ProgressBar step={7} />
             </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-              <CheckInDemo />
-              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, textAlign: 'center', margin: 0, maxWidth: 300 }}>
-                This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
-              </p>
+            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>How to use the app</h1>
+
+            {/* Carousel dot indicators */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginBottom: 24, flexShrink: 0 }}>
+              {CARDS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToCard(i)}
+                  style={{
+                    width: i === carouselIndex ? 22 : 8,
+                    height: 8, borderRadius: 99, border: 'none', padding: 0,
+                    background: i === carouselIndex ? C.blue : '#cbd5e1',
+                    transition: 'width 0.25s ease, background 0.25s ease',
+                    cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                  }}
+                />
+              ))}
             </div>
-            <div style={{ paddingTop: 14, flexShrink: 0 }}>
+
+            {/* Swipeable carousel */}
+            <div
+              ref={carouselRef}
+              onScroll={handleCarouselScroll}
+              style={{
+                flex: 1,
+                display: 'flex',
+                overflowX: 'auto',
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                gap: 0,
+              }}
+            >
+              <style>{`
+                .ob-carousel::-webkit-scrollbar { display: none; }
+              `}</style>
+              {CARDS.map((card, i) => (
+                <div
+                  key={card.key}
+                  style={{
+                    minWidth: '100%',
+                    scrollSnapAlign: 'start',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 2px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {card.render()}
+                </div>
+              ))}
+            </div>
+
+            {/* Continue */}
+            <div style={{ paddingTop: 18, flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
             </div>
           </div>
@@ -774,164 +944,50 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
-  // STEP 8 — HOW TO USE: LOG WORKOUT
-  // ══════════════════════════════════════════════════════════════════════
-  if (step === 8) {
-    return (
-      <PageShell>
-        <SlidePane visible={visible} dir={animDir}>
-          <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(7, 'back')} />
-              <ProgressBar step={8} />
-            </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-              <LogWorkoutDemo />
-              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, textAlign: 'center', margin: 0, maxWidth: 300 }}>
-                Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
-              </p>
-            </div>
-            <div style={{ paddingTop: 14, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(9, 'forward')}>Continue</PrimaryButton>
-            </div>
-          </div>
-        </SlidePane>
-      </PageShell>
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // STEP 9 — WEEKLY DOTS EXPLAINER
-  // ══════════════════════════════════════════════════════════════════════
-  if (step === 9) {
+  // Dot bubble for step 7 — computed here so it renders over everything at fixed position
+  const dotBubble = step === 7 && demoBubbleDay !== null && demoBubblePos ? (() => {
     const DEMO_DAYS = [
-      { day: 1, type: 'logged',     label: 'Mon' },
-      { day: 2, type: 'missed',     label: 'Tue' },
-      { day: 3, type: 'restDone',   label: 'Wed' },
-      { day: 4, type: 'logged',     label: 'Thu' },
-      { day: 5, type: 'future',     label: 'Fri' },
-      { day: 6, type: 'future',     label: 'Sat' },
-      { day: 7, type: 'futureRest', label: 'Sun' },
+      { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' },
+      { day: 4, type: 'logged' }, { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
     ];
-    const getDotStyle = (d) => {
-      if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
-      if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: '0 4px 0 0 #991b1b', icon: 'x' };
-      if (d.type === 'restDone')   return { bg: 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)', border: 'rgba(74,222,128,0.5)', shadow: '0 3px 0 0 #15803d', icon: 'leaf' };
-      if (d.type === 'future')     return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'empty' };
-      if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'leafOutline' };
-      return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
-    };
-    const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
-    const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || d.label);
+    const d = DEMO_DAYS[demoBubbleDay - 1];
+    const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || '');
     const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
-    const hasViewSummary = (d) => d.type === 'logged';
-    const hasViewWorkout = (d) => d.type === 'future';
+    const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
+    const hasViewSummary = d.type === 'logged';
+    const hasViewWorkout = d.type === 'future';
     const BUBBLE_W = 260, ARROW_H = 7, ARROW_W = 13, RADIUS = 13;
-
-    const renderBubble = () => {
-      if (demoBubbleDay === null || !demoBubblePos) return null;
-      const d = DEMO_DAYS[demoBubbleDay - 1];
-      const BUBBLE_H = (hasViewSummary(d) || hasViewWorkout(d)) ? 116 : 74;
-      const SVG_H = BUBBLE_H + ARROW_H;
-      const screenW = window.innerWidth;
-      const rawLeft = demoBubblePos.cx - BUBBLE_W / 2;
-      const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
-      const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(demoBubblePos.cx - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
-      const arrowL = arrowTip - ARROW_W / 2, arrowR = arrowTip + ARROW_W / 2;
-      const color = getBubbleColor(d);
-      const path = [`M ${RADIUS} ${ARROW_H}`,`L ${arrowL} ${ARROW_H}`,`L ${arrowTip} 0`,`L ${arrowR} ${ARROW_H}`,`L ${BUBBLE_W-RADIUS} ${ARROW_H}`,`Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H+RADIUS}`,`L ${BUBBLE_W} ${SVG_H-RADIUS}`,`Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W-RADIUS} ${SVG_H}`,`L ${RADIUS} ${SVG_H}`,`Q 0 ${SVG_H} 0 ${SVG_H-RADIUS}`,`L 0 ${ARROW_H+RADIUS}`,`Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,`Z`].join(' ');
-      return (
+    const BUBBLE_H = (hasViewSummary || hasViewWorkout) ? 116 : 74;
+    const SVG_H = BUBBLE_H + ARROW_H;
+    const screenW = window.innerWidth;
+    const rawLeft = demoBubblePos.cx - BUBBLE_W / 2;
+    const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
+    const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(demoBubblePos.cx - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
+    const arrowL = arrowTip - ARROW_W / 2, arrowR = arrowTip + ARROW_W / 2;
+    const color = getBubbleColor(d);
+    const path = [`M ${RADIUS} ${ARROW_H}`,`L ${arrowL} ${ARROW_H}`,`L ${arrowTip} 0`,`L ${arrowR} ${ARROW_H}`,`L ${BUBBLE_W-RADIUS} ${ARROW_H}`,`Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H+RADIUS}`,`L ${BUBBLE_W} ${SVG_H-RADIUS}`,`Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W-RADIUS} ${SVG_H}`,`L ${RADIUS} ${SVG_H}`,`Q 0 ${SVG_H} 0 ${SVG_H-RADIUS}`,`L 0 ${ARROW_H+RADIUS}`,`Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,`Z`].join(' ');
+    return (
+      <>
+        <div onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
         <div style={{ position: 'fixed', top: demoBubblePos.bottom + 4, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999 }} onClick={e => e.stopPropagation()}>
           <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}><path d={path} fill={color} /></svg>
           <div style={{ position: 'absolute', top: ARROW_H + 8, left: 12, right: 12, bottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>{getDemoLabel(d)}</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>{getDemoDate(d)}</span>
-            {hasViewSummary(d) && (
-              <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Summary</div>
-            )}
-            {hasViewWorkout(d) && (
-              <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Workout</div>
-            )}
+            {hasViewSummary && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Summary</div>}
+            {hasViewWorkout && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Workout</div>}
           </div>
         </div>
-      );
-    };
-
-    return (
-      <PageShell>
-        <SlidePane visible={visible} dir={animDir}>
-          <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 20, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(8, 'back')} />
-              <ProgressBar step={9} />
-            </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: 0, flexShrink: 0 }}>How to use the app</h1>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 32 }}>
-              {demoBubbleDay !== null && (
-                <div onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
-              )}
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', padding: '0 4px' }}>
-                {DEMO_DAYS.map((d) => {
-                  const s = getDotStyle(d);
-                  const SIZE = 42;
-                  return (
-                    <div key={d.day} style={{ flexShrink: 0 }}>
-                      <button
-                        onPointerDown={(e) => {
-                          e.currentTarget.style.transform = 'translateY(4px)';
-                          e.currentTarget.style.boxShadow = 'none';
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
-                          else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
-                        }}
-                        onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                        onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                        style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
-                      >
-                        {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                        {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
-                        {s.icon === 'leaf' && (
-                          <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
-                            <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-                            <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
-                            <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
-                            <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
-                          </svg>
-                        )}
-                        {s.icon === 'empty' && <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
-                        {s.icon === 'leafOutline' && (
-                          <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
-                            <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-                            <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                            <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                            <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
-                This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
-              </p>
-            </div>
-            <div style={{ paddingTop: 14, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(10, 'forward')}>Continue</PrimaryButton>
-            </div>
-          </div>
-        </SlidePane>
-        {renderBubble()}
-      </PageShell>
+      </>
     );
-  }
+  })() : null;
+
+  if (dotBubble) return dotBubble;
 
   // ══════════════════════════════════════════════════════════════════════
-  // STEP 10 — WELCOME
+  // STEP 8 — WELCOME
   // ══════════════════════════════════════════════════════════════════════
-  if (step === 10) {
+  if (step === 8) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
