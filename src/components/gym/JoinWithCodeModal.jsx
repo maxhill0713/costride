@@ -193,6 +193,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser, gymCount
     },
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success(`Joined ${gym.name}! 🎉`);
       handleClose();
       setTimeout(() => { window.location.href = createPageUrl('GymCommunity') + '?id=' + gym.id; }, 230);
