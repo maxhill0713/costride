@@ -157,7 +157,7 @@ export default function Profile() {
   const currentStreak = currentUser?.current_streak || 0;
   const filteredPosts = userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true && !post.is_hidden);
   const friendCount = friends.length;
-  const canPost = !!(postContent.trim() || postImage || postVideo);
+  const canPost = !!(postImage || postVideo);
 
   const badgeDefs = [
   { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
