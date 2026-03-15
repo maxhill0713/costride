@@ -339,7 +339,7 @@ export default function Profile() {
       {/* ── CREATE POST BOTTOM SHEET ── */}
       {showCreatePost && (
         <div
-          className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center px-5"
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center px-5"
           onClick={closeCreatePost}>
           <div
             className="w-full max-w-sm flex flex-col gap-4"
