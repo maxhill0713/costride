@@ -93,6 +93,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
   const [frozenDuration, setFrozenDuration] = useState(0);
+  const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
 
   const [overrideDayKey, setOverrideDayKey] = useState(null);
