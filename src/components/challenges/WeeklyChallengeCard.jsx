@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -81,28 +81,19 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               <p className="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">{challenge.description}</p>
             </div>
 
-            {/* Days left pill */}
-            {!isExpired ? (
+            {/* Days left pill — only shown when not expired, Ended pill removed */}
+            {!isExpired && (
               <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <Clock className="w-3 h-3 text-slate-500" />
                 <span className="text-[10px] font-bold text-slate-400">{daysLeft}d</span>
               </div>
-            ) : (
-              <span className="flex-shrink-0 text-[10px] font-bold text-slate-600 px-2 py-1 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                Ended
-              </span>
             )}
           </div>
 
-          {/* ── Progress bar ── */}
+          {/* ── Progress bar — percentage only, joined count removed ── */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3 h-3 text-slate-500" />
-                <span className="text-[11px] font-bold text-slate-500">{participantCount} joined</span>
-              </div>
+            <div className="flex items-center justify-end mb-1">
               <span className="text-[11px] font-bold text-slate-500">{progress}%</span>
             </div>
             <button onClick={() => setShowStats(!showStats)} className="w-full">
@@ -149,7 +140,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             </div>
           </div>
 
-          {/* ── Join button ── */}
+          {/* ── Join button — only shown when not expired ── */}
           {!isExpired && (
             <motion.div whileTap={!isParticipant ? { scale: 0.97 } : {}}>
               <button
