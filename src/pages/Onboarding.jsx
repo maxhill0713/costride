@@ -321,63 +321,49 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
     return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
   };
 
-  const DotIcon = ({ icon }) => {
-    if (icon === 'check') return <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-    if (icon === 'x')     return <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>;
-    if (icon === 'leaf')  return (
-      <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
-        <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-        <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
-        <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
-        <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
-      </svg>
-    );
-    if (icon === 'empty') return <div style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />;
-    if (icon === 'leafOutline') return (
-      <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
-        <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-        <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-        <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-        <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-      </svg>
-    );
-    return null;
-  };
-
-  const Dot = ({ d }) => {
-    const s = getDotStyle(d);
-    const SIZE = 44;
-    return (
-      <button
-        onPointerDown={(e) => {
-          e.currentTarget.style.transform = 'translateY(4px)';
-          e.currentTarget.style.boxShadow = 'none';
-          const rect = e.currentTarget.getBoundingClientRect();
-          if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
-          else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
-        }}
-        onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-        onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-        style={{ width: SIZE, height: SIZE, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease', flexShrink: 0 }}
-      >
-        <DotIcon icon={s.icon} />
-      </button>
-    );
-  };
-
-  const row1 = DEMO_DAYS.slice(0, 4); // Mon–Thu
-  const row2 = DEMO_DAYS.slice(4, 7); // Fri–Sun
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-      {/* S-shape: 4 on top, 3 centred below */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {row1.map(d => <Dot key={d.day} d={d} />)}
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {row2.map(d => <Dot key={d.day} d={d} />)}
-        </div>
+      {/* Single horizontal row — all 7 dots */}
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%' }}>
+        {DEMO_DAYS.map((d) => {
+          const s = getDotStyle(d);
+          const SIZE = 40;
+          return (
+            <button
+              key={d.day}
+              onPointerDown={(e) => {
+                e.currentTarget.style.transform = 'translateY(4px)';
+                e.currentTarget.style.boxShadow = 'none';
+                const rect = e.currentTarget.getBoundingClientRect();
+                if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
+                else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
+              }}
+              onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+              onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+              style={{ width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
+            >
+              {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+              {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
+              {s.icon === 'leaf' && (
+                <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
+                  <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
+                  <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
+                  <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
+                </svg>
+              )}
+              {s.icon === 'empty' && <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
+              {s.icon === 'leafOutline' && (
+                <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
+                  <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                  <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                  <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                </svg>
+              )}
+            </button>
+          );
+        })}
       </div>
       <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
         This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
@@ -590,6 +576,16 @@ export default function Onboarding() {
   // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
     const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
+
+    // Prevent iOS viewport resize when keyboard opens
+    const handleInputFocus = () => {
+      if (window.visualViewport) {
+        document.body.style.height = `${window.visualViewport.height}px`;
+      }
+    };
+    const handleInputBlur = () => {
+      document.body.style.height = '';
+    };
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
@@ -614,7 +610,7 @@ export default function Onboarding() {
                 {gymJoinMode === 'code' ? (
                   <div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
-                      <input type="text" value={gymCode} onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }} placeholder="e.g. GYM-ABCD" maxLength={12} onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }} style={{ flex: 1, fontSize: 18, padding: '13px 14px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                      <input type="text" value={gymCode} onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }} placeholder="e.g. GYM-ABCD" maxLength={12} onFocus={handleInputFocus} onBlur={handleInputBlur} style={{ flex: 1, fontSize: 18, padding: '13px 14px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
                       <ActionButton onClick={() => joinByCodeMutation.mutate(gymCode.trim())} disabled={gymCode.trim().length < 3} loading={joinByCodeMutation.isPending} color="blue">Join</ActionButton>
                     </div>
                     {gymCodeError && <p style={{ color: '#ef4444', fontSize: 12, margin: '6px 0 0', textAlign: 'center', fontWeight: 600 }}>{gymCodeError}</p>}
@@ -624,7 +620,7 @@ export default function Onboarding() {
                   <div>
                     <div style={{ position: 'relative' }}>
                       <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1, pointerEvents: 'none' }} />
-                      <input type="text" value={gymSearch} onChange={e => setGymSearch(e.target.value)} placeholder="Search gyms near you…" onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }} style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                      <input type="text" value={gymSearch} onChange={e => setGymSearch(e.target.value)} placeholder="Search gyms near you…" onFocus={handleInputFocus} onBlur={handleInputBlur} style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s', transform: 'translateZ(0)' }} />
                       {isGymSearching && <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}><Spinner size={16} color={C.blueMid} /></div>}
                     </div>
                     {gymSearchResults.length > 0 && (
@@ -849,7 +845,7 @@ export default function Onboarding() {
       {
         key: 'logworkout',
         render: () => (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%', paddingTop: 48 }}>
             <LogWorkoutDemo />
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
               Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
@@ -898,28 +894,23 @@ export default function Onboarding() {
               ))}
             </div>
 
-            {/* Carousel — no padding, flush with page */}
+            {/* Carousel */}
             <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
             <div
               ref={carouselRef}
               className="ob-carousel"
               onScroll={handleCarouselScroll}
-              style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', border: 'none', outline: 'none' }}
             >
               {CARDS.map((card) => (
-                <div key={card.key} style={{ minWidth: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+                <div key={card.key} style={{ minWidth: '100%', width: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', border: 'none', flexShrink: 0 }}>
                   {card.render()}
                 </div>
               ))}
             </div>
 
-            <div style={{ paddingTop: 18, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <PrimaryButton onClick={() => goTo(8, 'forward')} disabled={!hasSeenAll}>
-                {hasSeenAll ? 'Continue' : 'Swipe to continue →'}
-              </PrimaryButton>
-              <button onClick={() => goTo(8, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent' }}>
-                Skip — I don't need the tutorial
-              </button>
+            <div style={{ paddingTop: 18, flexShrink: 0 }}>
+              <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
             </div>
           </div>
         </SlidePane>
