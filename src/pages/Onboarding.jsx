@@ -278,6 +278,7 @@ export default function Onboarding() {
   const [selectedAccountType, setSelectedAccountType] = useState(null);
   const [gymJoinMode, setGymJoinMode] = useState('code');
   const [gymCode, setGymCode] = useState('');
+  const [gymCodeError, setGymCodeError] = useState('');
   const [gymSearch, setGymSearch] = useState('');
   const [gymSearchResults, setGymSearchResults] = useState([]);
   const [gymPlacesResults, setGymPlacesResults] = useState([]);
