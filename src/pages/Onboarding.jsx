@@ -430,14 +430,15 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
-  // Join via Google Places (creates gym first)
+  // Join via Google Places (creates gym via backend function to bypass RLS)
   const createAndJoinGymMutation = useMutation({
     mutationFn: async (place) => {
       const addressParts = place.address.split(',');
       const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : place.address;
-      const gym = await base44.entities.Gym.create({ name: place.name, address: place.address, city, google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude, type: gymType, status: 'approved', claim_status: 'unclaimed', members_count: 0, image_url: place.photo_url || null });
+      const gymData = { name: place.name, address: place.address, city, google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude, type: gymType, claim_status: 'unclaimed', image_url: place.photo_url || null };
+      const res = await base44.functions.invoke('addGym', { gymData });
+      const gym = res.data.gym;
       const me = await base44.auth.me();
-      await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
       if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
       return gym;
     },
