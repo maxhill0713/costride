@@ -341,6 +341,32 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
+  const joinByCodeMutation = useMutation({
+    mutationFn: async (code) => {
+      const gyms = await base44.entities.Gym.filter({ join_code: code.toUpperCase() });
+      if (!gyms || gyms.length === 0) throw new Error('Invalid code — no gym found');
+      const gym = gyms[0];
+      const me = await base44.auth.me();
+      const existing = await base44.entities.GymMembership.filter({ user_id: me.id, gym_id: gym.id, status: 'active' });
+      if (existing.length > 0) {
+        // already a member, treat as success
+        return gym;
+      }
+      await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
+      if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
+      return gym;
+    },
+    onSuccess: (gym) => {
+      setJoinedGym(gym);
+      setGymCodeError('');
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
+    onError: (err) => {
+      setGymCodeError(err.message || 'Invalid code — please try again');
+    },
+  });
+
   const leaveGymForSwitchMutation = useMutation({
     mutationFn: async (gymId) => {
       const me = await base44.auth.me();
