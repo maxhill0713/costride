@@ -7,7 +7,7 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 
-export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exercises, lastWorkout, notes, onConfirm, onCancel, isLoading }) {
+export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exercises, lastWorkout, notes, onConfirm, onCancel, isLoading, showConfirmButton = true }) {
   const formatDuration = (ms) => {
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
