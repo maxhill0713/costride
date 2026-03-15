@@ -860,7 +860,8 @@ export default function Onboarding() {
     ];
 
     const total = CARDS.length;
-    const hasSeenAll = carouselIndex >= total - 1;
+    // ── CHANGED: button is only enabled once user reaches the last card ──
+    const isOnLastCard = carouselIndex >= total - 1;
 
     const handleCarouselScroll = () => {
       if (!carouselRef.current) return;
@@ -909,8 +910,12 @@ export default function Onboarding() {
               ))}
             </div>
 
-            <div style={{ paddingTop: 18, flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(8, 'forward')}>Continue</PrimaryButton>
+            {/* ── CHANGED: always says "Continue", disabled until last card; skip link below ── */}
+            <div style={{ paddingTop: 18, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <PrimaryButton onClick={() => goTo(8, 'forward')} disabled={!isOnLastCard}>Continue</PrimaryButton>
+              <button onClick={() => goTo(8, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, textAlign: 'center' }}>
+                Skip — I don't need the tutorial
+              </button>
             </div>
           </div>
         </SlidePane>
@@ -966,17 +971,22 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            <div style={{ paddingTop: 44, flexShrink: 0 }}>
+            {/* ── CHANGED: fully-complete progress bar at top ── */}
+            <div style={{ paddingTop: 52, flexShrink: 0 }}>
+              <div style={{ marginBottom: 28 }}>
+                <ProgressBar step={9} />
+              </div>
               <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 6px', lineHeight: 1.1 }}>
                 Welcome to{' '}
                 <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
               </h1>
             </div>
+            {/* ── CHANGED: more exciting, natural paragraph ── */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.6, fontWeight: 500 }}>
+              <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.65, fontWeight: 500 }}>
                 {displayName
-                  ? <>You're all set, {displayName.trim().split(' ')[0]}. Your journey starts now. Let's build your community and start earning some rewards.</>
-                  : "Your journey starts now. Let's build your community and start earning some rewards."
+                  ? <>You're all set, {displayName.trim().split(' ')[0]}! Time to check in, crush your workouts, and climb the leaderboard with your gym. Your streak starts today — don't break it.</>
+                  : <>You're all set! Time to check in, crush your workouts, and climb the leaderboard with your gym. Your streak starts today — don't break it.</>
                 }
               </p>
             </div>
