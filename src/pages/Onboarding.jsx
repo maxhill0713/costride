@@ -5,15 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Building2, User,
-  Search, Camera, Loader2, CheckCircle2, MapPin
+  Search, Camera, CheckCircle2, MapPin
 } from 'lucide-react';
 
 const LOGO_URL =
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DESIGN TOKENS — clean light theme
-// ─────────────────────────────────────────────────────────────────────────────
 const C = {
   bg: '#f8faff',
   card: '#ffffff',
@@ -31,9 +28,6 @@ const C = {
   greenDark: '#15803d',
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DEFAULT SPLITS
-// ─────────────────────────────────────────────────────────────────────────────
 const DEFAULT_SPLITS = [
   {
     id: 'bro', name: 'Bro Split', description: '5 days · one muscle group per day',
@@ -86,10 +80,7 @@ const DEFAULT_SPLITS = [
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-purple-500 to-purple-600', cyan: 'from-cyan-500 to-cyan-600', green: 'from-green-500 to-green-600', orange: 'from-orange-500 to-orange-600', pink: 'from-pink-500 to-pink-600' };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED UI PRIMITIVES
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Progress bar ────────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
   const pct = Math.min(((step - 1) / 5) * 100, 100);
   return (
@@ -99,6 +90,7 @@ function ProgressBar({ step }) {
   );
 }
 
+// ─── Primary Duolingo button ─────────────────────────────────────────────────
 function PrimaryButton({ onClick, disabled, children }) {
   const [pressed, setPressed] = useState(false);
   return (
@@ -130,43 +122,50 @@ function PrimaryButton({ onClick, disabled, children }) {
   );
 }
 
-// Small 3D Duolingo-style action button (for Join / + Add)
-function ActionButton({ onClick, disabled, children, color = 'blue' }) {
+// ─── Small inline action button (Join / + Add) — subtle flat style ───────────
+// The 3D shadow was too heavy at small size; using a flatter pill instead.
+function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) {
   const [pressed, setPressed] = useState(false);
   const isGreen = color === 'green';
-  const bg = isGreen
-    ? 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)'
-    : `linear-gradient(to bottom, #60a5fa, ${C.blueMid} 40%, ${C.blue})`;
-  const shadow = isGreen ? '#15803d' : C.blueDark;
+  const activeBg = isGreen
+    ? 'linear-gradient(to bottom, #22c55e, #16a34a)'
+    : `linear-gradient(to bottom, ${C.blueMid}, ${C.blue})`;
+  const activeBorder = isGreen ? '#15803d' : C.blueDark;
+
   return (
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: disabled ? '#cbd5e1' : shadow, transform: 'translateY(3px)' }} />
-      <button
-        onMouseDown={() => !disabled && setPressed(true)}
-        onMouseUp={() => { setPressed(false); if (!disabled) onClick?.(); }}
-        onMouseLeave={() => setPressed(false)}
-        onTouchStart={() => !disabled && setPressed(true)}
-        onTouchEnd={() => { setPressed(false); if (!disabled) onClick?.(); }}
-        onTouchCancel={() => setPressed(false)}
-        disabled={disabled}
-        style={{
-          position: 'relative', zIndex: 1,
-          padding: '7px 14px', borderRadius: 10, border: 'none',
-          fontWeight: 800, fontSize: 12,
-          background: disabled ? '#e2e8f0' : bg,
-          color: disabled ? '#94a3b8' : '#fff',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          transform: pressed ? 'translateY(3px)' : 'translateY(0)',
-          boxShadow: pressed || disabled ? 'none' : `0 3px 0 0 ${shadow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
-          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
-          WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none', whiteSpace: 'nowrap',
-        }}
-      >{children}</button>
-    </div>
+    <button
+      onMouseDown={() => !disabled && !loading && setPressed(true)}
+      onMouseUp={() => { setPressed(false); if (!disabled && !loading) onClick?.(); }}
+      onMouseLeave={() => setPressed(false)}
+      onTouchStart={() => !disabled && !loading && setPressed(true)}
+      onTouchEnd={() => { setPressed(false); if (!disabled && !loading) onClick?.(); }}
+      onTouchCancel={() => setPressed(false)}
+      disabled={disabled || loading}
+      style={{
+        flexShrink: 0,
+        padding: '9px 16px',
+        borderRadius: 10,
+        border: `1.5px solid ${disabled || loading ? C.border : activeBorder}`,
+        background: disabled || loading ? '#f1f5f9' : activeBg,
+        color: disabled || loading ? C.muted : '#fff',
+        fontWeight: 800, fontSize: 13,
+        cursor: disabled || loading ? 'not-allowed' : 'pointer',
+        opacity: pressed ? 0.82 : 1,
+        transform: pressed ? 'scale(0.97)' : 'scale(1)',
+        transition: 'opacity 0.08s ease, transform 0.08s ease',
+        WebkitTapHighlightColor: 'transparent',
+        userSelect: 'none', outline: 'none',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        whiteSpace: 'nowrap',
+        minWidth: 64,
+      }}
+    >
+      {loading ? <Spinner size={13} color={C.blueMid} /> : children}
+    </button>
   );
 }
 
-// White fixed-screen shell
+// ─── Page shell ───────────────────────────────────────────────────────────────
 function PageShell({ children }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -185,13 +184,13 @@ function SlidePane({ visible, dir, children }) {
 
 function BackButton({ onClick }) {
   return (
-    <button onClick={onClick} style={{ background: 'none', border: 'none', padding: '2px 4px 2px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
+    <button onClick={onClick} style={{ background: 'none', border: 'none', padding: '2px 4px 2px 0', display: 'flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
       <ChevronLeft size={28} color={C.sub} strokeWidth={2.5} />
     </button>
   );
 }
 
-// Spinner that actually animates (CSS keyframe injected once)
+// ─── Spinner ─────────────────────────────────────────────────────────────────
 function Spinner({ size = 16, color = C.blueMid }) {
   useEffect(() => {
     if (document.getElementById('ob-spin-style')) return;
@@ -201,19 +200,47 @@ function Spinner({ size = 16, color = C.blueMid }) {
     document.head.appendChild(s);
   }, []);
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      border: `2px solid ${color}30`,
-      borderTopColor: color,
-      animation: 'ob-spin 0.7s linear infinite',
-      flexShrink: 0,
-    }} />
+    <div style={{ width: size, height: size, borderRadius: '50%', border: `2px solid ${color}30`, borderTopColor: color, animation: 'ob-spin 0.7s linear infinite', flexShrink: 0 }} />
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SPLIT DETAIL BOTTOM SHEET
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Joined gym card (shared between code + search paths) ────────────────────
+function JoinedGymCard({ gym, onSwitch, switching }) {
+  return (
+    <div style={{ flexShrink: 0 }}>
+      <div style={{ borderRadius: 18, overflow: 'hidden', border: `1.5px solid ${C.greenBorder}`, boxShadow: '0 3px 0 0 #15803d, 0 6px 20px rgba(22,163,74,0.15)', background: C.card }}>
+        {gym.image_url ? (
+          <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
+            <img src={gym.image_url} alt={gym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.45), transparent)' }} />
+          </div>
+        ) : (
+          <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Building2 size={32} color={C.blueMid} />
+          </div>
+        )}
+        <div style={{ padding: '12px 16px 14px' }}>
+          <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: '0 0 4px' }}>{gym.name}</p>
+          {(gym.address || gym.city) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <MapPin size={12} color={C.muted} />
+              <p style={{ color: C.sub, fontSize: 12, margin: 0 }}>{gym.address || gym.city}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={onSwitch}
+        disabled={switching}
+        style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '14px 0 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, width: '100%', textAlign: 'center', opacity: switching ? 0.5 : 1 }}
+      >
+        {switching ? 'Switching…' : 'Switch gym'}
+      </button>
+    </div>
+  );
+}
+
+// ─── Split detail sheet ───────────────────────────────────────────────────────
 function SplitDetailSheet({ split, onClose }) {
   if (!split) return null;
   return (
@@ -298,6 +325,7 @@ export default function Onboarding() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
   });
 
+  // Debounced gym search
   useEffect(() => {
     if (gymJoinMode !== 'search' || gymSearch.trim().length < 2) { setGymSearchResults([]); setGymPlacesResults([]); return; }
     setIsGymSearching(true);
@@ -318,16 +346,21 @@ export default function Onboarding() {
     return () => clearTimeout(timer);
   }, [gymSearch, gymJoinMode]);
 
+  // Join via search result (existing DB gym)
   const joinGymMutation = useMutation({
     mutationFn: async (gym) => {
       const me = await base44.auth.me();
-      await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
+      const existing = await base44.entities.GymMembership.filter({ user_id: me.id, gym_id: gym.id, status: 'active' });
+      if (existing.length === 0) {
+        await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
+      }
       if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
       return gym;
     },
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
+  // Join via Google Places (creates gym first)
   const createAndJoinGymMutation = useMutation({
     mutationFn: async (place) => {
       const addressParts = place.address.split(',');
@@ -341,6 +374,7 @@ export default function Onboarding() {
     onSuccess: (gym) => { setJoinedGym(gym); queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
+  // Join via code — looks up gym by join_code field, then creates membership
   const joinByCodeMutation = useMutation({
     mutationFn: async (code) => {
       const gyms = await base44.entities.Gym.filter({ join_code: code.toUpperCase() });
@@ -348,17 +382,15 @@ export default function Onboarding() {
       const gym = gyms[0];
       const me = await base44.auth.me();
       const existing = await base44.entities.GymMembership.filter({ user_id: me.id, gym_id: gym.id, status: 'active' });
-      if (existing.length > 0) {
-        // already a member, treat as success
-        return gym;
+      if (existing.length === 0) {
+        await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
       }
-      await base44.entities.GymMembership.create({ user_id: me.id, user_name: me.full_name, user_email: me.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'monthly' });
       if (!me.primary_gym_id) await base44.auth.updateMe({ primary_gym_id: gym.id });
       return gym;
     },
     onSuccess: (gym) => {
-      setJoinedGym(gym);
       setGymCodeError('');
+      setJoinedGym(gym);
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
@@ -367,12 +399,12 @@ export default function Onboarding() {
     },
   });
 
+  // Leave gym (used by Switch gym)
   const leaveGymForSwitchMutation = useMutation({
     mutationFn: async (gymId) => {
       const me = await base44.auth.me();
       const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: me.id });
       if (memberships.length > 0) await base44.entities.GymMembership.delete(memberships[0].id);
-      // clear primary_gym_id if it was set to this gym
       if (me.primary_gym_id === gymId) await base44.auth.updateMe({ primary_gym_id: null });
     },
     onSuccess: () => {
@@ -383,13 +415,21 @@ export default function Onboarding() {
 
   function goTo(next, dir = 'forward') { setAnimDir(dir); setVisible(false); setTimeout(() => { setStep(next); setVisible(true); }, 210); }
 
-  // Splash auto-advance after 2 seconds
+  // Splash auto-advance
   useEffect(() => {
-    if (step === 0) {
-      const t = setTimeout(() => goTo(1, 'forward'), 2000);
-      return () => clearTimeout(t);
-    }
+    if (step === 0) { const t = setTimeout(() => goTo(1, 'forward'), 2000); return () => clearTimeout(t); }
   }, [step]);
+
+  function handleSwitchGym() {
+    const gymId = joinedGym?.id;
+    setJoinedGym(null);
+    setGymSearch('');
+    setGymCode('');
+    setGymCodeError('');
+    setGymSearchResults([]);
+    setGymPlacesResults([]);
+    if (gymId) leaveGymForSwitchMutation.mutate(gymId);
+  }
 
   function handleAccountTypeContinue() {
     if (!selectedAccountType) return;
@@ -418,13 +458,9 @@ export default function Onboarding() {
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72 }}>
         <div style={{ flex: 1 }} />
-        {/* Logo centred, no glow */}
         <img src={LOGO_URL} alt="CoStride" style={{ width: 115, height: 115, borderRadius: 32, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
         <div style={{ flex: 1 }} />
-        {/* CoStride — all white */}
-        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>
-          CoStride
-        </h1>
+        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
       </div>
     );
   }
@@ -437,34 +473,14 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            {/* No logo — title shifted up */}
             <div style={{ paddingTop: 60, flexShrink: 0 }} />
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 28px', flexShrink: 0 }}>Choose your account type</h1>
-
-            {/* Account type cards — professional, app-consistent style */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20, flexShrink: 0 }}>
               {ACCOUNT_TYPES.map(type => {
                 const Icon = type.icon;
                 const isSelected = selectedAccountType === type.id;
                 return (
-                  <button
-                    key={type.id}
-                    onClick={() => setSelectedAccountType(type.id)}
-                    style={{
-                      position: 'relative', padding: '22px 16px 18px', borderRadius: 20,
-                      background: isSelected ? C.blueLight : C.card,
-                      border: isSelected ? `2px solid ${C.blueMid}` : `1.5px solid ${C.border}`,
-                      boxShadow: isSelected
-                        ? `0 4px 0 0 ${C.blueDark}, 0 8px 20px rgba(37,99,235,0.15)`
-                        : '0 3px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)',
-                      cursor: 'pointer', textAlign: 'center',
-                      transform: isSelected ? 'translateY(0)' : 'translateY(0)',
-                      transition: 'all 0.18s ease',
-                      WebkitTapHighlightColor: 'transparent',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-                    }}
-                  >
-                    {/* Icon circle */}
+                  <button key={type.id} onClick={() => setSelectedAccountType(type.id)} style={{ position: 'relative', padding: '22px 16px 18px', borderRadius: 20, background: isSelected ? C.blueLight : C.card, border: isSelected ? `2px solid ${C.blueMid}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? `0 4px 0 0 ${C.blueDark}, 0 8px 20px rgba(37,99,235,0.15)` : '0 3px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)', cursor: 'pointer', textAlign: 'center', transition: 'all 0.18s ease', WebkitTapHighlightColor: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 52, height: 52, borderRadius: 16, background: type.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${type.shadow}` }}>
                       <Icon size={24} color="#fff" strokeWidth={2} />
                     </div>
@@ -476,7 +492,6 @@ export default function Onboarding() {
                 );
               })}
             </div>
-
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={handleAccountTypeContinue} disabled={!selectedAccountType}>Continue</PrimaryButton>
             <p style={{ color: C.muted, fontSize: 11, textAlign: 'center', margin: '12px 0 0' }}>By continuing you agree to CoStride's Terms &amp; Privacy Policy</p>
@@ -490,8 +505,7 @@ export default function Onboarding() {
   // STEP 2 — JOIN YOUR COMMUNITY
   // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
-    const canContinue = !!joinedGym;
-    const isSearching = joinGymMutation.isPending || createAndJoinGymMutation.isPending;
+    const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
 
     return (
       <PageShell>
@@ -503,46 +517,41 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 16px', flexShrink: 0 }}>Let's Join Your Community</h1>
 
-            {/* Mode switcher — hidden once gym is joined */}
+            {/* Switcher — hidden once joined */}
             {!joinedGym && (
               <div style={{ position: 'relative', display: 'flex', background: '#e2eaf4', borderRadius: 16, padding: 5, marginBottom: 16, flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.08)' }}>
-                {/* sliding pill */}
-                <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 3px 0 0 #cbd5e1, 0 2px 6px rgba(0,0,0,0.1)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'code' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 2px 0 0 #cbd5e1, 0 1px 4px rgba(0,0,0,0.08)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'code' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
                 {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
-                  <button key={mode} onClick={() => { setGymJoinMode(mode); setJoinedGym(null); }} style={{ flex: 1, padding: '11px 0', borderRadius: 11, border: 'none', background: 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 800, fontSize: 14, cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.18s ease', WebkitTapHighlightColor: 'transparent', letterSpacing: '-0.01em' }}>
+                  <button key={mode} onClick={() => { setGymJoinMode(mode); setGymCodeError(''); }} style={{ flex: 1, padding: '11px 0', borderRadius: 11, border: 'none', background: 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 800, fontSize: 14, cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.18s ease', WebkitTapHighlightColor: 'transparent', letterSpacing: '-0.01em' }}>
                     {label}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Input area — only show when not yet joined */}
+            {/* Input — hidden once joined */}
             {!joinedGym && (
               <div style={{ flexShrink: 0 }}>
                 {gymJoinMode === 'code' ? (
+                  /* ── Enter Code ── */
                   <div>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
                       <input
                         type="text"
                         value={gymCode}
                         onChange={e => { setGymCode(e.target.value.toUpperCase()); setGymCodeError(''); }}
                         placeholder="e.g. GYM-ABCD"
                         maxLength={12}
-                        readOnly={false}
-                        onFocus={e => {
-                          e.preventDefault();
-                          setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
-                        }}
-                        style={{ fontSize: 18, flex: 1, padding: '14px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.12em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
+                        onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }}
+                        style={{ flex: 1, fontSize: 18, padding: '13px 14px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymCodeError ? '#ef4444' : gymCode.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', textAlign: 'center', fontWeight: 700, letterSpacing: '0.1em', fontFamily: 'monospace', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
+                      />
                       <ActionButton
-                        onClick={() => {
-                          if (gymCode.trim().length < 3) return;
-                          joinByCodeMutation.mutate(gymCode.trim());
-                        }}
-                        disabled={gymCode.trim().length < 3 || joinByCodeMutation.isPending}
+                        onClick={() => joinByCodeMutation.mutate(gymCode.trim())}
+                        disabled={gymCode.trim().length < 3}
+                        loading={joinByCodeMutation.isPending}
                         color="blue"
                       >
-                        {joinByCodeMutation.isPending ? <Spinner size={12} color="#fff" /> : 'Join'}
+                        Join
                       </ActionButton>
                     </div>
                     {gymCodeError && (
@@ -551,18 +560,16 @@ export default function Onboarding() {
                     <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '8px 0 0' }}>Ask your gym for their unique join code</p>
                   </div>
                 ) : (
+                  /* ── Find Gym ── */
                   <div>
                     <div style={{ position: 'relative' }}>
                       <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.muted, zIndex: 1, pointerEvents: 'none' }} />
                       <input
                         type="text"
                         value={gymSearch}
-                        onChange={e => { setGymSearch(e.target.value); }}
+                        onChange={e => setGymSearch(e.target.value)}
                         placeholder="Search gyms near you…"
-                        onFocus={e => {
-                          e.preventDefault();
-                          setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0);
-                        }}
+                        onFocus={e => { e.preventDefault(); setTimeout(() => { if (document.activeElement !== e.target) e.target.focus({ preventScroll: true }); }, 0); }}
                         style={{ fontSize: 16, width: '100%', padding: '14px 16px 14px 40px', borderRadius: 14, background: C.card, border: `1.5px solid ${gymSearch.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
                       />
                       {isGymSearching && (
@@ -572,43 +579,33 @@ export default function Onboarding() {
                       )}
                     </div>
 
-                    {/* DB results */}
                     {gymSearchResults.length > 0 && (
                       <div style={{ marginTop: 8, borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                         {gymSearchResults.map((gym, i) => (
                           <div key={gym.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderBottom: i < gymSearchResults.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                            {gym.image_url
-                              ? <img src={gym.image_url} alt={gym.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
-                              : <div style={{ width: 38, height: 38, borderRadius: 9, background: C.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.blue} /></div>}
+                            {gym.image_url ? <img src={gym.image_url} alt={gym.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 38, height: 38, borderRadius: 9, background: C.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.blue} /></div>}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym.name}</p>
                               <p style={{ color: C.sub, fontSize: 11, margin: '1px 0 0' }}>{gym.city}</p>
                             </div>
-                            <ActionButton onClick={() => joinGymMutation.mutate(gym)} disabled={isSearching} color="blue">
-                              {joinGymMutation.isPending ? <Spinner size={12} color="#fff" /> : 'Join'}
-                            </ActionButton>
+                            <ActionButton onClick={() => joinGymMutation.mutate(gym)} disabled={isJoining} loading={joinGymMutation.isPending} color="blue">Join</ActionButton>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    {/* Google Places results */}
                     {gymPlacesResults.length > 0 && (
                       <div style={{ marginTop: 8 }}>
                         <p style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Add from Google Maps</p>
                         <div style={{ borderRadius: 14, border: `1px solid ${C.border}`, background: C.card, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                           {gymPlacesResults.map((place, i) => (
                             <div key={place.place_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderBottom: i < gymPlacesResults.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                              {place.photo_url
-                                ? <img src={place.photo_url} alt={place.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
-                                : <div style={{ width: 38, height: 38, borderRadius: 9, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.green} /></div>}
+                              {place.photo_url ? <img src={place.photo_url} alt={place.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 38, height: 38, borderRadius: 9, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building2 size={16} color={C.green} /></div>}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{ color: C.text, fontWeight: 700, fontSize: 13, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.name}</p>
                                 <p style={{ color: C.sub, fontSize: 11, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                               </div>
-                              <ActionButton onClick={() => createAndJoinGymMutation.mutate(place)} disabled={isSearching} color="green">
-                                {createAndJoinGymMutation.isPending ? <Spinner size={12} color="#fff" /> : '+ Add'}
-                              </ActionButton>
+                              <ActionButton onClick={() => createAndJoinGymMutation.mutate(place)} disabled={isJoining} loading={createAndJoinGymMutation.isPending} color="green">+ Add</ActionButton>
                             </div>
                           ))}
                         </div>
@@ -625,66 +622,19 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* Joined gym card — shown once gym is joined, replaces all search UI */}
+            {/* Joined gym card — same for both code and search paths */}
             {joinedGym && (
-              <div style={{ flexShrink: 0 }}>
-                <div style={{ borderRadius: 18, overflow: 'hidden', border: `1.5px solid ${C.greenBorder}`, boxShadow: '0 3px 0 0 #15803d, 0 6px 20px rgba(22,163,74,0.15)', background: C.card }}>
-                  {joinedGym.image_url && (
-                    <div style={{ width: '100%', height: 130, overflow: 'hidden', position: 'relative' }}>
-                      <img src={joinedGym.image_url} alt={joinedGym.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
-                    </div>
-                  )}
-                  {!joinedGym.image_url && (
-                    <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg, #dbeafe, #e0f2fe)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Building2 size={32} color={C.blueMid} />
-                    </div>
-                  )}
-                  <div style={{ padding: '12px 16px 14px' }}>
-                    <p style={{ color: C.text, fontWeight: 800, fontSize: 15, margin: '0 0 4px' }}>{joinedGym.name}</p>
-                    {(joinedGym.address || joinedGym.city) && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <MapPin size={12} color={C.muted} />
-                        <p style={{ color: C.sub, fontSize: 12, margin: 0 }}>{joinedGym.address || joinedGym.city}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Switch gym button */}
-                <button
-                  onClick={() => {
-                    const gymId = joinedGym.id;
-                    // reset UI immediately so the user isn't blocked
-                    setJoinedGym(null);
-                    setGymSearch('');
-                    setGymCode('');
-                    setGymSearchResults([]);
-                    setGymPlacesResults([]);
-                    // remove the membership from the DB in the background
-                    leaveGymForSwitchMutation.mutate(gymId);
-                  }}
-                  disabled={leaveGymForSwitchMutation.isPending}
-                  style={{
-                    background: 'none', border: 'none', color: C.muted,
-                    fontSize: 13, cursor: 'pointer',
-                    padding: '14px 0 0',
-                    WebkitTapHighlightColor: 'transparent',
-                    fontWeight: 600, width: '100%', textAlign: 'center',
-                    opacity: leaveGymForSwitchMutation.isPending ? 0.5 : 1,
-                  }}
-                >
-                  {leaveGymForSwitchMutation.isPending ? 'Switching…' : 'Switch gym'}
-                </button>
-              </div>
+              <JoinedGymCard
+                gym={joinedGym}
+                onSwitch={handleSwitchGym}
+                switching={leaveGymForSwitchMutation.isPending}
+              />
             )}
 
             <div style={{ flex: 1 }} />
-
             <div style={{ flexShrink: 0 }}>
-              <PrimaryButton onClick={() => goTo(3, 'forward')} disabled={!canContinue}>Continue</PrimaryButton>
-              <p style={{ color: C.muted, fontSize: 13, textAlign: 'center', margin: '10px 0 0' }}>
-                You can add more gyms later from the Gyms page
-              </p>
+              <PrimaryButton onClick={() => goTo(3, 'forward')} disabled={!joinedGym}>Continue</PrimaryButton>
+              <p style={{ color: C.muted, fontSize: 13, textAlign: 'center', margin: '10px 0 0' }}>You can add more gyms later from the Gyms page</p>
             </div>
           </div>
         </SlidePane>
@@ -712,29 +662,15 @@ export default function Onboarding() {
                 const isSelected = selectedSplit?.id === split.id;
                 return (
                   <div key={split.id}
-                    style={{
-                      position: 'relative', borderRadius: 18, cursor: 'pointer', flexShrink: 0,
-                      background: C.card,
-                      border: isSelected ? `2px solid ${C.greenDark}` : `1.5px solid ${C.border}`,
-                      boxShadow: isSelected
-                        ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)`
-                        : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)',
-                      transform: 'translateY(0)',
-                      transition: 'border 0.15s ease, box-shadow 0.15s ease',
-                      WebkitTapHighlightColor: 'transparent',
-                    }}
+                    style={{ position: 'relative', borderRadius: 18, cursor: 'pointer', flexShrink: 0, background: C.card, border: isSelected ? `2px solid ${C.greenDark}` : `1.5px solid ${C.border}`, boxShadow: isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)', transition: 'border 0.15s ease, box-shadow 0.15s ease', WebkitTapHighlightColor: 'transparent' }}
                     onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
                     onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
                     onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
                     onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
                     onClick={e => {
                       const rect = e.currentTarget.getBoundingClientRect();
-                      const relX = e.clientX - rect.left;
-                      if (relX >= rect.width * (2 / 3)) {
-                        setPreviewSplit(split);
-                      } else {
-                        setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts });
-                      }
+                      if (e.clientX - rect.left >= rect.width * (2 / 3)) { setPreviewSplit(split); }
+                      else { setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts }); }
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px' }}>
@@ -742,12 +678,10 @@ export default function Onboarding() {
                         <p style={{ color: C.text, fontWeight: 900, fontSize: 15, margin: '0 0 1px', letterSpacing: '-0.01em' }}>{split.name}</p>
                         <p style={{ color: C.sub, fontSize: 11, margin: '0 0 5px' }}>{split.description}</p>
                         <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                          {split.days.map(d => (
-                            <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>
-                          ))}
+                          {split.days.map(d => <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>)}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 12, flexShrink: 0 }}>
+                      <div style={{ paddingLeft: 12, flexShrink: 0 }}>
                         <ChevronRight size={20} color={isSelected ? C.green : C.muted} strokeWidth={2.5} />
                       </div>
                     </div>
@@ -783,16 +717,9 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 28px', flexShrink: 0 }}>What's your name?</h1>
             <div style={{ flexShrink: 0 }}>
-              <input
-                type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value.slice(0, 30))}
-                placeholder="Name"
-                maxLength={30}
-                // stop page jumping on focus
+              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.slice(0, 30))} placeholder="Name" maxLength={30}
                 onFocus={e => { e.target.scrollIntoView = () => {}; }}
-                style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }}
-              />
+                style={{ fontSize: 18, width: '100%', padding: '15px 16px', borderRadius: 14, background: C.card, border: `1.5px solid ${displayName.length > 0 ? C.blueMid : C.border}`, color: C.text, outline: 'none', boxSizing: 'border-box', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'border-color 0.2s' }} />
             </div>
             <div style={{ flex: 1 }} />
             <PrimaryButton onClick={() => goTo(5, 'forward')} disabled={displayName.trim().length < 2}>Continue</PrimaryButton>
@@ -816,30 +743,16 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>Add a Profile Picture</h1>
             <p style={{ color: C.sub, fontSize: 14, margin: 0, flexShrink: 0 }}>Let your friends identify you.</p>
-
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); } }} />
-              <button onClick={() => fileInputRef.current?.click()}
-                style={{ position: 'relative', width: 180, height: 180, borderRadius: '50%', overflow: 'hidden', border: avatarPreview ? `3px solid ${C.blueMid}` : `2px dashed ${C.muted}`, background: avatarPreview ? 'transparent' : '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', boxShadow: avatarPreview ? '0 4px 20px rgba(59,130,246,0.15)' : 'none', transition: 'all 0.2s ease' }}>
-                {avatarPreview
-                  ? <img src={avatarPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                      <Camera size={40} color={C.muted} />
-                      <span style={{ color: C.muted, fontSize: 12, fontWeight: 600 }}>Tap to upload</span>
-                    </div>
-                }
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); } }} />
+              <button onClick={() => fileInputRef.current?.click()} style={{ width: 180, height: 180, borderRadius: '50%', overflow: 'hidden', border: avatarPreview ? `3px solid ${C.blueMid}` : `2px dashed ${C.muted}`, background: avatarPreview ? 'transparent' : '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', boxShadow: avatarPreview ? '0 4px 20px rgba(59,130,246,0.15)' : 'none', transition: 'all 0.2s ease' }}>
+                {avatarPreview ? <img src={avatarPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}><Camera size={40} color={C.muted} /><span style={{ color: C.muted, fontSize: 12, fontWeight: 600 }}>Tap to upload</span></div>}
               </button>
-              <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', maxWidth: 240, lineHeight: 1.55, margin: 0 }}>
-                A photo helps gym members and friends recognise you in the community.
-              </p>
+              <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', maxWidth: 240, lineHeight: 1.55, margin: 0 }}>A photo helps gym members and friends recognise you in the community.</p>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
               <PrimaryButton onClick={() => goTo(6, 'forward')} disabled={!avatarPreview}>Continue</PrimaryButton>
-              <button onClick={() => goTo(6, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', padding: '8px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600 }}>
-                Skip for now
-              </button>
+              <button onClick={() => goTo(6, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 14, cursor: 'pointer', padding: '8px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600 }}>Skip for now</button>
             </div>
           </div>
         </SlidePane>
@@ -861,7 +774,6 @@ export default function Onboarding() {
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>How often do you train?</h1>
             <p style={{ color: C.sub, fontSize: 14, margin: '0 0 20px', flexShrink: 0 }}>Pick the days you plan to go to the gym each week.</p>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 7, flexShrink: 0 }}>
               {DAY_NAMES.map((name, i) => {
                 const d = i + 1; const on = trainingDays.includes(d);
@@ -873,7 +785,6 @@ export default function Onboarding() {
                 );
               })}
             </div>
-
             <p style={{ color: C.muted, fontSize: 12, textAlign: 'center', margin: '10px 0 0', flexShrink: 0 }}>
               {trainingDays.length > 0 ? `${trainingDays.length} training day${trainingDays.length !== 1 ? 's' : ''} · ${7 - trainingDays.length} rest` : 'Select at least one day'}
             </p>
@@ -893,14 +804,12 @@ export default function Onboarding() {
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            {/* Title near top, no progress bar */}
             <div style={{ paddingTop: 44, flexShrink: 0 }}>
               <h1 style={{ color: C.text, fontWeight: 900, fontSize: 34, letterSpacing: '-0.03em', margin: '0 0 6px', lineHeight: 1.1 }}>
                 Welcome to{' '}
                 <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
               </h1>
             </div>
-
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.6, fontWeight: 500 }}>
                 {displayName
@@ -909,7 +818,6 @@ export default function Onboarding() {
                 }
               </p>
             </div>
-
             <PrimaryButton onClick={handleFinish} disabled={updateMeMutation.isPending}>
               {updateMeMutation.isPending ? 'Setting up…' : 'Get Started'}
             </PrimaryButton>
