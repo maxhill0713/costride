@@ -579,7 +579,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           const captured = workoutDuration;
                           frozenDurationRef.current = captured;
                           setFrozenDuration(captured);
-                          setShowSummary(true);
+                          logWorkoutMutation.mutate();
                         }}
                         disabled={logWorkoutMutation.isPending}
                         size="sm"
