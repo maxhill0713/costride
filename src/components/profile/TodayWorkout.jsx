@@ -267,6 +267,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         exercises: todayWorkout.exercises,
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
+        duration_minutes: frozenDuration > 0 ? Math.round(frozenDuration / 60) : undefined,
       });
 
       const newStreak = (currentUser.current_streak || 0) + 1;
