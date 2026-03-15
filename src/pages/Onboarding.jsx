@@ -878,90 +878,92 @@ export default function Onboarding() {
       carouselRef.current.scrollTo({ left: idx * carouselRef.current.offsetWidth, behavior: 'smooth' });
     };
 
-    return (
-      <PageShell>
-        <SlidePane visible={visible} dir={animDir}>
-          <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 16, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(6, 'back')} />
-              <ProgressBar step={7} />
-            </div>
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>How to use the app</h1>
-
-            {/* Carousel position dots */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginBottom: 24, flexShrink: 0 }}>
-              {CARDS.map((_, i) => (
-                <button key={i} onClick={() => scrollToCard(i)} style={{ width: i === carouselIndex ? 22 : 8, height: 8, borderRadius: 99, border: 'none', padding: 0, background: i === carouselIndex ? C.blue : '#cbd5e1', transition: 'width 0.25s ease, background 0.25s ease', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} />
-              ))}
-            </div>
-
-            {/* Carousel */}
-            <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
-            <div
-              ref={carouselRef}
-              className="ob-carousel"
-              onScroll={handleCarouselScroll}
-              style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', border: 'none', outline: 'none' }}
-            >
-              {CARDS.map((card) => (
-                <div key={card.key} style={{ minWidth: '100%', width: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', border: 'none', flexShrink: 0 }}>
-                  {card.render()}
-                </div>
-              ))}
-            </div>
-
-            {/* ── CHANGED: always says "Continue", disabled until last card; skip link below ── */}
-            <div style={{ paddingTop: 18, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <PrimaryButton onClick={() => goTo(8, 'forward')} disabled={!isOnLastCard}>Continue</PrimaryButton>
-              <button onClick={() => goTo(8, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, textAlign: 'center' }}>
-                Skip — I don't need the tutorial
-              </button>
+    // Dot bubble overlay (rendered over the carousel)
+    const renderDotBubble = () => {
+      if (demoBubbleDay === null || !demoBubblePos) return null;
+      const DEMO_DAYS = [
+        { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' },
+        { day: 4, type: 'logged' }, { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
+      ];
+      const d = DEMO_DAYS[demoBubbleDay - 1];
+      if (!d) return null;
+      const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || '');
+      const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
+      const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
+      const hasViewSummary = d.type === 'logged';
+      const hasViewWorkout = d.type === 'future';
+      const BUBBLE_W = 260, ARROW_H = 7, ARROW_W = 13, RADIUS = 13;
+      const BUBBLE_H = (hasViewSummary || hasViewWorkout) ? 116 : 74;
+      const SVG_H = BUBBLE_H + ARROW_H;
+      const screenW = window.innerWidth;
+      const rawLeft = demoBubblePos.cx - BUBBLE_W / 2;
+      const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
+      const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(demoBubblePos.cx - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
+      const arrowL = arrowTip - ARROW_W / 2, arrowR = arrowTip + ARROW_W / 2;
+      const color = getBubbleColor(d);
+      const path = [`M ${RADIUS} ${ARROW_H}`,`L ${arrowL} ${ARROW_H}`,`L ${arrowTip} 0`,`L ${arrowR} ${ARROW_H}`,`L ${BUBBLE_W-RADIUS} ${ARROW_H}`,`Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H+RADIUS}`,`L ${BUBBLE_W} ${SVG_H-RADIUS}`,`Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W-RADIUS} ${SVG_H}`,`L ${RADIUS} ${SVG_H}`,`Q 0 ${SVG_H} 0 ${SVG_H-RADIUS}`,`L 0 ${ARROW_H+RADIUS}`,`Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,`Z`].join(' ');
+      return (
+        <>
+          <div onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
+          <div style={{ position: 'fixed', top: demoBubblePos.bottom + 4, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999 }} onClick={e => e.stopPropagation()}>
+            <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}><path d={path} fill={color} /></svg>
+            <div style={{ position: 'absolute', top: ARROW_H + 8, left: 12, right: 12, bottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>{getDemoLabel(d)}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>{getDemoDate(d)}</span>
+              {hasViewSummary && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Summary</div>}
+              {hasViewWorkout && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Workout</div>}
             </div>
           </div>
-        </SlidePane>
-      </PageShell>
-    );
-  }
+        </>
+      );
+    };
 
-  // Dot bubble for step 7 — computed here so it renders over everything at fixed position
-  const dotBubble = step === 7 && demoBubbleDay !== null && demoBubblePos ? (() => {
-    const DEMO_DAYS = [
-      { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' },
-      { day: 4, type: 'logged' }, { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
-    ];
-    const d = DEMO_DAYS[demoBubbleDay - 1];
-    const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || '');
-    const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
-    const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
-    const hasViewSummary = d.type === 'logged';
-    const hasViewWorkout = d.type === 'future';
-    const BUBBLE_W = 260, ARROW_H = 7, ARROW_W = 13, RADIUS = 13;
-    const BUBBLE_H = (hasViewSummary || hasViewWorkout) ? 116 : 74;
-    const SVG_H = BUBBLE_H + ARROW_H;
-    const screenW = window.innerWidth;
-    const rawLeft = demoBubblePos.cx - BUBBLE_W / 2;
-    const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
-    const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(demoBubblePos.cx - clampedLeft, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
-    const arrowL = arrowTip - ARROW_W / 2, arrowR = arrowTip + ARROW_W / 2;
-    const color = getBubbleColor(d);
-    const path = [`M ${RADIUS} ${ARROW_H}`,`L ${arrowL} ${ARROW_H}`,`L ${arrowTip} 0`,`L ${arrowR} ${ARROW_H}`,`L ${BUBBLE_W-RADIUS} ${ARROW_H}`,`Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H+RADIUS}`,`L ${BUBBLE_W} ${SVG_H-RADIUS}`,`Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W-RADIUS} ${SVG_H}`,`L ${RADIUS} ${SVG_H}`,`Q 0 ${SVG_H} 0 ${SVG_H-RADIUS}`,`L 0 ${ARROW_H+RADIUS}`,`Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,`Z`].join(' ');
     return (
       <>
-        <div onPointerDown={() => { setDemoBubbleDay(null); setDemoBubblePos(null); }} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
-        <div style={{ position: 'fixed', top: demoBubblePos.bottom + 4, left: clampedLeft, width: BUBBLE_W, height: SVG_H, zIndex: 9999 }} onClick={e => e.stopPropagation()}>
-          <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}><path d={path} fill={color} /></svg>
-          <div style={{ position: 'absolute', top: ARROW_H + 8, left: 12, right: 12, bottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>{getDemoLabel(d)}</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>{getDemoDate(d)}</span>
-            {hasViewSummary && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', borderBottom: '3px solid #1e40af', color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Summary</div>}
-            {hasViewWorkout && <div style={{ marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 8, background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)', border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800, textAlign: 'center', cursor: 'default', opacity: 0.55 }}>View Workout</div>}
-          </div>
-        </div>
+        <PageShell>
+          <SlidePane visible={visible} dir={animDir}>
+            <div style={inner}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 16, flexShrink: 0 }}>
+                <BackButton onClick={() => goTo(6, 'back')} />
+                <ProgressBar step={7} />
+              </div>
+              <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>How to use the app</h1>
+
+              {/* Carousel position dots */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginBottom: 24, flexShrink: 0 }}>
+                {CARDS.map((_, i) => (
+                  <button key={i} onClick={() => scrollToCard(i)} style={{ width: i === carouselIndex ? 22 : 8, height: 8, borderRadius: 99, border: 'none', padding: 0, background: i === carouselIndex ? C.blue : '#cbd5e1', transition: 'width 0.25s ease, background 0.25s ease', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} />
+                ))}
+              </div>
+
+              {/* Carousel */}
+              <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
+              <div
+                ref={carouselRef}
+                className="ob-carousel"
+                onScroll={handleCarouselScroll}
+                style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', border: 'none', outline: 'none' }}
+              >
+                {CARDS.map((card) => (
+                  <div key={card.key} style={{ minWidth: '100%', width: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', border: 'none', flexShrink: 0 }}>
+                    {card.render()}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ paddingTop: 18, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <PrimaryButton onClick={() => goTo(8, 'forward')} disabled={!isOnLastCard}>Continue</PrimaryButton>
+                <button onClick={() => goTo(8, 'forward')} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 13, cursor: 'pointer', padding: '6px 0', WebkitTapHighlightColor: 'transparent', fontWeight: 600, textAlign: 'center' }}>
+                  Skip — I don't need the tutorial
+                </button>
+              </div>
+            </div>
+          </SlidePane>
+        </PageShell>
+        {renderDotBubble()}
       </>
     );
-  })() : null;
-
-  if (dotBubble) return dotBubble;
+  }
 
   // ══════════════════════════════════════════════════════════════════════
   // STEP 8 — WELCOME
