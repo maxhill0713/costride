@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Building2, User, CheckCircle2,
-  Search, Camera, X
+  Search, Camera, X, Loader2
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
