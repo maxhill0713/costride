@@ -79,7 +79,7 @@ function FillRing({ pct, color, size = 42 }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function TabCoachOverview({
-  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events,
+  myClasses = [], checkIns = [], allMemberships = [], avatarMap = {}, openModal, now, selectedGym, posts = [], events = [],
 }) {
   const [atRiskTab, setAtRiskTab] = useState('absent');
   const [rosterClass, setRosterClass] = useState(null);
