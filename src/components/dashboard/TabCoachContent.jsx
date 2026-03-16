@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { format, subDays } from 'date-fns';
 import {
-  Dumbbell, MessageSquarePlus, Calendar, Trophy, BarChart2,
+  Dumbbell, MessageSquarePlus, Calendar, BarChart2,
   Plus, Heart, MessageCircle, MoreHorizontal, Trash2,
-  ChevronRight, Zap, TrendingUp
+  Star, TrendingUp, Zap, ClipboardList, Award,
+  BookOpen, Bell,
 } from 'lucide-react';
 import { Card, Avatar } from './DashboardPrimitives';
 
-// ── CSS ───────────────────────────────────────────────────────────────────────
+// ── CSS ────────────────────────────────────────────────────────────────────────
 const CSS = `
   .tcc-root { display: grid; grid-template-columns: minmax(0,1fr) clamp(260px,22%,310px); gap: 16px; height: 100%; }
   .tcc-left { display: flex; flex-direction: column; height: 100%; overflow: hidden; min-height: 0; }
@@ -20,16 +21,16 @@ const CSS = `
   .tcc-feed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; padding-bottom: 24px; }
   .tcc-sidebar { height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; min-width: 260px; }
   @media (max-width: 768px) {
-    .tcc-root { grid-template-columns: 1fr !important; height: auto !important; }
-    .tcc-left { height: auto !important; overflow: visible !important; min-height: unset !important; }
-    .tcc-actions { grid-template-columns: repeat(3,1fr) !important; }
-    .tcc-feed { overflow: visible !important; flex: unset !important; }
+    .tcc-root      { grid-template-columns: 1fr !important; height: auto !important; }
+    .tcc-left      { height: auto !important; overflow: visible !important; min-height: unset !important; }
+    .tcc-actions   { grid-template-columns: repeat(3,1fr) !important; }
+    .tcc-feed      { overflow: visible !important; flex: unset !important; }
     .tcc-feed-grid { grid-template-columns: 1fr !important; }
-    .tcc-sidebar { height: auto !important; overflow: visible !important; min-width: unset !important; }
+    .tcc-sidebar   { height: auto !important; overflow: visible !important; min-width: unset !important; }
   }
 `;
 
-// ── 3-dot delete ──────────────────────────────────────────────────────────────
+// ── 3-dot delete menu ──────────────────────────────────────────────────────────
 function DeleteBtn({ onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -59,6 +60,7 @@ function DeleteBtn({ onDelete }) {
   );
 }
 
+// ── Post card ──────────────────────────────────────────────────────────────────
 function FeedCard({ post, onDelete }) {
   const likes    = post.likes?.length    || 0;
   const comments = post.comments?.length || 0;
@@ -67,7 +69,7 @@ function FeedCard({ post, onDelete }) {
   return (
     <div style={{ borderRadius: 12, background: 'rgba(12,26,46,0.8)', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Avatar name={post.author_name || post.gym_name || 'Me'} size={30}/>
+        <Avatar name={post.author_name || 'Me'} size={30}/>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.author_name || 'My Post'}</div>
         </div>
@@ -97,6 +99,64 @@ function FeedCard({ post, onDelete }) {
   );
 }
 
+// ── Member shoutout card ───────────────────────────────────────────────────────
+function ShoutoutCard({ shoutout, onDelete }) {
+  const likes = shoutout.likes?.length || 0;
+  return (
+    <div style={{ borderRadius: 12, background: 'rgba(12,26,46,0.8)', border: '1px solid rgba(251,191,36,0.18)', overflow: 'hidden' }}>
+      <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(251,191,36,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Award style={{ width: 14, height: 14, color: '#fbbf24' }}/>
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 800, color: '#fbbf24', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.22)', borderRadius: 5, padding: '1px 7px' }}>Shoutout 🏆</span>
+        <span style={{ fontSize: 11, color: '#3a5070', marginLeft: 'auto' }}>{shoutout.created_date ? format(new Date(shoutout.created_date), 'MMM d') : ''}</span>
+        <DeleteBtn onDelete={() => onDelete(shoutout.id)}/>
+      </div>
+      {shoutout.member_name && (
+        <div style={{ padding: '0 14px 6px', display: 'flex', alignItems: 'center', gap: 7 }}>
+          <Avatar name={shoutout.member_name} size={22}/>
+          <span style={{ fontSize: 12, fontWeight: 800, color: '#fbbf24' }}>{shoutout.member_name}</span>
+        </div>
+      )}
+      <div style={{ padding: '0 14px 10px' }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#f0f4f8', margin: 0, lineHeight: 1.45 }}>{shoutout.content || shoutout.title || ''}</p>
+      </div>
+      <div style={{ padding: '6px 14px 10px', display: 'flex', alignItems: 'center', gap: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: likes > 0 ? '#f87171' : '#3a5070', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <Heart style={{ width: 14, height: 14 }}/> {likes}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Class recap card ──────────────────────────────────────────────────────────
+function RecapCard({ recap, onDelete }) {
+  return (
+    <div style={{ borderRadius: 12, background: 'rgba(12,26,46,0.8)', border: '1px solid rgba(167,139,250,0.18)', overflow: 'hidden' }}>
+      <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(167,139,250,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <ClipboardList style={{ width: 14, height: 14, color: '#a78bfa' }}/>
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 800, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.22)', borderRadius: 5, padding: '1px 7px' }}>Class Recap</span>
+        {recap.class_name && <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{recap.class_name}</span>}
+        <span style={{ fontSize: 11, color: '#3a5070', marginLeft: 'auto' }}>{recap.created_date ? format(new Date(recap.created_date), 'MMM d') : ''}</span>
+        <DeleteBtn onDelete={() => onDelete(recap.id)}/>
+      </div>
+      {recap.attended !== undefined && (
+        <div style={{ padding: '0 14px 6px', display: 'flex', gap: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.09)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '2px 8px' }}>{recap.attended} attended</span>
+          {recap.fill_pct !== undefined && <span style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.09)', border: '1px solid rgba(56,189,248,0.18)', borderRadius: 6, padding: '2px 8px' }}>{recap.fill_pct}% full</span>}
+        </div>
+      )}
+      <div style={{ padding: '0 14px 10px' }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#f0f4f8', margin: 0, lineHeight: 1.45 }}>{recap.content || recap.notes || ''}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Event card ─────────────────────────────────────────────────────────────────
 function EventCard({ event, now, onDelete }) {
   const evDate   = new Date(event.event_date);
   const diffDays = Math.floor((evDate - now) / 86400000);
@@ -121,75 +181,7 @@ function EventCard({ event, now, onDelete }) {
   );
 }
 
-function ChallengeCard({ challenge, now, onDelete }) {
-  const start = new Date(challenge.start_date), end = new Date(challenge.end_date);
-  const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
-  const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
-  const remaining = Math.max(0, totalDays - elapsed);
-  const pct       = Math.min(100, Math.round((elapsed / totalDays) * 100));
-  return (
-    <div style={{ borderRadius: 12, background: 'rgba(12,26,46,0.8)', border: '1px solid rgba(245,158,11,0.15)', overflow: 'hidden' }}>
-      <div style={{ height: 90, background: 'linear-gradient(135deg,#1a1033,#3b1a5e,#6d28d9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Trophy style={{ width: 30, height: 30, color: 'rgba(245,158,11,0.6)' }}/>
-        <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 4, padding: '2px 7px' }}>Challenge</span>
-        <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: remaining <= 3 ? '#f87171' : '#3a5070', background: 'rgba(0,0,0,0.35)', borderRadius: 4, padding: '2px 7px' }}>{remaining}d left</span>
-        <div style={{ position: 'absolute', bottom: 8, right: 8 }}><DeleteBtn onDelete={() => onDelete(challenge.id)}/></div>
-      </div>
-      <div style={{ padding: '10px 14px 12px' }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#f0f4f8', margin: '0 0 6px' }}>{challenge.title}</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 11, color: '#3a5070' }}>{challenge.participants?.length || 0} participants</span>
-        </div>
-        <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const CLASS_IMAGES = {
-  hiit: 'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
-  yoga: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
-  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  default: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-};
-const CLASS_COLORS = {
-  hiit: { color: '#f87171', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', label: 'HIIT' },
-  yoga: { color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)', label: 'Yoga' },
-  strength: { color: '#818cf8', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', label: 'Strength' },
-  default: { color: '#38bdf8', bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.2)', label: 'Class' },
-};
-function getClassType(c) {
-  const n = (c.class_type || c.name || '').toLowerCase();
-  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
-  if (n.includes('yoga') || n.includes('flow')) return 'yoga';
-  if (n.includes('strength') || n.includes('lift') || n.includes('weight')) return 'strength';
-  return 'default';
-}
-function ClassCard({ gymClass, onDelete }) {
-  const typeKey = getClassType(gymClass);
-  const cfg = CLASS_COLORS[typeKey];
-  const img = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
-  return (
-    <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(160deg,#0d1535 0%,#080c1e 100%)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ position: 'relative', height: 110, overflow: 'hidden', flexShrink: 0 }}>
-        <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(8,12,28,0.85) 100%)' }}/>
-        <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</div>
-      </div>
-      <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gymClass.name || gymClass.title}</div>
-          <DeleteBtn onDelete={() => onDelete(gymClass.id)}/>
-        </div>
-        {gymClass.duration_minutes && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{gymClass.duration_minutes} min</div>}
-        {gymClass.description && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{gymClass.description}</div>}
-      </div>
-    </div>
-  );
-}
-
+// ── Poll card ──────────────────────────────────────────────────────────────────
 function PollCard({ poll, onDelete }) {
   const votes = poll.voters?.length || 0;
   return (
@@ -200,75 +192,167 @@ function PollCard({ poll, onDelete }) {
         <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(poll.id)}/></div>
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#f0f4f8', margin: '0 0 8px' }}>{poll.title}</p>
+      {/* Show poll options with vote bars if available */}
+      {poll.options && poll.options.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 8 }}>
+          {poll.options.map((opt, i) => {
+            const optVotes = opt.votes || 0;
+            const pct      = votes > 0 ? Math.round((optVotes / votes) * 100) : 0;
+            return (
+              <div key={i}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{opt.label || opt.text || `Option ${i+1}`}</span>
+                  <span style={{ fontSize: 10, color: '#a78bfa', fontWeight: 700 }}>{pct}%</span>
+                </div>
+                <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#8b5cf6,#a78bfa)', borderRadius: 99 }}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div style={{ fontSize: 11, color: '#3a5070', fontWeight: 600 }}>{votes} {votes === 1 ? 'vote' : 'votes'}</div>
     </div>
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Class card ─────────────────────────────────────────────────────────────────
+const CLASS_IMAGES = {
+  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
+  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
+  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
+  default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
+};
+const CLASS_COLORS = {
+  hiit:     { color: '#f87171', bg: 'rgba(239,68,68,0.12)',    border: 'rgba(239,68,68,0.25)',    label: 'HIIT'     },
+  yoga:     { color: '#34d399', bg: 'rgba(16,185,129,0.12)',   border: 'rgba(16,185,129,0.25)',   label: 'Yoga'     },
+  strength: { color: '#818cf8', bg: 'rgba(99,102,241,0.12)',   border: 'rgba(99,102,241,0.25)',   label: 'Strength' },
+  default:  { color: '#38bdf8', bg: 'rgba(14,165,233,0.1)',    border: 'rgba(14,165,233,0.2)',    label: 'Class'    },
+};
+function getClassType(c) {
+  const n = (c.class_type || c.name || '').toLowerCase();
+  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
+  if (n.includes('yoga') || n.includes('flow'))     return 'yoga';
+  if (n.includes('strength') || n.includes('lift') || n.includes('weight')) return 'strength';
+  return 'default';
+}
+function ClassCard({ gymClass, onDelete }) {
+  const typeKey = getClassType(gymClass);
+  const cfg     = CLASS_COLORS[typeKey];
+  const img     = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
+  return (
+    <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(160deg,#0d1535 0%,#080c1e 100%)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'relative', height: 110, overflow: 'hidden', flexShrink: 0 }}>
+        <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(8,12,28,0.85) 100%)' }}/>
+        <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</div>
+        {gymClass.schedule && (
+          <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.8)', background: 'rgba(0,0,0,0.55)', borderRadius: 5, padding: '2px 7px' }}>🕐 {gymClass.schedule}</div>
+        )}
+      </div>
+      <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gymClass.name || gymClass.title}</div>
+          <DeleteBtn onDelete={() => onDelete(gymClass.id)}/>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {gymClass.duration_minutes && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{gymClass.duration_minutes} min</span>}
+          {gymClass.max_capacity    && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)',  fontWeight: 600 }}>cap {gymClass.max_capacity}</span>}
+          {gymClass.difficulty      && <span style={{ fontSize: 10, color: cfg.color, fontWeight: 700 }}>{gymClass.difficulty}</span>}
+        </div>
+        {gymClass.description && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{gymClass.description}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────────
 export default function TabCoachContent({
-  events, challenges, polls, posts, classes = [],
+  events, polls, posts, classes = [], recaps = [], shoutouts = [],
   checkIns, ci30, avatarMap, allMemberships = [],
   openModal, now,
-  onDeletePost = () => {}, onDeleteEvent = () => {}, onDeleteChallenge = () => {},
-  onDeleteClass = () => {}, onDeletePoll = () => {},
+  onDeletePost      = () => {},
+  onDeleteEvent     = () => {},
+  onDeleteClass     = () => {},
+  onDeletePoll      = () => {},
+  onDeleteRecap     = () => {},
+  onDeleteShoutout  = () => {},
 }) {
   const [activeFilter, setActiveFilter] = useState('classes');
 
-  const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
-  const activeChallenges = challenges.filter(c => c.status === 'active');
-  const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+  const upcomingEvents = useMemo(() => events.filter(e => new Date(e.event_date) >= now), [events, now]);
 
   const FILTERS = [
-    { id: 'classes',    label: 'My Classes'  },
-    { id: 'posts',      label: 'My Posts'    },
-    { id: 'events',     label: 'Events'      },
-    { id: 'challenges', label: 'Challenges'  },
-    { id: 'polls',      label: 'Polls'       },
+    { id: 'classes',   label: 'My Classes'  },
+    { id: 'posts',     label: 'Posts'       },
+    { id: 'shoutouts', label: '🏆 Shoutouts' },
+    { id: 'recaps',    label: 'Recaps'      },
+    { id: 'events',    label: 'Events'      },
+    { id: 'polls',     label: 'Polls'       },
   ];
 
   const flatItems = useMemo(() => {
     let items = [];
-    if (activeFilter === 'classes')    items = classes.map(c     => ({ type: 'class',     data: c, date: new Date(c.created_date  || 0) }));
-    if (activeFilter === 'posts')      items = posts.map(p       => ({ type: 'post',      data: p, date: new Date(p.created_date  || 0) }));
-    if (activeFilter === 'events')     items = upcomingEvents.map(e => ({ type: 'event', data: e, date: new Date(e.event_date     || 0) }));
-    if (activeFilter === 'challenges') items = activeChallenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date || 0) }));
-    if (activeFilter === 'polls')      items = polls.map(p       => ({ type: 'poll',      data: p, date: new Date(p.created_date  || 0) }));
+    if (activeFilter === 'classes')   items = classes.map(c       => ({ type: 'class',    data: c, date: new Date(c.created_date   || 0) }));
+    if (activeFilter === 'posts')     items = posts.map(p         => ({ type: 'post',     data: p, date: new Date(p.created_date   || 0) }));
+    if (activeFilter === 'shoutouts') items = shoutouts.map(s     => ({ type: 'shoutout', data: s, date: new Date(s.created_date   || 0) }));
+    if (activeFilter === 'recaps')    items = recaps.map(r        => ({ type: 'recap',    data: r, date: new Date(r.created_date   || 0) }));
+    if (activeFilter === 'events')    items = upcomingEvents.map(e => ({ type: 'event',   data: e, date: new Date(e.event_date     || 0) }));
+    if (activeFilter === 'polls')     items = polls.map(p         => ({ type: 'poll',     data: p, date: new Date(p.created_date   || 0) }));
     return items.sort((a, b) => b.date - a.date);
-  }, [activeFilter, classes, posts, upcomingEvents, activeChallenges, polls]);
+  }, [activeFilter, classes, posts, shoutouts, recaps, upcomingEvents, polls]);
 
   const col1 = flatItems.filter((_, i) => i % 2 === 0);
   const col2 = flatItems.filter((_, i) => i % 2 === 1);
 
   const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}      onDelete={onDeletePost}/>;
-    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     now={now} onDelete={onDeleteEvent}/>;
-    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now} onDelete={onDeleteChallenge}/>;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}/>;
-    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass}/>;
+    if (item.type === 'post')     return <FeedCard     key={item.data.id || i} post={item.data}     onDelete={onDeletePost}/>;
+    if (item.type === 'shoutout') return <ShoutoutCard key={item.data.id || i} shoutout={item.data} onDelete={onDeleteShoutout}/>;
+    if (item.type === 'recap')    return <RecapCard    key={item.data.id || i} recap={item.data}    onDelete={onDeleteRecap}/>;
+    if (item.type === 'event')    return <EventCard    key={item.data.id || i} event={item.data}    now={now} onDelete={onDeleteEvent}/>;
+    if (item.type === 'poll')     return <PollCard     key={item.data.id || i} poll={item.data}     onDelete={onDeletePoll}/>;
+    if (item.type === 'class')    return <ClassCard    key={item.data.id || i} gymClass={item.data} onDelete={onDeleteClass}/>;
     return null;
   };
 
-  // Sidebar stats
+  // ── Sidebar: engagement on my content ─────────────────────────────────────
   const engagementScore = useMemo(() => {
-    const postEng = posts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0);
-    const pollEng = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
-    return postEng + pollEng + totalChalPart;
-  }, [posts, polls, totalChalPart]);
+    const postEng     = posts.reduce((s, p)     => s + (p.likes?.length    || 0) + (p.comments?.length || 0), 0);
+    const shoutoutEng = shoutouts.reduce((s, sh) => s + (sh.likes?.length   || 0), 0);
+    const pollEng     = polls.reduce((s, p)     => s + (p.voters?.length   || 0), 0);
+    return postEng + shoutoutEng + pollEng;
+  }, [posts, shoutouts, polls]);
 
+  // Post cadence last 7 days
   const cadenceData = useMemo(() => Array.from({ length: 7 }, (_, i) => {
     const day   = subDays(now, 6 - i);
     const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
     const end   = new Date(start.getTime() + 86400000);
-    return { label: format(day, 'EEE'), count: posts.filter(p => { const d = new Date(p.created_date); return d >= start && d < end; }).length };
-  }), [posts, now]);
+    const count = [...posts, ...shoutouts].filter(p => {
+      const d = new Date(p.created_date);
+      return d >= start && d < end;
+    }).length;
+    return { label: format(day, 'EEE'), count };
+  }), [posts, shoutouts, now]);
   const cadenceMax = Math.max(...cadenceData.map(d => d.count), 1);
 
+  // Clients not reached via content in 30 days
   const unreachedClients = useMemo(() => {
     const recentIds   = new Set(ci30.map(c => c.user_id));
     const pollVoterIds = new Set(polls.flatMap(p => p.voters || []));
     return allMemberships.filter(m => !recentIds.has(m.user_id) && !pollVoterIds.has(m.user_id)).slice(0, 4);
   }, [allMemberships, ci30, polls]);
+
+  // Members who got a shoutout recently (encourage recognition)
+  const shoutedOutIds = useMemo(() =>
+    new Set(shoutouts.map(s => s.member_id).filter(Boolean)),
+    [shoutouts]
+  );
+  const notYetShouteOut = useMemo(() =>
+    allMemberships.filter(m => !shoutedOutIds.has(m.user_id)).slice(0, 3),
+    [allMemberships, shoutedOutIds]
+  );
 
   const cardStyle = { background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 16, flexShrink: 0 };
 
@@ -280,14 +364,39 @@ export default function TabCoachContent({
         {/* ── LEFT ── */}
         <div className="tcc-left">
 
-          {/* Quick action buttons */}
+          {/* Quick action buttons — coach-specific: no Challenges */}
           <div className="tcc-actions">
             {[
-              { icon: Dumbbell,          label: 'My Classes',  sub: `${classes.length} classes`,         grad: 'linear-gradient(135deg,#1a0a3e 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(167,139,250,0.3)', iconBg: 'rgba(167,139,250,0.2)', iconColor: '#c4b5fd', fn: () => openModal('classes') },
-              { icon: MessageSquarePlus, label: 'New Post',    sub: 'Engage clients',                    grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post')    },
-              { icon: Calendar,          label: 'New Event',   sub: `${upcomingEvents.length} upcoming`, grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)', border: 'rgba(16,185,129,0.3)',  iconBg: 'rgba(16,185,129,0.2)',  iconColor: '#6ee7b7', fn: () => openModal('event')   },
-              { icon: Trophy,            label: 'Challenge',   sub: `${activeChallenges.length} active`, grad: 'linear-gradient(135deg,#3a1010 0%,#5a1a1a 50%,#dc2626 100%)', border: 'rgba(239,68,68,0.3)',   iconBg: 'rgba(239,68,68,0.2)',   iconColor: '#fca5a5', fn: () => openModal('challenge') },
-              { icon: BarChart2,         label: 'New Poll',    sub: `${polls.length} active`,            grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)',  iconBg: 'rgba(139,92,246,0.2)',  iconColor: '#c4b5fd', fn: () => openModal('poll')    },
+              {
+                icon: Dumbbell, label: 'My Classes', sub: `${classes.length} classes`,
+                grad: 'linear-gradient(135deg,#1a0a3e 0%,#2d1060 50%,#7c3aed 100%)',
+                border: 'rgba(167,139,250,0.3)', iconBg: 'rgba(167,139,250,0.2)', iconColor: '#c4b5fd',
+                fn: () => openModal('classes'),
+              },
+              {
+                icon: MessageSquarePlus, label: 'Post Update', sub: 'Engage clients',
+                grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)',
+                border: 'rgba(14,165,233,0.3)', iconBg: 'rgba(14,165,233,0.2)', iconColor: '#7dd3fc',
+                fn: () => openModal('post'),
+              },
+              {
+                icon: Award, label: 'Shoutout', sub: `${shoutouts.length} sent`,
+                grad: 'linear-gradient(135deg,#3a2200 0%,#5a3a00 50%,#d97706 100%)',
+                border: 'rgba(245,158,11,0.3)', iconBg: 'rgba(245,158,11,0.2)', iconColor: '#fcd34d',
+                fn: () => openModal('shoutout'),
+              },
+              {
+                icon: ClipboardList, label: 'Class Recap', sub: `${recaps.length} recaps`,
+                grad: 'linear-gradient(135deg,#130a2e 0%,#200f4a 50%,#6d28d9 100%)',
+                border: 'rgba(109,40,217,0.3)', iconBg: 'rgba(109,40,217,0.2)', iconColor: '#c4b5fd',
+                fn: () => openModal('recap'),
+              },
+              {
+                icon: BarChart2, label: 'New Poll', sub: `${polls.length} active`,
+                grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)',
+                border: 'rgba(16,185,129,0.3)', iconBg: 'rgba(16,185,129,0.2)', iconColor: '#6ee7b7',
+                fn: () => openModal('poll'),
+              },
             ].map(({ icon: Icon, label, sub, grad, border, iconBg, iconColor, fn }, i) => (
               <div key={i} onClick={fn} className="tcc-action-btn" style={{ background: grad, border: `1px solid ${border}` }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,0.5)'; }}
@@ -313,7 +422,7 @@ export default function TabCoachContent({
             ))}
           </div>
 
-          {/* Two-column feed */}
+          {/* Two-column masonry feed */}
           <div className="tcc-feed">
             {flatItems.length > 0 ? (
               <div className="tcc-feed-grid">
@@ -349,7 +458,8 @@ export default function TabCoachContent({
               {[
                 { label: 'Likes',      val: posts.reduce((s, p) => s + (p.likes?.length    || 0), 0), color: '#f87171' },
                 { label: 'Comments',   val: posts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
-                { label: 'Poll votes', val: polls.reduce((s, p) => s + (p.voters?.length    || 0), 0), color: '#a78bfa' },
+                { label: 'Poll votes', val: polls.reduce((s, p) => s + (p.voters?.length   || 0), 0), color: '#a78bfa' },
+                { label: 'Shoutouts',  val: shoutouts.length,                                         color: '#fbbf24' },
               ].map((s, i) => (
                 <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
                   {s.val} {s.label}
@@ -358,23 +468,24 @@ export default function TabCoachContent({
             </div>
           </div>
 
-          {/* My Classes & Events */}
+          {/* My content totals */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 12 }}>My Classes & Events</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em', marginBottom: 12 }}>Content Summary</div>
             {[
-              { count: classes.length,          label: 'My Classes',        color: '#a78bfa' },
-              { count: upcomingEvents.length,    label: 'Upcoming Events',   color: '#34d399' },
-              { count: activeChallenges.length,  label: 'Active Challenges', color: '#fbbf24' },
-              { count: polls.length,             label: 'Active Polls',      color: '#38bdf8' },
+              { count: classes.length,        label: 'My Classes',      color: '#a78bfa' },
+              { count: upcomingEvents.length,  label: 'Upcoming Events', color: '#34d399' },
+              { count: shoutouts.length,       label: 'Member Shoutouts',color: '#fbbf24' },
+              { count: recaps.length,          label: 'Class Recaps',    color: '#a78bfa' },
+              { count: polls.length,           label: 'Active Polls',    color: '#38bdf8' },
             ].map((s, i, arr) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                 <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 26 }}>{s.count}</span>
                 <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#8ba0b8' }}>{s.label}</span>
               </div>
             ))}
           </div>
 
-          {/* Posting Cadence */}
+          {/* Posting cadence */}
           <div style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>Posting Cadence</div>
@@ -393,9 +504,29 @@ export default function TabCoachContent({
               ))}
             </div>
             <div style={{ marginTop: 8, fontSize: 11, color: '#3a5070', fontWeight: 500 }}>
-              {cadenceData.filter(d => d.count > 0).length} active days this week
+              {cadenceData.filter(d => d.count > 0).length} active posting days this week
             </div>
           </div>
+
+          {/* Who to shoutout next */}
+          {notYetShouteOut.length > 0 && (
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>Shoutout Someone?</div>
+                <Award style={{ width: 14, height: 14, color: '#fbbf24' }}/>
+              </div>
+              <p style={{ fontSize: 10, color: '#3a5070', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>These members haven't been recognised yet.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {notYetShouteOut.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar name={m.user_name || '?'} size={26} src={avatarMap[m.user_id] || null}/>
+                    <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#8ba0b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Client'}</span>
+                    <button onClick={() => openModal('shoutout', m)} style={{ fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>🏆 Shout</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Clients not reached */}
           {unreachedClients.length > 0 && (
@@ -417,7 +548,7 @@ export default function TabCoachContent({
             </div>
           )}
 
-          {/* Recent posts */}
+          {/* Recent posts quick list */}
           <div style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>My Recent Posts</div>
