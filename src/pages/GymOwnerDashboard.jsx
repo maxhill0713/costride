@@ -150,11 +150,6 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
 }
 
 // ── Coach tabs live in separate files (see components/dashboard/TabCoach*.jsx) ─
-// TabCoachOverview  → components/dashboard/TabCoachOverview.jsx
-// TabCoachSchedule  → components/dashboard/TabCoachSchedule.jsx
-// TabCoachMembers   → components/dashboard/TabCoachMembers.jsx
-
-function _DELETED_STUB_START() {
   const ci7     = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7), end: now }));
   const ci30    = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
   const ciPrev7 = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) }));
