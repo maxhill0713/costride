@@ -576,182 +576,294 @@ export default function TabContent({
         {/* ── RIGHT SIDEBAR ── */}
         <div className="tc-sidebar">
 
-          {/* Engagement Score */}
-          <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Engagement Score</div>
-              <Zap style={{ width: 14, height: 14, color: '#fbbf24' }}/>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--text1)', letterSpacing: '-0.04em', lineHeight: 1 }}>{engagementScore}</span>
-              <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 4 }}>total interactions</span>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { label: 'Likes',        val: allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0), color: '#f87171' },
-                { label: 'Comments',     val: allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
-                { label: 'Poll votes',   val: polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0), color: '#a78bfa' },
-                { label: 'In challenge', val: totalChalPart,                                                 color: '#fbbf24' },
-              ].map((s, i) => (
-                <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
-                  {s.val} {s.label}
+          {isCoach ? (
+            // ── COACH SIDEBAR ──────────────────────────────────────────────
+            <>
+              {/* My Content Impact */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>My Content Impact</div>
+                  <Zap style={{ width: 14, height: 14, color: '#a78bfa' }}/>
                 </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Posting Cadence */}
-          <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Posting Cadence</div>
-              <TrendingUp style={{ width: 14, height: 14, color: '#38bdf8' }}/>
-            </div>
-            <div style={{ display: 'flex', gap: 4, height: 40, alignItems: 'flex-end' }}>
-              {cadenceData.map((d, i) => (
-                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: '100%', height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32), borderRadius: 3, background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg,#38bdf8,#0ea5e9)', transition: 'height 0.4s ease' }}/>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--text1)', letterSpacing: '-0.04em', lineHeight: 1 }}>{engagementScore}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 4 }}>interactions</span>
                 </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-              {cadenceData.map((d, i) => (
-                <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: 'var(--text3)' }}>{d.label}</div>
-              ))}
-            </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>
-              {cadenceData.filter(d => d.count > 0).length} active days this week
-            </div>
-          </Card>
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Likes',      val: allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0), color: '#f87171' },
+                    { label: 'Comments',   val: allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
+                    { label: 'Poll votes', val: polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0), color: '#a78bfa' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
+                      {s.val} {s.label}
+                    </div>
+                  ))}
+                </div>
+              </Card>
 
-          {/* Content Mix */}
-          {contentMix && (
-            <Card style={{ padding: 16, flexShrink: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 10 }}>Content Mix</div>
-              <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 10 }}>
-                {contentMix.filter(c => c.pct > 0).map((c, i) => (
-                  <div key={i} style={{ width: `${c.pct}%`, background: c.color, borderRadius: 99, transition: 'width 0.6s ease' }}/>
-                ))}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {contentMix.map((c, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }}/>
-                    <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>{c.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text1)' }}>{c.count}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text3)', width: 28, textAlign: 'right' }}>{c.pct}%</span>
+              {/* My Classes summary */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 12 }}>My Classes & Events</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[
+                    { count: classes.length,          label: 'My Classes',           color: '#a78bfa' },
+                    { count: upcomingEvents.length,    label: 'Upcoming Events',      color: '#34d399' },
+                    { count: activeChallenges.length,  label: 'Active Challenges',    color: '#fbbf24' },
+                    { count: polls.length,             label: 'Active Polls',         color: '#38bdf8' },
+                  ].map((s, i, arr) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 26 }}>{s.count}</span>
+                      <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Unreached clients */}
+              {unreachedMembers.length > 0 && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Clients Not Reached</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 6px' }}>{unreachedMembers.length}</div>
                   </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Poll Participation Rate */}
-          {pollParticipationRate !== null && (
-            <Card style={{ padding: 16, flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Poll Participation</div>
-                <BarChart2 style={{ width: 14, height: 14, color: '#a78bfa' }}/>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, marginBottom: 8 }}>
-                <span style={{ fontSize: 28, fontWeight: 900, color: pollParticipationRate >= 50 ? '#34d399' : pollParticipationRate >= 25 ? '#fbbf24' : '#f87171', letterSpacing: '-0.04em', lineHeight: 1 }}>
-                  {pollParticipationRate}%
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 3 }}>of members voting</span>
-              </div>
-              <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pollParticipationRate}%`, borderRadius: 99, background: pollParticipationRate >= 50 ? 'linear-gradient(90deg,#10b981,#34d399)' : pollParticipationRate >= 25 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : 'linear-gradient(90deg,#dc2626,#f87171)', transition: 'width 0.8s ease' }}/>
-              </div>
-              <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6, fontWeight: 500 }}>
-                {pollParticipationRate < 25 ? 'Low — try shorter, punchier polls' : pollParticipationRate < 50 ? 'Decent — pin polls to your feed' : 'Great engagement on polls!'}
-              </p>
-            </Card>
-          )}
-
-          {/* Unreached Members */}
-          {unreachedMembers.length > 0 && (
-            <Card style={{ padding: 16, flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Not Reached</div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 6px' }}>{unreachedMembers.length}</div>
-              </div>
-              <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>
-                Members with no check-ins, poll votes, or challenge joins in 30 days.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {unreachedMembers.map((m, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Avatar name={m.user_name || m.user_id || '?'} size={26} src={avatarMap[m.user_id] || null}/>
-                    <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</span>
-                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
+                  <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>
+                    Clients with no check-ins, poll votes, or challenge joins in 30 days.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {unreachedMembers.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar name={m.user_name || '?'} size={26} src={avatarMap[m.user_id] || null}/>
+                        <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Client'}</span>
+                        <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Recent Posts */}
-          <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Recent Posts</div>
-              <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-                <Plus style={{ width: 10, height: 10 }}/>
-              </button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {posts.length > 0 ? posts.slice(0, 3).map((post) => (
-                <div key={post.id}
-                  style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
-                  {post.content?.split('\n')[0] || post.title || 'Post'}
-                </div>
-              )) : (
-                <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
+                </Card>
               )}
-            </div>
-          </Card>
 
-          {/* Content Stats */}
-          <Card style={{ padding: 16, flexShrink: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Stats</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {[
-                { count: upcomingEvents.length, label: 'Upcoming Events',        color: '#10b981' },
-                { count: totalChalPart,          label: 'Challenge Participants', color: '#f59e0b' },
-                { count: polls.length,           label: 'Active Polls',           color: '#8b5cf6' },
-              ].map((s, i) => (
-                <div key={i}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-                  <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 28 }}>{s.count}</span>
-                  <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{s.label}</span>
-                  <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)' }}/>
+              {/* My recent posts */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>My Recent Posts</div>
+                  <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+                    <Plus style={{ width: 10, height: 10 }}/>
+                  </button>
                 </div>
-              ))}
-            </div>
-          </Card>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {posts.length > 0 ? posts.slice(0, 4).map((post) => (
+                    <div key={post.id} style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {post.content?.split('\n')[0] || post.title || 'Post'}
+                    </div>
+                  )) : (
+                    <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
+                  )}
+                </div>
+              </Card>
 
-          {/* Milestones */}
-          {milestones.length > 0 && (
-            <Card style={{ padding: 16, flexShrink: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Upcoming Member Milestones</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {milestones.map((m, i) => (
-                  <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <Avatar name={m.name} size={34} src={avatarMap[m.user_id] || null}/>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.toNext === 1 ? '1 visit to go!' : `${m.toNext} visits to go`}</div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: '#f59e0b' }}>{m.total} visits</div>
-                      <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>→ {m.next} visits</div>
-                    </div>
+              {/* Client milestones */}
+              {milestones.length > 0 && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>🎯 Client Milestones</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {milestones.map((m, i) => (
+                      <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                        <Avatar name={m.name} size={30} src={avatarMap[m.user_id] || null}/>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                          <div style={{ fontSize: 10, color: m.toNext === 1 ? '#34d399' : 'var(--text3)', marginTop: 1 }}>{m.toNext === 1 ? '🎉 1 visit to go!' : `${m.toNext} visits to go`}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: '#f59e0b' }}>{m.total}</div>
+                          <div style={{ fontSize: 9, color: 'var(--text3)' }}>→ {m.next}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </Card>
+                </Card>
+              )}
+            </>
+          ) : (
+            // ── GYM OWNER SIDEBAR ──────────────────────────────────────────
+            <>
+              {/* Engagement Score */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Engagement Score</div>
+                  <Zap style={{ width: 14, height: 14, color: '#fbbf24' }}/>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--text1)', letterSpacing: '-0.04em', lineHeight: 1 }}>{engagementScore}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 4 }}>total interactions</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Likes',        val: allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0), color: '#f87171' },
+                    { label: 'Comments',     val: allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
+                    { label: 'Poll votes',   val: polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0), color: '#a78bfa' },
+                    { label: 'In challenge', val: totalChalPart,                                                 color: '#fbbf24' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
+                      {s.val} {s.label}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Posting Cadence */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Posting Cadence</div>
+                  <TrendingUp style={{ width: 14, height: 14, color: '#38bdf8' }}/>
+                </div>
+                <div style={{ display: 'flex', gap: 4, height: 40, alignItems: 'flex-end' }}>
+                  {cadenceData.map((d, i) => (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <div style={{ width: '100%', height: d.count === 0 ? 3 : Math.max(6, (d.count / cadenceMax) * 32), borderRadius: 3, background: d.count === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(180deg,#38bdf8,#0ea5e9)', transition: 'height 0.4s ease' }}/>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                  {cadenceData.map((d, i) => (
+                    <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: 'var(--text3)' }}>{d.label}</div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>
+                  {cadenceData.filter(d => d.count > 0).length} active days this week
+                </div>
+              </Card>
+
+              {/* Content Mix */}
+              {contentMix && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 10 }}>Content Mix</div>
+                  <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 10 }}>
+                    {contentMix.filter(c => c.pct > 0).map((c, i) => (
+                      <div key={i} style={{ width: `${c.pct}%`, background: c.color, borderRadius: 99, transition: 'width 0.6s ease' }}/>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {contentMix.map((c, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }}/>
+                        <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>{c.label}</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text1)' }}>{c.count}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text3)', width: 28, textAlign: 'right' }}>{c.pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Poll Participation Rate */}
+              {pollParticipationRate !== null && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Poll Participation</div>
+                    <BarChart2 style={{ width: 14, height: 14, color: '#a78bfa' }}/>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: 28, fontWeight: 900, color: pollParticipationRate >= 50 ? '#34d399' : pollParticipationRate >= 25 ? '#fbbf24' : '#f87171', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {pollParticipationRate}%
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, paddingBottom: 3 }}>of members voting</span>
+                  </div>
+                  <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pollParticipationRate}%`, borderRadius: 99, background: pollParticipationRate >= 50 ? 'linear-gradient(90deg,#10b981,#34d399)' : pollParticipationRate >= 25 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : 'linear-gradient(90deg,#dc2626,#f87171)', transition: 'width 0.8s ease' }}/>
+                  </div>
+                  <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6, fontWeight: 500 }}>
+                    {pollParticipationRate < 25 ? 'Low — try shorter, punchier polls' : pollParticipationRate < 50 ? 'Decent — pin polls to your feed' : 'Great engagement on polls!'}
+                  </p>
+                </Card>
+              )}
+
+              {/* Unreached Members */}
+              {unreachedMembers.length > 0 && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Not Reached</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 6px' }}>{unreachedMembers.length}</div>
+                  </div>
+                  <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>
+                    Members with no check-ins, poll votes, or challenge joins in 30 days.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {unreachedMembers.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar name={m.user_name || m.user_id || '?'} size={26} src={avatarMap[m.user_id] || null}/>
+                        <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</span>
+                        <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Recent Posts */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Recent Posts</div>
+                  <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+                    <Plus style={{ width: 10, height: 10 }}/>
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {posts.length > 0 ? posts.slice(0, 3).map((post) => (
+                    <div key={post.id}
+                      style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
+                      {post.content?.split('\n')[0] || post.title || 'Post'}
+                    </div>
+                  )) : (
+                    <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Content Stats */}
+              <Card style={{ padding: 16, flexShrink: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Stats</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[
+                    { count: upcomingEvents.length, label: 'Upcoming Events',        color: '#10b981' },
+                    { count: totalChalPart,          label: 'Challenge Participants', color: '#f59e0b' },
+                    { count: polls.length,           label: 'Active Polls',           color: '#8b5cf6' },
+                  ].map((s, i) => (
+                    <div key={i}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 28 }}>{s.count}</span>
+                      <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{s.label}</span>
+                      <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)' }}/>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Milestones */}
+              {milestones.length > 0 && (
+                <Card style={{ padding: 16, flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Upcoming Member Milestones</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {milestones.map((m, i) => (
+                      <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                        <Avatar name={m.name} size={34} src={avatarMap[m.user_id] || null}/>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.toNext === 1 ? '1 visit to go!' : `${m.toNext} visits to go`}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: '#f59e0b' }}>{m.total} visits</div>
+                          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>→ {m.next} visits</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </>
           )}
 
         </div>
