@@ -277,6 +277,7 @@ function HeatmapChart({ gymId }) {
 export default function TabAnalytics({
   checkIns, ci30, totalMembers, monthCiPer, monthChangePct,
   monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
+  isCoach = false, myClasses = [],
 }) {
   const now = new Date();
 
