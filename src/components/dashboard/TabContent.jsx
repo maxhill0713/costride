@@ -393,12 +393,13 @@ export default function TabContent({
 
   const feedItems = useMemo(() => {
     switch (activeFilter) {
-      case 'members':    return { posts: memberPosts,     events: [], challenges: [],            polls: [],    classes: []     };
-      case 'gym':        return { posts: gymPosts,        events: [], challenges: [],            polls: [],    classes: []     };
-      case 'challenges': return { posts: [],              events: [], challenges: activeChallenges, polls: [], classes: []     };
-      case 'classes':    return { posts: [],              events: [], challenges: [],            polls: [],    classes         };
-      case 'polls':      return { posts: [],              events: [], challenges: [],            polls,        classes: []     };
-      default:           return { posts: allPosts,        events: upcomingEvents, challenges: activeChallenges, polls, classes };
+      case 'members':    return { posts: memberPosts,     events: [],            challenges: [],               polls: [],    classes: []     };
+      case 'gym':        return { posts: gymPosts,        events: [],            challenges: [],               polls: [],    classes: []     };
+      case 'challenges': return { posts: [],              events: [],            challenges: activeChallenges, polls: [],    classes: []     };
+      case 'classes':    return { posts: [],              events: [],            challenges: [],               polls: [],    classes         };
+      case 'polls':      return { posts: [],              events: [],            challenges: [],               polls,        classes: []     };
+      case 'events':     return { posts: [],              events: upcomingEvents, challenges: [],              polls: [],    classes: []     };
+      default:           return { posts: allPosts,        events: upcomingEvents, challenges: activeChallenges, polls,       classes };
     }
   }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
 
