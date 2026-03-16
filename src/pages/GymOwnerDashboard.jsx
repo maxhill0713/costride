@@ -607,13 +607,16 @@ function TabCoachSchedule({ myClasses, checkIns, events, challenges, avatarMap, 
                           {selCIs.length} attended
                         </span>
                       </div>
-                      {/* Session notes */}
+                      {/* Session notes — auto-saved */}
                       <textarea
-                        placeholder="Add session notes…"
+                        placeholder="Session notes (auto-saved)…"
                         value={notes[`${cls.id}-${format(selDay,'yyyy-MM-dd')}`] || ''}
-                        onChange={e => setNotes(n => ({ ...n, [`${cls.id}-${format(selDay,'yyyy-MM-dd')}`]: e.target.value }))}
-                        style={{ width: '100%', minHeight: 56, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                        onChange={e => saveNote(`${cls.id}-${format(selDay,'yyyy-MM-dd')}`, e.target.value)}
+                        style={{ width: '100%', minHeight: 64, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
                       />
+                      {notes[`${cls.id}-${format(selDay,'yyyy-MM-dd')}`] && (
+                        <div style={{ marginTop: 4, fontSize: 9, color: '#34d399', fontWeight: 600 }}>✓ Notes saved</div>
+                      )}
                     </div>
                   );
                 })}
