@@ -150,7 +150,9 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
 }
 
 // ── Coach tabs live in separate files (see components/dashboard/TabCoach*.jsx) ─
-  const ci7     = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7), end: now }));
+
+// ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
+const _GRADIENT_PLACEHOLDER = '';
   const ci30    = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
   const ciPrev7 = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) }));
 
