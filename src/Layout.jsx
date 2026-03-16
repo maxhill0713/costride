@@ -92,7 +92,7 @@ export default function Layout({ children, currentPageName }) {
 
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
-  const navItems = isGymOwner ? [
+  const navItems = isDashboardUser ? [
   { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' }] :
   [
