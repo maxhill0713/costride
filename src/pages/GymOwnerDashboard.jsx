@@ -748,6 +748,10 @@ export default function GymOwnerDashboard() {
                 <Plus style={{ width: 13, height: 13 }}/> New Post
               </button>
             )}
+            {/* Role toggle (dev preview) */}
+            <button onClick={toggleRole} title="Toggle role preview" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, background: isCoach ? 'rgba(167,139,250,0.1)' : 'rgba(56,189,248,0.08)', border: `1px solid ${isCoach ? 'rgba(167,139,250,0.25)' : 'rgba(56,189,248,0.2)'}`, color: isCoach ? '#a78bfa' : '#38bdf8', fontSize: 11, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.04em' }}>
+              {isCoach ? '🎓 Coach' : '🏢 Owner'} <span style={{ opacity: 0.5, fontSize: 9 }}>preview</span>
+            </button>
             {/* Bell */}
             <Link to={createPageUrl('NotificationsHub')}>
               <button style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#5a7a96', cursor: 'pointer', position: 'relative', transition: 'all 0.12s' }}
