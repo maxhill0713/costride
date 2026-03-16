@@ -340,9 +340,9 @@ export default function GymOwnerDashboard() {
     enabled: !!currentUser?.email, retry: 3, staleTime: 5 * 60 * 1000,
   });
 
-  const myGyms       = gyms.filter(g => g.owner_email === currentUser?.email);
+  const myGyms       = isCoach ? gyms : gyms.filter(g => g.owner_email === currentUser?.email);
   const approvedGyms = myGyms.filter(g => g.status === 'approved');
-  const pendingGyms  = myGyms.filter(g => g.status === 'pending');
+  const pendingGyms  = isCoach ? [] : myGyms.filter(g => g.status === 'pending');
   useEffect(() => { if (approvedGyms.length > 0 && !selectedGym) setSelectedGym(approvedGyms[0]); }, [approvedGyms, selectedGym]);
   useEffect(() => { const iv = setInterval(() => queryClient.invalidateQueries({ queryKey: ['ownerGyms'] }), 10000); return () => clearInterval(iv); }, [queryClient]);
 
