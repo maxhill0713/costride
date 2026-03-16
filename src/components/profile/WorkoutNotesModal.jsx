@@ -40,85 +40,118 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div
+          key="notes-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 10005,
+            background: 'rgba(0,0,0,0.72)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px 16px',
+          }}>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              top: '-100px',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 10005,
-              background: 'rgba(0,0,0,0.7)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-            }}
-          />
-          <motion.div
+            key="notes-card"
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] text-white"
             style={{
-              background: 'linear-gradient(135deg, rgba(28,34,60,0.95) 0%, rgba(8,10,20,0.98) 100%)',
+              width: '100%',
+              maxWidth: '384px',
+              background: 'linear-gradient(135deg, rgba(28,34,60,0.97) 0%, rgba(8,10,20,0.99) 100%)',
               border: '1px solid rgba(255,255,255,0.07)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               borderRadius: '24px',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
             }}>
 
             {/* Top shine */}
-            <div className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-3xl"
-              style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+              background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
+              pointerEvents: 'none',
+            }} />
 
-            <div className="px-5 pt-5 pb-5">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-xl font-black text-white tracking-tight">Workout Notes</h2>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: 0 }}>Workout Notes</h2>
                 <button
                   onClick={onClose}
-                  className="w-7 h-7 flex items-center justify-center rounded-full text-slate-400 hover:text-white transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <X className="w-3.5 h-3.5" />
+                  style={{
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.06)', border: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#94a3b8', flexShrink: 0,
+                  }}>
+                  <X size={14} />
                 </button>
               </div>
 
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-4">{workoutName}</p>
+              <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', marginTop: '2px' }}>
+                {workoutName}
+              </p>
 
-              {/* Notes textarea */}
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Form tips, goals, things to remember…"
                 rows={6}
-                className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-600 resize-none focus:outline-none focus:border-white/25 transition-colors leading-relaxed"
+                style={{
+                  width: '100%', background: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
+                  padding: '10px 12px', color: 'white', fontSize: '14px',
+                  resize: 'none', outline: 'none', lineHeight: '1.6',
+                  fontFamily: 'inherit', boxSizing: 'border-box',
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.25)'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
               />
 
-              {/* Buttons */}
-              <div className="flex gap-2 mt-3">
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex-1 py-2.5 rounded-xl font-black text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: '12px',
+                    fontWeight: 900, fontSize: '14px', color: 'white', border: 'none',
+                    background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
+                    boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
+                    cursor: isSaving ? 'not-allowed' : 'pointer',
+                    opacity: isSaving ? 0.5 : 1,
+                    transition: 'all 0.1s',
+                  }}>
                   {isSaving ? 'Saving…' : 'Save Notes'}
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-300 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: '12px',
+                    fontWeight: 700, fontSize: '14px', color: '#cbd5e1', border: 'none',
+                    background: 'linear-gradient(to bottom, #475569, #334155, #1e293b)',
+                    boxShadow: '0 3px 0 0 #0f172a, inset 0 1px 0 rgba(255,255,255,0.08)',
+                    cursor: 'pointer', transition: 'all 0.1s',
+                  }}>
                   Cancel
                 </button>
               </div>
             </div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );
