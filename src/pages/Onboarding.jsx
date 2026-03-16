@@ -244,7 +244,7 @@ function SplitDetailSheet({ split, onClose }) {
   );
 }
 
-// ─── Demo buttons — same horizontal level, 10% smaller padding ───────────────
+// ─── Demo buttons ─────────────────────────────────────────────────────────────
 function CheckInDemo() {
   const [pressed, setPressed] = useState(false);
   return (
@@ -260,7 +260,6 @@ function CheckInDemo() {
         style={{
           position: 'relative', zIndex: 1, width: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          // 10% smaller: was 16px top/bottom, now ~14px
           padding: '14px 22px', borderRadius: 18, border: 'none',
           background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
           color: '#fff', fontSize: 16, fontWeight: 900, letterSpacing: '-0.01em',
@@ -279,6 +278,7 @@ function LogWorkoutDemo() {
   const [pressed, setPressed] = useState(false);
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      {/* 3D underlay */}
       <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: '#1a3fa8', transform: 'translateY(3px)' }} />
       <button
         onMouseDown={() => setPressed(true)}
@@ -295,7 +295,8 @@ function LogWorkoutDemo() {
           color: '#fff', fontSize: 13, fontWeight: 800,
           cursor: 'pointer', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(3px)' : 'translateY(0)',
-          boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, 0 6px 20px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+          /* ── CHANGED: no glow/ambient shadow, only the 3D press shadow ── */
+          boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
           transition: 'transform 0.07s ease, box-shadow 0.07s ease',
           WebkitTapHighlightColor: 'transparent',
         }}
@@ -311,20 +312,20 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
     { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
   ];
   const allDays = [1, 2, 3, 4, 5, 6, 7];
-  const todayDay = 4; // demo "today" is Thursday
+  const todayDay = 4;
 
   const getDotStyle = (d) => {
-    if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
-    if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: '0 4px 0 0 #991b1b', icon: 'x' };
-    if (d.type === 'restDone')   return { bg: 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)', border: 'rgba(74,222,128,0.5)', shadow: '0 3px 0 0 #15803d', icon: 'leaf' };
-    if (d.type === 'future')     return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'empty' };
-    if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: '0 4px 0 0 #111827', icon: 'leafOutline' };
+    /* ── CHANGED: shadows removed from all dot types ── */
+    if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: 'none', icon: 'check' };
+    if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: 'none', icon: 'x' };
+    if (d.type === 'restDone')   return { bg: 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)', border: 'rgba(74,222,128,0.5)', shadow: 'none', icon: 'leaf' };
+    if (d.type === 'future')     return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: 'none', icon: 'empty' };
+    if (d.type === 'futureRest') return { bg: 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)', border: 'rgba(71,85,105,0.7)', shadow: 'none', icon: 'leafOutline' };
     return { bg: '#1e293b', border: '#334155', shadow: 'none', icon: 'empty' };
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%', paddingTop: 24 }}>
-      {/* S-curve row — matches Home.jsx exactly */}
       <div style={{
         position: 'relative',
         display: 'flex', flexDirection: 'row', flexWrap: 'nowrap',
@@ -337,7 +338,6 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
           const s = getDotStyle(d);
           const isTodayCircle = day === todayDay;
           const SIZE = isTodayCircle ? 49 : 40;
-          // Same sine-wave vertical offset as Home.jsx
           const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
 
           return (
@@ -348,7 +348,6 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
               marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
               overflow: 'visible', zIndex: 1,
             }}>
-              {/* Today ring pulse */}
               {isTodayCircle && (
                 <div style={{
                   position: 'absolute', width: SIZE + 14, height: SIZE + 14,
@@ -366,16 +365,18 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
                   if (demoBubbleDay === day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
                   else { setDemoBubbleDay(day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
                 }}
-                onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-                onPointerCancel={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onPointerCancel={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                 style={{
                   width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow,
+                  background: s.bg, border: `1px solid ${s.border}`,
+                  /* ── CHANGED: no shadow ── */
+                  boxShadow: 'none',
                   cursor: 'pointer', padding: 0, outline: 'none',
                   WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                  transition: 'transform 0.08s ease',
                 }}>
                 {s.icon === 'check' && <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 {s.icon === 'x' && <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
@@ -733,7 +734,6 @@ export default function Onboarding() {
                           {split.days.map(d => <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>)}
                         </div>
                       </div>
-                      {/* Chevron is its own button — stops propagation so card click doesn't also fire */}
                       <button
                         onClick={e => { e.stopPropagation(); setPreviewSplit(split); }}
                         style={{ padding: '8px 4px 8px 12px', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent', display: 'flex', alignItems: 'center' }}>
@@ -841,15 +841,12 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 7 — HOW TO USE THE APP (carousel)
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 7) {
     const CARDS = [
       {
         key: 'checkin',
         render: () => (
-          // Both demo buttons on same horizontal level — flex row, same maxWidth
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
             <div style={{ width: '100%', maxWidth: 280 }}>
               <CheckInDemo />
@@ -881,11 +878,11 @@ export default function Onboarding() {
         key: 'streak',
         render: () => (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-            {/* Plain streak icon — no shadow, no background */}
+            {/* ── CHANGED: 130 × 1.3 = 169px, rounded to 170 ── */}
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
               alt="Streak icon"
-              style={{ width: 130, height: 130, objectFit: 'contain', marginTop: 20 }}
+              style={{ width: 170, height: 170, objectFit: 'contain', marginTop: 20 }}
             />
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
               Meet your <strong style={{ color: C.text }}>streak icon</strong> — it tracks your consistency and appears on your posts so friends can react and cheer you on. Complete challenges to unlock new looks for it.
@@ -897,9 +894,8 @@ export default function Onboarding() {
         key: 'primarygym',
         render: () => (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-            {/* Purple star button — 3D press effect matching app style */}
+            {/* Purple star button — 3D press effect, no glow */}
             <div style={{ position: 'relative' }}>
-              {/* 3D underlay */}
               <div style={{
                 position: 'absolute', inset: 0, borderRadius: 18,
                 background: '#5b21b6',
@@ -910,7 +906,8 @@ export default function Onboarding() {
                 width: 64, height: 64, borderRadius: 18,
                 background: 'linear-gradient(to bottom, #c084fc, #a855f7 40%, #9333ea)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 0 0 #5b21b6, 0 8px 20px rgba(120,40,220,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                /* ── CHANGED: no ambient glow, only the 3D bottom shadow ── */
+                boxShadow: '0 4px 0 0 #5b21b6, inset 0 1px 0 rgba(255,255,255,0.2)',
               }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="none">
                   <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
@@ -952,15 +949,7 @@ export default function Onboarding() {
       const d = DEMO_DAYS[demoBubbleDay - 1];
       if (!d) return null;
       const getDemoLabel = (d) => {
-        const labels = {
-          1: 'Chest & Triceps',
-          2: 'No Workout',
-          3: 'Rest Day',
-          4: 'Back & Biceps',
-          5: 'Legs',
-          6: 'Shoulders',
-          7: 'Rest Day',
-        };
+        const labels = { 1: 'Chest & Triceps', 2: 'No Workout', 3: 'Rest Day', 4: 'Back & Biceps', 5: 'Legs', 6: 'Shoulders', 7: 'Rest Day' };
         return labels[d.day] || '';
       };
       const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
@@ -1004,14 +993,12 @@ export default function Onboarding() {
               </div>
               <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 20px', flexShrink: 0 }}>How to use the app</h1>
 
-              {/* Carousel position dots */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginBottom: 24, flexShrink: 0 }}>
                 {CARDS.map((_, i) => (
                   <button key={i} onClick={() => scrollToCard(i)} style={{ width: i === carouselIndex ? 22 : 8, height: 8, borderRadius: 99, border: 'none', padding: 0, background: i === carouselIndex ? C.blue : '#cbd5e1', transition: 'width 0.25s ease, background 0.25s ease', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} />
                 ))}
               </div>
 
-              {/* Carousel — NO box-shadow on cards */}
               <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
               <div
                 ref={carouselRef}
@@ -1021,7 +1008,6 @@ export default function Onboarding() {
                   flex: 1, display: 'flex', overflowX: 'auto',
                   scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
                   scrollbarWidth: 'none', msOverflowStyle: 'none',
-                  // No shadow, no border, no background on the carousel wrapper
                   border: 'none', outline: 'none', background: 'transparent',
                 }}
               >
@@ -1031,7 +1017,6 @@ export default function Onboarding() {
                     display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center',
                     boxSizing: 'border-box',
-                    // No shadow, no border, no background on individual cards
                     border: 'none', background: 'transparent',
                     flexShrink: 0,
                   }}>
