@@ -361,16 +361,19 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     if (actx) soundPoseSwap(actx);
     spawnParticles();
     // Fade out p1
-    p1.style.transition = 'opacity 0.15s ease';
+    p1.style.transition = 'opacity 0.2s ease';
     p1.style.opacity = '0';
     p1.style.pointerEvents = 'none';
-    // Show p2 and animate — set opacity FIRST, then apply animation
-    // (animation keyframes start at opacity:1 so no conflict)
+    // Clear any animation on stage so it doesn't interfere
+    stage.style.animation = 'none';
+    stage.style.filter = 'none';
+    // Show p2 — force reflow then animate
     p2.style.transition = 'none';
-    p2.style.pointerEvents = 'auto';
+    p2.style.animation = 'none';
+    p2.style.opacity = '0';
+    void p2.offsetWidth;
     p2.style.opacity = '1';
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
-    stage.style.animation = 'none';
     setTimeout(() => {
       if (actx) soundNumPop(actx);
       if (navigator.vibrate) navigator.vibrate([60, 80, 100]);
@@ -380,9 +383,10 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   }, 1980);
   const t4 = setTimeout(() => {
     if (actx) soundGlowPulse(actx);
-    stage.style.animation = 'none';
-    void stage.offsetWidth;
-    stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
+    // Apply glow to p2 directly, not stage (avoids compositing issues)
+    p2.style.animation = 'none';
+    void p2.offsetWidth;
+    p2.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
   }, 2800);
   const t5 = setTimeout(() => {
     if (actx) soundTransition(actx);
