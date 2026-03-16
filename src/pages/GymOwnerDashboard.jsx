@@ -820,6 +820,14 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
       return 0;
     });
 
+  // Leaderboard data
+  const lbData = [...enriched].sort((a,b) => {
+    if (lbMetric === 'streak') return b.streak - a.streak;
+    if (lbMetric === 'monthly') return b.visits - a.visits;
+    if (lbMetric === 'alltime') return b.totalVisits - a.totalVisits;
+    return 0;
+  }).slice(0, 10);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -833,28 +841,83 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search members…"
-          style={{ flex: 1, minWidth: 160, padding: '9px 14px', borderRadius: 10, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#f0f4f8', fontSize: 12, outline: 'none' }}
-        />
-        {/* Filter tabs */}
+        {/* View mode toggle */}
         <div style={{ display: 'flex', gap: 3, padding: '3px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-          {[{id:'all',label:'All'},{id:'active',label:'Active'},{id:'at_risk',label:'At Risk'},{id:'inactive',label:'Inactive'}].map(f => (
-            <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '5px 10px', borderRadius: 8, border: filter===f.id ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent', background: filter===f.id ? '#0c1a2e' : 'transparent', color: filter===f.id ? '#f0f4f8' : '#3a5070', fontSize: 11, fontWeight: filter===f.id ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              {f.label}{f.id!=='all' && counts[f.id] > 0 && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, color: filter===f.id ? '#a78bfa' : '#3a5070' }}>{counts[f.id]}</span>}
+          {[{id:'list',label:'👤 List'},{id:'leaderboard',label:'🏆 Board'}].map(v => (
+            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ padding: '5px 12px', borderRadius: 8, border: viewMode===v.id ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent', background: viewMode===v.id ? '#0c1a2e' : 'transparent', color: viewMode===v.id ? '#a78bfa' : '#3a5070', fontSize: 11, fontWeight: viewMode===v.id ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {v.label}
             </button>
           ))}
         </div>
-        {/* Sort */}
-        <select value={sort} onChange={e => setSort(e.target.value)} style={{ padding: '7px 10px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
-          <option value="recentlyActive">Recently Active</option>
-          <option value="mostVisits">Most Visits</option>
-          <option value="atRisk">At Risk First</option>
-          <option value="streak">Longest Streak</option>
-        </select>
+
+        {viewMode === 'list' && <>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search members…"
+            style={{ flex: 1, minWidth: 160, padding: '9px 14px', borderRadius: 10, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#f0f4f8', fontSize: 12, outline: 'none' }}
+          />
+          <div style={{ display: 'flex', gap: 3, padding: '3px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+            {[{id:'all',label:'All'},{id:'active',label:'Active'},{id:'at_risk',label:'At Risk'},{id:'inactive',label:'Inactive'}].map(f => (
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '5px 10px', borderRadius: 8, border: filter===f.id ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent', background: filter===f.id ? '#0c1a2e' : 'transparent', color: filter===f.id ? '#f0f4f8' : '#3a5070', fontSize: 11, fontWeight: filter===f.id ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {f.label}{f.id!=='all' && counts[f.id] > 0 && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, color: filter===f.id ? '#a78bfa' : '#3a5070' }}>{counts[f.id]}</span>}
+              </button>
+            ))}
+          </div>
+          <select value={sort} onChange={e => setSort(e.target.value)} style={{ padding: '7px 10px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <option value="recentlyActive">Recently Active</option>
+            <option value="mostVisits">Most Visits</option>
+            <option value="atRisk">At Risk First</option>
+            <option value="streak">Longest Streak</option>
+          </select>
+        </>}
+
+        {viewMode === 'leaderboard' && (
+          <div style={{ display: 'flex', gap: 3, padding: '3px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+            {[{id:'streak',label:'🔥 Streak'},{id:'monthly',label:'📅 This Month'},{id:'alltime',label:'⭐ All Time'}].map(m => (
+              <button key={m.id} onClick={() => setLbMetric(m.id)} style={{ padding: '5px 11px', borderRadius: 8, border: lbMetric===m.id ? '1px solid rgba(251,191,36,0.3)' : '1px solid transparent', background: lbMetric===m.id ? 'rgba(251,191,36,0.1)' : 'transparent', color: lbMetric===m.id ? '#fbbf24' : '#3a5070', fontSize: 11, fontWeight: lbMetric===m.id ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Leaderboard view */}
+      {viewMode === 'leaderboard' && (
+        <CoachCard accent="#fbbf24" style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '4px 0' }}>
+            {lbData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '36px 0', color: '#3a5070' }}>
+                <Trophy style={{ width: 24, height: 24, opacity: 0.3, margin: '0 auto 8px' }}/>
+                <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No data yet</p>
+              </div>
+            ) : lbData.map((m, i) => {
+              const sc = STATUS_CFG[m.status] || STATUS_CFG.regular;
+              const val = lbMetric === 'streak' ? `${m.streak}d 🔥` : lbMetric === 'monthly' ? `${m.visits} visits` : `${m.totalVisits} total`;
+              const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+              const barMax = lbData[0] ? (lbMetric === 'streak' ? lbData[0].streak : lbMetric === 'monthly' ? lbData[0].visits : lbData[0].totalVisits) : 1;
+              const barVal = lbMetric === 'streak' ? m.streak : lbMetric === 'monthly' ? m.visits : m.totalVisits;
+              return (
+                <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < lbData.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none', background: i < 3 ? `rgba(251,191,36,${0.03 - i*0.01})` : 'transparent' }}>
+                  <div style={{ width: 24, textAlign: 'center', fontSize: i < 3 ? 16 : 11, fontWeight: i < 3 ? 900 : 700, color: '#64748b', flexShrink: 0 }}>{medal}</div>
+                  <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={32} color={sc.color}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
+                    <div style={{ marginTop: 4, height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', maxWidth: 160 }}>
+                      <div style={{ height: '100%', width: `${barMax > 0 ? (barVal/barMax)*100 : 0}%`, background: `linear-gradient(90deg,#fbbf24,#f59e0b)`, borderRadius: 99 }}/>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: '#fbbf24', background: 'rgba(251,191,36,0.1)', borderRadius: 7, padding: '3px 10px', flexShrink: 0 }}>{val}</span>
+                </div>
+              );
+            })}
+          </div>
+        </CoachCard>
+      )}
+
+      {/* List view */}
+      {viewMode === 'list' && 
 
       {/* Member cards */}
       <CoachCard style={{ overflow: 'hidden' }}>
