@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -36,7 +37,7 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -121,4 +122,6 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
       )}
     </AnimatePresence>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 }
