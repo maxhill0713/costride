@@ -43,7 +43,7 @@ import TabCoachMembers  from '../components/dashboard/TabCoachMembers';
 const ALL_NAV = [
   { id: 'overview',  label: 'Overview',  icon: LayoutDashboard, roles: ['gym_owner', 'coach'] },
   { id: 'schedule',  label: 'Schedule',  icon: Calendar,        roles: ['coach'] },
-  { id: 'members',   label: 'Members',   icon: Users,           roles: ['gym_owner', 'coach'] },
+  { id: 'members',   label: 'Members',   coachLabel: 'Clients', icon: Users,           roles: ['gym_owner', 'coach'] },
   { id: 'content',   label: 'Content',   icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3,       roles: ['gym_owner', 'coach'] },
   { id: 'gym',       label: 'Settings',  icon: Settings,        roles: ['gym_owner'] },
