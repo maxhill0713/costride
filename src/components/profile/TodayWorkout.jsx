@@ -608,15 +608,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           onClick={() => { if (!isTimerActive) setShowTimerOptions(!showTimerOptions); }}
                           style={{ height: '51px' }}
                           className="relative w-full flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
-                          {/* Clock + time shifted up slightly */}
-                          <div className="flex items-center gap-2 -mt-1">
+                          {/* Clock + time nudged down slightly */}
+                          <div className="flex items-center gap-2 mt-1">
                             <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
                               {timerDisplay}
                             </span>
                           </div>
                           {/* "Timer" label underneath */}
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                             Timer
                           </span>
                         </button>
