@@ -221,11 +221,11 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
         setDragOffset(0);
       }}>
 
-      {/* ── PHOTO PANEL ── */}
+      {/* ── PHOTO PANEL — 10% smaller: was left:3% width:87%, now left:7.5% width:78% ── */}
       <div
         className="absolute top-0 h-full overflow-hidden"
         style={{
-          left: '3%', width: '87%', borderRadius: '8px',
+          left: '7.5%', width: '78%', borderRadius: '8px',
           transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
           transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         }}>
@@ -243,12 +243,12 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
             onClick={onPhotoClick}
             disabled={uploading}
             className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)' }}>
+            style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.18)', borderRadius: '10px' }}>
             {uploading
               ? <span className="text-slate-400 text-sm font-medium">Uploading...</span>
               : <>
-                  <Camera className="w-7 h-7 text-slate-500" />
-                  <span className="text-[12px] font-semibold text-slate-500">Add a photo</span>
+                  <Camera className="w-6 h-6 text-slate-500" />
+                  <span className="text-[11px] font-semibold text-slate-500">Add a photo</span>
                 </>}
           </button>
         )}
@@ -269,15 +269,21 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-// ── ADDED: gymName prop so it can be saved to the post ──
 export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, onContinue }) {
   const [phase, setPhase] = useState('reveal');
   const [comment, setComment] = useState('');
+  // ── Editable post title — initialised from workoutName prop ──
+  const [postTitle, setPostTitle] = useState(workoutName || '');
   const [photoUrl, setPhotoUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Keep postTitle in sync if workoutName prop changes before share phase loads
+  useEffect(() => {
+    setPostTitle(workoutName || '');
+  }, [workoutName]);
 
   const hasMore = exercises && exercises.length > PREVIEW_COUNT;
 
@@ -331,7 +337,8 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         likes: 0, comments: [], reactions: {},
         is_system_generated: false,
         allow_gym_repost: false,
-        workout_name: workoutName || null,
+        // ── Use the (possibly edited) postTitle instead of raw workoutName ──
+        workout_name: postTitle.trim() || workoutName || null,
         workout_exercises: (exercises || []).map(ex => {
           const rawName = ex.name || ex.title || ex.exercise_name || ex.exercise || '';
           const displayName = rawName
@@ -341,7 +348,6 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
           return { name: displayName || 'Exercise', sets, reps, weight };
         }),
         workout_volume: volumeStr,
-        // ── ADDED: save the gym name so PostCard can display it ──
         gym_name: gymName || null,
       });
 
@@ -516,9 +522,26 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
                   <div className="absolute inset-0 pointer-events-none rounded-xl"
                     style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-                  {/* ── TOP BAR: workout name + stat row ── */}
+                  {/* ── TOP BAR: editable title + stat row ── */}
                   <div className="relative z-10 px-4 pt-3.5 pb-3">
-                    <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{workoutName}</p>
+
+                    {/* ── EDITABLE TITLE BOX — styled like the caption textarea ── */}
+                    <div className="relative mb-3">
+                      <input
+                        type="text"
+                        value={postTitle}
+                        onChange={(e) => setPostTitle(e.target.value.slice(0, 60))}
+                        maxLength={60}
+                        className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-white text-lg font-black placeholder-slate-500 focus:outline-none focus:border-white/25 transition-colors tracking-tight"
+                        style={{ letterSpacing: '-0.02em' }}
+                        placeholder="Workout title…"
+                      />
+                      {postTitle.length >= 50 && (
+                        <span className="absolute bottom-2 right-3 text-[10px] font-medium text-orange-400">
+                          {postTitle.length}/60
+                        </span>
+                      )}
+                    </div>
 
                     {/* Stat row — matches PostCard exactly */}
                     <div className="flex items-center mb-3">
@@ -543,10 +566,10 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
                       <textarea
                         value={comment}
                         onChange={(e) => setComment(e.target.value.slice(0, 200))}
-                        placeholder="Add a caption… (optional)"
+                        placeholder="How did it go? Share your highlights!"
                         rows={2}
                         maxLength={200}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                        className="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-white/25 transition-colors"
                       />
                       <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${comment.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
                         {comment.length}/200
