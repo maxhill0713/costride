@@ -276,8 +276,8 @@ const STREAK_KEYFRAMES = `
     100% { transform: scale(1); opacity: 1; }
   }
   @keyframes streakGlowPulse {
-    0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,0.5)); }
-    50%      { filter: drop-shadow(0 0 42px rgba(249,115,22,0.9)); }
+    0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,0.6)) brightness(1); opacity: 1; }
+    50%      { filter: drop-shadow(0 0 44px rgba(249,115,22,1)) brightness(1.08); opacity: 1; }
   }
   @keyframes streakParticleBurst {
     0%   { transform: translate(0,0) scale(1); opacity: 1; }
