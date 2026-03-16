@@ -428,207 +428,208 @@ export default function Community() {
         </div>
 
         {/* ─── ONE CARD ─── */}
-{/* ── Lift Leaderboard Card — restyled to match challenge card aesthetic ── */}
-<div style={{
-  borderRadius: 20,
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.07)',
-  overflow: 'hidden',
-  position: 'relative',
-}}>
+        <div style={{
+          borderRadius: 28,
+          background: 'linear-gradient(160deg,rgba(12,20,48,0.96) 0%,rgba(6,10,26,0.99) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(${liftMeta.colorRgb},0.08), inset 0 1px 0 rgba(255,255,255,0.06)`,
+          position: 'relative',
+          overflow: 'visible',
+          transition: 'box-shadow 0.4s ease',
+        }}>
 
-  {/* ── 1. Lift Dropdown ── */}
-  <div style={{ padding: '14px 14px 0', position: 'relative', zIndex: 10 }}>
-    <LiftDropdown
-      value={activeLift}
-      onChange={v => { setActiveLift(v); setLbOpen(false); }}
-      liftMeta={liftMeta}
-    />
-  </div>
+          {/* Accent bar */}
+          <div style={{ height: 3, borderRadius: '28px 28px 0 0', background: `linear-gradient(90deg,transparent 0%,rgba(${liftMeta.colorRgb},0.5) 20%,${liftMeta.color} 50%,rgba(${liftMeta.colorRgb},0.5) 80%,transparent 100%)`, transition: 'background 0.4s ease' }} />
 
-  {/* ── 2. Hero PB row ── */}
-  <div style={{ padding: '14px 14px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
-    {/* Arc ring */}
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      <ArcRing pct={myPct ?? 0} color={liftMeta.color} size={108} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: myEntry ? 24 : 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-          {myEntry ? myEntry.weight : '—'}
-        </span>
-        {myEntry && <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>kg PB</span>}
-      </div>
-    </div>
+          {/* Background glow */}
+          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 180, borderRadius: '50%', background: `radial-gradient(ellipse,rgba(${liftMeta.colorRgb},0.07) 0%,transparent 70%)`, pointerEvents: 'none', transition: 'background 0.4s ease' }} />
 
-    {/* Rank info */}
-    <div style={{ flex: 1, minWidth: 0 }}>
-      {myEntry ? (
-        <>
-          <p style={{ fontSize: 15, fontWeight: 900, color: '#fff', margin: '0 0 2px', lineHeight: 1.2 }}>
-            {myPct !== null ? `Top ${100 - myPct}%` : 'Ranked'}
-          </p>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600, margin: '0 0 8px' }}>
-            #{myRank} of {leaderboard.length} athletes · {gymName}
-          </p>
-          {allTimeBest > 0 && allTimeBest !== myEntry.weight && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <TrendingUp style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.3)' }} />
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 700 }}>All-time PB: {allTimeBest}kg</span>
+          {/* ── 1. Lift Dropdown ── */}
+          <div style={{ padding: '18px 18px 0', position: 'relative', zIndex: 10 }}>
+            <LiftDropdown
+              value={activeLift}
+              onChange={v => { setActiveLift(v); setLbOpen(false) }}
+              liftMeta={liftMeta}
+            />
+          </div>
+
+          {/* ── 2. Hero PB ── */}
+          <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <ArcRing pct={myPct ?? 0} color={liftMeta.color} size={118} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: myEntry ? 26 : 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, animation: 'num-pop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both' }}>
+                  {myEntry ? myEntry.weight : '—'}
+                </span>
+                {myEntry && <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.28)' }}>kg PB</span>}
+              </div>
             </div>
-          )}
-        </>
-      ) : (
-        <>
-          <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.35)', margin: '0 0 4px' }}>No {liftMeta.label} logged</p>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: 0, fontWeight: 600 }}>Log a lift to appear on the board</p>
-        </>
-      )}
-    </div>
-  </div>
-
-  {/* ── Progress bar (your percentile) ── */}
-  <div style={{ padding: '12px 14px 0' }}>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-      <span style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Percentile</span>
-      <span style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>{myPct !== null ? `${myPct}%` : '—'}</span>
-    </div>
-    <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-      <div style={{ height: '100%', width: `${myPct ?? 0}%`, borderRadius: 99, background: `linear-gradient(90deg,${liftMeta.color},${liftMeta.color}99)`, transition: 'width 0.8s ease' }} />
-    </div>
-  </div>
-
-  {/* ── 3. Leaderboard header ── */}
-  <div style={{ padding: '14px 14px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <Trophy style={{ width: 12, height: 12, color: '#FFD700' }} />
-      <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Top Lifters</span>
-    </div>
-    {/* Time filter */}
-    <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      {TIME_FILTERS.map(tf => (
-        <button key={tf.id} onClick={() => setTimeFilter(tf.id)} style={{
-          padding: '4px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-          fontSize: 10, fontWeight: 800,
-          background: timeFilter === tf.id ? `rgba(${liftMeta.colorRgb},0.15)` : 'transparent',
-          color: timeFilter === tf.id ? liftMeta.color : 'rgba(255,255,255,0.22)',
-          outline: timeFilter === tf.id ? `1px solid rgba(${liftMeta.colorRgb},0.3)` : 'none',
-          transition: 'all 0.15s ease',
-        }}>{tf.label}</button>
-      ))}
-    </div>
-  </div>
-
-  {/* ── Leaderboard rows ── */}
-  <div style={{ padding: '10px 14px 0' }}>
-    {isLoading ? (
-      <div style={{ padding: '16px 0', textAlign: 'center', color: 'rgba(255,255,255,0.18)', fontSize: 12, fontWeight: 600 }}>Loading…</div>
-    ) : leaderboard.length === 0 ? (
-      <div style={{ padding: '16px 0', textAlign: 'center', color: 'rgba(255,255,255,0.18)', fontSize: 12, fontWeight: 600 }}>No lifts logged in this period</div>
-    ) : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {leaderboard.slice(0, 5).map((entry, i) => {
-          const M     = i < 3 ? MEDALS[i] : null;
-          const isMe  = entry.user_id === currentUser?.id;
-          const maxW  = leaderboard[0].weight;
-          const pct   = Math.max(6, Math.round((entry.weight / maxW) * 100));
-          return (
-            <div key={entry.user_id || i} style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '9px 11px', borderRadius: 14,
-              background: isMe
-                ? `rgba(${liftMeta.colorRgb},0.07)`
-                : i === 0 ? 'rgba(255,215,0,0.04)' : 'rgba(255,255,255,0.025)',
-              border: `1px solid ${isMe ? `rgba(${liftMeta.colorRgb},0.18)` : 'rgba(255,255,255,0.05)'}`,
-              position: 'relative', overflow: 'hidden',
-            }}>
-              {/* Progress bg stripe */}
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: M ? `rgba(${M.colorRgb},0.04)` : `rgba(${liftMeta.colorRgb},0.03)`, borderRadius: '14px 0 0 14px', pointerEvents: 'none' }} />
-
-              {/* Rank badge */}
-              <div style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: M ? M.badgeBg : 'rgba(255,255,255,0.05)', color: M ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.25)', position: 'relative', zIndex: 1 }}>
-                {i + 1}
-              </div>
-
-              {/* Avatar */}
-              <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: isMe ? `rgba(${liftMeta.colorRgb},0.18)` : M ? M.bg : 'rgba(255,255,255,0.06)', border: `1.5px solid ${isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.08)'}`, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.4)', position: 'relative', zIndex: 1 }}>
-                {userAvatarMap[entry.user_id]
-                  ? <img src={userAvatarMap[entry.user_id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ display: 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 10 }}>{ini(entry.user_name)}</span>
-                }
-              </div>
-
-              {/* Name */}
-              <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
-                <p style={{ fontSize: 13, fontWeight: isMe ? 900 : 600, color: isMe ? '#fff' : M ? M.color : 'rgba(255,255,255,0.55)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {isMe ? 'You' : entry.user_name || '—'}
-                </p>
-              </div>
-
-              {/* Weight */}
-              <span style={{ flexShrink: 0, fontSize: 13, fontWeight: 900, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.38)', position: 'relative', zIndex: 1, letterSpacing: '-0.02em' }}>
-                {entry.weight}kg
-              </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {myEntry ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 4 }}>
+                    <span style={{ fontSize: 15, fontWeight: 900, color: '#fff' }}>
+                      {myPct !== null ? `Top ${100 - myPct}%` : 'Ranked'}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontWeight: 600 }}>in {gymName}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: liftMeta.color, boxShadow: `0 0 8px ${liftMeta.color}` }} />
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', fontWeight: 600 }}>#{myRank} of {leaderboard.length} athletes</span>
+                  </div>
+                  {allTimeBest > 0 && allTimeBest !== myEntry.weight && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <TrendingUp style={{ width: 11, height: 11, color: 'rgba(255,255,255,0.28)' }} />
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', fontWeight: 700 }}>All-time PB: {allTimeBest}kg</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.38)', margin: '0 0 4px' }}>No {liftMeta.label} logged</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)', margin: 0, fontWeight: 600 }}>Log a lift to appear on the board</p>
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
+          </div>
 
-  {/* ── 4. Stats row ── */}
-  <div style={{ margin: '12px 14px 0', padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <div style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.1)`, flexShrink: 0 }}>
-        <Flame style={{ width: 13, height: 13, color: liftMeta.color }} />
-      </div>
-      <div>
-        <p style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{todayLifters}</p>
-        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', margin: '2px 0 0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Active today</p>
-      </div>
-    </div>
-    <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.07)' }} />
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14 }}>
-      <div style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,215,0,0.09)', flexShrink: 0 }}>
-        <Trophy style={{ width: 13, height: 13, color: '#FFD700' }} />
-      </div>
-      <div>
-        <p style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{leaderboard.length}</p>
-        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', margin: '2px 0 0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em' }}>On board</p>
-      </div>
-    </div>
-  </div>
+          {/* Divider */}
+          <div style={{ margin: '18px 18px 0', height: 1, background: 'rgba(255,255,255,0.05)' }} />
 
-  {/* ── 5. CTA — styled like the challenge Join button ── */}
-  <div style={{ padding: '12px 14px 14px' }}>
-    <button
-      onClick={() => setLbOpen(true)}
-      style={{
-        width: '100%', height: 40, borderRadius: 14, border: 'none', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 14px',
-        background: 'rgba(255,255,255,0.06)',
-        outline: '1px solid rgba(255,255,255,0.1)',
-        transition: 'all 0.15s ease',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.background = `rgba(${liftMeta.colorRgb},0.1)`; e.currentTarget.style.outlineColor = `rgba(${liftMeta.colorRgb},0.25)`; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.outlineColor = 'rgba(255,255,255,0.1)'; }}
-      onMouseDown={e => e.currentTarget.style.transform = 'translateY(1px)'}
-      onMouseUp={e => e.currentTarget.style.transform = ''}
-      onTouchStart={e => e.currentTarget.style.transform = 'translateY(1px)'}
-      onTouchEnd={e => e.currentTarget.style.transform = ''}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div style={{ width: 26, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.14)`, border: `1px solid rgba(${liftMeta.colorRgb},0.2)` }}>
-          <Trophy style={{ width: 12, height: 12, color: liftMeta.color }} />
+          {/* ── 3. Mini leaderboard ── */}
+          <div style={{ padding: '16px 16px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Trophy style={{ width: 13, height: 13, color: '#FFD700' }} />
+                <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Top Lifters</span>
+              </div>
+              {/* Time filter */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 1, padding: '2px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                {TIME_FILTERS.map(tf => (
+                  <button key={tf.id} onClick={() => setTimeFilter(tf.id)} style={{
+                    padding: '4px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 800,
+                    background: timeFilter === tf.id ? `rgba(${liftMeta.colorRgb},0.15)` : 'transparent',
+                    color: timeFilter === tf.id ? liftMeta.color : 'rgba(255,255,255,0.22)',
+                    outline: timeFilter === tf.id ? `1px solid rgba(${liftMeta.colorRgb},0.3)` : 'none',
+                    fontFamily: "'Outfit',system-ui,sans-serif",
+                    transition: 'all 0.15s ease',
+                  }}>{tf.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'rgba(255,255,255,0.14)', fontSize: 12, fontWeight: 600 }}>Loading…</div>
+            ) : leaderboard.length === 0 ? (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'rgba(255,255,255,0.14)', fontSize: 12, fontWeight: 600 }}>No lifts logged in this period</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {leaderboard.slice(0, 5).map((entry, i) => {
+                  const M = i < 3 ? MEDALS[i] : null
+                  const isMe = entry.user_id === currentUser?.id
+                  const maxW = leaderboard[0].weight
+                  const pct  = Math.max(6, Math.round((entry.weight / maxW) * 100))
+                  return (
+                    <div key={entry.user_id || i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '9px 10px', borderRadius: 14,
+                      background: isMe ? `rgba(${liftMeta.colorRgb},0.07)` : i === 0 ? 'rgba(255,215,0,0.04)' : 'rgba(255,255,255,0.025)',
+                      border: `1px solid ${isMe ? `rgba(${liftMeta.colorRgb},0.2)` : 'rgba(255,255,255,0.04)'}`,
+                      position: 'relative', overflow: 'hidden',
+                    }}>
+                      {/* Progress bg */}
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: M ? `rgba(${M.colorRgb},0.04)` : `rgba(${liftMeta.colorRgb},0.04)`, borderRadius: '14px 0 0 14px', pointerEvents: 'none', transition: 'width 0.6s ease' }} />
+
+                      {/* Rank */}
+                      <div style={{ width: 24, height: 24, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, background: M ? M.badgeBg : 'rgba(255,255,255,0.05)', color: M ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.22)', position: 'relative', zIndex: 1 }}>
+                        {i + 1}
+                      </div>
+
+                      {/* Avatar */}
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, background: isMe ? `rgba(${liftMeta.colorRgb},0.2)` : M ? M.bg : 'rgba(255,255,255,0.06)', border: `1.5px solid ${isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.08)'}`, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.45)', position: 'relative', zIndex: 1 }}>
+                        {userAvatarMap[entry.user_id] ? <img src={userAvatarMap[entry.user_id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+                        <span style={{ display: userAvatarMap[entry.user_id] ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 11 }}>{ini(entry.user_name)}</span>
+                      </div>
+
+                      {/* Name */}
+                      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: isMe ? 800 : 600, color: isMe ? '#fff' : M ? M.color : 'rgba(255,255,255,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {isMe ? 'You' : entry.user_name || '—'}
+                        </p>
+                      </div>
+
+                      {/* Weight */}
+                      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 900, color: isMe ? liftMeta.color : M ? M.color : 'rgba(255,255,255,0.4)', position: 'relative', zIndex: 1, letterSpacing: '-0.02em' }}>
+                        {entry.weight}kg
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div style={{ margin: '16px 18px 0', height: 1, background: 'rgba(255,255,255,0.05)' }} />
+
+          {/* ── 4. Stats ── */}
+          <div style={{ margin: '0 16px', padding: '14px 4px', display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.1)`, flexShrink: 0 }}>
+                <Flame style={{ width: 14, height: 14, color: liftMeta.color }} />
+              </div>
+              <div>
+                <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{todayLifters}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', margin: '2px 0 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Active today</p>
+              </div>
+            </div>
+            <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.07)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,215,0,0.09)', flexShrink: 0 }}>
+                <Trophy style={{ width: 14, height: 14, color: '#FFD700' }} />
+              </div>
+              <div>
+                <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1, letterSpacing: '-0.03em' }}>{leaderboard.length}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', margin: '2px 0 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>On board</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 5. CTA ── */}
+          <div style={{ padding: '0 16px 18px' }}>
+            <button
+              onClick={() => setLbOpen(true)}
+              style={{
+                width: '100%', padding: '14px 20px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: `linear-gradient(135deg,rgba(${liftMeta.colorRgb},0.13),rgba(${liftMeta.colorRgb},0.05))`,
+                outline: `1px solid rgba(${liftMeta.colorRgb},0.22)`,
+                boxShadow: `0 4px 20px rgba(${liftMeta.colorRgb},0.08),inset 0 1px 0 rgba(255,255,255,0.05)`,
+                fontFamily: "'Outfit',system-ui,sans-serif",
+                transition: 'transform 0.1s ease',
+              }}
+              onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+              onMouseUp={e => e.currentTarget.style.transform = ''}
+              onMouseLeave={e => e.currentTarget.style.transform = ''}
+              onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
+              onTouchEnd={e => e.currentTarget.style.transform = ''}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.14)`, border: `1px solid rgba(${liftMeta.colorRgb},0.22)` }}>
+                  <Trophy style={{ width: 15, height: 15, color: liftMeta.color }} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontSize: 13, fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1 }}>Full Leaderboard</p>
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0', fontWeight: 600 }}>{leaderboard.length} athletes ranked</p>
+                </div>
+              </div>
+              <ChevronRight style={{ width: 16, height: 16, color: liftMeta.color, opacity: 0.6 }} />
+            </button>
+          </div>
+
         </div>
-        <span style={{ fontSize: 13, fontWeight: 900, color: 'rgba(255,255,255,0.85)' }}>Full Leaderboard</span>
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontWeight: 600 }}>· {leaderboard.length} athletes</span>
-      </div>
-      <ChevronRight style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.25)' }} />
-    </button>
-  </div>
-
-</div>
-
       </div>
     </>
   )
