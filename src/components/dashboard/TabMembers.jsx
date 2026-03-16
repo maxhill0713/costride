@@ -724,12 +724,20 @@ export default function TabMembers({
 
                     {/* Inline single-member push panel */}
                     {isExpanded && (
-                      <MemberPushPanel
-                        member={m}
-                        gymName={gymName}
-                        gymId={selectedGym?.id}
-                        onClose={() => setExpandedMember(null)}
-                      />
+                     <>
+                       {m.user_email && (
+                         <div style={{ padding: '8px 16px', background: 'rgba(14,165,233,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                           <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Email</span>
+                           <a href={`mailto:${m.user_email}`} style={{ fontSize: 12, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }} onClick={e => e.stopPropagation()}>{m.user_email}</a>
+                         </div>
+                       )}
+                       <MemberPushPanel
+                         member={m}
+                         gymName={gymName}
+                         gymId={selectedGym?.id}
+                         onClose={() => setExpandedMember(null)}
+                       />
+                     </>
                     )}
                   </div>
                 );
