@@ -708,7 +708,7 @@ export default function GymOwnerDashboard() {
 
           {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {selectedGym?.join_code && (
+            {isGymOwner && selectedGym?.join_code && (
               <button onClick={() => setShowPoster(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 8, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', color: '#34d399', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
                 <QrCode style={{ width: 11, height: 11 }}/>
                 <span style={{ fontFamily: 'DM Mono,monospace', letterSpacing: '0.12em' }}>{selectedGym.join_code}</span>
@@ -720,16 +720,20 @@ export default function GymOwnerDashboard() {
                 <AlertTriangle style={{ width: 11, height: 11 }}/>{atRisk} at risk
               </button>
             )}
-            <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(56,189,248,0.07)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.16)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(56,189,248,0.14)'}
-              onMouseLeave={e => e.currentTarget.style.background='rgba(56,189,248,0.07)'}>
-              <QrCode style={{ width: 13, height: 13 }}/> Scan QR
-            </button>
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', color: '#f0f4f8', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.09)'}
-              onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
-              <Plus style={{ width: 13, height: 13 }}/> New Post
-            </button>
+            {isGymOwner && (
+              <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(56,189,248,0.07)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.16)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(56,189,248,0.14)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(56,189,248,0.07)'}>
+                <QrCode style={{ width: 13, height: 13 }}/> Scan QR
+              </button>
+            )}
+            {isGymOwner && (
+              <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', color: '#f0f4f8', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.09)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+                <Plus style={{ width: 13, height: 13 }}/> New Post
+              </button>
+            )}
             {/* Bell */}
             <Link to={createPageUrl('NotificationsHub')}>
               <button style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#5a7a96', cursor: 'pointer', position: 'relative', transition: 'all 0.12s' }}
