@@ -520,8 +520,7 @@ function _TabCoachOverview_PLACEHOLDER({ myClasses, checkIns, allMemberships, av
   );
 }
 
-// ── Coach Schedule Tab ────────────────────────────────────────────────────────
-function TabCoachSchedule({ myClasses, checkIns, events, challenges, avatarMap, openModal, now }) {
+function _TabCoachSchedule_PLACEHOLDER({ myClasses, checkIns, events, challenges, avatarMap, openModal, now }) {
   const todayIndex = 3; // today is always index 3 (3 days back + today + 3 ahead)
   const [selectedDay, setSelectedDay] = useState(todayIndex);
   const [notes, setNotes] = useState(() => {
