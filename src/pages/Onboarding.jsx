@@ -466,7 +466,7 @@ export default function Onboarding() {
         ]);
         const q = gymSearch.toLowerCase();
         const dbGyms = dbRes.status === 'fulfilled' ? dbRes.value.filter(g => g.name?.toLowerCase().includes(q) || g.city?.toLowerCase().includes(q)) : [];
-        const places = placesRes.status === 'fulfilled' ? (placesRes.value?.data?.results || []) : [];
+        const places = placesRes.status === 'fulfilled' ? (placesRes.value?.data?.results || placesRes.value?.results || []) : [];
         const existingIds = dbGyms.map(g => g.google_place_id).filter(Boolean);
         setGymSearchResults(dbGyms.slice(0, 5));
         setGymPlacesResults(places.filter(p => !existingIds.includes(p.place_id)).slice(0, 3));
