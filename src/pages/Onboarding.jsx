@@ -505,6 +505,7 @@ export default function Onboarding() {
   function handleAccountTypeContinue() {
     if (!selectedAccountType) return;
     if (selectedAccountType === 'gym_owner') { updateMeMutation.mutate({ account_type: 'gym_owner', onboarding_completed: false }); navigate(createPageUrl('GymSignup')); return; }
+    if (selectedAccountType === 'coach') { updateMeMutation.mutate({ account_type: 'coach', onboarding_completed: true }); navigate(createPageUrl('CoachDashboard')); return; }
     updateMeMutation.mutate({ account_type: 'personal', onboarding_completed: false });
     goTo(2, 'forward');
   }
