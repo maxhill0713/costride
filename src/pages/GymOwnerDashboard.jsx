@@ -315,9 +315,19 @@ export default function GymOwnerDashboard() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   useEffect(() => { if (currentUser && !currentUser.onboarding_completed) navigate(createPageUrl('Onboarding')); }, [currentUser, navigate]);
 
+  // Role toggle for preview — persisted in localStorage
+  const [roleOverride, setRoleOverride] = useState(() => localStorage.getItem('dashRoleOverride') || null);
+  const toggleRole = () => {
+    const next = roleOverride === 'coach' ? 'gym_owner' : roleOverride === 'gym_owner' ? null : 'coach';
+    if (next) localStorage.setItem('dashRoleOverride', next);
+    else localStorage.removeItem('dashRoleOverride');
+    setRoleOverride(next);
+  };
+  const effectiveAccountType = roleOverride || currentUser?.account_type;
+
   // Determine role — coach or gym_owner
-  const isCoach = currentUser?.account_type === 'coach';
-  const isGymOwner = currentUser?.account_type === 'gym_owner';
+  const isCoach = effectiveAccountType === 'coach';
+  const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole = isCoach ? 'coach' : 'gym_owner';
   const roleLabel = isCoach ? 'Coach' : 'Gym Owner';
 
