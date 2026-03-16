@@ -1386,7 +1386,7 @@ export default function GymOwnerDashboard() {
           openModal={openModal}
           now={now}
         />
-        // imported from components/dashboard/TabCoachMembers.jsx
+
       : <TabMembersComponent
           allMemberships={allMemberships} checkIns={checkIns} ci30={ci30}
           memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym}
