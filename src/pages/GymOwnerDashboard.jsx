@@ -1033,7 +1033,7 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
                   </div>
                   );
                   })}
-                  </CoachCard>}
+                  </CoachCard>)}
                   </div>
                   );
                   }
