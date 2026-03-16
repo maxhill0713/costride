@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
@@ -88,20 +87,10 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
             }} />
 
             <div style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: 0 }}>Workout Notes</h2>
-                <button
-                  onClick={onClose}
-                  style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.06)', border: 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: '#94a3b8', flexShrink: 0,
-                  }}>
-                  <X size={14} />
-                </button>
-              </div>
-
+              {/* Header — no X button */}
+              <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px 0' }}>
+                Workout Notes
+              </h2>
               <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', marginTop: '2px' }}>
                 {workoutName}
               </p>
@@ -123,9 +112,12 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
               />
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button
+                {/* Save — blue press-down button */}
+                <motion.button
                   onClick={handleSave}
                   disabled={isSaving}
+                  whileTap={{ scale: 0.95, y: 3 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                   style={{
                     flex: 1, padding: '10px', borderRadius: '12px',
                     fontWeight: 900, fontSize: '14px', color: 'white', border: 'none',
@@ -133,21 +125,24 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
                     boxShadow: '0 3px 0 0 #1a3fa8, 0 8px 20px rgba(0,0,100,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
                     cursor: isSaving ? 'not-allowed' : 'pointer',
                     opacity: isSaving ? 0.5 : 1,
-                    transition: 'all 0.1s',
                   }}>
                   {isSaving ? 'Saving…' : 'Save Notes'}
-                </button>
-                <button
+                </motion.button>
+
+                {/* Cancel — slate press-down button */}
+                <motion.button
                   onClick={onClose}
+                  whileTap={{ scale: 0.95, y: 3 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                   style={{
                     flex: 1, padding: '10px', borderRadius: '12px',
                     fontWeight: 700, fontSize: '14px', color: '#cbd5e1', border: 'none',
                     background: 'linear-gradient(to bottom, #475569, #334155, #1e293b)',
                     boxShadow: '0 3px 0 0 #0f172a, inset 0 1px 0 rgba(255,255,255,0.08)',
-                    cursor: 'pointer', transition: 'all 0.1s',
+                    cursor: 'pointer',
                   }}>
                   Cancel
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>
