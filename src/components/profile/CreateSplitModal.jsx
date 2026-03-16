@@ -978,9 +978,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 const mergedWorkouts = Object.fromEntries(
                   Object.entries(previewSplit.workouts).map(([day, wt]) => {
                     const dayWeights = previewWeights[day] || {};
+                    const daySets = previewSets[day] || {};
+                    const dayReps = previewReps[day] || {};
                     const mergedExercises = (wt.exercises || []).map((ex, idx) => ({
                       ...ex,
                       weight: dayWeights[idx] !== undefined ? dayWeights[idx] : ex.weight,
+                      sets: daySets[idx] !== undefined && daySets[idx] !== '' ? daySets[idx] : ex.sets,
+                      reps: dayReps[idx] !== undefined && dayReps[idx] !== '' ? dayReps[idx] : ex.reps,
                     }));
                     return [day, { ...wt, exercises: mergedExercises }];
                   })
