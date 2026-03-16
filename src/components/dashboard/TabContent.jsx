@@ -502,13 +502,19 @@ export default function TabContent({
 
           {/* Action cards */}
           <div className="tc-actions" style={{ flexShrink: 0 }}>
-            {[
+            {(isCoach ? [
+              { icon: Dumbbell,          label: 'My Classes',    sub: `${classes.length} classes`,         grad: 'linear-gradient(135deg,#1a0a3e 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(167,139,250,0.3)', iconBg: 'rgba(167,139,250,0.2)', iconColor: '#c4b5fd', fn: () => openModal('classes')   },
+              { icon: MessageSquarePlus, label: 'New Post',      sub: 'Engage members',                    grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post')      },
+              { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)', border: 'rgba(16,185,129,0.3)',  iconBg: 'rgba(16,185,129,0.2)',  iconColor: '#6ee7b7', fn: () => openModal('event')     },
+              { icon: Trophy,            label: 'Challenge',     sub: `${activeChallenges.length} active`, grad: 'linear-gradient(135deg,#3a1010 0%,#5a1a1a 50%,#dc2626 100%)', border: 'rgba(239,68,68,0.3)',   iconBg: 'rgba(239,68,68,0.2)',   iconColor: '#fca5a5', fn: () => openModal('challenge') },
+              { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)', iconBg: 'rgba(139,92,246,0.2)', iconColor: '#c4b5fd', fn: () => openModal('poll')      },
+            ] : [
               { icon: MessageSquarePlus, label: 'New Post',      sub: 'Share with members',                grad: 'linear-gradient(135deg,#0f2a4a 0%,#1a4a7a 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#7dd3fc', fn: () => openModal('post')      },
               { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, grad: 'linear-gradient(135deg,#0a2e28 0%,#0d4a3a 50%,#059669 100%)', border: 'rgba(16,185,129,0.3)',  iconBg: 'rgba(16,185,129,0.2)',  iconColor: '#6ee7b7', fn: () => openModal('event')     },
               { icon: Dumbbell,          label: 'Classes',       sub: `${classes.length} total`,           grad: 'linear-gradient(135deg,#0a2038 0%,#0d3060 50%,#0ea5e9 100%)', border: 'rgba(14,165,233,0.3)',  iconBg: 'rgba(14,165,233,0.2)',  iconColor: '#67e8f9', fn: () => openModal('classes')   },
               { icon: Trophy,            label: 'New Challenge', sub: `${activeChallenges.length} active`, grad: 'linear-gradient(135deg,#3a1010 0%,#5a1a1a 50%,#dc2626 100%)', border: 'rgba(239,68,68,0.3)',   iconBg: 'rgba(239,68,68,0.2)',   iconColor: '#fca5a5', fn: () => openModal('challenge') },
               { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            grad: 'linear-gradient(135deg,#1e0a3a 0%,#2d1060 50%,#7c3aed 100%)', border: 'rgba(139,92,246,0.3)', iconBg: 'rgba(139,92,246,0.2)', iconColor: '#c4b5fd', fn: () => openModal('poll')      },
-            ].map(({ icon: Icon, label, sub, grad, border, iconBg, iconColor, fn }, i) => (
+            ]).map(({ icon: Icon, label, sub, grad, border, iconBg, iconColor, fn }, i) => (
               <div key={i} onClick={fn} className="tc-action-btn"
                 style={{ background: grad, border: `1px solid ${border}` }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,0.5)'; }}
