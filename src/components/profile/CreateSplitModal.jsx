@@ -597,9 +597,25 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.weight || ''])),
         ])
       );
+      const loadedSets = Object.fromEntries(
+        Object.entries(savedVersion.workouts).map(([day, wt]) => [
+          day,
+          Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.sets || ''])),
+        ])
+      );
+      const loadedReps = Object.fromEntries(
+        Object.entries(savedVersion.workouts).map(([day, wt]) => [
+          day,
+          Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.reps || ''])),
+        ])
+      );
       setPreviewWeights(loadedWeights);
+      setPreviewSets(loadedSets);
+      setPreviewReps(loadedReps);
     } else {
       setPreviewWeights({});
+      setPreviewSets({});
+      setPreviewReps({});
     }
     setWeightsDirty(false);
     setStep('preview');
