@@ -1,146 +1,207 @@
 import React, { useMemo, useState } from 'react';
 import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
 import {
-  Activity, Users, AlertCircle, QrCode, FileText, Dumbbell,
-  Calendar, CheckCircle, Flame, Clock, UserCheck,
-  Trophy, MessageCircle, Star, Target, UserPlus, Bell,
-  ClipboardList, Zap, Heart, TrendingUp, CreditCard,
+  Activity, AlertCircle, QrCode, Dumbbell,
+  Calendar, CheckCircle, Flame, Clock,
+  Trophy, Bell, UserPlus,
+  TrendingUp, BarChart2,
+  X, Target,
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
-// ── Tiny sparkline ─────────────────────────────────────────────────────────────
-function Spark({ data = [], color = '#a78bfa', height = 28 }) {
+// ─── Sparkline ────────────────────────────────────────────────────────────────
+function Spark({ data = [], color = '#a78bfa', height = 28, width = 60 }) {
   if (!data.length || Math.max(...data) === 0) return (
-    <div style={{ width: 60, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 99 }} />
+    <div style={{ width, height, display: 'flex', alignItems: 'center' }}>
+      <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 99 }}/>
     </div>
   );
   const max = Math.max(...data, 1);
-  const w = 60;
   const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
+    const x = (i / (data.length - 1)) * width;
     const y = height - (v / max) * (height - 4) - 2;
     return `${x},${y}`;
   }).join(' ');
-  const area = `${pts} ${w},${height} 0,${height}`;
-  const id = `sp-${color.replace('#', '')}`;
+  const id = `sp${color.replace(/[^a-z0-9]/gi, '')}`;
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} style={{ width: w, height, display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width, height, display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.28"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
         </linearGradient>
       </defs>
-      <polygon points={area} fill={`url(#${id})`} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points={`${pts} ${width},${height} 0,${height}`} fill={`url(#${id})`}/>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-// ── Hero KPI card ──────────────────────────────────────────────────────────────
-function HeroKpi({ icon: Icon, label, value, sub, subColor, accentColor, spark, footerBar }) {
+// ─── KPI card ─────────────────────────────────────────────────────────────────
+function KpiCard({ icon: Icon, label, value, sub, subColor, accent, spark, bar }) {
   return (
-    <div style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accentColor}40,transparent)`, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accentColor, opacity: 0.07, filter: 'blur(22px)', pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 9, background: `${accentColor}18`, border: `1px solid ${accentColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon style={{ width: 13, height: 13, color: accentColor }} />
+    <div style={{ borderRadius: 16, padding: '15px 17px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accent}40,transparent)` }}/>
+      <div style={{ position: 'absolute', bottom: -14, right: -14, width: 56, height: 56, borderRadius: '50%', background: accent, opacity: 0.07, filter: 'blur(20px)' }}/>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 9 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 9, background: `${accent}18`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon style={{ width: 13, height: 13, color: accent }}/>
         </div>
-        {spark && <Spark data={spark} color={accentColor} />}
+        {spark && <Spark data={spark} color={accent}/>}
       </div>
-      <div style={{ fontSize: 30, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
-      <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 10, color: subColor || '#64748b', fontWeight: 600 }}>{sub}</div>
-      {footerBar != null && (
-        <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: `${accentColor}14`, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, footerBar)}%`, background: `linear-gradient(90deg,${accentColor},${accentColor}cc)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
+      {bar != null && (
+        <div style={{ marginTop: 9, height: 3, borderRadius: 99, background: `${accent}14`, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: `linear-gradient(90deg,${accent},${accent}bb)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
         </div>
       )}
     </div>
   );
 }
 
-// ── Fill ring ──────────────────────────────────────────────────────────────────
-function FillRing({ pct, color, size = 42 }) {
-  const r = (size - 6) / 2;
-  const c = size / 2;
-  const cf = 2 * Math.PI * r;
+// ─── Fill ring ────────────────────────────────────────────────────────────────
+function FillRing({ pct, color, size = 40 }) {
+  const r = (size - 6) / 2, c = size / 2, cf = 2 * Math.PI * r;
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
-      <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+      <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5"/>
       <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth="5"
         strokeDasharray={cf} strokeDashoffset={cf * (1 - pct / 100)}
-        strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+        strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }}/>
     </svg>
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
-export default function TabCoachOverview({
-  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events,
-}) {
-  const [atRiskTab, setAtRiskTab] = useState('absent');
-  const [rosterClass, setRosterClass] = useState(null);
-
-  // ── Core data ────────────────────────────────────────────────────────────
-  const ci7 = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 7), end: now })), [checkIns, now]);
-  const ci7p = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 14), end: subDays(now, 7) })), [checkIns, now]);
-
-  const todayCI = useMemo(() =>
-    checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()),
-    [checkIns, now]
+// ─── Member profile popover ───────────────────────────────────────────────────
+function MemberPopover({ member, checkInCount, lastSeen, streak, onClose, avatarSrc }) {
+  const absenceDays = lastSeen ? Math.floor((Date.now() - new Date(lastSeen)) / 86400000) : null;
+  return (
+    <div style={{ position: 'absolute', top: 38, left: 0, zIndex: 999, width: 200, borderRadius: 13, background: '#0d1526', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
+        <MiniAvatar name={member.user_name} src={avatarSrc} size={34} color="#10b981"/>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.user_name}</div>
+          {member.membership_type && <div style={{ fontSize: 10, color: '#64748b' }}>{member.membership_type}</div>}
+        </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3a5070', padding: 0 }}><X style={{ width: 12, height: 12 }}/></button>
+      </div>
+      {[
+        { label: 'Total visits',   value: checkInCount,                                                                                                   color: '#38bdf8' },
+        { label: 'Last seen',      value: absenceDays === 0 ? 'Today' : absenceDays === 1 ? 'Yesterday' : absenceDays != null ? `${absenceDays}d ago` : 'Never', color: absenceDays != null && absenceDays > 14 ? '#f87171' : '#34d399' },
+        { label: 'Current streak', value: streak > 0 ? `🔥 ${streak} days` : '—',                                                                        color: '#fbbf24' },
+      ].map((s, i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+          <span style={{ fontSize: 10, color: '#64748b' }}>{s.label}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.value}</span>
+        </div>
+      ))}
+    </div>
   );
+}
+
+// ─── Section label ────────────────────────────────────────────────────────────
+function SectionLabel({ children, accent = '#a78bfa' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      <div style={{ width: 3, height: 14, borderRadius: 99, background: accent, flexShrink: 0 }}/>
+      <span style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>{children}</span>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export default function TabCoachOverview({
+  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges = [],
+}) {
+  const [atRiskTab,   setAtRiskTab]   = useState('absent');
+  const [hoverMember, setHoverMember] = useState(null);
+
+  // ── Date buckets ─────────────────────────────────────────────────────────────
+  const ci7  = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 7),  end: now })), [checkIns, now]);
+  const ci7p = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 14), end: subDays(now, 7) })), [checkIns, now]);
+  const ci30 = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })), [checkIns, now]);
+
+  const todayCI        = useMemo(() => checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()), [checkIns, now]);
   const todayMemberIds = useMemo(() => [...new Set(todayCI.map(c => c.user_id))], [todayCI]);
 
+  // ── Per-member aggregates ────────────────────────────────────────────────────
   const memberLastCI = useMemo(() => {
     const m = {};
-    checkIns.forEach(c => {
-      if (!m[c.user_id] || new Date(c.check_in_date) > new Date(m[c.user_id])) m[c.user_id] = c.check_in_date;
-    });
+    checkIns.forEach(c => { if (!m[c.user_id] || new Date(c.check_in_date) > new Date(m[c.user_id])) m[c.user_id] = c.check_in_date; });
     return m;
   }, [checkIns]);
 
-  // ── At-risk + never visited ──────────────────────────────────────────────
-  const atRiskMembers = useMemo(() => allMemberships.filter(m => {
-    const l = memberLastCI[m.user_id];
-    return l && Math.floor((now - new Date(l)) / 86400000) >= 14;
-  }), [allMemberships, memberLastCI, now]);
+  const allVisits = useMemo(() => {
+    const m = {};
+    checkIns.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
+    return m;
+  }, [checkIns]);
 
-  const neverVisited = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
-  const atRiskAll = atRiskTab === 'absent' ? atRiskMembers : neverVisited;
+  const memberStreak = useMemo(() => {
+    const acc = {};
+    allMemberships.forEach(m => {
+      let streak = 0;
+      const days = new Set(checkIns.filter(c => c.user_id === m.user_id).map(c => startOfDay(new Date(c.check_in_date)).getTime()));
+      for (let i = 0; i <= 60; i++) { if (days.has(startOfDay(subDays(now, i)).getTime())) streak++; else break; }
+      acc[m.user_id] = streak;
+    });
+    return acc;
+  }, [allMemberships, checkIns, now]);
 
-  // ── Expiring memberships (within 7 days) ─────────────────────────────────
-  const expiringMembers = useMemo(() =>
-    allMemberships.filter(m => {
-      if (!m.end_date) return false;
-      const diff = Math.floor((new Date(m.end_date) - now) / 86400000);
-      return diff >= 0 && diff <= 7;
-    }).sort((a, b) => new Date(a.end_date) - new Date(b.end_date)).slice(0, 4),
-    [allMemberships, now]
-  );
-
-  // ── New members (joined in last 14 days) ─────────────────────────────────
-  const newMembers = useMemo(() =>
-    allMemberships.filter(m => m.start_date && Math.floor((now - new Date(m.start_date)) / 86400000) <= 14)
-      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-      .slice(0, 6),
-    [allMemberships, now]
-  );
-
-  // ── Week trend ───────────────────────────────────────────────────────────
-  const activeW = useMemo(() => new Set(ci7.map(c => c.user_id)).size, [ci7]);
-  const activePW = useMemo(() => new Set(ci7p.map(c => c.user_id)).size, [ci7p]);
+  // ── Trends ───────────────────────────────────────────────────────────────────
+  const activeW   = useMemo(() => new Set(ci7.map(c => c.user_id)).size,  [ci7]);
+  const activePW  = useMemo(() => new Set(ci7p.map(c => c.user_id)).size, [ci7p]);
   const weekTrend = activePW > 0 ? Math.round(((activeW - activePW) / activePW) * 100) : 0;
-
   const weekSpark = useMemo(() => Array.from({ length: 7 }, (_, i) =>
     checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6 - i)).getTime()).length
   ), [checkIns, now]);
 
-  // ── Classes with live attendance ─────────────────────────────────────────
+  // ── 30-day tiers ─────────────────────────────────────────────────────────────
+  const memberVisits30 = useMemo(() => { const m = {}; ci30.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; }); return m; }, [ci30]);
+  const totalM      = allMemberships.length;
+  const superActive = allMemberships.filter(m => (memberVisits30[m.user_id] || 0) >= 12).length;
+  const active      = allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 4 && v < 12; }).length;
+  const casual      = allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 1 && v < 4; }).length;
+  const inactive    = Math.max(0, totalM - superActive - active - casual);
+  const engRate     = totalM > 0 ? Math.round(((superActive + active) / totalM) * 100) : 0;
+
+  // ── Attention segments ────────────────────────────────────────────────────────
+  const atRiskMembers   = useMemo(() => allMemberships.filter(m => { const l = memberLastCI[m.user_id]; return l && Math.floor((now - new Date(l)) / 86400000) >= 14; }), [allMemberships, memberLastCI, now]);
+  const neverVisited    = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
+  const expiringMembers = useMemo(() => allMemberships.filter(m => { if (!m.end_date) return false; const d = Math.floor((new Date(m.end_date) - now) / 86400000); return d >= 0 && d <= 14; }), [allMemberships, now]);
+  const attentionCount  = atRiskMembers.length + neverVisited.length + expiringMembers.length;
+  const atRiskAll       = atRiskTab === 'absent' ? atRiskMembers : atRiskTab === 'expiring' ? expiringMembers : neverVisited;
+
+  // ── Challenges ────────────────────────────────────────────────────────────────
+  const activeChallenges = useMemo(() => challenges.filter(c => c.status === 'active'), [challenges]);
+
+  // ── Milestones ────────────────────────────────────────────────────────────────
+  const allMilestones = useMemo(() => allMemberships.map(m => {
+    const total = allVisits[m.user_id] || 0;
+    const next  = [10, 25, 50, 100, 200, 500].find(n => n > total);
+    return { ...m, total, next, toNext: next ? next - total : 0 };
+  }).filter(m => m.next && m.toNext <= 3).sort((a, b) => a.toNext - b.toNext).slice(0, 6), [allMemberships, allVisits]);
+
+  // ── Top streaks ───────────────────────────────────────────────────────────────
+  const topStreaks = useMemo(() => Object.entries(memberStreak)
+    .filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]).slice(0, 5)
+    .map(([uid, streak]) => { const m = allMemberships.find(m => m.user_id === uid); return { user_id: uid, name: m?.user_name || 'Member', streak }; }),
+    [memberStreak, allMemberships]
+  );
+
+  // ── Top performers ────────────────────────────────────────────────────────────
+  const weekStars = useMemo(() => {
+    const acc = {};
+    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
+    return Object.entries(acc).sort((a, b) => b[1].count - a[1].count).slice(0, 5).map(([uid, d]) => ({ user_id: uid, ...d }));
+  }, [ci7]);
+
+  // ── Classes with live data ────────────────────────────────────────────────────
   const classStats = useMemo(() => myClasses.map(cls => {
     const capacity = cls.max_capacity || cls.capacity || 20;
+    const booked   = cls.bookings?.length || 0;
     const attended = todayCI.filter(ci => {
       if (!cls.schedule) return false;
       const match = cls.schedule.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
@@ -149,472 +210,407 @@ export default function TabCoachOverview({
       if (match[2].toLowerCase() === 'pm' && sh !== 12) sh += 12;
       const h = new Date(ci.check_in_date).getHours();
       return h === sh || h === sh + 1;
-    });
-    const booked = cls.bookings || [];
-    const waitlist = cls.waitlist || [];
-    const classSpark = Array.from({ length: 7 }, (_, i) => {
-      const d = subDays(now, 6 - i);
-      return checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length;
-    });
-    return { ...cls, attended: attended.length, attendedList: attended, capacity, booked, waitlist, fill: Math.min(100, Math.round((attended.length / capacity) * 100)), classSpark };
-  }), [myClasses, todayCI, checkIns, now]);
+    }).length;
+    const fill = Math.min(100, Math.round(((booked || attended) / capacity) * 100));
+    return { ...cls, capacity, booked, attended, fill };
+  }), [myClasses, todayCI]);
 
-  const avgFill = classStats.length > 0
-    ? Math.round(classStats.reduce((s, c) => s + c.fill, 0) / classStats.length) : 0;
+  const avgFill = classStats.length > 0 ? Math.round(classStats.reduce((s, c) => s + c.fill, 0) / classStats.length) : 0;
 
-  // ── Weekly top performers ────────────────────────────────────────────────
-  const weekStars = useMemo(() => {
-    const acc = {};
-    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
-    return Object.entries(acc).sort((a, b) => b[1].count - a[1].count).slice(0, 5).map(([uid, d]) => ({ user_id: uid, ...d }));
-  }, [ci7]);
-
-  // ── Milestones ───────────────────────────────────────────────────────────
-  const allVisits = useMemo(() => {
-    const m = {};
-    checkIns.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
-    return m;
-  }, [checkIns]);
-
-  const milestones = useMemo(() => allMemberships.map(m => {
-    const total = allVisits[m.user_id] || 0;
-    const next = [5, 10, 25, 50, 100, 200, 500].find(n => n > total);
-    return { ...m, total, next, toNext: next ? next - total : 0 };
-  }).filter(m => m.next && m.toNext <= 3).sort((a, b) => a.toNext - b.toNext).slice(0, 5), [allMemberships, allVisits]);
-
-  // ── Streaks ──────────────────────────────────────────────────────────────
-  const topStreaks = useMemo(() => {
-    const acc = {};
-    allMemberships.forEach(m => {
-      let streak = 0;
-      const ciDays = new Set(checkIns.filter(c => c.user_id === m.user_id).map(c => startOfDay(new Date(c.check_in_date)).getTime()));
-      for (let i = 0; i <= 60; i++) {
-        if (ciDays.has(startOfDay(subDays(now, i)).getTime())) streak++;
-        else break;
-      }
-      if (streak > 0) acc[m.user_id] = { name: m.user_name || 'Member', streak, user_id: m.user_id };
-    });
-    return Object.values(acc).sort((a, b) => b.streak - a.streak).slice(0, 4);
-  }, [allMemberships, checkIns, now]);
-
-  // ── Upcoming events ──────────────────────────────────────────────────────
+  // ── Supporting data ───────────────────────────────────────────────────────────
   const upcomingEvents = useMemo(() => events.filter(e => new Date(e.event_date) >= now).slice(0, 3), [events, now]);
+  const newMembers     = useMemo(() => allMemberships.filter(m => m.start_date && Math.floor((now - new Date(m.start_date)) / 86400000) <= 14).sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).slice(0, 4), [allMemberships, now]);
+  const upcomingBirthdays = useMemo(() => allMemberships.filter(m => {
+    if (!m.date_of_birth) return false;
+    const thisYear = new Date(new Date(m.date_of_birth).setFullYear(now.getFullYear()));
+    const diff = Math.floor((thisYear - now) / 86400000);
+    return diff >= 0 && diff <= 7;
+  }).map(m => ({ ...m, daysUntil: Math.floor((new Date(new Date(m.date_of_birth).setFullYear(now.getFullYear())) - now) / 86400000) }))
+    .sort((a, b) => a.daysUntil - b.daysUntil).slice(0, 4), [allMemberships, now]);
 
-  // ── Birthdays this week ──────────────────────────────────────────────────
-  const upcomingBirthdays = useMemo(() =>
-    allMemberships.filter(m => {
-      if (!m.date_of_birth) return false;
-      const dob = new Date(m.date_of_birth);
-      const thisYear = new Date(dob);
-      thisYear.setFullYear(now.getFullYear());
-      const diff = Math.floor((thisYear - now) / 86400000);
-      return diff >= 0 && diff <= 7;
-    }).map(m => {
-      const dob = new Date(m.date_of_birth);
-      const thisYear = new Date(dob);
-      thisYear.setFullYear(now.getFullYear());
-      return { ...m, daysUntil: Math.floor((thisYear - now) / 86400000) };
-    }).sort((a, b) => a.daysUntil - b.daysUntil).slice(0, 5),
-    [allMemberships, now]
-  );
-
-  const hour = now.getHours();
+  const hour     = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const totalM = allMemberships.length;
-
-  // ── Week bar chart ───────────────────────────────────────────────────────
-  const maxWeekVal = Math.max(...weekSpark, 1);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: 18, alignItems: 'start' }}>
 
-      {/* ── 1. HERO BANNER ──────────────────────────────────────────────────── */}
-      <div style={{ borderRadius: 20, padding: '20px 24px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 60%,#060f1c 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -60, right: -60, width: 260, height: 260, borderRadius: '50%', background: 'rgba(167,139,250,0.07)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)', pointerEvents: 'none' }} />
+      {/* ══════════════════════════════════════════════════════════════════
+          MAIN COLUMN
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
-              {format(now, 'EEEE, d MMMM yyyy')} · {selectedGym?.name}
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', marginBottom: 6 }}>
-              {greeting} 👋
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#64748b' }}>
-                {myClasses.length === 0 ? 'No classes today' : `${myClasses.length} class${myClasses.length !== 1 ? 'es' : ''} today`}
-              </span>
-              {todayMemberIds.length > 0 && (
-                <span style={{ fontSize: 12, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', display: 'inline-block' }} />
-                  {todayMemberIds.length} checked in
-                </span>
-              )}
-              {newMembers.length > 0 && (
-                <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <UserPlus style={{ width: 10, height: 10 }} /> {newMembers.length} new member{newMembers.length !== 1 ? 's' : ''}
-                </span>
-              )}
-              {atRiskMembers.length > 0 && (
-                <span style={{ fontSize: 12, color: '#f87171', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <AlertCircle style={{ width: 10, height: 10 }} /> {atRiskMembers.length} absent
-                </span>
-              )}
-              {expiringMembers.length > 0 && (
-                <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <CreditCard style={{ width: 10, height: 10 }} /> {expiringMembers.length} expiring
-                </span>
-              )}
-              {upcomingBirthdays.length > 0 && (
-                <span style={{ fontSize: 12, color: '#f472b6', fontWeight: 700 }}>🎂 {upcomingBirthdays.length} birthday{upcomingBirthdays.length !== 1 ? 's' : ''} this week</span>
-              )}
-            </div>
+        {/* ── GREETING BANNER ──────────────────────────────────────────── */}
+        <div style={{ borderRadius: 20, padding: '20px 24px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 60%,#060f1c 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -60, right: -60, width: 260, height: 260, borderRadius: '50%', background: 'rgba(167,139,250,0.06)', filter: 'blur(60px)', pointerEvents: 'none' }}/>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)', pointerEvents: 'none' }}/>
+          <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5 }}>
+            {format(now, 'EEEE, d MMMM yyyy')} · {selectedGym?.name}
           </div>
-
-          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
-            {[
-              { icon: QrCode, label: 'Scan QR', color: '#10b981', fn: () => openModal('qrScanner') },
-              { icon: FileText, label: 'Post Update', color: '#38bdf8', fn: () => openModal('post') },
-              { icon: ClipboardList, label: 'Class Notes', color: '#a78bfa', fn: () => openModal('classNotes') },
-              { icon: Calendar, label: 'Schedule', color: '#34d399', fn: () => openModal('schedule') },
-              { icon: Dumbbell, label: 'My Classes', color: '#f59e0b', fn: () => openModal('classes') },
-            ].map(({ icon: Ic, label, color, fn }, i) => (
-              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: `${color}12`, border: `1px solid ${color}22`, color, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}40`; }}
-                onMouseLeave={e => { e.currentTarget.style.background = `${color}12`; e.currentTarget.style.borderColor = `${color}22`; }}>
-                <Ic style={{ width: 12, height: 12 }} />{label}
-              </button>
-            ))}
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', marginBottom: 8 }}>{greeting} 👋</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            {todayMemberIds.length > 0 && (
+              <span style={{ fontSize: 12, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', display: 'inline-block' }}/>
+                {todayMemberIds.length} checked in today
+              </span>
+            )}
+            {classStats.length > 0 && <span style={{ fontSize: 12, color: '#64748b' }}>{classStats.length} class{classStats.length !== 1 ? 'es' : ''} today</span>}
+            {attentionCount > 0 && (
+              <span style={{ fontSize: 12, color: '#f87171', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <AlertCircle style={{ width: 10, height: 10 }}/>{attentionCount} need attention
+              </span>
+            )}
+            {newMembers.length > 0 && (
+              <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <UserPlus style={{ width: 10, height: 10 }}/>{newMembers.length} new this fortnight
+              </span>
+            )}
+            {upcomingBirthdays.length > 0 && (
+              <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>🎂 {upcomingBirthdays.length} birthday{upcomingBirthdays.length !== 1 ? 's' : ''} this week</span>
+            )}
           </div>
         </div>
 
-        {/* Today's class strip */}
-        {myClasses.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto' }}>
-            {classStats.map((cls, i) => {
-              const c = classColor(cls);
-              const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
-              const isExpanded = rosterClass === (cls.id || i);
-              return (
-                <div key={cls.id || i} onClick={() => setRosterClass(isExpanded ? null : (cls.id || i))}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 11, background: isExpanded ? `${c}14` : `${c}08`, border: `1px solid ${isExpanded ? c : `${c}20`}`, flexShrink: 0, cursor: 'pointer', transition: 'all 0.15s' }}>
-                  <FillRing pct={cls.fill} color={fillColor} size={38} />
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{cls.name}</div>
-                    <div style={{ fontSize: 10, color: '#64748b' }}>
-                      {cls.schedule || '—'} · <span style={{ color: fillColor, fontWeight: 700 }}>{cls.attended}/{cls.capacity}</span>
-                      {cls.waitlist?.length > 0 && <span style={{ color: '#f87171', marginLeft: 4 }}>+{cls.waitlist.length} waitlist</span>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ── 2. KPI ROW ────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
-        <HeroKpi icon={Activity} label="In Today" value={todayMemberIds.length} sub={`of ${totalM} members`} accentColor="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} footerBar={totalM > 0 ? (todayMemberIds.length / totalM) * 100 : 0} />
-        <HeroKpi icon={Dumbbell} label="Classes Today" value={myClasses.length} sub={`avg fill ${avgFill}%`} accentColor="#a78bfa" footerBar={avgFill} />
-        <HeroKpi icon={TrendingUp} label="Active This Week" value={activeW} sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Same as last week'} accentColor="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} footerBar={totalM > 0 ? (activeW / totalM) * 100 : 0} />
-        <HeroKpi icon={AlertCircle} label="Absent 14+ Days" value={atRiskMembers.length} sub={`${neverVisited.length} never visited`} accentColor={atRiskMembers.length > 0 ? '#ef4444' : '#10b981'} subColor={atRiskMembers.length > 0 ? '#f87171' : '#34d399'} />
-        <HeroKpi icon={UserPlus} label="New Members" value={newMembers.length} sub="joined last 14 days" accentColor="#38bdf8" subColor={newMembers.length > 0 ? '#38bdf8' : '#64748b'} />
-      </div>
-
-      {/* ── 3. MAIN GRID ──────────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 260px', gap: 16, alignItems: 'start' }}>
-
-        {/* ── COL 1 ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Today's check-in feed */}
-          <CoachCard accent="#10b981" title={`Members In Today · ${todayMemberIds.length}`} action="Scan QR" onAction={() => openModal('qrScanner')}>
-            <div style={{ padding: '12px 16px' }}>
-              {todayMemberIds.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '18px 0' }}>
-                  <Clock style={{ width: 20, height: 20, color: '#3a5070', margin: '0 auto 8px' }} />
-                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No check-ins yet today</p>
-                  <button onClick={() => openModal('qrScanner')} style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Scan First Check-in</button>
-                </div>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: todayMemberIds.length > 6 ? 10 : 0 }}>
-                    {todayMemberIds.slice(0, 12).map((uid) => {
-                      const ci = todayCI.find(c => c.user_id === uid);
-                      const mins = Math.floor((now - new Date(ci.check_in_date)) / 60000);
-                      const t = mins < 1 ? 'now' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`;
-                      return (
-                        <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 9px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
-                          <MiniAvatar name={ci.user_name} src={avatarMap[uid]} size={22} color="#10b981" />
-                          <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{ci.user_name || 'Member'}</div>
-                            <div style={{ fontSize: 9, color: '#10b981' }}>{t} ago</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {todayMemberIds.length > 12 && (
-                    <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '4px 0' }}>+{todayMemberIds.length - 12} more members</div>
-                  )}
-                </>
-              )}
+        {/* ══ 1. MY CLASSES TODAY ═══════════════════════════════════════════ */}
+        <section>
+          <SectionLabel accent="#a78bfa">My Classes Today</SectionLabel>
+          {classStats.length === 0 ? (
+            <div style={{ padding: '20px', borderRadius: 14, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+              <Dumbbell style={{ width: 20, height: 20, color: '#3a5070', margin: '0 auto 8px' }}/>
+              <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned today</p>
+              <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Manage Classes</button>
             </div>
-          </CoachCard>
-
-          {/* My classes with roster expansion */}
-          <CoachCard accent="#a78bfa" title="My Classes Today" action="Manage" onAction={() => openModal('classes')}>
-            <div style={{ padding: '12px 16px' }}>
-              {classStats.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Dumbbell style={{ width: 22, height: 22, color: '#3a5070', margin: '0 auto 8px' }} />
-                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned yet</p>
-                  <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Add Your First Class</button>
-                </div>
-              ) : classStats.map((cls, i) => {
-                const c = classColor(cls);
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {classStats.map((cls, i) => {
+                const c         = classColor(cls);
                 const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
-                const isExpanded = rosterClass === (cls.id || i);
+                const spotsLeft = cls.capacity - (cls.booked || cls.attended);
                 return (
-                  <div key={cls.id || i} style={{ marginBottom: i < classStats.length - 1 ? 10 : 0 }}>
-                    <div style={{ padding: '12px 14px', borderRadius: 13, background: `${c}06`, border: `1px solid ${isExpanded ? c : `${c}1a`}`, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}
-                      onClick={() => setRosterClass(isExpanded ? null : (cls.id || i))}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c, borderRadius: '13px 0 0 13px' }} />
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 10, marginBottom: 8 }}>
-                        <FillRing pct={cls.fill} color={fillColor} size={44} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
-                          <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap', alignItems: 'center' }}>
-                            {cls.schedule && <span style={{ fontSize: 10, color: '#64748b' }}>🕐 {cls.schedule}</span>}
-                            {cls.duration_minutes && <span style={{ fontSize: 10, color: '#3a5070' }}>{cls.duration_minutes}min</span>}
-                            {cls.waitlist?.length > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 5, padding: '1px 5px' }}>{cls.waitlist.length} waitlisted</span>}
-                          </div>
+                  <div key={cls.id || i} style={{ borderRadius: 14, background: '#0c1a2e', border: `1px solid ${c}22`, overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c }}/>
+                    <div style={{ padding: '13px 16px 13px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <FillRing pct={cls.fill} color={fillColor} size={42}/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          {cls.schedule && (
+                            <span style={{ fontSize: 11, fontWeight: 800, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 6, padding: '2px 8px' }}>
+                              🕐 {cls.schedule}
+                            </span>
+                          )}
+                          {cls.duration_minutes && <span style={{ fontSize: 10, color: '#64748b' }}>{cls.duration_minutes}min</span>}
+                          {cls.difficulty && <span style={{ fontSize: 10, color: c, fontWeight: 700 }}>{cls.difficulty}</span>}
                         </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: 20, fontWeight: 900, color: fillColor, lineHeight: 1 }}>{cls.attended}</div>
-                          <div style={{ fontSize: 9, color: '#3a5070', marginTop: 1 }}>of {cls.capacity}</div>
+                        <div style={{ fontSize: 14, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
+                        <div style={{ display: 'flex', gap: 12, marginTop: 4, alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, color: '#64748b' }}>
+                            <span style={{ color: fillColor, fontWeight: 800 }}>{cls.booked || cls.attended}</span>
+                            <span style={{ color: '#3a5070' }}>/{cls.capacity} booked</span>
+                          </span>
+                          <span style={{ fontSize: 11, color: spotsLeft <= 3 ? '#f87171' : '#64748b', fontWeight: spotsLeft <= 3 ? 700 : 400 }}>
+                            {spotsLeft <= 0 ? '🔴 Full' : `${spotsLeft} spots left`}
+                          </span>
+                          {cls.waitlist?.length > 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.18)', borderRadius: 5, padding: '1px 6px' }}>{cls.waitlist.length} waitlisted</span>
+                          )}
+                        </div>
+                        <div style={{ marginTop: 7, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}99)`, borderRadius: 99 }}/>
                         </div>
                       </div>
-                      <div style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}99)`, borderRadius: 99 }} />
-                        </div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: fillColor, flexShrink: 0 }}>{cls.fill}%</span>
-                        <Spark data={cls.classSpark} color={c} height={22} />
+                      <button onClick={() => openModal('qrScanner', cls)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.1))', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(16,185,129,0.25)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.1))'}>
+                        <QrCode style={{ width: 12, height: 12 }}/> Start Check-In
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* ══ 2. MEMBERS IN TODAY ═══════════════════════════════════════════ */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <SectionLabel accent="#10b981">Members In Today</SectionLabel>
+            <span style={{ fontSize: 11, color: '#34d399', fontWeight: 700, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 99, padding: '2px 10px' }}>{todayMemberIds.length} checked in</span>
+          </div>
+          {todayMemberIds.length === 0 ? (
+            <div style={{ padding: '18px', borderRadius: 14, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+              <Clock style={{ width: 18, height: 18, color: '#3a5070', margin: '0 auto 7px' }}/>
+              <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 8px' }}>No check-ins yet today</p>
+              <button onClick={() => openModal('qrScanner')} style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>Scan First Check-in</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {todayMemberIds.map(uid => {
+                const ci     = todayCI.find(c => c.user_id === uid);
+                const mins   = ci ? Math.floor((now - new Date(ci.check_in_date)) / 60000) : 0;
+                const t      = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ago`;
+                const member = allMemberships.find(m => m.user_id === uid);
+                return (
+                  <div key={uid} style={{ position: 'relative' }}
+                    onMouseEnter={() => setHoverMember(uid)}
+                    onMouseLeave={() => setHoverMember(null)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 10, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)', cursor: 'default' }}>
+                      <MiniAvatar name={ci?.user_name || '?'} src={avatarMap[uid]} size={24} color="#10b981"/>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{ci?.user_name || 'Member'}</div>
+                        <div style={{ fontSize: 9, color: '#10b981' }}>{t}</div>
                       </div>
                     </div>
-
-                    {/* Roster expansion */}
-                    {isExpanded && cls.booked.length > 0 && (
-                      <div style={{ marginTop: 4, padding: '10px 12px', borderRadius: '0 0 12px 12px', background: `${c}04`, border: `1px solid ${c}14`, borderTop: 'none' }}>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Class Roster</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {cls.booked.map((b, j) => {
-                            const checkedIn = cls.attendedList.some(ci => ci.user_id === b.user_id);
-                            return (
-                              <div key={b.user_id || j} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: checkedIn ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${checkedIn ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
-                                <MiniAvatar name={b.user_name} src={avatarMap[b.user_id]} size={18} color={checkedIn ? '#34d399' : '#475569'} />
-                                <span style={{ fontSize: 10, fontWeight: 600, color: checkedIn ? '#d4fae8' : '#64748b', whiteSpace: 'nowrap' }}>{b.user_name}</span>
-                                {checkedIn && <CheckCircle style={{ width: 9, height: 9, color: '#34d399' }} />}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {cls.waitlist.length > 0 && (
-                          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                            <div style={{ fontSize: 9, fontWeight: 800, color: '#f87171', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Waitlist · {cls.waitlist.length}</div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                              {cls.waitlist.map((w, j) => (
-                                <div key={w.user_id || j} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.14)' }}>
-                                  <MiniAvatar name={w.user_name} src={avatarMap[w.user_id]} size={16} color="#f87171" />
-                                  <span style={{ fontSize: 9, color: '#f87171', fontWeight: 600 }}>{w.user_name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    {hoverMember === uid && member && (
+                      <MemberPopover
+                        member={member}
+                        checkInCount={allVisits[uid] || 0}
+                        lastSeen={memberLastCI[uid]}
+                        streak={memberStreak[uid] || 0}
+                        avatarSrc={avatarMap[uid]}
+                        onClose={() => setHoverMember(null)}
+                      />
                     )}
                   </div>
                 );
               })}
             </div>
-          </CoachCard>
+          )}
+        </section>
 
-          {/* Weekly attendance chart */}
-          <CoachCard accent="#38bdf8" title="This Week's Attendance">
-            <div style={{ padding: '12px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 72, marginBottom: 8 }}>
-                {weekSpark.map((count, i) => {
-                  const d = subDays(now, 6 - i);
-                  const isT = startOfDay(d).getTime() === startOfDay(now).getTime();
-                  const h = count === 0 ? 4 : Math.max(8, (count / maxWeekVal) * 64);
-                  const color = isT ? '#a78bfa' : count > 0 ? 'rgba(167,139,250,0.45)' : 'rgba(255,255,255,0.05)';
+        {/* ══ 3. KEY METRICS ROW ════════════════════════════════════════════ */}
+        <section>
+          <SectionLabel accent="#38bdf8">Key Metrics</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 11 }}>
+            <KpiCard icon={Activity}    label="Check-ins Today"   value={todayMemberIds.length}  sub={`of ${totalM} members`}                                      accent="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} bar={totalM > 0 ? (todayMemberIds.length / totalM) * 100 : 0}/>
+            <KpiCard icon={TrendingUp}  label="Active This Week"  value={activeW}                sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Flat vs last wk'} accent="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} bar={totalM > 0 ? (activeW / totalM) * 100 : 0}/>
+            <KpiCard icon={BarChart2}   label="Engagement Rate"   value={`${engRate}%`}           sub={`${superActive + active} engaged`}                            accent="#a78bfa" bar={engRate}/>
+            <KpiCard icon={AlertCircle} label="Needs Attention"   value={attentionCount}          sub={`${atRiskMembers.length} absent · ${expiringMembers.length} expiring`} accent={attentionCount > 0 ? '#ef4444' : '#10b981'} subColor={attentionCount > 0 ? '#f87171' : '#34d399'}/>
+            <KpiCard icon={Trophy}      label="Active Challenges" value={activeChallenges.length} sub={`${activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0)} participants`} accent="#fbbf24"/>
+          </div>
+        </section>
+
+        {/* ══ 4. ACTIVITY WIDGETS ═══════════════════════════════════════════ */}
+        <section>
+          <SectionLabel accent="#38bdf8">Activity</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+
+            {/* Weekly Attendance Graph */}
+            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Weekly Attendance</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b' }}>
+                  {weekTrend > 0 ? '↑' : weekTrend < 0 ? '↓' : '—'}{Math.abs(weekTrend)}% vs last wk
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 68, marginBottom: 8 }}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d     = subDays(now, 6 - i);
+                  const count = weekSpark[i];
+                  const isT   = startOfDay(d).getTime() === startOfDay(now).getTime();
+                  const maxV  = Math.max(...weekSpark, 1);
+                  const h     = count === 0 ? 4 : Math.max(8, (count / maxV) * 60);
                   return (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
                       {count > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: isT ? '#a78bfa' : '#64748b' }}>{count}</span>}
-                      <div style={{ width: '100%', height: h, borderRadius: '4px 4px 2px 2px', background: color, position: 'relative', transition: 'height 0.4s ease' }}>
-                        {isT && count > 0 && <div style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', boxShadow: '0 0 10px rgba(167,139,250,0.5)' }} />}
+                      <div style={{ width: '100%', height: h, borderRadius: '4px 4px 2px 2px', background: isT ? '#a78bfa' : count > 0 ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.05)', position: 'relative' }}>
+                        {isT && count > 0 && <div style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', boxShadow: '0 0 10px rgba(167,139,250,0.5)' }}/>}
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 5, marginBottom: 12 }}>
                 {Array.from({ length: 7 }, (_, i) => {
-                  const d = subDays(now, 6 - i);
+                  const d   = subDays(now, 6 - i);
                   const isT = startOfDay(d).getTime() === startOfDay(now).getTime();
                   return <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: isT ? 800 : 600, color: isT ? '#a78bfa' : '#3a5070' }}>{format(d, 'EEE')}</div>;
                 })}
               </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+              <div style={{ display: 'flex', gap: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 {[
-                  { label: 'check-ins', value: ci7.length, color: '#38bdf8' },
-                  { label: 'unique', value: activeW, color: '#a78bfa' },
-                  { label: 'vs last wk', value: `${weekTrend > 0 ? `+${weekTrend}` : weekTrend}%`, color: weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b' },
-                  { label: 'avg/day', value: Math.round(ci7.length / 7 * 10) / 10, color: '#fbbf24' },
+                  { label: 'check-ins', value: ci7.length,                    color: '#38bdf8' },
+                  { label: 'unique',    value: activeW,                        color: '#a78bfa' },
+                  { label: 'avg/day',   value: (ci7.length / 7).toFixed(1),   color: '#fbbf24' },
                 ].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
                     <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </CoachCard>
-        </div>
 
-        {/* ── COL 2 ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* At-risk / absent members */}
-          <CoachCard accent="#f87171" title="Needs Attention">
-            <div style={{ padding: '0 16px' }}>
-              <div style={{ display: 'flex', gap: 3, padding: '10px 0' }}>
-                {[{ id: 'absent', label: `Absent · ${atRiskMembers.length}` }, { id: 'never', label: `Never Visited · ${neverVisited.length}` }].map(t => (
-                  <button key={t.id} onClick={() => setAtRiskTab(t.id)} style={{ flex: 1, padding: '5px 8px', borderRadius: 8, border: atRiskTab === t.id ? '1px solid rgba(248,113,113,0.3)' : '1px solid transparent', background: atRiskTab === t.id ? 'rgba(248,113,113,0.1)' : 'transparent', color: atRiskTab === t.id ? '#f87171' : '#3a5070', fontSize: 10, fontWeight: atRiskTab === t.id ? 800 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    {t.label}
-                  </button>
+            {/* 30-Day Engagement Breakdown */}
+            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '16px' }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', marginBottom: 14 }}>30-Day Engagement</div>
+              <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 14 }}>
+                {totalM > 0 && [
+                  { val: superActive, color: '#10b981' },
+                  { val: active,      color: '#38bdf8' },
+                  { val: casual,      color: '#a78bfa' },
+                  { val: inactive,    color: '#334155' },
+                ].filter(t => t.val > 0).map((t, i, arr) => (
+                  <div key={i} style={{ flex: t.val, background: t.color, opacity: 0.85, borderRadius: i===0?'99px 0 0 99px':i===arr.length-1?'0 99px 99px 0':0 }}/>
                 ))}
               </div>
+              {[
+                { label: 'Super Active', sub: '12+ visits', val: superActive, color: '#10b981' },
+                { label: 'Active',       sub: '4–11',       val: active,      color: '#38bdf8' },
+                { label: 'Casual',       sub: '1–3',        val: casual,      color: '#a78bfa' },
+                { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: '#475569' },
+              ].map((t, i) => {
+                const pct = totalM > 0 ? Math.round((t.val / totalM) * 100) : 0;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 3 ? 8 : 0 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: t.color, flexShrink: 0 }}/>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#d4e4f4' }}>{t.label} <span style={{ fontSize: 9, color: '#64748b' }}>{t.sub}</span></span>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: t.color }}>{t.val}</span>
+                      </div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${t.color},${t.color}88)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 9, color: '#64748b', width: 24, textAlign: 'right', flexShrink: 0 }}>{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 30-Day Snapshot */}
+          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 18px' }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', marginBottom: 14 }}>30-Day Snapshot</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
+              {[
+                { label: 'Total check-ins',    value: ci30.length,                                                 color: '#38bdf8' },
+                { label: 'Unique members',      value: new Set(ci30.map(c => c.user_id)).size,                      color: '#34d399' },
+                { label: 'Avg visits / member', value: totalM > 0 ? (ci30.length / totalM).toFixed(1) : '—',       color: '#a78bfa' },
+                { label: 'Needs attention',     value: attentionCount,                                              color: attentionCount > 0 ? '#f87171' : '#34d399' },
+              ].map((s, i, arr) => (
+                <div key={i} style={{ padding: '6px 14px', borderRight: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                  <div style={{ fontSize: 10, color: '#3a5070', fontWeight: 600 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══ 5. MEMBER INSIGHTS — NEEDS ATTENTION ═════════════════════════ */}
+        <section>
+          <SectionLabel accent="#f87171">Member Insights</SectionLabel>
+          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+            {/* Three-tab switcher: Absent / Expiring / Never visited */}
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              {[
+                { id: 'absent',   label: 'Absent 14d+',   count: atRiskMembers.length,   color: '#f87171' },
+                { id: 'expiring', label: 'Expiring Soon',  count: expiringMembers.length, color: '#fbbf24' },
+                { id: 'never',    label: 'Never Visited',  count: neverVisited.length,    color: '#64748b' },
+              ].map(t => (
+                <button key={t.id} onClick={() => setAtRiskTab(t.id)} style={{ flex: 1, padding: '11px 10px', background: 'none', border: 'none', borderBottom: atRiskTab===t.id ? `2px solid ${t.color}` : '2px solid transparent', color: atRiskTab===t.id ? t.color : '#3a5070', fontSize: 11, fontWeight: atRiskTab===t.id ? 800 : 600, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                  {t.label}
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 99, background: atRiskTab===t.id ? `${t.color}18` : 'rgba(255,255,255,0.05)', color: atRiskTab===t.id ? t.color : '#3a5070', border: `1px solid ${atRiskTab===t.id ? `${t.color}30` : 'transparent'}` }}>{t.count}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ padding: '8px 16px' }}>
               {atRiskAll.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '16px 0 14px' }}>
-                  <CheckCircle style={{ width: 18, height: 18, color: '#34d399', margin: '0 auto 6px' }} />
+                <div style={{ textAlign: 'center', padding: '18px 0' }}>
+                  <CheckCircle style={{ width: 18, height: 18, color: '#34d399', margin: '0 auto 7px' }}/>
                   <p style={{ fontSize: 12, color: '#34d399', fontWeight: 700, margin: 0 }}>
-                    {atRiskTab === 'absent' ? 'All members active 🎉' : 'Everyone has visited 🎉'}
+                    {atRiskTab === 'absent' ? 'All members active 🎉' : atRiskTab === 'expiring' ? 'No memberships expiring soon' : 'Everyone has visited 🎉'}
                   </p>
                 </div>
-              ) : atRiskAll.slice(0, 6).map((m, i) => {
-                const last = memberLastCI[m.user_id];
-                const days = last ? Math.floor((now - new Date(last)) / 86400000) : null;
-                const urgency = days === null || days > 30 ? '#ef4444' : days > 21 ? '#f97316' : '#fbbf24';
+              ) : atRiskAll.slice(0, 8).map((m, i) => {
+                const last     = memberLastCI[m.user_id];
+                const days     = last ? Math.floor((now - new Date(last)) / 86400000) : null;
+                const daysLeft = m.end_date ? Math.floor((new Date(m.end_date) - now) / 86400000) : null;
+                const urgency  = atRiskTab === 'expiring'
+                  ? (daysLeft <= 3 ? '#ef4444' : daysLeft <= 7 ? '#f97316' : '#fbbf24')
+                  : (days === null || days > 30 ? '#ef4444' : days > 21 ? '#f97316' : '#fbbf24');
                 return (
-                  <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(atRiskAll.length, 6) - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color={urgency} />
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < Math.min(atRiskAll.length, 8)-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={30} color={urgency}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                      <div style={{ fontSize: 10, color: urgency }}>{days !== null ? `${days}d absent` : 'Never visited'}</div>
+                      <div style={{ fontSize: 10, color: urgency, fontWeight: 600 }}>
+                        {atRiskTab === 'expiring'
+                          ? (daysLeft === 0 ? 'Expires today' : daysLeft === 1 ? 'Expires tomorrow' : `${daysLeft}d until expiry`)
+                          : atRiskTab === 'never' ? 'Never visited'
+                          : `${days}d absent`}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                      <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Note</button>
-                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
+                    {atRiskTab === 'expiring' && m.membership_type && (
+                      <span style={{ fontSize: 9, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)', borderRadius: 5, padding: '2px 6px', flexShrink: 0 }}>{m.membership_type}</span>
+                    )}
+                    <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                      <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer' }}>Note</button>
+                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer' }}>Reach</button>
                     </div>
                   </div>
                 );
               })}
-              {atRiskAll.length > 6 && (
-                <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '8px 0' }}>+{atRiskAll.length - 6} more</div>
+              {atRiskAll.length > 8 && (
+                <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '8px 0' }}>+{atRiskAll.length - 8} more</div>
               )}
             </div>
-          </CoachCard>
+          </div>
+        </section>
 
-          {/* Expiring memberships */}
-          {expiringMembers.length > 0 && (
-            <CoachCard accent="#fbbf24" title={`⚠️ Expiring Soon · ${expiringMembers.length}`}>
-              <div style={{ padding: '10px 16px' }}>
-                {expiringMembers.map((m, i) => {
-                  const daysLeft = Math.floor((new Date(m.end_date) - now) / 86400000);
-                  const urgency = daysLeft <= 2 ? '#f87171' : daysLeft <= 5 ? '#f97316' : '#fbbf24';
-                  return (
-                    <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < expiringMembers.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color={urgency} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                        <div style={{ fontSize: 10, color: urgency, fontWeight: 600 }}>{daysLeft === 0 ? 'Expires today!' : `Expires in ${daysLeft}d`} · {m.membership_type || 'Monthly'}</div>
-                      </div>
-                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Renew</button>
-                    </div>
-                  );
-                })}
+        {/* ══ 6. COMMUNITY & MOTIVATION ════════════════════════════════════ */}
+        <section>
+          <SectionLabel accent="#fbbf24">Community & Motivation</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+
+            {/* Milestones: 50th & 100th visit callouts */}
+            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                <Target style={{ width: 14, height: 14, color: '#a78bfa' }}/>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Close to Milestones</span>
               </div>
-            </CoachCard>
-          )}
-
-          {/* New members to welcome */}
-          {newMembers.length > 0 && (
-            <CoachCard accent="#38bdf8" title={`👋 New Members · ${newMembers.length}`}>
-              <div style={{ padding: '10px 16px' }}>
-                {newMembers.map((m, i) => {
-                  const daysAgo = Math.floor((now - new Date(m.start_date)) / 86400000);
-                  const hasVisited = !!memberLastCI[m.user_id];
-                  return (
-                    <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < newMembers.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color="#38bdf8" />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>
-                          Joined {daysAgo === 0 ? 'today' : `${daysAgo}d ago`} ·{' '}
-                          <span style={{ color: hasVisited ? '#34d399' : '#f87171', fontWeight: 600 }}>
-                            {hasVisited ? 'visited ✓' : 'not visited yet'}
-                          </span>
-                        </div>
-                      </div>
-                      <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Intro</button>
-                    </div>
-                  );
-                })}
-              </div>
-            </CoachCard>
-          )}
-
-          {/* Top performers this week */}
-          {weekStars.length > 0 && (
-            <CoachCard accent="#fbbf24" title="This Week's Top Members">
-              <div style={{ padding: '10px 16px' }}>
-                {weekStars.map((m, i) => {
-                  const medals = ['🥇', '🥈', '🥉'];
-                  const maxCount = weekStars[0]?.count || 1;
-                  return (
-                    <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < weekStars.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <span style={{ fontSize: i < 3 ? 15 : 11, width: 22, textAlign: 'center', flexShrink: 0 }}>{medals[i] || `${i + 1}`}</span>
-                      <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={28} color="#fbbf24" />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 5 }}>
-                          <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, background: 'linear-gradient(90deg,#fbbf24,#f59e0b)', borderRadius: 99 }} />
-                        </div>
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', flexShrink: 0 }}>{m.count}x</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CoachCard>
-          )}
-
-          {/* Streaks */}
-          {topStreaks.length > 0 && (
-            <CoachCard accent="#f59e0b" title="🔥 Current Streaks">
-              <div style={{ padding: '10px 16px' }}>
-                {topStreaks.map((m, i) => (
-                  <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < topStreaks.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                    <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={28} color="#f59e0b" />
+              {allMilestones.length === 0 ? (
+                <p style={{ fontSize: 11, color: '#3a5070', margin: 0, textAlign: 'center', padding: '10px 0' }}>No members near a milestone</p>
+              ) : allMilestones.map((m, i) => {
+                const isBig  = m.next === 50 || m.next === 100;
+                const accent = m.next === 100 ? '#fbbf24' : m.next === 50 ? '#34d399' : '#a78bfa';
+                return (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: i < allMilestones.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color={accent}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 5 }}>
-                        <div style={{ height: '100%', width: `${Math.min(100, (m.streak / 30) * 100)}%`, background: 'linear-gradient(90deg,#f59e0b,#ef4444)', borderRadius: 99 }} />
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
+                      <div style={{ fontSize: 10, color: m.toNext === 1 ? '#34d399' : '#64748b', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        {m.toNext === 1 ? '🎉 1 visit to go!' : `${m.toNext} visits to ${m.next}`}
+                        {isBig && <span style={{ fontSize: 9, fontWeight: 800, color: accent, background: `${accent}14`, borderRadius: 4, padding: '1px 5px' }}>{m.next === 100 ? '💯 100th' : '⭐ 50th'}</span>}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: accent }}>{m.total}</div>
+                      <div style={{ fontSize: 8, color: '#3a5070' }}>→{m.next}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Streaks */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                  <Flame style={{ width: 14, height: 14, color: '#f59e0b' }}/>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Active Streaks</span>
+                </div>
+                {topStreaks.length === 0 ? (
+                  <p style={{ fontSize: 11, color: '#3a5070', margin: 0, textAlign: 'center', padding: '6px 0' }}>No active streaks</p>
+                ) : topStreaks.slice(0, 4).map((m, i) => (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(topStreaks.length, 4)-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={26} color="#f59e0b"/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 4 }}>
+                        <div style={{ height: '100%', width: `${Math.min(100, (m.streak / 30) * 100)}%`, background: 'linear-gradient(90deg,#f59e0b,#ef4444)', borderRadius: 99 }}/>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -624,110 +620,161 @@ export default function TabCoachOverview({
                   </div>
                 ))}
               </div>
-            </CoachCard>
-          )}
+
+              {/* Birthdays */}
+              {upcomingBirthdays.length > 0 && (
+                <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(244,114,182,0.15)', padding: '12px 14px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#f0f4f8', marginBottom: 8 }}>🎂 Birthdays This Week</div>
+                  {upcomingBirthdays.map((m, i) => (
+                    <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < upcomingBirthdays.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                      <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={24} color="#f472b6"/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name}</div>
+                        <div style={{ fontSize: 9, color: m.daysUntil === 0 ? '#f472b6' : '#64748b' }}>{m.daysUntil === 0 ? '🎉 Today!' : `in ${m.daysUntil}d`}</div>
+                      </div>
+                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#f472b6', background: 'rgba(244,114,182,0.07)', border: '1px solid rgba(244,114,182,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Wish</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          RIGHT PANEL — QUICK ACTIONS + SUPPORT CARDS
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 0 }}>
+
+        {/* ── Quick Actions ─────────────────────────────────────────────── */}
+        <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+          <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Quick Actions</span>
+          </div>
+          <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {[
+              { icon: QrCode,   label: 'Scan Check-In',  sub: 'Start a class',       color: '#10b981', fn: () => openModal('qrScanner') },
+              { icon: Calendar, label: 'Create Event',   sub: 'Schedule something',  color: '#34d399', fn: () => openModal('event')     },
+              { icon: Bell,     label: 'Send Reminder',  sub: 'Post to members',     color: '#38bdf8', fn: () => openModal('post')      },
+              { icon: Dumbbell, label: 'Manage Classes', sub: 'Edit your timetable', color: '#a78bfa', fn: () => openModal('classes')   },
+            ].map(({ icon: Ic, label, sub, color, fn }, i) => (
+              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 11px', borderRadius: 11, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'all 0.12s', textAlign: 'left', width: '100%' }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${color}0f`; e.currentTarget.style.borderColor = `${color}30`; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}>
+                <div style={{ width: 30, height: 30, borderRadius: 9, background: `${color}16`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Ic style={{ width: 13, height: 13, color }}/>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{label}</div>
+                  <div style={{ fontSize: 10, color: '#3a5070' }}>{sub}</div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* ── COL 3: SIDEBAR ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-          {/* Milestones */}
-          {milestones.length > 0 && (
-            <CoachCard accent="#a78bfa" title="🎯 Close to Milestones">
-              <div style={{ padding: '10px 14px' }}>
-                {milestones.map((m, i) => (
-                  <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < milestones.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={26} color="#a78bfa" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                      <div style={{ fontSize: 9, color: m.toNext === 1 ? '#34d399' : '#64748b' }}>
-                        {m.toNext === 1 ? '🎉 1 visit to go!' : `${m.toNext} to reach ${m.next}`}
-                      </div>
+        {/* ── Upcoming Events ───────────────────────────────────────────── */}
+        {upcomingEvents.length > 0 && (
+          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Upcoming Events</span>
+              <button onClick={() => openModal('event')} style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>+ New</button>
+            </div>
+            <div style={{ padding: '8px 14px' }}>
+              {upcomingEvents.map((ev, i) => {
+                const d    = new Date(ev.event_date);
+                const diff = Math.floor((d - now) / 86400000);
+                return (
+                  <div key={ev.id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: i < upcomingEvents.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <div style={{ flexShrink: 0, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.14)', borderRadius: 8, padding: '4px 7px', textAlign: 'center', minWidth: 32 }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', lineHeight: 1 }}>{format(d,'d')}</div>
+                      <div style={{ fontSize: 7, fontWeight: 800, color: '#1a5a3a', textTransform: 'uppercase' }}>{format(d,'MMM')}</div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 900, color: '#a78bfa' }}>{m.total}</div>
-                      <div style={{ fontSize: 8, color: '#3a5070' }}>→{m.next}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
+                      <div style={{ fontSize: 9, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d away`}</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CoachCard>
-          )}
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-          {/* Birthdays */}
-          {upcomingBirthdays.length > 0 && (
-            <CoachCard accent="#f472b6" title="🎂 Birthdays This Week">
-              <div style={{ padding: '10px 14px' }}>
-                {upcomingBirthdays.map((m, i) => (
-                  <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < upcomingBirthdays.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={26} color="#f472b6" />
+        {/* ── Top Members This Week ─────────────────────────────────────── */}
+        {weekStars.length > 0 && (
+          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Top Members This Week</span>
+            </div>
+            <div style={{ padding: '8px 14px' }}>
+              {weekStars.map((m, i) => {
+                const medals   = ['🥇','🥈','🥉'];
+                const maxCount = weekStars[0]?.count || 1;
+                return (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < weekStars.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <span style={{ fontSize: i < 3 ? 14 : 10, width: 18, textAlign: 'center', flexShrink: 0 }}>{medals[i] || `${i+1}`}</span>
+                    <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={26} color="#fbbf24"/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 4 }}>
+                        <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, background: 'linear-gradient(90deg,#fbbf24,#f59e0b)', borderRadius: 99 }}/>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', flexShrink: 0 }}>{m.count}x</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── New Members ───────────────────────────────────────────────── */}
+        {newMembers.length > 0 && (
+          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(56,189,248,0.15)', overflow: 'hidden' }}>
+            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <UserPlus style={{ width: 12, height: 12, color: '#38bdf8' }}/>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>New Members</span>
+              <span style={{ fontSize: 10, color: '#38bdf8', marginLeft: 'auto', fontWeight: 700 }}>{newMembers.length}</span>
+            </div>
+            <div style={{ padding: '8px 12px' }}>
+              {newMembers.map((m, i) => {
+                const daysAgo    = Math.floor((now - new Date(m.start_date)) / 86400000);
+                const hasVisited = !!memberLastCI[m.user_id];
+                return (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < newMembers.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={26} color="#38bdf8"/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name}</div>
-                      <div style={{ fontSize: 9, color: m.daysUntil === 0 ? '#f472b6' : '#64748b', fontWeight: m.daysUntil === 0 ? 700 : 400 }}>
-                        {m.daysUntil === 0 ? '🎉 Today!' : `in ${m.daysUntil} day${m.daysUntil !== 1 ? 's' : ''}`}
+                      <div style={{ fontSize: 9, color: '#64748b' }}>
+                        {daysAgo === 0 ? 'Joined today' : `${daysAgo}d ago`} ·{' '}
+                        <span style={{ color: hasVisited ? '#34d399' : '#f87171', fontWeight: 600 }}>{hasVisited ? 'visited ✓' : 'not in yet'}</span>
                       </div>
                     </div>
-                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#f472b6', background: 'rgba(244,114,182,0.07)', border: '1px solid rgba(244,114,182,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Wish</button>
+                    <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Intro</button>
                   </div>
-                ))}
-              </div>
-            </CoachCard>
-          )}
-
-          {/* Upcoming events */}
-          {upcomingEvents.length > 0 && (
-            <CoachCard accent="#34d399" title="Upcoming Events" action="+ New" onAction={() => openModal('event')}>
-              <div style={{ padding: '10px 14px' }}>
-                {upcomingEvents.map((ev, i) => {
-                  const d = new Date(ev.event_date);
-                  const diff = Math.floor((d - now) / 86400000);
-                  return (
-                    <div key={ev.id || i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < upcomingEvents.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <div style={{ flexShrink: 0, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.14)', borderRadius: 8, padding: '4px 7px', textAlign: 'center', minWidth: 32 }}>
-                        <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', lineHeight: 1 }}>{format(d, 'd')}</div>
-                        <div style={{ fontSize: 7, fontWeight: 800, color: '#1a5a3a', textTransform: 'uppercase' }}>{format(d, 'MMM')}</div>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
-                        <div style={{ fontSize: 9, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d away`}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CoachCard>
-          )}
-
-          {/* My class summary */}
-          <CoachCard accent="#0ea5e9" title="My Class Summary">
-            <div style={{ padding: '10px 14px' }}>
-              {[
-                { label: 'Total check-ins today', value: todayMemberIds.length, color: '#38bdf8' },
-                { label: 'Avg fill rate', value: `${avgFill}%`, color: '#a78bfa' },
-                { label: 'Check-ins this week', value: ci7.length, color: '#34d399' },
-                { label: 'Members absent 14d+', value: atRiskMembers.length, color: atRiskMembers.length > 0 ? '#f87171' : '#34d399' },
-                { label: 'Expiring this week', value: expiringMembers.length, color: expiringMembers.length > 0 ? '#fbbf24' : '#34d399' },
-              ].map((s, i, arr) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                  <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>{s.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: s.color, background: `${s.color}12`, border: `1px solid ${s.color}20`, borderRadius: 6, padding: '1px 8px' }}>{s.value}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </CoachCard>
+          </div>
+        )}
 
-          {/* Recent posts */}
-          <CoachCard accent="#34d399" title="My Posts" action="+ New" onAction={() => openModal('post')}>
-            <div style={{ padding: '10px 14px' }}>
-              {posts.length === 0 ? (
-                <p style={{ fontSize: 11, color: '#3a5070', textAlign: 'center', padding: '8px 0', margin: 0 }}>No posts yet</p>
-              ) : posts.slice(0, 3).map((p, i) => (
-                <div key={p.id || i} style={{ padding: '6px 8px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 5, fontSize: 11, fontWeight: 600, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {p.content?.split('\n')[0] || p.title || 'Post'}
-                </div>
-              ))}
-            </div>
-          </CoachCard>
+        {/* ── My Recent Posts ───────────────────────────────────────────── */}
+        <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>My Recent Posts</span>
+            <button onClick={() => openModal('post')} style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>+ New</button>
+          </div>
+          <div style={{ padding: '8px 12px' }}>
+            {posts.length === 0 ? (
+              <p style={{ fontSize: 11, color: '#3a5070', margin: 0, textAlign: 'center', padding: '8px 0' }}>No posts yet</p>
+            ) : posts.slice(0, 3).map((p, i) => (
+              <div key={p.id||i} style={{ padding: '6px 8px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: i < 2 ? 5 : 0, fontSize: 11, fontWeight: 600, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {p.content?.split('\n')[0] || p.title || 'Post'}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
