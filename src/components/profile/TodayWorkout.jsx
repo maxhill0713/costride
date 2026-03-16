@@ -352,7 +352,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     );
   }
 
-  // ── Fixed timer time display — always the same size regardless of active state ──
   const timerDisplay = (() => {
     const t = parseInt(restTimer) || 90;
     return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`;
@@ -603,19 +602,22 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
 
-                      {/*
-                        Timer display box — fixed at height:51px always.
-                        When active: shows countdown. When inactive: shows set time.
-                        The dropdown for adjusting time is only shown when inactive.
-                      */}
+                      {/* Timer display box with "Timer" label underneath */}
                       <div className="relative" style={{ flex: '0 0 auto', width: '49%' }}>
                         <button
                           onClick={() => { if (!isTimerActive) setShowTimerOptions(!showTimerOptions); }}
                           style={{ height: '51px' }}
-                          className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
-                          <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
-                          <span className="text-blue-300 font-black text-2xl tabular-nums leading-none">
-                            {timerDisplay}
+                          className="relative w-full flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
+                          {/* Clock + time shifted up slightly */}
+                          <div className="flex items-center gap-2 -mt-1">
+                            <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
+                              {timerDisplay}
+                            </span>
+                          </div>
+                          {/* "Timer" label underneath */}
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                            Timer
                           </span>
                         </button>
 
@@ -639,10 +641,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         )}
                       </div>
 
-                      {/*
-                        Go / Stop button — fixed at height:51px always.
-                        Width is also locked so switching label doesn't resize it.
-                      */}
+                      {/* Go / Stop button */}
                       <button
                         onClick={() => {
                           if (!isTimerActive) {
