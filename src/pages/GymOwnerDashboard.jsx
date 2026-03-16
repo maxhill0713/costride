@@ -515,8 +515,17 @@ function TabCoachOverview({ myClasses, checkIns, allMemberships, avatarMap, open
 
 // ── Coach Schedule Tab ────────────────────────────────────────────────────────
 function TabCoachSchedule({ myClasses, checkIns, events, challenges, avatarMap, openModal, now }) {
-  const [selectedDay, setSelectedDay] = useState(0); // 0 = today
-  const [notes, setNotes]             = useState({});
+  const todayIndex = 3; // today is always index 3 (3 days back + today + 3 ahead)
+  const [selectedDay, setSelectedDay] = useState(todayIndex);
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('coachSessionNotes') || '{}'); } catch { return {}; }
+  });
+
+  const saveNote = (key, val) => {
+    const updated = { ...notes, [key]: val };
+    setNotes(updated);
+    try { localStorage.setItem('coachSessionNotes', JSON.stringify(updated)); } catch {}
+  };
 
   const week = Array.from({ length: 7 }, (_, i) => subDays(now, 3 - i)); // 3 days back + today + 3 ahead
 
