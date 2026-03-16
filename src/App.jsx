@@ -43,7 +43,6 @@ import Community from './pages/Community';
 import ModeratorDashboard from './pages/ModeratorDashboard';
 import NotificationsHub from './pages/NotificationsHub';
 import PostArchive from './pages/PostArchive';
-import CoachDashboard from './pages/CoachDashboard';
 
 const LayoutWrapper = ({ children, currentPageName }) => (
   <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -110,7 +109,6 @@ const AuthenticatedApp = () => {
       <Route path="/ModeratorDashboard" element={<LayoutWrapper currentPageName="ModeratorDashboard"><ModeratorDashboard /></LayoutWrapper>} />
       <Route path="/NotificationsHub" element={<LayoutWrapper currentPageName="NotificationsHub"><NotificationsHub /></LayoutWrapper>} />
       <Route path="/PostArchive" element={<LayoutWrapper currentPageName="PostArchive"><PostArchive /></LayoutWrapper>} />
-      <Route path="/CoachDashboard" element={<CoachDashboard />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
