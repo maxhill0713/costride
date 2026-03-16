@@ -69,7 +69,6 @@ const DEFAULT_SPLITS = [
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const COLOR_GRADIENT_MAP = { blue: 'from-blue-500 to-blue-600', purple: 'from-purple-500 to-purple-600', cyan: 'from-cyan-500 to-cyan-600', green: 'from-green-500 to-green-600', orange: 'from-orange-500 to-orange-600', pink: 'from-pink-500 to-pink-600' };
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
   const pct = Math.min(((step - 1) / 7) * 100, 100);
   return (
@@ -79,7 +78,6 @@ function ProgressBar({ step }) {
   );
 }
 
-// ─── Primary Duolingo button ──────────────────────────────────────────────────
 function PrimaryButton({ onClick, disabled, children }) {
   const [pressed, setPressed] = useState(false);
   return (
@@ -111,7 +109,6 @@ function PrimaryButton({ onClick, disabled, children }) {
   );
 }
 
-// ─── Small inline action button ───────────────────────────────────────────────
 function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) {
   const [pressed, setPressed] = useState(false);
   const isGreen = color === 'green';
@@ -247,7 +244,7 @@ function SplitDetailSheet({ split, onClose }) {
   );
 }
 
-// ─── Demo button helpers (How To Use pages) ───────────────────────────────────
+// ─── Demo buttons — same horizontal level, 10% smaller padding ───────────────
 function CheckInDemo() {
   const [pressed, setPressed] = useState(false);
   return (
@@ -263,9 +260,10 @@ function CheckInDemo() {
         style={{
           position: 'relative', zIndex: 1, width: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '16px 24px', borderRadius: 18, border: 'none',
+          // 10% smaller: was 16px top/bottom, now ~14px
+          padding: '14px 22px', borderRadius: 18, border: 'none',
           background: 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
-          color: '#fff', fontSize: 17, fontWeight: 900, letterSpacing: '-0.01em',
+          color: '#fff', fontSize: 16, fontWeight: 900, letterSpacing: '-0.01em',
           cursor: 'pointer', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(5px)' : 'translateY(0)',
           boxShadow: pressed ? 'none' : '0 5px 0 0 #15803d, 0 8px 24px rgba(22,163,74,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
@@ -292,9 +290,10 @@ function LogWorkoutDemo() {
         style={{
           position: 'relative', zIndex: 1, width: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '14px 24px', borderRadius: 9, border: 'none',
+          // 10% smaller: was 14px top/bottom, now ~13px
+          padding: '13px 22px', borderRadius: 9, border: 'none',
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)',
-          color: '#fff', fontSize: 14, fontWeight: 800,
+          color: '#fff', fontSize: 13, fontWeight: 800,
           cursor: 'pointer', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(3px)' : 'translateY(0)',
           boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, 0 6px 20px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -306,12 +305,15 @@ function LogWorkoutDemo() {
   );
 }
 
-// ─── Weekly dots card (used inside carousel) ─────────────────────────────────
+// ─── Weekly dots card — S-curve layout matching Home.jsx ─────────────────────
 function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDemoBubblePos }) {
   const DEMO_DAYS = [
     { day: 1, type: 'logged' }, { day: 2, type: 'missed' }, { day: 3, type: 'restDone' }, { day: 4, type: 'logged' },
     { day: 5, type: 'future' }, { day: 6, type: 'future' }, { day: 7, type: 'futureRest' },
   ];
+  const allDays = [1, 2, 3, 4, 5, 6, 7];
+  const todayDay = 4; // demo "today" is Thursday
+
   const getDotStyle = (d) => {
     if (d.type === 'logged')     return { bg: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)', border: 'rgba(147,197,253,0.5)', shadow: '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55)', icon: 'check' };
     if (d.type === 'missed')     return { bg: 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)', border: 'rgba(248,113,113,0.5)', shadow: '0 4px 0 0 #991b1b', icon: 'x' };
@@ -323,50 +325,90 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-      {/* Single horizontal row — all 7 dots */}
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%' }}>
-        {DEMO_DAYS.map((d) => {
+      {/* S-curve row — matches Home.jsx exactly */}
+      <div style={{
+        position: 'relative',
+        display: 'flex', flexDirection: 'row', flexWrap: 'nowrap',
+        alignItems: 'flex-start', justifyContent: 'center',
+        gap: 8, width: '100%',
+        height: 88, overflow: 'visible',
+      }}>
+        {allDays.map((day, i) => {
+          const d = DEMO_DAYS[i];
           const s = getDotStyle(d);
-          const SIZE = 40;
+          const isTodayCircle = day === todayDay;
+          const SIZE = isTodayCircle ? 49 : 40;
+          // Same sine-wave vertical offset as Home.jsx
+          const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
+
           return (
-            <button
-              key={d.day}
-              onPointerDown={(e) => {
-                e.currentTarget.style.transform = 'translateY(4px)';
-                e.currentTarget.style.boxShadow = 'none';
-                const rect = e.currentTarget.getBoundingClientRect();
-                if (demoBubbleDay === d.day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
-                else { setDemoBubbleDay(d.day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
-              }}
-              onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-              onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
-              style={{ width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow, cursor: 'pointer', padding: 0, outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
-            >
-              {s.icon === 'check' && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-              {s.icon === 'x' && <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
-              {s.icon === 'leaf' && (
-                <svg width="15" height="15" viewBox="0 0 100 100" fill="none">
-                  <line x1="50" y1="90" x2="50" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="#4ade80" />
-                  <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="#4ade80" />
-                  <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="#4ade80" />
-                </svg>
+            <div key={day} style={{
+              position: 'relative', width: SIZE, height: SIZE,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
+              overflow: 'visible', zIndex: 1,
+            }}>
+              {/* Today ring pulse */}
+              {isTodayCircle && (
+                <div style={{
+                  position: 'absolute', width: SIZE + 14, height: SIZE + 14,
+                  borderRadius: '50%', border: '3px solid rgba(148,163,184,0.45)',
+                  background: 'rgba(148,163,184,0.08)',
+                  animation: 'todayRingPulse 2s ease-in-out infinite',
+                  pointerEvents: 'none',
+                }} />
               )}
-              {s.icon === 'empty' && <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.35)' }} />}
-              {s.icon === 'leafOutline' && (
-                <svg width="14" height="14" viewBox="0 0 100 100" fill="none">
-                  <line x1="50" y1="90" x2="50" y2="32" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M50 10 C45 20 41 28 43 35 C46 39 54 39 57 35 C59 27 55 20 50 10Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                  <path d="M50 32 C43 24 33 20 23 24 C21 29 25 37 33 39 C41 41 49 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                  <path d="M50 32 C57 24 67 20 77 24 C79 29 75 37 67 39 C59 41 51 37 50 32Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                </svg>
-              )}
-            </button>
+              <button
+                onPointerDown={(e) => {
+                  e.currentTarget.style.opacity = '0.65';
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if (demoBubbleDay === day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
+                  else { setDemoBubbleDay(day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
+                }}
+                onPointerUp={(e) => { e.currentTarget.style.opacity = '1'; }}
+                onPointerLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                style={{
+                  width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow,
+                  cursor: 'pointer', padding: 0, outline: 'none',
+                  WebkitTapHighlightColor: 'transparent', userSelect: 'none',
+                  transition: 'opacity 0.1s ease',
+                }}>
+                {s.icon === 'check' && <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                {s.icon === 'x' && <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
+                {s.icon === 'leaf' && (
+                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                    <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                  </svg>
+                )}
+                {s.icon === 'empty' && (
+                  <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent' }} />
+                )}
+                {s.icon === 'leafOutline' && (
+                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                    <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                  </svg>
+                )}
+              </button>
+            </div>
           );
         })}
       </div>
-      <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 320 }}>
-        This is your weekly tracker, they represent your workout plan for the week, featuring rest days, workout days and missed days. Press on the buttons to see what each colour means, the grey circles are future days and as you progress through the week they will fill in.
+
+      <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+        Your weekly tracker at a glance. Blue means done, red means missed, green is a rest day. Tap any circle to see details. Grey circles are upcoming — they'll fill in as the week progresses.
       </p>
     </div>
   );
@@ -378,9 +420,6 @@ const ACCOUNT_TYPES = [
   { id: 'gym_owner', title: 'I own a Gym', description: 'Register your gym, manage members, create rewards', icon: Building2, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)', shadow: 'rgba(168,85,247,0.3)' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN EXPORT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -521,9 +560,7 @@ export default function Onboarding() {
 
   const inner = { flex: 1, display: 'flex', flexDirection: 'column', padding: '0 24px 28px', overflow: 'hidden', maxWidth: 480, width: '100%', margin: '0 auto' };
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 0 — SPLASH
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 0) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', paddingBottom: 72 }}>
@@ -535,9 +572,7 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 1 — ACCOUNT TYPE
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 1) {
     return (
       <PageShell>
@@ -571,21 +606,11 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 2 — JOIN YOUR COMMUNITY
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 2) {
     const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
-
-    // Prevent iOS viewport resize when keyboard opens
-    const handleInputFocus = () => {
-      if (window.visualViewport) {
-        document.body.style.height = `${window.visualViewport.height}px`;
-      }
-    };
-    const handleInputBlur = () => {
-      document.body.style.height = '';
-    };
+    const handleInputFocus = () => { if (window.visualViewport) { document.body.style.height = `${window.visualViewport.height}px`; } };
+    const handleInputBlur = () => { document.body.style.height = ''; };
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
@@ -675,9 +700,7 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 3 — PICK YOUR WORKOUT
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 3) {
     return (
       <PageShell>
@@ -734,9 +757,7 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 4 — ENTER YOUR NAME
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 4) {
     return (
       <PageShell>
@@ -758,9 +779,7 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 5 — PROFILE PICTURE
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 5) {
     return (
       <PageShell>
@@ -789,9 +808,7 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 6 — TRAINING DAYS
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 6) {
     return (
       <PageShell>
@@ -825,7 +842,6 @@ export default function Onboarding() {
     );
   }
 
-
   // ══════════════════════════════════════════════════════════════════════
   // STEP 7 — HOW TO USE THE APP (carousel)
   // ══════════════════════════════════════════════════════════════════════
@@ -834,10 +850,13 @@ export default function Onboarding() {
       {
         key: 'checkin',
         render: () => (
+          // Both demo buttons on same horizontal level — flex row, same maxWidth
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-            <CheckInDemo />
+            <div style={{ width: '100%', maxWidth: 280 }}>
+              <CheckInDemo />
+            </div>
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
-              This is your check in button. You have to be near your gym to use this and you should check in just before you start your workout.
+              Tap <strong style={{ color: C.text }}>Check In</strong> when you arrive at the gym. You need to be nearby for it to register — it's what starts your streak timer and lets your friends see you're training.
             </p>
           </div>
         ),
@@ -845,10 +864,12 @@ export default function Onboarding() {
       {
         key: 'logworkout',
         render: () => (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%', paddingTop: 48 }}>
-            <LogWorkoutDemo />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+            <div style={{ width: '100%', maxWidth: 280 }}>
+              <LogWorkoutDemo />
+            </div>
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
-              Press this after you have finished your workout. It will log your exercises and any changes you have made to your routine, increase your streak, and if you want it will share your workout with your friends and community.
+              Hit <strong style={{ color: C.text }}>Log Workout</strong> when you're done. It saves your lifts, grows your streak, and gives you the option to share your session with friends.
             </p>
           </div>
         ),
@@ -860,7 +881,6 @@ export default function Onboarding() {
     ];
 
     const total = CARDS.length;
-    // ── CHANGED: button is only enabled once user reaches the last card ──
     const isOnLastCard = carouselIndex >= total - 1;
 
     const handleCarouselScroll = () => {
@@ -878,7 +898,6 @@ export default function Onboarding() {
       carouselRef.current.scrollTo({ left: idx * carouselRef.current.offsetWidth, behavior: 'smooth' });
     };
 
-    // Dot bubble overlay (rendered over the carousel)
     const renderDotBubble = () => {
       if (demoBubbleDay === null || !demoBubblePos) return null;
       const DEMO_DAYS = [
@@ -936,16 +955,30 @@ export default function Onboarding() {
                 ))}
               </div>
 
-              {/* Carousel */}
+              {/* Carousel — NO box-shadow on cards */}
               <style>{`.ob-carousel::-webkit-scrollbar{display:none}`}</style>
               <div
                 ref={carouselRef}
                 className="ob-carousel"
                 onScroll={handleCarouselScroll}
-                style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', border: 'none', outline: 'none' }}
+                style={{
+                  flex: 1, display: 'flex', overflowX: 'auto',
+                  scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
+                  scrollbarWidth: 'none', msOverflowStyle: 'none',
+                  // No shadow, no border, no background on the carousel wrapper
+                  border: 'none', outline: 'none', background: 'transparent',
+                }}
               >
                 {CARDS.map((card) => (
-                  <div key={card.key} style={{ minWidth: '100%', width: '100%', scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', border: 'none', flexShrink: 0 }}>
+                  <div key={card.key} style={{
+                    minWidth: '100%', width: '100%', scrollSnapAlign: 'start',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    boxSizing: 'border-box',
+                    // No shadow, no border, no background on individual cards
+                    border: 'none', background: 'transparent',
+                    flexShrink: 0,
+                  }}>
                     {card.render()}
                   </div>
                 ))}
@@ -965,15 +998,12 @@ export default function Onboarding() {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════
   // STEP 8 — WELCOME
-  // ══════════════════════════════════════════════════════════════════════
   if (step === 8) {
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
           <div style={inner}>
-            {/* ── CHANGED: fully-complete progress bar at top ── */}
             <div style={{ paddingTop: 52, flexShrink: 0 }}>
               <div style={{ marginBottom: 28 }}>
                 <ProgressBar step={9} />
@@ -983,7 +1013,6 @@ export default function Onboarding() {
                 <span style={{ background: `linear-gradient(to right, ${C.blueMid}, #06b6d4)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
               </h1>
             </div>
-            {/* ── CHANGED: more exciting, natural paragraph ── */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p style={{ color: C.sub, fontSize: 17, margin: 0, lineHeight: 1.65, fontWeight: 500 }}>
                 {displayName
