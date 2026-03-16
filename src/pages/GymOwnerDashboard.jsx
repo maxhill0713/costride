@@ -149,8 +149,12 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
   );
 }
 
-// ── Coach Overview ────────────────────────────────────────────────────────────
-function TabCoachOverview({ myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges, polls }) {
+// ── Coach tabs are now in separate component files ────────────────────────────
+// See: components/dashboard/TabCoachOverview.jsx
+//      components/dashboard/TabCoachSchedule.jsx
+//      components/dashboard/TabCoachMembers.jsx
+
+function _TabCoachOverview_PLACEHOLDER({ myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges, polls }) {
   const ci7     = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7), end: now }));
   const ci30    = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
   const ciPrev7 = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) }));
