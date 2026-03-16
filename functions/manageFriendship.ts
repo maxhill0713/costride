@@ -19,13 +19,19 @@ Deno.serve(async (req) => {
 
     if (action === 'add') {
       // Check for existing request in either direction
-      const [existing1, existing2] = await Promise.all([
+      const [existing1, existing2, friendData] = await Promise.all([
         db.entities.Friend.filter({ user_id: user.id, friend_id: friendId }),
-        db.entities.Friend.filter({ user_id: friendId, friend_id: user.id })
+        db.entities.Friend.filter({ user_id: friendId, friend_id: user.id }),
+        db.entities.User.filter({ id: friendId })
       ]);
 
       if (existing1.length > 0 || existing2.length > 0) {
         return Response.json({ error: 'Friend request already exists' }, { status: 400 });
+      }
+
+      const targetFriend = friendData[0];
+      if (!targetFriend) {
+        return Response.json({ error: 'Friend not found' }, { status: 404 });
       }
 
       const friendRequest = await db.entities.Friend.create({
@@ -33,8 +39,8 @@ Deno.serve(async (req) => {
         user_name: user.full_name,
         user_avatar: user.avatar_url || '',
         friend_id: friendId,
-        friend_name: '',
-        friend_avatar: '',
+        friend_name: targetFriend.full_name || '',
+        friend_avatar: targetFriend.avatar_url || '',
         status: 'pending'
       });
 
