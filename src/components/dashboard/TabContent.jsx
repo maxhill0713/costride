@@ -377,7 +377,13 @@ export default function TabContent({
   const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
 
-  const FILTERS = [
+  const FILTERS = isCoach ? [
+    { id: 'classes',    label: 'My Classes'  },
+    { id: 'gym',        label: 'Posts'       },
+    { id: 'challenges', label: 'Challenges'  },
+    { id: 'polls',      label: 'Polls'       },
+    { id: 'events',     label: 'Events'      },
+  ] : [
     { id: 'gym',        label: 'Gym Posts'   },
     { id: 'members',    label: 'Members'     },
     { id: 'challenges', label: 'Challenges'  },
