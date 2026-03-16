@@ -15,7 +15,6 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import RedeemReward from './pages/RedeemReward';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
-import CoachDashboard from './pages/CoachDashboard';
 import Onboarding from './pages/Onboarding';
 import GymSignup from './pages/GymSignup';
 import MemberSignup from './pages/MemberSignup';
@@ -82,7 +81,6 @@ const AuthenticatedApp = () => {
       <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
       <Route path="/RedeemReward" element={<LayoutWrapper currentPageName="RedeemReward"><RedeemReward /></LayoutWrapper>} />
       <Route path="/GymOwnerDashboard" element={<LayoutWrapper currentPageName="GymOwnerDashboard"><GymOwnerDashboard /></LayoutWrapper>} />
-      <Route path="/CoachDashboard" element={<LayoutWrapper currentPageName="CoachDashboard"><CoachDashboard /></LayoutWrapper>} />
       <Route path="/Onboarding" element={<LayoutWrapper currentPageName="Onboarding"><Onboarding /></LayoutWrapper>} />
       <Route path="/GymSignup" element={<LayoutWrapper currentPageName="GymSignup"><GymSignup /></LayoutWrapper>} />
       <Route path="/MemberSignup" element={<LayoutWrapper currentPageName="MemberSignup"><MemberSignup /></LayoutWrapper>} />
