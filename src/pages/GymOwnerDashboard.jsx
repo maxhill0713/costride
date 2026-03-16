@@ -523,44 +523,72 @@ export default function GymOwnerDashboard() {
           setSelectedRows={setSelectedRows} openModal={openModal} now={now}
           Spark={Spark} Delta={Delta}
         />,
-    content: <TabContentComponent
-      events={isCoach ? coachEvents : events}
-      challenges={isCoach ? coachChallenges : challenges}
-      polls={isCoach ? coachPolls : polls}
-      posts={isCoach ? coachPosts : posts}
-      classes={isCoach ? myClasses : classes}
-      checkIns={isCoach ? coachCheckIns : checkIns}
-      ci30={isCoach ? coachCi30 : ci30}
-      avatarMap={avatarMap}
-      leaderboardView={leaderboardView}
-      setLeaderboardView={setLeaderboardView}
-      openModal={openModal}
-      now={now}
-      onDeletePost={id=>deletePostM.mutate(id)}
-      onDeleteEvent={id=>deleteEventM.mutate(id)}
-      onDeleteChallenge={id=>deleteChallengeM.mutate(id)}
-      onDeleteClass={id=>deleteClassM.mutate(id)}
-      onDeletePoll={id=>deletePollM.mutate(id)}
-      isCoach={isCoach}
-    />,
-    analytics: <TabAnalyticsComponent
-      checkIns={isCoach ? coachCheckIns : checkIns}
-      ci30={isCoach ? coachCi30 : ci30}
-      totalMembers={isCoach ? coachMemberships.length : totalMembers}
-      monthCiPer={monthCiPer}
-      monthChangePct={monthChangePct}
-      monthGrowthData={monthGrowthData}
-      retentionRate={retentionRate}
-      activeThisMonth={activeThisMonth}
-      newSignUps={newSignUps}
-      atRisk={atRisk}
-      gymId={selectedGym?.id}
-      sparkData={sparkData7}
-      Spark={Spark}
-      Delta={Delta}
-      isCoach={isCoach}
-      myClasses={myClasses}
-    />,
+    content: isCoach
+      ? <TabCoachContent
+          events={coachEvents}
+          challenges={coachChallenges}
+          polls={coachPolls}
+          posts={coachPosts}
+          classes={myClasses}
+          checkIns={coachCheckIns}
+          ci30={coachCi30}
+          avatarMap={avatarMap}
+          allMemberships={coachMemberships}
+          openModal={openModal}
+          now={now}
+          onDeletePost={id=>deletePostM.mutate(id)}
+          onDeleteEvent={id=>deleteEventM.mutate(id)}
+          onDeleteChallenge={id=>deleteChallengeM.mutate(id)}
+          onDeleteClass={id=>deleteClassM.mutate(id)}
+          onDeletePoll={id=>deletePollM.mutate(id)}
+        />
+      : <TabContentComponent
+          events={events}
+          challenges={challenges}
+          polls={polls}
+          posts={posts}
+          classes={classes}
+          checkIns={checkIns}
+          ci30={ci30}
+          avatarMap={avatarMap}
+          leaderboardView={leaderboardView}
+          setLeaderboardView={setLeaderboardView}
+          openModal={openModal}
+          now={now}
+          onDeletePost={id=>deletePostM.mutate(id)}
+          onDeleteEvent={id=>deleteEventM.mutate(id)}
+          onDeleteChallenge={id=>deleteChallengeM.mutate(id)}
+          onDeleteClass={id=>deleteClassM.mutate(id)}
+          onDeletePoll={id=>deletePollM.mutate(id)}
+        />,
+    analytics: isCoach
+      ? <TabCoachAnalytics
+          checkIns={coachCheckIns}
+          ci30={coachCi30}
+          totalMembers={coachMemberships.length}
+          myClasses={myClasses}
+          monthChangePct={monthChangePct}
+          retentionRate={retentionRate}
+          activeThisMonth={new Set(coachCi30.map(c => c.user_id)).size}
+          atRisk={atRisk}
+          gymId={selectedGym?.id}
+        />
+      : <TabAnalyticsComponent
+          checkIns={checkIns}
+          ci30={ci30}
+          totalMembers={totalMembers}
+          monthCiPer={monthCiPer}
+          monthChangePct={monthChangePct}
+          monthGrowthData={monthGrowthData}
+          retentionRate={retentionRate}
+          activeThisMonth={activeThisMonth}
+          newSignUps={newSignUps}
+          atRisk={atRisk}
+          gymId={selectedGym?.id}
+          sparkData={sparkData7}
+          Spark={Spark}
+          Delta={Delta}
+        />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
   };
 
