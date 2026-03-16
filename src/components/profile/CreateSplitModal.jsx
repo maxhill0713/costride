@@ -441,6 +441,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts] = useState({});
   const [previewWeights, setPreviewWeights] = useState({});
+  const [previewSets, setPreviewSets] = useState({});
+  const [previewReps, setPreviewReps] = useState({});
   const [weightsDirty, setWeightsDirty] = useState(false);
   const [dotsMenuOpen, setDotsMenuOpen] = useState(false);
   const [confirmDeleteSplitId, setConfirmDeleteSplitId] = useState(null);
