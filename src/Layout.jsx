@@ -47,6 +47,7 @@ export default function Layout({ children, currentPageName }) {
 
   // Hide navigation on onboarding, signup pages, and gym owner dashboard (has its own nav)
   const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || currentPageName === 'GymOwnerDashboard';
+  const isDashboardUser = currentUser?.account_type === 'gym_owner' || currentUser?.account_type === 'coach';
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
