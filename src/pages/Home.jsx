@@ -848,7 +848,7 @@ export default function Home() {
           className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} animate-[breathe_3s_ease-in-out_infinite]`}
           style={{
             objectFit: 'contain',
-            filter: 'drop-shadow(0 0 6px rgba(255,150,0,0.5))',
+            
             opacity: 1,
           }} />
         <span
