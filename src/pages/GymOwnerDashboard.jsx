@@ -85,39 +85,6 @@ const Delta = ({ val }) => {
 };
 
 // ── Coach KPI card ────────────────────────────────────────────────────────────
-function CoachKpiCard({ icon: Icon, label, value, sub, subColor = '#64748b', accentColor = '#38bdf8', footerBar }) {
-  return (
-    <div style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
-      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accentColor, opacity: 0.07, filter: 'blur(24px)', pointerEvents: 'none' }}/>
-      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accentColor}45,transparent)`, pointerEvents: 'none' }}/>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
-        <div style={{ width: 26, height: 26, borderRadius: 8, background: `${accentColor}18`, border: `1px solid ${accentColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon style={{ width: 12, height: 12, color: accentColor }}/>
-        </div>
-      </div>
-      <div style={{ fontSize: 32, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
-      <div style={{ fontSize: 11, color: subColor, fontWeight: 600 }}>{sub}</div>
-      {footerBar != null && (
-        <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: `${accentColor}18`, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, footerBar)}%`, background: `linear-gradient(90deg,${accentColor},${accentColor}cc)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Coach card shell ──────────────────────────────────────────────────────────
-function CoachCard({ children, style = {}, accent }) {
-  return (
-    <div style={{ background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, position: 'relative', overflow: 'hidden', ...style }}>
-      {accent && <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accent}35,transparent)`, pointerEvents: 'none' }}/>}
-      {children}
-    </div>
-  );
-}
-
-// ── Coach KPI card ────────────────────────────────────────────────────────────
 function CoachKpiCard({ icon: Icon, label, value, sub, subColor = '#64748b', accentColor = '#a78bfa', footerBar, trend }) {
   return (
     <div style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
