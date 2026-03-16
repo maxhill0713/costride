@@ -150,10 +150,14 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
 }
 
 // ── Coach tabs live in separate files (see components/dashboard/TabCoach*.jsx) ─
-// ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
-const _REMOVE_ME = null;
+//   TabCoachOverview → components/dashboard/TabCoachOverview.jsx
+//   TabCoachSchedule → components/dashboard/TabCoachSchedule.jsx
+//   TabCoachMembers  → components/dashboard/TabCoachMembers.jsx
 
-  const todayCI  = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime());
+// ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
+const _STUB_PLACEHOLDER = null; // Intentionally left blank – see above files
+
+  const todayCI_UNUSED  = null; // intentional placeholder - NOT real code
   const totalM   = allMemberships.length;
   const activeW  = new Set(ci7.map(c => c.user_id)).size;
   const activePW = new Set(ciPrev7.map(c => c.user_id)).size;
