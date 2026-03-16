@@ -239,9 +239,9 @@ function SmallInput({ value, onChange, placeholder }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// READ-ONLY DAY CARD (weight column is editable)
+// READ-ONLY DAY CARD (sets, reps, and weight columns are editable)
 // ─────────────────────────────────────────────────────────────────────────────
-function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
+function ReadOnlyDayCard({ day, workout, weights, onWeightChange, sets, onSetsChange, reps, onRepsChange }) {
   const grad = colorGradient(workout.color);
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -250,7 +250,6 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
           <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
         </div>
         <p className="flex-1 text-white text-[14px] font-bold">{workout.name}</p>
-        <Lock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
       </div>
       <div className="flex gap-1.5 px-4 pb-3">
         {COLOR_OPTIONS.map((c) =>
@@ -271,8 +270,20 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
           {workout.exercises.map((ex, idx) =>
         <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
               <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
-              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.sets}</p>
-              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.reps}</p>
+              <input
+                type="text" inputMode="decimal"
+                value={sets?.[idx] ?? ex.sets ?? ''}
+                onChange={(e) => onSetsChange(idx, e.target.value)}
+                placeholder={ex.sets || '—'}
+                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+              <input
+                type="text" inputMode="decimal"
+                value={reps?.[idx] ?? ex.reps ?? ''}
+                onChange={(e) => onRepsChange(idx, e.target.value)}
+                placeholder={ex.reps || '—'}
+                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
               <div className="relative">
                 <input
                   type="text" inputMode="decimal"
@@ -287,9 +298,6 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
         )}
         </div>
       }
-      <div className="px-4 pb-3.5 pt-2">
-        <p className="text-[11px] text-slate-600 font-bold flex items-center gap-1.5">Read-only</p>
-      </div>
     </div>
   );
 }
