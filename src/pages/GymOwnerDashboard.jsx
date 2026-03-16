@@ -741,7 +741,16 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
   const [filter, setFilter]     = useState('all');
   const [sort, setSort]         = useState('recentlyActive');
   const [expanded, setExpanded] = useState(null);
-  const [notes, setNotes]       = useState({});
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'leaderboard'
+  const [lbMetric, setLbMetric] = useState('streak'); // 'streak' | 'monthly' | 'alltime'
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('coachMemberNotes') || '{}'); } catch { return {}; }
+  });
+  const saveNote = (uid, val) => {
+    const updated = { ...notes, [uid]: val };
+    setNotes(updated);
+    try { localStorage.setItem('coachMemberNotes', JSON.stringify(updated)); } catch {}
+  };
 
   const memberLastCI = {};
   checkIns.forEach(c => { if (!memberLastCI[c.user_id] || new Date(c.check_in_date) > new Date(memberLastCI[c.user_id])) memberLastCI[c.user_id] = c.check_in_date; });
