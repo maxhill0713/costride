@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import RedeemReward from './pages/RedeemReward';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
+import CoachDashboard from './pages/CoachDashboard';
 import Onboarding from './pages/Onboarding';
 import GymSignup from './pages/GymSignup';
 import MemberSignup from './pages/MemberSignup';
