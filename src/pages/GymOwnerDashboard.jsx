@@ -678,11 +678,91 @@ export default function GymOwnerDashboard() {
   const { data: memberUsers = [] } = useQuery({ queryKey: ['memberUsers', selectedGym?.id, memberUserIds.length], queryFn: async () => { if (!memberUserIds.length) return []; const r = await Promise.allSettled(memberUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(x => x?.[0] || null))); return r.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value); }, enabled: memberUserIds.length > 0 && on, staleTime: 10 * 60 * 1000 });
   const avatarMap = useMemo(() => { const m = {}; memberUsers.forEach(u => { if (u?.id) { const av = u.avatar_url || u.profile_picture || u.photo_url || null; if (av) m[u.id] = av; } }); return m; }, [memberUsers]);
 
-  // Classes this coach teaches (match by name/email)
+  // Classes this coach teaches (match by name/email/id)
   const myClasses = useMemo(() => {
     if (!isCoach || !currentUser) return classes;
-    return classes.filter(c => c.instructor === currentUser.full_name || c.instructor === currentUser.email || c.coach_name === currentUser.full_name || c.coach_email === currentUser.email || c.coach_id === currentUser.id);
+    return classes.filter(c =>
+      c.instructor === currentUser.full_name ||
+      c.instructor === currentUser.email ||
+      c.coach_name === currentUser.full_name ||
+      c.coach_email === currentUser.email ||
+      c.coach_id === currentUser.id
+    );
   }, [classes, currentUser, isCoach]);
+
+  // ── Coach-scoped data: only what's relevant to this coach ─────────────────
+  // Members who have ever checked in during one of the coach's class time slots
+  const coachMemberIds = useMemo(() => {
+    if (!isCoach) return null;
+    // If coach has no classes, show all members so the dashboard isn't empty
+    if (!myClasses.length) return new Set(allMemberships.map(m => m.user_id));
+    // Build hour sets for each class schedule
+    const classHours = new Set(
+      myClasses.flatMap(cls => {
+        const s = cls.schedule || '';
+        const match = s.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
+        if (!match) return [];
+        let h = parseInt(match[1]);
+        if (match[2].toLowerCase() === 'pm' && h !== 12) h += 12;
+        if (match[2].toLowerCase() === 'am' && h === 12) h = 0;
+        return [h, h + 1];
+      })
+    );
+    // Fall back to all members if we can't parse any schedule
+    if (!classHours.size) return new Set(allMemberships.map(m => m.user_id));
+    const ids = new Set();
+    checkIns.forEach(c => {
+      const h = new Date(c.check_in_date).getHours();
+      if (classHours.has(h)) ids.add(c.user_id);
+    });
+    // Always include members with no check-ins so they're visible as at-risk
+    allMemberships.forEach(m => { if (!ids.has(m.user_id)) ids.add(m.user_id); });
+    return ids;
+  }, [isCoach, myClasses, checkIns, allMemberships]);
+
+  // Filtered versions passed to coach tabs — coaches only see their slice
+  const coachMemberships = useMemo(() =>
+    isCoach && coachMemberIds
+      ? allMemberships.filter(m => coachMemberIds.has(m.user_id))
+      : allMemberships,
+    [isCoach, allMemberships, coachMemberIds]
+  );
+  const coachCheckIns = useMemo(() =>
+    isCoach && coachMemberIds
+      ? checkIns.filter(c => coachMemberIds.has(c.user_id))
+      : checkIns,
+    [isCoach, checkIns, coachMemberIds]
+  );
+  // Coach sees only their own posts, events, challenges, polls
+  const coachPosts = useMemo(() =>
+    isCoach
+      ? posts.filter(p => p.author_id === currentUser?.id || p.created_by === currentUser?.id || !p.author_id)
+      : posts,
+    [isCoach, posts, currentUser]
+  );
+  const coachEvents = useMemo(() =>
+    isCoach
+      ? events.filter(e => e.created_by === currentUser?.id || e.coach_id === currentUser?.id || !e.created_by)
+      : events,
+    [isCoach, events, currentUser]
+  );
+  const coachChallenges = useMemo(() =>
+    isCoach
+      ? challenges.filter(c => c.created_by === currentUser?.id || c.coach_id === currentUser?.id || !c.created_by)
+      : challenges,
+    [isCoach, challenges, currentUser]
+  );
+  const coachPolls = useMemo(() =>
+    isCoach
+      ? polls.filter(p => p.created_by === currentUser?.id || !p.created_by)
+      : polls,
+    [isCoach, polls, currentUser]
+  );
+  // Coach-scoped ci30
+  const coachCi30 = useMemo(() =>
+    isCoach ? coachCheckIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })) : ci30,
+    [isCoach, coachCheckIns, now, ci30]
+  );
 
   const ci7              = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now }));
   const ci30             = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
@@ -741,17 +821,98 @@ export default function GymOwnerDashboard() {
     monthChangePct < 0 && { icon: TrendingDown, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', label: 'Attendance Down', action: 'View Insight', fn: () => setTab('analytics') },
   ].filter(Boolean).slice(0, 4);
 
-  // ── Tab content — coach gets different views ──────────────────────────────
+  // ── Tab content — coach gets scoped data, owner gets full data ───────────
   const tabContent = {
     overview: isCoach
-      ? <TabCoachOverview myClasses={myClasses} checkIns={checkIns} allMemberships={allMemberships} avatarMap={avatarMap} openModal={openModal} now={now} selectedGym={selectedGym} posts={posts} events={events} challenges={challenges} polls={polls}/>
-      : <TabOverview todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest} activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate} newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={ciPrev30} atRisk={atRisk} sparkData={sparkData7} monthGrowthData={monthGrowthData} cancelledEst={cancelledEst} peakLabel={peakLabel} peakEndLabel={peakEndLabel} peakEntry={peakEntry} satVsAvg={satVsAvg} monthCiPer={monthCiPer} checkIns={checkIns} allMemberships={allMemberships} challenges={challenges} posts={posts} polls={polls} classes={classes} coaches={coaches} streaks={streaks} recentActivity={recentActivity} chartDays={chartDays} chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMap} priorities={priorities} selectedGym={selectedGym} now={now} openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta}/>,
-    members:  isCoach
-      ? <TabCoachMembers allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} avatarMap={avatarMap} openModal={openModal} now={now}/>
-      : <TabMembersComponent allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMap} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta}/>,
-    content:  <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMap} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={id=>deletePostM.mutate(id)} onDeleteEvent={id=>deleteEventM.mutate(id)} onDeleteChallenge={id=>deleteChallengeM.mutate(id)} onDeleteClass={id=>deleteClassM.mutate(id)} onDeletePoll={id=>deletePollM.mutate(id)}/>,
-    analytics:<TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} sparkData={sparkData7} Spark={Spark} Delta={Delta}/>,
-    gym:      <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
+      ? <TabCoachOverview
+          myClasses={myClasses}
+          checkIns={coachCheckIns}
+          allMemberships={coachMemberships}
+          avatarMap={avatarMap}
+          openModal={openModal}
+          now={now}
+          selectedGym={selectedGym}
+          posts={coachPosts}
+          events={coachEvents}
+          challenges={coachChallenges}
+          polls={coachPolls}
+        />
+      : <TabOverview
+          todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
+          activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
+          newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={ciPrev30}
+          atRisk={atRisk} sparkData={sparkData7} monthGrowthData={monthGrowthData}
+          cancelledEst={cancelledEst} peakLabel={peakLabel} peakEndLabel={peakEndLabel}
+          peakEntry={peakEntry} satVsAvg={satVsAvg} monthCiPer={monthCiPer}
+          checkIns={checkIns} allMemberships={allMemberships} challenges={challenges}
+          posts={posts} polls={polls} classes={classes} coaches={coaches}
+          streaks={streaks} recentActivity={recentActivity} chartDays={chartDays}
+          chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMap}
+          priorities={priorities} selectedGym={selectedGym} now={now}
+          openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta}
+        />,
+    members: isCoach
+      ? <TabCoachMembers
+          allMemberships={coachMemberships}
+          checkIns={coachCheckIns}
+          ci30={coachCi30}
+          avatarMap={avatarMap}
+          openModal={openModal}
+          now={now}
+        />
+      : <TabMembersComponent
+          allMemberships={allMemberships} checkIns={checkIns} ci30={ci30}
+          memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym}
+          atRisk={atRisk} atRiskMembersList={atRiskMembersList}
+          retentionRate={retentionRate} totalMembers={totalMembers}
+          activeThisWeek={activeThisWeek} newSignUps={newSignUps}
+          weeklyChangePct={weeklyChangePct} avatarMap={avatarMap}
+          memberFilter={memberFilter} setMemberFilter={setMemberFilter}
+          memberSearch={memberSearch} setMemberSearch={setMemberSearch}
+          memberSort={memberSort} setMemberSort={setMemberSort}
+          memberPage={memberPage} setMemberPage={setMemberPage}
+          memberPageSize={memberPageSize} selectedRows={selectedRows}
+          setSelectedRows={setSelectedRows} openModal={openModal} now={now}
+          Spark={Spark} Delta={Delta}
+        />,
+    // Content: coach sees only their own posts/events/challenges/polls
+    content: <TabContentComponent
+      events={isCoach ? coachEvents : events}
+      challenges={isCoach ? coachChallenges : challenges}
+      polls={isCoach ? coachPolls : polls}
+      posts={isCoach ? coachPosts : posts}
+      classes={isCoach ? myClasses : classes}
+      checkIns={isCoach ? coachCheckIns : checkIns}
+      ci30={isCoach ? coachCi30 : ci30}
+      avatarMap={avatarMap}
+      leaderboardView={leaderboardView}
+      setLeaderboardView={setLeaderboardView}
+      openModal={openModal}
+      now={now}
+      onDeletePost={id=>deletePostM.mutate(id)}
+      onDeleteEvent={id=>deleteEventM.mutate(id)}
+      onDeleteChallenge={id=>deleteChallengeM.mutate(id)}
+      onDeleteClass={id=>deleteClassM.mutate(id)}
+      onDeletePoll={id=>deletePollM.mutate(id)}
+    />,
+    // Analytics: coach sees their member slice only
+    analytics: <TabAnalyticsComponent
+      checkIns={isCoach ? coachCheckIns : checkIns}
+      ci30={isCoach ? coachCi30 : ci30}
+      totalMembers={isCoach ? coachMemberships.length : totalMembers}
+      monthCiPer={monthCiPer}
+      monthChangePct={monthChangePct}
+      monthGrowthData={monthGrowthData}
+      retentionRate={retentionRate}
+      activeThisMonth={activeThisMonth}
+      newSignUps={newSignUps}
+      atRisk={atRisk}
+      gymId={selectedGym?.id}
+      sparkData={sparkData7}
+      Spark={Spark}
+      Delta={Delta}
+    />,
+    gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
   };
 
   // ── Splash screens ────────────────────────────────────────────────────────
