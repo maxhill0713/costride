@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -47,7 +48,7 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
     return map[kg] || { from: '#64748b', to: '#475569' };
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -217,4 +218,6 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
       )}
     </AnimatePresence>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 }
