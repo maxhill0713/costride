@@ -950,24 +950,12 @@ export default function Home() {
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
                   <div className="relative space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                        <Dumbbell className="w-4 h-4 text-white" />
-                      </div>
-                      <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Create Workout Split</h3>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowSplitModal(true)}
-                        className="flex-1 p-2 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-500/20">
-                        <Calendar className="w-3 h-3" /> Start Building
-                      </button>
-                      <button
-                        onClick={() => navigate(createPageUrl('Progress'))}
-                        className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-500/20">
-                        <TrendingUp className="w-3 h-3" /> Log Workout
-                      </button>
-                    </div>
+                    <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Create Workout Split</h3>
+                    <button
+                      onClick={() => setShowSplitModal(true)}
+                      className="w-full p-2 rounded-lg bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 text-white font-semibold text-xs flex items-center justify-center border border-transparent shadow-[0_3px_0_0_#92400e,0_8px_20px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                      Start Building
+                    </button>
                   </div>
                 </Card>
               )}
