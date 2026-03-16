@@ -1,21 +1,22 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    await base44.auth.me();
+    const payload = await req.json();
 
-    const { gymId } = await req.json();
+    // Support both direct invocation (gymId) and automation payload (data.gym_id)
+    const gymId = payload.gymId || payload.data?.gym_id;
 
     if (!gymId) {
       return Response.json({ error: 'Gym ID required' }, { status: 400 });
     }
 
     const [members, checkIns, challenges, lifts] = await Promise.all([
-      base44.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }),
-      base44.entities.CheckIn.filter({ gym_id: gymId }),
-      base44.entities.Challenge.filter({ gym_id: gymId }),
-      base44.entities.Lift.filter({ gym_id: gymId })
+      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }),
+      base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }),
+      base44.asServiceRole.entities.Challenge.filter({ gym_id: gymId }),
+      base44.asServiceRole.entities.Lift.filter({ gym_id: gymId })
     ]);
 
     // Active members (checked in this month)
@@ -46,6 +47,12 @@ Deno.serve(async (req) => {
       challenges_won: challengesWon,
       engagement_score: Math.round(engagementScore)
     };
+
+    // Update or create GymStats record
+    const existingStats = await base44.asServiceRole.entities.GymStats.filter({ gym_id: gymId });
+    if (existingStats.length > 0) {
+      await base44.asServiceRole.entities.GymStats.update(existingStats[0].id, stats);
+    }
 
     return Response.json(stats);
   } catch (error) {
