@@ -244,7 +244,10 @@ export default function GymOwnerDashboard() {
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole   = isCoach ? 'coach' : 'gym_owner';
   const roleLabel  = isCoach ? 'Coach' : 'Gym Owner';
-  const NAV        = ALL_NAV.filter(item => item.roles.includes(dashRole));
+  const NAV        = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
+    ...item,
+    label: isCoach && item.coachLabel ? item.coachLabel : item.label,
+  }));
 
   const { data: gyms = [], error: gymsError } = useQuery({
     queryKey: ['ownerGyms', currentUser?.email],
