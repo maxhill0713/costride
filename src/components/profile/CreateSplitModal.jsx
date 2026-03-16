@@ -859,6 +859,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));
                       setWeightsDirty(true);
                     }}
+                    sets={previewSets[day] || {}}
+                    onSetsChange={(idx, val) => {
+                      setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));
+                      setWeightsDirty(true);
+                    }}
+                    reps={previewReps[day] || {}}
+                    onRepsChange={(idx, val) => {
+                      setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));
+                      setWeightsDirty(true);
+                    }}
                   />
                 );
               })}
