@@ -1015,25 +1015,28 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
                     </div>
                   </div>
 
-                  {/* Coach note */}
-                  <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>Coach Note</div>
-                    <textarea
-                      placeholder={`Add a note about ${m.user_name || 'this member'}…`}
-                      value={notes[m.user_id] || ''}
-                      onChange={e => setNotes(n => ({ ...n, [m.user_id]: e.target.value }))}
-                      style={{ width: '100%', minHeight: 64, padding: '9px 11px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.5 }}
-                    />
+                  {/* Coach note — auto-saved */}
+                   <div>
+                     <div style={{ fontSize: 10, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                       Coach Note
+                       {notes[m.user_id] && <span style={{ fontSize: 9, color: '#34d399', fontWeight: 600 }}>✓ saved</span>}
+                     </div>
+                     <textarea
+                       placeholder={`Add a note about ${m.user_name || 'this member'}…`}
+                       value={notes[m.user_id] || ''}
+                       onChange={e => saveNote(m.user_id, e.target.value)}
+                       style={{ width: '100%', minHeight: 64, padding: '9px 11px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.5 }}
+                     />
+                   </div>
                   </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </CoachCard>
-    </div>
-  );
-}
+                  )}
+                  </div>
+                  );
+                  })}
+                  </CoachCard>}
+                  </div>
+                  );
+                  }
 
 // ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
 const GRADIENT_OVERRIDE = `
