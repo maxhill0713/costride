@@ -1143,8 +1143,8 @@ export default function GymOwnerDashboard() {
   );
   // Coach-scoped ci30
   const coachCi30 = useMemo(() =>
-    isCoach ? coachCheckIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })) : ci30,
-    [isCoach, coachCheckIns, now, ci30]
+    coachCheckIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })),
+    [coachCheckIns, now]
   );
 
   const ci7              = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now }));
