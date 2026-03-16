@@ -269,7 +269,7 @@ const STREAK_KEYFRAMES = `
     100% { transform: scale(1) rotate(0deg); }
   }
   @keyframes streakIconPop {
-    0%   { transform: scale(0.6); opacity: 0; }
+    0%   { transform: scale(0.6); opacity: 1; }
     55%  { transform: scale(1.1); opacity: 1; }
     72%  { transform: scale(0.97); }
     85%  { transform: scale(1.04); }
@@ -360,14 +360,15 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
     spawnParticles();
+    // Fade out p1
     p1.style.transition = 'opacity 0.15s ease';
     p1.style.opacity = '0';
     p1.style.pointerEvents = 'none';
+    // Show p2 and animate — set opacity FIRST, then apply animation
+    // (animation keyframes start at opacity:1 so no conflict)
     p2.style.transition = 'none';
-    p2.style.opacity = '1';
     p2.style.pointerEvents = 'auto';
-    p2.style.animation = 'none';
-    void p2.offsetWidth;
+    p2.style.opacity = '1';
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     stage.style.animation = 'none';
     setTimeout(() => {
@@ -423,7 +424,6 @@ export default function Home() {
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
-  // ── Sticky header scroll logic ───────────────────────────────────────────
   const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
@@ -847,11 +847,7 @@ export default function Home() {
           src={POSE_1_URL}
           alt="streak"
           className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} animate-[breathe_3s_ease-in-out_infinite]`}
-          style={{
-            objectFit: 'contain',
-            
-            opacity: 1,
-          }} />
+          style={{ objectFit: 'contain', opacity: 1 }} />
         <span
           className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
           style={{
@@ -878,7 +874,6 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── Sticky header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out"
           style={{
@@ -897,7 +892,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Inline header placeholder ── */}
         <div className="px-4 py-3 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={false} />
         </div>
@@ -1415,6 +1409,7 @@ export default function Home() {
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
               <div id="streak-anim-stage" style={{ position: 'relative', width: 180, height: 180, filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))', opacity: 0, willChange: 'transform, opacity, filter' }}>
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="streak pose 1" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 1 }} />
+                {/* p2 starts hidden; JS sets opacity:1 before firing the animation */}
                 <img id="streak-anim-p2" src={POSE_2_URL} alt="streak pose 2" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0, willChange: 'transform, opacity' }} />
               </div>
               <div id="streak-anim-num" style={{ fontSize: 120, fontWeight: 900, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.04em', lineHeight: 1, opacity: 0, transform: 'scale(0.5)' }}>
@@ -1622,7 +1617,6 @@ export default function Home() {
               transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
               onClick={(e) => e.stopPropagation()}
               className={modalPanelClass}>
-              {/* ── CHANGED: added text-center to centre title and date ── */}
               <div className="mb-5 text-center">
                 <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
                 <p className="text-sm text-slate-400 font-medium">
@@ -1737,7 +1731,6 @@ export default function Home() {
                 transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
                 onClick={(e) => e.stopPropagation()}
                 className={modalPanelClass}>
-                {/* ── CHANGED: added text-center to centre title and date ── */}
                 <div className="mb-5 text-center">
                   <h3 className="text-2xl font-black text-white mb-2">{workoutName}</h3>
                   <p className="text-sm text-slate-400 font-medium mt-2">{formattedDate}</p>
