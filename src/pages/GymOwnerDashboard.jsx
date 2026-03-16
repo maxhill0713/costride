@@ -917,9 +917,6 @@ function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal,
       )}
 
       {/* List view */}
-      {viewMode === 'list' && 
-
-      {/* List view */}
       {viewMode === 'list' && (<CoachCard style={{ overflow: 'hidden' }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '36px 0', color: '#3a5070' }}>
