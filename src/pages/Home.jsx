@@ -15,7 +15,6 @@ import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
-import StreakPose2 from '../components/StreakPose2';
 import PostCard from '../components/feed/PostCard';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
