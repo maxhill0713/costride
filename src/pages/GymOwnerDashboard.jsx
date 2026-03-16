@@ -489,12 +489,16 @@ export default function GymOwnerDashboard() {
               <AlertTriangle style={{ width: 9, height: 9 }}/>{atRisk}
             </button>
           )}
-          <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.16)', color: '#38bdf8', cursor: 'pointer' }}>
-            <QrCode style={{ width: 14, height: 14 }}/>
-          </button>
-          <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: '#f0f4f8', cursor: 'pointer' }}>
-            <Plus style={{ width: 14, height: 14 }}/>
-          </button>
+          {isGymOwner && (
+            <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.16)', color: '#38bdf8', cursor: 'pointer' }}>
+              <QrCode style={{ width: 14, height: 14 }}/>
+            </button>
+          )}
+          {isGymOwner && (
+            <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: '#f0f4f8', cursor: 'pointer' }}>
+              <Plus style={{ width: 14, height: 14 }}/>
+            </button>
+          )}
         </div>
       </header>
 
