@@ -480,7 +480,7 @@ export default function GymOwnerDashboard() {
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.02em', lineHeight: 1 }}>{selectedGym?.name || 'Dashboard'}</div>
-            <div style={{ fontSize: 9, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>Gym Owner</div>
+            <div style={{ fontSize: 9, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>{roleLabel}</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
