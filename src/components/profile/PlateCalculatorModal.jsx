@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 
 export default function PlateCalculatorModal({ isOpen, onClose }) {
   const [targetWeight, setTargetWeight] = useState('');
@@ -98,7 +97,7 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
 
             {/* Top shine */}
             <div style={{
-              position: 'sticky', top: 0, left: 0, right: 0, height: '1px',
+              position: 'sticky', top: 0, height: '1px',
               background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
               pointerEvents: 'none',
             }} />
@@ -109,24 +108,14 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
             }} />
 
             <div style={{ padding: '20px', position: 'relative' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px 0' }}>Plate Calculator</h2>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-                    Standard gym · max 20kg plates
-                  </p>
-                </div>
-                <button
-                  onClick={onClose}
-                  style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.06)', border: 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: '#94a3b8', flexShrink: 0,
-                  }}>
-                  <X size={14} />
-                </button>
+              {/* Header — no X button */}
+              <div style={{ marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px 0' }}>
+                  Plate Calculator
+                </h2>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                  Standard gym · max 20kg plates
+                </p>
               </div>
 
               {/* Inputs */}
@@ -237,18 +226,20 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
                 </motion.div>
               )}
 
-              {/* Close */}
-              <button
+              {/* Close — slate press-down button */}
+              <motion.button
                 onClick={onClose}
+                whileTap={{ scale: 0.95, y: 3 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                 style={{
                   width: '100%', padding: '10px', borderRadius: '12px',
                   fontWeight: 700, fontSize: '14px', color: '#cbd5e1', border: 'none',
                   background: 'linear-gradient(to bottom, #475569, #334155, #1e293b)',
                   boxShadow: '0 3px 0 0 #0f172a, inset 0 1px 0 rgba(255,255,255,0.08)',
-                  cursor: 'pointer', transition: 'all 0.1s',
+                  cursor: 'pointer',
                 }}>
                 Close
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
