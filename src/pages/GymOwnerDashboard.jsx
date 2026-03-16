@@ -155,9 +155,7 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
 //   TabCoachMembers  → components/dashboard/TabCoachMembers.jsx
 
 // ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
-const _STUB_PLACEHOLDER = null; // Intentionally left blank – see above files
-
-  const todayCI_UNUSED  = null; // intentional placeholder - NOT real code
+const _STUB_PLACEHOLDER = null;
   const totalM   = allMemberships.length;
   const activeW  = new Set(ci7.map(c => c.user_id)).size;
   const activePW = new Set(ciPrev7.map(c => c.user_id)).size;
