@@ -563,7 +563,7 @@ export default function GymOwnerDashboard() {
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 900, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.03em' }}>{selectedGym?.name || 'Dashboard'}</div>
-                <div style={{ fontSize: 9, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>Gym Owner</div>
+                <div style={{ fontSize: 9, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>{roleLabel}</div>
               </div>
             )}
           </div>
