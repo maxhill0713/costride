@@ -43,6 +43,7 @@ import Community from './pages/Community';
 import ModeratorDashboard from './pages/ModeratorDashboard';
 import NotificationsHub from './pages/NotificationsHub';
 import PostArchive from './pages/PostArchive';
+import CoachDashboard from './pages/CoachDashboard';
 
 const LayoutWrapper = ({ children, currentPageName }) => (
   <Layout currentPageName={currentPageName}>{children}</Layout>
