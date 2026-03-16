@@ -6,7 +6,22 @@ import {
   ArrowUpRight, UserPlus, QrCode, Trophy, Send, Bell, X, Check,
   MessageSquare, Zap, Clock, Gift, Flame
 } from 'lucide-react';
-import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
+import { Card, Avatar, StatusChip, FitnessScore, Empty } from './DashboardPrimitives';
+
+const RiskBadge = ({ risk }) => {
+  const map = {
+    'Low':    { bg: 'rgba(16,185,129,0.12)',  color: '#34d399',  border: 'rgba(16,185,129,0.25)' },
+    'Medium': { bg: 'rgba(245,158,11,0.12)',  color: '#fbbf24',  border: 'rgba(245,158,11,0.25)' },
+    'High':   { bg: 'rgba(239,68,68,0.12)',   color: '#f87171',  border: 'rgba(239,68,68,0.25)' },
+  };
+  const s = map[risk] || map['Low'];
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
+      {risk}
+    </span>
+  );
+};
+const HealthScore = FitnessScore;
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
