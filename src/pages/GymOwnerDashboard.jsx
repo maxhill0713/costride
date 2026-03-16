@@ -741,8 +741,7 @@ function _TabCoachSchedule_PLACEHOLDER({ myClasses, checkIns, events, challenges
   );
 }
 
-// ── Coach Members Tab ─────────────────────────────────────────────────────────
-function TabCoachMembers({ allMemberships, checkIns, ci30, avatarMap, openModal, now }) {
+function _TabCoachMembers_PLACEHOLDER({ allMemberships, checkIns, ci30, avatarMap, openModal, now }) {
   const [search, setSearch]     = useState('');
   const [filter, setFilter]     = useState('all');
   const [sort, setSort]         = useState('recentlyActive');
