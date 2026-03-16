@@ -269,15 +269,15 @@ const STREAK_KEYFRAMES = `
     100% { transform: scale(1) rotate(0deg); }
   }
   @keyframes streakIconPop {
-    0%   { transform: scale(0.6); opacity: 1; }
-    55%  { transform: scale(1.1); opacity: 1; }
-    72%  { transform: scale(0.97); }
-    85%  { transform: scale(1.04); }
-    100% { transform: scale(1); opacity: 1; }
+    0%   { transform: scale(0.5); }
+    55%  { transform: scale(1.12); }
+    72%  { transform: scale(0.96); }
+    85%  { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
   @keyframes streakGlowPulse {
-    0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,0.6)) brightness(1); opacity: 1; }
-    50%      { filter: drop-shadow(0 0 44px rgba(249,115,22,1)) brightness(1.08); opacity: 1; }
+    0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,0.6)); }
+    50%      { filter: drop-shadow(0 0 44px rgba(249,115,22,1)); }
   }
   @keyframes streakParticleBurst {
     0%   { transform: translate(0,0) scale(1); opacity: 1; }
