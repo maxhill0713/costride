@@ -315,9 +315,28 @@ export default function GymOwnerDashboard() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   useEffect(() => { if (currentUser && !currentUser.onboarding_completed) navigate(createPageUrl('Onboarding')); }, [currentUser, navigate]);
 
+  // Determine role — coach or gym_owner
+  const isCoach = currentUser?.account_type === 'coach';
+  const isGymOwner = currentUser?.account_type === 'gym_owner';
+  const dashRole = isCoach ? 'coach' : 'gym_owner';
+  const roleLabel = isCoach ? 'Coach' : 'Gym Owner';
+
+  // Filter nav items by role
+  const NAV = ALL_NAV.filter(item => item.roles.includes(dashRole));
+
   const { data: gyms = [], error: gymsError } = useQuery({
     queryKey: ['ownerGyms', currentUser?.email],
-    queryFn:  () => base44.entities.Gym.filter({ owner_email: currentUser.email }),
+    queryFn:  async () => {
+      if (isCoach) {
+        // Coaches: find gyms they are listed as a coach in
+        const coachRecords = await base44.entities.Coach.filter({ user_email: currentUser.email });
+        if (!coachRecords.length) return [];
+        const gymIds = [...new Set(coachRecords.map(c => c.gym_id))];
+        const results = await Promise.allSettled(gymIds.map(id => base44.entities.Gym.filter({ id })));
+        return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+      }
+      return base44.entities.Gym.filter({ owner_email: currentUser.email });
+    },
     enabled: !!currentUser?.email, retry: 3, staleTime: 5 * 60 * 1000,
   });
 
