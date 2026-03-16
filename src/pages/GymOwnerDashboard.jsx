@@ -1351,7 +1351,6 @@ export default function GymOwnerDashboard() {
           posts={coachPosts}
           events={coachEvents}
           challenges={coachChallenges}
-          polls={coachPolls}
         />
       : <TabOverview
           todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
