@@ -35,12 +35,13 @@ import TabContentComponent from '../components/dashboard/TabContent';
 import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
 import TabGym        from '../components/dashboard/TabGym';
 
-const NAV = [
-  { id: 'overview',  label: 'Overview',  icon: LayoutDashboard },
-  { id: 'members',   label: 'Members',   icon: Users },
-  { id: 'content',   label: 'Content',   icon: FileText },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'gym',       label: 'Settings',  icon: Settings },
+// Full nav — items are filtered per role below
+const ALL_NAV = [
+  { id: 'overview',  label: 'Overview',  icon: LayoutDashboard, roles: ['gym_owner', 'coach'] },
+  { id: 'members',   label: 'Members',   icon: Users,           roles: ['gym_owner', 'coach'] },
+  { id: 'content',   label: 'Content',   icon: FileText,        roles: ['gym_owner', 'coach'] },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3,       roles: ['gym_owner'] },
+  { id: 'gym',       label: 'Settings',  icon: Settings,        roles: ['gym_owner'] },
 ];
 
 // ─── Sparkline SVG helper ────────────────────────────────────────────────────
