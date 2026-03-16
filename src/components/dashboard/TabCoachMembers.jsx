@@ -379,6 +379,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
             <div style={{ fontSize: 9, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Client Info</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
               {[
+                { label: 'Email',        value: m.user_email || '—' },
                 { label: 'Member Since', value: m.join_date ? format(new Date(m.join_date), 'MMM d, yyyy') : m.created_date ? format(new Date(m.created_date), 'MMM d, yyyy') : '—' },
                 { label: 'Membership',   value: m.membership_type || 'Monthly' },
                 { label: 'First Visit',  value: clientCIs.length > 0 ? format(new Date([...clientCIs].sort((a, b) => new Date(a.check_in_date) - new Date(b.check_in_date))[0].check_in_date), 'MMM d, yyyy') : 'Not yet' },
@@ -386,7 +387,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               ].map((item, i) => (
                 <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{item.label}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{item.value}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', wordBreak: 'break-all' }}>{item.value}</div>
                 </div>
               ))}
             </div>
