@@ -279,6 +279,7 @@ function LogWorkoutDemo() {
   const [pressed, setPressed] = useState(false);
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: '#1a3fa8', transform: 'translateY(3px)' }} />
       <button
         onMouseDown={() => setPressed(true)}
         onMouseUp={() => setPressed(false)}
@@ -293,9 +294,9 @@ function LogWorkoutDemo() {
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)',
           color: '#fff', fontSize: 13, fontWeight: 800,
           cursor: 'pointer', userSelect: 'none', outline: 'none',
-          transform: pressed ? 'translateY(2px)' : 'translateY(0)',
-          boxShadow: 'none',
-          transition: 'transform 0.07s ease',
+          transform: pressed ? 'translateY(3px)' : 'translateY(0)',
+          boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, 0 6px 20px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
           WebkitTapHighlightColor: 'transparent',
         }}
       >Log Workout</button>
@@ -322,7 +323,7 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%', paddingTop: 24 }}>
       {/* S-curve row — matches Home.jsx exactly */}
       <div style={{
         position: 'relative',
@@ -359,20 +360,22 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
               )}
               <button
                 onPointerDown={(e) => {
-                  e.currentTarget.style.opacity = '0.65';
+                  e.currentTarget.style.transform = 'translateY(4px)';
+                  e.currentTarget.style.boxShadow = 'none';
                   const rect = e.currentTarget.getBoundingClientRect();
                   if (demoBubbleDay === day) { setDemoBubbleDay(null); setDemoBubblePos(null); }
                   else { setDemoBubbleDay(day); setDemoBubblePos({ cx: rect.left + rect.width / 2, bottom: rect.bottom }); }
                 }}
-                onPointerUp={(e) => { e.currentTarget.style.opacity = '1'; }}
-                onPointerLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                onPointerUp={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                onPointerLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
+                onPointerCancel={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = s.shadow; }}
                 style={{
                   width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: 'none',
+                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow,
                   cursor: 'pointer', padding: 0, outline: 'none',
                   WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                  transition: 'opacity 0.1s ease',
+                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
                 }}>
                 {s.icon === 'check' && <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 {s.icon === 'x' && <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" /></svg>}
@@ -816,14 +819,13 @@ export default function Onboarding() {
               <ProgressBar step={6} />
             </div>
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 4px', flexShrink: 0 }}>How often do you train?</h1>
-            <p style={{ color: C.sub, fontSize: 14, margin: '0 0 20px', flexShrink: 0 }}>Pick the days you plan to go to the gym each week.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 7, flexShrink: 0 }}>
+            <p style={{ color: C.sub, fontSize: 14, margin: '0 0 28px', flexShrink: 0 }}>Pick the days you plan to go to the gym each week.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 7, flexShrink: 0, marginTop: 12 }}>
               {DAY_NAMES.map((name, i) => {
                 const d = i + 1; const on = trainingDays.includes(d);
                 return (
-                  <button key={d} onClick={() => handleToggleDay(d)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, paddingTop: 13, paddingBottom: 13, borderRadius: 14, border: on ? `2px solid ${C.blueMid}` : `2px solid ${C.border}`, background: on ? `linear-gradient(to bottom, ${C.blueMid}, ${C.blue})` : C.card, color: on ? '#fff' : C.sub, fontWeight: 700, fontSize: 11, cursor: 'pointer', boxShadow: on ? `0 3px 0 0 ${C.blueDark}, 0 4px 10px rgba(59,130,246,0.15)` : '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.15s ease', WebkitTapHighlightColor: 'transparent' }}>
+                  <button key={d} onClick={() => handleToggleDay(d)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 15, paddingBottom: 15, borderRadius: 14, border: on ? `2px solid ${C.blueMid}` : `2px solid ${C.border}`, background: on ? `linear-gradient(to bottom, ${C.blueMid}, ${C.blue})` : C.card, color: on ? '#fff' : C.sub, fontWeight: 700, fontSize: 11, cursor: 'pointer', boxShadow: on ? `0 3px 0 0 ${C.blueDark}, 0 4px 10px rgba(59,130,246,0.15)` : '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.15s ease', WebkitTapHighlightColor: 'transparent' }}>
                     {name}
-                    {on && <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
                   </button>
                 );
               })}
@@ -883,7 +885,7 @@ export default function Onboarding() {
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
               alt="Streak icon"
-              style={{ width: 100, height: 100, objectFit: 'contain' }}
+              style={{ width: 130, height: 130, objectFit: 'contain', marginTop: 20 }}
             />
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
               Meet your <strong style={{ color: C.text }}>streak icon</strong> — it tracks your consistency and appears on your posts so friends can react and cheer you on. Complete challenges to unlock new looks for it.
@@ -895,15 +897,25 @@ export default function Onboarding() {
         key: 'primarygym',
         render: () => (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
-            {/* Purple star button — flat, no shadow, matches the clean card style */}
-            <div style={{
-              width: 64, height: 64, borderRadius: 18,
-              background: 'linear-gradient(to bottom, #c084fc, #a855f7, #9333ea)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="none">
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-              </svg>
+            {/* Purple star button — 3D press effect matching app style */}
+            <div style={{ position: 'relative' }}>
+              {/* 3D underlay */}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: 18,
+                background: '#5b21b6',
+                transform: 'translateY(4px)',
+              }} />
+              <div style={{
+                position: 'relative', zIndex: 1,
+                width: 64, height: 64, borderRadius: 18,
+                background: 'linear-gradient(to bottom, #c084fc, #a855f7 40%, #9333ea)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 0 0 #5b21b6, 0 8px 20px rgba(120,40,220,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+              }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="none">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
+              </div>
             </div>
             <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
               The <strong style={{ color: C.text }}>star button</strong> lets you set your home gym — the community shown on your home page. Find it on the My Gyms page. You can also use it on the workout split page to set your active training plan.
@@ -939,7 +951,18 @@ export default function Onboarding() {
       ];
       const d = DEMO_DAYS[demoBubbleDay - 1];
       if (!d) return null;
-      const getDemoLabel = (d) => ({ logged: d.day === 1 ? 'Chest' : 'Upper A', missed: 'No Workout', restDone: 'Rest Day', future: d.day === 5 ? 'Push A' : 'Pull A', futureRest: 'Rest Day' }[d.type] || '');
+      const getDemoLabel = (d) => {
+        const labels = {
+          1: 'Chest & Triceps',
+          2: 'No Workout',
+          3: 'Rest Day',
+          4: 'Back & Biceps',
+          5: 'Legs',
+          6: 'Shoulders',
+          7: 'Rest Day',
+        };
+        return labels[d.day] || '';
+      };
       const getDemoDate = (d) => ['Monday 17 Mar','Tuesday 18 Mar','Wednesday 19 Mar','Thursday 20 Mar','Friday 21 Mar','Saturday 22 Mar','Sunday 23 Mar'][d.day - 1];
       const getBubbleColor = (d) => ({ logged: '#3b82f6', missed: '#dc2626', restDone: '#16a34a', future: '#263244', futureRest: '#1e2535' }[d.type] || '#263244');
       const hasViewSummary = d.type === 'logged';
