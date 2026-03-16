@@ -428,7 +428,7 @@ export default function Onboarding() {
   const [animDir, setAnimDir] = useState('forward');
   const [visible, setVisible] = useState(true);
   const [selectedAccountType, setSelectedAccountType] = useState(null);
-  const [gymJoinMode, setGymJoinMode] = useState('code');
+  const [gymJoinMode, setGymJoinMode] = useState('search');
   const [gymCode, setGymCode] = useState('');
   const [gymCodeError, setGymCodeError] = useState('');
   const [gymSearch, setGymSearch] = useState('');
@@ -609,8 +609,8 @@ export default function Onboarding() {
   // STEP 2 — JOIN YOUR COMMUNITY
   if (step === 2) {
     const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
-    const handleInputFocus = () => { if (window.visualViewport) { document.body.style.height = `${window.visualViewport.height}px`; } };
-    const handleInputBlur = () => { document.body.style.height = ''; };
+    const handleInputFocus = () => {};
+    const handleInputBlur = () => {};
     return (
       <PageShell>
         <SlidePane visible={visible} dir={animDir}>
@@ -622,8 +622,8 @@ export default function Onboarding() {
             <h1 style={{ color: C.text, fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', margin: '0 0 16px', flexShrink: 0 }}>Let's Join Your Community</h1>
             {!joinedGym && (
               <div style={{ position: 'relative', display: 'flex', background: '#e2eaf4', borderRadius: 16, padding: 5, marginBottom: 16, flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.08)' }}>
-                <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 2px 0 0 #cbd5e1, 0 1px 4px rgba(0,0,0,0.08)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'code' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
-                {[['code', 'Enter Code'], ['search', 'Find Gym']].map(([mode, label]) => (
+                <div style={{ position: 'absolute', top: 5, bottom: 5, width: 'calc(50% - 5px)', borderRadius: 11, background: C.card, boxShadow: '0 2px 0 0 #cbd5e1, 0 1px 4px rgba(0,0,0,0.08)', transition: 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1)', transform: gymJoinMode === 'search' ? 'translateX(0)' : 'translateX(calc(100% + 10px))', pointerEvents: 'none' }} />
+                {[['search', 'Find Gym'], ['code', 'Enter Code']].map(([mode, label]) => (
                   <button key={mode} onClick={() => { setGymJoinMode(mode); setGymCodeError(''); }} style={{ flex: 1, padding: '11px 0', borderRadius: 11, border: 'none', background: 'transparent', color: gymJoinMode === mode ? C.blue : C.sub, fontWeight: 800, fontSize: 14, cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.18s ease', WebkitTapHighlightColor: 'transparent', letterSpacing: '-0.01em' }}>
                     {label}
                   </button>
