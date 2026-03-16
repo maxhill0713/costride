@@ -1415,6 +1415,7 @@ export default function GymOwnerDashboard() {
       onDeleteChallenge={id=>deleteChallengeM.mutate(id)}
       onDeleteClass={id=>deleteClassM.mutate(id)}
       onDeletePoll={id=>deletePollM.mutate(id)}
+      isCoach={isCoach}
     />,
     analytics: <TabAnalyticsComponent
       checkIns={isCoach ? coachCheckIns : checkIns}
@@ -1431,6 +1432,8 @@ export default function GymOwnerDashboard() {
       sparkData={sparkData7}
       Spark={Spark}
       Delta={Delta}
+      isCoach={isCoach}
+      myClasses={myClasses}
     />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
   };
