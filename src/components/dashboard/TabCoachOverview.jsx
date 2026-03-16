@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
+import { format, subDays, startOfDay, isWithinInterval, addDays } from 'date-fns';
 import {
   Activity, Users, AlertCircle, QrCode, FileText, Dumbbell,
-  Calendar, CheckCircle, Flame, TrendingUp, Clock, UserCheck,
-  Trophy, BarChart2, MessageCircle, Plus, ChevronRight,
-  Zap, Star, Target, ArrowUpRight, TrendingDown,
+  Calendar, CheckCircle, Flame, Clock, UserCheck,
+  Trophy, MessageCircle, ChevronRight,
+  Star, Target, UserPlus, BookOpen, Bell,
+  ClipboardList, Zap, Heart, Award, TrendingUp,
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
-// ── Tiny sparkline ────────────────────────────────────────────────────────────
+// ── Tiny sparkline ─────────────────────────────────────────────────────────────
 function Spark({ data = [], color = '#a78bfa', height = 28 }) {
   if (!data.length || Math.max(...data) === 0) return (
     <div style={{ width: 60, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -38,12 +39,10 @@ function Spark({ data = [], color = '#a78bfa', height = 28 }) {
   );
 }
 
-// ── Hero KPI card ─────────────────────────────────────────────────────────────
-function HeroKpi({ icon: Icon, label, value, sub, subColor, accentColor, spark, footerBar, onClick }) {
+// ── Hero KPI card ──────────────────────────────────────────────────────────────
+function HeroKpi({ icon: Icon, label, value, sub, subColor, accentColor, spark, footerBar }) {
   return (
-    <div onClick={onClick} style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', cursor: onClick ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s' }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.borderColor = `${accentColor}35`; }}}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}>
+    <div style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accentColor}40,transparent)`, pointerEvents: 'none' }}/>
       <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accentColor, opacity: 0.07, filter: 'blur(22px)', pointerEvents: 'none' }}/>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -64,7 +63,7 @@ function HeroKpi({ icon: Icon, label, value, sub, subColor, accentColor, spark, 
   );
 }
 
-// ── Class fill ring ───────────────────────────────────────────────────────────
+// ── Class fill ring ────────────────────────────────────────────────────────────
 function FillRing({ pct, color, size = 42 }) {
   const r  = (size - 6) / 2;
   const c  = size / 2;
@@ -79,16 +78,25 @@ function FillRing({ pct, color, size = 42 }) {
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-export default function TabCoachOverview({
-  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges,
-}) {
-  const [atRiskTab, setAtRiskTab] = useState('absent');
+// ── Roster pill (booked vs checked in) ────────────────────────────────────────
+function RosterPill({ label, count, color }) {
+  return (
+    <span style={{ fontSize: 9, fontWeight: 800, color, background: `${color}14`, border: `1px solid ${color}22`, borderRadius: 6, padding: '2px 7px' }}>
+      {label}: {count}
+    </span>
+  );
+}
 
-  // ── Core data ───────────────────────────────────────────────────────────
-  const ci7    = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now })), [checkIns, now]);
-  const ci30   = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now })), [checkIns, now]);
-  const ci7p   = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) })), [checkIns, now]);
+// ── Main component ─────────────────────────────────────────────────────────────
+export default function TabCoachOverview({
+  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events,
+}) {
+  const [atRiskTab,    setAtRiskTab]    = useState('absent');
+  const [rosterClass,  setRosterClass]  = useState(null);   // which class roster is expanded
+
+  // ── Core data ────────────────────────────────────────────────────────────
+  const ci7  = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now })), [checkIns, now]);
+  const ci7p = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) })), [checkIns, now]);
 
   const todayCI = useMemo(() =>
     checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()),
@@ -105,41 +113,33 @@ export default function TabCoachOverview({
     return m;
   }, [checkIns]);
 
-  // ── At-risk + never visited ───────────────────────────────────────────────
-  const atRiskMembers  = useMemo(() => allMemberships.filter(m => { const l = memberLastCI[m.user_id]; return l && Math.floor((now - new Date(l)) / 86400000) >= 14; }), [allMemberships, memberLastCI, now]);
-  const neverVisited   = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
-  const atRiskAll      = atRiskTab === 'absent' ? atRiskMembers : neverVisited;
+  // ── At-risk + never visited ──────────────────────────────────────────────
+  const atRiskMembers = useMemo(() => allMemberships.filter(m => {
+    const l = memberLastCI[m.user_id];
+    return l && Math.floor((now - new Date(l)) / 86400000) >= 14;
+  }), [allMemberships, memberLastCI, now]);
+  const neverVisited  = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
+  const atRiskAll     = atRiskTab === 'absent' ? atRiskMembers : neverVisited;
 
-  // ── Week trend ────────────────────────────────────────────────────────────
+  // ── New members (joined in last 14 days) ─────────────────────────────────
+  const newMembers = useMemo(() =>
+    allMemberships.filter(m => m.start_date && Math.floor((now - new Date(m.start_date)) / 86400000) <= 14)
+      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+      .slice(0, 6),
+    [allMemberships, now]
+  );
+
+  // ── Week trend ───────────────────────────────────────────────────────────
   const activeW  = useMemo(() => new Set(ci7.map(c => c.user_id)).size,  [ci7]);
   const activePW = useMemo(() => new Set(ci7p.map(c => c.user_id)).size, [ci7p]);
   const weekTrend = activePW > 0 ? Math.round(((activeW - activePW) / activePW) * 100) : 0;
 
-  // 7-day spark data
+  // 7-day spark
   const weekSpark = useMemo(() => Array.from({ length: 7 }, (_, i) =>
     checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6-i)).getTime()).length
   ), [checkIns, now]);
 
-  // ── 30-day member engagement tiers ───────────────────────────────────────
-  const memberVisits30 = useMemo(() => {
-    const m = {};
-    ci30.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
-    return m;
-  }, [ci30]);
-  const superActive = useMemo(() => allMemberships.filter(m => (memberVisits30[m.user_id] || 0) >= 12).length, [allMemberships, memberVisits30]);
-  const active      = useMemo(() => allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 4 && v < 12; }).length, [allMemberships, memberVisits30]);
-  const casual      = useMemo(() => allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 1 && v < 4; }).length, [allMemberships, memberVisits30]);
-  const totalM      = allMemberships.length;
-  const engRate     = totalM > 0 ? Math.round(((superActive + active) / totalM) * 100) : 0;
-
-  // ── Weekly top performers ─────────────────────────────────────────────────
-  const weekStars = useMemo(() => {
-    const acc = {};
-    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
-    return Object.entries(acc).sort((a,b) => b[1].count - a[1].count).slice(0,5).map(([uid, d]) => ({ user_id: uid, ...d }));
-  }, [ci7]);
-
-  // ── Classes with live attendance ──────────────────────────────────────────
+  // ── Classes with live attendance + roster ────────────────────────────────
   const classStats = useMemo(() => myClasses.map(cls => {
     const capacity = cls.max_capacity || cls.capacity || 20;
     const attended = todayCI.filter(ci => {
@@ -150,16 +150,38 @@ export default function TabCoachOverview({
       if (match[2].toLowerCase() === 'pm' && sh !== 12) sh += 12;
       const h = new Date(ci.check_in_date).getHours();
       return h === sh || h === sh + 1;
-    }).length;
-    // 4-week attendance spark per class
+    });
+    const booked   = cls.bookings || [];         // expected array of { user_id, user_name }
+    const waitlist = cls.waitlist || [];          // expected array of { user_id, user_name }
     const classSpark = Array.from({ length: 7 }, (_, i) => {
       const d = subDays(now, 6 - i);
       return checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length;
     });
-    return { ...cls, attended, capacity, fill: Math.min(100, Math.round((attended / capacity) * 100)), classSpark };
+    return {
+      ...cls,
+      attended: attended.length,
+      attendedList: attended,
+      capacity,
+      booked,
+      waitlist,
+      fill: Math.min(100, Math.round((attended.length / capacity) * 100)),
+      classSpark,
+    };
   }), [myClasses, todayCI, checkIns, now]);
 
-  // ── Member milestones ─────────────────────────────────────────────────────
+  // Average fill rate across all classes today
+  const avgFill = classStats.length > 0
+    ? Math.round(classStats.reduce((s, c) => s + c.fill, 0) / classStats.length)
+    : 0;
+
+  // ── Weekly top performers ────────────────────────────────────────────────
+  const weekStars = useMemo(() => {
+    const acc = {};
+    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
+    return Object.entries(acc).sort((a,b) => b[1].count - a[1].count).slice(0,5).map(([uid, d]) => ({ user_id: uid, ...d }));
+  }, [ci7]);
+
+  // ── Member milestones ────────────────────────────────────────────────────
   const allVisits = useMemo(() => {
     const m = {};
     checkIns.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
@@ -171,7 +193,7 @@ export default function TabCoachOverview({
     return { ...m, total, next, toNext: next ? next - total : 0 };
   }).filter(m => m.next && m.toNext <= 3).sort((a,b) => a.toNext - b.toNext).slice(0, 5), [allMemberships, allVisits]);
 
-  // ── Streaks ───────────────────────────────────────────────────────────────
+  // ── Streaks ──────────────────────────────────────────────────────────────
   const topStreaks = useMemo(() => {
     const acc = {};
     allMemberships.forEach(m => {
@@ -186,24 +208,48 @@ export default function TabCoachOverview({
     return Object.values(acc).sort((a,b) => b.streak - a.streak).slice(0, 4);
   }, [allMemberships, checkIns, now]);
 
-  const upcomingEvents  = useMemo(() => events.filter(e => new Date(e.event_date) >= now).slice(0, 3), [events, now]);
-  const activeChallenges = useMemo(() => challenges.filter(c => c.status === 'active'), [challenges]);
+  // ── Upcoming events (coach's own) ────────────────────────────────────────
+  const upcomingEvents = useMemo(() => events.filter(e => new Date(e.event_date) >= now).slice(0, 3), [events, now]);
+
+  // ── Member birthdays in next 7 days ─────────────────────────────────────
+  const upcomingBirthdays = useMemo(() =>
+    allMemberships.filter(m => {
+      if (!m.date_of_birth) return false;
+      const dob  = new Date(m.date_of_birth);
+      const thisYear = new Date(dob);
+      thisYear.setFullYear(now.getFullYear());
+      const diff = Math.floor((thisYear - now) / 86400000);
+      return diff >= 0 && diff <= 7;
+    }).map(m => {
+      const dob  = new Date(m.date_of_birth);
+      const thisYear = new Date(dob);
+      thisYear.setFullYear(now.getFullYear());
+      return { ...m, daysUntil: Math.floor((thisYear - now) / 86400000) };
+    }).sort((a,b) => a.daysUntil - b.daysUntil).slice(0, 5),
+    [allMemberships, now]
+  );
+
+  // ── Upcoming PT / personal appointments ─────────────────────────────────
+  // appointments expected shape: { id, client_name, client_id, date, type, notes }
+  const appointments = useMemo(() => {
+    const raw = myClasses.filter(c => c.type === 'personal_training' || c.is_appointment);
+    return raw.sort((a,b) => new Date(a.schedule_date||a.schedule) - new Date(b.schedule_date||b.schedule)).slice(0,5);
+  }, [myClasses]);
 
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const totalM  = allMemberships.length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      {/* ── 1. HERO BANNER ─────────────────────────────────────────────────── */}
+      {/* ── 1. HERO BANNER ──────────────────────────────────────────────────── */}
       <div style={{ borderRadius: 20, padding: '20px 24px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 60%,#060f1c 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
-        {/* bg glow */}
         <div style={{ position: 'absolute', top: -60, right: -60, width: 260, height: 260, borderRadius: '50%', background: 'rgba(167,139,250,0.07)', filter: 'blur(60px)', pointerEvents: 'none' }}/>
         <div style={{ position: 'absolute', bottom: -40, left: 100, width: 180, height: 180, borderRadius: '50%', background: 'rgba(56,189,248,0.05)', filter: 'blur(50px)', pointerEvents: 'none' }}/>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)', pointerEvents: 'none' }}/>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          {/* Left: greeting */}
           <div>
             <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
               {format(now, 'EEEE, d MMMM yyyy')} · {selectedGym?.name}
@@ -213,34 +259,38 @@ export default function TabCoachOverview({
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: '#64748b' }}>
-                {myClasses.length === 0 ? 'No classes assigned' : `${myClasses.length} class${myClasses.length !== 1 ? 'es' : ''}`}
+                {myClasses.length === 0 ? 'No classes today' : `${myClasses.length} class${myClasses.length !== 1 ? 'es' : ''} today`}
               </span>
               {todayMemberIds.length > 0 && (
                 <span style={{ fontSize: 12, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', display: 'inline-block' }}/>
-                  {todayMemberIds.length} in today
+                  {todayMemberIds.length} checked in
                 </span>
               )}
-              {(atRiskMembers.length + neverVisited.length) > 0 && (
+              {newMembers.length > 0 && (
+                <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <UserPlus style={{ width: 10, height: 10 }}/> {newMembers.length} new member{newMembers.length !== 1 ? 's' : ''}
+                </span>
+              )}
+              {atRiskMembers.length > 0 && (
                 <span style={{ fontSize: 12, color: '#f87171', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <AlertCircle style={{ width: 10, height: 10 }}/>
-                  {atRiskMembers.length + neverVisited.length} need attention
+                  <AlertCircle style={{ width: 10, height: 10 }}/> {atRiskMembers.length} absent
                 </span>
               )}
-              {activeChallenges.length > 0 && (
-                <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>🏆 {activeChallenges.length} active challenge{activeChallenges.length !== 1 ? 's' : ''}</span>
+              {upcomingBirthdays.length > 0 && (
+                <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>🎂 {upcomingBirthdays.length} birthday{upcomingBirthdays.length !== 1 ? 's' : ''} this week</span>
               )}
             </div>
           </div>
 
-          {/* Right: quick action strip */}
+          {/* Quick actions — coach-specific */}
           <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
             {[
-              { icon: QrCode,    label: 'Scan QR',       color: '#10b981', fn: () => openModal('qrScanner') },
-              { icon: FileText,  label: 'Post Update',   color: '#38bdf8', fn: () => openModal('post')      },
-              { icon: Calendar,  label: 'Add Event',     color: '#34d399', fn: () => openModal('event')     },
-              { icon: Trophy,    label: 'Challenge',     color: '#fbbf24', fn: () => openModal('challenge') },
-              { icon: Dumbbell,  label: 'My Classes',    color: '#a78bfa', fn: () => openModal('classes')   },
+              { icon: QrCode,       label: 'Scan QR',      color: '#10b981', fn: () => openModal('qrScanner')  },
+              { icon: FileText,     label: 'Post Update',  color: '#38bdf8', fn: () => openModal('post')       },
+              { icon: ClipboardList,label: 'Class Notes',  color: '#a78bfa', fn: () => openModal('classNotes') },
+              { icon: Calendar,     label: 'Schedule',     color: '#34d399', fn: () => openModal('schedule')   },
+              { icon: Dumbbell,     label: 'My Classes',   color: '#f59e0b', fn: () => openModal('classes')    },
             ].map(({ icon: Ic, label, color, fn }, i) => (
               <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: `${color}12`, border: `1px solid ${color}22`, color, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s', whiteSpace: 'nowrap' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}40`; }}
@@ -251,18 +301,23 @@ export default function TabCoachOverview({
           </div>
         </div>
 
-        {/* Today's class overview strip */}
+        {/* Today's class strip */}
         {myClasses.length > 0 && (
           <div style={{ display: 'flex', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto' }}>
             {classStats.map((cls, i) => {
               const c = classColor(cls);
               const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
+              const isExpanded = rosterClass === (cls.id || i);
               return (
-                <div key={cls.id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 11, background: `${c}08`, border: `1px solid ${c}20`, flexShrink: 0 }}>
+                <div key={cls.id||i} onClick={() => setRosterClass(isExpanded ? null : (cls.id || i))}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 11, background: isExpanded ? `${c}14` : `${c}08`, border: `1px solid ${isExpanded ? c : `${c}20`}`, flexShrink: 0, cursor: 'pointer', transition: 'all 0.15s' }}>
                   <FillRing pct={cls.fill} color={fillColor} size={38}/>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{cls.name}</div>
-                    <div style={{ fontSize: 10, color: '#64748b' }}>{cls.schedule || '—'} · <span style={{ color: fillColor, fontWeight: 700 }}>{cls.attended}/{cls.capacity}</span></div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                      {cls.schedule || '—'} · <span style={{ color: fillColor, fontWeight: 700 }}>{cls.attended}/{cls.capacity}</span>
+                      {cls.waitlist?.length > 0 && <span style={{ color: '#f87171', marginLeft: 4 }}>+{cls.waitlist.length} waitlist</span>}
+                    </div>
                   </div>
                 </div>
               );
@@ -271,16 +326,16 @@ export default function TabCoachOverview({
         )}
       </div>
 
-      {/* ── 2. KPI ROW ──────────────────────────────────────────────────────── */}
+      {/* ── 2. KPI ROW ────────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
-        <HeroKpi icon={Activity}   label="In Today"          value={todayMemberIds.length} sub={`of ${totalM} members`}                           accentColor="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} footerBar={totalM > 0 ? (todayMemberIds.length/totalM)*100 : 0}/>
-        <HeroKpi icon={TrendingUp} label="Active This Week"  value={activeW}               sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Same as last week'} accentColor="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} footerBar={totalM > 0 ? (activeW/totalM)*100 : 0}/>
-        <HeroKpi icon={BarChart2}  label="Engagement Rate"   value={`${engRate}%`}         sub={`${superActive + active} engaged members`}          accentColor="#a78bfa" footerBar={engRate}/>
-        <HeroKpi icon={AlertCircle} label="Need Attention"   value={atRiskMembers.length + neverVisited.length} sub={`${atRiskMembers.length} absent · ${neverVisited.length} never`} accentColor={(atRiskMembers.length + neverVisited.length) > 0 ? '#ef4444' : '#10b981'} subColor={(atRiskMembers.length + neverVisited.length) > 0 ? '#f87171' : '#34d399'}/>
-        <HeroKpi icon={Flame}      label="Active Challenges" value={activeChallenges.length} sub={activeChallenges.reduce((s,c) => s+(c.participants||[]).length, 0) + ' participants'} accentColor="#fbbf24"/>
+        <HeroKpi icon={Activity}    label="In Today"         value={todayMemberIds.length}  sub={`of ${totalM} members`}                                    accentColor="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} footerBar={totalM > 0 ? (todayMemberIds.length/totalM)*100 : 0}/>
+        <HeroKpi icon={Dumbbell}    label="Classes Today"    value={myClasses.length}        sub={`avg fill ${avgFill}%`}                                     accentColor="#a78bfa" footerBar={avgFill}/>
+        <HeroKpi icon={TrendingUp}  label="Active This Week" value={activeW}                 sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Same as last week'} accentColor="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} footerBar={totalM > 0 ? (activeW/totalM)*100 : 0}/>
+        <HeroKpi icon={AlertCircle} label="Absent 14+ Days"  value={atRiskMembers.length}    sub={`${neverVisited.length} never visited`}                      accentColor={atRiskMembers.length > 0 ? '#ef4444' : '#10b981'} subColor={atRiskMembers.length > 0 ? '#f87171' : '#34d399'}/>
+        <HeroKpi icon={UserPlus}    label="New Members"      value={newMembers.length}        sub="joined last 14 days"                                         accentColor="#38bdf8" subColor={newMembers.length > 0 ? '#38bdf8' : '#64748b'}/>
       </div>
 
-      {/* ── 3. MAIN GRID ────────────────────────────────────────────────────── */}
+      {/* ── 3. MAIN GRID ──────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 260px', gap: 16, alignItems: 'start' }}>
 
         {/* ── COL 1 ── */}
@@ -321,7 +376,86 @@ export default function TabCoachOverview({
             </div>
           </CoachCard>
 
-          {/* Weekly attendance bar chart */}
+          {/* My classes with roster expansion */}
+          <CoachCard accent="#a78bfa" title="My Classes Today" action="Manage" onAction={() => openModal('classes')}>
+            <div style={{ padding: '12px 16px' }}>
+              {classStats.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <Dumbbell style={{ width: 22, height: 22, color: '#3a5070', margin: '0 auto 8px' }}/>
+                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned yet</p>
+                  <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Add Your First Class</button>
+                </div>
+              ) : classStats.map((cls, i) => {
+                const c         = classColor(cls);
+                const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
+                const isExpanded = rosterClass === (cls.id || i);
+                return (
+                  <div key={cls.id||i} style={{ marginBottom: i < classStats.length-1 ? 10 : 0 }}>
+                    <div style={{ padding: '12px 14px', borderRadius: 13, background: `${c}06`, border: `1px solid ${isExpanded ? c : `${c}1a`}`, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}
+                      onClick={() => setRosterClass(isExpanded ? null : (cls.id || i))}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c, borderRadius: '13px 0 0 13px' }}/>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 10, marginBottom: 8 }}>
+                        <FillRing pct={cls.fill} color={fillColor} size={44}/>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
+                          <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+                            {cls.schedule && <span style={{ fontSize: 10, color: '#64748b' }}>🕐 {cls.schedule}</span>}
+                            {cls.duration_minutes && <span style={{ fontSize: 10, color: '#3a5070' }}>{cls.duration_minutes}min</span>}
+                            {cls.waitlist?.length > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 5, padding: '1px 5px' }}>{cls.waitlist.length} waitlisted</span>}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 20, fontWeight: 900, color: fillColor, lineHeight: 1 }}>{cls.attended}</div>
+                          <div style={{ fontSize: 9, color: '#3a5070', marginTop: 1 }}>of {cls.capacity}</div>
+                        </div>
+                      </div>
+                      <div style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}99)`, borderRadius: 99 }}/>
+                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: fillColor, flexShrink: 0 }}>{cls.fill}%</span>
+                        <Spark data={cls.classSpark} color={c} height={22}/>
+                      </div>
+                    </div>
+
+                    {/* Roster expansion */}
+                    {isExpanded && cls.booked.length > 0 && (
+                      <div style={{ marginTop: 4, padding: '10px 12px', borderRadius: '0 0 12px 12px', background: `${c}04`, border: `1px solid ${c}14`, borderTop: 'none' }}>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Class Roster</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {cls.booked.map((b, j) => {
+                            const checkedIn = cls.attendedList.some(ci => ci.user_id === b.user_id);
+                            return (
+                              <div key={b.user_id||j} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 7, background: checkedIn ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${checkedIn ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
+                                <MiniAvatar name={b.user_name} src={avatarMap[b.user_id]} size={18} color={checkedIn ? '#34d399' : '#475569'}/>
+                                <span style={{ fontSize: 10, fontWeight: 600, color: checkedIn ? '#d4fae8' : '#64748b', whiteSpace: 'nowrap' }}>{b.user_name}</span>
+                                {checkedIn && <CheckCircle style={{ width: 9, height: 9, color: '#34d399' }}/>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {cls.waitlist.length > 0 && (
+                          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div style={{ fontSize: 9, fontWeight: 800, color: '#f87171', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Waitlist · {cls.waitlist.length}</div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                              {cls.waitlist.map((w, j) => (
+                                <div key={w.user_id||j} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.14)' }}>
+                                  <MiniAvatar name={w.user_name} src={avatarMap[w.user_id]} size={16} color="#f87171"/>
+                                  <span style={{ fontSize: 9, color: '#f87171', fontWeight: 600 }}>{w.user_name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CoachCard>
+
+          {/* Weekly attendance chart */}
           <CoachCard accent="#38bdf8" title="This Week's Attendance">
             <div style={{ padding: '12px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 72, marginBottom: 8 }}>
@@ -349,7 +483,6 @@ export default function TabCoachOverview({
                   return <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: isT ? 800 : 600, color: isT ? '#a78bfa' : '#3a5070' }}>{format(d,'EEE')}</div>;
                 })}
               </div>
-              {/* Week summary */}
               <div style={{ display: 'flex', gap: 16, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 16, fontWeight: 900, color: '#38bdf8', letterSpacing: '-0.02em' }}>{ci7.length}</div>
@@ -372,60 +505,15 @@ export default function TabCoachOverview({
               </div>
             </div>
           </CoachCard>
-
-          {/* My classes — detailed cards */}
-          <CoachCard accent="#a78bfa" title="My Classes" action="Manage" onAction={() => openModal('classes')}>
-            <div style={{ padding: '12px 16px' }}>
-              {classStats.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Dumbbell style={{ width: 22, height: 22, color: '#3a5070', margin: '0 auto 8px' }}/>
-                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned yet</p>
-                  <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Add Your First Class</button>
-                </div>
-              ) : classStats.map((cls, i) => {
-                const c         = classColor(cls);
-                const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
-                return (
-                  <div key={cls.id||i} style={{ marginBottom: i < classStats.length-1 ? 10 : 0, padding: '12px 14px', borderRadius: 13, background: `${c}06`, border: `1px solid ${c}1a`, position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c, borderRadius: '13px 0 0 13px' }}/>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 10, marginBottom: 8 }}>
-                      <FillRing pct={cls.fill} color={fillColor} size={44}/>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
-                        <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap' }}>
-                          {cls.schedule && <span style={{ fontSize: 10, color: '#64748b' }}>🕐 {cls.schedule}</span>}
-                          {cls.duration_minutes && <span style={{ fontSize: 10, color: '#3a5070' }}>{cls.duration_minutes}min</span>}
-                          {cls.capacity && <span style={{ fontSize: 10, color: '#3a5070' }}>cap {cls.capacity}</span>}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: 20, fontWeight: 900, color: fillColor, lineHeight: 1 }}>{cls.attended}</div>
-                        <div style={{ fontSize: 9, color: '#3a5070', marginTop: 1 }}>today</div>
-                      </div>
-                    </div>
-                    {/* Attendance bar */}
-                    <div style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}99)`, borderRadius: 99 }}/>
-                      </div>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: fillColor, flexShrink: 0 }}>{cls.fill}%</span>
-                      <Spark data={cls.classSpark} color={c} height={22}/>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CoachCard>
         </div>
 
         {/* ── COL 2 ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* At-risk + never visited tabbed */}
+          {/* At-risk / absent members with outreach */}
           <CoachCard accent="#f87171" title="Needs Attention">
             <div style={{ padding: '0 16px' }}>
-              {/* Tab switcher */}
-              <div style={{ display: 'flex', gap: 3, padding: '10px 0 10px' }}>
+              <div style={{ display: 'flex', gap: 3, padding: '10px 0' }}>
                 {[{ id: 'absent', label: `Absent · ${atRiskMembers.length}` }, { id: 'never', label: `Never Visited · ${neverVisited.length}` }].map(t => (
                   <button key={t.id} onClick={() => setAtRiskTab(t.id)} style={{ flex: 1, padding: '5px 8px', borderRadius: 8, border: atRiskTab===t.id ? '1px solid rgba(248,113,113,0.3)' : '1px solid transparent', background: atRiskTab===t.id ? 'rgba(248,113,113,0.1)' : 'transparent', color: atRiskTab===t.id ? '#f87171' : '#3a5070', fontSize: 10, fontWeight: atRiskTab===t.id ? 800 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     {t.label}
@@ -450,7 +538,10 @@ export default function TabCoachOverview({
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
                       <div style={{ fontSize: 10, color: urgency }}>{days !== null ? `${days}d absent` : 'Never visited'}</div>
                     </div>
-                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Reach</button>
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Note</button>
+                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Reach</button>
+                    </div>
                   </div>
                 );
               })}
@@ -460,52 +551,39 @@ export default function TabCoachOverview({
             </div>
           </CoachCard>
 
-          {/* Engagement breakdown */}
-          <CoachCard accent="#8b5cf6" title="30-Day Engagement">
-            <div style={{ padding: '12px 16px' }}>
-              {/* Stacked bar */}
-              <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 14 }}>
-                {totalM > 0 && [
-                  { val: superActive, color: '#10b981' },
-                  { val: active,      color: '#38bdf8' },
-                  { val: casual,      color: '#a78bfa' },
-                  { val: Math.max(0, totalM - superActive - active - casual), color: '#334155' },
-                ].filter(t => t.val > 0).map((t, i, arr) => (
-                  <div key={i} style={{ flex: t.val, background: t.color, opacity: 0.85, borderRadius: i===0?'99px 0 0 99px':i===arr.length-1?'0 99px 99px 0':0 }}/>
-                ))}
-              </div>
-              {[
-                { label: 'Super Active', sub: '12+ visits', val: superActive, color: '#10b981' },
-                { label: 'Active',       sub: '4–11',       val: active,      color: '#38bdf8' },
-                { label: 'Casual',       sub: '1–3',        val: casual,      color: '#a78bfa' },
-                { label: 'Inactive',     sub: '0 visits',   val: Math.max(0, totalM - superActive - active - casual), color: '#475569' },
-              ].map((t, i) => {
-                const pct = totalM > 0 ? Math.round((t.val / totalM) * 100) : 0;
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: i < 3 ? 9 : 0 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: t.color, flexShrink: 0 }}/>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#d4e4f4' }}>{t.label} <span style={{ fontSize: 9, color: '#64748b', fontWeight: 400 }}>{t.sub}</span></span>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: t.color }}>{t.val}</span>
+          {/* New members to welcome */}
+          {newMembers.length > 0 && (
+            <CoachCard accent="#38bdf8" title={`👋 New Members · ${newMembers.length}`}>
+              <div style={{ padding: '10px 16px' }}>
+                {newMembers.map((m, i) => {
+                  const daysAgo = Math.floor((now - new Date(m.start_date)) / 86400000);
+                  const hasVisited = !!memberLastCI[m.user_id];
+                  return (
+                    <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < newMembers.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                      <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color="#38bdf8"/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>
+                          Joined {daysAgo === 0 ? 'today' : `${daysAgo}d ago`} ·{' '}
+                          <span style={{ color: hasVisited ? '#34d399' : '#f87171', fontWeight: 600 }}>
+                            {hasVisited ? 'visited ✓' : 'not visited yet'}
+                          </span>
+                        </div>
                       </div>
-                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${t.color},${t.color}88)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
-                      </div>
+                      <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Intro</button>
                     </div>
-                    <span style={{ fontSize: 9, color: '#64748b', width: 26, textAlign: 'right', flexShrink: 0 }}>{pct}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          </CoachCard>
+                  );
+                })}
+              </div>
+            </CoachCard>
+          )}
 
           {/* Top performers this week */}
           {weekStars.length > 0 && (
             <CoachCard accent="#fbbf24" title="This Week's Top Members">
               <div style={{ padding: '10px 16px' }}>
                 {weekStars.map((m, i) => {
-                  const medals = ['🥇','🥈','🥉'];
+                  const medals  = ['🥇','🥈','🥉'];
                   const maxCount = weekStars[0]?.count || 1;
                   return (
                     <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < weekStars.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
@@ -525,7 +603,7 @@ export default function TabCoachOverview({
             </CoachCard>
           )}
 
-          {/* Streaks */}
+          {/* Current streaks */}
           {topStreaks.length > 0 && (
             <CoachCard accent="#f59e0b" title="🔥 Current Streaks">
               <div style={{ padding: '10px 16px' }}>
@@ -575,29 +653,22 @@ export default function TabCoachOverview({
             </CoachCard>
           )}
 
-          {/* Active challenges */}
-          {activeChallenges.length > 0 && (
-            <CoachCard accent="#fbbf24" title="Active Challenges" action="+ New" onAction={() => openModal('challenge')}>
+          {/* Birthdays this week */}
+          {upcomingBirthdays.length > 0 && (
+            <CoachCard accent="#f472b6" title="🎂 Birthdays This Week">
               <div style={{ padding: '10px 14px' }}>
-                {activeChallenges.slice(0, 3).map((ch, i) => {
-                  const start = new Date(ch.start_date), end = new Date(ch.end_date);
-                  const total = Math.max(1, Math.floor((end - start) / 86400000));
-                  const elapsed = Math.max(0, Math.floor((now - start) / 86400000));
-                  const pct = Math.min(100, Math.round((elapsed / total) * 100));
-                  return (
-                    <div key={ch.id||i} style={{ marginBottom: i < activeChallenges.length-1 ? 10 : 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
-                        <Trophy style={{ width: 11, height: 11, color: '#fbbf24', flexShrink: 0 }}/>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.title}</span>
-                        <span style={{ fontSize: 9, color: '#64748b', flexShrink: 0 }}>{(ch.participants||[]).length}👤</span>
+                {upcomingBirthdays.map((m, i) => (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < upcomingBirthdays.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={26} color="#f472b6"/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name}</div>
+                      <div style={{ fontSize: 9, color: m.daysUntil === 0 ? '#f472b6' : '#64748b', fontWeight: m.daysUntil === 0 ? 700 : 400 }}>
+                        {m.daysUntil === 0 ? '🎉 Today!' : `in ${m.daysUntil} day${m.daysUntil !== 1 ? 's' : ''}`}
                       </div>
-                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', borderRadius: 99 }}/>
-                      </div>
-                      <div style={{ fontSize: 9, color: '#64748b', textAlign: 'right', marginTop: 3 }}>{pct}% elapsed</div>
                     </div>
-                  );
-                })}
+                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#f472b6', background: 'rgba(244,114,182,0.07)', border: '1px solid rgba(244,114,182,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Wish</button>
+                  </div>
+                ))}
               </div>
             </CoachCard>
           )}
@@ -617,7 +688,7 @@ export default function TabCoachOverview({
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
-                        <div style={{ fontSize: 9, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d`}</div>
+                        <div style={{ fontSize: 9, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d away`}</div>
                       </div>
                     </div>
                   );
@@ -626,14 +697,14 @@ export default function TabCoachOverview({
             </CoachCard>
           )}
 
-          {/* 30-day snapshot numbers */}
-          <CoachCard accent="#0ea5e9" title="30-Day Snapshot">
+          {/* Quick class stats summary */}
+          <CoachCard accent="#0ea5e9" title="My Class Summary">
             <div style={{ padding: '10px 14px' }}>
               {[
-                { label: 'Total check-ins',  value: ci30.length,                                        color: '#38bdf8' },
-                { label: 'Unique members',   value: new Set(ci30.map(c=>c.user_id)).size,               color: '#34d399' },
-                { label: 'Avg visits / member', value: totalM > 0 ? (ci30.length / totalM).toFixed(1) : '—', color: '#a78bfa' },
-                { label: 'Need attention',   value: atRiskMembers.length + neverVisited.length,         color: (atRiskMembers.length + neverVisited.length) > 0 ? '#f87171' : '#34d399' },
+                { label: 'Total check-ins today', value: todayMemberIds.length,  color: '#38bdf8' },
+                { label: 'Avg fill rate',          value: `${avgFill}%`,           color: '#a78bfa' },
+                { label: 'Check-ins this week',    value: ci7.length,              color: '#34d399' },
+                { label: 'Members absent 14d+',    value: atRiskMembers.length,    color: atRiskMembers.length > 0 ? '#f87171' : '#34d399' },
               ].map((s, i, arr) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                   <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>{s.label}</span>
