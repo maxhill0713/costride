@@ -82,6 +82,7 @@ const AuthenticatedApp = () => {
       <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
       <Route path="/RedeemReward" element={<LayoutWrapper currentPageName="RedeemReward"><RedeemReward /></LayoutWrapper>} />
       <Route path="/GymOwnerDashboard" element={<LayoutWrapper currentPageName="GymOwnerDashboard"><GymOwnerDashboard /></LayoutWrapper>} />
+      <Route path="/CoachDashboard" element={<LayoutWrapper currentPageName="CoachDashboard"><CoachDashboard /></LayoutWrapper>} />
       <Route path="/Onboarding" element={<LayoutWrapper currentPageName="Onboarding"><Onboarding /></LayoutWrapper>} />
       <Route path="/GymSignup" element={<LayoutWrapper currentPageName="GymSignup"><GymSignup /></LayoutWrapper>} />
       <Route path="/MemberSignup" element={<LayoutWrapper currentPageName="MemberSignup"><MemberSignup /></LayoutWrapper>} />
