@@ -279,7 +279,6 @@ function LogWorkoutDemo() {
   const [pressed, setPressed] = useState(false);
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: '#1a3fa8', transform: 'translateY(3px)' }} />
       <button
         onMouseDown={() => setPressed(true)}
         onMouseUp={() => setPressed(false)}
@@ -290,14 +289,13 @@ function LogWorkoutDemo() {
         style={{
           position: 'relative', zIndex: 1, width: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          // 10% smaller: was 14px top/bottom, now ~13px
           padding: '13px 22px', borderRadius: 9, border: 'none',
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)',
           color: '#fff', fontSize: 13, fontWeight: 800,
           cursor: 'pointer', userSelect: 'none', outline: 'none',
-          transform: pressed ? 'translateY(3px)' : 'translateY(0)',
-          boxShadow: pressed ? 'none' : '0 3px 0 0 #1a3fa8, 0 6px 20px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
-          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
+          transform: pressed ? 'translateY(2px)' : 'translateY(0)',
+          boxShadow: 'none',
+          transition: 'transform 0.07s ease',
           WebkitTapHighlightColor: 'transparent',
         }}
       >Log Workout</button>
@@ -371,7 +369,7 @@ function WeeklyDotsCard({ demoBubbleDay, setDemoBubbleDay, demoBubblePos, setDem
                 style={{
                   width: SIZE, height: SIZE, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: s.shadow,
+                  background: s.bg, border: `1px solid ${s.border}`, boxShadow: 'none',
                   cursor: 'pointer', padding: 0, outline: 'none',
                   WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                   transition: 'opacity 0.1s ease',
@@ -609,7 +607,7 @@ export default function Onboarding() {
   // STEP 2 — JOIN YOUR COMMUNITY
   if (step === 2) {
     const isJoining = joinGymMutation.isPending || createAndJoinGymMutation.isPending || joinByCodeMutation.isPending;
-    const handleInputFocus = () => {};
+    const handleInputFocus = (e) => { e.target.scrollIntoView = () => {}; };
     const handleInputBlur = () => {};
     return (
       <PageShell>
@@ -722,11 +720,7 @@ export default function Onboarding() {
                     onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
                     onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
                     onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isSelected ? `0 4px 0 0 ${C.greenDark}, 0 6px 16px rgba(22,163,74,0.15)` : '0 4px 0 0 #cbd5e1, 0 2px 8px rgba(0,0,0,0.06)'; }}
-                    onClick={e => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      if (e.clientX - rect.left >= rect.width * (2 / 3)) { setPreviewSplit(split); }
-                      else { setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts }); }
-                    }}
+                    onClick={() => setSelectedSplit(isSelected ? null : { id: split.id, name: split.name, days: split.days, workouts: split.workouts })}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -736,9 +730,12 @@ export default function Onboarding() {
                           {split.days.map(d => <span key={d} className={`bg-gradient-to-r ${split.color}`} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 7, color: '#fff' }}>{DAY_NAMES[d - 1]}</span>)}
                         </div>
                       </div>
-                      <div style={{ paddingLeft: 12, flexShrink: 0 }}>
+                      {/* Chevron is its own button — stops propagation so card click doesn't also fire */}
+                      <button
+                        onClick={e => { e.stopPropagation(); setPreviewSplit(split); }}
+                        style={{ padding: '8px 4px 8px 12px', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent', display: 'flex', alignItems: 'center' }}>
                         <ChevronRight size={20} color={isSelected ? C.green : C.muted} strokeWidth={2.5} />
-                      </div>
+                      </button>
                     </div>
                   </div>
                 );
@@ -877,6 +874,42 @@ export default function Onboarding() {
       {
         key: 'dots',
         render: () => <WeeklyDotsCard demoBubbleDay={demoBubbleDay} setDemoBubbleDay={setDemoBubbleDay} demoBubblePos={demoBubblePos} setDemoBubblePos={setDemoBubblePos} />,
+      },
+      {
+        key: 'streak',
+        render: () => (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+            {/* Plain streak icon — no shadow, no background */}
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
+              alt="Streak icon"
+              style={{ width: 100, height: 100, objectFit: 'contain' }}
+            />
+            <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+              Meet your <strong style={{ color: C.text }}>streak icon</strong> — it tracks your consistency and appears on your posts so friends can react and cheer you on. Complete challenges to unlock new looks for it.
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: 'primarygym',
+        render: () => (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, width: '100%' }}>
+            {/* Purple star button — flat, no shadow, matches the clean card style */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 18,
+              background: 'linear-gradient(to bottom, #c084fc, #a855f7, #9333ea)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="none">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+              </svg>
+            </div>
+            <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.65, textAlign: 'center', margin: 0, maxWidth: 300 }}>
+              The <strong style={{ color: C.text }}>star button</strong> lets you set your home gym — the community shown on your home page. Find it on the My Gyms page. You can also use it on the workout split page to set your active training plan.
+            </p>
+          </div>
+        ),
       },
     ];
 
