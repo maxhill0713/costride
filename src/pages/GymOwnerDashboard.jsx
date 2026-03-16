@@ -490,6 +490,7 @@ export default function GymOwnerDashboard() {
           checkIns={coachCheckIns}
           events={coachEvents}
           challenges={coachChallenges}
+          allMemberships={coachMemberships}
           avatarMap={avatarMap}
           openModal={openModal}
           now={now}
@@ -780,11 +781,11 @@ export default function GymOwnerDashboard() {
             </button>
             <div>
               <div style={{ fontSize: 16, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {{ members:'Members', content:'Content', analytics:'Analytics', gym:'Settings', schedule:'Schedule' }[tab] || selectedGym?.name || 'Dashboard'}
+                {{ members: isCoach ? 'Clients' : 'Members', content:'Content', analytics:'Analytics', gym:'Settings', schedule:'Schedule' }[tab] || selectedGym?.name || 'Dashboard'}
               </div>
               <div style={{ fontSize: 11, color: '#1e3a54', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
                 {tab === 'members'
-                  ? <><span style={{ color: accentColor, fontWeight: 800 }}>{allMemberships.length}</span><span> members · {selectedGym?.name}</span></>
+                  ? <><span style={{ color: accentColor, fontWeight: 800 }}>{isCoach ? coachMemberships.length : allMemberships.length}</span><span> {isCoach ? 'clients' : 'members'} · {selectedGym?.name}</span></>
                   : <><span>{format(now, 'EEEE, d MMMM yyyy')}</span><span style={{ color: '#112030' }}>·</span><Sun style={{ width: 10, height: 10 }}/><span>18°C</span></>
                 }
               </div>
