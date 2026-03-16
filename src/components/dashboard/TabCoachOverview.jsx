@@ -1,51 +1,147 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
 import {
   Activity, Users, AlertCircle, QrCode, FileText, Dumbbell,
   Calendar, CheckCircle, Flame, TrendingUp, Clock, UserCheck,
+  Trophy, BarChart2, MessageCircle, Plus, ChevronRight,
+  Zap, Star, Target, ArrowUpRight, TrendingDown,
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
-function StatPill({ label, value, color = '#a78bfa', sub }) {
+// ── Tiny sparkline ────────────────────────────────────────────────────────────
+function Spark({ data = [], color = '#a78bfa', height = 28 }) {
+  if (!data.length || Math.max(...data) === 0) return (
+    <div style={{ width: 60, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 99 }}/>
+    </div>
+  );
+  const max = Math.max(...data, 1);
+  const w = 60;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = height - (v / max) * (height - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  const area = `${pts} ${w},${height} 0,${height}`;
+  const id   = `sp-${color.replace('#','')}`;
   return (
-    <div style={{ borderRadius: 14, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${color}40,transparent)`, pointerEvents: 'none' }}/>
-      <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 30, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: '#64748b', fontWeight: 500, marginTop: 6 }}>{sub}</div>}
-      <div style={{ position: 'absolute', bottom: -12, right: -12, width: 48, height: 48, borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(16px)' }}/>
+    <svg viewBox={`0 0 ${w} ${height}`} style={{ width: w, height, display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill={`url(#${id})`}/>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// ── Hero KPI card ─────────────────────────────────────────────────────────────
+function HeroKpi({ icon: Icon, label, value, sub, subColor, accentColor, spark, footerBar, onClick }) {
+  return (
+    <div onClick={onClick} style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', cursor: onClick ? 'pointer' : 'default', transition: 'transform 0.15s, border-color 0.15s' }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.borderColor = `${accentColor}35`; }}}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}>
+      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accentColor}40,transparent)`, pointerEvents: 'none' }}/>
+      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accentColor, opacity: 0.07, filter: 'blur(22px)', pointerEvents: 'none' }}/>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 9, background: `${accentColor}18`, border: `1px solid ${accentColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon style={{ width: 13, height: 13, color: accentColor }}/>
+        </div>
+        {spark && <Spark data={spark} color={accentColor}/>}
+      </div>
+      <div style={{ fontSize: 30, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
+      <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 10, color: subColor || '#64748b', fontWeight: 600 }}>{sub}</div>
+      {footerBar != null && (
+        <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: `${accentColor}14`, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, footerBar)}%`, background: `linear-gradient(90deg,${accentColor},${accentColor}cc)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function TabCoachOverview({ myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges }) {
-  const ci7  = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 7),  end: now }));
-  const ci30 = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now }));
+// ── Class fill ring ───────────────────────────────────────────────────────────
+function FillRing({ pct, color, size = 42 }) {
+  const r  = (size - 6) / 2;
+  const c  = size / 2;
+  const cf = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
+      <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5"/>
+      <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth="5"
+        strokeDasharray={cf} strokeDashoffset={cf * (1 - pct / 100)}
+        strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }}/>
+    </svg>
+  );
+}
 
-  const todayCI = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime());
-  const todayMembers = [...new Set(todayCI.map(c => c.user_id))];
+// ── Main component ────────────────────────────────────────────────────────────
+export default function TabCoachOverview({
+  myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges,
+}) {
+  const [atRiskTab, setAtRiskTab] = useState('absent');
 
-  const memberLastCI = {};
-  checkIns.forEach(c => {
-    if (!memberLastCI[c.user_id] || new Date(c.check_in_date) > new Date(memberLastCI[c.user_id]))
-      memberLastCI[c.user_id] = c.check_in_date;
-  });
+  // ── Core data ───────────────────────────────────────────────────────────
+  const ci7    = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now })), [checkIns, now]);
+  const ci30   = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now })), [checkIns, now]);
+  const ci7p   = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) })), [checkIns, now]);
 
-  const atRisk = allMemberships.filter(m => {
-    const l = memberLastCI[m.user_id];
-    return !l || Math.floor((now - new Date(l)) / 86400000) >= 14;
-  });
+  const todayCI = useMemo(() =>
+    checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()),
+    [checkIns, now]
+  );
+  const todayMemberIds = useMemo(() => [...new Set(todayCI.map(c => c.user_id))], [todayCI]);
 
-  const weekStars = useMemo(() => Object.entries(
-    ci7.reduce((acc, c) => {
-      acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 };
-      return acc;
-    }, {})
-  ).sort((a, b) => b[1].count - a[1].count).slice(0, 5).map(([uid, d]) => ({ user_id: uid, ...d })), [ci7]);
+  // ── Last check-in per member ─────────────────────────────────────────────
+  const memberLastCI = useMemo(() => {
+    const m = {};
+    checkIns.forEach(c => {
+      if (!m[c.user_id] || new Date(c.check_in_date) > new Date(m[c.user_id])) m[c.user_id] = c.check_in_date;
+    });
+    return m;
+  }, [checkIns]);
 
-  // Today's classes with live attendance
+  // ── At-risk + never visited ───────────────────────────────────────────────
+  const atRiskMembers  = useMemo(() => allMemberships.filter(m => { const l = memberLastCI[m.user_id]; return l && Math.floor((now - new Date(l)) / 86400000) >= 14; }), [allMemberships, memberLastCI, now]);
+  const neverVisited   = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
+  const atRiskAll      = atRiskTab === 'absent' ? atRiskMembers : neverVisited;
+
+  // ── Week trend ────────────────────────────────────────────────────────────
+  const activeW  = useMemo(() => new Set(ci7.map(c => c.user_id)).size,  [ci7]);
+  const activePW = useMemo(() => new Set(ci7p.map(c => c.user_id)).size, [ci7p]);
+  const weekTrend = activePW > 0 ? Math.round(((activeW - activePW) / activePW) * 100) : 0;
+
+  // 7-day spark data
+  const weekSpark = useMemo(() => Array.from({ length: 7 }, (_, i) =>
+    checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6-i)).getTime()).length
+  ), [checkIns, now]);
+
+  // ── 30-day member engagement tiers ───────────────────────────────────────
+  const memberVisits30 = useMemo(() => {
+    const m = {};
+    ci30.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
+    return m;
+  }, [ci30]);
+  const superActive = useMemo(() => allMemberships.filter(m => (memberVisits30[m.user_id] || 0) >= 12).length, [allMemberships, memberVisits30]);
+  const active      = useMemo(() => allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 4 && v < 12; }).length, [allMemberships, memberVisits30]);
+  const casual      = useMemo(() => allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 1 && v < 4; }).length, [allMemberships, memberVisits30]);
+  const totalM      = allMemberships.length;
+  const engRate     = totalM > 0 ? Math.round(((superActive + active) / totalM) * 100) : 0;
+
+  // ── Weekly top performers ─────────────────────────────────────────────────
+  const weekStars = useMemo(() => {
+    const acc = {};
+    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
+    return Object.entries(acc).sort((a,b) => b[1].count - a[1].count).slice(0,5).map(([uid, d]) => ({ user_id: uid, ...d }));
+  }, [ci7]);
+
+  // ── Classes with live attendance ──────────────────────────────────────────
   const classStats = useMemo(() => myClasses.map(cls => {
-    const capacity = cls.max_capacity || 20;
+    const capacity = cls.max_capacity || cls.capacity || 20;
     const attended = todayCI.filter(ci => {
       if (!cls.schedule) return false;
       const match = cls.schedule.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
@@ -55,230 +151,453 @@ export default function TabCoachOverview({ myClasses, checkIns, allMemberships, 
       const h = new Date(ci.check_in_date).getHours();
       return h === sh || h === sh + 1;
     }).length;
-    return { ...cls, attended, capacity, fill: Math.min(100, Math.round((attended / capacity) * 100)) };
-  }), [myClasses, todayCI]);
+    // 4-week attendance spark per class
+    const classSpark = Array.from({ length: 7 }, (_, i) => {
+      const d = subDays(now, 6 - i);
+      return checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length;
+    });
+    return { ...cls, attended, capacity, fill: Math.min(100, Math.round((attended / capacity) * 100)), classSpark };
+  }), [myClasses, todayCI, checkIns, now]);
 
-  // Members close to milestones
-  const memberVisits = {};
-  checkIns.forEach(c => { memberVisits[c.user_id] = (memberVisits[c.user_id] || 0) + 1; });
-  const milestones = allMemberships.map(m => {
-    const total = memberVisits[m.user_id] || 0;
-    const next  = [5, 10, 25, 50, 100, 200].find(n => n > total);
+  // ── Member milestones ─────────────────────────────────────────────────────
+  const allVisits = useMemo(() => {
+    const m = {};
+    checkIns.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
+    return m;
+  }, [checkIns]);
+  const milestones = useMemo(() => allMemberships.map(m => {
+    const total = allVisits[m.user_id] || 0;
+    const next  = [5, 10, 25, 50, 100, 200, 500].find(n => n > total);
     return { ...m, total, next, toNext: next ? next - total : 0 };
-  }).filter(m => m.next && m.toNext <= 3).sort((a, b) => a.toNext - b.toNext).slice(0, 4);
+  }).filter(m => m.next && m.toNext <= 3).sort((a,b) => a.toNext - b.toNext).slice(0, 5), [allMemberships, allVisits]);
 
-  const upcomingEvents = events.filter(e => new Date(e.event_date) >= now).slice(0, 3);
+  // ── Streaks ───────────────────────────────────────────────────────────────
+  const topStreaks = useMemo(() => {
+    const acc = {};
+    allMemberships.forEach(m => {
+      let streak = 0;
+      const ciDays = new Set(checkIns.filter(c => c.user_id === m.user_id).map(c => startOfDay(new Date(c.check_in_date)).getTime()));
+      for (let i = 0; i <= 60; i++) {
+        if (ciDays.has(startOfDay(subDays(now, i)).getTime())) streak++;
+        else break;
+      }
+      if (streak > 0) acc[m.user_id] = { name: m.user_name || 'Member', streak, user_id: m.user_id };
+    });
+    return Object.values(acc).sort((a,b) => b.streak - a.streak).slice(0, 4);
+  }, [allMemberships, checkIns, now]);
+
+  const upcomingEvents  = useMemo(() => events.filter(e => new Date(e.event_date) >= now).slice(0, 3), [events, now]);
+  const activeChallenges = useMemo(() => challenges.filter(c => c.status === 'active'), [challenges]);
 
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-  // Active members this week vs last week
-  const ci7prev = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 14), end: subDays(now, 7) }));
-  const activeW = new Set(ci7.map(c => c.user_id)).size;
-  const activePW = new Set(ci7prev.map(c => c.user_id)).size;
-  const weekTrend = activePW > 0 ? Math.round(((activeW - activePW) / activePW) * 100) : 0;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      {/* Coach Daily Briefing Banner */}
-      <div style={{ borderRadius: 16, padding: '18px 22px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 50%,#061020 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(167,139,250,0.06)', filter: 'blur(50px)', pointerEvents: 'none' }}/>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.35),transparent)', pointerEvents: 'none' }}/>
+      {/* ── 1. HERO BANNER ─────────────────────────────────────────────────── */}
+      <div style={{ borderRadius: 20, padding: '20px 24px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 60%,#060f1c 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
+        {/* bg glow */}
+        <div style={{ position: 'absolute', top: -60, right: -60, width: 260, height: 260, borderRadius: '50%', background: 'rgba(167,139,250,0.07)', filter: 'blur(60px)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', bottom: -40, left: 100, width: 180, height: 180, borderRadius: '50%', background: 'rgba(56,189,248,0.05)', filter: 'blur(50px)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)', pointerEvents: 'none' }}/>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          {/* Left: greeting */}
           <div>
-            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
-              {format(now, 'EEEE, d MMMM')} · {selectedGym?.name}
+            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+              {format(now, 'EEEE, d MMMM yyyy')} · {selectedGym?.name}
             </div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.02em', marginBottom: 4 }}>{greeting} 👋</div>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-              {myClasses.length === 0
-                ? 'No classes assigned yet'
-                : `${myClasses.length} class${myClasses.length !== 1 ? 'es' : ''} · ${todayMembers.length} members in today`}
-              {atRisk.length > 0 && <span style={{ color: '#f87171', marginLeft: 8 }}>· {atRisk.length} need attention</span>}
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', marginBottom: 6 }}>
+              {greeting} 👋
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                {myClasses.length === 0 ? 'No classes assigned' : `${myClasses.length} class${myClasses.length !== 1 ? 'es' : ''}`}
+              </span>
+              {todayMemberIds.length > 0 && (
+                <span style={{ fontSize: 12, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', display: 'inline-block' }}/>
+                  {todayMemberIds.length} in today
+                </span>
+              )}
+              {(atRiskMembers.length + neverVisited.length) > 0 && (
+                <span style={{ fontSize: 12, color: '#f87171', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <AlertCircle style={{ width: 10, height: 10 }}/>
+                  {atRiskMembers.length + neverVisited.length} need attention
+                </span>
+              )}
+              {activeChallenges.length > 0 && (
+                <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>🏆 {activeChallenges.length} active challenge{activeChallenges.length !== 1 ? 's' : ''}</span>
+              )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+
+          {/* Right: quick action strip */}
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
             {[
-              { icon: QrCode,   label: 'Scan QR',     color: '#10b981', fn: () => openModal('qrScanner') },
-              { icon: FileText, label: 'Post Update',  color: '#38bdf8', fn: () => openModal('post')      },
-              { icon: Dumbbell, label: 'My Classes',   color: '#a78bfa', fn: () => openModal('classes')   },
+              { icon: QrCode,    label: 'Scan QR',       color: '#10b981', fn: () => openModal('qrScanner') },
+              { icon: FileText,  label: 'Post Update',   color: '#38bdf8', fn: () => openModal('post')      },
+              { icon: Calendar,  label: 'Add Event',     color: '#34d399', fn: () => openModal('event')     },
+              { icon: Trophy,    label: 'Challenge',     color: '#fbbf24', fn: () => openModal('challenge') },
+              { icon: Dumbbell,  label: 'My Classes',    color: '#a78bfa', fn: () => openModal('classes')   },
             ].map(({ icon: Ic, label, color, fn }, i) => (
-              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: `${color}14`, border: `1px solid ${color}25`, color, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: `${color}12`, border: `1px solid ${color}22`, color, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}40`; }}
+                onMouseLeave={e => { e.currentTarget.style.background = `${color}12`; e.currentTarget.style.borderColor = `${color}22`; }}>
                 <Ic style={{ width: 12, height: 12 }}/>{label}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Today's class overview strip */}
+        {myClasses.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto' }}>
+            {classStats.map((cls, i) => {
+              const c = classColor(cls);
+              const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
+              return (
+                <div key={cls.id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 11, background: `${c}08`, border: `1px solid ${c}20`, flexShrink: 0 }}>
+                  <FillRing pct={cls.fill} color={fillColor} size={38}/>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{cls.name}</div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>{cls.schedule || '—'} · <span style={{ color: fillColor, fontWeight: 700 }}>{cls.attended}/{cls.capacity}</span></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* KPIs — coach-relevant only */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-        <StatPill label="In Today"        value={todayMembers.length} sub={`of ${allMemberships.length} members`} color="#10b981"/>
-        <StatPill label="Active This Week" value={activeW}            sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last week` : 'same as last week'} color="#38bdf8"/>
-        <StatPill label="My Classes"       value={myClasses.length}   sub="in your schedule" color="#a78bfa"/>
-        <StatPill label="Need Attention"   value={atRisk.length}      sub="14+ days absent"  color={atRisk.length > 0 ? '#ef4444' : '#10b981'}/>
+      {/* ── 2. KPI ROW ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
+        <HeroKpi icon={Activity}   label="In Today"          value={todayMemberIds.length} sub={`of ${totalM} members`}                           accentColor="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} footerBar={totalM > 0 ? (todayMemberIds.length/totalM)*100 : 0}/>
+        <HeroKpi icon={TrendingUp} label="Active This Week"  value={activeW}               sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Same as last week'} accentColor="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} footerBar={totalM > 0 ? (activeW/totalM)*100 : 0}/>
+        <HeroKpi icon={BarChart2}  label="Engagement Rate"   value={`${engRate}%`}         sub={`${superActive + active} engaged members`}          accentColor="#a78bfa" footerBar={engRate}/>
+        <HeroKpi icon={AlertCircle} label="Need Attention"   value={atRiskMembers.length + neverVisited.length} sub={`${atRiskMembers.length} absent · ${neverVisited.length} never`} accentColor={(atRiskMembers.length + neverVisited.length) > 0 ? '#ef4444' : '#10b981'} subColor={(atRiskMembers.length + neverVisited.length) > 0 ? '#f87171' : '#34d399'}/>
+        <HeroKpi icon={Flame}      label="Active Challenges" value={activeChallenges.length} sub={activeChallenges.reduce((s,c) => s+(c.participants||[]).length, 0) + ' participants'} accentColor="#fbbf24"/>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
+      {/* ── 3. MAIN GRID ────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 260px', gap: 16, alignItems: 'start' }}>
 
-        {/* LEFT */}
+        {/* ── COL 1 ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* Today's Classes */}
-          <CoachCard accent="#a78bfa" title="Today's Classes" action="Manage" onAction={() => openModal('classes')}>
+          {/* Today's check-in feed */}
+          <CoachCard accent="#10b981" title={`Members In Today · ${todayMemberIds.length}`} action="Scan QR" onAction={() => openModal('qrScanner')}>
             <div style={{ padding: '12px 16px' }}>
-              {classStats.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                  <Dumbbell style={{ width: 24, height: 24, color: '#3a5070', margin: '0 auto 8px' }}/>
-                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: 0 }}>No classes assigned yet</p>
-                  <button onClick={() => openModal('classes')} style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
-                    Add Your First Class
-                  </button>
+              {todayMemberIds.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '18px 0' }}>
+                  <Clock style={{ width: 20, height: 20, color: '#3a5070', margin: '0 auto 8px' }}/>
+                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No check-ins yet today</p>
+                  <button onClick={() => openModal('qrScanner')} style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Scan First Check-in</button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {classStats.map((cls, i) => {
-                    const c = classColor(cls);
-                    const fillColor = cls.fill >= 70 ? '#34d399' : cls.fill >= 40 ? '#fbbf24' : '#38bdf8';
-                    return (
-                      <div key={cls.id || i} style={{ padding: '14px 16px', borderRadius: 13, background: `${c}06`, border: `1px solid ${c}20`, position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c, borderRadius: '13px 0 0 13px' }}/>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 8, marginBottom: 10 }}>
+                <>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: todayCI.length > 6 ? 10 : 0 }}>
+                    {todayMemberIds.slice(0, 12).map((uid) => {
+                      const ci   = todayCI.find(c => c.user_id === uid);
+                      const mins = Math.floor((now - new Date(ci.check_in_date)) / 60000);
+                      const t    = mins < 1 ? 'now' : mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h`;
+                      return (
+                        <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 9px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
+                          <MiniAvatar name={ci.user_name} src={avatarMap[uid]} size={22} color="#10b981"/>
                           <div>
-                            <div style={{ fontSize: 14, fontWeight: 800, color: '#f0f4f8' }}>{cls.name}</div>
-                            <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
-                              {cls.schedule && <span style={{ fontSize: 10, color: '#64748b' }}>🕐 {cls.schedule}</span>}
-                              {cls.duration_minutes && <span style={{ fontSize: 10, color: '#3a5070' }}>{cls.duration_minutes} min</span>}
-                              {cls.difficulty && <span style={{ fontSize: 10, color: '#3a5070', textTransform: 'capitalize' }}>{cls.difficulty}</span>}
-                            </div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: 20, fontWeight: 900, color: fillColor, lineHeight: 1 }}>{cls.attended}</div>
-                            <div style={{ fontSize: 9, color: '#3a5070', marginTop: 2 }}>of {cls.capacity} cap</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', whiteSpace: 'nowrap' }}>{ci.user_name || 'Member'}</div>
+                            <div style={{ fontSize: 9, color: '#10b981' }}>{t} ago</div>
                           </div>
                         </div>
-                        <div style={{ paddingLeft: 8 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ height: 5, flex: 1, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}bb)`, borderRadius: 99, transition: 'width 0.6s ease' }}/>
-                            </div>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: fillColor, flexShrink: 0 }}>{cls.fill}% full</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                  {todayMemberIds.length > 12 && (
+                    <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '4px 0' }}>+{todayMemberIds.length - 12} more members</div>
+                  )}
+                </>
               )}
             </div>
           </CoachCard>
 
-          {/* Members checked in today */}
-          <CoachCard accent="#10b981" title={`Members In Today · ${todayCI.length}`}>
+          {/* Weekly attendance bar chart */}
+          <CoachCard accent="#38bdf8" title="This Week's Attendance">
             <div style={{ padding: '12px 16px' }}>
-              {todayCI.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '18px 0', color: '#3a5070' }}>
-                  <Clock style={{ width: 18, height: 18, opacity: 0.3, margin: '0 auto 8px' }}/>
-                  <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No check-ins yet today</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {[...new Set(todayCI.map(c => c.user_id))].map((uid, i) => {
-                    const ci = todayCI.find(c => c.user_id === uid);
-                    const mins = Math.floor((now - new Date(ci.check_in_date)) / 60000);
-                    const timeAgo = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ago`;
-                    return (
-                      <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 10px', borderRadius: 9, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                        <MiniAvatar name={ci.user_name} src={avatarMap[uid]} size={24} color="#10b981"/>
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8' }}>{ci.user_name || 'Member'}</div>
-                          <div style={{ fontSize: 9, color: '#10b981' }}>{timeAgo}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </CoachCard>
-
-          {/* This week's top performers */}
-          {weekStars.length > 0 && (
-            <CoachCard accent="#fbbf24" title="This Week's Top Members">
-              <div style={{ padding: '10px 16px' }}>
-                {weekStars.map((m, i) => {
-                  const medals = ['🥇', '🥈', '🥉'];
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 72, marginBottom: 8 }}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d      = subDays(now, 6 - i);
+                  const count  = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length;
+                  const isT    = startOfDay(d).getTime() === startOfDay(now).getTime();
+                  const maxV   = Math.max(...weekSpark, 1);
+                  const h      = count === 0 ? 4 : Math.max(8, (count / maxV) * 64);
+                  const color  = isT ? '#a78bfa' : count > 0 ? 'rgba(167,139,250,0.45)' : 'rgba(255,255,255,0.05)';
                   return (
-                    <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < weekStars.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <span style={{ fontSize: i < 3 ? 16 : 11, width: 20, textAlign: 'center', flexShrink: 0 }}>{medals[i] || `${i + 1}`}</span>
-                      <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={30} color="#fbbf24"/>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>{m.count} check-in{m.count !== 1 ? 's' : ''} this week</div>
-                      </div>
-                      <div style={{ height: 4, width: 60, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', flexShrink: 0 }}>
-                        <div style={{ height: '100%', width: `${(m.count / (weekStars[0]?.count || 1)) * 100}%`, background: 'linear-gradient(90deg,#fbbf24,#f59e0b)', borderRadius: 99 }}/>
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      {count > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: isT ? '#a78bfa' : '#64748b' }}>{count}</span>}
+                      <div style={{ width: '100%', height: h, borderRadius: '4px 4px 2px 2px', background: color, position: 'relative', transition: 'height 0.4s ease' }}>
+                        {isT && count > 0 && <div style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', boxShadow: '0 0 10px rgba(167,139,250,0.5)' }}/>}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </CoachCard>
-          )}
+              <div style={{ display: 'flex', gap: 6 }}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d   = subDays(now, 6-i);
+                  const isT = startOfDay(d).getTime() === startOfDay(now).getTime();
+                  return <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: isT ? 800 : 600, color: isT ? '#a78bfa' : '#3a5070' }}>{format(d,'EEE')}</div>;
+                })}
+              </div>
+              {/* Week summary */}
+              <div style={{ display: 'flex', gap: 16, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#38bdf8', letterSpacing: '-0.02em' }}>{ci7.length}</div>
+                  <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>check-ins</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#a78bfa', letterSpacing: '-0.02em' }}>{activeW}</div>
+                  <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>unique</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b', letterSpacing: '-0.02em' }}>
+                    {weekTrend > 0 ? `+${weekTrend}` : weekTrend}%
+                  </div>
+                  <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>vs last wk</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#fbbf24', letterSpacing: '-0.02em' }}>{Math.round(ci7.length / 7 * 10) / 10}</div>
+                  <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>avg/day</div>
+                </div>
+              </div>
+            </div>
+          </CoachCard>
+
+          {/* My classes — detailed cards */}
+          <CoachCard accent="#a78bfa" title="My Classes" action="Manage" onAction={() => openModal('classes')}>
+            <div style={{ padding: '12px 16px' }}>
+              {classStats.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <Dumbbell style={{ width: 22, height: 22, color: '#3a5070', margin: '0 auto 8px' }}/>
+                  <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned yet</p>
+                  <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Add Your First Class</button>
+                </div>
+              ) : classStats.map((cls, i) => {
+                const c         = classColor(cls);
+                const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
+                return (
+                  <div key={cls.id||i} style={{ marginBottom: i < classStats.length-1 ? 10 : 0, padding: '12px 14px', borderRadius: 13, background: `${c}06`, border: `1px solid ${c}1a`, position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c, borderRadius: '13px 0 0 13px' }}/>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 10, marginBottom: 8 }}>
+                      <FillRing pct={cls.fill} color={fillColor} size={44}/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 3, flexWrap: 'wrap' }}>
+                          {cls.schedule && <span style={{ fontSize: 10, color: '#64748b' }}>🕐 {cls.schedule}</span>}
+                          {cls.duration_minutes && <span style={{ fontSize: 10, color: '#3a5070' }}>{cls.duration_minutes}min</span>}
+                          {cls.capacity && <span style={{ fontSize: 10, color: '#3a5070' }}>cap {cls.capacity}</span>}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: fillColor, lineHeight: 1 }}>{cls.attended}</div>
+                        <div style={{ fontSize: 9, color: '#3a5070', marginTop: 1 }}>today</div>
+                      </div>
+                    </div>
+                    {/* Attendance bar */}
+                    <div style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fillColor},${fillColor}99)`, borderRadius: 99 }}/>
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: fillColor, flexShrink: 0 }}>{cls.fill}%</span>
+                      <Spark data={cls.classSpark} color={c} height={22}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CoachCard>
         </div>
 
-        {/* RIGHT SIDEBAR */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* ── COL 2 ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* Members needing attention */}
+          {/* At-risk + never visited tabbed */}
           <CoachCard accent="#f87171" title="Needs Attention">
-            <div style={{ padding: '10px 14px' }}>
-              {atRisk.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '14px 0' }}>
+            <div style={{ padding: '0 16px' }}>
+              {/* Tab switcher */}
+              <div style={{ display: 'flex', gap: 3, padding: '10px 0 10px' }}>
+                {[{ id: 'absent', label: `Absent · ${atRiskMembers.length}` }, { id: 'never', label: `Never Visited · ${neverVisited.length}` }].map(t => (
+                  <button key={t.id} onClick={() => setAtRiskTab(t.id)} style={{ flex: 1, padding: '5px 8px', borderRadius: 8, border: atRiskTab===t.id ? '1px solid rgba(248,113,113,0.3)' : '1px solid transparent', background: atRiskTab===t.id ? 'rgba(248,113,113,0.1)' : 'transparent', color: atRiskTab===t.id ? '#f87171' : '#3a5070', fontSize: 10, fontWeight: atRiskTab===t.id ? 800 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              {atRiskAll.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '16px 0 14px' }}>
                   <CheckCircle style={{ width: 18, height: 18, color: '#34d399', margin: '0 auto 6px' }}/>
-                  <p style={{ fontSize: 12, color: '#34d399', fontWeight: 700, margin: 0 }}>All members active 🎉</p>
+                  <p style={{ fontSize: 12, color: '#34d399', fontWeight: 700, margin: 0 }}>
+                    {atRiskTab === 'absent' ? 'All members active 🎉' : 'Everyone has visited 🎉'}
+                  </p>
                 </div>
-              ) : atRisk.slice(0, 6).map((m, i) => {
-                const last = memberLastCI[m.user_id];
-                const days = last ? Math.floor((now - new Date(last)) / 86400000) : null;
+              ) : atRiskAll.slice(0, 6).map((m, i) => {
+                const last    = memberLastCI[m.user_id];
+                const days    = last ? Math.floor((now - new Date(last)) / 86400000) : null;
                 const urgency = days === null || days > 30 ? '#ef4444' : days > 21 ? '#f97316' : '#fbbf24';
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(atRisk.length, 6) - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(atRiskAll.length,6)-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                     <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color={urgency}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
                       <div style={{ fontSize: 10, color: urgency }}>{days !== null ? `${days}d absent` : 'Never visited'}</div>
                     </div>
-                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>
-                      Reach
-                    </button>
+                    <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', flexShrink: 0 }}>Reach</button>
+                  </div>
+                );
+              })}
+              {atRiskAll.length > 6 && (
+                <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '8px 0' }}>+{atRiskAll.length - 6} more</div>
+              )}
+            </div>
+          </CoachCard>
+
+          {/* Engagement breakdown */}
+          <CoachCard accent="#8b5cf6" title="30-Day Engagement">
+            <div style={{ padding: '12px 16px' }}>
+              {/* Stacked bar */}
+              <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 14 }}>
+                {totalM > 0 && [
+                  { val: superActive, color: '#10b981' },
+                  { val: active,      color: '#38bdf8' },
+                  { val: casual,      color: '#a78bfa' },
+                  { val: Math.max(0, totalM - superActive - active - casual), color: '#334155' },
+                ].filter(t => t.val > 0).map((t, i, arr) => (
+                  <div key={i} style={{ flex: t.val, background: t.color, opacity: 0.85, borderRadius: i===0?'99px 0 0 99px':i===arr.length-1?'0 99px 99px 0':0 }}/>
+                ))}
+              </div>
+              {[
+                { label: 'Super Active', sub: '12+ visits', val: superActive, color: '#10b981' },
+                { label: 'Active',       sub: '4–11',       val: active,      color: '#38bdf8' },
+                { label: 'Casual',       sub: '1–3',        val: casual,      color: '#a78bfa' },
+                { label: 'Inactive',     sub: '0 visits',   val: Math.max(0, totalM - superActive - active - casual), color: '#475569' },
+              ].map((t, i) => {
+                const pct = totalM > 0 ? Math.round((t.val / totalM) * 100) : 0;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: i < 3 ? 9 : 0 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: t.color, flexShrink: 0 }}/>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#d4e4f4' }}>{t.label} <span style={{ fontSize: 9, color: '#64748b', fontWeight: 400 }}>{t.sub}</span></span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: t.color }}>{t.val}</span>
+                      </div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${t.color},${t.color}88)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 9, color: '#64748b', width: 26, textAlign: 'right', flexShrink: 0 }}>{pct}%</span>
                   </div>
                 );
               })}
             </div>
           </CoachCard>
 
-          {/* Milestones */}
-          {milestones.length > 0 && (
-            <CoachCard accent="#a78bfa" title="Close to Milestones">
-              <div style={{ padding: '10px 14px' }}>
-                {milestones.map((m, i) => (
-                  <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: i < milestones.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={28} color="#a78bfa"/>
+          {/* Top performers this week */}
+          {weekStars.length > 0 && (
+            <CoachCard accent="#fbbf24" title="This Week's Top Members">
+              <div style={{ padding: '10px 16px' }}>
+                {weekStars.map((m, i) => {
+                  const medals = ['🥇','🥈','🥉'];
+                  const maxCount = weekStars[0]?.count || 1;
+                  return (
+                    <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < weekStars.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                      <span style={{ fontSize: i < 3 ? 15 : 11, width: 22, textAlign: 'center', flexShrink: 0 }}>{medals[i] || `${i+1}`}</span>
+                      <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={28} color="#fbbf24"/>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 5 }}>
+                          <div style={{ height: '100%', width: `${(m.count/maxCount)*100}%`, background: 'linear-gradient(90deg,#fbbf24,#f59e0b)', borderRadius: 99 }}/>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', flexShrink: 0 }}>{m.count}x</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CoachCard>
+          )}
+
+          {/* Streaks */}
+          {topStreaks.length > 0 && (
+            <CoachCard accent="#f59e0b" title="🔥 Current Streaks">
+              <div style={{ padding: '10px 16px' }}>
+                {topStreaks.map((m, i) => (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < topStreaks.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.name} src={avatarMap[m.user_id]} size={28} color="#f59e0b"/>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                      <div style={{ fontSize: 10, color: m.toNext === 1 ? '#10b981' : '#64748b' }}>
-                        {m.toNext === 1 ? '🎉 1 visit to go!' : `${m.toNext} visits to ${m.next}`}
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginTop: 5 }}>
+                        <div style={{ height: '100%', width: `${Math.min(100, (m.streak/30)*100)}%`, background: 'linear-gradient(90deg,#f59e0b,#ef4444)', borderRadius: 99 }}/>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 900, color: '#a78bfa' }}>{m.total}</div>
-                      <div style={{ fontSize: 8, color: '#3a5070' }}>visits</div>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: '#fbbf24' }}>{m.streak}</div>
+                      <div style={{ fontSize: 8, color: '#3a5070' }}>days</div>
                     </div>
                   </div>
                 ))}
+              </div>
+            </CoachCard>
+          )}
+        </div>
+
+        {/* ── COL 3: SIDEBAR ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* Milestone celebrations */}
+          {milestones.length > 0 && (
+            <CoachCard accent="#a78bfa" title="🎯 Close to Milestones">
+              <div style={{ padding: '10px 14px' }}>
+                {milestones.map((m, i) => (
+                  <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < milestones.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                    <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={26} color="#a78bfa"/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
+                      <div style={{ fontSize: 9, color: m.toNext === 1 ? '#34d399' : '#64748b' }}>
+                        {m.toNext === 1 ? '🎉 1 visit to go!' : `${m.toNext} to reach ${m.next}`}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: '#a78bfa' }}>{m.total}</div>
+                      <div style={{ fontSize: 8, color: '#3a5070' }}>→{m.next}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CoachCard>
+          )}
+
+          {/* Active challenges */}
+          {activeChallenges.length > 0 && (
+            <CoachCard accent="#fbbf24" title="Active Challenges" action="+ New" onAction={() => openModal('challenge')}>
+              <div style={{ padding: '10px 14px' }}>
+                {activeChallenges.slice(0, 3).map((ch, i) => {
+                  const start = new Date(ch.start_date), end = new Date(ch.end_date);
+                  const total = Math.max(1, Math.floor((end - start) / 86400000));
+                  const elapsed = Math.max(0, Math.floor((now - start) / 86400000));
+                  const pct = Math.min(100, Math.round((elapsed / total) * 100));
+                  return (
+                    <div key={ch.id||i} style={{ marginBottom: i < activeChallenges.length-1 ? 10 : 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+                        <Trophy style={{ width: 11, height: 11, color: '#fbbf24', flexShrink: 0 }}/>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.title}</span>
+                        <span style={{ fontSize: 9, color: '#64748b', flexShrink: 0 }}>{(ch.participants||[]).length}👤</span>
+                      </div>
+                      <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', borderRadius: 99 }}/>
+                      </div>
+                      <div style={{ fontSize: 9, color: '#64748b', textAlign: 'right', marginTop: 3 }}>{pct}% elapsed</div>
+                    </div>
+                  );
+                })}
               </div>
             </CoachCard>
           )}
@@ -288,17 +607,17 @@ export default function TabCoachOverview({ myClasses, checkIns, allMemberships, 
             <CoachCard accent="#34d399" title="Upcoming Events" action="+ New" onAction={() => openModal('event')}>
               <div style={{ padding: '10px 14px' }}>
                 {upcomingEvents.map((ev, i) => {
-                  const d = new Date(ev.event_date);
+                  const d    = new Date(ev.event_date);
                   const diff = Math.floor((d - now) / 86400000);
                   return (
-                    <div key={ev.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < upcomingEvents.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                      <div style={{ flexShrink: 0, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.14)', borderRadius: 8, padding: '4px 7px', textAlign: 'center', minWidth: 34 }}>
-                        <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', lineHeight: 1 }}>{format(d, 'd')}</div>
-                        <div style={{ fontSize: 7, fontWeight: 800, color: '#1a5a3a', textTransform: 'uppercase' }}>{format(d, 'MMM')}</div>
+                    <div key={ev.id||i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < upcomingEvents.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                      <div style={{ flexShrink: 0, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.14)', borderRadius: 8, padding: '4px 7px', textAlign: 'center', minWidth: 32 }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', lineHeight: 1 }}>{format(d,'d')}</div>
+                        <div style={{ fontSize: 7, fontWeight: 800, color: '#1a5a3a', textTransform: 'uppercase' }}>{format(d,'MMM')}</div>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
-                        <div style={{ fontSize: 10, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d away`}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
+                        <div style={{ fontSize: 9, color: diff <= 2 ? '#f87171' : '#64748b' }}>{diff === 0 ? 'Today!' : diff === 1 ? 'Tomorrow' : `${diff}d`}</div>
                       </div>
                     </div>
                   );
@@ -307,23 +626,32 @@ export default function TabCoachOverview({ myClasses, checkIns, allMemberships, 
             </CoachCard>
           )}
 
-          {/* Quick actions */}
-          <CoachCard accent="#a78bfa" title="Quick Actions">
-            <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {/* 30-day snapshot numbers */}
+          <CoachCard accent="#0ea5e9" title="30-Day Snapshot">
+            <div style={{ padding: '10px 14px' }}>
               {[
-                { icon: QrCode,    label: 'Scan Check-in',  color: '#10b981', fn: () => openModal('qrScanner') },
-                { icon: FileText,  label: 'Post to Members', color: '#38bdf8', fn: () => openModal('post')      },
-                { icon: Calendar,  label: 'Create Event',    color: '#34d399', fn: () => openModal('event')     },
-                { icon: Dumbbell,  label: 'Manage Classes',  color: '#a78bfa', fn: () => openModal('classes')   },
-              ].map(({ icon: Ic, label, color, fn }, i) => (
-                <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'all 0.12s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = `${color}10`; e.currentTarget.style.borderColor = `${color}30`; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Ic style={{ width: 10, height: 10, color }}/>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#d4e4f4' }}>{label}</span>
-                </button>
+                { label: 'Total check-ins',  value: ci30.length,                                        color: '#38bdf8' },
+                { label: 'Unique members',   value: new Set(ci30.map(c=>c.user_id)).size,               color: '#34d399' },
+                { label: 'Avg visits / member', value: totalM > 0 ? (ci30.length / totalM).toFixed(1) : '—', color: '#a78bfa' },
+                { label: 'Need attention',   value: atRiskMembers.length + neverVisited.length,         color: (atRiskMembers.length + neverVisited.length) > 0 ? '#f87171' : '#34d399' },
+              ].map((s, i, arr) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                  <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>{s.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: s.color, background: `${s.color}12`, border: `1px solid ${s.color}20`, borderRadius: 6, padding: '1px 8px' }}>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </CoachCard>
+
+          {/* Recent posts */}
+          <CoachCard accent="#34d399" title="My Posts" action="+ New" onAction={() => openModal('post')}>
+            <div style={{ padding: '10px 14px' }}>
+              {posts.length === 0 ? (
+                <p style={{ fontSize: 11, color: '#3a5070', textAlign: 'center', padding: '8px 0', margin: 0 }}>No posts yet</p>
+              ) : posts.slice(0,3).map((p,i) => (
+                <div key={p.id||i} style={{ padding: '6px 8px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 5, fontSize: 11, fontWeight: 600, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {p.content?.split('\n')[0] || p.title || 'Post'}
+                </div>
               ))}
             </div>
           </CoachCard>
