@@ -362,9 +362,8 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     spawnParticles();
     // Hide p1, show p2 using display (avoids all opacity/compositing conflicts)
     p1.style.display = 'none';
-    stage.style.animation = 'none';
     p2.style.display = 'block';
-    p2.style.animation = 'none';
+    p2.style.opacity = '1';
     void p2.offsetWidth; // force reflow
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     setTimeout(() => {
