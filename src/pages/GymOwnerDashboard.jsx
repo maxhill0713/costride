@@ -494,6 +494,9 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button onClick={toggleRole} style={{ background: isCoach ? 'rgba(167,139,250,0.1)' : 'rgba(56,189,248,0.08)', border: `1px solid ${isCoach ? 'rgba(167,139,250,0.25)' : 'rgba(56,189,248,0.2)'}`, color: isCoach ? '#a78bfa' : '#38bdf8', borderRadius: 8, fontSize: 10, fontWeight: 800, padding: '4px 8px', cursor: 'pointer' }}>
+            {isCoach ? '🎓' : '🏢'}
+          </button>
           {atRisk > 0 && (
             <button onClick={() => setTab('members')} style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 99, fontSize: 10, fontWeight: 700, padding: '4px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
               <AlertTriangle style={{ width: 9, height: 9 }}/>{atRisk}
