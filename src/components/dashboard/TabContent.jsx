@@ -366,8 +366,9 @@ export default function TabContent({
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [], classes = [],
   onDeletePost = () => {}, onDeleteEvent = () => {}, onDeleteChallenge = () => {},
   onDeleteClass = () => {}, onDeletePoll = () => {},
+  isCoach = false,
 }) {
-  const [activeFilter, setActiveFilter] = useState('gym');
+  const [activeFilter, setActiveFilter] = useState(isCoach ? 'classes' : 'gym');
 
   const allPosts         = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   const gymPosts         = allPosts.filter(p => !p.user_id || p.gym_id || p.member_id);
