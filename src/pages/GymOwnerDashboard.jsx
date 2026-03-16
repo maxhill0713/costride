@@ -610,8 +610,8 @@ export default function GymOwnerDashboard() {
           })}
         </nav>
 
-        {/* Retention Pro */}
-        {!collapsed && (
+        {/* Retention Pro — gym owners only */}
+        {!collapsed && isGymOwner && (
           <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
             <Link to={createPageUrl('Plus')}>
               <div style={{ padding: '12px 13px', borderRadius: 12, background: 'linear-gradient(135deg,rgba(139,92,246,0.14),rgba(236,72,153,0.07))', border: '1px solid rgba(139,92,246,0.2)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
