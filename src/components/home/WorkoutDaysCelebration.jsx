@@ -77,10 +77,6 @@ function injectStyles() {
       85%  { transform: scale(1.07); }
       100% { transform: scale(1); }
     }
-    @keyframes wdcCardReveal {
-      from { opacity: 0; transform: translateY(28px) scale(0.96); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
     @keyframes wdcWiggle {
       0%, 60%, 100% { transform: rotate(0deg); }
       65%           { transform: rotate(-6deg); }
@@ -115,7 +111,7 @@ export default function WorkoutDaysCelebration({
       playCircleLevelUp();
       spawnBlueParticles(todayRef.current);
     }, 1230);
-    const t2 = setTimeout(() => { onDismiss?.(); }, 5100);
+    const t2 = setTimeout(() => { onDismiss?.(); }, 4600);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -262,17 +258,25 @@ export default function WorkoutDaysCelebration({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.35 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center"
       >
-        <div style={{
-          animation: 'wdcCardReveal 0.83s cubic-bezier(0.34,1.15,0.64,1) forwards',
-          padding: '32px 24px 32px',
-          width: 'min(340px, 90vw)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.96 }}
+          transition={{
+            enter: { duration: 0.55, ease: [0.34, 1.15, 0.64, 1] },
+            exit:  { duration: 0.55, ease: [0.4, 0, 1, 1] },
+          }}
+          style={{
+            padding: '32px 24px 32px',
+            width: 'min(340px, 90vw)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
 
           {/* Day circles row */}
           <div style={{
@@ -358,7 +362,7 @@ export default function WorkoutDaysCelebration({
             })}
           </div>
 
-        </div>
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );
