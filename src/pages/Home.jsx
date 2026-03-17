@@ -677,6 +677,10 @@ export default function Home() {
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
 
+  // Hide check-in on rest days; show it if user has switched to a training day
+  const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
+  const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
+
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());
