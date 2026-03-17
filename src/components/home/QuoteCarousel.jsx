@@ -51,7 +51,7 @@ export default function QuoteCarousel() {
     <div
       className="rounded-2xl select-none relative shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
       style={{
-        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        background: 'linear-gradient(135deg, rgba(15,30,70,0.88) 0%, rgba(5,10,35,0.97) 100%)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.07)',
