@@ -65,6 +65,44 @@ export const RingChart = ({ pct = 70, size = 64, stroke = 5, color = '#0ea5e9' }
   );
 };
 
+// ── StatusChip ─────────────────────────────────────────────────────────────────
+export function StatusChip({ status }) {
+  const map = {
+    'Engaged':  { color: '#10b981', bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.2)'  },
+    'New':      { color: '#0ea5e9', bg: 'rgba(14,165,233,0.1)',  border: 'rgba(14,165,233,0.2)'  },
+    'Casual':   { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)'  },
+    'At Risk':  { color: '#ef4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.2)'   },
+    'Banned':   { color: '#94a3b8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.2)' },
+  };
+  const s = map[status] || map['Casual'];
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
+      {status}
+    </span>
+  );
+}
+
+// ── FitnessScore ───────────────────────────────────────────────────────────────
+export function FitnessScore({ score = 0, label = 'Score', sub = '' }) {
+  const color = score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+  const r = 22, stroke = 4, circ = 2 * Math.PI * r;
+  const dash = circ * Math.min(100, Math.max(0, score)) / 100;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+      <div style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width={56} height={56} style={{ transform: 'rotate(-90deg)', position: 'absolute', inset: 0 }}>
+          <circle cx={28} cy={28} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke}/>
+          <circle cx={28} cy={28} r={r} fill="none" stroke={color} strokeWidth={stroke}
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"/>
+        </svg>
+        <span style={{ fontSize: 14, fontWeight: 800, color, letterSpacing: '-0.03em', position: 'relative', zIndex: 1 }}>{score}</span>
+      </div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,244,248,0.7)', textAlign: 'center' }}>{label}</div>
+      {sub && <div style={{ fontSize: 9, color: '#475569', textAlign: 'center' }}>{sub}</div>}
+    </div>
+  );
+}
+
 // ── Avatar ─────────────────────────────────────────────────────────────────────
 export function Avatar({ name = '?', size = 32, src = null }) {
   const colors = [
