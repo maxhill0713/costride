@@ -13,13 +13,11 @@ export default function UsernameStep({
 }) {
   const [checking, setChecking] = useState(false);
   const [isUnique, setIsUnique] = useState(null); // null = not checked yet
-  const [checkError, setCheckError] = useState(false);
   const debounceRef = useRef(null);
 
   // Debounce uniqueness check whenever username changes and format is valid
   useEffect(() => {
     setIsUnique(null);
-    setCheckError(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!isValid) return;
