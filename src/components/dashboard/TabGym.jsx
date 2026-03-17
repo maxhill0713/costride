@@ -387,13 +387,14 @@ function PrivacySettings({ settings, onUpdate }) {
 export default function TabGym({
   selectedGym, classes, coaches, openModal,
   checkIns = [], allMemberships = [], atRisk = 0, retentionRate = 0,
+  atRiskDays: atRiskDaysProp = 14, onAtRiskDaysChange,
 }) {
   const now = new Date();
   const statusVerified = selectedGym?.verified;
 
   // ── Local settings state (in real app these persist to the gym record) ─────
   const [retentionSettings, setRetentionSettings] = useState({
-    atRiskDays:        14,
+    atRiskDays:        atRiskDaysProp,
     highRiskDays:      21,
     newMemberDays:     30,
     week1FollowUpDays: 7,
