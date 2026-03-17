@@ -114,8 +114,8 @@ export default function WorkoutDaysCelebration({
       setAnimated(true);
       playCircleLevelUp();
       spawnBlueParticles(todayRef.current);
-    }, 820);
-    const t2 = setTimeout(() => { onDismiss?.(); }, 3400);
+    }, 1230);
+    const t2 = setTimeout(() => { onDismiss?.(); }, 5100);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -139,7 +139,9 @@ export default function WorkoutDaysCelebration({
   const getCircleProps = (day, i) => {
     const isToday        = day === todayDowAdjusted;
     const done           = loggedDays.has(day);
-    const isRestDay      = !trainingDays.includes(day);
+    // A day is only a rest day if it's not in the training split AND hasn't been logged.
+    // Guard: if trainingDays is empty (split not set up yet) treat nothing as a rest day.
+    const isRestDay      = trainingDays.length > 0 && !trainingDays.includes(day) && !done;
     const isPast         = day < todayDowAdjusted;
     const isMissed       = !isRestDay && !done && isPast;
     const isPastRest     = isRestDay && (isPast || isToday);
@@ -181,7 +183,7 @@ export default function WorkoutDaysCelebration({
     };
 
     const getAnim = () => {
-      if (isToday && animated) return 'wdcCirclePop 0.6s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (isToday && animated) return 'wdcCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (isToday || isRestDay || done || isMissed) return 'none';
       return `wdcWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
     };
@@ -192,21 +194,7 @@ export default function WorkoutDaysCelebration({
   const CircleIcon = ({ isToday, done, isRestDay, isMissed, isPastRest, size, isTodayPending }) => {
     const iconSize = isToday ? 20 : 16;
 
-    if (isRestDay) {
-      const col    = isPastRest ? '#4ade80'                 : 'rgba(148,163,184,0.55)';
-      const stroke = isPastRest ? '#15803d'                 : 'rgba(148,163,184,0.3)';
-      return (
-        <svg width={isToday ? 32 : 26} height={isToday ? 32 : 26} viewBox="0 0 100 100" fill="none">
-          <line x1="50" y1="95" x2="50" y2="30" stroke={stroke} strokeWidth="3" strokeLinecap="round" />
-          <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z"  fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
-          <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
-          <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
-          <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
-          <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
-        </svg>
-      );
-    }
-
+    // Today's circle (pending → grey dot, animated → blue tick)
     if (isToday) {
       if (isTodayPending) return (
         <div style={{
@@ -222,17 +210,34 @@ export default function WorkoutDaysCelebration({
             d="M4 10.5l4.5 4.5 7.5-9"
             stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
             strokeDasharray="40" strokeDashoffset="40"
-            style={{ animation: 'wdcTickDraw 0.38s ease 0.08s forwards' }}
+            style={{ animation: 'wdcTickDraw 0.57s ease 0.12s forwards' }}
           />
         </svg>
       );
     }
 
+    // Completed workout → blue tick (must come before rest-day check)
     if (done) return (
       <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="none">
         <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
+
+    // Rest day → leaf icon (only for non-done, non-today days not in split)
+    if (isRestDay) {
+      const col    = isPastRest ? '#4ade80'             : 'rgba(148,163,184,0.55)';
+      const stroke = isPastRest ? '#15803d'             : 'rgba(148,163,184,0.3)';
+      return (
+        <svg width={isToday ? 32 : 26} height={isToday ? 32 : 26} viewBox="0 0 100 100" fill="none">
+          <line x1="50" y1="95" x2="50" y2="30" stroke={stroke} strokeWidth="3" strokeLinecap="round" />
+          <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z"  fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
+          <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
+          <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
+          <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
+          <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill={isPastRest ? col : 'none'} stroke={col} strokeWidth="1.5" />
+        </svg>
+      );
+    }
 
     if (isMissed) return (
       <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="none">
@@ -240,11 +245,12 @@ export default function WorkoutDaysCelebration({
       </svg>
     );
 
+    // Upcoming training day → empty ring
     return (
       <div style={{
-        width: isToday ? 18 : 14, height: isToday ? 18 : 14, borderRadius: '50%',
-        border: isToday ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
-        background: isToday ? 'rgba(255,255,255,0.05)' : 'transparent',
+        width: 14, height: 14, borderRadius: '50%',
+        border: '2px solid rgba(100,116,139,0.35)',
+        background: 'transparent',
       }} />
     );
   };
@@ -260,34 +266,13 @@ export default function WorkoutDaysCelebration({
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center"
       >
         <div style={{
-          animation: 'wdcCardReveal 0.55s cubic-bezier(0.34,1.15,0.64,1) forwards',
-          background: 'linear-gradient(135deg, rgba(30,35,60,0.95) 0%, rgba(8,10,20,0.98) 100%)',
-          border: '1px solid rgba(255,255,255,0.09)',
-          borderRadius: 28,
+          animation: 'wdcCardReveal 0.83s cubic-bezier(0.34,1.15,0.64,1) forwards',
           padding: '32px 24px 32px',
           width: 'min(340px, 90vw)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
         }}>
-
-          {/* "This Week" label */}
-          <motion.p
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
-            style={{
-              fontSize: 13,
-              fontWeight: 800,
-              color: 'rgba(148,163,184,0.7)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}
-          >
-            This Week
-          </motion.p>
 
           {/* Day circles row */}
           <div style={{
