@@ -122,17 +122,22 @@ export default function Friends() {
     gcTime: 15 * 60 * 1000
   });
 
+  const [pendingOutgoing, setPendingOutgoing] = useState([]); // [{id, full_name, username, avatar_url}]
+
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', {
       friendId: friendUser.id,
       action: 'add'
     }),
-    onSuccess: () => {
+    onSuccess: (_, friendUser) => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['friendUsers'] });
+      // Add to local pending list so it appears in friends modal immediately
+      setPendingOutgoing(prev => [...prev.filter(p => p.id !== friendUser.id), friendUser]);
       toast.success('Friend request sent!');
       setShowAddModal(false);
+      setShowFriendsModal(true);
       setSearchQuery('');
     },
     onError: (error) => {
