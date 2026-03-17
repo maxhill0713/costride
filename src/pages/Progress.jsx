@@ -443,7 +443,7 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         transform: pressed ? 'translateY(4px)' : 'translateY(0)',
         boxShadow: pressed
           ? 'none'
-          : `0 4px 0 0 rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.45), 0 0 28px 0px ${glowColor}`,
+          : `0 4px 0 0 rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.45)`,
         transition: pressed
           ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
