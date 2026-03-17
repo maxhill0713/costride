@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Audio ────────────────────────────────────────────────────────────────────
 function playCircleLevelUp() {
@@ -62,6 +61,10 @@ function injectStyles() {
   const s = document.createElement('style');
   s.id = 'wdc-styles';
   s.textContent = `
+    @keyframes wdcCardEnter {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
     @keyframes wdcParticleBurst {
       0%   { transform: translate(0,0) scale(1); opacity: 1; }
       100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
@@ -102,7 +105,11 @@ export default function WorkoutDaysCelebration({
   onDismiss,
 }) {
   const [animated, setAnimated] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const todayRef = useRef(null);
+
+  // EXIT_DUR must match the exit transition duration below (ms)
+  const EXIT_DUR = 600;
 
   useEffect(() => {
     injectStyles();
@@ -111,8 +118,10 @@ export default function WorkoutDaysCelebration({
       playCircleLevelUp();
       spawnBlueParticles(todayRef.current);
     }, 1230);
-    const t2 = setTimeout(() => { onDismiss?.(); }, 4600);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    // Start the exit animation EXIT_DUR ms before actually unmounting
+    const t2 = setTimeout(() => setExiting(true), 4600 - EXIT_DUR);
+    const t3 = setTimeout(() => { onDismiss?.(); }, 4600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   const trainingDays = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
@@ -252,31 +261,32 @@ export default function WorkoutDaysCelebration({
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        key="wdc-overlay"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
-        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center"
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        // Fade overlay out on exit
+        opacity: exiting ? 0 : 1,
+        transition: `opacity ${EXIT_DUR}ms ease-in-out`,
+      }}
+    >
+      <div
+        style={{
+          padding: '32px 24px 32px',
+          width: 'min(340px, 90vw)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          // Slide card down + fade on exit; spring entrance via keyframe
+          animation: !exiting ? 'wdcCardEnter 0.55s cubic-bezier(0.34,1.15,0.64,1) forwards' : 'none',
+          opacity: exiting ? 0 : 1,
+          transform: exiting ? 'translateY(28px) scale(0.96)' : undefined,
+          transition: exiting ? `opacity ${EXIT_DUR}ms cubic-bezier(0.4,0,1,1), transform ${EXIT_DUR}ms cubic-bezier(0.4,0,1,1)` : 'none',
+        }}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.96 }}
-          transition={{
-            enter: { duration: 0.55, ease: [0.34, 1.15, 0.64, 1] },
-            exit:  { duration: 0.55, ease: [0.4, 0, 1, 1] },
-          }}
-          style={{
-            padding: '32px 24px 32px',
-            width: 'min(340px, 90vw)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
 
           {/* Day circles row */}
           <div style={{
@@ -362,8 +372,7 @@ export default function WorkoutDaysCelebration({
             })}
           </div>
 
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      </div>
   );
 }
