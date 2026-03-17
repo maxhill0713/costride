@@ -15,7 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'userId required' }, { status: 400 });
     }
 
-    const results = await base44.asServiceRole.entities.User.filter({ id: userId });
+    let results = [];
+    try {
+      results = await base44.asServiceRole.entities.User.filter({ id: userId });
+    } catch {
+      return Response.json({ user: null }, { status: 200 });
+    }
     const found = results[0] || null;
 
     if (!found) {
