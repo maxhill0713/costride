@@ -572,9 +572,18 @@ export default function Home() {
     staleTime: 30000,
   });
 
+  const [pendingRequestIds, setPendingRequestIds] = useState(new Set());
+
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); setShowAddFriendModal(false); setFriendSearchQuery(''); },
+    onSuccess: (_, friendUser) => {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
+      setPendingRequestIds(prev => new Set([...prev, friendUser.id]));
+      setShowAddFriendModal(false);
+      setShowFriendsModal(true);
+      setFriendSearchQuery('');
+    },
   });
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
