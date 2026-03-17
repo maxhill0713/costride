@@ -1164,8 +1164,6 @@ export default function Home() {
                           background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
                           transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                           animation: pressedDay === day ? 'none' : getAnimation(),
-                          animationPlayState: 'running',
-                          animationDelay: bounce ? '0s' : `${i * 0.18}s`,
                           opacity: pressedDay === day ? 0.65 : 1,
                           transform: 'none',
                           willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
