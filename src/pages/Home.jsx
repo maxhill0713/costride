@@ -1500,6 +1500,23 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {/* Sent requests (pending) at the top */}
+              {[...pendingRequestIds].filter(id => !friends.some(f => f.friend_id === id)).map(pendingId => {
+                const u = friendUsersList.find(u => u.id === pendingId) || searchResults.find(u => u.id === pendingId);
+                const name = u?.full_name || 'User';
+                return (
+                  <div key={`pending-${pendingId}`} className="p-2 rounded-lg bg-slate-800/60 border border-slate-600/40 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                      </div>
+                      <p className="font-semibold text-white text-xs truncate">{name}</p>
+                    </div>
+                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] flex-shrink-0">Pending</Badge>
+                  </div>
+                );
+              })}
+              {/* Incoming friend requests */}
               {friendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.user_id); return (u?.full_name||req.user_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.user_id);
                 const name = u?.full_name || request.user_name || request.friend_name;
@@ -1518,7 +1535,7 @@ export default function Home() {
                   </div>
                 );
               })}
-              {friends.length === 0 && friendRequests.length === 0
+              {friends.length === 0 && friendRequests.length === 0 && pendingRequestIds.size === 0
                 ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 : friendsWithActivity.filter(friend => { const u = friendUsersList.find(u => u.id === friend.friend_id); return (u?.full_name||friend.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(friend => {
                     const u = friendUsersList.find(u => u.id === friend.friend_id);
