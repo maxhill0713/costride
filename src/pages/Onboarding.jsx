@@ -834,104 +834,27 @@ export default function Onboarding() {
   if (step === 6) {
     const hasContent = username.length > 0;
     const isValid = isUsernameValid(username);
-    // Show error hint only if user has typed something invalid
     const showFormatHint = hasContent && !isValid;
 
     return (
-      <PageShell>
-        <SlidePane visible={visible} dir={animDir}>
-          <div style={inner}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 52, marginBottom: 28, flexShrink: 0 }}>
-              <BackButton onClick={() => goTo(5, 'back')} />
-              <ProgressBar step={6} />
-            </div>
-
-            <h1 style={{ color: C.text, fontWeight: 900, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 6px', flexShrink: 0 }}>
-              Create a username
-            </h1>
-            <p style={{ color: C.sub, fontSize: 14, margin: '0 0 28px', flexShrink: 0 }}>
-              This is how others will find and tag you.
-            </p>
-
-            <div style={{ flexShrink: 0 }}>
-              {/* Input with @ prefix */}
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                {/* @ symbol */}
-                <span style={{
-                  position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
-                  fontSize: 18, fontWeight: 700,
-                  color: hasContent ? C.blueMid : C.muted,
-                  pointerEvents: 'none',
-                  transition: 'color 0.2s',
-                  userSelect: 'none',
-                }}>@</span>
-
-                <input
-                  type="text"
-                  value={username}
-                  onChange={e => {
-                    // Sanitise on input: lowercase, alphanumeric + underscores only
-                    const sanitised = e.target.value
-                      .toLowerCase()
-                      .replace(/[^a-z0-9_]/g, '')
-                      .slice(0, 20);
-                    setUsername(sanitised);
-                    setUsernameEdited(true);
-                  }}
-                  placeholder="username"
-                  maxLength={20}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  onFocus={e => { e.target.scrollIntoView = () => {}; }}
-                  style={{
-                    fontSize: 18,
-                    width: '100%',
-                    padding: '15px 16px 15px 36px',
-                    borderRadius: 14,
-                    background: C.card,
-                    border: `1.5px solid ${
-                      showFormatHint ? '#ef4444'
-                      : hasContent    ? C.blueMid
-                      :                 C.border
-                    }`,
-                    color: hasContent ? C.blueMid : C.text,
-                    fontWeight: 700,
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                    transition: 'border-color 0.2s, color 0.2s',
-                    letterSpacing: '0.01em',
-                  }}
-                />
-              </div>
-
-              {/* Hint / error line */}
-              <div style={{ minHeight: 20, marginTop: 8 }}>
-                {showFormatHint ? (
-                  <p style={{ color: '#ef4444', fontSize: 12, margin: 0, fontWeight: 600 }}>
-                    At least 3 characters · only letters, numbers and underscores
-                  </p>
-                ) : hasContent && isValid ? (
-                  <p style={{ color: C.green, fontSize: 12, margin: 0, fontWeight: 600 }}>
-                    ✓ Looks good!
-                  </p>
-                ) : (
-                  <p style={{ color: C.muted, fontSize: 12, margin: 0 }}>
-                    Letters, numbers and underscores only · max 20 characters
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div style={{ flex: 1 }} />
-
-            <PrimaryButton onClick={() => goTo(7, 'forward')} disabled={!isValid}>
-              Continue
-            </PrimaryButton>
-          </div>
-        </SlidePane>
-      </PageShell>
+      <UsernameStep
+        username={username}
+        setUsername={setUsername}
+        setUsernameEdited={setUsernameEdited}
+        hasContent={hasContent}
+        isValid={isValid}
+        showFormatHint={showFormatHint}
+        visible={visible}
+        animDir={animDir}
+        inner={inner}
+        goTo={goTo}
+        C={C}
+        PrimaryButton={PrimaryButton}
+        BackButton={BackButton}
+        ProgressBar={ProgressBar}
+        PageShell={PageShell}
+        SlidePane={SlidePane}
+      />
     );
   }
 
