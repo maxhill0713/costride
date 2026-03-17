@@ -103,7 +103,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col items-center justify-center gap-4">
         <p className="text-white text-lg">User not found.</p>
-        <Link to={createPageUrl('Friends')} className="text-blue-400 underline text-sm">Go back</Link>
+        <Link to={createPageUrl('Home')} className="text-blue-400 underline text-sm">Go back</Link>
       </div>
     );
   }
@@ -112,12 +112,12 @@ export default function UserProfile() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
 
       {/* ── TOP BAR ── */}
-      <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
-        <Link to={createPageUrl('Friends')} className="active:scale-90 transition-transform">
-          <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
-        </Link>
-        <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
-      </div>
+       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
+         <Link to={createPageUrl('Home')} className="active:scale-90 transition-transform">
+           <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
+         </Link>
+         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
+       </div>
 
       {/* ── HERO ── */}
       <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
