@@ -961,7 +961,7 @@ export default function Home() {
           {memberGym?.id && (
             <motion.div whileTap={{ scale: 0.97, y: 2 }}>
               <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-                <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-200 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
+                <Card className="rounded-xl text-card-foreground transition-all duration-200 cursor-pointer relative h-40 overflow-hidden group" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                   {memberGym?.image_url ? (
                     <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
                   ) : (
