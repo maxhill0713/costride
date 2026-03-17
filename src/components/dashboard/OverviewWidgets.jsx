@@ -207,6 +207,94 @@ export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openMod
   );
 };
 
+// ─── Community Health Score ───────────────────────────────────────────────────
+export const CommunityHealthScore = ({ checkIns = [], challenges = [], posts = [], allMemberships = [], now = new Date() }) => {
+  const scores = React.useMemo(() => {
+    const total = allMemberships.length || 1;
+
+    // Check-in frequency: active members (checked in last 30d) / total
+    const ci30 = checkIns.filter(c => now - new Date(c.check_in_date) < 30 * 86400000);
+    const activeMembers = new Set(ci30.map(c => c.user_id)).size;
+    const checkInScore = Math.min(100, Math.round((activeMembers / total) * 100));
+
+    // Challenge participation: participants across active challenges / total
+    const activeChallenges = challenges.filter(c => c.status === 'active');
+    const chalParticipants = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+    const challengeScore = Math.min(100, Math.round((chalParticipants / Math.max(activeChallenges.length * total, 1)) * 100));
+
+    // Post engagement: total reactions + comments across posts this month
+    const recentPosts = posts.filter(p => now - new Date(p.created_date) < 30 * 86400000);
+    const totalEngagements = recentPosts.reduce((s, p) => {
+      return s + Object.keys(p.reactions || {}).length + (p.comments?.length || 0);
+    }, 0);
+    const postScore = Math.min(100, Math.round((totalEngagements / Math.max(total, 1)) * 80));
+
+    // Streaks: members with streak ≥ 3 days
+    const streakMembers = allMemberships.filter(m => (m.current_streak || 0) >= 3).length;
+    // Approximate using check-in density — members with 3+ check-ins in last 7d
+    const ci7ByUser = {};
+    checkIns.filter(c => now - new Date(c.check_in_date) < 7 * 86400000).forEach(c => {
+      ci7ByUser[c.user_id] = (ci7ByUser[c.user_id] || 0) + 1;
+    });
+    const streakCount = Object.values(ci7ByUser).filter(v => v >= 3).length;
+    const streakScore = Math.min(100, Math.round((streakCount / total) * 100));
+
+    const overall = Math.round((checkInScore + challengeScore + postScore + streakScore) / 4);
+    return { checkInScore, challengeScore, postScore, streakScore, overall };
+  }, [checkIns, challenges, posts, allMemberships, now]);
+
+  const metrics = [
+    { label: 'Check-in Frequency', value: scores.checkInScore, color: '#38bdf8', icon: '📅' },
+    { label: 'Challenge Participation', value: scores.challengeScore, color: '#f59e0b', icon: '🏆' },
+    { label: 'Post Engagement', value: scores.postScore, color: '#a78bfa', icon: '💬' },
+    { label: 'Streaks', value: scores.streakScore, color: '#34d399', icon: '🔥' },
+  ];
+
+  const overallColor = scores.overall >= 70 ? '#10b981' : scores.overall >= 40 ? '#f59e0b' : '#f87171';
+  const grade = scores.overall >= 85 ? 'Excellent' : scores.overall >= 70 ? 'Good' : scores.overall >= 50 ? 'Fair' : 'Needs Work';
+
+  return (
+    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 18, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, left: 16, right: 16, height: 1, background: `linear-gradient(90deg, transparent, ${overallColor}50, transparent)`, pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Community Health</div>
+          <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>4 key engagement signals</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: overallColor, letterSpacing: '-0.03em', lineHeight: 1 }}>
+            {scores.overall}<span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', marginLeft: 2 }}>/100</span>
+          </div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: overallColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{grade}</div>
+        </div>
+      </div>
+
+      {/* Overall bar */}
+      <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 14 }}>
+        <div style={{ height: '100%', width: `${scores.overall}%`, borderRadius: 99, background: `linear-gradient(90deg, ${overallColor}, ${overallColor}bb)`, transition: 'width 1s cubic-bezier(0.22,1,0.36,1)' }} />
+      </div>
+
+      {/* Individual metrics */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {metrics.map(m => (
+          <div key={m.label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 12 }}>{m.icon}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>{m.label}</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: m.color }}>{m.value}</span>
+            </div>
+            <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
+              <div style={{ height: '100%', width: `${m.value}%`, borderRadius: 99, background: m.color, opacity: 0.85, transition: 'width 1s cubic-bezier(0.22,1,0.36,1)' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ─── Invite to Classes card ───────────────────────────────────────────────────
 export const InviteToClasses = ({ classes = [], openModal }) => (
   <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:20 }}>
