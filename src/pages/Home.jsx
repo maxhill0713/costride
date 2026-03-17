@@ -1599,9 +1599,13 @@ export default function Home() {
                           </div>
                           <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.email}</div></div>
                         </div>
-                        <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                          <UserPlus className="w-4 h-4" />
-                        </Button>
+                        <button
+                          onClick={() => addFriendMutation.mutate(user)}
+                          disabled={addFriendMutation.isPending}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 shadow-[0_3px_0_0_#1a3fa8,0_5px_14px_rgba(59,130,246,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50 flex-shrink-0">
+                          <UserPlus className="w-3.5 h-3.5" />
+                          Add
+                        </button>
                       </div>
                     ))
               )}
