@@ -129,6 +129,8 @@ export default function Friends() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friendUsers'] });
       toast.success('Friend request sent!');
       setShowAddModal(false);
       setSearchQuery('');
@@ -601,6 +603,11 @@ export default function Friends() {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+                {/* Pending outgoing requests at top */}
+                {friends.length > 0 && friendRequests.length === 0 && (
+                  <div className="text-xs text-slate-500 font-semibold mb-2">PENDING REQUESTS</div>
+                )}
+                {/* Incoming friend requests */}
                 {friendRequests
                   .filter((req) => {
                     const requesterUser = allUsers.find((u) => u.id === req.user_id);
@@ -734,15 +741,14 @@ export default function Friends() {
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setShowFriendsModal(true);
-                    setSearchQuery('');
-                  }}
-                  className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors flex-shrink-0"
-                >
-                  <ChevronDown className="w-5 h-5 -rotate-90" />
-                </button>
+                   onClick={() => {
+                     setShowAddModal(false);
+                     setSearchQuery('');
+                   }}
+                   className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors flex-shrink-0"
+                 >
+                   <ChevronDown className="w-5 h-5 -rotate-90" />
+                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
@@ -772,14 +778,14 @@ export default function Friends() {
                             )}
                           </div>
                         </div>
-                        <Button
-                          size="sm"
+                        <button
                           onClick={() => addFriendMutation.mutate(user)}
                           disabled={addFriendMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-semibold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50 text-sm"
                         >
                           <UserPlus className="w-4 h-4" />
-                        </Button>
+                          Add
+                        </button>
                       </div>
                     ))
                   )
