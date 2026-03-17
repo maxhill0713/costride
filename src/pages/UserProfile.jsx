@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft, MapPin, Building2, Flame, Star } from 'lucide-react';
 import PostCard from '../components/feed/PostCard';
@@ -13,7 +13,6 @@ export default function UserProfile() {
   const userId = urlParams.get('id');
   const [selectedPost, setSelectedPost] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const navigate = useNavigate();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -104,7 +103,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col items-center justify-center gap-4">
         <p className="text-white text-lg">User not found.</p>
-        <button onClick={() => navigate(-1)} className="text-blue-400 underline text-sm">Go back</button>
+        <Link to={createPageUrl('Friends')} className="text-blue-400 underline text-sm">Go back</Link>
       </div>
     );
   }
@@ -114,9 +113,9 @@ export default function UserProfile() {
 
       {/* ── TOP BAR ── */}
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="active:scale-90 transition-transform">
+        <Link to={createPageUrl('Friends')} className="active:scale-90 transition-transform">
           <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
-        </button>
+        </Link>
         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
       </div>
 

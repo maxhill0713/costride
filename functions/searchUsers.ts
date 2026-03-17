@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const results = allUsers
       .filter(u =>
         u.id !== user.id &&
-        (u.username?.toLowerCase().includes(q) || u.full_name?.toLowerCase().includes(q))
+        u.username?.toLowerCase().includes(q)
       )
       .slice(0, limit)
       .map(u => ({

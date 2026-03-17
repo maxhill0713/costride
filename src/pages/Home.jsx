@@ -572,18 +572,9 @@ export default function Home() {
     staleTime: 30000,
   });
 
-  const [pendingRequestIds, setPendingRequestIds] = useState(new Set());
-
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
-    onSuccess: (_, friendUser) => {
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
-      setPendingRequestIds(prev => new Set([...prev, friendUser.id]));
-      setShowAddFriendModal(false);
-      setShowFriendsModal(true);
-      setFriendSearchQuery('');
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); setShowAddFriendModal(false); setFriendSearchQuery(''); },
   });
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
@@ -1500,23 +1491,6 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {/* Sent requests (pending) at the top */}
-              {[...pendingRequestIds].filter(id => !friends.some(f => f.friend_id === id)).map(pendingId => {
-                const u = friendUsersList.find(u => u.id === pendingId) || filteredSearchResults.find(u => u.id === pendingId) || searchResults.find(u => u.id === pendingId);
-                const name = u?.full_name || 'User';
-                return (
-                  <div key={`pending-${pendingId}`} className="p-2 rounded-lg bg-slate-800/60 border border-slate-600/40 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
-                      </div>
-                      <p className="font-semibold text-white text-xs truncate">{name}</p>
-                    </div>
-                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] flex-shrink-0">Pending</Badge>
-                  </div>
-                );
-              })}
-              {/* Incoming friend requests */}
               {friendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.user_id); return (u?.full_name||req.user_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.user_id);
                 const name = u?.full_name || request.user_name || request.friend_name;
@@ -1535,7 +1509,7 @@ export default function Home() {
                   </div>
                 );
               })}
-              {friends.length === 0 && friendRequests.length === 0 && pendingRequestIds.size === 0
+              {friends.length === 0 && friendRequests.length === 0
                 ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 : friendsWithActivity.filter(friend => { const u = friendUsersList.find(u => u.id === friend.friend_id); return (u?.full_name||friend.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(friend => {
                     const u = friendUsersList.find(u => u.id === friend.friend_id);
@@ -1580,7 +1554,7 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                <Input placeholder="Search by name or @username..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
+                <Input placeholder="Add Friends..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
                   className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
               </div>
               <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
@@ -1599,13 +1573,9 @@ export default function Home() {
                           </div>
                           <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.email}</div></div>
                         </div>
-                        <button
-                          onClick={() => addFriendMutation.mutate(user)}
-                          disabled={addFriendMutation.isPending}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 shadow-[0_3px_0_0_#1a3fa8,0_5px_14px_rgba(59,130,246,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50 flex-shrink-0">
-                          <UserPlus className="w-3.5 h-3.5" />
-                          Add
-                        </button>
+                        <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                          <UserPlus className="w-4 h-4" />
+                        </Button>
                       </div>
                     ))
               )}
