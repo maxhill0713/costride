@@ -1106,9 +1106,9 @@ export default function Home() {
                     return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                   };
                   const getAnimation = () => {
-                    if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
+                    if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) 0s 1 normal forwards';
                     if (isRestDay || done || isPreJoin) return 'none';
-                    return 'dayWiggle 2.4s ease-in-out infinite';
+                    return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
                   };
                   return (
                     <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
