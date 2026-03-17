@@ -694,7 +694,6 @@ export default function GymOwnerDashboard() {
 
   return (
     <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#060c18' }}>
-      <style>{DASH_STYLE}</style>
       <style>{GRADIENT_OVERRIDE}</style>
 
       {/* ─── SIDEBAR ── */}
