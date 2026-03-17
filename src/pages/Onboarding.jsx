@@ -546,7 +546,7 @@ export default function Onboarding() {
 
   // ── Username validation helper ────────────────────────────────────────────
   function isUsernameValid(u) {
-    return u.length >= 3 && /^[a-z0-9_]+$/.test(u);
+    return u.length >= 3 && /^[a-z0-9_.]+$/.test(u);
   }
 
   async function handleFinish() {
