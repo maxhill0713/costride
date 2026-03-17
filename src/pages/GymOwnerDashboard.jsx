@@ -642,7 +642,6 @@ export default function GymOwnerDashboard() {
   // ── MOBILE LAYOUT ─────────────────────────────────────────────────────────
   if (isMobile) return (
     <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#060c18', overflow: 'hidden' }}>
-      <style>{DASH_STYLE}</style>
       <style>{GRADIENT_OVERRIDE}</style>
       <header style={{ flexShrink: 0, background: '#080f1e', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
