@@ -30,8 +30,18 @@ function SubPage({ title, onBack, action, children }) {
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="p-2 -ml-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
-              <ChevronRight className="w-6 h-6 rotate-180" />
+              className="flex items-center justify-center w-9 h-9 rounded-xl text-white/70 hover:text-white transition-all duration-100 transform-gpu"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(40,50,80,0.9), rgba(20,25,45,0.95))',
+                border: '1px solid rgba(255,255,255,0.12)',
+                boxShadow: '0 3px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+              onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)'; }}
+              onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)'; }}>
+              <ChevronRight className="w-5 h-5 rotate-180" />
             </button>
             <h1 className="text-xl font-black text-white tracking-tight">{title}</h1>
           </div>
