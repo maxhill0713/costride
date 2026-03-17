@@ -830,8 +830,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         currentUser={currentUser}
         activeDayKey={activeDayKey}
         onSelect={(dayKey) => {
-          setOverrideDayKey(dayKey === adjustedDay ? null : dayKey);
+          const newOverride = dayKey === adjustedDay ? null : dayKey;
+          setOverrideDayKey(newOverride);
           setEditingIndex(null);
+          onOverrideDayChange?.(newOverride);
         }}
       />
     </>
