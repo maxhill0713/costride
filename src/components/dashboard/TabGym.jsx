@@ -195,43 +195,6 @@ export default function TabGym({
   const now = new Date();
   const statusVerified = selectedGym?.verified;
 
-  // ── Local settings state (in real app these persist to the gym record) ─────
-  const [retentionSettings, setRetentionSettings] = useState({
-    atRiskDays:        atRiskDaysProp,
-    highRiskDays:      21,
-    newMemberDays:     30,
-    week1FollowUpDays: 7,
-  });
-
-  const [segmentSettings, setSegmentSettings] = useState({
-    superActiveVisits: 12,
-    activeVisits:      4,
-    casualVisits:      1,
-    atRiskDays:        retentionSettings.atRiskDays,
-  });
-
-  const [notifSettings, setNotifSettings] = useState({
-    alertAtRisk:         true,
-    alertNewMember:      true,
-    alertStreakBroken:   true,
-    alertMilestones:     true,
-    alertQuietMembers:   true,
-    alertNoPost:         true,
-    alertPollLow:        false,
-    alertChallengeLow:   true,
-    alertNoChallenge:    true,
-    alertLowFill:        true,
-    alertClassDependency:false,
-    alertWaitlist:       false,
-  });
-
-  const [communitySettings, setCommunitySettings] = useState({
-    weightCheckIn:   40,
-    weightChallenge: 20,
-    weightPost:      20,
-    weightRetention: 20,
-  });
-
   const [nudgeSettings, setNudgeSettings] = useState({
     showTodayPanel:          true,
     showContentSuggestions:  true,
@@ -241,20 +204,8 @@ export default function TabGym({
     showClassLoyalty:         true,
   });
 
-  const [privacySettings, setPrivacySettings] = useState({
-    publicMemberCount: false,
-    publicCoaches:     true,
-    publicClasses:     true,
-    publicGallery:     true,
-    allowReferrals:    true,
-  });
-
   const [saved, setSaved] = useState(false);
-  const handleSave = () => {
-    if (onAtRiskDaysChange) onAtRiskDaysChange(retentionSettings.atRiskDays);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
+  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
