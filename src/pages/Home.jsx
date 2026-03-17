@@ -16,6 +16,7 @@ import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
 import PostCard from '../components/feed/PostCard';
+import WorkoutDaysCelebration from '../components/home/WorkoutDaysCelebration';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -360,12 +361,10 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   }, 1600);
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
-    spawnParticles();
-    // Hide p1, show p2 using display (avoids all opacity/compositing conflicts)
     p1.style.display = 'none';
     p2.style.display = 'block';
     p2.style.opacity = '1';
-    void p2.offsetWidth; // force reflow
+    void p2.offsetWidth;
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     setTimeout(() => {
       if (actx) soundNumPop(actx);
@@ -407,6 +406,7 @@ export default function Home() {
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
+  const [showDaysCelebration, setShowDaysCelebration] = useState(false); // ← Stage 4
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [celebrationExercises, setCelebrationExercises] = useState([]);
@@ -427,7 +427,7 @@ export default function Home() {
   const scrollTicking = useRef(false);
 
   useEffect(() => {
-    const INLINE_HEADER_HEIGHT = 64;
+    // Must match the ghost spacer height below (px-4 py-2.5 + compact header ~44px = ~52px total)
     const SCROLL_UP_TRIGGER = 8;
 
     const handleScroll = () => {
@@ -436,7 +436,10 @@ export default function Home() {
       requestAnimationFrame(() => {
         const currentY = window.scrollY;
         const delta = lastScrollY.current - currentY;
-        const atTop = currentY <= INLINE_HEADER_HEIGHT;
+        // Use the actual ghost spacer element height so the threshold is always correct
+        const spacer = document.getElementById('home-header-spacer');
+        const spacerH = spacer ? spacer.offsetHeight : 52;
+        const atTop = currentY <= spacerH;
         setIsAtTop(atTop);
         if (atTop) {
           setStickyHeaderVisible(true);
@@ -677,7 +680,6 @@ export default function Home() {
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
 
-  // Hide check-in on rest days; show it if user has switched to a training day
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
 
@@ -893,8 +895,9 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="px-4 py-3 opacity-0 pointer-events-none" aria-hidden="true">
-          <HeaderContent compact={false} />
+        {/* Ghost spacer — same height as the fixed header so content starts below it */}
+        <div id="home-header-spacer" className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
+          <HeaderContent compact={true} />
         </div>
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
@@ -1081,8 +1084,6 @@ export default function Home() {
                   const workoutLog = logsByDay[day];
                   const showViewWorkout = !done && !isRestDay && !isMissed && (day > todayDay || isTodayCircle);
                   const hasBubbleBtn = done && !isRestDay && workoutLog || showViewWorkout;
-                  const BUBBLE_W = 274;
-                  const BUBBLE_H = hasBubbleBtn ? 118 : 78;
 
                   const getBg = () => {
                     if (isRestDay) {
@@ -1448,8 +1449,24 @@ export default function Home() {
             currentUser={currentUser}
             onContinue={() => {
               setShowShareWorkout(false);
-              setTimeout(() => setJustLoggedDay(null), 1500);
+              // Short pause then show Stage 4
+              setTimeout(() => setShowDaysCelebration(true), 200);
             }} />
+        )}
+      </AnimatePresence>
+
+      {/* STAGE 4 — Day circles celebration */}
+      <AnimatePresence>
+        {showDaysCelebration && (
+          <WorkoutDaysCelebration
+            currentUser={currentUser}
+            weeklyWorkoutLogs={weeklyWorkoutLogs}
+            todayDow={todayDowAdjusted}
+            onDismiss={() => {
+              setShowDaysCelebration(false);
+              setTimeout(() => setJustLoggedDay(null), 400);
+            }}
+          />
         )}
       </AnimatePresence>
 
