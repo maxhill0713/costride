@@ -567,7 +567,7 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 5 }).then(res => res.data.users || []),
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
     enabled: friendSearchQuery.length >= 2,
     staleTime: 30000,
   });
@@ -1554,7 +1554,7 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                <Input placeholder="Add Friends..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
+                <Input placeholder="Search by username..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
                   className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
               </div>
               <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
@@ -1571,7 +1571,7 @@ export default function Home() {
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
                             {user.avatar_url ? <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-sm font-semibold text-white">{user.full_name?.charAt(0)?.toUpperCase()}</span>}
                           </div>
-                          <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.email}</div></div>
+                          <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
                         </div>
                         <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                           <UserPlus className="w-4 h-4" />
@@ -1666,10 +1666,27 @@ export default function Home() {
                   </div>
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
-                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                       let sets = ex.sets || ex.set_count || ex.num_sets || (ex.logged_sets?.length) || (ex.sets_data?.length) || '-';
-                       let reps = ex.reps || ex.rep_count || ex.num_reps || ex.logged_sets?.[0]?.reps || ex.sets_data?.[0]?.reps || '-';
-                       const weight = ex.weight_kg || ex.weight_lbs || ex.weight || ex.logged_sets?.[0]?.weight || ex.sets_data?.[0]?.weight || '-';
+                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                      // Parse setsReps string as universal fallback
+                      const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
+                      const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                      // Sets
+                      const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
+                      const sets = (rawSets !== undefined && rawSets !== null && String(rawSets) !== '')
+                        ? String(rawSets)
+                        : ex.logged_sets?.length ? String(ex.logged_sets.length)
+                        : ex.sets_data?.length ? String(ex.sets_data.length)
+                        : srParts[0] || '-';
+                      // Reps
+                      const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
+                      const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '')
+                        ? String(rawReps)
+                        : ex.logged_sets?.[0]?.reps ? String(ex.logged_sets[0].reps)
+                        : ex.sets_data?.[0]?.reps ? String(ex.sets_data[0].reps)
+                        : srParts[1] || '-';
+                      // Weight
+                      const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight;
+                      const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
@@ -1739,9 +1756,14 @@ export default function Home() {
                     <div className="space-y-2 -mx-2">
                       {exercises.map((ex, idx) => {
                         const exName = ex.exercise || ex.name || ex.title || `Exercise ${idx + 1}`;
-                        const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
-                        const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
-                        const weight = ex.weight || '-';
+                        const setsRepsStr2 = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
+                        const srParts2 = /[xX]/.test(setsRepsStr2) ? setsRepsStr2.split(/[xX]/).map(s => s.trim()) : [];
+                        const rawSets2 = ex.sets ?? ex.set_count ?? ex.num_sets;
+                        const sets = (rawSets2 !== undefined && rawSets2 !== null && String(rawSets2) !== '') ? String(rawSets2) : srParts2[0] || '-';
+                        const rawReps2 = ex.reps ?? ex.rep_count ?? ex.num_reps;
+                        const reps = (rawReps2 !== undefined && rawReps2 !== null && String(rawReps2) !== '') ? String(rawReps2) : srParts2[1] || '-';
+                        const rawWeight2 = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
+                        const weight = (rawWeight2 !== undefined && rawWeight2 !== null && String(rawWeight2) !== '') ? String(rawWeight2) : '-';
                         return (
                           <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                             <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
