@@ -608,10 +608,25 @@ export default function Friends() {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
-                {/* Pending outgoing requests at top */}
-                {friends.length > 0 && friendRequests.length === 0 && (
-                  <div className="text-xs text-slate-500 font-semibold mb-2">PENDING REQUESTS</div>
-                )}
+                {/* Outgoing pending requests at top */}
+                {pendingOutgoing.map((pending) => (
+                  <div key={`pending-${pending.id}`}
+                    className="p-2 rounded-lg bg-slate-800/50 border border-slate-600/30 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {pending.avatar_url
+                          ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
+                          : <span className="text-xs font-semibold text-white">{pending.full_name?.charAt(0)?.toUpperCase()}</span>
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white text-xs truncate">{pending.full_name}</p>
+                        {pending.username && <p className="text-[10px] text-slate-400">@{pending.username}</p>}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-700/60 border border-slate-600/40 px-2 py-1 rounded-md flex-shrink-0">Pending</span>
+                  </div>
+                ))}
                 {/* Incoming friend requests */}
                 {friendRequests
                   .filter((req) => {
