@@ -14,10 +14,10 @@ import StrengthProgress from '../components/profile/StrengthProgress';
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
-  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+  background: 'linear-gradient(135deg, rgba(15,30,70,0.88) 0%, rgba(5,10,35,0.97) 100%)',
   border: '1px solid rgba(255,255,255,0.07)',
-  backdropFilter: 'blur(16px)',
-  WebkitBackdropFilter: 'blur(16px)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
 };
 const btnCyan = "bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 text-white font-bold rounded-full px-4 py-1.5 flex items-center gap-1.5 justify-center shadow-[0_3px_0_0_#0369a1,0_6px_16px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
@@ -440,7 +440,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     <div
       className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
       style={{
-        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        background: 'linear-gradient(135deg, rgba(15,30,70,0.88) 0%, rgba(5,10,35,0.97) 100%)',
         border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
