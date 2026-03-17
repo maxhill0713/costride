@@ -104,7 +104,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col items-center justify-center gap-4">
         <p className="text-white text-lg">User not found.</p>
-        <Link to={createPageUrl('Friends')} className="text-blue-400 underline text-sm">Go back</Link>
+        <button onClick={() => navigate(-1)} className="text-blue-400 underline text-sm">Go back</button>
       </div>
     );
   }
