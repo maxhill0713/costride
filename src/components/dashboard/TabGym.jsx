@@ -300,21 +300,7 @@ export default function TabGym({
         ))}
       </div>
 
-      {/* ── Settings grid ───────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <RetentionThresholds settings={retentionSettings} onUpdate={setRetentionSettings}/>
-        <SegmentationRules settings={{ ...segmentSettings, atRiskDays: retentionSettings.atRiskDays }} onUpdate={setSegmentSettings}/>
-      </div>
-
-      <NotificationPreferences settings={notifSettings} onUpdate={setNotifSettings}/>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <CommunityHealthConfig settings={communitySettings} onUpdate={setCommunitySettings}/>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <SmartNudgeSettings settings={nudgeSettings} onUpdate={setNudgeSettings}/>
-          <PrivacySettings settings={privacySettings} onUpdate={setPrivacySettings}/>
-        </div>
-      </div>
+      <SmartNudgeSettings settings={nudgeSettings} onUpdate={setNudgeSettings}/>
 
       {/* ── Save bar ────────────────────────────────────────────────────────── */}
       <div style={{ position: 'sticky', bottom: 16, zIndex: 20 }}>
