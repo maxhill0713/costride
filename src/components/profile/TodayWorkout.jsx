@@ -369,8 +369,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           border: '1px solid rgba(255,255,255,0.07)',
         }}>
 
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
+
         {/* Header */}
-        <div className="space-y-2 mb-3">
+        <div className="space-y-2 mb-3 relative z-10">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
               <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
