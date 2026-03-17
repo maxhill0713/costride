@@ -767,7 +767,9 @@ export default function Friends() {
                           </div>
                           <div>
                             <div className="font-semibold text-white text-sm">{user.full_name}</div>
-                            <div className="text-xs text-slate-400">{user.email}</div>
+                            {user.username && (
+                              <div className="text-xs text-slate-400">@{user.username}</div>
+                            )}
                           </div>
                         </div>
                         <Button
