@@ -77,7 +77,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
   );
 }
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
