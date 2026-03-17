@@ -186,22 +186,6 @@ function SmartNudgeSettings({ settings, onUpdate }) {
   );
 }
 
-// ── Privacy & Visibility ───────────────────────────────────────────────────────
-function PrivacySettings({ settings, onUpdate }) {
-  const update = (key, val) => onUpdate({ ...settings, [key]: val });
-  return (
-    <Card style={{ padding: '20px 24px' }}>
-      <SectionHeading icon={Lock} color="#64748b" title="Privacy & Visibility" sub="Control what's visible on your public gym page"/>
-
-      <ToggleRow label="Show member count publicly"    sub="Display total member count on your public page"         value={settings.publicMemberCount}  onChange={v => update('publicMemberCount', v)}  color="#0ea5e9"/>
-      <ToggleRow label="Show coach profiles"           sub="Display coach names and bios on public page"            value={settings.publicCoaches}      onChange={v => update('publicCoaches', v)}      color="#a78bfa"/>
-      <ToggleRow label="Show class schedule"           sub="List your class timetable publicly"                     value={settings.publicClasses}      onChange={v => update('publicClasses', v)}      color="#10b981"/>
-      <ToggleRow label="Show photo gallery"            sub="Display your gym photo gallery on the public page"      value={settings.publicGallery}      onChange={v => update('publicGallery', v)}      color="#38bdf8"/>
-      <ToggleRow label="Allow member referral sharing" sub="Members can share a referral link to your gym"          value={settings.allowReferrals}     onChange={v => update('allowReferrals', v)}     color="#f59e0b"/>
-    </Card>
-  );
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TabGym({
   selectedGym, classes, coaches, openModal,
