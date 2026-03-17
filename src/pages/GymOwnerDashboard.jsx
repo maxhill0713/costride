@@ -29,7 +29,7 @@ import QRScanner             from '../components/gym/QRScanner';
 import CreatePollModal       from '../components/polls/CreatePollModal';
 import GymJoinPoster         from '../components/dashboard/GymJoinPoster';
 import QRCode                from 'react-qr-code';
-import { DASH_STYLE } from '../components/dashboard/DashboardPrimitives';
+
 import TabOverview   from '../components/dashboard/TabOverview';
 import TabMembersComponent from '../components/dashboard/TabMembers';
 import TabContentComponent from '../components/dashboard/TabContent';
