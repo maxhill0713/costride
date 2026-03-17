@@ -292,7 +292,7 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
 // ─── Illustrations — kept exactly from original ───────────────────────────────
 function AnalyticsIllustration() {
   return (
-    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
       <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
       <rect x="30" y="38" width="16" height="50" rx="5" fill="url(#ab2)" />
       <rect x="52" y="20" width="16" height="68" rx="5" fill="url(#ab3)" />
@@ -319,14 +319,14 @@ function SplitIllustration() {
     <img
       src={src}
       alt="split"
-      style={{ display: 'block', width: 84, height: 84, objectFit: 'cover', borderRadius: 12, pointerEvents: 'none' }}
+      style={{ display: 'block', width: 84, height: 68, objectFit: "cover", borderRadius: 8, pointerEvents: 'none' }}
     />
   );
 }
 
 function GoalsIllustration() {
   return (
-    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
       <circle cx="60" cy="48" r="42" stroke="rgba(96,165,250,0.15)" strokeWidth="2" fill="none" />
       <circle cx="60" cy="48" r="30" stroke="rgba(96,165,250,0.25)" strokeWidth="2" fill="none" />
       <circle cx="60" cy="48" r="18" stroke="rgba(96,165,250,0.4)"  strokeWidth="2" fill="none" />
@@ -348,7 +348,7 @@ function GoalsIllustration() {
 
 function CommunityIllustration() {
   return (
-    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
       <circle cx="28"  cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
       <path d="M12 76 C12 56 44 56 44 76" fill="url(#ci1)" opacity="0.55" />
       <circle cx="60"  cy="26" r="14" fill="url(#ci2)" />
@@ -369,7 +369,7 @@ function CommunityIllustration() {
 
 function RankIllustration() {
   return (
-    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
       <polygon
         points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28"
         fill="url(#ri1)"
@@ -457,18 +457,8 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         )}
       </div>
 
-      {/* ── ILLUSTRATION BOX — dark rounded square ── */}
-      <div
-        className="relative flex-shrink-0 flex items-center justify-center overflow-hidden"
-        style={{
-          width: 104,
-          height: 104,
-          borderRadius: 16,
-          background: 'rgba(0,0,0,0.38)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          zIndex: 1,
-        }}
-      >
+      {/* ── ILLUSTRATION — no box, blends into card ── */}
+      <div className="relative flex-shrink-0 flex items-center justify-center" style={{ zIndex: 1 }}>
         <Illustration />
       </div>
 
