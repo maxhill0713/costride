@@ -1502,7 +1502,7 @@ export default function Home() {
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {/* Sent requests (pending) at the top */}
               {[...pendingRequestIds].filter(id => !friends.some(f => f.friend_id === id)).map(pendingId => {
-                const u = friendUsersList.find(u => u.id === pendingId) || searchResults.find(u => u.id === pendingId);
+                const u = friendUsersList.find(u => u.id === pendingId) || filteredSearchResults.find(u => u.id === pendingId) || searchResults.find(u => u.id === pendingId);
                 const name = u?.full_name || 'User';
                 return (
                   <div key={`pending-${pendingId}`} className="p-2 rounded-lg bg-slate-800/60 border border-slate-600/40 flex items-center justify-between gap-2">
