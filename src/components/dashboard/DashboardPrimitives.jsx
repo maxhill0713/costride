@@ -66,7 +66,7 @@ export const RingChart = ({ pct = 70, size = 64, stroke = 5, color = '#0ea5e9' }
 };
 
 // ── Avatar ─────────────────────────────────────────────────────────────────────
-function Avatar({ name = '?', size = 32, src = null }) {
+export function Avatar({ name = '?', size = 32, src = null }) {
   const colors = [
     ['#3b82f6','#06b6d4'], ['#8b5cf6','#ec4899'], ['#10b981','#0ea5e9'],
     ['#f59e0b','#ef4444'], ['#6366f1','#8b5cf6'], ['#14b8a6','#3b82f6'],
