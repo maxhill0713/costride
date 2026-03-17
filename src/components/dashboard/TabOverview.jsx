@@ -12,7 +12,7 @@ import {
 import {
   Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip
 } from './DashboardPrimitives';
-import { StreakCelebrations, GymSetupChecklist, SmartNudges } from './OverviewWidgets';
+import { StreakCelebrations, GymSetupChecklist, SmartNudges, CommunityHealthScore } from './OverviewWidgets';
 
 // ── Custom tooltip ─────────────────────────────────────────────────────────────
 function BarTip({ active, payload, label }) {
