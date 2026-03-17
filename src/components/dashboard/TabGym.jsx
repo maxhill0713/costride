@@ -52,28 +52,6 @@ function ToggleRow({ label, sub, value, onChange, color = '#0ea5e9' }) {
   );
 }
 
-// ── Threshold slider row ───────────────────────────────────────────────────────
-function ThresholdRow({ label, sub, value, min, max, step = 1, unit, onChange, color = '#ef4444' }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{label}</span>
-          {sub && <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{sub}</div>}
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 900, color, background: `${color}15`, border: `1px solid ${color}25`, borderRadius: 7, padding: '2px 10px', letterSpacing: '-0.02em' }}>
-          {value}{unit}
-        </div>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))}
-        style={{ width: '100%', accentColor: color, cursor: 'pointer', height: 4 }}/>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-        <span style={{ fontSize: 9, color: '#475569' }}>{min}{unit}</span>
-        <span style={{ fontSize: 9, color: '#475569' }}>{max}{unit}</span>
-      </div>
-    </div>
-  );
-}
 
 // ── Gym Health Overview (mini dashboard snapshot) ──────────────────────────────
 function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMemberships, atRisk, retentionRate, now }) {
