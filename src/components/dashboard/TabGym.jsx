@@ -2,13 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import {
-  Dumbbell, Calendar, Users, Star, Trash2, Image as ImageIcon,
-  MapPin, Tag, ShieldCheck, Clock, ChevronRight, ExternalLink,
-  Settings, Camera, AlertTriangle, Copy, Check, Bell, Zap,
-  TrendingUp, TrendingDown, Activity, Target, Award, Shield,
-  Flame, Heart, BarChart2, Sparkles, CheckCircle, RefreshCw,
-  UserPlus, MessageSquarePlus, Eye, Lock, Sliders, ToggleLeft,
-  ToggleRight, Info
+  Dumbbell, Calendar, Users, Star, Image as ImageIcon,
+  MapPin, Tag, ShieldCheck, ChevronRight, ExternalLink,
+  Settings, Camera, AlertTriangle, Copy, Check,
+  Sparkles, CheckCircle, Info
 } from 'lucide-react';
 import { Card, SectionTitle } from './DashboardPrimitives';
 
