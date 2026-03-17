@@ -563,6 +563,25 @@ return (
                 </div>
               }
             </div>
+            {!searchQuery && recentlyViewedGyms.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Recently Viewed</p>
+                <div className="flex flex-col gap-2">
+                  {recentlyViewedGyms.map((gym) => (
+                    <Link key={gym.id} to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/40 hover:border-blue-500/40 transition-all">
+                      {gym.image_url
+                        ? <img src={gym.image_url} alt={gym.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                        : <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0"><Dumbbell className="w-5 h-5 text-white" /></div>
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-sm truncate">{gym.name}</p>
+                        <p className="text-xs text-slate-400 truncate">{gym.city}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
             {filteredGyms.length === 0 ?
               <div className="text-center py-12">
                 <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
