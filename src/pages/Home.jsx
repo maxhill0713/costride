@@ -567,7 +567,7 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 5 }).then(res => res.data.users || []),
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
     enabled: friendSearchQuery.length >= 2,
     staleTime: 30000,
   });
@@ -1554,7 +1554,7 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                <Input placeholder="Add Friends..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
+                <Input placeholder="Search by username..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
                   className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
               </div>
               <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
@@ -1571,7 +1571,7 @@ export default function Home() {
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
                             {user.avatar_url ? <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-sm font-semibold text-white">{user.full_name?.charAt(0)?.toUpperCase()}</span>}
                           </div>
-                          <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.email}</div></div>
+                          <div><div className="font-semibold text-white text-sm">{user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
                         </div>
                         <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                           <UserPlus className="w-4 h-4" />
