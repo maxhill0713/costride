@@ -438,7 +438,7 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
         display: 'flex',
         alignItems: 'center',
-        padding: '14px 0 14px 18px',
+        padding: '16px 0 16px 20px',
         gap: 0,
       }}
     >
@@ -449,25 +449,24 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 20% 50%, ${glowColor} 0%, transparent 55%)`, opacity: pressed ? 0.2 : 0.08, transition: 'opacity 0.1s ease' }}/>
 
-      {/* ── TEXT — left, flexible ── */}
-      <div className="relative flex-1 min-w-0 pr-3" style={{ zIndex: 1 }}>
+      {/* TEXT — fixed right padding so gap to illustration is always equal */}
+      <div className="relative flex-1 min-w-0" style={{ zIndex: 1, paddingRight: 20 }}>
         <p className="text-[17px] font-black text-white tracking-tight leading-tight mb-1.5">{label}</p>
         {description && (
           <p className="text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.72)' }}>{description}</p>
         )}
       </div>
 
-      {/* ── ILLUSTRATION — no box, blends into card ── */}
-      <div className="relative flex-shrink-0 flex items-center justify-center" style={{ zIndex: 1 }}>
+      {/* ILLUSTRATION — fixed-width container so every card aligns identically */}
+      <div className="relative flex-shrink-0 flex items-center justify-center"
+        style={{ width: 84, zIndex: 1 }}>
         <Illustration />
       </div>
 
-      {/* ── ARROW — right of box, vertically centred ── */}
-      <div
-        className="flex-shrink-0 flex items-center justify-center"
-        style={{ width: 36, zIndex: 1 }}
-      >
-        <ChevronRight style={{ width: 16, height: 16, color: iconColor }} />
+      {/* ARROW — bigger, fixed width */}
+      <div className="flex-shrink-0 flex items-center justify-center"
+        style={{ width: 44, zIndex: 1 }}>
+        <ChevronRight style={{ width: 22, height: 22, color: iconColor }} />
       </div>
     </div>
   );
