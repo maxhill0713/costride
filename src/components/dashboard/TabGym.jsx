@@ -646,3 +646,12 @@ export const SettingsPage = () => {
     </div>
   );
 };
+
+// ─── Default export: TabGym ────────────────────────────────────────────────────
+export default function TabGym({
+  selectedGym, classes, coaches, openModal,
+  checkIns = [], allMemberships = [], atRisk = 0, retentionRate = 0,
+  atRiskDays: atRiskDaysProp = 14, onAtRiskDaysChange,
+}) {
+  return <SettingsPage />;
+}
