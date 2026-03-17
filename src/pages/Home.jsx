@@ -403,6 +403,7 @@ export default function Home() {
     catch { return new Set(); }
   });
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
+  const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
