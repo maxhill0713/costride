@@ -114,9 +114,9 @@ export default function UserProfile() {
 
       {/* ── TOP BAR ── */}
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
-        <Link to={createPageUrl('Friends')} className="active:scale-90 transition-transform">
+        <button onClick={() => navigate(-1)} className="active:scale-90 transition-transform">
           <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
-        </Link>
+        </button>
         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
       </div>
 
