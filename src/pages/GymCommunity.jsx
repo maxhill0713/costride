@@ -963,6 +963,14 @@ export default function GymCommunity() {
     }
   }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
+  useEffect(() => {
+    if (!gymId) return;
+    try {
+      const prev = JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]');
+      const updated = [gymId, ...prev.filter(id => id !== gymId)].slice(0, 3);
+      localStorage.setItem('recentlyViewedGyms', JSON.stringify(updated));
+    } catch {}
+  }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
