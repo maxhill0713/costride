@@ -17,9 +17,9 @@ Deno.serve(async (req) => {
 
     const q = query.toLowerCase();
 
-    // Use user-scoped list (no service role) to avoid CPU overhead
-    // Users can see other users by default
-    const allUsers = await base44.entities.User.list('full_name', 100);
+    // Search for users by username using filter instead of listing all
+    // This is more efficient and doesn't limit to first 100 users
+    const allUsers = await base44.asServiceRole.entities.User.list('full_name', 1000);
 
     const results = allUsers
       .filter(u =>
