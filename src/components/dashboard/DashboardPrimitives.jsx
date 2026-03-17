@@ -23,6 +23,24 @@ const T = {
   divider: 'rgba(255,255,255,0.05)',
 };
 
+// ── Avatar ─────────────────────────────────────────────────────────────────────
+function Avatar({ name = '?', size = 32, src = null }) {
+  const colors = [
+    ['#3b82f6','#06b6d4'], ['#8b5cf6','#ec4899'], ['#10b981','#0ea5e9'],
+    ['#f59e0b','#ef4444'], ['#6366f1','#8b5cf6'], ['#14b8a6','#3b82f6'],
+  ];
+  const [c1, c2] = colors[(name || '?').charCodeAt(0) % colors.length];
+  const [imgFailed, setImgFailed] = useState(false);
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg,${c1},${c2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 800, flexShrink: 0, overflow: 'hidden' }}>
+      {src && !imgFailed
+        ? <img src={src} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgFailed(true)}/>
+        : (name || '?').charAt(0).toUpperCase()
+      }
+    </div>
+  );
+}
+
 // ── Responsive styles ──────────────────────────────────────────────────────────
 const MOBILE_CSS = `
   .tc-root {
