@@ -118,13 +118,10 @@ const { data: gyms = [] } = useQuery({
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-const { data: userCheckIns = [] } = useQuery({
-    queryKey: ['checkIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 50),
-    enabled: !!currentUser,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+const recentlyViewedGymIds = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]'); }
+    catch { return []; }
+  }, []);
 const memberGymIds = gymMemberships.map((m) => m.gym_id);
 const { data: userGymsData = [] } = useQuery({
     queryKey: ['memberGyms', currentUser?.id],
