@@ -75,7 +75,7 @@ export default function UsernameStep({
                 onChange={e => {
                   const sanitised = e.target.value
                     .toLowerCase()
-                    .replace(/[^a-z0-9_]/g, '')
+                    .replace(/[^a-z0-9_.]/g, '')
                     .slice(0, 20);
                   setUsername(sanitised);
                   setUsernameEdited(true);
@@ -127,7 +127,7 @@ export default function UsernameStep({
             <div style={{ minHeight: 20, marginTop: 8 }}>
               {showFormatHint ? (
                 <p style={{ color: '#ef4444', fontSize: 12, margin: 0, fontWeight: 600 }}>
-                  At least 3 characters · only letters, numbers and underscores
+                  At least 3 characters · only letters, numbers, dots and underscores
                 </p>
               ) : isUnique === false ? (
                 <p style={{ color: '#ef4444', fontSize: 12, margin: 0, fontWeight: 600 }}>
@@ -147,7 +147,7 @@ export default function UsernameStep({
                 </p>
               ) : (
                 <p style={{ color: C.muted, fontSize: 12, margin: 0 }}>
-                  Letters, numbers and underscores only · max 20 characters
+                  Letters, numbers, dots and underscores only · max 20 characters
                 </p>
               )}
             </div>
