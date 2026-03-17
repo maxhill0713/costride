@@ -132,10 +132,6 @@ export default function UsernameStep({
                 <p style={{ color: '#ef4444', fontSize: 12, margin: 0, fontWeight: 600 }}>
                   That username is already taken — try another
                 </p>
-              ) : checkError ? (
-                <p style={{ color: '#f59e0b', fontSize: 12, margin: 0, fontWeight: 600 }}>
-                  Couldn't check availability — please try again
-                </p>
               ) : isUnique === true ? (
                 <p style={{ color: C.green, fontSize: 12, margin: 0, fontWeight: 600 }}>
                   ✓ That username is available!
