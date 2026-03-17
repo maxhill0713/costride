@@ -447,7 +447,11 @@ export default function TabGym({
   });
 
   const [saved, setSaved] = useState(false);
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const handleSave = () => {
+    if (onAtRiskDaysChange) onAtRiskDaysChange(retentionSettings.atRiskDays);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
