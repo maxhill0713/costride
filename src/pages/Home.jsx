@@ -355,6 +355,7 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     trigAnim(lbl, 'streakFadeUp', 400, 'ease');
   }, 700);
   const t2 = setTimeout(() => {
+    stage.style.opacity = '1';
     trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
   }, 1600);
   const t3 = setTimeout(() => {
