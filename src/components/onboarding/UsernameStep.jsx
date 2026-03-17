@@ -53,7 +53,7 @@ export default function UsernameStep({
             Create a username
           </h1>
           <p style={{ color: C.sub, fontSize: 14, margin: '0 0 28px', flexShrink: 0 }}>
-            This is your unique handle — like Instagram, others use it to find you.
+            This is your unique handle, your friends will use this to find you.
           </p>
 
           <div style={{ flexShrink: 0 }}>
