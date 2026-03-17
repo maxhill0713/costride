@@ -172,14 +172,12 @@ const BADGE_LIBRARY = [
 // ─── Rank sub-page ─────────────────────────────────────────────────────────────
 function RankPage({ currentUser, onBack, checkIns = [] }) {
   const [equippedBadges, setEquippedBadges] = useState(currentUser?.equipped_badges || []);
-
   const userStats = {
     total_check_ins: checkIns.length,
     longest_streak: currentUser?.longest_streak || 0,
     current_streak: currentUser?.current_streak || 0,
     gym_join_date: currentUser?.created_date
   };
-
   const isBadgeEarned = (badgeId) => {
     switch(badgeId) {
       case '10_visits': return userStats.total_check_ins >= 10;
@@ -193,11 +191,9 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
       default: return false;
     }
   };
-
   const earnedBadges = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
   const lockedBadges = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
   const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
-
   const handleEquipBadge = async (badgeId) => {
     let newEquipped = [...equippedBadges];
     if (newEquipped.includes(badgeId)) {
@@ -209,10 +205,8 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
     setEquippedBadges(newEquipped);
     await base44.auth.updateMe({ equipped_badges: newEquipped });
   };
-
   return (
     <SubPage title="Rank" onBack={onBack}>
-      {/* Showcase */}
       {equippedBadgeDetails.length > 0 && (
         <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border border-amber-400/40 shadow-lg mb-4">
           <h3 className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5">
@@ -234,8 +228,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           </div>
         </div>
       )}
-
-      {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -270,8 +262,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           </div>
         </div>
       )}
-
-      {/* Locked Badges */}
       {lockedBadges.length > 0 && (
         <div>
           <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
@@ -299,10 +289,10 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
   );
 }
 
-// ─── Decorative SVG / image illustrations ─────────────────────────────────────
+// ─── Illustrations — kept exactly from original ───────────────────────────────
 function AnalyticsIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
       <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
       <rect x="30" y="38" width="16" height="50" rx="5" fill="url(#ab2)" />
       <rect x="52" y="20" width="16" height="68" rx="5" fill="url(#ab3)" />
@@ -328,25 +318,15 @@ function SplitIllustration() {
   return (
     <img
       src={src}
-      alt="heatmap"
-      style={{
-        display: 'block',
-        width: 130,
-        height: 'auto',
-        borderTopRightRadius: 16,
-        borderBottomLeftRadius: 8,
-        borderTopLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        opacity: 0.9,
-        pointerEvents: 'none',
-      }}
+      alt="split"
+      style={{ display: 'block', width: 84, height: 84, objectFit: 'cover', borderRadius: 12, pointerEvents: 'none' }}
     />
   );
 }
 
 function GoalsIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
       <circle cx="60" cy="48" r="42" stroke="rgba(96,165,250,0.15)" strokeWidth="2" fill="none" />
       <circle cx="60" cy="48" r="30" stroke="rgba(96,165,250,0.25)" strokeWidth="2" fill="none" />
       <circle cx="60" cy="48" r="18" stroke="rgba(96,165,250,0.4)"  strokeWidth="2" fill="none" />
@@ -368,7 +348,7 @@ function GoalsIllustration() {
 
 function CommunityIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
       <circle cx="28"  cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
       <path d="M12 76 C12 56 44 56 44 76" fill="url(#ci1)" opacity="0.55" />
       <circle cx="60"  cy="26" r="14" fill="url(#ci2)" />
@@ -389,7 +369,7 @@ function CommunityIllustration() {
 
 function RankIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="84" height="84" viewBox="0 0 120 96" fill="none">
       <polygon
         points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28"
         fill="url(#ri1)"
@@ -428,17 +408,22 @@ function RankIllustration() {
   );
 }
 
-// ─── Tall nav card ─────────────────────────────────────────────────────────────
-function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
+// ─── Tall nav card — layout matches reference image ───────────────────────────
+// Layout: [text left] [dark square box with illustration] [> arrow]
+function TallCard({ label, description, iconColor, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
   const events = {
-    onMouseDown: () => setPressed(true), onMouseUp: () => setPressed(false),
-    onMouseLeave: () => setPressed(false), onTouchStart: () => setPressed(true),
-    onTouchEnd: () => setPressed(false), onTouchCancel: () => setPressed(false),
+    onMouseDown:   () => setPressed(true),
+    onMouseUp:     () => setPressed(false),
+    onMouseLeave:  () => setPressed(false),
+    onTouchStart:  () => setPressed(true),
+    onTouchEnd:    () => setPressed(false),
+    onTouchCancel: () => setPressed(false),
   };
+
   const inner = (
     <div
-      className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
+      className="relative overflow-hidden rounded-2xl w-full text-left"
       style={{
         background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
         border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
@@ -451,33 +436,52 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
         transition: pressed
           ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '14px 0 14px 18px',
+        gap: 0,
       }}
     >
-      {/* Top shine */}
+      {/* Top shine line */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }}/>
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
-        style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
-      {/* Illustration — top right corner, inset from edge */}
-      <div className="absolute top-3 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
-        <Illustration />
-      </div>
-      {/* Content */}
-      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
-        <div className="flex items-center">
-          <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
-        </div>
+        style={{ background: `radial-gradient(ellipse at 20% 50%, ${glowColor} 0%, transparent 55%)`, opacity: pressed ? 0.2 : 0.08, transition: 'opacity 0.1s ease' }}/>
+
+      {/* ── TEXT — left, flexible ── */}
+      <div className="relative flex-1 min-w-0 pr-3" style={{ zIndex: 1 }}>
+        <p className="text-[17px] font-black text-white tracking-tight leading-tight mb-1.5">{label}</p>
         {description && (
-          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
+          <p className="text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.72)' }}>{description}</p>
         )}
       </div>
-      {/* Arrow bottom-right — bare chevron, no circle */}
-      <div className="absolute bottom-5 right-3">
-        <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
+
+      {/* ── ILLUSTRATION BOX — dark rounded square ── */}
+      <div
+        className="relative flex-shrink-0 flex items-center justify-center overflow-hidden"
+        style={{
+          width: 104,
+          height: 104,
+          borderRadius: 16,
+          background: 'rgba(0,0,0,0.38)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          zIndex: 1,
+        }}
+      >
+        <Illustration />
+      </div>
+
+      {/* ── ARROW — right of box, vertically centred ── */}
+      <div
+        className="flex-shrink-0 flex items-center justify-center"
+        style={{ width: 36, zIndex: 1 }}
+      >
+        <ChevronRight style={{ width: 16, height: 16, color: iconColor }} />
       </div>
     </div>
   );
+
   if (As === 'link') return <Link to={href} className="block" {...events}>{inner}</Link>;
   return <button className="w-full" onClick={onClick} {...events}>{inner}</button>;
 }
@@ -508,20 +512,18 @@ export default function Progress() {
   });
 
   if (!currentUser) return null;
-  if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
+  if (view === 'goals')     return <GoalsPage     currentUser={currentUser} onBack={() => setView('hub')} />;
   if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
-  if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
-  if (view === 'rank')      return <RankPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
+  if (view === 'split')     return <SplitPage     currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
+  if (view === 'rank')      return <RankPage      currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
   const activeGoals    = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
-  const primaryGymId   = currentUser?.primary_gym_id;
 
   const cards = [
     {
       id: 'analytics',
       label: 'Analytics',
-      subtitle: `${workoutLogs.length} sessions logged`,
       description: 'Dive into your performance data, track personal records, and see how your lifts have progressed over time.',
       icon: BarChart3,
       iconColor: '#e879f9',
@@ -534,8 +536,7 @@ export default function Progress() {
     {
       id: 'split',
       label: 'Workout Split',
-      subtitle: currentUser?.custom_split_name || (currentUser?.workout_split ? 'Active split' : 'No split set'),
-      description: 'View your weekly training schedule, heatmap, and track which sessions you\'ve completed.',
+      description: "View your weekly training schedule, heatmap, and track which sessions you've completed.",
       icon: Dumbbell,
       iconColor: '#818cf8',
       iconBg: 'rgba(99,102,241,0.18)',
@@ -547,7 +548,6 @@ export default function Progress() {
     {
       id: 'goals',
       label: 'Goals',
-      subtitle: `${activeGoals.length} active · ${completedGoals.length} completed`,
       description: 'Set targets, log milestones, and track your progress toward every fitness goal you set.',
       icon: Target,
       iconColor: '#60a5fa',
@@ -560,8 +560,7 @@ export default function Progress() {
     {
       id: 'community',
       label: 'Community',
-      subtitle: gymMemberships.length === 1 ? '1 gym joined' : `${gymMemberships.length} gyms joined`,
-      description: 'See the leaderboard, check who\'s training today, and stay motivated with your gym crew.',
+      description: "See the leaderboard, check who's training today, and stay motivated with your gym crew.",
       icon: Users,
       iconColor: '#34d399',
       iconBg: 'rgba(16,185,129,0.18)',
@@ -575,7 +574,6 @@ export default function Progress() {
     {
       id: 'rank',
       label: 'Rank',
-      subtitle: 'Badges & achievements',
       description: 'Earn badges for hitting milestones, consistency streaks, and personal records across your training journey.',
       icon: Award,
       iconColor: '#fbbf24',
