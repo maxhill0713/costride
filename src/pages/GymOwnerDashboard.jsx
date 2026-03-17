@@ -221,6 +221,7 @@ export default function GymOwnerDashboard() {
   const [showPoster, setShowPoster] = useState(false);
   const [chartRange, setChartRange] = useState(7);
   const [leaderboardView, setLeaderboardView] = useState('checkins');
+  const [atRiskDays, setAtRiskDays] = useState(14);
   const [memberFilter, setMemberFilter] = useState('all');
   const [memberSearch, setMemberSearch] = useState('');
   const [memberSort, setMemberSort]     = useState('recentlyActive');
