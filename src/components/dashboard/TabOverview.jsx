@@ -398,52 +398,7 @@ export default function TabOverview({
             </div>
           </Card>
 
-          <Card style={{ padding: 20, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 16, right: 16, height: 1, background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.3), transparent)', pointerEvents: 'none' }}/>
-            <SectionTitle action={() => setTab('analytics')} actionLabel="View all">Insights</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {peakLabel && (
-                <div style={{ padding: '11px 13px', borderRadius: 12, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.18)', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)' }}/>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                    <Zap style={{ width: 12, height: 12, color: '#a78bfa' }}/>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>Peak: {peakLabel}–{peakEndLabel} today</span>
-                  </div>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Expect {Math.round((peakEntry?.[1] || 0) * 1.1)}+ visits</span>
-                </div>
-              )}
-              {satVsAvg !== 0 && (
-                <div style={{ padding: '11px 13px', borderRadius: 12, background: satVsAvg >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(245,158,11,0.08)', border: `1px solid ${satVsAvg >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(245,158,11,0.18)'}`, position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${satVsAvg >= 0 ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'},transparent)` }}/>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: satVsAvg < 0 ? 6 : 0 }}>
-                    <Star style={{ width: 12, height: 12, color: satVsAvg >= 0 ? '#34d399' : '#fbbf24' }}/>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>
-                      Sat attendance <span style={{ color: satVsAvg >= 0 ? '#34d399' : '#f87171' }}>{satVsAvg >= 0 ? '+' : ''}{satVsAvg}%</span>
-                    </span>
-                  </div>
-                  {satVsAvg < 0 && (
-                    <button onClick={() => openModal('challenge')} style={{ fontSize: 11, color: '#fbbf24', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', fontWeight: 700 }}>
-                      Start a challenge →
-                    </button>
-                  )}
-                </div>
-              )}
-              {monthChangePct !== 0 && (
-                <div style={{ padding: '11px 13px', borderRadius: 12, background: monthChangePct >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)', border: `1px solid ${monthChangePct >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)'}`, position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${monthChangePct >= 0 ? 'rgba(52,211,153,0.4)' : 'rgba(248,113,113,0.4)'},transparent)` }}/>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingUp style={{ width: 12, height: 12, color: monthChangePct >= 0 ? '#34d399' : '#f87171' }}/>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>
-                      Monthly check-ins <span style={{ color: monthChangePct >= 0 ? '#34d399' : '#f87171' }}>{monthChangePct >= 0 ? '+' : ''}{monthChangePct}%</span>
-                    </span>
-                  </div>
-                </div>
-              )}
-              {peakLabel === null && satVsAvg === 0 && monthChangePct === 0 && (
-                <Empty icon={Sparkles} label="Check back once members are active"/>
-              )}
-            </div>
-          </Card>
+          <CommunityHealthScore checkIns={checkIns} challenges={challenges} posts={posts} allMemberships={allMemberships} now={now} />
         </div>
       </div>
 
