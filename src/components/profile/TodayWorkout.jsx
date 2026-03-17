@@ -363,10 +363,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onClick={() => !isExpanded && setIsExpanded(true)}
         className={`relative overflow-hidden rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.35)] p-3 ${!isExpanded && 'cursor-pointer'}`}
         style={{
-          background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(99,102,241,0.15)',
+          background: 'linear-gradient(135deg, rgba(15,30,70,0.88) 0%, rgba(5,10,35,0.97) 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.07)',
         }}>
 
         {/* Header */}

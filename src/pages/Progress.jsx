@@ -28,7 +28,9 @@ function SubPage({ title, onBack, action, children }) {
       <div className="max-w-4xl mx-auto px-4 pt-5 pb-32">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-2 -ml-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
+            <button
+              onClick={onBack}
+              className="p-2 -ml-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
               <ChevronRight className="w-6 h-6 rotate-180" />
             </button>
             <h1 className="text-xl font-black text-white tracking-tight">{title}</h1>
@@ -83,7 +85,7 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, id, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
   });
-  const activeGoals    = goals.filter((g) => g.status === 'active');
+  const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
   return (
     <SubPage title="Goals" onBack={onBack} action={
@@ -155,77 +157,111 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   );
 }
 
-// ─── Badge definitions & logic ────────────────────────────────────────────────
+// ─── Badge definitions & logic ───────────────────────────────────────────────
 const BADGE_LIBRARY = [
-  { id: '10_visits',        title: 'Getting Started',  description: '10 gym check-ins',        icon: '🎯', color: 'from-blue-400 to-blue-600'      },
-  { id: '50_visits',        title: 'Regular',          description: '50 gym check-ins',        icon: '🔥', color: 'from-orange-400 to-red-500'     },
-  { id: '100_visits',       title: 'Dedicated',        description: '100 gym check-ins',       icon: '🏆', color: 'from-yellow-400 to-orange-500'  },
-  { id: '7_day_streak',     title: 'Week Warrior',     description: '7-day streak',            icon: '⚡', color: 'from-green-400 to-emerald-500'  },
-  { id: '30_day_streak',    title: 'Month Master',     description: '30-day streak',           icon: '🔥', color: 'from-red-400 to-pink-500'       },
-  { id: '90_day_streak',    title: 'Consistency King', description: '90-day streak',           icon: '👑', color: 'from-purple-400 to-pink-500'    },
-  { id: '1_year',           title: 'One Year Strong',  description: '1 year membership',       icon: '📅', color: 'from-indigo-400 to-blue-500'    },
-  { id: 'community_leader', title: 'Community Leader', description: 'Active community member', icon: '👥', color: 'from-cyan-400 to-blue-500'      },
+  { id: '10_visits', title: 'Getting Started', description: '10 gym check-ins', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+  { id: '50_visits', title: 'Regular', description: '50 gym check-ins', icon: '🔥', color: 'from-orange-400 to-red-500' },
+  { id: '100_visits', title: 'Dedicated', description: '100 gym check-ins', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+  { id: '7_day_streak', title: 'Week Warrior', description: '7-day streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+  { id: '30_day_streak', title: 'Month Master', description: '30-day streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+  { id: '90_day_streak', title: 'Consistency King', description: '90-day streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+  { id: '1_year', title: 'One Year Strong', description: '1 year membership', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+  { id: 'community_leader', title: 'Community Leader', description: 'Active community member', icon: '👥', color: 'from-cyan-400 to-blue-500' }
 ];
 
 // ─── Rank sub-page ─────────────────────────────────────────────────────────────
 function RankPage({ currentUser, onBack, checkIns = [] }) {
   const [equippedBadges, setEquippedBadges] = useState(currentUser?.equipped_badges || []);
+
   const userStats = {
     total_check_ins: checkIns.length,
-    longest_streak:  currentUser?.longest_streak || 0,
-    gym_join_date:   currentUser?.created_date,
+    longest_streak: currentUser?.longest_streak || 0,
+    current_streak: currentUser?.current_streak || 0,
+    gym_join_date: currentUser?.created_date
   };
-  const isBadgeEarned = (id) => {
-    switch (id) {
-      case '10_visits':        return userStats.total_check_ins >= 10;
-      case '50_visits':        return userStats.total_check_ins >= 50;
-      case '100_visits':       return userStats.total_check_ins >= 100;
-      case '7_day_streak':     return userStats.longest_streak >= 7;
-      case '30_day_streak':    return userStats.longest_streak >= 30;
-      case '90_day_streak':    return userStats.longest_streak >= 90;
-      case '1_year':           return userStats.gym_join_date && Math.floor((new Date() - new Date(userStats.gym_join_date)) / (1000*60*60*24)) >= 365;
+
+  const isBadgeEarned = (badgeId) => {
+    switch(badgeId) {
+      case '10_visits': return userStats.total_check_ins >= 10;
+      case '50_visits': return userStats.total_check_ins >= 50;
+      case '100_visits': return userStats.total_check_ins >= 100;
+      case '7_day_streak': return userStats.longest_streak >= 7;
+      case '30_day_streak': return userStats.longest_streak >= 30;
+      case '90_day_streak': return userStats.longest_streak >= 90;
+      case '1_year': return userStats.gym_join_date && Math.floor((new Date() - new Date(userStats.gym_join_date)) / (1000*60*60*24)) >= 365;
       case 'community_leader': return userStats.total_check_ins >= 20;
       default: return false;
     }
   };
-  const earnedBadges         = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
-  const lockedBadges         = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
+
+  const earnedBadges = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
+  const lockedBadges = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
   const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
-  const handleEquipBadge     = async (badgeId) => {
-    let n = [...equippedBadges];
-    if (n.includes(badgeId)) n = n.filter(id => id !== badgeId);
-    else { if (n.length >= 3) n.shift(); n.push(badgeId); }
-    setEquippedBadges(n);
-    await base44.auth.updateMe({ equipped_badges: n });
+
+  const handleEquipBadge = async (badgeId) => {
+    let newEquipped = [...equippedBadges];
+    if (newEquipped.includes(badgeId)) {
+      newEquipped = newEquipped.filter(id => id !== badgeId);
+    } else {
+      if (newEquipped.length >= 3) newEquipped.shift();
+      newEquipped.push(badgeId);
+    }
+    setEquippedBadges(newEquipped);
+    await base44.auth.updateMe({ equipped_badges: newEquipped });
   };
+
   return (
     <SubPage title="Rank" onBack={onBack}>
+      {/* Showcase */}
       {equippedBadgeDetails.length > 0 && (
         <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border border-amber-400/40 shadow-lg mb-4">
-          <h3 className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-amber-400" />Showcase</h3>
+          <h3 className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            Showcase
+          </h3>
           <div className="grid grid-cols-3 gap-1.5">
             {equippedBadgeDetails.map((badge) => (
               <div key={badge.id} className={`relative p-2 rounded-lg bg-gradient-to-br ${badge.color} border border-white/30 shadow-md`}>
-                <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm"><CheckCircle className="w-2 h-2 text-amber-900" strokeWidth={3} /></div>
-                <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"><span className="text-lg">{badge.icon}</span></div>
+                <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                  <CheckCircle className="w-2 h-2 text-amber-900" strokeWidth={3} />
+                </div>
+                <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                  <span className="text-lg">{badge.icon}</span>
+                </div>
                 <h4 className="font-bold text-white text-[9px] text-center drop-shadow line-clamp-1">{badge.title}</h4>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Award className="w-4 h-4 text-yellow-400" />Earned ({earnedBadges.length})</h3>
+          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <Award className="w-4 h-4 text-yellow-400" />
+            Earned ({earnedBadges.length})
+          </h3>
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-            {earnedBadges.map((badge) => {
+            {earnedBadges.map((badge, index) => {
               const isEquipped = equippedBadges.includes(badge.id);
               return (
-                <button key={badge.id} onClick={() => handleEquipBadge(badge.id)}
-                  className={`p-3 text-center bg-gradient-to-br ${badge.color} border rounded-lg shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group cursor-pointer ${isEquipped ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-white/20 hover:border-white/40'}`}>
-                  {isEquipped && <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10"><CheckCircle className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} /></div>}
+                <button
+                  key={badge.id}
+                  onClick={() => handleEquipBadge(badge.id)}
+                  className={`p-3 text-center bg-gradient-to-br ${badge.color} border rounded-lg shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group cursor-pointer ${
+                    isEquipped ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-white/20 hover:border-white/40'
+                  }`}
+                >
+                  {isEquipped && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10">
+                      <CheckCircle className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative"><span className="text-xl drop-shadow-lg z-10">{badge.icon}</span></div>
+                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
+                    <span className="text-xl drop-shadow-lg z-10">{badge.icon}</span>
+                  </div>
                   <h4 className="font-bold text-white text-[10px] mb-0.5 drop-shadow line-clamp-1">{badge.title}</h4>
                   <p className="text-[8px] text-white/80 font-medium drop-shadow line-clamp-1">{badge.description}</p>
                 </button>
@@ -234,16 +270,23 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           </div>
         </div>
       )}
+
+      {/* Locked Badges */}
       {lockedBadges.length > 0 && (
         <div>
-          <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2"><Flame className="w-4 h-4 text-slate-400" />Locked ({lockedBadges.length})</h3>
+          <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
+            <Flame className="w-4 h-4 text-slate-400" />
+            Locked ({lockedBadges.length})
+          </h3>
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
             {lockedBadges.map((badge) => (
               <div key={badge.id} className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-dashed border-slate-700/50 rounded-lg relative overflow-hidden cursor-not-allowed">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50" />
                 <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-slate-800/50 flex items-center justify-center shadow-sm relative opacity-40">
                   <span className="text-xl">{badge.icon}</span>
-                  <div className="absolute inset-0 flex items-center justify-center"><span className="text-sm">🔒</span></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm">🔒</span>
+                  </div>
                 </div>
                 <h4 className="font-bold text-slate-500 text-[10px] mb-0.5 relative z-10 line-clamp-1">{badge.title}</h4>
                 <p className="text-[8px] text-slate-600 font-medium relative z-10 line-clamp-1">{badge.description}</p>
@@ -256,378 +299,131 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ─── ILLUSTRATIONS — clean glowing neon on dark, iOS emoji style ───────────────
-//     Key: simple shapes + rich gradient fills + soft bloom glow underneath
-//     No complex geometry. Light comes from top-left. Glow pools at base.
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Analytics — ascending bars + magenta trend arrow (matches reference closely)
+// ─── Decorative SVG / image illustrations ─────────────────────────────────────
 function AnalyticsIllustration() {
-  // Four bars: [x, width, height]  — all share base y=88
-  const bars = [
-    { x: 8,  w: 18, h: 22 },
-    { x: 30, w: 18, h: 38 },
-    { x: 52, w: 18, h: 54 },
-    { x: 74, w: 18, h: 70 },
-  ];
-  const base = 88;
-
   return (
-    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+      <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
+      <rect x="30" y="38" width="16" height="50" rx="5" fill="url(#ab2)" />
+      <rect x="52" y="20" width="16" height="68" rx="5" fill="url(#ab3)" />
+      <rect x="74" y="30" width="16" height="58" rx="5" fill="url(#ab4)" />
+      <rect x="96" y="10" width="16" height="78" rx="5" fill="url(#ab5)" />
+      <polyline points="16,56 38,38 60,20 82,30 104,10" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.75" />
+      {[[16,56],[38,38],[60,20],[82,30],[104,10]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="3.5" fill="#e879f9" opacity="0.9" />
+      ))}
       <defs>
-        {/* Per-bar gradient: bright at top, deep at bottom */}
-        {bars.map((_, i) => (
-          <linearGradient key={i} id={`b${i}`} x1="0.5" y1="0" x2="0.5" y2="1">
-            <stop offset="0%"   stopColor="#e879f9" stopOpacity="0.95"/>
-            <stop offset="40%"  stopColor="#a855f7"/>
-            <stop offset="100%" stopColor="#5b21b6" stopOpacity="0.9"/>
-          </linearGradient>
-        ))}
-        {/* Bar inner highlight (left edge shine) */}
-        <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.22"/>
-          <stop offset="35%"  stopColor="white" stopOpacity="0.06"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        {/* Arrow gradient */}
-        <linearGradient id="arr" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#c026d3"/>
-          <stop offset="100%" stopColor="#f5d0fe"/>
-        </linearGradient>
-        {/* Bloom filter */}
-        <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="softbloom" x="-80%" y="-80%" width="260%" height="260%">
-          <feGaussianBlur stdDeviation="9"/>
-        </filter>
-        <filter id="arrglow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="3.5"/>
-        </filter>
+        <linearGradient id="ab1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#9333ea" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e879f9" stopOpacity="0.9"/><stop offset="100%" stopColor="#a855f7" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f0abfc" stopOpacity="0.9"/><stop offset="100%" stopColor="#c026d3" stopOpacity="0.25"/></linearGradient>
       </defs>
-
-      {/* Floor glow — pools of light under each bar */}
-      {bars.map((b, i) => (
-        <ellipse key={i} cx={b.x + b.w / 2} cy={base + 2} rx={b.w * 0.7} ry={4}
-          fill="#a855f7" filter="url(#softbloom)" opacity={0.5 + i * 0.1}/>
-      ))}
-
-      {/* Bars */}
-      {bars.map((b, i) => (
-        <g key={i}>
-          <rect x={b.x} y={base - b.h} width={b.w} height={b.h}
-            rx={3} fill={`url(#b${i})`}/>
-          {/* Left-edge shine */}
-          <rect x={b.x} y={base - b.h} width={b.w} height={b.h}
-            rx={3} fill="url(#shine)"/>
-          {/* Top cap highlight */}
-          <rect x={b.x + 2} y={base - b.h} width={b.w - 4} height={4}
-            rx={2} fill="white" opacity="0.18"/>
-        </g>
-      ))}
-
-      {/* Arrow glow pass */}
-      <polyline
-        points={bars.map(b => `${b.x + b.w / 2},${base - b.h - 6}`).join(' ')}
-        stroke="#d946ef" strokeWidth="5" fill="none"
-        strokeLinecap="round" strokeLinejoin="round"
-        filter="url(#arrglow)" opacity="0.6"/>
-
-      {/* Arrow line */}
-      <polyline
-        points={bars.map(b => `${b.x + b.w / 2},${base - b.h - 6}`).join(' ')}
-        stroke="url(#arr)" strokeWidth="2.5" fill="none"
-        strokeLinecap="round" strokeLinejoin="round"/>
-
-      {/* Arrowhead */}
-      {(() => {
-        const last = bars[bars.length - 1], prev = bars[bars.length - 2];
-        const ex = last.x + last.w / 2, ey = base - last.h - 6;
-        const px = prev.x + prev.w / 2, py = base - prev.h - 6;
-        const a = Math.atan2(ey - py, ex - px), L = 10, sp = 0.44;
-        return (
-          <polygon
-            points={`${ex},${ey} ${ex - L*Math.cos(a-sp)},${ey - L*Math.sin(a-sp)} ${ex - L*Math.cos(a+sp)},${ey - L*Math.sin(a+sp)}`}
-            fill="#f5d0fe"
-          />
-        );
-      })()}
     </svg>
   );
 }
 
-// Workout Split — glowing dumbbell, blue/indigo
 function SplitIllustration() {
+  const src = "data:image/png;base64,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";
   return (
-    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
-      <defs>
-        <linearGradient id="sp-plate" x1="0.3" y1="0" x2="0.7" y2="1">
-          <stop offset="0%"   stopColor="#c7d2fe"/>
-          <stop offset="40%"  stopColor="#818cf8"/>
-          <stop offset="100%" stopColor="#3730a3"/>
-        </linearGradient>
-        <linearGradient id="sp-bar" x1="0.3" y1="0" x2="0.7" y2="1">
-          <stop offset="0%"   stopColor="#e0e7ff"/>
-          <stop offset="50%"  stopColor="#6366f1"/>
-          <stop offset="100%" stopColor="#312e81"/>
-        </linearGradient>
-        <linearGradient id="sp-collar" x1="0.3" y1="0" x2="0.7" y2="1">
-          <stop offset="0%"   stopColor="#e0e7ff"/>
-          <stop offset="100%" stopColor="#4f46e5"/>
-        </linearGradient>
-        <linearGradient id="sp-shine" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.35"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        <filter id="sp-bloom" x="-80%" y="-80%" width="260%" height="260%">
-          <feGaussianBlur stdDeviation="9"/>
-        </filter>
-        <filter id="sp-glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="4"/>
-        </filter>
-      </defs>
-
-      {/* Bloom */}
-      <ellipse cx="55" cy="70" rx="46" ry="10" fill="#6366f1" filter="url(#sp-bloom)" opacity="0.75"/>
-
-      {/* LEFT PLATE */}
-      <rect x="4"  y="28" width="22" height="36" rx="5" fill="url(#sp-plate)"/>
-      <rect x="4"  y="28" width="22" height="16" rx="5" fill="url(#sp-shine)"/>
-      {/* Left plate subtle edge lines */}
-      {[34,38,42,46,50,54].map(y => (
-        <line key={y} x1="5" y1={y} x2="25" y2={y} stroke="rgba(0,0,0,0.1)" strokeWidth="1"/>
-      ))}
-
-      {/* LEFT COLLAR */}
-      <rect x="26" y="34" width="8" height="24" rx="2" fill="url(#sp-collar)"/>
-      <rect x="26" y="34" width="8" height="10" rx="2" fill="url(#sp-shine)"/>
-
-      {/* HANDLE */}
-      <rect x="34" y="38" width="44" height="16" rx="4" fill="url(#sp-bar)"/>
-      <rect x="34" y="38" width="44" height="7"  rx="4" fill="url(#sp-shine)"/>
-      {/* Knurling */}
-      {[44,51,58,65,72].map(x => (
-        <line key={x} x1={x} y1="39" x2={x} y2="53" stroke="rgba(0,0,0,0.12)" strokeWidth="1.2"/>
-      ))}
-
-      {/* RIGHT COLLAR */}
-      <rect x="78" y="34" width="8" height="24" rx="2" fill="url(#sp-collar)"/>
-      <rect x="78" y="34" width="8" height="10" rx="2" fill="url(#sp-shine)"/>
-
-      {/* RIGHT PLATE */}
-      <rect x="86" y="28" width="22" height="36" rx="5" fill="url(#sp-plate)"/>
-      <rect x="86" y="28" width="22" height="16" rx="5" fill="url(#sp-shine)"/>
-      {[34,38,42,46,50,54].map(y => (
-        <line key={y} x1="87" y1={y} x2="107" y2={y} stroke="rgba(0,0,0,0.1)" strokeWidth="1"/>
-      ))}
-
-      {/* Glow around handle */}
-      <rect x="34" y="38" width="44" height="16" rx="4" fill="#818cf8"
-        filter="url(#sp-glow)" opacity="0.4"/>
-    </svg>
+    <img
+      src={src}
+      alt="heatmap"
+      style={{
+        display: 'block',
+        width: 130,
+        height: 'auto',
+        borderTopRightRadius: 16,
+        borderBottomLeftRadius: 8,
+        borderTopLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        opacity: 0.9,
+        pointerEvents: 'none',
+      }}
+    />
   );
 }
 
-// Goals — glowing bullseye target, cyan/blue with gold arrow
 function GoalsIllustration() {
-  const cx = 52, cy = 52;
-  const rings = [
-    { r: 40, fill: '#0284c7' },
-    { r: 30, fill: '#0ea5e9' },
-    { r: 20, fill: '#38bdf8' },
-    { r: 11, fill: '#7dd3fc' },
-    { r:  4, fill: '#ffffff' },
-  ];
   return (
-    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+      <circle cx="60" cy="48" r="42" stroke="rgba(96,165,250,0.15)" strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="30" stroke="rgba(96,165,250,0.25)" strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="18" stroke="rgba(96,165,250,0.4)"  strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="8"  fill="url(#gi1)" />
+      <circle cx="60" cy="48" r="3"  fill="white" opacity="0.95" />
+      <line x1="90" y1="18" x2="66" y2="44" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" />
+      <polygon points="66,44 76,26 84,36" fill="#60a5fa" opacity="0.85" />
+      <rect x="4" y="22" width="6" height="52" rx="3" fill="rgba(59,130,246,0.12)" />
+      <rect x="4" y="48" width="6" height="26" rx="3" fill="url(#gi2)" />
+      <rect x="14" y="22" width="6" height="52" rx="3" fill="rgba(59,130,246,0.12)" />
+      <rect x="14" y="34" width="6" height="40" rx="3" fill="url(#gi2)" />
       <defs>
-        <radialGradient id="gls-r0" cx="38%" cy="32%">
-          <stop offset="0%"   stopColor="#bae6fd"/>
-          <stop offset="100%" stopColor="#0369a1"/>
-        </radialGradient>
-        <radialGradient id="gls-r1" cx="38%" cy="32%">
-          <stop offset="0%"   stopColor="#7dd3fc"/>
-          <stop offset="100%" stopColor="#0284c7"/>
-        </radialGradient>
-        <radialGradient id="gls-r2" cx="38%" cy="32%">
-          <stop offset="0%"   stopColor="#bae6fd"/>
-          <stop offset="100%" stopColor="#0ea5e9"/>
-        </radialGradient>
-        <radialGradient id="gls-r3" cx="38%" cy="32%">
-          <stop offset="0%"   stopColor="#e0f2fe"/>
-          <stop offset="100%" stopColor="#38bdf8"/>
-        </radialGradient>
-        <radialGradient id="gls-r4" cx="40%" cy="35%">
-          <stop offset="0%"   stopColor="#ffffff"/>
-          <stop offset="100%" stopColor="#bae6fd"/>
-        </radialGradient>
-        <linearGradient id="gls-arr" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#d97706"/>
-          <stop offset="100%" stopColor="#fef3c7"/>
-        </linearGradient>
-        <filter id="gls-bloom" x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="10"/>
-        </filter>
-        <filter id="gls-arrglow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="3"/>
-        </filter>
+        <radialGradient id="gi1"><stop offset="0%" stopColor="#93c5fd"/><stop offset="100%" stopColor="#2563eb"/></radialGradient>
+        <linearGradient id="gi2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#60a5fa"/><stop offset="100%" stopColor="#1d4ed8"/></linearGradient>
       </defs>
-
-      {/* Bloom */}
-      <circle cx={cx} cy={cy} r="40" fill="#0ea5e9" filter="url(#gls-bloom)" opacity="0.45"/>
-
-      {/* Rings — back to front with radial gradient for 3D sphere effect */}
-      <circle cx={cx} cy={cy} r="40" fill="url(#gls-r0)"/>
-      <circle cx={cx} cy={cy} r="30" fill="url(#gls-r1)"/>
-      <circle cx={cx} cy={cy} r="20" fill="url(#gls-r2)"/>
-      <circle cx={cx} cy={cy} r="11" fill="url(#gls-r3)"/>
-      <circle cx={cx} cy={cy} r=" 4" fill="url(#gls-r4)"/>
-
-      {/* Ring separators (thin gaps) */}
-      {[40, 30, 20, 11].map(r => (
-        <circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5"/>
-      ))}
-
-      {/* Arrow glow */}
-      <line x1="105" y1="10" x2={cx + 3} y2={cy - 2}
-        stroke="#fbbf24" strokeWidth="5" strokeLinecap="round"
-        filter="url(#gls-arrglow)" opacity="0.5"/>
-      {/* Arrow shaft */}
-      <line x1="105" y1="10" x2={cx + 3} y2={cy - 2}
-        stroke="url(#gls-arr)" strokeWidth="3" strokeLinecap="round"/>
-      {/* Fletching */}
-      <polygon points="105,10 98,6 100,15" fill="#fef3c7" opacity="0.95"/>
-      {/* Tip */}
-      <polygon points={`${cx+3},${cy-2} ${cx+11},${cy-9} ${cx+10},${cy+6}`} fill="#fef3c7"/>
     </svg>
   );
 }
 
-// Community — three glowing people, green/emerald
 function CommunityIllustration() {
   return (
-    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+      <circle cx="28"  cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
+      <path d="M12 76 C12 56 44 56 44 76" fill="url(#ci1)" opacity="0.55" />
+      <circle cx="60"  cy="26" r="14" fill="url(#ci2)" />
+      <path d="M38 78 C38 54 82 54 82 78" fill="url(#ci2)" opacity="0.8" />
+      <circle cx="92" cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
+      <path d="M76 76 C76 56 108 56 108 76" fill="url(#ci1)" opacity="0.55" />
+      <line x1="39" y1="30" x2="46" y2="28" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.55" />
+      <line x1="74" y1="28" x2="81" y2="30" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.55" />
+      <circle cx="60" cy="26" r="22" stroke="#34d399" strokeWidth="1" fill="none" opacity="0.2" />
+      <circle cx="60" cy="26" r="32" stroke="#34d399" strokeWidth="1" fill="none" opacity="0.1" />
       <defs>
-        <radialGradient id="cm-hc" cx="38%" cy="30%">
-          <stop offset="0%"   stopColor="#a7f3d0"/>
-          <stop offset="100%" stopColor="#047857"/>
-        </radialGradient>
-        <radialGradient id="cm-hs" cx="38%" cy="30%">
-          <stop offset="0%"   stopColor="#6ee7b7"/>
-          <stop offset="100%" stopColor="#065f46"/>
-        </radialGradient>
-        <linearGradient id="cm-bc" x1="0.35" y1="0" x2="0.65" y2="1">
-          <stop offset="0%"   stopColor="#6ee7b7"/>
-          <stop offset="100%" stopColor="#064e3b"/>
-        </linearGradient>
-        <linearGradient id="cm-bs" x1="0.35" y1="0" x2="0.65" y2="1">
-          <stop offset="0%"   stopColor="#34d399"/>
-          <stop offset="100%" stopColor="#064e3b"/>
-        </linearGradient>
-        <linearGradient id="cm-shine" x1="0.2" y1="0" x2="0.5" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        <filter id="cm-bloom" x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="9"/>
-        </filter>
+        <radialGradient id="ci1"><stop offset="0%" stopColor="#6ee7b7"/><stop offset="100%" stopColor="#059669"/></radialGradient>
+        <radialGradient id="ci2"><stop offset="0%" stopColor="#a7f3d0"/><stop offset="100%" stopColor="#10b981"/></radialGradient>
       </defs>
-
-      {/* Floor bloom */}
-      <ellipse cx="55" cy="83" rx="50" ry="9" fill="#10b981" filter="url(#cm-bloom)" opacity="0.7"/>
-
-      {/* ── LEFT PERSON (smaller, behind) ── */}
-      {/* Body */}
-      <path d="M12,84 Q12,62 24,60 Q36,62 36,84 Z" fill="url(#cm-bs)"/>
-      {/* Head */}
-      <circle cx="24" cy="50" r="11" fill="url(#cm-hs)"/>
-      <circle cx="24" cy="50" r="11" fill="url(#cm-shine)"/>
-
-      {/* ── RIGHT PERSON (smaller, behind) ── */}
-      <path d="M74,84 Q74,62 86,60 Q98,62 98,84 Z" fill="url(#cm-bs)"/>
-      <circle cx="86" cy="50" r="11" fill="url(#cm-hs)"/>
-      <circle cx="86" cy="50" r="11" fill="url(#cm-shine)"/>
-
-      {/* ── CENTRE PERSON (front, larger) ── */}
-      <path d="M36,86 Q36,56 55,54 Q74,56 74,86 Z" fill="url(#cm-bc)"/>
-      {/* Shine on body */}
-      <path d="M39,86 Q39,59 50,56 Q46,58 46,86 Z" fill="white" opacity="0.08"/>
-      {/* Head */}
-      <circle cx="55" cy="40" r="16" fill="url(#cm-hc)"/>
-      <circle cx="55" cy="40" r="16" fill="url(#cm-shine)"/>
     </svg>
   );
 }
 
-// Rank — glowing trophy, gold/amber
 function RankIllustration() {
   return (
-    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
+    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+      <polygon
+        points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28"
+        fill="url(#ri1)"
+        opacity="0.92"
+      />
+      <circle cx="60" cy="37" r="9" fill="white" opacity="0.12" />
+      <circle cx="60" cy="37" r="5" fill="white" opacity="0.2" />
+      <path d="M51,64 L46,82 L60,73 L74,82 L69,64" fill="url(#ri4)" opacity="0.85" />
+      <polygon points="22,34 27,46 39,46 30,53 33,65 22,58 11,65 14,53 5,46 17,46" fill="url(#ri2)" opacity="0.6" />
+      <polygon points="98,34 103,46 115,46 106,53 109,65 98,58 87,65 90,53 81,46 93,46" fill="url(#ri3)" opacity="0.6" />
+      <circle cx="100" cy="12" r="2.5" fill="#fde68a" opacity="0.9" />
+      <circle cx="108" cy="22" r="1.5" fill="#fde68a" opacity="0.55" />
+      <circle cx="14"  cy="16" r="1.8" fill="#fde68a" opacity="0.65" />
+      <circle cx="20"  cy="8"  r="1.2" fill="#fde68a" opacity="0.4" />
+      <ellipse cx="55" cy="24" rx="7" ry="3" fill="white" opacity="0.12" transform="rotate(-20 55 24)" />
       <defs>
-        <radialGradient id="tr-cup" cx="35%" cy="28%">
-          <stop offset="0%"   stopColor="#fef3c7"/>
-          <stop offset="35%"  stopColor="#fbbf24"/>
-          <stop offset="100%" stopColor="#78350f"/>
-        </radialGradient>
-        <radialGradient id="tr-base" cx="35%" cy="25%">
-          <stop offset="0%"   stopColor="#fde68a"/>
-          <stop offset="100%" stopColor="#92400e"/>
-        </radialGradient>
-        <radialGradient id="tr-star" cx="42%" cy="30%">
-          <stop offset="0%"   stopColor="#fef9c3"/>
-          <stop offset="100%" stopColor="#d97706"/>
-        </radialGradient>
-        <linearGradient id="tr-handle" x1="0.3" y1="0" x2="0.7" y2="1">
-          <stop offset="0%"   stopColor="#fde68a"/>
+        <linearGradient id="ri1" x1="60" y1="6" x2="60" y2="66" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fde68a"/>
+          <stop offset="50%" stopColor="#f59e0b"/>
           <stop offset="100%" stopColor="#b45309"/>
         </linearGradient>
-        <linearGradient id="tr-shine" x1="0.15" y1="0" x2="0.4" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.4"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
+        <linearGradient id="ri2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e2e8f0"/>
+          <stop offset="100%" stopColor="#64748b"/>
         </linearGradient>
-        <filter id="tr-bloom" x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="9"/>
-        </filter>
-        <filter id="tr-starglow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3"/>
-        </filter>
+        <linearGradient id="ri3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fdba74"/>
+          <stop offset="100%" stopColor="#92400e"/>
+        </linearGradient>
+        <linearGradient id="ri4" x1="60" y1="64" x2="60" y2="82" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#f59e0b"/>
+          <stop offset="100%" stopColor="#78350f" stopOpacity="0.5"/>
+        </linearGradient>
       </defs>
-
-      {/* Floor bloom */}
-      <ellipse cx="55" cy="84" rx="40" ry="8" fill="#f59e0b" filter="url(#tr-bloom)" opacity="0.7"/>
-
-      {/* ── BASE ── */}
-      <rect x="34" y="74" width="42" height="10" rx="3" fill="url(#tr-base)"/>
-      <rect x="34" y="74" width="42" height="4" rx="3" fill="url(#tr-shine)"/>
-
-      {/* ── STEM ── */}
-      <rect x="48" y="66" width="14" height="10" rx="2" fill="url(#tr-base)"/>
-
-      {/* ── CUP ── */}
-      {/* Main cup shape: wide at top, narrows toward stem */}
-      <path d="M22,20 Q22,8 55,6 Q88,8 88,20 L78,66 Q55,72 32,66 Z" fill="url(#tr-cup)"/>
-      {/* Shine overlay */}
-      <path d="M26,22 Q27,10 48,8 Q40,11 38,28 Z" fill="url(#tr-shine)"/>
-
-      {/* ── HANDLES ── */}
-      <path d="M22,26 Q6,26 4,40 Q2,56 20,56 L24,54"
-        stroke="url(#tr-handle)" strokeWidth="6" fill="none" strokeLinecap="round"/>
-      <path d="M22,26 Q6,26 4,40 Q2,56 20,56 L24,54"
-        stroke="#fef3c7" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.4"/>
-      <path d="M88,26 Q104,26 106,40 Q108,56 90,56 L86,54"
-        stroke="url(#tr-handle)" strokeWidth="6" fill="none" strokeLinecap="round"/>
-      <path d="M88,26 Q104,26 106,40 Q108,56 90,56 L86,54"
-        stroke="#fef3c7" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.4"/>
-
-      {/* ── STAR ── */}
-      {/* Glow pass */}
-      <polygon points="55,18 58.5,28 69,28 61,34 64,44 55,38 46,44 49,34 41,28 51.5,28"
-        fill="#fbbf24" filter="url(#tr-starglow)" opacity="0.7"/>
-      {/* Star */}
-      <polygon points="55,18 58.5,28 69,28 61,34 64,44 55,38 46,44 49,34 41,28 51.5,28"
-        fill="url(#tr-star)"/>
     </svg>
   );
 }
@@ -659,24 +455,26 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     >
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }}/>
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
-        style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }}/>
-      {/* Illustration */}
-      <div className="absolute top-0 right-0 pointer-events-none" style={{ opacity: 0.95 }}>
-        <Illustration/>
+        style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
+      {/* Illustration — top right corner, inset from edge */}
+      <div className="absolute top-3 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
+        <Illustration />
       </div>
       {/* Content */}
-      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '60%' }}>
-        <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
+      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
+        <div className="flex items-center">
+          <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
+        </div>
         {description && (
           <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
         )}
       </div>
-      {/* Arrow */}
+      {/* Arrow bottom-right — bare chevron, no circle */}
       <div className="absolute bottom-5 right-3">
-        <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }}/>
+        <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
       </div>
     </div>
   );
@@ -710,13 +508,14 @@ export default function Progress() {
   });
 
   if (!currentUser) return null;
-  if (view === 'goals')     return <GoalsPage     currentUser={currentUser} onBack={() => setView('hub')}/>;
-  if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')}/>;
-  if (view === 'split')     return <SplitPage     currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')}/>;
-  if (view === 'rank')      return <RankPage      currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')}/>;
+  if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
+  if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
+  if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
+  if (view === 'rank')      return <RankPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
-  const activeGoals    = goals.filter(g => g.status === 'active');
-  const completedGoals = goals.filter(g => g.status === 'completed');
+  const activeGoals    = goals.filter((g) => g.status === 'active');
+  const completedGoals = goals.filter((g) => g.status === 'completed');
+  const primaryGymId   = currentUser?.primary_gym_id;
 
   const cards = [
     {
@@ -724,17 +523,25 @@ export default function Progress() {
       label: 'Analytics',
       subtitle: `${workoutLogs.length} sessions logged`,
       description: 'Dive into your performance data, track personal records, and see how your lifts have progressed over time.',
-      icon: BarChart3, iconColor: '#e879f9', iconBg: 'rgba(168,85,247,0.18)',
-      accentColor: '#d946ef', accentBorder: 'rgba(168,85,247,0.45)', glowColor: 'rgba(168,85,247,0.35)',
+      icon: BarChart3,
+      iconColor: '#e879f9',
+      iconBg: 'rgba(168,85,247,0.18)',
+      accentColor: '#d946ef',
+      accentBorder: 'rgba(168,85,247,0.45)',
+      glowColor: 'rgba(168,85,247,0.35)',
       illustration: AnalyticsIllustration,
     },
     {
       id: 'split',
       label: 'Workout Split',
       subtitle: currentUser?.custom_split_name || (currentUser?.workout_split ? 'Active split' : 'No split set'),
-      description: "View your weekly training schedule, heatmap, and track which sessions you've completed.",
-      icon: Dumbbell, iconColor: '#818cf8', iconBg: 'rgba(99,102,241,0.18)',
-      accentColor: '#a5b4fc', accentBorder: 'rgba(99,102,241,0.45)', glowColor: 'rgba(99,102,241,0.35)',
+      description: 'View your weekly training schedule, heatmap, and track which sessions you\'ve completed.',
+      icon: Dumbbell,
+      iconColor: '#818cf8',
+      iconBg: 'rgba(99,102,241,0.18)',
+      accentColor: '#a5b4fc',
+      accentBorder: 'rgba(99,102,241,0.45)',
+      glowColor: 'rgba(99,102,241,0.35)',
       illustration: SplitIllustration,
     },
     {
@@ -742,27 +549,40 @@ export default function Progress() {
       label: 'Goals',
       subtitle: `${activeGoals.length} active · ${completedGoals.length} completed`,
       description: 'Set targets, log milestones, and track your progress toward every fitness goal you set.',
-      icon: Target, iconColor: '#60a5fa', iconBg: 'rgba(59,130,246,0.18)',
-      accentColor: '#93c5fd', accentBorder: 'rgba(59,130,246,0.45)', glowColor: 'rgba(59,130,246,0.35)',
+      icon: Target,
+      iconColor: '#60a5fa',
+      iconBg: 'rgba(59,130,246,0.18)',
+      accentColor: '#93c5fd',
+      accentBorder: 'rgba(59,130,246,0.45)',
+      glowColor: 'rgba(59,130,246,0.35)',
       illustration: GoalsIllustration,
     },
     {
       id: 'community',
       label: 'Community',
       subtitle: gymMemberships.length === 1 ? '1 gym joined' : `${gymMemberships.length} gyms joined`,
-      description: "See the leaderboard, check who's training today, and stay motivated with your gym crew.",
-      icon: Users, iconColor: '#34d399', iconBg: 'rgba(16,185,129,0.18)',
-      accentColor: '#6ee7b7', accentBorder: 'rgba(16,185,129,0.45)', glowColor: 'rgba(16,185,129,0.35)',
+      description: 'See the leaderboard, check who\'s training today, and stay motivated with your gym crew.',
+      icon: Users,
+      iconColor: '#34d399',
+      iconBg: 'rgba(16,185,129,0.18)',
+      accentColor: '#6ee7b7',
+      accentBorder: 'rgba(16,185,129,0.45)',
+      glowColor: 'rgba(16,185,129,0.35)',
       illustration: CommunityIllustration,
-      isLink: true, href: createPageUrl('Community'),
+      isLink: true,
+      href: createPageUrl('Community'),
     },
     {
       id: 'rank',
       label: 'Rank',
       subtitle: 'Badges & achievements',
       description: 'Earn badges for hitting milestones, consistency streaks, and personal records across your training journey.',
-      icon: Award, iconColor: '#fbbf24', iconBg: 'rgba(245,158,11,0.18)',
-      accentColor: '#fde68a', accentBorder: 'rgba(245,158,11,0.45)', glowColor: 'rgba(245,158,11,0.35)',
+      icon: Award,
+      iconColor: '#fbbf24',
+      iconBg: 'rgba(245,158,11,0.18)',
+      accentColor: '#fde68a',
+      accentBorder: 'rgba(245,158,11,0.45)',
+      glowColor: 'rgba(245,158,11,0.35)',
       illustration: RankIllustration,
     },
   ];
