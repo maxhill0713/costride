@@ -12,6 +12,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import StrengthProgress from '../components/profile/StrengthProgress';
+import ProgressiveOverloadTracker from '../components/profile/ProgressiveOverloadTracker';
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
@@ -160,7 +161,15 @@ function SplitPage({ currentUser, checkIns, onBack }) {
 function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
     <SubPage title="Analytics" onBack={onBack}>
-      <StrengthProgress currentUser={currentUser} />
+      {/* Progressive Overload Tracker — top of analytics */}
+      <ProgressiveOverloadTracker currentUser={currentUser} />
+
+      {/* Per-exercise strength chart */}
+      <div className="mt-6">
+        <StrengthProgress currentUser={currentUser} />
+      </div>
+
+      {/* Exercise insights */}
       <div className="mt-6">
         <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
       </div>
@@ -300,7 +309,7 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
   );
 }
 
-// ─── Illustrations — kept exactly from original ───────────────────────────────
+// ─── Illustrations ────────────────────────────────────────────────────────────
 function AnalyticsIllustration() {
   return (
     <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
@@ -419,8 +428,7 @@ function RankIllustration() {
   );
 }
 
-// ─── Tall nav card — layout matches reference image ───────────────────────────
-// Layout: [text left] [dark square box with illustration] [> arrow]
+// ─── Tall nav card ─────────────────────────────────────────────────────────────
 function TallCard({ label, description, iconColor, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
   const events = {
@@ -453,14 +461,11 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         gap: 0,
       }}
     >
-      {/* Top shine line */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }}/>
-      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 20% 50%, ${glowColor} 0%, transparent 55%)`, opacity: pressed ? 0.2 : 0.08, transition: 'opacity 0.1s ease' }}/>
 
-      {/* TEXT — fixed right padding so gap to illustration is always equal */}
       <div className="relative flex-1 min-w-0" style={{ zIndex: 1, paddingRight: 20 }}>
         <p className="text-[17px] font-black text-white tracking-tight leading-tight mb-1.5">{label}</p>
         {description && (
@@ -468,13 +473,11 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         )}
       </div>
 
-      {/* ILLUSTRATION — fixed-width container so every card aligns identically */}
       <div className="relative flex-shrink-0 flex items-center justify-center"
         style={{ width: 84, zIndex: 1 }}>
         <Illustration />
       </div>
 
-      {/* ARROW — bigger, fixed width */}
       <div className="flex-shrink-0 flex items-center justify-center"
         style={{ width: 44, zIndex: 1 }}>
         <motion.div
