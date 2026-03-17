@@ -30,7 +30,8 @@ export default function UsernameStep({
         const results = await base44.entities.User.filter({ username: username.trim() });
         setIsUnique(results.length === 0);
       } catch {
-        setCheckError(true);
+        // If the check fails (e.g. network or unsupported filter), assume unique so user isn't blocked
+        setIsUnique(true);
       } finally {
         setChecking(false);
       }
