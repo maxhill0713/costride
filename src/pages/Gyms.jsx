@@ -210,6 +210,13 @@ if (a.id === currentUser?.primary_gym_id) return -1;
 if (b.id === currentUser?.primary_gym_id) return 1;
 return 0;
   });
+const recentlyViewedGyms = useMemo(() => {
+    return recentlyViewedGymIds
+      .map(id => gyms.find(g => g.id === id))
+      .filter(Boolean)
+      .slice(0, 3);
+  }, [recentlyViewedGymIds, gyms]);
+
 const filteredGyms = gyms.filter((gym) => {
 const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
