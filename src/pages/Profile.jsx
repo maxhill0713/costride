@@ -215,22 +215,22 @@ export default function Profile() {
             {currentUser.username && (
               <p className="text-[12px] text-slate-400 font-semibold">@{currentUser.username}</p>
             )}
-          <div className="flex justify-around items-center">
-          <div className="text-center">
-            <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>
-            <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
+            <div className="flex justify-around items-center">
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{friendCount}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{currentStreak}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-[18px] font-black text-white leading-none">{friendCount}</p>
-            <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[18px] font-black text-white leading-none">{currentStreak}</p>
-            <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
-          </div>
-          </div>
-          </div>
-          </div>
+        </div>
 
         {/* Status + location + gym */}
         <div className="space-y-1">
