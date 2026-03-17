@@ -479,7 +479,7 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         style={{ width: 44, zIndex: 1 }}>
         <motion.div
           animate={{ x: [0, 4, 0] }}
-          transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+          transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}>
           <ChevronRight style={{ width: 22, height: 22, color: iconColor }} />
         </motion.div>
       </div>
