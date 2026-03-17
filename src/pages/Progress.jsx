@@ -157,14 +157,14 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
 
 // ─── Badge definitions & logic ────────────────────────────────────────────────
 const BADGE_LIBRARY = [
-  { id: '10_visits',       title: 'Getting Started',   description: '10 gym check-ins',        icon: '🎯', color: 'from-blue-400 to-blue-600'       },
-  { id: '50_visits',       title: 'Regular',           description: '50 gym check-ins',        icon: '🔥', color: 'from-orange-400 to-red-500'      },
-  { id: '100_visits',      title: 'Dedicated',         description: '100 gym check-ins',       icon: '🏆', color: 'from-yellow-400 to-orange-500'   },
-  { id: '7_day_streak',    title: 'Week Warrior',      description: '7-day streak',            icon: '⚡', color: 'from-green-400 to-emerald-500'   },
-  { id: '30_day_streak',   title: 'Month Master',      description: '30-day streak',           icon: '🔥', color: 'from-red-400 to-pink-500'        },
-  { id: '90_day_streak',   title: 'Consistency King',  description: '90-day streak',           icon: '👑', color: 'from-purple-400 to-pink-500'     },
-  { id: '1_year',          title: 'One Year Strong',   description: '1 year membership',       icon: '📅', color: 'from-indigo-400 to-blue-500'     },
-  { id: 'community_leader',title: 'Community Leader',  description: 'Active community member', icon: '👥', color: 'from-cyan-400 to-blue-500'       },
+  { id: '10_visits',        title: 'Getting Started',  description: '10 gym check-ins',        icon: '🎯', color: 'from-blue-400 to-blue-600'      },
+  { id: '50_visits',        title: 'Regular',          description: '50 gym check-ins',        icon: '🔥', color: 'from-orange-400 to-red-500'     },
+  { id: '100_visits',       title: 'Dedicated',        description: '100 gym check-ins',       icon: '🏆', color: 'from-yellow-400 to-orange-500'  },
+  { id: '7_day_streak',     title: 'Week Warrior',     description: '7-day streak',            icon: '⚡', color: 'from-green-400 to-emerald-500'  },
+  { id: '30_day_streak',    title: 'Month Master',     description: '30-day streak',           icon: '🔥', color: 'from-red-400 to-pink-500'       },
+  { id: '90_day_streak',    title: 'Consistency King', description: '90-day streak',           icon: '👑', color: 'from-purple-400 to-pink-500'    },
+  { id: '1_year',           title: 'One Year Strong',  description: '1 year membership',       icon: '📅', color: 'from-indigo-400 to-blue-500'    },
+  { id: 'community_leader', title: 'Community Leader', description: 'Active community member', icon: '👥', color: 'from-cyan-400 to-blue-500'      },
 ];
 
 // ─── Rank sub-page ─────────────────────────────────────────────────────────────
@@ -173,11 +173,10 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
   const userStats = {
     total_check_ins: checkIns.length,
     longest_streak:  currentUser?.longest_streak || 0,
-    current_streak:  currentUser?.current_streak || 0,
     gym_join_date:   currentUser?.created_date,
   };
-  const isBadgeEarned = (badgeId) => {
-    switch (badgeId) {
+  const isBadgeEarned = (id) => {
+    switch (id) {
       case '10_visits':        return userStats.total_check_ins >= 10;
       case '50_visits':        return userStats.total_check_ins >= 50;
       case '100_visits':       return userStats.total_check_ins >= 100;
@@ -189,19 +188,15 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
       default: return false;
     }
   };
-  const earnedBadges      = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
-  const lockedBadges      = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
+  const earnedBadges         = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
+  const lockedBadges         = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
   const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
-  const handleEquipBadge  = async (badgeId) => {
-    let newEquipped = [...equippedBadges];
-    if (newEquipped.includes(badgeId)) {
-      newEquipped = newEquipped.filter(id => id !== badgeId);
-    } else {
-      if (newEquipped.length >= 3) newEquipped.shift();
-      newEquipped.push(badgeId);
-    }
-    setEquippedBadges(newEquipped);
-    await base44.auth.updateMe({ equipped_badges: newEquipped });
+  const handleEquipBadge     = async (badgeId) => {
+    let n = [...equippedBadges];
+    if (n.includes(badgeId)) n = n.filter(id => id !== badgeId);
+    else { if (n.length >= 3) n.shift(); n.push(badgeId); }
+    setEquippedBadges(n);
+    await base44.auth.updateMe({ equipped_badges: n });
   };
   return (
     <SubPage title="Rank" onBack={onBack}>
@@ -211,12 +206,8 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
           <div className="grid grid-cols-3 gap-1.5">
             {equippedBadgeDetails.map((badge) => (
               <div key={badge.id} className={`relative p-2 rounded-lg bg-gradient-to-br ${badge.color} border border-white/30 shadow-md`}>
-                <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-                  <CheckCircle className="w-2 h-2 text-amber-900" strokeWidth={3} />
-                </div>
-                <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                  <span className="text-lg">{badge.icon}</span>
-                </div>
+                <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm"><CheckCircle className="w-2 h-2 text-amber-900" strokeWidth={3} /></div>
+                <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"><span className="text-lg">{badge.icon}</span></div>
                 <h4 className="font-bold text-white text-[9px] text-center drop-shadow line-clamp-1">{badge.title}</h4>
               </div>
             ))}
@@ -232,15 +223,9 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
               return (
                 <button key={badge.id} onClick={() => handleEquipBadge(badge.id)}
                   className={`p-3 text-center bg-gradient-to-br ${badge.color} border rounded-lg shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group cursor-pointer ${isEquipped ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-white/20 hover:border-white/40'}`}>
-                  {isEquipped && (
-                    <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10">
-                      <CheckCircle className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} />
-                    </div>
-                  )}
+                  {isEquipped && <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10"><CheckCircle className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} /></div>}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
-                    <span className="text-xl drop-shadow-lg z-10">{badge.icon}</span>
-                  </div>
+                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative"><span className="text-xl drop-shadow-lg z-10">{badge.icon}</span></div>
                   <h4 className="font-bold text-white text-[10px] mb-0.5 drop-shadow line-clamp-1">{badge.title}</h4>
                   <p className="text-[8px] text-white/80 font-medium drop-shadow line-clamp-1">{badge.description}</p>
                 </button>
@@ -272,89 +257,99 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ─── 3D ILLUSTRATIONS (iOS-style, glowing neon) ────────────────────────────────
+// ─── ILLUSTRATIONS — clean glowing neon on dark, iOS emoji style ───────────────
+//     Key: simple shapes + rich gradient fills + soft bloom glow underneath
+//     No complex geometry. Light comes from top-left. Glow pools at base.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Analytics — ascending 3D bars + magenta trend arrow (matches reference exactly)
+// Analytics — ascending bars + magenta trend arrow (matches reference closely)
 function AnalyticsIllustration() {
+  // Four bars: [x, width, height]  — all share base y=88
   const bars = [
-    { x: 6,  base: 86, w: 16, h: 20 },
-    { x: 27, base: 86, w: 16, h: 34 },
-    { x: 48, base: 86, w: 16, h: 50 },
-    { x: 69, base: 86, w: 16, h: 66 },
+    { x: 8,  w: 18, h: 22 },
+    { x: 30, w: 18, h: 38 },
+    { x: 52, w: 18, h: 54 },
+    { x: 74, w: 18, h: 70 },
   ];
-  const d = 8;
-  const fronts = ['#6d28d9','#7c3aed','#9333ea','#a855f7'];
-  const sides  = ['#4c1d95','#5b21b6','#6d28d9','#7c3aed'];
-  const tops   = ['#a78bfa','#c084fc','#d8b4fe','#ede9fe'];
-  const trendPts = bars.map(b => `${b.x + b.w/2},${b.base - b.h - 5}`).join(' ');
+  const base = 88;
 
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
       <defs>
-        <filter id="ab-bg" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="7"/>
-        </filter>
-        <filter id="ab-arr" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="4"/>
-        </filter>
+        {/* Per-bar gradient: bright at top, deep at bottom */}
         {bars.map((_, i) => (
-          <linearGradient key={i} id={`abf${i}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={tops[i]} stopOpacity="0.95"/>
-            <stop offset="100%" stopColor={fronts[i]}/>
+          <linearGradient key={i} id={`b${i}`} x1="0.5" y1="0" x2="0.5" y2="1">
+            <stop offset="0%"   stopColor="#e879f9" stopOpacity="0.95"/>
+            <stop offset="40%"  stopColor="#a855f7"/>
+            <stop offset="100%" stopColor="#5b21b6" stopOpacity="0.9"/>
           </linearGradient>
         ))}
-        <linearGradient id="ab-arrow" x1="0" y1="1" x2="1" y2="0">
+        {/* Bar inner highlight (left edge shine) */}
+        <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="white" stopOpacity="0.22"/>
+          <stop offset="35%"  stopColor="white" stopOpacity="0.06"/>
+          <stop offset="100%" stopColor="white" stopOpacity="0"/>
+        </linearGradient>
+        {/* Arrow gradient */}
+        <linearGradient id="arr" x1="0" y1="1" x2="1" y2="0">
           <stop offset="0%"   stopColor="#c026d3"/>
           <stop offset="100%" stopColor="#f5d0fe"/>
         </linearGradient>
-        <linearGradient id="ab-shine" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.28"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
+        {/* Bloom filter */}
+        <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="6" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="softbloom" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="9"/>
+        </filter>
+        <filter id="arrglow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3.5"/>
+        </filter>
       </defs>
 
-      {/* Ambient bloom */}
-      <ellipse cx="56" cy="84" rx="54" ry="10" fill="#7c3aed" filter="url(#ab-bg)" opacity="0.8"/>
+      {/* Floor glow — pools of light under each bar */}
+      {bars.map((b, i) => (
+        <ellipse key={i} cx={b.x + b.w / 2} cy={base + 2} rx={b.w * 0.7} ry={4}
+          fill="#a855f7" filter="url(#softbloom)" opacity={0.5 + i * 0.1}/>
+      ))}
 
-      {bars.map((b, i) => {
-        const { x, base, w, h } = b;
-        const fy = base - h;
-        return (
-          <g key={i}>
-            {/* Right depth face */}
-            <polygon
-              points={`${x+w},${fy} ${x+w+d},${fy-d} ${x+w+d},${base-d} ${x+w},${base}`}
-              fill={sides[i]} opacity="0.9"
-            />
-            {/* Front face */}
-            <rect x={x} y={fy} width={w} height={h} fill={`url(#abf${i})`} rx="2"/>
-            {/* Shine */}
-            <rect x={x} y={fy} width={w} height={h * 0.45} fill="url(#ab-shine)" rx="2"/>
-            {/* Top face */}
-            <polygon
-              points={`${x},${fy} ${x+d},${fy-d} ${x+w+d},${fy-d} ${x+w},${fy}`}
-              fill={tops[i]} opacity="0.95"
-            />
-          </g>
-        );
-      })}
+      {/* Bars */}
+      {bars.map((b, i) => (
+        <g key={i}>
+          <rect x={b.x} y={base - b.h} width={b.w} height={b.h}
+            rx={3} fill={`url(#b${i})`}/>
+          {/* Left-edge shine */}
+          <rect x={b.x} y={base - b.h} width={b.w} height={b.h}
+            rx={3} fill="url(#shine)"/>
+          {/* Top cap highlight */}
+          <rect x={b.x + 2} y={base - b.h} width={b.w - 4} height={4}
+            rx={2} fill="white" opacity="0.18"/>
+        </g>
+      ))}
 
-      {/* Trend line glow */}
-      <polyline points={trendPts} stroke="#e879f9" strokeWidth="5" fill="none"
-        strokeLinecap="round" strokeLinejoin="round" filter="url(#ab-arr)" opacity="0.5"/>
-      {/* Trend line */}
-      <polyline points={trendPts} stroke="url(#ab-arrow)" strokeWidth="2.8" fill="none"
+      {/* Arrow glow pass */}
+      <polyline
+        points={bars.map(b => `${b.x + b.w / 2},${base - b.h - 6}`).join(' ')}
+        stroke="#d946ef" strokeWidth="5" fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+        filter="url(#arrglow)" opacity="0.6"/>
+
+      {/* Arrow line */}
+      <polyline
+        points={bars.map(b => `${b.x + b.w / 2},${base - b.h - 6}`).join(' ')}
+        stroke="url(#arr)" strokeWidth="2.5" fill="none"
         strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Arrow head */}
+
+      {/* Arrowhead */}
       {(() => {
         const last = bars[bars.length - 1], prev = bars[bars.length - 2];
-        const ex = last.x + last.w/2, ey = last.base - last.h - 5;
-        const px = prev.x + prev.w/2, py = prev.base - prev.h - 5;
-        const ang = Math.atan2(ey - py, ex - px), al = 11, sp = 0.42;
+        const ex = last.x + last.w / 2, ey = base - last.h - 6;
+        const px = prev.x + prev.w / 2, py = base - prev.h - 6;
+        const a = Math.atan2(ey - py, ex - px), L = 10, sp = 0.44;
         return (
           <polygon
-            points={`${ex},${ey} ${ex - al*Math.cos(ang-sp)},${ey - al*Math.sin(ang-sp)} ${ex - al*Math.cos(ang+sp)},${ey - al*Math.sin(ang+sp)}`}
+            points={`${ex},${ey} ${ex - L*Math.cos(a-sp)},${ey - L*Math.sin(a-sp)} ${ex - L*Math.cos(a+sp)},${ey - L*Math.sin(a+sp)}`}
             fill="#f5d0fe"
           />
         );
@@ -363,298 +358,276 @@ function AnalyticsIllustration() {
   );
 }
 
-// Workout Split — 3D dumbbell (blue/indigo)
+// Workout Split — glowing dumbbell, blue/indigo
 function SplitIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
       <defs>
-        <filter id="db-bg" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="7"/>
-        </filter>
-        <linearGradient id="db-plate" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#a5b4fc"/>
-          <stop offset="100%" stopColor="#4338ca"/>
-        </linearGradient>
-        <linearGradient id="db-handle" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="sp-plate" x1="0.3" y1="0" x2="0.7" y2="1">
           <stop offset="0%"   stopColor="#c7d2fe"/>
-          <stop offset="100%" stopColor="#6366f1"/>
+          <stop offset="40%"  stopColor="#818cf8"/>
+          <stop offset="100%" stopColor="#3730a3"/>
         </linearGradient>
-        <linearGradient id="db-collar" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="sp-bar" x1="0.3" y1="0" x2="0.7" y2="1">
           <stop offset="0%"   stopColor="#e0e7ff"/>
-          <stop offset="100%" stopColor="#818cf8"/>
+          <stop offset="50%"  stopColor="#6366f1"/>
+          <stop offset="100%" stopColor="#312e81"/>
         </linearGradient>
-        <linearGradient id="db-shine" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="sp-collar" x1="0.3" y1="0" x2="0.7" y2="1">
+          <stop offset="0%"   stopColor="#e0e7ff"/>
+          <stop offset="100%" stopColor="#4f46e5"/>
+        </linearGradient>
+        <linearGradient id="sp-shine" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="white" stopOpacity="0.35"/>
           <stop offset="100%" stopColor="white" stopOpacity="0"/>
         </linearGradient>
+        <filter id="sp-bloom" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="9"/>
+        </filter>
+        <filter id="sp-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4"/>
+        </filter>
       </defs>
 
-      {/* Ambient bloom */}
-      <ellipse cx="60" cy="70" rx="50" ry="11" fill="#6366f1" filter="url(#db-bg)" opacity="0.75"/>
+      {/* Bloom */}
+      <ellipse cx="55" cy="70" rx="46" ry="10" fill="#6366f1" filter="url(#sp-bloom)" opacity="0.75"/>
 
-      {/* ── LEFT PLATE ── */}
-      <polygon points="28,30 35,23 35,73 28,80" fill="#3730a3" opacity="0.85"/>
-      <rect x="8" y="30" width="20" height="50" rx="3" fill="url(#db-plate)"/>
-      <rect x="8" y="30" width="20" height="22" rx="3" fill="url(#db-shine)"/>
-      <polygon points="8,30 15,23 35,23 28,30" fill="#c7d2fe" opacity="0.95"/>
-      {[38,44,50,56,62].map(y => <line key={y} x1="9" y1={y} x2="27" y2={y} stroke="rgba(0,0,0,0.15)" strokeWidth="1.2"/>)}
+      {/* LEFT PLATE */}
+      <rect x="4"  y="28" width="22" height="36" rx="5" fill="url(#sp-plate)"/>
+      <rect x="4"  y="28" width="22" height="16" rx="5" fill="url(#sp-shine)"/>
+      {/* Left plate subtle edge lines */}
+      {[34,38,42,46,50,54].map(y => (
+        <line key={y} x1="5" y1={y} x2="25" y2={y} stroke="rgba(0,0,0,0.1)" strokeWidth="1"/>
+      ))}
 
-      {/* ── LEFT COLLAR ── */}
-      <polygon points="28,37 33,31 33,69 28,75" fill="#4338ca" opacity="0.9"/>
-      <rect x="28" y="37" width="6" height="36" rx="1" fill="url(#db-collar)"/>
-      <polygon points="28,37 33,31 39,31 34,37" fill="#e0e7ff" opacity="0.9"/>
+      {/* LEFT COLLAR */}
+      <rect x="26" y="34" width="8" height="24" rx="2" fill="url(#sp-collar)"/>
+      <rect x="26" y="34" width="8" height="10" rx="2" fill="url(#sp-shine)"/>
 
-      {/* ── HANDLE ── */}
-      <polygon points="34,40 40,34 80,34 74,40" fill="#e0e7ff" opacity="0.85"/>
-      <rect x="34" y="40" width="52" height="18" rx="3" fill="url(#db-handle)"/>
-      <rect x="34" y="40" width="52" height="8" rx="3" fill="url(#db-shine)"/>
-      {[46,53,60,67,74].map(x => <line key={x} x1={x} y1="41" x2={x} y2="57" stroke="rgba(0,0,0,0.12)" strokeWidth="1.2"/>)}
+      {/* HANDLE */}
+      <rect x="34" y="38" width="44" height="16" rx="4" fill="url(#sp-bar)"/>
+      <rect x="34" y="38" width="44" height="7"  rx="4" fill="url(#sp-shine)"/>
+      {/* Knurling */}
+      {[44,51,58,65,72].map(x => (
+        <line key={x} x1={x} y1="39" x2={x} y2="53" stroke="rgba(0,0,0,0.12)" strokeWidth="1.2"/>
+      ))}
 
-      {/* ── RIGHT COLLAR ── */}
-      <polygon points="74,37 79,31 85,31 80,37" fill="#e0e7ff" opacity="0.9"/>
-      <rect x="74" y="37" width="6" height="36" rx="1" fill="url(#db-collar)"/>
-      <polygon points="80,37 85,31 85,69 80,75" fill="#4338ca" opacity="0.9"/>
+      {/* RIGHT COLLAR */}
+      <rect x="78" y="34" width="8" height="24" rx="2" fill="url(#sp-collar)"/>
+      <rect x="78" y="34" width="8" height="10" rx="2" fill="url(#sp-shine)"/>
 
-      {/* ── RIGHT PLATE ── */}
-      <polygon points="86,30 93,23 93,73 86,80" fill="#3730a3" opacity="0.85"/>
-      <rect x="86" y="30" width="20" height="50" rx="3" fill="url(#db-plate)"/>
-      <rect x="86" y="30" width="20" height="22" rx="3" fill="url(#db-shine)"/>
-      <polygon points="86,30 93,23 113,23 106,30" fill="#c7d2fe" opacity="0.95"/>
-      {[38,44,50,56,62].map(y => <line key={y} x1="87" y1={y} x2="105" y2={y} stroke="rgba(0,0,0,0.15)" strokeWidth="1.2"/>)}
+      {/* RIGHT PLATE */}
+      <rect x="86" y="28" width="22" height="36" rx="5" fill="url(#sp-plate)"/>
+      <rect x="86" y="28" width="22" height="16" rx="5" fill="url(#sp-shine)"/>
+      {[34,38,42,46,50,54].map(y => (
+        <line key={y} x1="87" y1={y} x2="107" y2={y} stroke="rgba(0,0,0,0.1)" strokeWidth="1"/>
+      ))}
+
+      {/* Glow around handle */}
+      <rect x="34" y="38" width="44" height="16" rx="4" fill="#818cf8"
+        filter="url(#sp-glow)" opacity="0.4"/>
     </svg>
   );
 }
 
-// Goals — 3D bullseye target with gold arrow
+// Goals — glowing bullseye target, cyan/blue with gold arrow
 function GoalsIllustration() {
+  const cx = 52, cy = 52;
   const rings = [
-    { rx: 46, ry: 13, front: '#0284c7', edge: '#075985' },
-    { rx: 34, ry:  9, front: '#0ea5e9', edge: '#0369a1' },
-    { rx: 22, ry:  6, front: '#38bdf8', edge: '#0284c7' },
-    { rx: 12, ry:  3.5, front: '#7dd3fc', edge: '#38bdf8' },
-    { rx:  4, ry:  1.5, front: '#ffffff', edge: '#bae6fd' },
+    { r: 40, fill: '#0284c7' },
+    { r: 30, fill: '#0ea5e9' },
+    { r: 20, fill: '#38bdf8' },
+    { r: 11, fill: '#7dd3fc' },
+    { r:  4, fill: '#ffffff' },
   ];
-  const cx = 56, cy = 60;
-
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
       <defs>
-        <filter id="tg-bg"  x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="7"/>
-        </filter>
-        <filter id="tg-arr" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="3"/>
-        </filter>
-        <linearGradient id="tg-shine" x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        <linearGradient id="arr-g" x1="0" y1="1" x2="1" y2="0">
+        <radialGradient id="gls-r0" cx="38%" cy="32%">
+          <stop offset="0%"   stopColor="#bae6fd"/>
+          <stop offset="100%" stopColor="#0369a1"/>
+        </radialGradient>
+        <radialGradient id="gls-r1" cx="38%" cy="32%">
+          <stop offset="0%"   stopColor="#7dd3fc"/>
+          <stop offset="100%" stopColor="#0284c7"/>
+        </radialGradient>
+        <radialGradient id="gls-r2" cx="38%" cy="32%">
+          <stop offset="0%"   stopColor="#bae6fd"/>
+          <stop offset="100%" stopColor="#0ea5e9"/>
+        </radialGradient>
+        <radialGradient id="gls-r3" cx="38%" cy="32%">
+          <stop offset="0%"   stopColor="#e0f2fe"/>
+          <stop offset="100%" stopColor="#38bdf8"/>
+        </radialGradient>
+        <radialGradient id="gls-r4" cx="40%" cy="35%">
+          <stop offset="0%"   stopColor="#ffffff"/>
+          <stop offset="100%" stopColor="#bae6fd"/>
+        </radialGradient>
+        <linearGradient id="gls-arr" x1="0" y1="1" x2="1" y2="0">
           <stop offset="0%"   stopColor="#d97706"/>
-          <stop offset="60%"  stopColor="#fbbf24"/>
           <stop offset="100%" stopColor="#fef3c7"/>
         </linearGradient>
+        <filter id="gls-bloom" x="-70%" y="-70%" width="240%" height="240%">
+          <feGaussianBlur stdDeviation="10"/>
+        </filter>
+        <filter id="gls-arrglow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
       </defs>
 
       {/* Bloom */}
-      <ellipse cx={cx} cy={cy + 8} rx="52" ry="11" fill="#0ea5e9" filter="url(#tg-bg)" opacity="0.65"/>
+      <circle cx={cx} cy={cy} r="40" fill="#0ea5e9" filter="url(#gls-bloom)" opacity="0.45"/>
 
-      {/* Rings back-to-front */}
-      {[...rings].reverse().map((r, i) => (
-        <g key={i}>
-          <ellipse cx={cx} cy={cy + 5} rx={r.rx} ry={r.ry * 0.65} fill={r.edge} opacity="0.8"/>
-          <ellipse cx={cx} cy={cy}     rx={r.rx} ry={r.ry}         fill={r.front}/>
-          <ellipse cx={cx - r.rx*0.14} cy={cy - r.ry*0.3} rx={r.rx*0.55} ry={r.ry*0.38} fill="url(#tg-shine)"/>
-        </g>
+      {/* Rings — back to front with radial gradient for 3D sphere effect */}
+      <circle cx={cx} cy={cy} r="40" fill="url(#gls-r0)"/>
+      <circle cx={cx} cy={cy} r="30" fill="url(#gls-r1)"/>
+      <circle cx={cx} cy={cy} r="20" fill="url(#gls-r2)"/>
+      <circle cx={cx} cy={cy} r="11" fill="url(#gls-r3)"/>
+      <circle cx={cx} cy={cy} r=" 4" fill="url(#gls-r4)"/>
+
+      {/* Ring separators (thin gaps) */}
+      {[40, 30, 20, 11].map(r => (
+        <circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5"/>
       ))}
 
       {/* Arrow glow */}
-      <line x1="108" y1="12" x2={cx + 2} y2={cy - 1}
-        stroke="#fbbf24" strokeWidth="6" strokeLinecap="round" opacity="0.4" filter="url(#tg-arr)"/>
+      <line x1="105" y1="10" x2={cx + 3} y2={cy - 2}
+        stroke="#fbbf24" strokeWidth="5" strokeLinecap="round"
+        filter="url(#gls-arrglow)" opacity="0.5"/>
       {/* Arrow shaft */}
-      <line x1="108" y1="12" x2={cx + 2} y2={cy - 1}
-        stroke="url(#arr-g)" strokeWidth="3.5" strokeLinecap="round"/>
+      <line x1="105" y1="10" x2={cx + 3} y2={cy - 2}
+        stroke="url(#gls-arr)" strokeWidth="3" strokeLinecap="round"/>
       {/* Fletching */}
-      <polygon points="108,12 101,8 103,17" fill="#fef3c7" opacity="0.9"/>
+      <polygon points="105,10 98,6 100,15" fill="#fef3c7" opacity="0.95"/>
       {/* Tip */}
-      <polygon points={`${cx+2},${cy-1} ${cx+10},${cy-8} ${cx+9},${cy+6}`} fill="#fef3c7"/>
-
-      {/* Sparkles */}
-      {[[100,6],[114,28],[16,22],[20,80],[102,80]].map(([x,y], i) => (
-        <g key={i}>
-          <line x1={x-3} y1={y} x2={x+3} y2={y} stroke="#fde68a" strokeWidth="1.5" strokeLinecap="round" opacity="0.65"/>
-          <line x1={x} y1={y-3} x2={x} y2={y+3} stroke="#fde68a" strokeWidth="1.5" strokeLinecap="round" opacity="0.65"/>
-        </g>
-      ))}
+      <polygon points={`${cx+3},${cy-2} ${cx+11},${cy-9} ${cx+10},${cy+6}`} fill="#fef3c7"/>
     </svg>
   );
 }
 
-// Community — 3D people cluster (green/teal)
+// Community — three glowing people, green/emerald
 function CommunityIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
       <defs>
-        <filter id="cm-bg" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="7"/>
-        </filter>
-        <linearGradient id="cm-head-s" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#6ee7b7"/>
-          <stop offset="100%" stopColor="#059669"/>
-        </linearGradient>
-        <linearGradient id="cm-head-c" x1="0" y1="0" x2="0" y2="1">
+        <radialGradient id="cm-hc" cx="38%" cy="30%">
           <stop offset="0%"   stopColor="#a7f3d0"/>
-          <stop offset="100%" stopColor="#10b981"/>
-        </linearGradient>
-        <linearGradient id="cm-body-s" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#34d399"/>
-          <stop offset="100%" stopColor="#065f46"/>
-        </linearGradient>
-        <linearGradient id="cm-body-c" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#6ee7b7"/>
           <stop offset="100%" stopColor="#047857"/>
+        </radialGradient>
+        <radialGradient id="cm-hs" cx="38%" cy="30%">
+          <stop offset="0%"   stopColor="#6ee7b7"/>
+          <stop offset="100%" stopColor="#065f46"/>
+        </radialGradient>
+        <linearGradient id="cm-bc" x1="0.35" y1="0" x2="0.65" y2="1">
+          <stop offset="0%"   stopColor="#6ee7b7"/>
+          <stop offset="100%" stopColor="#064e3b"/>
         </linearGradient>
-        <linearGradient id="cm-shine" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.32"/>
+        <linearGradient id="cm-bs" x1="0.35" y1="0" x2="0.65" y2="1">
+          <stop offset="0%"   stopColor="#34d399"/>
+          <stop offset="100%" stopColor="#064e3b"/>
+        </linearGradient>
+        <linearGradient id="cm-shine" x1="0.2" y1="0" x2="0.5" y2="1">
+          <stop offset="0%"   stopColor="white" stopOpacity="0.3"/>
           <stop offset="100%" stopColor="white" stopOpacity="0"/>
         </linearGradient>
+        <filter id="cm-bloom" x="-70%" y="-70%" width="240%" height="240%">
+          <feGaussianBlur stdDeviation="9"/>
+        </filter>
       </defs>
 
-      {/* Bloom */}
-      <ellipse cx="60" cy="86" rx="52" ry="10" fill="#10b981" filter="url(#cm-bg)" opacity="0.7"/>
+      {/* Floor bloom */}
+      <ellipse cx="55" cy="83" rx="50" ry="9" fill="#10b981" filter="url(#cm-bloom)" opacity="0.7"/>
 
-      {/* ── LEFT PERSON ── */}
-      <ellipse cx="26" cy="86" rx="13" ry="4" fill="#047857" opacity="0.4"/>
-      {/* Body depth */}
-      <path d="M38,54 Q43,56 43,86 L38,86 Z" fill="#065f46" opacity="0.7"/>
+      {/* ── LEFT PERSON (smaller, behind) ── */}
       {/* Body */}
-      <path d="M14,86 Q14,56 26,54 Q38,56 38,86 Z" fill="url(#cm-body-s)" opacity="0.9"/>
-      {/* Head depth */}
-      <ellipse cx="30" cy="49" rx="10" ry="3.5" fill="#047857" opacity="0.5"/>
+      <path d="M12,84 Q12,62 24,60 Q36,62 36,84 Z" fill="url(#cm-bs)"/>
       {/* Head */}
-      <circle cx="26" cy="40" r="12" fill="url(#cm-head-s)"/>
-      <circle cx="22" cy="36" r="6"  fill="url(#cm-shine)"/>
+      <circle cx="24" cy="50" r="11" fill="url(#cm-hs)"/>
+      <circle cx="24" cy="50" r="11" fill="url(#cm-shine)"/>
 
-      {/* ── RIGHT PERSON ── */}
-      <ellipse cx="94" cy="86" rx="13" ry="4" fill="#047857" opacity="0.4"/>
-      <path d="M106,54 Q111,56 111,86 L106,86 Z" fill="#065f46" opacity="0.7"/>
-      <path d="M82,86 Q82,56 94,54 Q106,56 106,86 Z" fill="url(#cm-body-s)" opacity="0.9"/>
-      <ellipse cx="98" cy="49" rx="10" ry="3.5" fill="#047857" opacity="0.5"/>
-      <circle cx="94" cy="40" r="12" fill="url(#cm-head-s)"/>
-      <circle cx="90" cy="36" r="6"  fill="url(#cm-shine)"/>
+      {/* ── RIGHT PERSON (smaller, behind) ── */}
+      <path d="M74,84 Q74,62 86,60 Q98,62 98,84 Z" fill="url(#cm-bs)"/>
+      <circle cx="86" cy="50" r="11" fill="url(#cm-hs)"/>
+      <circle cx="86" cy="50" r="11" fill="url(#cm-shine)"/>
 
       {/* ── CENTRE PERSON (front, larger) ── */}
-      <ellipse cx="60" cy="88" rx="18" ry="5" fill="#047857" opacity="0.5"/>
-      {/* Body depth */}
-      <path d="M78,50 Q85,53 85,88 L78,88 Z" fill="#065f46" opacity="0.75"/>
-      {/* Body */}
-      <path d="M42,88 Q42,50 60,48 Q78,50 78,88 Z" fill="url(#cm-body-c)"/>
+      <path d="M36,86 Q36,56 55,54 Q74,56 74,86 Z" fill="url(#cm-bc)"/>
       {/* Shine on body */}
-      <path d="M45,88 Q45,53 55,50 Q53,52 53,88 Z" fill="white" opacity="0.08"/>
-      {/* Head depth */}
-      <ellipse cx="65" cy="45" rx="14" ry="5" fill="#047857" opacity="0.5"/>
+      <path d="M39,86 Q39,59 50,56 Q46,58 46,86 Z" fill="white" opacity="0.08"/>
       {/* Head */}
-      <circle cx="60" cy="32" r="16" fill="url(#cm-head-c)"/>
-      <circle cx="54" cy="26" r="8"  fill="url(#cm-shine)"/>
-
-      {/* Connection lines */}
-      <line x1="38" y1="54" x2="46" y2="52" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.5"/>
-      <line x1="74" y1="52" x2="82" y2="54" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.5"/>
-
-      {/* Sparkles */}
-      {[[60,14],[108,32],[12,32]].map(([x,y], i) => (
-        <g key={i}>
-          <line x1={x-2.5} y1={y} x2={x+2.5} y2={y} stroke="#a7f3d0" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-          <line x1={x} y1={y-2.5} x2={x} y2={y+2.5} stroke="#a7f3d0" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-        </g>
-      ))}
+      <circle cx="55" cy="40" r="16" fill="url(#cm-hc)"/>
+      <circle cx="55" cy="40" r="16" fill="url(#cm-shine)"/>
     </svg>
   );
 }
 
-// Rank — 3D trophy cup with star (gold/amber)
+// Rank — glowing trophy, gold/amber
 function RankIllustration() {
   return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
+    <svg width="96" height="78" viewBox="0 0 110 90" fill="none">
       <defs>
-        <filter id="tr-bg"  x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="8"/>
-        </filter>
-        <filter id="tr-str" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3"/>
-        </filter>
-        <linearGradient id="tr-cup" x1="0.15" y1="0" x2="0.85" y2="1">
-          <stop offset="0%"   stopColor="#fde68a"/>
-          <stop offset="45%"  stopColor="#f59e0b"/>
-          <stop offset="100%" stopColor="#92400e"/>
-        </linearGradient>
-        <linearGradient id="tr-side" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#b45309"/>
+        <radialGradient id="tr-cup" cx="35%" cy="28%">
+          <stop offset="0%"   stopColor="#fef3c7"/>
+          <stop offset="35%"  stopColor="#fbbf24"/>
           <stop offset="100%" stopColor="#78350f"/>
-        </linearGradient>
-        <linearGradient id="tr-base" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#fbbf24"/>
+        </radialGradient>
+        <radialGradient id="tr-base" cx="35%" cy="25%">
+          <stop offset="0%"   stopColor="#fde68a"/>
           <stop offset="100%" stopColor="#92400e"/>
-        </linearGradient>
-        <linearGradient id="tr-shine" x1="0.15" y1="0" x2="0.35" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.45"/>
-          <stop offset="55%"  stopColor="white" stopOpacity="0.1"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        <radialGradient id="tr-star" cx="45%" cy="30%">
+        </radialGradient>
+        <radialGradient id="tr-star" cx="42%" cy="30%">
           <stop offset="0%"   stopColor="#fef9c3"/>
           <stop offset="100%" stopColor="#d97706"/>
         </radialGradient>
+        <linearGradient id="tr-handle" x1="0.3" y1="0" x2="0.7" y2="1">
+          <stop offset="0%"   stopColor="#fde68a"/>
+          <stop offset="100%" stopColor="#b45309"/>
+        </linearGradient>
+        <linearGradient id="tr-shine" x1="0.15" y1="0" x2="0.4" y2="1">
+          <stop offset="0%"   stopColor="white" stopOpacity="0.4"/>
+          <stop offset="100%" stopColor="white" stopOpacity="0"/>
+        </linearGradient>
+        <filter id="tr-bloom" x="-70%" y="-70%" width="240%" height="240%">
+          <feGaussianBlur stdDeviation="9"/>
+        </filter>
+        <filter id="tr-starglow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
       </defs>
 
-      {/* Bloom */}
-      <ellipse cx="60" cy="86" rx="46" ry="9" fill="#f59e0b" filter="url(#tr-bg)" opacity="0.72"/>
+      {/* Floor bloom */}
+      <ellipse cx="55" cy="84" rx="40" ry="8" fill="#f59e0b" filter="url(#tr-bloom)" opacity="0.7"/>
 
       {/* ── BASE ── */}
-      <polygon points="37,82 43,76 77,76 83,82" fill="#fbbf24" opacity="0.92"/>
-      <rect x="37" y="82" width="46" height="8" rx="2" fill="url(#tr-base)"/>
-      <polygon points="83,82 89,76 89,90 83,90" fill="#92400e" opacity="0.8"/>
+      <rect x="34" y="74" width="42" height="10" rx="3" fill="url(#tr-base)"/>
+      <rect x="34" y="74" width="42" height="4" rx="3" fill="url(#tr-shine)"/>
 
       {/* ── STEM ── */}
-      <polygon points="63,74 69,68 69,76 63,82" fill="#b45309" opacity="0.85"/>
-      <rect x="51" y="74" width="12" height="8" rx="1" fill="url(#tr-cup)"/>
-      <polygon points="51,74 57,68 69,68 63,74" fill="#fde68a" opacity="0.92"/>
+      <rect x="48" y="66" width="14" height="10" rx="2" fill="url(#tr-base)"/>
 
-      {/* ── CUP BODY ── */}
-      {/* Right depth face */}
-      <polygon points="80,22 88,16 88,62 80,68" fill="url(#tr-side)" opacity="0.88"/>
-      {/* Front face */}
-      <path d="M32,22 Q32,10 60,8 Q88,10 88,22 L80,68 Q60,74 40,68 Z" fill="url(#tr-cup)"/>
-      {/* Top face */}
-      <polygon points="32,22 39,16 81,16 88,22" fill="#fde68a" opacity="0.92"/>
-      {/* Shine */}
-      <path d="M36,24 Q38,13 54,10 Q46,13 44,27 Z" fill="url(#tr-shine)"/>
+      {/* ── CUP ── */}
+      {/* Main cup shape: wide at top, narrows toward stem */}
+      <path d="M22,20 Q22,8 55,6 Q88,8 88,20 L78,66 Q55,72 32,66 Z" fill="url(#tr-cup)"/>
+      {/* Shine overlay */}
+      <path d="M26,22 Q27,10 48,8 Q40,11 38,28 Z" fill="url(#tr-shine)"/>
 
       {/* ── HANDLES ── */}
-      <path d="M32,28 Q15,28 13,42 Q11,58 28,58 L32,55"
-        stroke="#f59e0b" strokeWidth="6" fill="none" strokeLinecap="round"/>
-      <path d="M32,28 Q15,28 13,42 Q11,58 28,58 L32,55"
-        stroke="#fde68a" strokeWidth="3.2" fill="none" strokeLinecap="round" opacity="0.55"/>
-      <path d="M88,28 Q105,28 107,42 Q109,58 92,58 L88,55"
-        stroke="#f59e0b" strokeWidth="6" fill="none" strokeLinecap="round"/>
-      <path d="M88,28 Q105,28 107,42 Q109,58 92,58 L88,55"
-        stroke="#fde68a" strokeWidth="3.2" fill="none" strokeLinecap="round" opacity="0.55"/>
+      <path d="M22,26 Q6,26 4,40 Q2,56 20,56 L24,54"
+        stroke="url(#tr-handle)" strokeWidth="6" fill="none" strokeLinecap="round"/>
+      <path d="M22,26 Q6,26 4,40 Q2,56 20,56 L24,54"
+        stroke="#fef3c7" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M88,26 Q104,26 106,40 Q108,56 90,56 L86,54"
+        stroke="url(#tr-handle)" strokeWidth="6" fill="none" strokeLinecap="round"/>
+      <path d="M88,26 Q104,26 106,40 Q108,56 90,56 L86,54"
+        stroke="#fef3c7" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.4"/>
 
       {/* ── STAR ── */}
-      <g filter="url(#tr-str)">
-        <polygon points="60,18 63.5,28 74,28 66,34 69,44 60,38 51,44 54,34 46,28 56.5,28"
-          fill="#fbbf24" opacity="0.6"/>
-      </g>
-      <polygon points="60,18 63.5,28 74,28 66,34 69,44 60,38 51,44 54,34 46,28 56.5,28"
+      {/* Glow pass */}
+      <polygon points="55,18 58.5,28 69,28 61,34 64,44 55,38 46,44 49,34 41,28 51.5,28"
+        fill="#fbbf24" filter="url(#tr-starglow)" opacity="0.7"/>
+      {/* Star */}
+      <polygon points="55,18 58.5,28 69,28 61,34 64,44 55,38 46,44 49,34 41,28 51.5,28"
         fill="url(#tr-star)"/>
-
-      {/* Sparkles */}
-      {[[112,12],[16,12],[110,76],[10,76],[60,4]].map(([x,y], i) => (
-        <g key={i}>
-          <line x1={x-3} y1={y} x2={x+3} y2={y} stroke="#fde68a" strokeWidth="1.8" strokeLinecap="round" opacity="0.7"/>
-          <line x1={x} y1={y-3} x2={x} y2={y+3} stroke="#fde68a" strokeWidth="1.8" strokeLinecap="round" opacity="0.7"/>
-        </g>
-      ))}
     </svg>
   );
 }
@@ -690,15 +663,13 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }}/>
-      {/* Illustration — top-right */}
-      <div className="absolute top-3 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
+      {/* Illustration */}
+      <div className="absolute top-0 right-0 pointer-events-none" style={{ opacity: 0.95 }}>
         <Illustration/>
       </div>
       {/* Content */}
-      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
-        <div className="flex items-center">
-          <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
-        </div>
+      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '60%' }}>
+        <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
         {description && (
           <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
         )}
@@ -744,8 +715,8 @@ export default function Progress() {
   if (view === 'split')     return <SplitPage     currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')}/>;
   if (view === 'rank')      return <RankPage      currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')}/>;
 
-  const activeGoals  = goals.filter((g) => g.status === 'active');
-  const completedGoals = goals.filter((g) => g.status === 'completed');
+  const activeGoals    = goals.filter(g => g.status === 'active');
+  const completedGoals = goals.filter(g => g.status === 'completed');
 
   const cards = [
     {
@@ -753,10 +724,8 @@ export default function Progress() {
       label: 'Analytics',
       subtitle: `${workoutLogs.length} sessions logged`,
       description: 'Dive into your performance data, track personal records, and see how your lifts have progressed over time.',
-      icon: BarChart3,
-      iconColor: '#e879f9', iconBg: 'rgba(168,85,247,0.18)',
-      accentColor: '#d946ef', accentBorder: 'rgba(168,85,247,0.45)',
-      glowColor: 'rgba(168,85,247,0.35)',
+      icon: BarChart3, iconColor: '#e879f9', iconBg: 'rgba(168,85,247,0.18)',
+      accentColor: '#d946ef', accentBorder: 'rgba(168,85,247,0.45)', glowColor: 'rgba(168,85,247,0.35)',
       illustration: AnalyticsIllustration,
     },
     {
@@ -764,10 +733,8 @@ export default function Progress() {
       label: 'Workout Split',
       subtitle: currentUser?.custom_split_name || (currentUser?.workout_split ? 'Active split' : 'No split set'),
       description: "View your weekly training schedule, heatmap, and track which sessions you've completed.",
-      icon: Dumbbell,
-      iconColor: '#818cf8', iconBg: 'rgba(99,102,241,0.18)',
-      accentColor: '#a5b4fc', accentBorder: 'rgba(99,102,241,0.45)',
-      glowColor: 'rgba(99,102,241,0.35)',
+      icon: Dumbbell, iconColor: '#818cf8', iconBg: 'rgba(99,102,241,0.18)',
+      accentColor: '#a5b4fc', accentBorder: 'rgba(99,102,241,0.45)', glowColor: 'rgba(99,102,241,0.35)',
       illustration: SplitIllustration,
     },
     {
@@ -775,10 +742,8 @@ export default function Progress() {
       label: 'Goals',
       subtitle: `${activeGoals.length} active · ${completedGoals.length} completed`,
       description: 'Set targets, log milestones, and track your progress toward every fitness goal you set.',
-      icon: Target,
-      iconColor: '#60a5fa', iconBg: 'rgba(59,130,246,0.18)',
-      accentColor: '#93c5fd', accentBorder: 'rgba(59,130,246,0.45)',
-      glowColor: 'rgba(59,130,246,0.35)',
+      icon: Target, iconColor: '#60a5fa', iconBg: 'rgba(59,130,246,0.18)',
+      accentColor: '#93c5fd', accentBorder: 'rgba(59,130,246,0.45)', glowColor: 'rgba(59,130,246,0.35)',
       illustration: GoalsIllustration,
     },
     {
@@ -786,23 +751,18 @@ export default function Progress() {
       label: 'Community',
       subtitle: gymMemberships.length === 1 ? '1 gym joined' : `${gymMemberships.length} gyms joined`,
       description: "See the leaderboard, check who's training today, and stay motivated with your gym crew.",
-      icon: Users,
-      iconColor: '#34d399', iconBg: 'rgba(16,185,129,0.18)',
-      accentColor: '#6ee7b7', accentBorder: 'rgba(16,185,129,0.45)',
-      glowColor: 'rgba(16,185,129,0.35)',
+      icon: Users, iconColor: '#34d399', iconBg: 'rgba(16,185,129,0.18)',
+      accentColor: '#6ee7b7', accentBorder: 'rgba(16,185,129,0.45)', glowColor: 'rgba(16,185,129,0.35)',
       illustration: CommunityIllustration,
-      isLink: true,
-      href: createPageUrl('Community'),
+      isLink: true, href: createPageUrl('Community'),
     },
     {
       id: 'rank',
       label: 'Rank',
       subtitle: 'Badges & achievements',
       description: 'Earn badges for hitting milestones, consistency streaks, and personal records across your training journey.',
-      icon: Award,
-      iconColor: '#fbbf24', iconBg: 'rgba(245,158,11,0.18)',
-      accentColor: '#fde68a', accentBorder: 'rgba(245,158,11,0.45)',
-      glowColor: 'rgba(245,158,11,0.35)',
+      icon: Award, iconColor: '#fbbf24', iconBg: 'rgba(245,158,11,0.18)',
+      accentColor: '#fde68a', accentBorder: 'rgba(245,158,11,0.45)', glowColor: 'rgba(245,158,11,0.35)',
       illustration: RankIllustration,
     },
   ];
