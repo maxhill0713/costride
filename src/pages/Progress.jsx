@@ -477,7 +477,11 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
       {/* ARROW — bigger, fixed width */}
       <div className="flex-shrink-0 flex items-center justify-center"
         style={{ width: 44, zIndex: 1 }}>
-        <ChevronRight style={{ width: 22, height: 22, color: iconColor }} />
+        <motion.div
+          animate={{ x: [0, 4, 0] }}
+          transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+          <ChevronRight style={{ width: 22, height: 22, color: iconColor }} />
+        </motion.div>
       </div>
     </div>
   );
