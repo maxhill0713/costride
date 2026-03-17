@@ -10,7 +10,7 @@ import {
   Pencil, Calendar, Activity, Users, AlertTriangle,
   ChevronRight, MoreHorizontal, Minus,
 } from 'lucide-react';
-import { Card, SectionTitle, Empty, Avatar, RingChart } from './DashboardPrimitives';
+import { RingChart, Avatar } from './DashboardPrimitives';
 import { SmartNudges } from './OverviewWidgets';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
