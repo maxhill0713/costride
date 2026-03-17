@@ -1666,22 +1666,10 @@ export default function Home() {
                   </div>
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
-                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
-                      let sets = '-', reps = '-';
-                      if (ex.sets) sets = ex.sets;
-                      else if (ex.set_count) sets = ex.set_count;
-                      else if (ex.num_sets) sets = ex.num_sets;
-                      else if (ex.setsReps || ex.sets_reps || ex.set_reps) { const p = String(ex.setsReps || ex.sets_reps || ex.set_reps || '').toLowerCase().split(/\s*x\s*/); sets = p[0] || '-'; }
-                      else if (ex.logged_sets?.length) sets = ex.logged_sets.length;
-                      else if (ex.sets_data?.length) sets = ex.sets_data.length;
-                      if (ex.reps) reps = ex.reps;
-                      else if (ex.rep_count) reps = ex.rep_count;
-                      else if (ex.num_reps) reps = ex.num_reps;
-                      else if (ex.setsReps || ex.sets_reps || ex.set_reps) { const p = String(ex.setsReps || ex.sets_reps || ex.set_reps || '').toLowerCase().split(/\s*x\s*/); reps = p[1] || '-'; }
-                      else if (ex.logged_sets?.[0]?.reps) reps = ex.logged_sets[0].reps;
-                      else if (ex.sets_data?.[0]?.reps) reps = ex.sets_data[0].reps;
-                      const weight = rawWeight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight ?? '-';
+                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                       let sets = ex.sets || ex.set_count || ex.num_sets || (ex.logged_sets?.length) || (ex.sets_data?.length) || '-';
+                       let reps = ex.reps || ex.rep_count || ex.num_reps || ex.logged_sets?.[0]?.reps || ex.sets_data?.[0]?.reps || '-';
+                       const weight = ex.weight_kg || ex.weight_lbs || ex.weight || ex.logged_sets?.[0]?.weight || ex.sets_data?.[0]?.weight || '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
