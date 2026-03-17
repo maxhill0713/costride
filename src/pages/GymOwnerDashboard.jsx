@@ -589,7 +589,7 @@ export default function GymOwnerDashboard() {
           Spark={Spark}
           Delta={Delta}
         />,
-    gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>,
+    gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate}/>,
   };
 
   // ── Splash screens ────────────────────────────────────────────────────────
