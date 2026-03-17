@@ -7,8 +7,6 @@ import {
   Users, Target, Sparkles, ArrowUpRight, Activity, Shield, CheckCircle,
   RefreshCw, Bell,
 } from 'lucide-react';
-import { Card, Empty, Avatar } from './DashboardPrimitives';
-
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
   blue:    '#0ea5e9',
