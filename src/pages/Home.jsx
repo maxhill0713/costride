@@ -652,14 +652,6 @@ export default function Home() {
   }
 
   const memberGym = memberGymData || null;
-
-  // Determine if today is a rest day (not in training_days) and whether the user has overridden to a training day
-  const todayIsRestDay = (() => {
-    const trainingDays = currentUser?.training_days || [];
-    return !trainingDays.includes(todayDowAdjusted);
-  })();
-  const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
-
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
