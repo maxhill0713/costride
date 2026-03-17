@@ -23,6 +23,48 @@ const T = {
   divider: 'rgba(255,255,255,0.05)',
 };
 
+// ── Layout primitives ──────────────────────────────────────────────────────────
+export const Card = ({ children, style = {}, className = '', onClick }) => (
+  <div className={className} onClick={onClick}
+    style={{ background: 'var(--card,#111827)', border: '1px solid var(--border,rgba(255,255,255,0.07))', borderRadius: 16, ...style }}>
+    {children}
+  </div>
+);
+
+export const SectionTitle = ({ children, action, actionLabel }) => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text1,#f1f5f9)', margin: 0 }}>{children}</p>
+    {action && (
+      <button onClick={action} style={{ fontSize: 11, fontWeight: 600, color: 'var(--cyan,#00d4ff)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+        {actionLabel || 'View all'} <ChevronRight style={{ width: 11, height: 11 }}/>
+      </button>
+    )}
+  </div>
+);
+
+export const Empty = ({ icon: Icon, label }) => (
+  <div style={{ padding: '28px 16px', textAlign: 'center' }}>
+    <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.14)', margin: '0 auto 10px' }}>
+      <Icon style={{ width: 18, height: 18, color: 'rgba(14,165,233,0.4)' }}/>
+    </div>
+    <p style={{ fontSize: 12, color: 'var(--text3,#475569)', fontWeight: 500, margin: 0 }}>{label}</p>
+  </div>
+);
+
+export const RingChart = ({ pct = 70, size = 64, stroke = 5, color = '#0ea5e9' }) => {
+  const r    = (size - stroke * 2) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = circ * (pct / 100);
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+        style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.22,1,0.36,1)' }}/>
+    </svg>
+  );
+};
+
 // ── Avatar ─────────────────────────────────────────────────────────────────────
 function Avatar({ name = '?', size = 32, src = null }) {
   const colors = [
