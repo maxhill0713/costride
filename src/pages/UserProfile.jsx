@@ -138,18 +138,23 @@ export default function UserProfile() {
             </div>
           </div>
 
-          <div className="flex flex-1 justify-around items-center">
-            <div className="text-center">
-              <p className="text-[18px] font-black text-white leading-none">{favouritePosts.length}</p>
-              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[18px] font-black text-white leading-none">{friendsList.length}</p>
-              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[18px] font-black text-white leading-none">{streak}</p>
-              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
+          <div className="flex flex-col gap-1 justify-center flex-1">
+            {profileUser.username && (
+              <p className="text-[12px] text-slate-400 font-semibold">@{profileUser.username}</p>
+            )}
+            <div className="flex justify-around items-center">
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{favouritePosts.length}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{friendsList.length}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[18px] font-black text-white leading-none">{streak}</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
+              </div>
             </div>
           </div>
         </div>
