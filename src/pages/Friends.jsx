@@ -727,7 +727,7 @@ export default function Friends() {
                 <div className="relative flex-1 w-70">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
                   <Input
-                    placeholder="Add Friends..."
+                    placeholder="Search by @username..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="relative top-1 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-base md:text-sm h-9 transition-all duration-200"
