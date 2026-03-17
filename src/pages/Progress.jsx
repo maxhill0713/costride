@@ -429,10 +429,10 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        transform: pressed ? 'scale(0.977) translateY(2px)' : 'scale(1)',
+        transform: pressed ? 'translateY(4px)' : 'translateY(0)',
         boxShadow: pressed
-          ? `0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px ${glowColor}`
-          : `0 4px 24px rgba(0,0,0,0.4)`,
+          ? 'none'
+          : `0 4px 0 0 rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.45), 0 0 28px 0px ${glowColor}`,
         transition: pressed
           ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
