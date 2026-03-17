@@ -1,9 +1,15 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { format, subDays } from 'date-fns';
-import { Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight, TrendingUp, Zap, Heart, MessageCircle, Dumbbell, MoreHorizontal, Trash2 } from 'lucide-react';
+import { format, subDays, differenceInDays } from 'date-fns';
+import {
+  Plus, Trophy, BarChart2, MessageSquarePlus, Calendar, ChevronRight,
+  TrendingUp, TrendingDown, Zap, Heart, MessageCircle, Dumbbell,
+  MoreHorizontal, Trash2, Eye, Flame, AlertTriangle, Star, Award,
+  Users, Target, Sparkles, ArrowUpRight, Activity, Shield, CheckCircle,
+  RefreshCw, Bell
+} from 'lucide-react';
 import { Card, Empty, Avatar } from './DashboardPrimitives';
 
-// ── Responsive styles injected once ──────────────────────────────────────────
+// ── Responsive styles ──────────────────────────────────────────────────────────
 const MOBILE_CSS = `
   .tc-root {
     display: grid;
@@ -12,133 +18,35 @@ const MOBILE_CSS = `
     height: 100%;
     max-width: 100%;
   }
-  .tc-left {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    min-height: 0;
-  }
-  .tc-actions {
-    display: grid;
-    grid-template-columns: repeat(5,1fr);
-    gap: 10px;
-    flex-shrink: 0;
-    padding-bottom: 12px;
-  }
-  .tc-action-btn {
-    border-radius: 14px;
-    padding: 16px 14px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.18s, box-shadow 0.18s;
-    min-height: 96px;
-  }
-  .tc-tabs {
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 12px;
-    gap: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    flex-shrink: 0;
-  }
+  .tc-left { display: flex; flex-direction: column; height: 100%; overflow: hidden; min-height: 0; }
+  .tc-actions { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; flex-shrink: 0; padding-bottom: 12px; }
+  .tc-action-btn { border-radius: 14px; padding: 16px 14px; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.18s, box-shadow 0.18s; min-height: 96px; }
+  .tc-tabs { display: flex; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 12px; gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 0; }
   .tc-tabs::-webkit-scrollbar { display: none; }
-  .tc-tab-btn {
-    padding: 7px 16px;
-    font-size: 12px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .tc-feed {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
-  }
-  .tc-feed-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    align-items: start;
-    padding-bottom: 24px;
-  }
-  .tc-sidebar {
-    height: 100%;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 280px;
-  }
-
+  .tc-tab-btn { padding: 7px 16px; font-size: 12px; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+  .tc-feed { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; }
+  .tc-feed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; padding-bottom: 24px; }
+  .tc-sidebar { height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; min-width: 280px; }
   @media (max-width: 768px) {
-    .tc-root {
-      grid-template-columns: 1fr !important;
-      height: auto !important;
-      overflow: visible !important;
-    }
-    .tc-left {
-      height: auto !important;
-      overflow: visible !important;
-      min-height: unset !important;
-    }
-    .tc-actions {
-      grid-template-columns: repeat(3, 1fr) !important;
-      gap: 8px !important;
-    }
-    .tc-action-btn {
-      min-height: 80px !important;
-      padding: 12px 10px !important;
-    }
-    .tc-action-label {
-      font-size: 11px !important;
-    }
-    .tc-action-sub {
-      font-size: 9px !important;
-    }
-    .tc-feed {
-      overflow: visible !important;
-      min-height: unset !important;
-      flex: unset !important;
-    }
-    .tc-feed-grid {
-      grid-template-columns: 1fr !important;
-    }
-    .tc-feed-col {
-      display: contents !important;
-    }
-    .tc-sidebar {
-      height: auto !important;
-      overflow: visible !important;
-      min-width: unset !important;
-    }
-    .tc-tab-btn {
-      padding: 7px 12px !important;
-      font-size: 11px !important;
-    }
+    .tc-root { grid-template-columns: 1fr !important; height: auto !important; overflow: visible !important; }
+    .tc-left { height: auto !important; overflow: visible !important; min-height: unset !important; }
+    .tc-actions { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+    .tc-action-btn { min-height: 80px !important; padding: 12px 10px !important; }
+    .tc-action-label { font-size: 11px !important; }
+    .tc-action-sub { font-size: 9px !important; }
+    .tc-feed { overflow: visible !important; min-height: unset !important; flex: unset !important; }
+    .tc-feed-grid { grid-template-columns: 1fr !important; }
+    .tc-feed-col { display: contents !important; }
+    .tc-sidebar { height: auto !important; overflow: visible !important; min-width: unset !important; }
+    .tc-tab-btn { padding: 7px 12px !important; font-size: 11px !important; }
   }
-
   @media (max-width: 480px) {
-    .tc-actions {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-    .tc-action-btn {
-      min-height: 72px !important;
-      padding: 10px 9px !important;
-    }
+    .tc-actions { grid-template-columns: repeat(2, 1fr) !important; }
+    .tc-action-btn { min-height: 72px !important; padding: 10px 9px !important; }
   }
 `;
 
-// ── 3-dot menu delete button ──────────────────────────────────────────────────
+// ── 3-dot delete menu ──────────────────────────────────────────────────────────
 function DeleteBtn({ onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -150,15 +58,13 @@ function DeleteBtn({ onDelete }) {
   }, [open]);
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+      <button onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
         style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 6, cursor: 'pointer' }}>
         <MoreHorizontal style={{ width: 13, height: 13, color: 'rgba(255,255,255,0.5)' }}/>
       </button>
       {open && (
         <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: '#1a1f36', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
+          <button onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
@@ -170,14 +76,22 @@ function DeleteBtn({ onDelete }) {
   );
 }
 
-// ── Feed post card ────────────────────────────────────────────────────────────
-function FeedCard({ post, onDelete }) {
+// ── Feed post card — now with engagement tier indicator ───────────────────────
+function FeedCard({ post, onDelete, isTopPerformer, isLowPerformer }) {
   const likes    = post.likes?.length    || 0;
   const comments = post.comments?.length || 0;
   const hasImage = post.image_url || post.media_url;
   const content  = post.content || post.title || '';
+  const total    = likes + comments;
+
   return (
-    <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ borderRadius: 12, background: 'var(--card2)', border: `1px solid ${isTopPerformer ? 'rgba(16,185,129,0.3)' : isLowPerformer ? 'rgba(239,68,68,0.15)' : 'var(--border)'}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {isTopPerformer && (
+        <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, fontSize: 9, fontWeight: 800, color: '#34d399', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 5, padding: '2px 7px' }}>⭐ Top post</div>
+      )}
+      {isLowPerformer && total === 0 && (
+        <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, fontSize: 9, fontWeight: 800, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 5, padding: '2px 7px' }}>No engagement</div>
+      )}
       <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <Avatar name={post.author_name || post.gym_name || 'G'} size={30}/>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -202,12 +116,7 @@ function FeedCard({ post, onDelete }) {
       )}
       {hasImage && (
         <div style={{ overflow: 'hidden' }}>
-          <img
-            src={post.image_url || post.media_url}
-            alt=""
-            style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
-            onError={e => e.currentTarget.parentElement.style.display = 'none'}
-          />
+          <img src={post.image_url || post.media_url} alt="" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} onError={e => e.currentTarget.parentElement.style.display = 'none'}/>
         </div>
       )}
       <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -217,6 +126,11 @@ function FeedCard({ post, onDelete }) {
         <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: comments > 0 ? '#38bdf8' : 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <MessageCircle style={{ width: 14, height: 14 }}/> {comments}
         </button>
+        {total > 0 && (
+          <div style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: total >= 5 ? '#34d399' : 'var(--text3)' }}>
+            {total} interactions
+          </div>
+        )}
       </div>
     </div>
   );
@@ -249,13 +163,14 @@ function EventCard({ event, now, onDelete }) {
   );
 }
 
-// ── Challenge card ────────────────────────────────────────────────────────────
+// ── Challenge card ─────────────────────────────────────────────────────────────
 function ChallengeCard({ challenge, now, onDelete }) {
   const start     = new Date(challenge.start_date), end = new Date(challenge.end_date);
   const totalDays = Math.max(1, Math.floor((end - start) / 86400000));
   const elapsed   = Math.max(0, Math.floor((now - start) / 86400000));
   const remaining = Math.max(0, totalDays - elapsed);
   const pct       = Math.min(100, Math.round((elapsed / totalDays) * 100));
+  const parts     = challenge.participants?.length || 0;
   return (
     <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(245,158,11,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: 90, background: 'linear-gradient(135deg,#1a1033,#3b1a5e,#6d28d9)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -267,7 +182,8 @@ function ChallengeCard({ challenge, now, onDelete }) {
       <div style={{ padding: '10px 14px 12px' }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 6px' }}>{challenge.title}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{challenge.participants?.length || 0} participants</span>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{parts} participants</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: pct >= 75 ? '#f59e0b' : '#a78bfa' }}>{pct}% done</span>
         </div>
         <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.8s ease' }}/>
@@ -277,7 +193,7 @@ function ChallengeCard({ challenge, now, onDelete }) {
   );
 }
 
-// ── Class type config ─────────────────────────────────────────────────────────
+// ── Class type config ──────────────────────────────────────────────────────────
 const CLASS_TYPE_CONFIG_DASH = {
   hiit:     { color: '#f87171', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.25)',   label: 'HIIT'     },
   yoga:     { color: '#34d399', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.25)',  label: 'Yoga'     },
@@ -309,7 +225,6 @@ function getClassTypeDash(c) {
   if (n.includes('pilates') || n.includes('barre')) return 'pilates';
   return 'default';
 }
-
 function ClassCard({ gymClass, onDelete }) {
   const typeKey = getClassTypeDash(gymClass);
   const cfg = CLASS_TYPE_CONFIG_DASH[typeKey] || CLASS_TYPE_CONFIG_DASH.default;
@@ -344,23 +259,367 @@ function ClassCard({ gymClass, onDelete }) {
   );
 }
 
-// ── Poll card ─────────────────────────────────────────────────────────────────
-function PollCard({ poll, onDelete }) {
-  const votes = poll.voters?.length || 0;
+// ── Poll card ──────────────────────────────────────────────────────────────────
+function PollCard({ poll, onDelete, allMemberships }) {
+  const votes   = poll.voters?.length || 0;
+  const total   = allMemberships?.length || 0;
+  const partPct = total > 0 ? Math.round((votes / total) * 100) : 0;
   return (
     <div style={{ borderRadius: 12, background: 'var(--card2)', border: '1px solid rgba(139,92,246,0.15)', padding: '12px 14px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <BarChart2 style={{ width: 13, height: 13, color: '#a78bfa' }}/>
         <span style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 5, padding: '1px 7px' }}>Poll</span>
+        {partPct > 0 && (
+          <span style={{ fontSize: 9, fontWeight: 700, color: partPct >= 50 ? '#34d399' : '#f59e0b', background: partPct >= 50 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', borderRadius: 4, padding: '1px 6px' }}>
+            {partPct}% voted
+          </span>
+        )}
         <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(poll.id)}/></div>
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', margin: '0 0 8px' }}>{poll.title}</p>
-      <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>{votes} {votes === 1 ? 'vote' : 'votes'}</div>
+      <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 6 }}>
+        <div style={{ height: '100%', width: `${partPct}%`, borderRadius: 99, background: 'linear-gradient(90deg,#7c3aed,#a78bfa)', transition: 'width 0.6s ease' }}/>
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>{votes} {votes === 1 ? 'vote' : 'votes'}{total > 0 ? ` of ${total} members` : ''}</div>
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── NEW: Community Activity Insights ─────────────────────────────────────────
+// Shows posts, likes, comments, poll votes trend over 7 days
+function CommunityActivityWidget({ allPosts, polls, challenges, now }) {
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const day   = subDays(now, 6 - i);
+    const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    const end   = new Date(start.getTime() + 86400000);
+    const posts  = allPosts.filter(p => { const d = new Date(p.created_date); return d >= start && d < end; }).length;
+    const likes  = allPosts.filter(p => { const d = new Date(p.created_date); return d >= start && d < end; }).reduce((s, p) => s + (p.likes?.length || 0), 0);
+    const comments = allPosts.filter(p => { const d = new Date(p.created_date); return d >= start && d < end; }).reduce((s, p) => s + (p.comments?.length || 0), 0);
+    return { label: format(day, 'EEE'), posts, likes, comments, total: posts + likes + comments };
+  }), [allPosts, now]);
+
+  const maxVal  = Math.max(...days.map(d => d.total), 1);
+  const thisWeek = days.reduce((s, d) => s + d.total, 0);
+  const trend    = days[6].total >= days[0].total;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Community Activity</div>
+          <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>Posts, likes & comments</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontSize: 18, fontWeight: 900, color: trend ? '#10b981' : '#f59e0b', letterSpacing: '-0.04em' }}>{thisWeek}</span>
+          {trend ? <TrendingUp style={{ width: 12, height: 12, color: '#10b981' }}/> : <TrendingDown style={{ width: 12, height: 12, color: '#f59e0b' }}/>}
+        </div>
+      </div>
+
+      {/* Stacked bars by day */}
+      <div style={{ display: 'flex', gap: 4, height: 48, alignItems: 'flex-end', marginBottom: 6 }}>
+        {days.map((d, i) => (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 40, gap: 1 }}>
+              {d.total === 0 ? (
+                <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.06)' }}/>
+              ) : (
+                <>
+                  {d.comments > 0 && <div style={{ height: Math.max(3, (d.comments / maxVal) * 36), borderRadius: 2, background: '#38bdf8', opacity: 0.9 }}/>}
+                  {d.likes > 0    && <div style={{ height: Math.max(3, (d.likes    / maxVal) * 36), borderRadius: 2, background: '#f87171', opacity: 0.9 }}/>}
+                  {d.posts > 0    && <div style={{ height: Math.max(3, (d.posts    / maxVal) * 36), borderRadius: 2, background: '#a78bfa', opacity: 0.9 }}/>}
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+        {days.map((d, i) => (
+          <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: 'var(--text3)' }}>{d.label}</div>
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        {[{ color: '#a78bfa', label: 'Posts' }, { color: '#f87171', label: 'Likes' }, { color: '#38bdf8', label: 'Comments' }].map((l, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: l.color }}/>
+            <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--text3)' }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ── NEW: Top & Low Performing Content ─────────────────────────────────────────
+function ContentPerformanceWidget({ allPosts, openModal }) {
+  const ranked = useMemo(() => {
+    return [...allPosts]
+      .map(p => ({ ...p, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 }))
+      .sort((a, b) => b.score - a.score);
+  }, [allPosts]);
+
+  const top3  = ranked.slice(0, 3);
+  const low3  = ranked.filter(p => p.score === 0).slice(0, 3);
+
+  if (allPosts.length === 0) return null;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Performance</div>
+
+      {/* Top performers */}
+      {top3.length > 0 && (
+        <>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>⭐ Top performing</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 12 }}>
+            {top3.map((p, i) => (
+              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 9px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                <div style={{ width: 18, height: 18, borderRadius: 5, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#34d399', flexShrink: 0 }}>{i + 1}</div>
+                <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {(p.title || p.content || '').split('\n')[0].slice(0, 40) || 'Post'}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                  <span style={{ fontSize: 10, color: '#f87171' }}>♥ {p.likes?.length || 0}</span>
+                  <span style={{ fontSize: 10, color: '#38bdf8' }}>💬 {p.comments?.length || 0}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Low performers / no engagement */}
+      {low3.length > 0 && (
+        <>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>📉 No engagement</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+            {low3.map((p, i) => (
+              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 9px', borderRadius: 8, background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.1)' }}>
+                <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {(p.title || p.content || '').split('\n')[0].slice(0, 40) || 'Post'}
+                </span>
+                <span style={{ fontSize: 9, color: '#64748b' }}>{p.created_date ? format(new Date(p.created_date), 'MMM d') : ''}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => openModal('post')} style={{ width: '100%', fontSize: 11, fontWeight: 700, color: '#38bdf8', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', textAlign: 'center' }}>
+            Post something new →
+          </button>
+        </>
+      )}
+    </Card>
+  );
+}
+
+// ── NEW: Challenge Completion Rates ────────────────────────────────────────────
+function ChallengeCompletionWidget({ challenges, allMemberships, now }) {
+  const data = useMemo(() => {
+    return challenges
+      .filter(c => c.start_date && c.end_date)
+      .map(c => {
+        const end     = new Date(c.end_date);
+        const isEnded = end < now;
+        const parts   = c.participants?.length || 0;
+        const members = allMemberships.length || 1;
+        const joinPct = Math.round((parts / members) * 100);
+        const compPct = c.completions ? Math.round((c.completions / Math.max(parts, 1)) * 100) : null;
+        return { ...c, isEnded, parts, joinPct, compPct };
+      })
+      .sort((a, b) => b.parts - a.parts)
+      .slice(0, 4);
+  }, [challenges, allMemberships, now]);
+
+  if (data.length === 0) return null;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Challenge Uptake</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {data.map((c, i) => (
+          <div key={c.id || i}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: 8 }}>{c.title}</span>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>{c.parts} joined</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: c.joinPct >= 50 ? '#34d399' : c.joinPct >= 25 ? '#f59e0b' : '#f87171' }}>{c.joinPct}%</span>
+              </div>
+            </div>
+            <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${c.joinPct}%`, borderRadius: 99, background: c.joinPct >= 50 ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#7c3aed,#f59e0b)', transition: 'width 0.6s ease' }}/>
+            </div>
+            {c.joinPct < 25 && (
+              <div style={{ fontSize: 9, color: '#f87171', marginTop: 2, fontWeight: 600 }}>Low uptake — promote this challenge</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ── NEW: Engagement Trend (week over week) ────────────────────────────────────
+function EngagementTrendWidget({ allPosts, polls, challenges, now }) {
+  const { thisWeek, lastWeek, change } = useMemo(() => {
+    const weekStart = subDays(now, 7);
+    const prevStart = subDays(now, 14);
+
+    const scoreForPeriod = (start, end) => {
+      const posts = allPosts.filter(p => {
+        const d = new Date(p.created_date);
+        return d >= start && d < end;
+      });
+      const postEng = posts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0);
+      const pollEng = polls.filter(p => {
+        const d = new Date(p.created_date || 0);
+        return d >= start && d < end;
+      }).reduce((s, p) => s + (p.voters?.length || 0), 0);
+      return postEng + pollEng;
+    };
+
+    const thisWeek = scoreForPeriod(weekStart, now);
+    const lastWeek = scoreForPeriod(prevStart, weekStart);
+    const change   = lastWeek === 0 ? 0 : Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+    return { thisWeek, lastWeek, change };
+  }, [allPosts, polls, now]);
+
+  const up = change >= 0;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Engagement Trend</div>
+          <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>Week over week</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          {up ? <TrendingUp style={{ width: 14, height: 14, color: '#10b981' }}/> : <TrendingDown style={{ width: 14, height: 14, color: '#ef4444' }}/>}
+          <span style={{ fontSize: 14, fontWeight: 900, color: up ? '#10b981' : '#ef4444', letterSpacing: '-0.02em' }}>
+            {up ? '+' : ''}{change}%
+          </span>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {[
+          { label: 'This week', val: thisWeek, color: up ? '#10b981' : '#ef4444' },
+          { label: 'Last week', val: lastWeek, color: '#64748b' },
+        ].map((s, i) => (
+          <div key={i} style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: s.color, letterSpacing: '-0.04em' }}>{s.val}</div>
+            <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginTop: 2, textTransform: 'uppercase' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+      {change < 0 && (
+        <div style={{ marginTop: 10, padding: '7px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+          <div style={{ fontSize: 10, color: '#f87171', fontWeight: 600 }}>Engagement dropped — consider a new challenge or poll to re-activate members</div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── NEW: Member Content Leaderboard ───────────────────────────────────────────
+// Who in your community is posting and engaging most
+function MemberEngagementLeaderboard({ allPosts, avatarMap, allMemberships }) {
+  const leaders = useMemo(() => {
+    const scores = {};
+    allPosts.forEach(p => {
+      if (!p.user_id) return;
+      if (!scores[p.user_id]) scores[p.user_id] = { userId: p.user_id, name: p.author_name || 'Member', posts: 0, likes: 0, comments: 0 };
+      scores[p.user_id].posts++;
+    });
+    allPosts.forEach(p => {
+      (p.comments || []).forEach(c => {
+        const id = c.user_id || c.author_id;
+        if (!id) return;
+        if (!scores[id]) scores[id] = { userId: id, name: c.author_name || 'Member', posts: 0, likes: 0, comments: 0 };
+        scores[id].comments++;
+      });
+    });
+    return Object.values(scores)
+      .map(s => ({ ...s, score: s.posts * 3 + s.comments * 2 + s.likes }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+  }, [allPosts]);
+
+  if (leaders.length === 0) return null;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>🏆 Top Community Contributors</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        {leaders.map((m, i) => (
+          <div key={m.userId} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 18, height: 18, borderRadius: 5, background: i === 0 ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: i === 0 ? '#f59e0b' : 'var(--text3)', flexShrink: 0 }}>
+              {i + 1}
+            </div>
+            <Avatar name={m.name} size={24} src={avatarMap[m.userId] || null}/>
+            <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {m.posts > 0    && <span style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa' }}>{m.posts}p</span>}
+              {m.comments > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8' }}>{m.comments}c</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ── NEW: What to post today smart panel ───────────────────────────────────────
+function WhatToPostPanel({ allPosts, polls, challenges, events, now, openModal }) {
+  const suggestions = useMemo(() => {
+    const items = [];
+    const daysSinceLastPost = allPosts.length > 0
+      ? differenceInDays(now, new Date(allPosts[0]?.created_date || now))
+      : 999;
+
+    if (daysSinceLastPost >= 3) {
+      items.push({ color: '#f59e0b', icon: MessageSquarePlus, label: `No post in ${daysSinceLastPost} days — keep your feed active`, action: 'Post now', fn: () => openModal('post') });
+    }
+
+    const activePollCount = polls.filter(p => !p.ended_at).length;
+    if (activePollCount === 0) {
+      items.push({ color: '#a78bfa', icon: BarChart2, label: 'No active poll — polls drive high engagement', action: 'Create poll', fn: () => openModal('poll') });
+    }
+
+    const activeChallenge = challenges.find(c => c.status === 'active');
+    if (!activeChallenge) {
+      items.push({ color: '#fbbf24', icon: Trophy, label: 'No active challenge — members lose motivation without one', action: 'Start one', fn: () => openModal('challenge') });
+    }
+
+    const upcomingEvent = events.find(e => new Date(e.event_date) >= now);
+    if (!upcomingEvent) {
+      items.push({ color: '#34d399', icon: Calendar, label: 'No upcoming events — schedule something to build excitement', action: 'Add event', fn: () => openModal('event') });
+    }
+
+    return items.slice(0, 3);
+  }, [allPosts, polls, challenges, events, now]);
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <Card style={{ padding: 16, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <Sparkles style={{ width: 13, height: 13, color: '#0ea5e9' }}/>
+        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Content suggestions</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {suggestions.map((s, i) => (
+          <div key={i} onClick={s.fn} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 9, background: `${s.color}08`, border: `1px solid ${s.color}20`, cursor: 'pointer', transition: 'background 0.14s' }}>
+            <s.icon style={{ width: 12, height: 12, color: s.color, flexShrink: 0 }}/>
+            <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4 }}>{s.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: s.color, whiteSpace: 'nowrap', padding: '2px 7px', borderRadius: 5, background: `${s.color}15`, flexShrink: 0 }}>{s.action}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
   openModal, now, leaderboardView, setLeaderboardView, allMemberships = [], classes = [],
@@ -376,6 +635,14 @@ export default function TabContent({
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalChalPart    = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+
+  // Top/low performers for feed badge decoration
+  const postScores = useMemo(() => {
+    return allPosts.map(p => ({ id: p.id, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 }));
+  }, [allPosts]);
+  const maxScore = Math.max(...postScores.map(p => p.score), 1);
+  const topPostIds = new Set(postScores.filter(p => p.score >= maxScore * 0.7 && p.score > 0).map(p => p.id));
+  const lowPostIds = new Set(postScores.filter(p => p.score === 0).map(p => p.id));
 
   const FILTERS = isCoach ? [
     { id: 'classes',    label: 'My Classes'  },
@@ -393,13 +660,13 @@ export default function TabContent({
 
   const feedItems = useMemo(() => {
     switch (activeFilter) {
-      case 'members':    return { posts: memberPosts,     events: [],            challenges: [],               polls: [],    classes: []     };
-      case 'gym':        return { posts: gymPosts,        events: [],            challenges: [],               polls: [],    classes: []     };
-      case 'challenges': return { posts: [],              events: [],            challenges: activeChallenges, polls: [],    classes: []     };
-      case 'classes':    return { posts: [],              events: [],            challenges: [],               polls: [],    classes         };
-      case 'polls':      return { posts: [],              events: [],            challenges: [],               polls,        classes: []     };
-      case 'events':     return { posts: [],              events: upcomingEvents, challenges: [],              polls: [],    classes: []     };
-      default:           return { posts: allPosts,        events: upcomingEvents, challenges: activeChallenges, polls,       classes };
+      case 'members':    return { posts: memberPosts, events: [], challenges: [], polls: [], classes: [] };
+      case 'gym':        return { posts: gymPosts,    events: [], challenges: [], polls: [], classes: [] };
+      case 'challenges': return { posts: [], events: [], challenges: activeChallenges, polls: [], classes: [] };
+      case 'classes':    return { posts: [], events: [], challenges: [], polls: [], classes };
+      case 'polls':      return { posts: [], events: [], challenges: [], polls, classes: [] };
+      case 'events':     return { posts: [], events: upcomingEvents, challenges: [], polls: [], classes: [] };
+      default:           return { posts: allPosts, events: upcomingEvents, challenges: activeChallenges, polls, classes };
     }
   }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
 
@@ -418,14 +685,15 @@ export default function TabContent({
   const col2 = flatFeedItems.filter((_, i) => i % 2 === 1);
 
   const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}      onDelete={onDeletePost}/>;
+    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}      onDelete={onDeletePost} isTopPerformer={topPostIds.has(item.data.id)} isLowPerformer={lowPostIds.has(item.data.id)}/>;
     if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     now={now} onDelete={onDeleteEvent}/>;
     if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} now={now} onDelete={onDeleteChallenge}/>;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}/>;
+    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll} allMemberships={allMemberships}/>;
     if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass}/>;
     return null;
   };
 
+  // Milestones
   const milestones = useMemo(() => {
     const acc = {}, userIdByName = {};
     checkIns.forEach(c => {
@@ -499,7 +767,6 @@ export default function TabContent({
 
         {/* ── LEFT ── */}
         <div className="tc-left">
-
           {/* Action cards */}
           <div className="tc-actions" style={{ flexShrink: 0 }}>
             {(isCoach ? [
@@ -529,20 +796,12 @@ export default function TabContent({
             ))}
           </div>
 
-          {/* Filter tabs — horizontally scrollable on mobile */}
+          {/* Filter tabs */}
           <div className="tc-tabs">
             <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', padding: '7px 16px 7px 2px', marginBottom: -1, flexShrink: 0 }}>Feed</span>
             {FILTERS.map(f => (
-              <button
-                key={f.id}
-                onClick={() => setActiveFilter(f.id)}
-                className="tc-tab-btn"
-                style={{
-                  fontWeight: activeFilter === f.id ? 700 : 500,
-                  color: activeFilter === f.id ? 'var(--text1)' : 'var(--text3)',
-                  borderBottom: activeFilter === f.id ? '2px solid #a78bfa' : '2px solid transparent',
-                  marginBottom: -1,
-                }}>
+              <button key={f.id} onClick={() => setActiveFilter(f.id)} className="tc-tab-btn"
+                style={{ fontWeight: activeFilter === f.id ? 700 : 500, color: activeFilter === f.id ? 'var(--text1)' : 'var(--text3)', borderBottom: activeFilter === f.id ? '2px solid #a78bfa' : '2px solid transparent', marginBottom: -1 }}>
                 {f.label}
               </button>
             ))}
@@ -575,11 +834,9 @@ export default function TabContent({
 
         {/* ── RIGHT SIDEBAR ── */}
         <div className="tc-sidebar">
-
           {isCoach ? (
-            // ── COACH SIDEBAR ──────────────────────────────────────────────
+            // ── COACH SIDEBAR ────────────────────────────────────────────────
             <>
-              {/* My Content Impact */}
               <Card style={{ padding: 16, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>My Content Impact</div>
@@ -602,17 +859,18 @@ export default function TabContent({
                 </div>
               </Card>
 
-              {/* My Classes summary */}
+              <EngagementTrendWidget allPosts={allPosts} polls={polls} challenges={challenges} now={now}/>
+
               <Card style={{ padding: 16, flexShrink: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em', marginBottom: 12 }}>My Classes & Events</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {[
-                    { count: classes.length,          label: 'My Classes',           color: '#a78bfa' },
-                    { count: upcomingEvents.length,    label: 'Upcoming Events',      color: '#34d399' },
-                    { count: activeChallenges.length,  label: 'Active Challenges',    color: '#fbbf24' },
-                    { count: polls.length,             label: 'Active Polls',         color: '#38bdf8' },
+                    { count: classes.length,         label: 'My Classes',        color: '#a78bfa' },
+                    { count: upcomingEvents.length,   label: 'Upcoming Events',   color: '#34d399' },
+                    { count: activeChallenges.length, label: 'Active Challenges', color: '#fbbf24' },
+                    { count: polls.length,            label: 'Active Polls',      color: '#38bdf8' },
                   ].map((s, i, arr) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                       <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 26 }}>{s.count}</span>
                       <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{s.label}</span>
                     </div>
@@ -620,16 +878,13 @@ export default function TabContent({
                 </div>
               </Card>
 
-              {/* Unreached clients */}
               {unreachedMembers.length > 0 && (
                 <Card style={{ padding: 16, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                     <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Clients Not Reached</div>
                     <div style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 6px' }}>{unreachedMembers.length}</div>
                   </div>
-                  <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>
-                    Clients with no check-ins, poll votes, or challenge joins in 30 days.
-                  </p>
+                  <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, fontWeight: 500, lineHeight: 1.4 }}>No check-ins, poll votes, or challenge joins in 30 days.</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {unreachedMembers.map((m, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -642,32 +897,12 @@ export default function TabContent({
                 </Card>
               )}
 
-              {/* My recent posts */}
-              <Card style={{ padding: 16, flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>My Recent Posts</div>
-                  <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-                    <Plus style={{ width: 10, height: 10 }}/>
-                  </button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {posts.length > 0 ? posts.slice(0, 4).map((post) => (
-                    <div key={post.id} style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {post.content?.split('\n')[0] || post.title || 'Post'}
-                    </div>
-                  )) : (
-                    <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
-                  )}
-                </div>
-              </Card>
-
-              {/* Client milestones */}
               {milestones.length > 0 && (
                 <Card style={{ padding: 16, flexShrink: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>🎯 Client Milestones</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {milestones.map((m, i) => (
-                      <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                      <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                         <Avatar name={m.name} size={30} src={avatarMap[m.user_id] || null}/>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
@@ -684,8 +919,11 @@ export default function TabContent({
               )}
             </>
           ) : (
-            // ── GYM OWNER SIDEBAR ──────────────────────────────────────────
+            // ── GYM OWNER SIDEBAR ─────────────────────────────────────────────
             <>
+              {/* Content suggestions */}
+              <WhatToPostPanel allPosts={allPosts} polls={polls} challenges={challenges} events={events} now={now} openModal={openModal}/>
+
               {/* Engagement Score */}
               <Card style={{ padding: 16, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -701,7 +939,7 @@ export default function TabContent({
                     { label: 'Likes',        val: allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0), color: '#f87171' },
                     { label: 'Comments',     val: allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0), color: '#38bdf8' },
                     { label: 'Poll votes',   val: polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0), color: '#a78bfa' },
-                    { label: 'In challenge', val: totalChalPart,                                                 color: '#fbbf24' },
+                    { label: 'In challenge', val: totalChalPart,                                                color: '#fbbf24' },
                   ].map((s, i) => (
                     <div key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: s.color }}>
                       {s.val} {s.label}
@@ -709,6 +947,21 @@ export default function TabContent({
                   ))}
                 </div>
               </Card>
+
+              {/* Engagement trend WoW */}
+              <EngagementTrendWidget allPosts={allPosts} polls={polls} challenges={challenges} now={now}/>
+
+              {/* Community activity 7-day chart */}
+              <CommunityActivityWidget allPosts={allPosts} polls={polls} challenges={challenges} now={now}/>
+
+              {/* Content performance: top & low */}
+              <ContentPerformanceWidget allPosts={allPosts} openModal={openModal}/>
+
+              {/* Challenge uptake rates */}
+              <ChallengeCompletionWidget challenges={challenges} allMemberships={allMemberships} now={now}/>
+
+              {/* Top community contributors */}
+              <MemberEngagementLeaderboard allPosts={allPosts} avatarMap={avatarMap} allMemberships={allMemberships}/>
 
               {/* Posting Cadence */}
               <Card style={{ padding: 16, flexShrink: 0 }}>
@@ -730,6 +983,9 @@ export default function TabContent({
                 </div>
                 <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>
                   {cadenceData.filter(d => d.count > 0).length} active days this week
+                  {cadenceData.filter(d => d.count > 0).length < 3 && (
+                    <span style={{ color: '#f59e0b', marginLeft: 6, fontWeight: 700 }}>— post more often</span>
+                  )}
                 </div>
               </Card>
 
@@ -755,7 +1011,7 @@ export default function TabContent({
                 </Card>
               )}
 
-              {/* Poll Participation Rate */}
+              {/* Poll Participation */}
               {pollParticipationRate !== null && (
                 <Card style={{ padding: 16, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -799,28 +1055,6 @@ export default function TabContent({
                 </Card>
               )}
 
-              {/* Recent Posts */}
-              <Card style={{ padding: 16, flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Recent Posts</div>
-                  <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
-                    <Plus style={{ width: 10, height: 10 }}/>
-                  </button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {posts.length > 0 ? posts.slice(0, 3).map((post) => (
-                    <div key={post.id}
-                      style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
-                      {post.content?.split('\n')[0] || post.title || 'Post'}
-                    </div>
-                  )) : (
-                    <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
-                  )}
-                </div>
-              </Card>
-
               {/* Content Stats */}
               <Card style={{ padding: 16, flexShrink: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Stats</div>
@@ -830,8 +1064,7 @@ export default function TabContent({
                     { count: totalChalPart,          label: 'Challenge Participants', color: '#f59e0b' },
                     { count: polls.length,           label: 'Active Polls',           color: '#8b5cf6' },
                   ].map((s, i) => (
-                    <div key={i}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', cursor: 'pointer' }}
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', cursor: 'pointer' }}
                       onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
                       onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                       <span style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', minWidth: 28 }}>{s.count}</span>
@@ -865,7 +1098,6 @@ export default function TabContent({
               )}
             </>
           )}
-
         </div>
       </div>
     </>
