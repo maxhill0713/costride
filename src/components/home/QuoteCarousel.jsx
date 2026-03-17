@@ -60,8 +60,8 @@ export default function QuoteCarousel() {
         overflow: 'hidden',
       }}>
 
-      {/* Decorative gradient accent */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+      <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
       {/* Dots — fixed height */}
       <div className="flex justify-center gap-2 pt-3 pb-1 relative z-10 flex-shrink-0" style={{ height: DOTS_H }}>
