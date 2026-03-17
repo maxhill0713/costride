@@ -611,20 +611,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           onClick={() => { if (!isTimerActive) setShowTimerOptions(!showTimerOptions); }}
                           style={{ height: '51px' }}
                           className="relative w-full flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
-                          {/* Clock + time nudged down slightly */}
                           <div className="flex items-center gap-2 mt-1">
                             <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
                               {timerDisplay}
                             </span>
                           </div>
-                          {/* "Timer" label underneath */}
                           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                             Timer
                           </span>
                         </button>
 
-                        {/* Adjust dropdown — only available when timer is NOT running */}
                         {showTimerOptions && !isTimerActive && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
@@ -708,7 +705,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         />
       </Card>
 
-      {/* Workout Summary Modal */}
+      {/* ── Workout Summary Modal ── */}
       <AnimatePresence>
         {summaryLog && (
           <motion.div
@@ -785,12 +782,23 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
+                      // Robust parsing: handles empty strings, numbers, and setsReps fallback
                       const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
-                      const srParts = setsRepsStr ? setsRepsStr.split(/\s*[xX]\s*/) : [];
-                      const sets = ex.sets ?? ex.set_count ?? ex.num_sets ?? srParts[0] ?? '-';
-                      const reps = ex.reps ?? ex.rep_count ?? ex.num_reps ?? srParts[1] ?? '-';
-                      const weight = rawWeight ?? '-';
+                      const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                      const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
+                      const sets = (rawSets !== undefined && rawSets !== null && String(rawSets) !== '')
+                        ? String(rawSets)
+                        : ex.logged_sets?.length ? String(ex.logged_sets.length)
+                        : ex.sets_data?.length ? String(ex.sets_data.length)
+                        : srParts[0] || '-';
+                      const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
+                      const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '')
+                        ? String(rawReps)
+                        : ex.logged_sets?.[0]?.reps ? String(ex.logged_sets[0].reps)
+                        : ex.sets_data?.[0]?.reps ? String(ex.sets_data[0].reps)
+                        : srParts[1] || '-';
+                      const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight;
+                      const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
