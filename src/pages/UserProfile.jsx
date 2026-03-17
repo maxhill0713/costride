@@ -13,6 +13,7 @@ export default function UserProfile() {
   const userId = urlParams.get('id');
   const [selectedPost, setSelectedPost] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const navigate = useNavigate();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
