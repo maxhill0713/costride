@@ -211,6 +211,10 @@ export default function Profile() {
             </div>
           </button>
 
+          <div className="flex flex-col gap-1 justify-center flex-1">
+            {currentUser.username && (
+              <p className="text-[12px] text-slate-400 font-semibold">@{currentUser.username}</p>
+            )}
           <div className="flex flex-1 justify-around items-center">
             <div className="text-center">
               <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>

@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight, Building2, User,
   Search, Camera, MapPin
 } from 'lucide-react';
+import UsernameStep from '../components/onboarding/UsernameStep';
 
 const LOGO_URL =
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';

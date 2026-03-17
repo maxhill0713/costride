@@ -19,17 +19,18 @@ Deno.serve(async (req) => {
 
     // Use user-scoped list (no service role) to avoid CPU overhead
     // Users can see other users by default
-    const allUsers = await base44.entities.User.list('full_name', 30);
+    const allUsers = await base44.entities.User.list('full_name', 100);
 
     const results = allUsers
       .filter(u =>
         u.id !== user.id &&
-        (u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
+        u.username?.toLowerCase().includes(q)
       )
       .slice(0, limit)
       .map(u => ({
         id: u.id,
         full_name: u.full_name,
+        username: u.username || null,
         email: u.email,
         avatar_url: u.avatar_url || null
       }));
