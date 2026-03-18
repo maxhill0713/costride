@@ -272,7 +272,7 @@ export default function TabCoachOverview({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
         {/* ── GREETING BANNER ──────────────────────────────────────────── */}
-        <div style={{ borderRadius: 20, padding: '20px 24px', background: 'linear-gradient(135deg,#0d0720 0%,#0c1a2e 60%,#060f1c 100%)', border: '1px solid rgba(167,139,250,0.18)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ borderRadius: 12, padding: '20px 24px', background: `linear-gradient(135deg,${T.card} 0%,#0d1630 60%,${T.card} 100%)`, border: `1px solid ${T.purple}22`, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -60, right: -60, width: 260, height: 260, borderRadius: '50%', background: 'rgba(167,139,250,0.06)', filter: 'blur(60px)', pointerEvents: 'none' }}/>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.4),transparent)', pointerEvents: 'none' }}/>
           <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5 }}>
