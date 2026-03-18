@@ -764,7 +764,7 @@ export default function TabCoachOverview({
 
         {/* ── New Members ───────────────────────────────────────────────── */}
         {newMembers.length > 0 && (
-          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(56,189,248,0.15)', overflow: 'hidden' }}>
+          <SCard accent={T.blue} style={{ overflow: 'hidden' }}>
             <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <UserPlus style={{ width: 12, height: 12, color: '#38bdf8' }}/>
               <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>New Members</span>
