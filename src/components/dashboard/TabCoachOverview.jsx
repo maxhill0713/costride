@@ -508,11 +508,11 @@ export default function TabCoachOverview({
                     <span style={{ fontSize: 9, color: '#64748b', width: 24, textAlign: 'right', flexShrink: 0 }}>{pct}%</span>
                   </div>
                 );
-              })}
-            </div>
-          </div>
+                })}
+                </SCard>
+                </div>
 
-          {/* 30-Day Snapshot */}
+                {/* 30-Day Snapshot */}
           <SCard style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>30-Day Snapshot</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
@@ -528,7 +528,7 @@ export default function TabCoachOverview({
                 </div>
               ))}
             </div>
-          </div>
+          </SCard>
         </section>
 
         {/* ══ 5. MEMBER INSIGHTS — NEEDS ATTENTION ═════════════════════════ */}
@@ -624,10 +624,10 @@ export default function TabCoachOverview({
                     </div>
                   </div>
                 );
-              })}
-            </div>
+                })}
+                </SCard>
 
-            {/* Streaks */}
+                {/* Streaks */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <SCard style={{ padding: '14px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
@@ -651,9 +651,9 @@ export default function TabCoachOverview({
                     </div>
                   </div>
                 ))}
-              </div>
+                </SCard>
 
-              {/* Birthdays */}
+                {/* Birthdays */}
               {upcomingBirthdays.length > 0 && (
                 <SCard accent="#f472b6" style={{ padding: '12px 14px' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: '#f0f4f8', marginBottom: 8 }}>🎂 Birthdays This Week</div>
@@ -667,11 +667,11 @@ export default function TabCoachOverview({
                       <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#f472b6', background: 'rgba(244,114,182,0.07)', border: '1px solid rgba(244,114,182,0.15)', borderRadius: 5, padding: '3px 7px', cursor: 'pointer' }}>Wish</button>
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
+                  </SCard>
+                  )}
+                  </div>
+                  </div>
+                  </section>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -704,7 +704,7 @@ export default function TabCoachOverview({
               </button>
             ))}
           </div>
-        </div>
+        </SCard>
 
         {/* ── Upcoming Events ───────────────────────────────────────────── */}
         {upcomingEvents.length > 0 && (
@@ -731,7 +731,7 @@ export default function TabCoachOverview({
                 );
               })}
             </div>
-          </div>
+          </SCard>
         )}
 
         {/* ── Top Members This Week ─────────────────────────────────────── */}
@@ -759,7 +759,7 @@ export default function TabCoachOverview({
                 );
               })}
             </div>
-          </div>
+          </SCard>
         )}
 
         {/* ── New Members ───────────────────────────────────────────────── */}
@@ -789,7 +789,7 @@ export default function TabCoachOverview({
                 );
               })}
             </div>
-          </div>
+          </SCard>
         )}
 
         {/* ── My Recent Posts ───────────────────────────────────────────── */}
@@ -807,7 +807,7 @@ export default function TabCoachOverview({
               </div>
             ))}
           </div>
-        </div>
+        </SCard>
       </div>
     </div>
   );
