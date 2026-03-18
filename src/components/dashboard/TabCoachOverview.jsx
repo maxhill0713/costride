@@ -598,7 +598,7 @@ export default function TabCoachOverview({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
 
             {/* Milestones: 50th & 100th visit callouts */}
-            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px' }}>
+            <SCard style={{ padding: '14px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
                 <Target style={{ width: 14, height: 14, color: '#a78bfa' }}/>
                 <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Close to Milestones</span>
