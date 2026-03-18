@@ -103,33 +103,70 @@ const RadarTip = ({ active, payload }) => {
   );
 };
 
-// ── KPI card — matches Overview KpiCard visually ───────────────────────────────
-function KpiCard({ icon: Icon, label, value, valueSuffix, unit, color, trend, footerBar }) {
+// ── Inline mini sparkline ─────────────────────────────────────────────────────
+function Spark({ data = [], color = T.blue, w = 64, h = 26 }) {
+  if (!data || data.length < 2) return <div style={{ width: w, height: h }} />;
+  const max = Math.max(...data, 1), min = Math.min(...data, 0), range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - 4 - ((v - min) / range) * (h - 8);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const first = pts.split(' ')[0], last = pts.split(' ').slice(-1)[0];
+  const area = `${first.split(',')[0]},${h} ${pts} ${last.split(',')[0]},${h}`;
+  const uid = color.replace('#', '') + w;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`sp-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill={`url(#sp-${uid})`} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── KPI card — sparklines, richer trend badge, context sub-line ────────────────
+function KpiCard({ icon: Icon, label, value, valueSuffix, unit, color, trend, footerBar, spark, subContext }) {
+  const trendColor = trend == null ? null : trend > 0 ? T.green : trend < 0 ? T.red : T.text3;
   return (
     <div style={{ borderRadius: 12, padding: '16px 18px 14px', background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {/* Shimmer */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}28,transparent)`, pointerEvents: 'none' }} />
-      {/* Soft corner glow */}
-      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(20px)', pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: color, opacity: 0.06, filter: 'blur(20px)', pointerEvents: 'none' }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, letterSpacing: '0.09em', textTransform: 'uppercase' }}>{label}</span>
-        <div style={{ width: 26, height: 26, borderRadius: 7, background: `${color}14`, border: `1px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: `${color}14`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon style={{ width: 12, height: 12, color }} />
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-        <span style={{ fontSize: 36, fontWeight: 800, color: T.text1, lineHeight: 1, letterSpacing: '-0.05em' }}>{value}</span>
-        {valueSuffix && <span style={{ fontSize: 14, fontWeight: 500, color: T.text3 }}>{valueSuffix}</span>}
-      </div>
-      {unit && <div style={{ fontSize: 11, color: T.text2, fontWeight: 500, marginBottom: 6 }}>{unit}</div>}
-      {trend !== null && trend !== undefined && (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 99, background: trend >= 0 ? `${T.green}12` : `${T.red}12`, width: 'fit-content', marginBottom: 8 }}>
-          {trend >= 0 ? <ArrowUpRight style={{ width: 10, height: 10, color: T.green }} /> : <TrendingDown style={{ width: 10, height: 10, color: T.red }} />}
-          <span style={{ fontSize: 10, fontWeight: 700, color: trend >= 0 ? T.green : T.red }}>{Math.abs(trend)}%</span>
+
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+            <span style={{ fontSize: 34, fontWeight: 800, color: T.text1, lineHeight: 1, letterSpacing: '-0.05em' }}>{value}</span>
+            {valueSuffix && <span style={{ fontSize: 13, fontWeight: 500, color: T.text3 }}>{valueSuffix}</span>}
+          </div>
+          {unit && <div style={{ fontSize: 11, color: T.text2, fontWeight: 500, marginTop: 3 }}>{unit}</div>}
         </div>
-      )}
+        {spark && <Spark data={spark} color={color} />}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto' }}>
+        {trend != null && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 99, background: trend > 0 ? `${T.green}12` : trend < 0 ? `${T.red}12` : T.divider }}>
+            {trend > 0 ? <ArrowUpRight style={{ width: 10, height: 10, color: trendColor }} /> : trend < 0 ? <TrendingDown style={{ width: 10, height: 10, color: trendColor }} /> : null}
+            <span style={{ fontSize: 10, fontWeight: 700, color: trendColor }}>{trend > 0 ? '+' : ''}{trend}%</span>
+          </div>
+        )}
+        {subContext && <span style={{ fontSize: 10, color: T.text3, fontWeight: 500 }}>{subContext}</span>}
+      </div>
+
       {footerBar != null && (
-        <div style={{ height: 2, borderRadius: 99, background: T.divider, overflow: 'hidden', marginTop: 'auto' }}>
+        <div style={{ height: 2, borderRadius: 99, background: T.divider, overflow: 'hidden', marginTop: 10 }}>
           <div style={{ height: '100%', borderRadius: 99, width: `${Math.min(100, footerBar)}%`, background: color, transition: 'width 0.8s ease' }} />
         </div>
       )}
@@ -393,13 +430,19 @@ function DropOffAnalysis({ allMemberships, checkIns, now }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 9, background: `${T.amber}08`, border: `1px solid ${T.amber}18` }}>
-            <div style={{ fontSize: 10, color: T.amber, fontWeight: 700, marginBottom: 2 }}>
-              ⚡ Highest risk: {[...data].sort((a, b) => b.count - a.count)[0]?.label} stage
-            </div>
-            <div style={{ fontSize: 10, color: T.text3 }}>
-              {[...data].sort((a, b) => b.count - a.count)[0]?.count || 0} members dropping off at this lifecycle point
-            </div>
+          {/* Ranked summary rows */}
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[...data].filter(d => d.count > 0).sort((a, b) => b.count - a.count).map((d, i) => {
+              const pct = total > 0 ? Math.round((d.count / total) * 100) : 0;
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', borderRadius: 8, background: i === 0 ? `${d.color}0c` : T.divider, border: `1px solid ${i === 0 ? d.color + '22' : T.border}` }}>
+                  {i === 0 && <span style={{ fontSize: 8, fontWeight: 800, color: d.color, background: `${d.color}18`, border: `1px solid ${d.color}28`, borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Highest</span>}
+                  <span style={{ flex: 1, fontSize: 11, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? T.text1 : T.text2 }}>{d.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: d.color }}>{d.count}</span>
+                  <span style={{ fontSize: 10, color: T.text3, minWidth: 28, textAlign: 'right' }}>{pct}%</span>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
@@ -423,32 +466,58 @@ function ChurnSignalWidget({ allMemberships, checkIns, now }) {
     return { ...m, name: m.user_name || m.name || 'Member', daysSince, freqDrop, score, last30, prev30 };
   }).filter(m => m.score >= 40).sort((a, b) => b.score - a.score).slice(0, 5), [allMemberships, checkIns, now]);
 
+  const riskLabel = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
+  const riskColor = s => s >= 90 ? T.red : s >= 70 ? '#f97316' : T.amber;
+
   return (
     <SCard accent={T.red} style={{ padding: 20 }}>
-      <CardHeader title="Churn Signals" sub="Members showing early warning signs"
-        right={<span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: `${T.red}12`, border: `1px solid ${T.red}22`, borderRadius: 6, padding: '2px 7px' }}>{signals.length}</span>}
+      <CardHeader title="Churn Risk Tracker" sub="Early warning — scored by recency and frequency"
+        right={
+          <span style={{ fontSize: 10, fontWeight: 700, color: signals.length > 0 ? T.red : T.green, background: signals.length > 0 ? `${T.red}12` : `${T.green}12`, border: `1px solid ${signals.length > 0 ? T.red + '22' : T.green + '22'}`, borderRadius: 6, padding: '2px 8px' }}>
+            {signals.length > 0 ? `${signals.length} flagged` : '✓ Clear'}
+          </span>
+        }
       />
       {signals.length === 0 ? (
-        <div style={{ padding: '10px 12px', borderRadius: 8, background: `${T.green}08`, border: `1px solid ${T.green}18` }}>
-          <div style={{ fontSize: 11, color: T.green, fontWeight: 600 }}>✓ No churn signals detected</div>
+        <div style={{ padding: '12px 14px', borderRadius: 9, background: `${T.green}08`, border: `1px solid ${T.green}18`, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CheckCircle style={{ width: 13, height: 13, color: T.green, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>No churn signals detected</div>
+            <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>All tracked members showing healthy engagement</div>
+          </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {signals.map((m, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 9, background: m.score >= 80 ? `${T.red}08` : `${T.amber}08`, border: `1px solid ${m.score >= 80 ? T.red + '20' : T.amber + '20'}` }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>
-                  {m.daysSince < 999 ? `${m.daysSince}d absent` : 'Never visited'}
-                  {m.freqDrop && <span style={{ color: T.amber, marginLeft: 6 }}>· frequency dropping</span>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {signals.map((m, i) => {
+            const color = riskColor(m.score);
+            return (
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: m.score >= 80 ? `${T.red}07` : `${T.amber}07`, border: `1px solid ${color}1e` }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                    <div style={{ flexShrink: 0, fontSize: 8, fontWeight: 800, color, background: `${color}15`, border: `1px solid ${color}28`, borderRadius: 4, padding: '2px 5px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {riskLabel(m.score)}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: T.text3, flexShrink: 0 }}>
+                    {m.daysSince < 999 ? `${m.daysSince}d absent` : 'No visits'}
+                  </span>
+                </div>
+                <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: 6 }}>
+                  <div style={{ height: '100%', width: `${m.score}%`, borderRadius: 99, background: `linear-gradient(90deg,${color}60,${color})`, transition: 'width 0.6s ease' }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 9, color: T.text3 }}>Score <span style={{ fontWeight: 700, color }}>{m.score}</span>/100</span>
+                  {m.freqDrop && m.prev30 > 0 && (
+                    <span style={{ fontSize: 9, color: T.amber, fontWeight: 600 }}>↓ {m.last30} vs {m.prev30} visits last month</span>
+                  )}
+                  {!m.freqDrop && m.last30 > 0 && (
+                    <span style={{ fontSize: 9, color: T.text3 }}>{m.last30} visit{m.last30 !== 1 ? 's' : ''} this month</span>
+                  )}
                 </div>
               </div>
-              <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: m.score >= 80 ? `${T.red}14` : `${T.amber}14`, border: `1px solid ${m.score >= 80 ? T.red + '28' : T.amber + '28'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 900, color: m.score >= 80 ? T.red : T.amber, letterSpacing: '-0.02em' }}>{m.score}</span>
-                <span style={{ fontSize: 7, fontWeight: 700, color: T.text3, textTransform: 'uppercase' }}>risk</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </SCard>
@@ -1035,10 +1104,10 @@ export default function TabAnalytics({
           </SCard>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-            <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"   color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} />
-            <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month"   color={trendColor} trend={monthChangePct} />
-            <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month"  color={T.purple} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} />
-            <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="of all check-ins" color={T.amber} footerBar={returnRate} />
+            <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"   color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} spark={weekTrend.slice(-7).map(d => d.value)} subContext={`${weekTrend.reduce((a,d)=>a+d.value,0)} in 12 weeks`} />
+            <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month"   color={trendColor} trend={monthChangePct} subContext={monthChangePct > 0 ? 'Growing' : monthChangePct < 0 ? 'Declining' : 'Flat'} />
+            <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month"  color={T.purple} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} subContext={`${superActive} members at 15+`} />
+            <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="repeat check-ins" color={T.amber} footerBar={returnRate} subContext={returnRate >= 70 ? 'Strong loyalty' : 'Needs work'} />
           </div>
         )}
 
@@ -1115,24 +1184,49 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </SCard>
 
+        {/* Traffic Heatmap */}
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
+          <CardHeader title="Traffic Heatmap" sub="Check-in density by day and time"
+            right={<div style={{ width: 26, height: 26, borderRadius: 7, background: `${T.cyan}14`, border: `1px solid ${T.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Flame style={{ width: 12, height: 12, color: T.cyan }} /></div>}
+          />
+          <HeatmapChart gymId={gymId} />
+        </SCard>
 
+        {/* Peak Hours */}
+        <RankedBarList title="Peak Hours" icon={Clock} accent={T.amber} items={peakHours} emptyLabel="No check-in data yet" />
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* 30-Day Snapshot */}
+        {/* 30-Day Snapshot — dense metrics with status dots */}
         <SCard accent={T.blue} style={{ padding: 20 }}>
-          <CardHeader title="30-Day Snapshot" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>30-Day Snapshot</div>
+              <div style={{ fontSize: 10, color: T.text3, marginTop: 2 }}>{format(now, 'MMM d')} rolling window</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 7, background: `${T.blue}12`, border: `1px solid ${T.blue}22` }}>
+              <Activity style={{ width: 10, height: 10, color: T.blue }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: T.blue }}>Live</span>
+            </div>
+          </div>
           {[
-            { label: 'Total check-ins', value: ci30.length,         color: T.blue   },
-            { label: 'New sign-ups',    value: newSignUps,          color: T.purple  },
-            { label: 'At-risk members', value: atRisk,              color: atRisk > 0 ? T.red : T.green },
-            { label: 'Retention rate',  value: `${retentionRate}%`, color: retentionRate >= 70 ? T.green : T.amber },
-            { label: 'Active classes',  value: (classes || []).length, color: T.purple },
+            { label: 'Check-ins',       value: ci30.length,            color: T.blue,   icon: Activity,   sub: `${dailyAvg}/day avg` },
+            { label: 'New sign-ups',    value: newSignUps,             color: T.green,  icon: UserPlus,   sub: `+${newSignUps} joined` },
+            { label: 'Retention',       value: `${retentionRate}%`,    color: retentionRate >= 70 ? T.green : T.amber, icon: Shield, sub: retentionRate >= 70 ? 'Healthy' : 'Below target' },
+            { label: 'At risk',         value: atRisk,                 color: atRisk > 0 ? T.red : T.green, icon: AlertTriangle, sub: atRisk > 0 ? `${Math.round((atRisk / Math.max(totalMembers,1)) * 100)}% of gym` : 'None' },
+            { label: 'Active classes',  value: (classes || []).length, color: T.purple, icon: Calendar,   sub: 'on schedule' },
+            { label: 'Avg visits/mem',  value: avgPerMem,              color: T.cyan,   icon: BarChart2,  sub: 'this month' },
           ].map((s, i, arr) => (
-            <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: i < arr.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
-              <span style={{ fontSize: 12, color: T.text2, fontWeight: 500 }}>{s.label}</span>
-              <StatPill value={s.value} color={s.color} />
+            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < arr.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
+              <div style={{ width: 22, height: 22, borderRadius: 6, background: `${s.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <s.icon style={{ width: 10, height: 10, color: s.color }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.text2 }}>{s.label}</div>
+                <div style={{ fontSize: 9, color: T.text3, marginTop: 1 }}>{s.sub}</div>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</span>
             </div>
           ))}
         </SCard>
@@ -1155,16 +1249,33 @@ export default function TabAnalytics({
               <PolarGrid stroke={T.border} radialLines={false} />
               <PolarAngleAxis dataKey="subject" tick={{ fill: T.text2, fontSize: 9, fontFamily: 'DM Sans, system-ui', fontWeight: 700 }} />
               <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar dataKey="A" stroke={T.purple} fill={T.purple} fillOpacity={0.12} strokeWidth={2} />
+              <Radar dataKey="A" stroke={T.purple} fill={T.purple} fillOpacity={0.15} strokeWidth={2} dot={{ r: 3, fill: T.purple, strokeWidth: 0 }} />
               <Tooltip content={<RadarTip />} />
             </RadarChart>
           </ResponsiveContainer>
+          {/* Quick interpretation */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 12 }}>
+            {radarData.map((d, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 7, background: d.A >= 70 ? `${T.green}08` : d.A >= 40 ? T.divider : `${T.red}07`, border: `1px solid ${d.A >= 70 ? T.green + '18' : d.A >= 40 ? T.border : T.red + '18'}` }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: d.A >= 70 ? T.green : d.A >= 40 ? T.amber : T.red, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: T.text2, flex: 1 }}>{d.subject}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: d.A >= 70 ? T.green : d.A >= 40 ? T.amber : T.red }}>{Math.round(d.A)}</span>
+              </div>
+            ))}
+          </div>
         </SCard>
 
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} accent={T.amber} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
 
+        <SegmentBreakdown title="Engagement Breakdown" total={totalMembers} segments={[
+          { label: 'Super Active', sub: '15+ visits', val: superActive, color: T.green  },
+          { label: 'Active',       sub: '8–14',       val: active,      color: T.blue   },
+          { label: 'Casual',       sub: '1–7',        val: casual,      color: T.purple },
+          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.amber  },
+        ]} />
 
+        <MilestoneProgressWidget checkIns={checkIns} />
       </div>
     </div>
   );
