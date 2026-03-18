@@ -513,7 +513,7 @@ export default function TabCoachOverview({
           </div>
 
           {/* 30-Day Snapshot */}
-          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 18px' }}>
+          <SCard style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', marginBottom: 14 }}>30-Day Snapshot</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
               {[
