@@ -428,7 +428,7 @@ export default function TabCoachOverview({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
 
             {/* Weekly Attendance Graph */}
-            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '16px' }}>
+            <SCard style={{ padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Weekly Attendance</span>
                 <span style={{ fontSize: 10, fontWeight: 700, color: weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b' }}>
