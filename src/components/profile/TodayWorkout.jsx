@@ -579,6 +579,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       )}
                       <Button
                         onClick={() => {
+                          // Validate all exercises have sets, reps, and weight
+                          const exercises = todayWorkout?.exercises || [];
+                          const incomplete = exercises.some(ex => {
+                            const sets = ex.sets || ex.setsReps?.split('x')?.[0];
+                            const reps = ex.reps || ex.setsReps?.split('x')?.[1];
+                            const weight = ex.weight;
+                            return !sets || !reps || !weight;
+                          });
+                          if (incomplete) {
+                            setShowIncompleteWarning(true);
+                            return;
+                          }
                           const captured = workoutDuration;
                           frozenDurationRef.current = captured;
                           setFrozenDuration(captured);
