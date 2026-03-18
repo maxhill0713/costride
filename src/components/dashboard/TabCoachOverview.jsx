@@ -534,7 +534,7 @@ export default function TabCoachOverview({
         {/* ══ 5. MEMBER INSIGHTS — NEEDS ATTENTION ═════════════════════════ */}
         <section>
           <SectionLabel accent="#f87171">Member Insights</SectionLabel>
-          <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+          <SCard style={{ overflow: 'hidden' }}>
             {/* Three-tab switcher: Absent / Expiring / Never visited */}
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {[
