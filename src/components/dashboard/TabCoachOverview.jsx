@@ -319,7 +319,7 @@ export default function TabCoachOverview({
                 const fillColor = cls.fill >= 80 ? '#34d399' : cls.fill >= 50 ? '#fbbf24' : '#38bdf8';
                 const spotsLeft = cls.capacity - (cls.booked || cls.attended);
                 return (
-                  <div key={cls.id || i} style={{ borderRadius: 14, background: '#0c1a2e', border: `1px solid ${c}22`, overflow: 'hidden', position: 'relative' }}>
+                  <div key={cls.id || i} style={{ borderRadius: 12, background: T.card, border: `1px solid ${c}22`, overflow: 'hidden', position: 'relative' }}>
                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: c }}/>
                     <div style={{ padding: '13px 16px 13px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
                       <FillRing pct={cls.fill} color={fillColor} size={42}/>
