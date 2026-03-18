@@ -44,9 +44,9 @@ function matchesMuscleGroup(exerciseName, group) {
   return group.keywords.some(kw => lower.includes(kw));
 }
 
-function pctChange(current, baseline) {
-  if (!baseline || baseline === 0) return 0;
-  return +((( current - baseline) / baseline) * 100).toFixed(1);
+function kgDiff(current, baseline) {
+  if (baseline === null || baseline === undefined) return 0;
+  return +(current - baseline).toFixed(1);
 }
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ function CustomTooltip({ active, payload, label }) {
               fontSize: 11, fontWeight: 800,
               color: p.value > 0 ? '#34d399' : p.value < 0 ? '#f87171' : '#64748b',
             }}>
-              {p.value > 0 ? '+' : ''}{p.value}%
+              {p.value > 0 ? '+' : ''}{p.value}kg
             </span>
           </div>
         ))}
@@ -145,9 +145,9 @@ function MuscleGroupSelector({ selected, onSelect }) {
 }
 
 // ─── Summary badges below chart ───────────────────────────────────────────────
-function ExerciseSummaryBadge({ name, pct, color }) {
-  const Icon = pct > 2 ? TrendingUp : pct < -2 ? TrendingDown : Minus;
-  const textColor = pct > 2 ? '#34d399' : pct < -2 ? '#f87171' : '#64748b';
+function ExerciseSummaryBadge({ name, diff, color }) {
+  const Icon = diff > 0.5 ? TrendingUp : diff < -0.5 ? TrendingDown : Minus;
+  const textColor = diff > 0.5 ? '#34d399' : diff < -0.5 ? '#f87171' : '#64748b';
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
@@ -162,7 +162,7 @@ function ExerciseSummaryBadge({ name, pct, color }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Icon size={10} color={textColor} />
         <span style={{ fontSize: 10, fontWeight: 800, color: textColor }}>
-          {pct > 0 ? '+' : ''}{pct}%
+          {diff > 0 ? '+' : ''}{diff}kg
         </span>
       </div>
     </div>
@@ -227,89 +227,114 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
   const allExerciseNames = useMemo(() => Object.keys(exerciseSeriesMap), [exerciseSeriesMap]);
 
   // ── Build chart data ───────────────────────────────────────────────────────
-  // Strategy: for each exercise, compute % change from ITS FIRST data point
-  // within (or just before) the selected period. Merge all onto a shared date axis.
+  // Each workout log session = one data point (not deduplicated by date).
+  // Y axis = kg difference from each exercise's personal baseline.
+  // New exercises: show 0kg from period start until their first log.
   const { chartData, exerciseMeta } = useMemo(() => {
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
 
     const p = PERIODS.find(p => p.key === period);
     const cutoff = p.months ? subMonths(new Date(), p.months) : null;
+    const periodStart = cutoff || (
+      allExerciseNames.reduce((earliest, name) => {
+        const first = exerciseSeriesMap[name]?.[0]?.rawDate;
+        return first && first < earliest ? first : earliest;
+      }, new Date())
+    );
 
-    // For each exercise, find baseline = last data point AT or BEFORE cutoff
-    // (or first data point if all data is after cutoff)
+    // For each exercise, baseline = first ever data point for that exercise
+    // (regardless of period — so "new" exercises added mid-period start at 0)
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (!series.length) return;
-      if (!cutoff) {
-        baselines[name] = series[0].weight;
-      } else {
-        const before = series.filter(d => d.rawDate <= cutoff);
-        baselines[name] = before.length > 0
-          ? before[before.length - 1].weight  // last point before period = baseline
-          : series[0].weight;                  // first point in period = baseline
-      }
+      // baseline is the very first logged weight for this exercise
+      baselines[name] = series[0].weight;
     });
 
-    // Collect all data points within the period window
-    // Merge into a unified sorted list of dates
-    const dateSet = new Set();
-    const pointsByNameAndDate = {}; // `${name}__${dateStr}` → pct
-
+    // Collect every individual log session as a separate data point
+    // Each point: { rawDate, sessionIndex, label, [exerciseName]: kgDiff }
+    // We build a flat array of { rawDate, exerciseName, weight } tuples first
+    const allPoints = []; // { rawDate, name, weight }
     allExerciseNames.forEach(name => {
-      const baseline = baselines[name];
       const series = exerciseSeriesMap[name];
       series.forEach(({ rawDate, weight }) => {
         if (cutoff && rawDate < cutoff) return;
-        const dateStr = format(rawDate, 'MMM d');
-        dateSet.add(dateStr + '__' + rawDate.getTime()); // keep sortable
-        const key = `${name}__${dateStr}`;
-        // If multiple entries on the same date, take the max weight
-        const existing = pointsByNameAndDate[key];
-        const pct = pctChange(weight, baseline);
-        if (existing === undefined || pct > existing) {
-          pointsByNameAndDate[key] = pct;
-        }
+        allPoints.push({ rawDate, name, weight });
       });
     });
 
-    // Sort dates
-    const sortedDates = Array.from(dateSet)
-      .sort((a, b) => parseInt(a.split('__')[1]) - parseInt(b.split('__')[1]))
-      .map(d => d.split('__')[0]);
+    // Sort all points by date
+    allPoints.sort((a, b) => a.rawDate - b.rawDate);
 
-    // Deduplicate date labels (multiple exercises may share a date)
-    const uniqueDates = [...new Set(sortedDates)];
+    // Build unique timeline — each unique (date+session) combo gets a row.
+    // We need to know which dates have data for any exercise.
+    // Group by date string, keeping all entries
+    const dateGroups = {}; // dateStr → [ { name, weight, rawDate } ]
+    allPoints.forEach(pt => {
+      const dateStr = format(pt.rawDate, 'MMM d');
+      if (!dateGroups[dateStr]) dateGroups[dateStr] = [];
+      dateGroups[dateStr].push(pt);
+    });
 
-    // Build rows
-    const rows = uniqueDates.map(dateStr => {
+    const sortedDateStrs = Object.keys(dateGroups).sort((a, b) => {
+      const tA = dateGroups[a][0].rawDate.getTime();
+      const tB = dateGroups[b][0].rawDate.getTime();
+      return tA - tB;
+    });
+
+    // Build rows — one row per date that has any data.
+    // For exercises with no data on a given date: null (gap in line).
+    // For exercises that haven't started yet: 0 (flat baseline).
+    const rows = sortedDateStrs.map(dateStr => {
       const row = { date: dateStr };
+      const pointsOnDay = dateGroups[dateStr];
+      const dayTimestamp = dateGroups[dateStr][0].rawDate;
+
       allExerciseNames.forEach(name => {
-        const key = `${name}__${dateStr}`;
-        row[name] = pointsByNameAndDate[key] ?? null; // null = no data that day
+        const baseline = baselines[name];
+        const firstEntry = exerciseSeriesMap[name]?.[0];
+
+        // Has this exercise been logged at all before or on this date?
+        const exerciseStarted = firstEntry && firstEntry.rawDate <= dayTimestamp;
+
+        if (!exerciseStarted) {
+          // Exercise hasn't been introduced yet — show 0 (flat line at baseline)
+          row[name] = 0;
+        } else {
+          // Find if this exercise was logged on this day
+          const dayEntry = pointsOnDay.find(pt => pt.name === name);
+          if (dayEntry) {
+            row[name] = kgDiff(dayEntry.weight, baseline);
+          } else {
+            // Exercise exists but not logged today — null (gap, no dot)
+            row[name] = null;
+          }
+        }
       });
+
       return row;
     });
 
-    // Exercise metadata (name, color, final pct for badges)
+    // Exercise metadata — final kg diff for badges
     const meta = allExerciseNames.map((name, i) => {
-      const lastRow = [...rows].reverse().find(r => r[name] !== null);
+      const lastRow = [...rows].reverse().find(r => r[name] !== null && r[name] !== undefined);
       return {
         name,
         color: LINE_COLORS[i % LINE_COLORS.length],
-        finalPct: lastRow ? lastRow[name] : 0,
+        finalDiff: lastRow ? lastRow[name] : 0,
       };
     });
 
-    // Sort meta: biggest gainers first
-    meta.sort((a, b) => b.finalPct - a.finalPct);
+    // Sort: biggest gainers first
+    meta.sort((a, b) => b.finalDiff - a.finalDiff);
 
     return { chartData: rows, exerciseMeta: meta };
   }, [allExerciseNames, exerciseSeriesMap, period]);
 
   // ── Y-axis domain: auto with a bit of padding ──────────────────────────────
   const yDomain = useMemo(() => {
-    if (!chartData.length) return [-20, 20];
+    if (!chartData.length) return [-5, 10];
     let min = 0, max = 0;
     chartData.forEach(row => {
       allExerciseNames.forEach(name => {
@@ -319,7 +344,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         if (v > max) max = v;
       });
     });
-    const pad = Math.max(5, Math.abs(max - min) * 0.15);
+    const pad = Math.max(2, Math.abs(max - min) * 0.15);
     return [Math.floor(min - pad), Math.ceil(max + pad)];
   }, [chartData, allExerciseNames]);
 
@@ -392,7 +417,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         ) : !hasData ? (
           <div style={{ height: 220, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <div style={{ fontSize: 32 }}>{selectedGroup?.emoji}</div>
             <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
               No {selectedGroup?.label} data yet
             </p>
@@ -403,7 +427,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         ) : (
           <>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(255,255,255,0.04)"
@@ -431,9 +455,9 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                   tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
                   tickLine={false}
                   axisLine={false}
-                  width={52}
+                  width={44}
                   domain={yDomain}
-                  tickFormatter={v => `${v > 0 ? '+' : ''}${v}%`}
+                  tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
                 />
 
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
@@ -445,8 +469,8 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                     dataKey={name}
                     stroke={color}
                     strokeWidth={2}
-                    dot={{ r: 3, fill: color, strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
+                    dot={false}
+                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
                     connectNulls={false}
                   />
                 ))}
@@ -458,8 +482,8 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
               display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12,
               paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)',
             }}>
-              {exerciseMeta.map(({ name, color, finalPct }) => (
-                <ExerciseSummaryBadge key={name} name={name} pct={finalPct} color={color} />
+              {exerciseMeta.map(({ name, color, finalDiff }) => (
+                <ExerciseSummaryBadge key={name} name={name} diff={finalDiff} color={color} />
               ))}
             </div>
 
@@ -467,7 +491,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             {exerciseMeta.length > 1 && (() => {
               const best    = exerciseMeta[0];
               const worst   = exerciseMeta[exerciseMeta.length - 1];
-              const stalled = exerciseMeta.filter(e => Math.abs(e.finalPct) < 2);
+              const stalled = exerciseMeta.filter(e => Math.abs(e.finalDiff) < 0.5);
               return (
                 <div style={{
                   marginTop: 10, padding: '10px 12px', borderRadius: 10,
@@ -475,16 +499,16 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                   border: '1px solid rgba(255,255,255,0.06)',
                   fontSize: 11, color: '#64748b', lineHeight: 1.5,
                 }}>
-                  {best.finalPct > 2 && (
+                  {best.finalDiff > 0.5 && (
                     <span>
                       <span style={{ color: '#34d399', fontWeight: 700 }}>↑ {best.name}</span>
-                      {' '}is your best gainer (+{best.finalPct}%).{' '}
+                      {' '}is your best gainer (+{best.finalDiff}kg).{' '}
                     </span>
                   )}
-                  {worst.finalPct < -2 && (
+                  {worst.finalDiff < -0.5 && (
                     <span>
                       <span style={{ color: '#f87171', fontWeight: 700 }}>↓ {worst.name}</span>
-                      {' '}has regressed ({worst.finalPct}%).{' '}
+                      {' '}has regressed ({worst.finalDiff}kg).{' '}
                     </span>
                   )}
                   {stalled.length > 0 && stalled.length < exerciseMeta.length && (
@@ -495,7 +519,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                       {' '}{stalled.length === 1 ? 'has' : 'have'} plateaued — consider increasing weight.
                     </span>
                   )}
-                  {best.finalPct <= 2 && worst.finalPct >= -2 && stalled.length === exerciseMeta.length && (
+                  {best.finalDiff <= 0.5 && worst.finalDiff >= -0.5 && stalled.length === exerciseMeta.length && (
                     <span>All exercises are holding steady. Push the weight up to drive overload.</span>
                   )}
                 </div>
