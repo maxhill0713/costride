@@ -586,10 +586,10 @@ export default function TabCoachOverview({
                 );
               })}
               {atRiskAll.length > 8 && (
-                <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '8px 0' }}>+{atRiskAll.length - 8} more</div>
+                <div style={{ fontSize: 11, color: T.text3, textAlign: 'center', padding: '8px 0' }}>+{atRiskAll.length - 8} more</div>
               )}
             </div>
-          </div>
+          </SCard>
         </section>
 
         {/* ══ 6. COMMUNITY & MOTIVATION ════════════════════════════════════ */}
