@@ -91,6 +91,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showLogConfirm, setShowLogConfirm] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
   const [frozenDuration, setFrozenDuration] = useState(0);
   const frozenDurationRef = React.useRef(0);
