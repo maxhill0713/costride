@@ -81,7 +81,7 @@ function ToggleRow({ label, sub, value, onChange, color = T.blue, last }) {
 }
 
 // ── Gym Health Overview ────────────────────────────────────────────────────────
-function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMemberships, atRisk, retentionRate, now }) {
+function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMemberships, atRisk, retentionRate, now, openModal }) {
   const totalMembers = allMemberships?.length || 0;
   const ci30 = (checkIns || []).filter(c => {
     const d = new Date(c.check_in_date), cutoff = new Date(now);
@@ -113,6 +113,21 @@ function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMembers
   ];
   const done       = checks.filter(c => c.done).length;
   const scoreColor = healthScore >= 75 ? T.green : healthScore >= 50 ? T.amber : T.red;
+  const scoreTier  = healthScore >= 80 ? 'Top 20% of gyms' : healthScore >= 65 ? 'Above average' : healthScore >= 50 ? 'Needs improvement' : 'Getting started';
+
+  // Actionable checklist — each undone item gets a CTA
+  const actionableChecks = [
+    { label: 'Hero photo uploaded',    done: !!selectedGym?.image_url,      color: T.blue,   cta: 'Add photo',  action: 'heroPhoto' },
+    { label: 'At least 1 class added', done: (classes?.length || 0) > 0,    color: T.green,  cta: 'Add class',  action: 'classes'   },
+    { label: 'At least 1 coach added', done: (coaches?.length || 0) > 0,    color: T.purple, cta: 'Add coach',  action: 'coaches'   },
+    { label: 'Members joined',         done: totalMembers > 0,              color: T.amber,  cta: 'Add member', action: 'members'   },
+    { label: 'Retention above 70%',    done: retentionRate >= 70,           color: T.green,  cta: 'View tips',  action: null        },
+    { label: 'No at-risk members',     done: atRisk === 0,                  color: T.red,    cta: 'Message them', action: 'message' },
+    { label: 'Check-ins this month',   done: ci30.length > 0,               color: '#fb923c',cta: 'Scan QR',    action: 'qrScanner' },
+    { label: 'Gym verified',           done: !!selectedGym?.verified,       color: T.blue,   cta: 'Verify now', action: null        },
+  ];
+
+  const done = actionableChecks.filter(c => c.done).length;
 
   return (
     <SCard accent={T.blue} style={{ padding: 20 }}>
@@ -124,6 +139,9 @@ function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMembers
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 36, fontWeight: 800, color: scoreColor, letterSpacing: '-0.05em', lineHeight: 1 }}>{healthScore}</div>
           <div style={{ fontSize: 10, color: T.text3, fontWeight: 600, marginTop: 1 }}>/ 100</div>
+          <div style={{ marginTop: 5, fontSize: 10, fontWeight: 700, color: scoreColor, background: `${scoreColor}14`, border: `1px solid ${scoreColor}25`, borderRadius: 6, padding: '2px 8px', display: 'inline-block' }}>
+            {scoreTier}
+          </div>
         </div>
       </div>
 
@@ -132,46 +150,126 @@ function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMembers
         <div style={{ height: '100%', width: `${healthScore}%`, borderRadius: 99, background: healthScore >= 75 ? `linear-gradient(90deg,${T.green},#34d399)` : healthScore >= 50 ? `linear-gradient(90deg,#d97706,${T.amber})` : `linear-gradient(90deg,${T.red},#f87171)`, transition: 'width 0.8s ease' }} />
       </div>
 
-      {/* Checklist */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
-        {checks.map((c, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 8, background: c.done ? `${c.color}08` : T.divider, border: `1px solid ${c.done ? c.color + '20' : T.border}` }}>
+      {/* Actionable checklist — undone items show a CTA button */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {actionableChecks.map((c, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 11px', borderRadius: 9, background: c.done ? `${c.color}08` : T.divider, border: `1px solid ${c.done ? c.color + '20' : T.border}` }}>
             {c.done
-              ? <CheckCircle style={{ width: 12, height: 12, color: c.color, flexShrink: 0 }} />
-              : <div style={{ width: 12, height: 12, borderRadius: '50%', border: `2px solid ${T.border}`, flexShrink: 0 }} />
+              ? <CheckCircle style={{ width: 13, height: 13, color: c.color, flexShrink: 0 }} />
+              : <div style={{ width: 13, height: 13, borderRadius: '50%', border: `2px solid ${T.border}`, flexShrink: 0 }} />
             }
-            <span style={{ fontSize: 11, fontWeight: 600, color: c.done ? T.text1 : T.text3 }}>{c.label}</span>
+            <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: c.done ? T.text2 : T.text1 }}>{c.label}</span>
+            {!c.done && c.action && (
+              <button onClick={() => openModal(c.action)}
+                style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: c.color, background: `${c.color}12`, border: `1px solid ${c.color}28`, borderRadius: 6, padding: '3px 9px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                {c.cta} →
+              </button>
+            )}
+            {!c.done && !c.action && (
+              <span style={{ flexShrink: 0, fontSize: 10, color: T.text3, fontWeight: 600 }}>{c.cta}</span>
+            )}
           </div>
         ))}
       </div>
 
-      <div style={{ marginTop: 14, padding: '8px 12px', borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, color: T.text3, fontWeight: 600 }}>{done} of {checks.length} completed</span>
+      <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 11, color: T.text3, fontWeight: 600 }}>{done} of {actionableChecks.length} completed</span>
         <span style={{ fontSize: 11, fontWeight: 700, color: healthScore >= 75 ? T.green : T.amber }}>
-          {healthScore >= 75 ? '✓ Fully set up' : `${checks.length - done} action${checks.length - done !== 1 ? 's' : ''} remaining`}
+          {healthScore >= 75 ? '✓ Fully set up' : `${actionableChecks.length - done} action${actionableChecks.length - done !== 1 ? 's' : ''} remaining`}
         </span>
       </div>
     </SCard>
   );
 }
 
-// ── Smart Nudge Settings ──────────────────────────────────────────────────────
-function SmartNudgeSettings({ settings, onUpdate }) {
-  const update = (key, val) => onUpdate({ ...settings, [key]: val });
-  const rows = [
-    { key: 'showTodayPanel',          label: "Show 'What to do today' panel",  sub: 'Daily action recommendations on the Overview page',        color: T.blue   },
-    { key: 'showContentSuggestions',  label: 'Smart content suggestions',       sub: 'Recommend when to post, run polls, and launch challenges', color: T.purple },
-    { key: 'showStreakRecovery',       label: 'Streak recovery prompts',         sub: 'Surface members who just broke a streak for re-engagement', color: T.amber  },
-    { key: 'showDropOffMap',          label: 'Drop-off risk map',               sub: 'Show the drop-off lifecycle stage breakdown',              color: T.red    },
-    { key: 'showReferrals',           label: 'Referral tracking',               sub: 'Track which members are bringing in new sign-ups',         color: T.purple },
-    { key: 'showClassLoyalty',        label: 'Class loyalty warnings',          sub: 'Flag members who only attend a single class/coach',        color: '#fb923c'},
+
+// ── Membership Pricing Tiers ──────────────────────────────────────────────────
+function MembershipPricingSection({ selectedGym, openModal }) {
+  const tiers = selectedGym?.membership_tiers || [];
+  const defaultTiers = [
+    { name: 'Monthly',   price: selectedGym?.price || null, description: 'Rolling monthly membership', color: T.blue   },
+    { name: 'Annual',    price: null,                        description: 'Best value — save 2 months', color: T.green  },
+    { name: 'Day Pass',  price: null,                        description: 'Pay per visit',              color: T.purple },
+  ];
+  const displayTiers = tiers.length > 0 ? tiers : defaultTiers;
+  return (
+    <SCard accent={T.green} style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Membership Pricing</div>
+          <div style={{ fontSize: 11, color: T.text3, marginTop: 2 }}>Set pricing tiers shown to prospective members</div>
+        </div>
+        <button onClick={() => openModal('pricing')}
+          style={{ fontSize: 11, fontWeight: 700, color: T.green, background: `${T.green}10`, border: `1px solid ${T.green}28`, borderRadius: 7, padding: '5px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          Edit Pricing
+        </button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+        {displayTiers.map((tier, i) => (
+          <div key={i} style={{ padding: '14px 14px', borderRadius: 10, background: tier.price ? `${tier.color}08` : T.divider, border: `1px solid ${tier.price ? tier.color + '22' : T.border}`, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${tier.color}22,transparent)`, pointerEvents: 'none' }} />
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>{tier.name}</div>
+            {tier.price ? (
+              <div style={{ fontSize: 22, fontWeight: 800, color: tier.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                £{tier.price}
+                <span style={{ fontSize: 11, fontWeight: 500, color: T.text3 }}>/mo</span>
+              </div>
+            ) : (
+              <button onClick={() => openModal('pricing')}
+                style={{ fontSize: 11, fontWeight: 700, color: T.text3, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 3 }}>
+                + Set price
+              </button>
+            )}
+            <div style={{ fontSize: 10, color: T.text3, marginTop: 5, lineHeight: 1.4 }}>{tier.description}</div>
+          </div>
+        ))}
+      </div>
+      {tiers.length === 0 && (
+        <div style={{ marginTop: 10, padding: '9px 12px', borderRadius: 8, background: `${T.amber}08`, border: `1px solid ${T.amber}18` }}>
+          <div style={{ fontSize: 11, color: T.amber, fontWeight: 600 }}>⚠ No pricing tiers set — prospective members can't see what you charge</div>
+        </div>
+      )}
+    </SCard>
+  );
+}
+
+// ── Notification Settings (replaces SmartNudgeSettings) ──────────────────────
+function NotificationSettings({ nudgeSettings, onUpdate }) {
+  const update = (key, val) => onUpdate({ ...nudgeSettings, [key]: val });
+  const sections = [
+    {
+      title: 'Dashboard Panels', sub: 'Control what appears on your Overview',
+      rows: [
+        { key: 'showTodayPanel',         label: "Today's action panel",         sub: 'Daily action recommendations',                        color: T.blue   },
+        { key: 'showContentSuggestions', label: 'Smart content suggestions',    sub: 'When to post, run polls, start challenges',           color: T.purple },
+        { key: 'showDropOffMap',         label: 'Drop-off risk map',            sub: 'Lifecycle drop-off breakdown',                        color: T.red    },
+      ],
+    },
+    {
+      title: 'Member Alerts', sub: 'When to surface warnings and nudges',
+      rows: [
+        { key: 'showStreakRecovery',     label: 'Streak recovery prompts',       sub: 'Surface members who just broke a streak',            color: T.amber  },
+        { key: 'showClassLoyalty',      label: 'Class dependency warnings',      sub: 'Flag members attending only one class or coach',     color: '#fb923c'},
+        { key: 'showReferrals',         label: 'Referral tracking',              sub: 'Track who brings in new sign-ups',                   color: T.purple },
+      ],
+    },
   ];
   return (
     <SCard accent={T.blue} style={{ padding: 20 }}>
-      <SectionHeading icon={Sparkles} color={T.blue} title="Smart Nudges & Auto-Actions" sub="Control the AI-style suggestions and action panel behaviour" />
-      {rows.map((r, i) => (
-        <ToggleRow key={r.key} label={r.label} sub={r.sub} value={settings[r.key]} onChange={v => update(r.key, v)} color={r.color} last={i === rows.length - 1} />
-      ))}
+      <SectionHeading icon={Sparkles} color={T.blue} title="Notifications & Smart Nudges" sub="Customise what the dashboard surfaces and when" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {sections.map((section, si) => (
+          <div key={si}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.text2, marginBottom: 10, paddingBottom: 6, borderBottom: `1px solid ${T.divider}` }}>
+              {section.title}
+              <span style={{ fontSize: 10, color: T.text3, fontWeight: 500, marginLeft: 7 }}>{section.sub}</span>
+            </div>
+            {section.rows.map((r, i) => (
+              <ToggleRow key={r.key} label={r.label} sub={r.sub} value={nudgeSettings[r.key]} onChange={v => update(r.key, v)} color={r.color} last={i === section.rows.length - 1} />
+            ))}
+          </div>
+        ))}
+      </div>
       <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 9, background: `${T.blue}06`, border: `1px solid ${T.blue}15` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <Info style={{ width: 11, height: 11, color: T.blue }} />
@@ -211,7 +309,7 @@ export default function TabGym({
       {/* ── Hero banner ────────────────────────────────────────────────────── */}
       <div style={{ borderRadius: 12, overflow: 'hidden', background: T.card, border: `1px solid ${T.border}`, position: 'relative' }}>
         {/* Cover image */}
-        <div style={{ height: 190, position: 'relative', background: `linear-gradient(135deg,#070e1c 0%,#0d1a36 50%,#070e1c 100%)`, overflow: 'hidden' }}>
+        <div style={{ height: 155, position: 'relative', background: `linear-gradient(135deg,#070e1c 0%,#0d1a36 50%,#070e1c 100%)`, overflow: 'hidden' }}>
           {selectedGym?.image_url && <img src={selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />}
           <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,${T.card}cc 100%)` }} />
           <button onClick={() => openModal('heroPhoto')}
@@ -245,11 +343,16 @@ export default function TabGym({
                       </div>
                     </>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: statusVerified ? `${T.green}12` : `${T.amber}12`, border: `1px solid ${statusVerified ? T.green + '25' : T.amber + '25'}` }}>
-                    <ShieldCheck style={{ width: 10, height: 10, color: statusVerified ? T.green : T.amber }} />
-                    <span style={{ fontSize: 10, fontWeight: 800, color: statusVerified ? T.green : T.amber, letterSpacing: '0.04em' }}>
-                      {statusVerified ? 'Verified' : 'Pending'}
-                    </span>
+                  <div style={{ position: 'relative' }}>
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: statusVerified ? `${T.green}12` : `${T.amber}12`, border: `1px solid ${statusVerified ? T.green + '25' : T.amber + '25'}`, cursor: statusVerified ? 'default' : 'help' }}
+                      title={statusVerified ? 'Your gym is live and visible to members' : 'Your gym will be visible once verified — typically 1–2 business days after submission'}>
+                      <ShieldCheck style={{ width: 10, height: 10, color: statusVerified ? T.green : T.amber }} />
+                      <span style={{ fontSize: 10, fontWeight: 800, color: statusVerified ? T.green : T.amber, letterSpacing: '0.04em' }}>
+                        {statusVerified ? 'Verified' : 'Pending'}
+                      </span>
+                      {!statusVerified && <Info style={{ width: 9, height: 9, color: T.amber, opacity: 0.7 }} />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -286,7 +389,7 @@ export default function TabGym({
       <GymHealthOverview
         selectedGym={selectedGym} classes={classes} coaches={coaches}
         checkIns={checkIns} allMemberships={allMemberships}
-        atRisk={atRisk} retentionRate={retentionRate} now={now}
+        atRisk={atRisk} retentionRate={retentionRate} now={now} openModal={openModal}
       />
 
       {/* ── Manage sections ───────────────────────────────────────────────────── */}
@@ -317,8 +420,7 @@ export default function TabGym({
         ))}
       </div>
 
-      {/* ── Smart Nudge Settings ──────────────────────────────────────────────── */}
-      <SmartNudgeSettings settings={nudgeSettings} onUpdate={setNudgeSettings} />
+      {/* ── Smart Nudge Settings removed — now rendered as NotificationSettings below the pricing section ── */}
 
       {/* ── Sticky save bar ───────────────────────────────────────────────────── */}
       <div style={{ position: 'sticky', bottom: 16, zIndex: 20 }}>
@@ -422,6 +524,12 @@ export default function TabGym({
           </Link>
         </SCard>
       </div>
+
+      {/* ── Membership Pricing ────────────────────────────────────────────────── */}
+      <MembershipPricingSection selectedGym={selectedGym} openModal={openModal} />
+
+      {/* ── Notification Settings ─────────────────────────────────────────────── */}
+      <NotificationSettings nudgeSettings={nudgeSettings} onUpdate={setNudgeSettings} />
 
       {/* ── Danger Zone ───────────────────────────────────────────────────────── */}
       <div style={{ borderRadius: 12, border: `1px solid ${T.red}22`, background: `${T.red}04`, padding: 20 }}>
