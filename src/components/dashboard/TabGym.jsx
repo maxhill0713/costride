@@ -111,7 +111,6 @@ function GymHealthOverview({ selectedGym, classes, coaches, checkIns, allMembers
     { label: 'Check-ins this month',   done: ci30.length > 0,                color: '#fb923c'},
     { label: 'Gym verified',           done: !!selectedGym?.verified,        color: T.blue   },
   ];
-  const done       = checks.filter(c => c.done).length;
   const scoreColor = healthScore >= 75 ? T.green : healthScore >= 50 ? T.amber : T.red;
   const scoreTier  = healthScore >= 80 ? 'Top 20% of gyms' : healthScore >= 65 ? 'Above average' : healthScore >= 50 ? 'Needs improvement' : 'Getting started';
 
