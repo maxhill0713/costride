@@ -709,8 +709,8 @@ export default function TabCoachOverview({
         {/* ── Upcoming Events ───────────────────────────────────────────── */}
         {upcomingEvents.length > 0 && (
           <SCard accent={T.green} style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Upcoming Events</span>
+            <div style={{ padding: '12px 14px 8px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Upcoming Events</span>
               <button onClick={() => openModal('event')} style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>+ New</button>
             </div>
             <div style={{ padding: '8px 14px' }}>
