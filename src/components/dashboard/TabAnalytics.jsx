@@ -230,7 +230,7 @@ function HeatmapChart({ gymId }) {
   );
 }
 
-// ── Retention Funnel ──────────────────────────────────────────────────────────
+// ── Retention Funnel — visual stepper with arrows + conversion ────────────────
 function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
   const funnel = useMemo(() => {
     const total = allMemberships.length;
@@ -254,51 +254,88 @@ function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
       return last && differenceInDays(now, new Date(last.check_in_date)) <= 21;
     }).length;
     return [
-      { label: 'Joined',           val: total,          color: T.blue,   icon: UserPlus    },
-      { label: 'Week-1 return',    val: w1Return,       color: T.green,  icon: RefreshCw   },
-      { label: 'Month-1 active',   val: month1Active,   color: T.purple, icon: Activity    },
-      { label: 'Month-3 retained', val: month3Retained, color: T.amber,  icon: CheckCircle },
+      { label: 'Joined',           val: total,          color: T.blue,   icon: UserPlus,    desc: 'Total members' },
+      { label: 'Week-1 return',    val: w1Return,       color: T.green,  icon: RefreshCw,   desc: 'Came back in first week' },
+      { label: 'Month-1 active',   val: month1Active,   color: T.purple, icon: Activity,    desc: '4+ visits in first month' },
+      { label: 'Month-3 retained', val: month3Retained, color: T.amber,  icon: CheckCircle, desc: 'Still active at 3 months' },
     ];
   }, [allMemberships, checkIns, now]);
+
+  const hasData = allMemberships.length > 0;
+
   return (
     <SCard accent={T.blue} style={{ padding: 20 }}>
-      <CardHeader title="Retention Funnel" sub="Member lifecycle conversion"
+      <CardHeader title="Retention Funnel" sub="Member lifecycle — where people drop off"
         right={
           <div style={{ width: 28, height: 28, borderRadius: 7, background: `${T.blue}14`, border: `1px solid ${T.blue}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Target style={{ width: 13, height: 13, color: T.blue }} />
           </div>
         }
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {funnel.map((stage, i) => {
-          const pct     = funnel[0].val > 0 ? Math.round((stage.val / funnel[0].val) * 100) : 0;
-          const dropPct = i > 0 && funnel[i-1].val > 0 ? Math.round(((funnel[i-1].val - stage.val) / funnel[i-1].val) * 100) : 0;
-          return (
-            <div key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: `${stage.color}14`, border: `1px solid ${stage.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <stage.icon style={{ width: 11, height: 11, color: stage.color }} />
+
+      {!hasData ? (
+        <div style={{ padding: '14px', borderRadius: 9, background: `${T.blue}06`, border: `1px solid ${T.blue}18`, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: T.text3, lineHeight: 1.5 }}>Funnel populates once members have joined and checked in. Add members to get started.</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {funnel.map((stage, i) => {
+            const pctOfTotal  = funnel[0].val > 0 ? Math.round((stage.val / funnel[0].val) * 100) : 0;
+            const convFromPrev = i > 0 && funnel[i-1].val > 0 ? Math.round((stage.val / funnel[i-1].val) * 100) : null;
+            const dropPct      = convFromPrev !== null ? 100 - convFromPrev : 0;
+            const barWidth     = pctOfTotal;
+
+            return (
+              <div key={i}>
+                {/* Step row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0' }}>
+                  {/* Step number + icon */}
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: `${stage.color}14`, border: `1px solid ${stage.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <stage.icon style={{ width: 14, height: 14, color: stage.color }} />
+                    </div>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.text1 }}>{stage.label}</span>
-                  {i > 0 && dropPct > 0 && (
-                    <span style={{ fontSize: 9, fontWeight: 700, color: dropPct > 30 ? T.red : T.amber, background: dropPct > 30 ? `${T.red}12` : `${T.amber}12`, padding: '1px 5px', borderRadius: 4 }}>
-                      -{dropPct}% drop
-                    </span>
-                  )}
+                  {/* Label + bar */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>{stage.label}</span>
+                        <span style={{ fontSize: 10, color: T.text3, marginLeft: 7 }}>{stage.desc}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 18, fontWeight: 800, color: stage.color, letterSpacing: '-0.03em' }}>{stage.val}</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: T.text3, minWidth: 28, textAlign: 'right' }}>{pctOfTotal}%</span>
+                      </div>
+                    </div>
+                    <div style={{ height: 5, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${barWidth}%`, borderRadius: 99, background: `linear-gradient(90deg,${stage.color},${stage.color}80)`, transition: 'width 0.8s ease' }} />
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: stage.color, letterSpacing: '-0.03em' }}>{stage.val}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: T.text3, minWidth: 28, textAlign: 'right' }}>{pct}%</span>
-                </div>
+
+                {/* Conversion arrow between steps */}
+                {i < funnel.length - 1 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 16, marginBottom: 2 }}>
+                    {/* Vertical line */}
+                    <div style={{ width: 1, height: 18, background: T.border, marginLeft: 15, flexShrink: 0 }} />
+                    {/* Conversion badge */}
+                    {convFromPrev !== null && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: -4 }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: dropPct > 40 ? T.red : dropPct > 20 ? T.amber : T.green, background: dropPct > 40 ? `${T.red}10` : dropPct > 20 ? `${T.amber}10` : `${T.green}10`, border: `1px solid ${dropPct > 40 ? T.red + '25' : dropPct > 20 ? T.amber + '25' : T.green + '25'}`, borderRadius: 5, padding: '1px 6px' }}>
+                          {convFromPrev}% converted
+                        </span>
+                        {dropPct > 0 && (
+                          <span style={{ fontSize: 9, color: T.text3 }}>({dropPct}% lost)</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div style={{ height: 4, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${stage.color},${stage.color}80)`, transition: 'width 0.8s ease' }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </SCard>
   );
 }
@@ -473,22 +510,50 @@ function Week1ReturnTrendWidget({ allMemberships, checkIns, now }) {
   );
 }
 
-// ── Smart Insights Panel ──────────────────────────────────────────────────────
+// ── Smart Insights Panel — gym-size aware ─────────────────────────────────────
 function SmartInsightsPanel({ checkIns, ci30, allMemberships, atRisk, retentionRate, monthChangePct, totalMembers, now }) {
   const insights = useMemo(() => {
     const items = [];
-    if (retentionRate < 60)  items.push({ color: T.red,   icon: AlertTriangle, label: `Retention at ${retentionRate}% — below healthy threshold of 70%`,  detail: 'Focus on week-1 follow-ups and streak recovery',              priority: 1 });
-    else if (retentionRate >= 80) items.push({ color: T.green, icon: CheckCircle, label: `Retention is strong at ${retentionRate}%`,                        detail: 'Keep maintaining your current engagement rhythm',               priority: 5 });
+
+    // ── Too small for meaningful analytics ────────────────────────────────────
+    if (totalMembers < 5) {
+      items.push({ color: T.blue, icon: Users, label: `Only ${totalMembers} member${totalMembers === 1 ? '' : 's'} so far`, detail: `Analytics become meaningful at 10+ members. Add ${10 - totalMembers} more to unlock trend insights.`, priority: 0, isInfo: true });
+      return items;
+    }
+    if (totalMembers < 10) {
+      items.push({ color: T.blue, icon: Users, label: `${totalMembers} members — growing`, detail: `Retention data will be more reliable at 10+ members. Keep ${10 - totalMembers} more joining.`, priority: 0, isInfo: true });
+    }
+
+    // ── Retention ─────────────────────────────────────────────────────────────
+    if (totalMembers >= 10) {
+      if (retentionRate < 60) items.push({ color: T.red, icon: AlertTriangle, label: `Retention at ${retentionRate}% — below 70% healthy threshold`, detail: 'Focus on week-1 follow-ups and streak recovery messages.', priority: 1 });
+      else if (retentionRate >= 80) items.push({ color: T.green, icon: CheckCircle, label: `Retention strong at ${retentionRate}%`, detail: 'You\'re in the top 20% of gyms — keep your current engagement rhythm.', priority: 5 });
+    }
+
+    // ── At-risk concentration ──────────────────────────────────────────────────
     const atRiskPct = totalMembers > 0 ? Math.round((atRisk / totalMembers) * 100) : 0;
-    if (atRiskPct >= 20) items.push({ color: T.red, icon: Zap, label: `${atRiskPct}% of members are at risk — act now`,                                      detail: 'Send a re-engagement push to everyone 14+ days inactive',      priority: 1 });
-    if (monthChangePct < -10) items.push({ color: T.amber, icon: TrendingDown, label: `Check-ins down ${Math.abs(monthChangePct)}% vs last month`,            detail: 'Consider a new challenge or event to re-activate attendance',  priority: 2 });
-    else if (monthChangePct > 15) items.push({ color: T.green, icon: TrendingUp, label: `Strong growth — check-ins up ${monthChangePct}% this month`,         detail: 'Great momentum, make sure your schedule can handle demand',    priority: 4 });
+    if (atRiskPct >= 20) items.push({ color: T.red, icon: Zap, label: `${atRiskPct}% of members are at risk`, detail: 'Send a re-engagement push to everyone 14+ days inactive.', priority: 1 });
+
+    // ── Month change ──────────────────────────────────────────────────────────
+    if (checkIns.length < 20) {
+      items.push({ color: T.blue, icon: Activity, label: 'Not enough check-in data yet', detail: 'Month-over-month comparisons populate after 7+ days of check-ins.', priority: 2, isInfo: true });
+    } else if (monthChangePct < -10) {
+      items.push({ color: T.amber, icon: TrendingDown, label: `Check-ins down ${Math.abs(monthChangePct)}% vs last month`, detail: 'Consider a new challenge or event to re-activate attendance.', priority: 2 });
+    } else if (monthChangePct > 15) {
+      items.push({ color: T.green, icon: TrendingUp, label: `Strong growth — up ${monthChangePct}% this month`, detail: 'Great momentum. Make sure your schedule can handle demand.', priority: 4 });
+    }
+
+    // ── Visit frequency ───────────────────────────────────────────────────────
     const visitRatio = totalMembers > 0 ? (ci30.length / 30) / totalMembers : 0;
-    if (visitRatio < 0.05 && totalMembers > 10) items.push({ color: T.amber, icon: Activity, label: 'Visit frequency is low — less than 5% of members per day', detail: 'Try promoting morning classes or adding peak-time incentives', priority: 2 });
+    if (visitRatio < 0.05 && totalMembers > 10) items.push({ color: T.amber, icon: Activity, label: 'Visit frequency is low', detail: 'Less than 5% of members check in per day. Try promoting morning classes.', priority: 2 });
+
+    // ── Weekend attendance ─────────────────────────────────────────────────────
     const weekendCI = checkIns.filter(c => [0, 6].includes(new Date(c.check_in_date).getDay())).length;
-    if (weekendCI / Math.max(checkIns.length, 1) < 0.15 && checkIns.length > 50) items.push({ color: T.blue, icon: Calendar, label: 'Weekend attendance is low (<15% of visits)', detail: 'A weekend challenge or Saturday event could drive more footfall', priority: 3 });
+    if (weekendCI / Math.max(checkIns.length, 1) < 0.15 && checkIns.length > 50) items.push({ color: T.blue, icon: Calendar, label: 'Weekend attendance is low (<15% of visits)', detail: 'A weekend challenge or Saturday event could drive more footfall.', priority: 3 });
+
     return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [checkIns, ci30, allMemberships, atRisk, retentionRate, monthChangePct, totalMembers, now]);
+
   return (
     <SCard accent={T.blue} style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
@@ -501,12 +566,12 @@ function SmartInsightsPanel({ checkIns, ci30, allMemberships, atRisk, retentionR
             <div style={{ fontSize: 11, color: T.green, fontWeight: 600 }}>✓ Your gym looks healthy — no critical signals</div>
           </div>
         ) : insights.map((s, i) => (
-          <div key={i} style={{ padding: '9px 12px', borderRadius: 9, background: `${s.color}08`, border: `1px solid ${s.color}20` }}>
+          <div key={i} style={{ padding: '9px 12px', borderRadius: 9, background: `${s.color}${s.isInfo ? '06' : '08'}`, border: `1px solid ${s.color}20` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
               <s.icon style={{ width: 11, height: 11, color: s.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{s.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: s.isInfo ? T.text2 : T.text1 }}>{s.label}</span>
             </div>
-            <div style={{ fontSize: 10, color: T.text3, paddingLeft: 18 }}>{s.detail}</div>
+            <div style={{ fontSize: 10, color: T.text3, paddingLeft: 18, lineHeight: 1.5 }}>{s.detail}</div>
           </div>
         ))}
       </div>
@@ -711,9 +776,67 @@ function RankedBarList({ title, icon: Icon, accent, items, emptyIcon, emptyLabel
   );
 }
 
+// ── Vs-last-month comparison badge ────────────────────────────────────────────
+function VsBadge({ current, prev, unit = '' }) {
+  if (!prev || prev === 0) return null;
+  const diff = current - prev;
+  const pct  = Math.round((diff / prev) * 100);
+  const up   = diff > 0;
+  const flat = diff === 0;
+  const color = flat ? T.text3 : up ? T.green : T.red;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5, background: flat ? T.divider : up ? `${T.green}10` : `${T.red}10`, border: `1px solid ${flat ? T.border : up ? T.green + '25' : T.red + '25'}`, color }}>
+      {flat ? '→' : up ? '↑' : '↓'} {Math.abs(pct)}% vs last month
+    </span>
+  );
+}
+
+// ── Trends Summary Card — right sidebar "deeper" panel ────────────────────────
+function TrendsSummaryCard({ ci30, ciPrev30, allMemberships, retentionRate, atRisk, monthChangePct, totalMembers, now }) {
+  const prevTotalCI = ciPrev30?.length || 0;
+  const thisTotalCI = ci30.length;
+
+  // Simulate prev-month retention (rough estimate from prev-month active set)
+  const prevActive = useMemo(() => {
+    if (!ciPrev30?.length) return null;
+    return new Set(ciPrev30.map(c => c.user_id)).size;
+  }, [ciPrev30]);
+  const thisActive = useMemo(() => new Set(ci30.map(c => c.user_id)).size, [ci30]);
+  const prevRetention = prevActive !== null && totalMembers > 0 ? Math.round((prevActive / totalMembers) * 100) : null;
+
+  const rows = [
+    { label: 'Check-ins',        curr: thisTotalCI,  prev: prevTotalCI,   fmt: v => v,          color: T.blue   },
+    { label: 'Active members',   curr: thisActive,   prev: prevActive,    fmt: v => v,          color: T.green  },
+    { label: 'Retention rate',   curr: retentionRate,prev: prevRetention, fmt: v => `${v}%`,    color: retentionRate >= 70 ? T.green : T.amber },
+    { label: 'At-risk members',  curr: atRisk,       prev: null,          fmt: v => v,          color: atRisk > 0 ? T.red : T.green },
+  ];
+
+  return (
+    <SCard accent={T.blue} style={{ padding: 20 }}>
+      <CardHeader title="Month Comparison" sub="This month vs last month" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: i < rows.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
+            <span style={{ fontSize: 12, color: T.text2, fontWeight: 500 }}>{r.label}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              {r.prev !== null && <VsBadge current={r.curr} prev={r.prev} />}
+              <span style={{ fontSize: 13, fontWeight: 700, color: r.color }}>{r.fmt(r.curr)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {prevTotalCI === 0 && (
+        <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 8, background: `${T.blue}06`, border: `1px solid ${T.blue}15` }}>
+          <div style={{ fontSize: 10, color: T.text3, lineHeight: 1.5 }}>Comparison data populates after your first full month of check-ins.</div>
+        </div>
+      )}
+    </SCard>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TabAnalytics({
-  checkIns, ci30, totalMembers, monthCiPer, monthChangePct,
+  checkIns, ci30, ciPrev30 = [], totalMembers, monthCiPer, monthChangePct,
   monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
   allMemberships = [], classes = [], coaches = [], avatarMap = {},
   isCoach = false, myClasses = [],
@@ -896,19 +1019,35 @@ export default function TabAnalytics({
 
       {/* ── LEFT ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-          <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"  color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} />
-          <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month" color={trendColor} trend={monthChangePct} />
-          <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month" color={T.purple} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} />
-          <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="of all check-ins" color={T.amber} footerBar={returnRate} />
-        </div>
+        {/* KPIs — with vs-last-month context */}
+        {checkIns.length < 3 ? (
+          // Too little data — friendly placeholder instead of a row of zeros
+          <SCard style={{ padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${T.blue}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Activity style={{ width: 16, height: 16, color: T.blue }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Analytics data loading</div>
+                <div style={{ fontSize: 11, color: T.text3, marginTop: 3, lineHeight: 1.5 }}>KPIs and trends populate after your first 7 days of check-ins. Start by scanning member QR codes.</div>
+              </div>
+            </div>
+          </SCard>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
+            <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"   color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} />
+            <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month"   color={trendColor} trend={monthChangePct} />
+            <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month"  color={T.purple} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} />
+            <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="of all check-ins" color={T.amber} footerBar={returnRate} />
+          </div>
+        )}
 
         <SmartInsightsPanel checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} totalMembers={totalMembers} now={now} />
         <RetentionFunnelWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
         <DropOffAnalysis allMemberships={allMemberships} checkIns={checkIns} now={now} />
 
-        {/* Weekly Trend */}
+        {/* Weekly Trend — only show once there's meaningful data */}
+        {weekTrend.some(d => d.value > 0) ? (
         <SCard accent={T.blue} style={{ padding: 20 }}>
           <CardHeader title="Weekly Check-in Trend" sub="12-week rolling view"
             right={<span style={{ fontSize: 10, fontWeight: 700, color: T.blue, background: `${T.blue}12`, border: `1px solid ${T.blue}25`, borderRadius: 7, padding: '2px 9px' }}>{weekTrend.reduce((s, d) => s + d.value, 0)} total</span>}
@@ -929,6 +1068,17 @@ export default function TabAnalytics({
             </AreaChart>
           </ResponsiveContainer>
         </SCard>
+        ) : (
+          <SCard style={{ padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <Activity style={{ width: 14, height: 14, color: T.text3 }} />
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: T.text2 }}>Weekly trend chart</div>
+                <div style={{ fontSize: 11, color: T.text3, marginTop: 2 }}>Populates after 7+ days of check-in data</div>
+              </div>
+            </div>
+          </SCard>
+        )}
 
         <ClassPerformanceWidget classes={classes} checkIns={checkIns} ci30={ci30} now={now} />
 
@@ -965,7 +1115,16 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </SCard>
 
+        {/* Traffic Heatmap */}
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
+          <CardHeader title="Traffic Heatmap" sub="Check-in density by day and time"
+            right={<div style={{ width: 26, height: 26, borderRadius: 7, background: `${T.cyan}14`, border: `1px solid ${T.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Flame style={{ width: 12, height: 12, color: T.cyan }} /></div>}
+          />
+          <HeatmapChart gymId={gymId} />
+        </SCard>
 
+        {/* Peak Hours */}
+        <RankedBarList title="Peak Hours" icon={Clock} accent={T.amber} items={peakHours} emptyLabel="No check-in data yet" />
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
@@ -987,6 +1146,13 @@ export default function TabAnalytics({
           ))}
         </SCard>
 
+        {/* Month Comparison — new deeper right panel */}
+        <TrendsSummaryCard
+          ci30={ci30} ciPrev30={ciPrev30} allMemberships={allMemberships}
+          retentionRate={retentionRate} atRisk={atRisk}
+          monthChangePct={monthChangePct} totalMembers={totalMembers} now={now}
+        />
+
         <Week1ReturnTrendWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
         <ChurnSignalWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
 
@@ -1007,7 +1173,14 @@ export default function TabAnalytics({
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} accent={T.amber} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
 
+        <SegmentBreakdown title="Engagement Breakdown" total={totalMembers} segments={[
+          { label: 'Super Active', sub: '15+ visits', val: superActive, color: T.green  },
+          { label: 'Active',       sub: '8–14',       val: active,      color: T.blue   },
+          { label: 'Casual',       sub: '1–7',        val: casual,      color: T.purple },
+          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.amber  },
+        ]} />
 
+        <MilestoneProgressWidget checkIns={checkIns} />
       </div>
     </div>
   );
