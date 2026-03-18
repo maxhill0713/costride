@@ -514,7 +514,7 @@ export default function TabCoachOverview({
 
           {/* 30-Day Snapshot */}
           <SCard style={{ padding: '14px 18px' }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', marginBottom: 14 }}>30-Day Snapshot</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>30-Day Snapshot</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
               {[
                 { label: 'Total check-ins',    value: ci30.length,                                                 color: '#38bdf8' },
