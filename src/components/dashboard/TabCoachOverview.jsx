@@ -430,7 +430,7 @@ export default function TabCoachOverview({
             {/* Weekly Attendance Graph */}
             <SCard style={{ padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Weekly Attendance</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Weekly Attendance</span>
                 <span style={{ fontSize: 10, fontWeight: 700, color: weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b' }}>
                   {weekTrend > 0 ? '↑' : weekTrend < 0 ? '↓' : '—'}{Math.abs(weekTrend)}% vs last wk
                 </span>
