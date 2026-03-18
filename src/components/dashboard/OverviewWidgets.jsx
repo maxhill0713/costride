@@ -170,43 +170,6 @@ export const GymSetupChecklist = ({ selectedGym, classes = [], coaches = [], ope
   );
 };
 
-// ─── Smart Action Nudges ──────────────────────────────────────────────────────
-export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openModal, setTab, checkIns, allMemberships, now }) => {
-  const nudges = React.useMemo(() => {
-    const list = [];
-    if (atRisk > 0) list.push({ icon:'💬', title:`${atRisk} members haven't visited`, sub:'Send a personalised re-engagement message', color:'#f87171', bg:'rgba(239,68,68,0.08)', border:'rgba(239,68,68,0.2)', cta:'Message them', fn:()=>openModal('post') });
-    if (!challenges.some(c=>c.status==='active')) list.push({ icon:'🏆', title:'Launch a community challenge', sub:'Active challenges boost check-ins by ~40%', color:'#fbbf24', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Create challenge', fn:()=>openModal('challenge') });
-    if (polls.length === 0) list.push({ icon:'📊', title:'Ask your members a question', sub:'Polls drive engagement and show you care', color:'#a78bfa', bg:'rgba(139,92,246,0.08)', border:'rgba(139,92,246,0.2)', cta:'Create poll', fn:()=>openModal('poll') });
-    const classGoers = new Set(checkIns.filter(c=>now-new Date(c.check_in_date)<7*86400000).map(c=>c.user_id));
-    const notThisWeek = allMemberships.filter(m=>!classGoers.has(m.user_id));
-    if (notThisWeek.length > 0) list.push({ icon:'📅', title:`Invite ${Math.min(notThisWeek.length,12)} members to a class`, sub:"Haven't been in this week — a nudge helps", color:'#34d399', bg:'rgba(16,185,129,0.08)', border:'rgba(16,185,129,0.2)', cta:'Post invite', fn:()=>openModal('post') });
-    if (monthChangePct < -10) list.push({ icon:'⚠️', title:`Attendance down ${Math.abs(monthChangePct)}% this month`, sub:'A 7-day challenge can reverse the trend', color:'#f59e0b', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Fix it', fn:()=>openModal('challenge') });
-    return list.slice(0, 4);
-  }, [atRisk, challenges, polls, monthChangePct, checkIns, allMemberships, now]);
-
-  if (nudges.length === 0) return null;
-
-  return (
-    <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',marginBottom:12,letterSpacing:'-0.01em' }}>Action Items</div>
-      <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-        {nudges.map((n,i) => (
-          <div key={i} onClick={n.fn} style={{ display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,background:n.bg,border:`1px solid ${n.border}`,cursor:'pointer',transition:'filter 0.15s' }}
-            onMouseEnter={e=>e.currentTarget.style.filter='brightness(1.12)'}
-            onMouseLeave={e=>e.currentTarget.style.filter=''}>
-            <span style={{ fontSize:18,flexShrink:0 }}>{n.icon}</span>
-            <div style={{ flex:1,minWidth:0 }}>
-              <div style={{ fontSize:11,fontWeight:700,color:'var(--text1)',lineHeight:1.3 }}>{n.title}</div>
-              <div style={{ fontSize:10,color:'var(--text3)',marginTop:2 }}>{n.sub}</div>
-            </div>
-            <span style={{ fontSize:10,fontWeight:700,color:n.color,whiteSpace:'nowrap',flexShrink:0 }}>{n.cta} →</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 // ─── Community Health Score ───────────────────────────────────────────────────
 export const CommunityHealthScore = ({ checkIns = [], challenges = [], posts = [], allMemberships = [], now = new Date() }) => {
   const scores = React.useMemo(() => {

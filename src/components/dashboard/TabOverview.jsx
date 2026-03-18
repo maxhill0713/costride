@@ -11,7 +11,7 @@ import {
   ChevronRight, MoreHorizontal, Minus,
 } from 'lucide-react';
 import { RingChart, Avatar } from './DashboardPrimitives';
-import { SmartNudges } from './OverviewWidgets';
+
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -640,12 +640,7 @@ export default function TabOverview({
           </div>
         )}
 
-        {/* Smart nudges */}
-        <SmartNudges
-          atRisk={atRisk} challenges={challenges} polls={polls}
-          monthChangePct={monthChangePct} openModal={openModal} setTab={setTab}
-          checkIns={checkIns} allMemberships={allMemberships} now={now}
-        />
+
       </div>
     </div>
   );
