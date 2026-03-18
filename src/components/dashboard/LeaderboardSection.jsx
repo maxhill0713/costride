@@ -95,34 +95,34 @@ export default function LeaderboardSection({ checkInLeaderboard, streakLeaderboa
   if (!open) return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <button onClick={() => setOpen(true)} className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
-        style={{ background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)', border:'1px solid rgba(255,215,0,0.18)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-        <div style={{ position:'absolute',top:0,bottom:0,width:'30%',background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)',animation:'lb-shimmer 3.5s ease-in-out infinite',pointerEvents:'none' }}/>
-        <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.6) 30%,rgba(255,215,0,0.9) 50%,rgba(255,215,0,0.6) 70%,transparent 100%)',borderRadius:'inherit' }}/>
-        <div className="flex items-center gap-3 px-4 py-3.5">
-          <div style={{ width:44,height:44,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,180,0,0.08))',border:'1px solid rgba(255,215,0,0.25)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
-            <Trophy style={{ width:20,height:20,color:'#FFD700',filter:'drop-shadow(0 0 6px rgba(255,215,0,0.5))' }}/>
+      <button onClick={() => setOpen(true)}
+        style={{ display:'block', width:'100%', textAlign:'left', cursor:'pointer', position:'relative', overflow:'hidden', background:'#0b1120', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, transition:'border-color 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.13)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 16px' }}>
+          <div style={{ width:40,height:40,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'rgba(255,215,0,0.1)',border:'1px solid rgba(255,215,0,0.2)' }}>
+            <Trophy style={{ width:18,height:18,color:'#FFD700' }}/>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p style={{ fontSize:15,fontWeight:900,color:'#fff',letterSpacing:'-0.02em',lineHeight:1 }}>Weekly Leaderboard</p>
-              {list.length>0 && <span style={{ fontSize:9,fontWeight:900,letterSpacing:'0.1em',color:'rgba(255,215,0,0.7)',background:'rgba(255,215,0,0.1)',border:'1px solid rgba(255,215,0,0.2)',padding:'2px 6px',borderRadius:4,textTransform:'uppercase' }}>LIVE</span>}
+          <div style={{ flex:1,minWidth:0 }}>
+            <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:3 }}>
+              <p style={{ fontSize:13,fontWeight:700,color:'#f0f4f8',letterSpacing:'-0.01em',lineHeight:1,margin:0 }}>Weekly Leaderboard</p>
+              {list.length>0 && <span style={{ fontSize:9,fontWeight:800,letterSpacing:'0.1em',color:'rgba(255,215,0,0.7)',background:'rgba(255,215,0,0.1)',border:'1px solid rgba(255,215,0,0.2)',padding:'2px 6px',borderRadius:4,textTransform:'uppercase' }}>LIVE</span>}
             </div>
-            <p style={{ fontSize:11,marginTop:3,fontWeight:600,color:'rgba(255,255,255,0.35)' }}>
+            <p style={{ fontSize:11,fontWeight:600,color:'#475569',margin:0 }}>
               {list.length>0 ? `${list.length} athletes ranked this week` : 'No activity this week'}
             </p>
           </div>
           {podium.length>0 && (
             <div style={{ display:'flex',alignItems:'center',marginRight:4 }}>
               {podium.map((m,i)=>(
-                <div key={i} style={{ width:32,height:32,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].bg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,marginLeft:i===0?0:-10,zIndex:3-i,boxShadow:`0 0 12px ${MEDALS[i].glow},0 2px 8px rgba(0,0,0,0.4)`,flexShrink:0 }}>
+                <div key={i} style={{ width:28,height:28,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].bg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,marginLeft:i===0?0:-8,zIndex:3-i,flexShrink:0 }}>
                   <span style={{ width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900 }}>{initials(m.userName)}</span>
                 </div>
               ))}
             </div>
           )}
-          <div style={{ width:30,height:30,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
-            <ChevronRight style={{ width:15,height:15,color:'rgba(255,255,255,0.4)' }}/>
+          <div style={{ width:28,height:28,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.07)',flexShrink:0 }}>
+            <ChevronRight style={{ width:14,height:14,color:'rgba(255,255,255,0.3)' }}/>
           </div>
         </div>
       </button>
