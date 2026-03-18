@@ -855,6 +855,31 @@ export default function TabOverview({
             valueColor={monthChangePct >= 0 ? T.green : T.red} last />
         </div>
 
+        {/* Coaches quick panel */}
+        {coaches && coaches.length > 0 && (
+          <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${T.purple}20,transparent)`, pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Coaches</div>
+              <button onClick={() => openModal('coaches')} style={{ fontSize: 11, fontWeight: 700, color: T.purple, background: `${T.purple}10`, border: `1px solid ${T.purple}28`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                Manage
+              </button>
+            </div>
+            {coaches.slice(0, 4).map((coach, i) => (
+              <div key={coach.id || i} onClick={() => openModal('coaches')} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(coaches.length, 4) - 1 ? `1px solid ${T.divider}` : 'none', cursor: 'pointer' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${T.purple}20`, border: `1px solid ${T.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: T.purple, flexShrink: 0, overflow: 'hidden' }}>
+                  {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (coach.name || 'C').charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.name}</div>
+                  <div style={{ fontSize: 10, color: T.text3 }}>{coach.invite_status === 'pending' ? '⏳ Invite pending' : coach.role || 'Coach'}</div>
+                </div>
+              </div>
+            ))}
+            {coaches.length > 4 && <div style={{ fontSize: 11, color: T.text3, marginTop: 8 }}>+{coaches.length - 4} more coaches</div>}
+          </div>
+        )}
+
         {/* Pinned priorities */}
         {priorities && priorities.length > 0 && (
           <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
