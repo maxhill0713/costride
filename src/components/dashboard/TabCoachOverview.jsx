@@ -629,7 +629,7 @@ export default function TabCoachOverview({
 
             {/* Streaks */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px' }}>
+              <SCard style={{ padding: '14px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
                   <Flame style={{ width: 14, height: 14, color: '#f59e0b' }}/>
                   <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Active Streaks</span>
