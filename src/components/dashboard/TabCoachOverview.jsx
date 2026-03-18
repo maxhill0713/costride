@@ -134,11 +134,11 @@ function MemberPopover({ member, checkInCount, lastSeen, streak, onClose, avatar
 }
 
 // ─── Section label ────────────────────────────────────────────────────────────
-function SectionLabel({ children, accent = '#a78bfa' }) {
+function SectionLabel({ children, accent = T.purple }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
       <div style={{ width: 3, height: 14, borderRadius: 99, background: accent, flexShrink: 0 }}/>
-      <span style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>{children}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: T.text1, letterSpacing: '-0.01em' }}>{children}</span>
     </div>
   );
 }
