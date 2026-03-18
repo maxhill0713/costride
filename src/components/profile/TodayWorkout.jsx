@@ -185,6 +185,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const todayLog = previousWorkouts.find((log) => log.completed_date === todayDate);
   const alreadyLoggedToday = !!todayLog;
 
+  // If already logged today, freeze the card on what was actually logged — don't let switching workouts change the display
+  const displayWorkout = (alreadyLoggedToday && todayLog)
+    ? { name: todayLog.workout_name || todayLog.workout_type || todayWorkout?.name, exercises: todayLog.exercises || [] }
+    : todayWorkout;
+
   const updateWorkoutMutation = useMutation({
     mutationFn: async (updatedExercises) => {
       const updatedWorkout = {
@@ -344,7 +349,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     </motion.button>
   );
 
-  if (!todayWorkout) {
+  if (!displayWorkout) {
     return (
       <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
         <Dumbbell className="w-8 h-8 text-slate-400 mx-auto mb-2" />
@@ -395,7 +400,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <h2
                 className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight leading-tight"
                 style={{ fontSize: '16.5px' }}>
-                {todayWorkout.name.length > 28 ? todayWorkout.name.substring(0, 28) + '…' : todayWorkout.name}
+                {(displayWorkout.name || '').length > 28 ? displayWorkout.name.substring(0, 28) + '…' : displayWorkout.name}
               </h2>
             </motion.button>
           </div>
@@ -451,7 +456,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               style={{ overflow: 'hidden', transformOrigin: 'top', visibility: isExpanded ? 'visible' : 'hidden' }}>
               <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</p>
 
-              {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+              {displayWorkout.exercises && displayWorkout.exercises.length > 0 ? (
                 <div className="px-2 space-y-2">
                   {/* Headers */}
                   <motion.div
@@ -468,13 +473,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   </motion.div>
 
                   {/* Exercise Rows */}
-                  {todayWorkout.exercises.map((exercise, index) => (
+                  {displayWorkout.exercises.map((exercise, index) => (
                     <motion.div
                       key={index}
                       initial={false}
                       animate={{}}
                       className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_44px_12px_44px_auto_auto] gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
-                      {editingIndex === index ? (
+                      {!alreadyLoggedToday && editingIndex === index ? (
                         <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
@@ -553,13 +558,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
                               {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                             </div>
-                            <motion.button
-                              onClick={() => handleEdit(index, exercise)}
-                              whileTap={{ scale: 0.78, y: 1 }}
-                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                              className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </motion.button>
+                            {!alreadyLoggedToday && (
+                              <motion.button
+                                onClick={() => handleEdit(index, exercise)}
+                                whileTap={{ scale: 0.78, y: 1 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                                className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </motion.button>
+                            )}
                           </div>
                         </>
                       )}
@@ -704,14 +711,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </AnimatePresence>
 
         <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
-        <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
+        <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={displayWorkout?.name} />
         <WorkoutSummaryModal
           isOpen={showSummary}
           duration={frozenDurationRef.current * 1000}
-          workoutName={todayWorkout?.name}
-          exercises={todayWorkout?.exercises}
+          workoutName={displayWorkout?.name}
+          exercises={displayWorkout?.exercises}
           lastWorkout={lastWorkout}
-          notes={currentUser?.workout_notes?.[todayWorkout?.name] || ''}
+          notes={currentUser?.workout_notes?.[displayWorkout?.name] || ''}
           onConfirm={() => { setShowSummary(false); logWorkoutMutation.mutate(); }}
           onCancel={() => setShowSummary(false)}
           isLoading={logWorkoutMutation.isPending}
@@ -795,7 +802,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      // Robust parsing: handles empty strings, numbers, and setsReps fallback
                       const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
                       const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
                       const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
