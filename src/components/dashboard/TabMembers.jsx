@@ -755,41 +755,38 @@ export default function TabMembers({
             <AlertsPanel memberRows={memberRows} atRisk={atRisk} setMemberFilter={handleFilter} setMemberSort={setMemberSort} openModal={openModal} />
             <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
             <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
-            <SCard style={{ padding: 18 }}>
-              <CardHeader title="Growth" />
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ flex: 1 }}>
-                  <StatRow label="Retention"      value={`${retentionRate}%`} valueColor={retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red} />
-                  <StatRow label="Active / week"  value={activeThisWeek}      valueColor={T.blue} />
-                  <StatRow label="New this month" value={newSignUps}           valueColor={newSignUps > 0 ? T.green : T.text1} last />
-                </div>
-                <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great!' : gymHealthScore >= 50 ? 'Keep going' : 'Needs work'} />
-              </div>
-            </SCard>
-            <SCard style={{ padding: 18 }}>
-              <CardHeader title="Quick Actions" />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                {[
-                  { icon: UserPlus, label: 'Add Member',    color: T.green,  fn: () => openModal('members')   },
-                  { icon: QrCode,   label: 'Scan Check-in', color: T.blue,   fn: () => openModal('qrScanner') },
-                  { icon: Trophy,   label: 'New Challenge', color: T.amber,  fn: () => openModal('challenge') },
-                  { icon: Send,     label: 'Send Message',  color: T.purple, fn: () => openModal('post')      },
-                ].map(({ icon: Icon, label, color, fn }, i) => {
-                  const [hov, setHov] = useState(false);
-                  return (
-                    <button key={i} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px', borderRadius: 8, background: hov ? `${color}10` : T.divider, border: `1px solid ${hov ? color + '30' : T.border}`, cursor: 'pointer', transition: 'all 0.12s', fontSize: 11, fontWeight: 600, color: hov ? T.text1 : T.text2, fontFamily: 'inherit' }}>
-                      <div style={{ width: 22, height: 22, borderRadius: 6, background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon style={{ width: 11, height: 11, color }} /></div>
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </SCard>
-            <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
           </div>
         )}
       </div>
+
+      {/* ── Below-table: Growth + Leaderboards (compact side-by-side) ── */}
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {/* Growth — 3 KPI tiles */}
+          <SCard style={{ padding: '14px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>Growth</div>
+              <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great!' : gymHealthScore >= 50 ? 'Keep going' : 'Needs work'} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+              {[
+                { label: 'Retention',     value: `${retentionRate}%`, color: retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red },
+                { label: 'Active / week', value: activeThisWeek,      color: T.blue  },
+                { label: 'New members',   value: newSignUps,           color: newSignUps > 0 ? T.green : T.text1 },
+              ].map((s, i) => (
+                <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: s.color, letterSpacing: '-0.03em', marginBottom: 4 }}>{s.value}</div>
+                  <div style={{ fontSize: 10, color: T.text3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </SCard>
+          {/* Leaderboards */}
+          <div style={{ minWidth: 0 }}>
+            <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
