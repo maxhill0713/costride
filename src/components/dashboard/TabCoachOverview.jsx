@@ -765,10 +765,10 @@ export default function TabCoachOverview({
         {/* ── New Members ───────────────────────────────────────────────── */}
         {newMembers.length > 0 && (
           <SCard accent={T.blue} style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <UserPlus style={{ width: 12, height: 12, color: '#38bdf8' }}/>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>New Members</span>
-              <span style={{ fontSize: 10, color: '#38bdf8', marginLeft: 'auto', fontWeight: 700 }}>{newMembers.length}</span>
+            <div style={{ padding: '12px 14px 8px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <UserPlus style={{ width: 12, height: 12, color: T.blue }}/>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>New Members</span>
+              <span style={{ fontSize: 10, color: T.blue, marginLeft: 'auto', fontWeight: 700 }}>{newMembers.length}</span>
             </div>
             <div style={{ padding: '8px 12px' }}>
               {newMembers.map((m, i) => {
