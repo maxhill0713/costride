@@ -6,16 +6,17 @@ import {
   ArrowUpRight, UserPlus, QrCode, Trophy, Send, Bell, X, Check,
   Zap, Clock, Flame, Activity, Shield,
 } from 'lucide-react';
-import { Card, Avatar, StatusChip, FitnessScore, Empty } from './DashboardPrimitives';
+import { Avatar, StatusChip, FitnessScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
-// ── Design tokens (matches TabOverview) ───────────────────────────────────────
+// ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
   blue:    '#0ea5e9',
   green:   '#10b981',
   red:     '#ef4444',
   amber:   '#f59e0b',
+  purple:  '#8b5cf6',
   text1:   '#f0f4f8',
   text2:   '#94a3b8',
   text3:   '#475569',
@@ -25,12 +26,43 @@ const T = {
   divider: 'rgba(255,255,255,0.05)',
 };
 
-// ── Risk badge — two-tone only, no rainbow ────────────────────────────────────
+// ── Shared card shell with shimmer — matches Overview ─────────────────────────
+function SCard({ children, style = {}, accent }) {
+  const c = accent || T.blue;
+  return (
+    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden', ...style }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${c}28,transparent)`, pointerEvents: 'none' }} />
+      {children}
+    </div>
+  );
+}
+
+// Card section header
+function CardHeader({ title, sub }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>{title}</div>
+      {sub && <div style={{ fontSize: 11, color: T.text3, marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
+}
+
+// Divider stat row — identical to Overview Monthly Snapshot
+function StatRow({ label, value, valueColor, last }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: last ? 'none' : `1px solid ${T.divider}` }}>
+      <span style={{ fontSize: 12, color: T.text2, fontWeight: 500 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: valueColor || T.text1 }}>{value}</span>
+    </div>
+  );
+}
+
+// ── Risk badge ─────────────────────────────────────────────────────────────────
 const RiskBadge = ({ risk }) => {
   const map = {
-    Low:    { color: T.green, bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.2)'  },
-    Medium: { color: T.amber, bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)'  },
-    High:   { color: T.red,   bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.2)'   },
+    Low:    { color: T.green, bg: `${T.green}12`, border: `${T.green}25` },
+    Medium: { color: T.amber, bg: `${T.amber}12`, border: `${T.amber}25` },
+    High:   { color: T.red,   bg: `${T.red}12`,   border: `${T.red}25`   },
   };
   const s = map[risk] || map.Low;
   return (
@@ -42,15 +74,15 @@ const RiskBadge = ({ risk }) => {
 
 const HealthScore = FitnessScore;
 
-// ── Milestone tag — single neutral style, no per-milestone rainbow ─────────────
+// ── Milestone badge ────────────────────────────────────────────────────────────
 function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
   let label = null;
-  if (visitsTotal === 1)   label = 'First visit';
-  else if (visitsTotal === 10)  label = '10 visits';
-  else if (visitsTotal === 25)  label = '25 visits';
-  else if (visitsTotal === 50)  label = '50 visits';
-  else if (visitsTotal === 100) label = '100 visits';
-  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7) label = 'New';
+  if      (visitsTotal === 1)                             label = 'First visit';
+  else if (visitsTotal === 10)                            label = '10 visits';
+  else if (visitsTotal === 25)                            label = '25 visits';
+  else if (visitsTotal === 50)                            label = '50 visits';
+  else if (visitsTotal === 100)                           label = '100 visits';
+  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7)  label = 'New';
   if (!label) return null;
   return (
     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, background: T.divider, border: `1px solid ${T.border}`, padding: '2px 6px', borderRadius: 5 }}>
@@ -59,90 +91,107 @@ function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
   );
 }
 
-// ── Preset push messages ───────────────────────────────────────────────────────
+// ── Preset messages ────────────────────────────────────────────────────────────
 const PRESET_MESSAGES = [
-  { id: 'miss',      label: 'We miss you',       sublabel: 'Re-engagement',   body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.` },
-  { id: 'offer',     label: 'Bring a guest',      sublabel: 'Special offer',   body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.` },
-  { id: 'challenge', label: 'New challenge',      sublabel: 'Motivation',      body: (g, n) => `${n}, a new challenge has just launched at ${g}. It's a great chance to push yourself and hit a new personal best.` },
-  { id: 'nudge',     label: 'Friendly reminder',  sublabel: 'Check-in nudge',  body: (g, n) => `Just checking in, ${n}. Your spot at ${g} is ready whenever you are — consistency is everything.` },
-  { id: 'streak',    label: 'Keep it going',      sublabel: 'Streak recovery', body: (g, n) => `${n}, don't break your streak! Pop in to ${g} today and keep the momentum alive.` },
-  { id: 'welcome',   label: 'Welcome back',       sublabel: 'Week-1 follow-up',body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
+  { id: 'miss',      label: 'We miss you',       sublabel: 'Re-engagement',    body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.` },
+  { id: 'offer',     label: 'Bring a guest',      sublabel: 'Special offer',    body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.` },
+  { id: 'challenge', label: 'New challenge',      sublabel: 'Motivation',       body: (g, n) => `${n}, a new challenge has just launched at ${g}. It's a great chance to push yourself and hit a new personal best.` },
+  { id: 'nudge',     label: 'Friendly reminder',  sublabel: 'Check-in nudge',   body: (g, n) => `Just checking in, ${n}. Your spot at ${g} is ready whenever you are — consistency is everything.` },
+  { id: 'streak',    label: 'Keep it going',      sublabel: 'Streak recovery',  body: (g, n) => `${n}, don't break your streak! Pop in to ${g} today and keep the momentum alive.` },
+  { id: 'welcome',   label: 'Welcome back',       sublabel: 'Week-1 follow-up', body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
 ];
 
-// ── Single member push panel ───────────────────────────────────────────────────
+// ── Template/Custom toggle ─────────────────────────────────────────────────────
+function ModeToggle({ mode, setMode }) {
+  return (
+    <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: T.divider, borderRadius: 8, border: `1px solid ${T.border}`, marginBottom: 12 }}>
+      {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
+        <button key={m.id} onClick={() => setMode(m.id)}
+          style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: mode === m.id ? `${T.blue}18` : 'transparent', border: `1px solid ${mode === m.id ? T.blue + '35' : 'transparent'}`, color: mode === m.id ? T.blue : T.text3, fontFamily: 'inherit', transition: 'all 0.12s' }}>
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Preset grid ────────────────────────────────────────────────────────────────
+function PresetGrid({ preset, setPreset, cols = 2 }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols},1fr)`, gap: 5 }}>
+      {PRESET_MESSAGES.map(p => (
+        <button key={p.id} onClick={() => setPreset(p.id)}
+          style={{ padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: preset === p.id ? `${T.blue}12` : T.divider, border: `1px solid ${preset === p.id ? T.blue + '40' : T.border}`, transition: 'all 0.12s', fontFamily: 'inherit' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: preset === p.id ? T.blue : T.text1, marginBottom: 2 }}>{p.label}</div>
+          <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.sublabel}</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Message preview box ────────────────────────────────────────────────────────
+function MessagePreview({ text }) {
+  return (
+    <div style={{ padding: '9px 11px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, borderLeft: `3px solid ${text ? T.blue + '60' : T.border}`, fontSize: 11, color: text ? T.text2 : T.text3, lineHeight: 1.6, fontStyle: text ? 'normal' : 'italic' }}>
+      {text || 'Select a template or write a message…'}
+    </div>
+  );
+}
+
+// ── Send button ────────────────────────────────────────────────────────────────
+function SendBtn({ onClick, disabled, sending, sent, label }) {
+  const ready = !disabled && !sending && !sent;
+  return (
+    <button onClick={onClick} disabled={disabled || sending || sent}
+      style={{ width: '100%', padding: '9px', borderRadius: 8, border: `1px solid ${sent ? T.green + '40' : ready ? T.blue + '40' : T.border}`, cursor: ready ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: sent ? `${T.green}10` : ready ? `${T.blue}12` : T.divider, color: sent ? T.green : ready ? T.blue : T.text3, transition: 'all 0.15s', fontFamily: 'inherit' }}>
+      {sent ? <><Check style={{ width: 12, height: 12 }} /> Sent</> : sending ? 'Sending…' : <><Send style={{ width: 12, height: 12 }} /> {label}</>}
+    </button>
+  );
+}
+
+// ── Single-member push panel ───────────────────────────────────────────────────
 function MemberPushPanel({ member, gymName, gymId, onClose }) {
-  const [preset, setPreset] = useState('miss');
-  const [custom, setCustom] = useState('');
-  const [mode,   setMode]   = useState('preset');
+  const [preset,  setPreset]  = useState('miss');
+  const [custom,  setCustom]  = useState('');
+  const [mode,    setMode]    = useState('preset');
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
-
-  const message = mode === 'preset'
-    ? PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, member.name.split(' ')[0]) || ''
-    : custom;
+  const firstName = member.name.split(' ')[0];
+  const message   = mode === 'preset' ? PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, firstName) || '' : custom;
 
   const handleSend = async () => {
     if (!message.trim() || sending) return;
     setSending(true);
     try {
-      await base44.functions.invoke('sendPushNotification', {
-        gym_id: gymId, gym_name: gymName, target: 'specific',
-        message: message.trim(), member_ids: [member.user_id],
-      });
+      await base44.functions.invoke('sendPushNotification', { gym_id: gymId, gym_name: gymName, target: 'specific', message: message.trim(), member_ids: [member.user_id] });
       setSent(true);
       setTimeout(() => { setSent(false); onClose(); }, 2000);
     } catch (e) { console.error(e); } finally { setSending(false); }
   };
 
   return (
-    <div style={{ padding: '14px 16px 16px', background: `${T.blue}06`, borderBottom: `1px solid ${T.divider}`, borderLeft: `3px solid ${T.blue}60` }}>
+    <div style={{ padding: '14px 16px 16px', background: `${T.blue}06`, borderBottom: `1px solid ${T.divider}`, borderLeft: `3px solid ${T.blue}50` }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Bell style={{ width: 13, height: 13, color: T.blue }} />
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>Push Notification</div>
-            <div style={{ fontSize: 10, color: T.text3 }}>Sending to {member.name.split(' ')[0]}</div>
+            <div style={{ fontSize: 10, color: T.text3 }}>Sending to {firstName}</div>
           </div>
         </div>
         <button onClick={onClose} style={{ width: 24, height: 24, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.divider, border: `1px solid ${T.border}`, cursor: 'pointer' }}>
           <X style={{ width: 11, height: 11, color: T.text3 }} />
         </button>
       </div>
-
-      {/* Mode toggle */}
-      <div style={{ display: 'flex', gap: 3, marginBottom: 12, padding: 3, background: T.divider, borderRadius: 8, border: `1px solid ${T.border}`, width: 'fit-content' }}>
-        {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
-          <button key={m.id} onClick={() => setMode(m.id)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: mode === m.id ? `${T.blue}18` : 'transparent', border: `1px solid ${mode === m.id ? T.blue + '35' : 'transparent'}`, color: mode === m.id ? T.blue : T.text3, fontFamily: 'inherit', transition: 'all 0.12s' }}>
-            {m.label}
-          </button>
-        ))}
-      </div>
-
-      {mode === 'preset' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 12 }}>
-          {PRESET_MESSAGES.map(p => (
-            <button key={p.id} onClick={() => setPreset(p.id)} style={{ padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: preset === p.id ? `${T.blue}12` : T.divider, border: `1px solid ${preset === p.id ? T.blue + '40' : T.border}`, transition: 'all 0.12s', fontFamily: 'inherit' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: preset === p.id ? T.blue : T.text1, marginBottom: 2 }}>{p.label}</div>
-              <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.sublabel}</div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <textarea value={custom} onChange={e => setCustom(e.target.value)} placeholder={`Write a message to ${member.name.split(' ')[0]}…`} rows={3}
-          style={{ width: '100%', boxSizing: 'border-box', marginBottom: 12, background: T.divider, border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 10px', fontSize: 11, color: T.text1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
+      <ModeToggle mode={mode} setMode={setMode} />
+      {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
+        <textarea value={custom} onChange={e => setCustom(e.target.value)} placeholder={`Write a message to ${firstName}…`} rows={3}
+          style={{ width: '100%', boxSizing: 'border-box', marginBottom: 10, background: T.divider, border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 10px', fontSize: 11, color: T.text1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
           onFocus={e => e.target.style.borderColor = `${T.blue}50`} onBlur={e => e.target.style.borderColor = T.border} />
       )}
-
-      {message && (
-        <div style={{ marginBottom: 12, padding: '9px 11px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.blue}60`, fontSize: 11, color: T.text2, lineHeight: 1.6 }}>
-          {message}
-        </div>
-      )}
-
-      <button onClick={handleSend} disabled={!message.trim() || sending || sent}
-        style={{ width: '100%', padding: '9px', borderRadius: 8, border: `1px solid ${sent ? T.green + '40' : message.trim() ? T.blue + '40' : T.border}`, cursor: message.trim() && !sending && !sent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: sent ? `${T.green}10` : message.trim() ? `${T.blue}12` : T.divider, color: sent ? T.green : message.trim() ? T.blue : T.text3, transition: 'all 0.15s', fontFamily: 'inherit' }}>
-        {sent ? <><Check style={{ width: 12, height: 12 }} /> Sent</> : sending ? 'Sending…' : <><Send style={{ width: 12, height: 12 }} /> Send to {member.name.split(' ')[0]}</>}
-      </button>
+      {message && <div style={{ margin: '10px 0' }}><MessagePreview text={message} /></div>}
+      <SendBtn onClick={handleSend} disabled={!message.trim()} sending={sending} sent={sent} label={`Send to ${firstName}`} />
     </div>
   );
 }
@@ -154,7 +203,6 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
   const [mode,    setMode]    = useState('preset');
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
-
   const members     = memberRows.filter(m => selectedRows.has(m.id));
   const memberCount = members.length;
   const buildMsg    = (p, name) => PRESET_MESSAGES.find(x => x.id === p)?.body(gymName, name) || '';
@@ -175,7 +223,7 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
   };
 
   return (
-    <div style={{ padding: '14px 16px 16px', background: `${T.blue}06`, borderBottom: `1px solid ${T.divider}`, borderLeft: `3px solid ${T.blue}60` }}>
+    <div style={{ padding: '14px 16px 16px', background: `${T.blue}06`, borderBottom: `1px solid ${T.divider}`, borderLeft: `3px solid ${T.blue}50` }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Users style={{ width: 13, height: 13, color: T.blue }} />
@@ -184,15 +232,16 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
             <div style={{ fontSize: 10, color: T.text3 }}>{memberCount} {memberCount === 1 ? 'member' : 'members'} selected{mode === 'preset' && ' · personalised per name'}</div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          {/* Stacked avatars */}
           <div style={{ display: 'flex' }}>
             {members.slice(0, 4).map((m, i) => (
-              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: '2px solid var(--card)', borderRadius: '50%' }}>
+              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: `2px solid ${T.card}`, borderRadius: '50%' }}>
                 <Avatar name={m.name} size={20} src={m.avatar_url || m.member_avatar} />
               </div>
             ))}
             {memberCount > 4 && (
-              <div style={{ marginLeft: -6, width: 20, height: 20, borderRadius: '50%', background: T.divider, border: '2px solid var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ marginLeft: -6, width: 20, height: 20, borderRadius: '50%', background: T.divider, border: `2px solid ${T.card}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontSize: 8, fontWeight: 800, color: T.text2 }}>+{memberCount - 4}</span>
               </div>
             )}
@@ -202,26 +251,10 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
           </button>
         </div>
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div>
-          <div style={{ display: 'flex', gap: 3, marginBottom: 10, padding: 3, background: T.divider, borderRadius: 8, border: `1px solid ${T.border}`, width: 'fit-content' }}>
-            {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
-              <button key={m.id} onClick={() => setMode(m.id)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: mode === m.id ? `${T.blue}18` : 'transparent', border: `1px solid ${mode === m.id ? T.blue + '35' : 'transparent'}`, color: mode === m.id ? T.blue : T.text3, fontFamily: 'inherit', transition: 'all 0.12s' }}>
-                {m.label}
-              </button>
-            ))}
-          </div>
-          {mode === 'preset' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-              {PRESET_MESSAGES.map(p => (
-                <button key={p.id} onClick={() => setPreset(p.id)} style={{ padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: preset === p.id ? `${T.blue}12` : T.divider, border: `1px solid ${preset === p.id ? T.blue + '40' : T.border}`, transition: 'all 0.12s', fontFamily: 'inherit' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: preset === p.id ? T.blue : T.text1, marginBottom: 2 }}>{p.label}</div>
-                  <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.sublabel}</div>
-                </button>
-              ))}
-            </div>
-          ) : (
+          <ModeToggle mode={mode} setMode={setMode} />
+          {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} cols={2} /> : (
             <textarea value={custom} onChange={e => setCustom(e.target.value)} placeholder={`Write a message to all ${memberCount} members…`} rows={4}
               style={{ width: '100%', boxSizing: 'border-box', background: T.divider, border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 10px', fontSize: 11, color: T.text1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
               onFocus={e => e.target.style.borderColor = `${T.blue}50`} onBlur={e => e.target.style.borderColor = T.border} />
@@ -229,20 +262,15 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Preview</div>
-          <div style={{ flex: 1, padding: '9px 11px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, borderLeft: `3px solid ${preview ? T.blue + '60' : T.border}`, fontSize: 11, color: preview ? T.text2 : T.text3, lineHeight: 1.6, fontStyle: preview ? 'normal' : 'italic' }}>
-            {preview || 'Select a template or write a message…'}
-          </div>
-          <button onClick={handleSend} disabled={!preview.trim() || sending || sent}
-            style={{ width: '100%', padding: '9px', borderRadius: 8, border: `1px solid ${sent ? T.green + '40' : preview.trim() ? T.blue + '40' : T.border}`, cursor: preview.trim() && !sending && !sent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: sent ? `${T.green}10` : preview.trim() ? `${T.blue}12` : T.divider, color: sent ? T.green : preview.trim() ? T.blue : T.text3, transition: 'all 0.15s', fontFamily: 'inherit' }}>
-            {sent ? <><Check style={{ width: 13, height: 13 }} /> Sent to {memberCount}</> : sending ? `Sending…` : <><Send style={{ width: 13, height: 13 }} /> Send to {memberCount}</>}
-          </button>
+          <div style={{ flex: 1 }}><MessagePreview text={preview} /></div>
+          <SendBtn onClick={handleSend} disabled={!preview.trim()} sending={sending} sent={sent} label={`Send to ${memberCount}`} />
         </div>
       </div>
     </div>
   );
 }
 
-// ── Segment summary — simplified, single-blue accent ─────────────────────────
+// ── Segment summary — KPI card style matching Overview ────────────────────────
 function SegmentSummary({ memberRows, totalMembers, setMemberFilter, activeFilter }) {
   const segs = useMemo(() => {
     const superActive = memberRows.filter(m => m.visits30 >= 15).length;
@@ -251,34 +279,36 @@ function SegmentSummary({ memberRows, totalMembers, setMemberFilter, activeFilte
     const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
     const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
     return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo', color: T.green, filter: 'active'  },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14/mo',      color: T.blue,  filter: 'active'  },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3/mo',       color: T.amber, filter: 'active'  },
-      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days',     color: T.red,   filter: 'atRisk'  },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days', color: T.text2, filter: 'new'     },
+      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo', color: T.green,  filter: 'active'  },
+      { id: 'active',      label: 'Active',        val: active,      sub: '4–14/mo',       color: T.blue,   filter: 'active'  },
+      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3/mo',        color: T.amber,  filter: 'active'  },
+      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days',      color: T.red,    filter: 'atRisk'  },
+      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',  color: T.text2,  filter: 'new'     },
     ];
   }, [memberRows]);
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
       {segs.map(s => {
-        const isActive = activeFilter === s.filter;
+        const isActive = activeFilter === s.filter && activeFilter !== 'all';
         return (
-          <button key={s.id} onClick={() => setMemberFilter(isActive ? 'all' : s.filter)}
-            style={{ padding: '14px 10px', borderRadius: 10, cursor: 'pointer', textAlign: 'center', background: T.card, border: `1px solid ${isActive ? s.color + '40' : T.border}`, transition: 'all 0.15s', fontFamily: 'inherit' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = `${s.color}40`}
-            onMouseLeave={e => e.currentTarget.style.borderColor = isActive ? `${s.color}40` : T.border}>
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.val > 0 ? s.color : T.text3, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{s.val}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: s.val > 0 ? T.text1 : T.text3 }}>{s.label}</div>
-            <div style={{ fontSize: 10, color: T.text3, marginTop: 2 }}>{s.sub}</div>
-          </button>
+          <div key={s.id} onClick={() => setMemberFilter(isActive ? 'all' : s.filter)}
+            style={{ padding: '16px 14px', borderRadius: 12, cursor: 'pointer', background: T.card, border: `1px solid ${isActive ? s.color + '40' : T.border}`, transition: 'all 0.15s', position: 'relative', overflow: 'hidden' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = `${s.color}40`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = isActive ? `${s.color}40` : T.border; e.currentTarget.style.transform = ''; }}>
+            {/* Shimmer */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${s.color}28,transparent)`, pointerEvents: 'none' }} />
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{s.label}</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: s.val > 0 ? s.color : T.text3, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 6 }}>{s.val}</div>
+            <div style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{s.sub}</div>
+          </div>
         );
       })}
     </div>
   );
 }
 
-// ── Drop-off analysis ─────────────────────────────────────────────────────────
+// ── Drop-off widget ────────────────────────────────────────────────────────────
 function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
   const buckets = useMemo(() => {
     const w1 = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.daysSince >= 7).length;
@@ -295,9 +325,8 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
   const total = buckets.reduce((a, b) => a + b.val, 0);
 
   return (
-    <div style={{ padding: 18, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 2 }}>Drop-off Patterns</div>
-      <div style={{ fontSize: 11, color: T.text3, marginBottom: 14 }}>When members typically go inactive</div>
+    <SCard style={{ padding: 18 }}>
+      <CardHeader title="Drop-off Patterns" sub="When members typically go inactive" />
       {total === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, background: `${T.green}0a`, border: `1px solid ${T.green}18` }}>
           <CheckCircle style={{ width: 13, height: 13, color: T.green, flexShrink: 0 }} />
@@ -325,19 +354,16 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
           </button>
         </>
       )}
-    </div>
+    </SCard>
   );
 }
 
-// ── Week-1 follow-up ───────────────────────────────────────────────────────────
+// ── Week-1 return widget ───────────────────────────────────────────────────────
 function WeekOneFollowUp({ memberRows, setMemberFilter }) {
   const { returned, didnt, names } = useMemo(() => {
     const newish = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo >= 7 && m.joinedDaysAgo <= 21);
     let returned = 0, didnt = 0; const names = [];
-    newish.forEach(m => {
-      if (m.visitsTotal >= 2) returned++;
-      else { didnt++; if (names.length < 3) names.push(m.name.split(' ')[0]); }
-    });
+    newish.forEach(m => { if (m.visitsTotal >= 2) returned++; else { didnt++; if (names.length < 3) names.push(m.name.split(' ')[0]); } });
     return { returned, didnt, names };
   }, [memberRows]);
   const total = returned + didnt;
@@ -345,10 +371,10 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
   const color = total === 0 ? T.text3 : pct >= 60 ? T.green : pct >= 40 ? T.amber : T.red;
 
   return (
-    <div style={{ padding: 18, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
+    <SCard style={{ padding: 18 }} accent={color}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Week-1 Return Rate</div>
-        <div style={{ fontSize: 26, fontWeight: 800, color, letterSpacing: '-0.04em', lineHeight: 1 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: '-0.04em', lineHeight: 1 }}>
           {total === 0 ? '—' : `${pct}%`}
         </div>
       </div>
@@ -357,16 +383,16 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
         <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>No members in this window yet.</p>
       ) : (
         <>
-          <div style={{ height: 4, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: 12 }}>
             <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 99, transition: 'width 0.7s ease' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <div style={{ padding: '8px 10px', borderRadius: 8, background: `${T.green}0a`, border: `1px solid ${T.green}18`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: T.green }}>{returned}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: T.green, letterSpacing: '-0.03em' }}>{returned}</div>
               <div style={{ fontSize: 10, color: T.text3, fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Came back</div>
             </div>
             <div style={{ padding: '8px 10px', borderRadius: 8, background: `${T.red}0a`, border: `1px solid ${didnt > 0 ? T.red + '18' : T.border}`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: didnt > 0 ? T.red : T.text3 }}>{didnt}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: didnt > 0 ? T.red : T.text3, letterSpacing: '-0.03em' }}>{didnt}</div>
               <div style={{ fontSize: 10, color: T.text3, fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Didn't return</div>
             </div>
           </div>
@@ -380,7 +406,7 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
           )}
         </>
       )}
-    </div>
+    </SCard>
   );
 }
 
@@ -403,12 +429,12 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
   return (
     <>
       {/* Stats strip */}
-      <div style={{ padding: '10px 16px', background: T.divider, borderBottom: `1px solid ${T.divider}`, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 16px', background: T.divider, borderBottom: `1px solid ${T.divider}`, display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         {[
-          { label: 'Total Visits', val: m.visitsTotal,        color: T.blue  },
-          { label: 'This Month',   val: m.visits30,            color: T.green },
-          { label: 'Posts (30d)',  val: recentPosts,           color: T.text2 },
-          { label: 'Eng. Score',   val: `${engScore}%`,        color: engScore >= 70 ? T.green : engScore >= 40 ? T.amber : T.red },
+          { label: 'Total Visits', val: m.visitsTotal,  color: T.blue  },
+          { label: 'This Month',   val: m.visits30,     color: T.green },
+          { label: 'Posts (30d)',  val: recentPosts,    color: T.text2 },
+          { label: 'Eng. Score',   val: `${engScore}%`, color: engScore >= 70 ? T.green : engScore >= 40 ? T.amber : T.red },
         ].map((s, i) => (
           <div key={i} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
@@ -433,16 +459,6 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
   );
 }
 
-// ── Stat row helper ────────────────────────────────────────────────────────────
-function StatRow({ label, value, valueColor, last }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: last ? 'none' : `1px solid ${T.divider}` }}>
-      <span style={{ fontSize: 12, color: T.text2, fontWeight: 500 }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: valueColor || T.text1 }}>{value}</span>
-    </div>
-  );
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
@@ -455,7 +471,6 @@ export default function TabMembers({
   const [expandedMember, setExpandedMember] = useState(null);
   const [showBulkPanel,  setShowBulkPanel]  = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-
   React.useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
@@ -464,17 +479,16 @@ export default function TabMembers({
 
   const gymName = selectedGym?.name || 'Your Gym';
 
-  // ── Build member rows ────────────────────────────────────────────────────────
+  // ── Build member rows ──────────────────────────────────────────────────────
   const memberRows = useMemo(() => allMemberships.map(m => {
-    const userCI     = checkIns.filter(c => c.user_id === m.user_id);
-    const visits30   = ci30.filter(c => c.user_id === m.user_id).length;
-    const lastVisit  = memberLastCheckIn[m.user_id];
-    const daysSince  = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
-    const isBanned   = (selectedGym?.banned_members || []).includes(m.user_id);
-    const name       = userCI[0]?.user_name || m.user_name || 'Member';
-    const joinDate   = m.join_date || m.created_date || m.created_at;
+    const userCI    = checkIns.filter(c => c.user_id === m.user_id);
+    const visits30  = ci30.filter(c => c.user_id === m.user_id).length;
+    const lastVisit = memberLastCheckIn[m.user_id];
+    const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
+    const isBanned  = (selectedGym?.banned_members || []).includes(m.user_id);
+    const name      = userCI[0]?.user_name || m.user_name || 'Member';
+    const joinDate  = m.join_date || m.created_date || m.created_at;
     const joinedDaysAgo = joinDate ? differenceInDays(now, new Date(joinDate)) : null;
-
     let tier = 'New';
     if (visits30 >= 15) tier = 'Super Active'; else if (visits30 >= 8) tier = 'Active'; else if (visits30 >= 1) tier = 'Casual';
     let risk = 'Low';
@@ -482,7 +496,6 @@ export default function TabMembers({
     let statusTag = tier === 'Super Active' || tier === 'Active' ? 'Engaged' : tier === 'New' ? 'New' : 'Casual';
     if (daysSince >= 14) statusTag = 'At Risk';
     if (isBanned) statusTag = 'Banned';
-
     let lastVisitDisplay = 'Never';
     if (lastVisit) {
       if (daysSince === 0)     lastVisitDisplay = 'Today';
@@ -492,7 +505,6 @@ export default function TabMembers({
       else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
       else                     lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
     }
-
     const sortedCI = userCI.sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
     let streak = sortedCI.length > 0 ? 1 : 0;
     let cur = sortedCI.length > 0 ? new Date(sortedCI[0].check_in_date) : null;
@@ -504,7 +516,6 @@ export default function TabMembers({
         if (diff === 1) { streak++; cur = d; } else if (diff > 1) break;
       }
     }
-
     return {
       ...m, name, visits30, visitsTotal: userCI.length, lastVisit, daysSince,
       tier, risk, statusTag, lastVisitDisplay,
@@ -513,7 +524,7 @@ export default function TabMembers({
     };
   }), [allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym?.banned_members, avatarMap, now]);
 
-  // ── Filtering & sorting ──────────────────────────────────────────────────────
+  // ── Filter / sort / paginate ───────────────────────────────────────────────
   const filtered = useMemo(() => memberRows.filter(m => {
     if (memberFilter === 'active')   return m.daysSince < 7;
     if (memberFilter === 'inactive') return m.daysSince >= 14;
@@ -546,40 +557,44 @@ export default function TabMembers({
   };
 
   const toggleAll       = () => { if (selectedRows.size === paginated.length) { setSelectedRows(new Set()); setShowBulkPanel(false); } else setSelectedRows(new Set(paginated.map(m => m.id))); };
-  const handleToggleRow = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); if (s.size === 0) setShowBulkPanel(false); };
-  const handleFilter    = (f)  => { setMemberFilter(f); setMemberPage(1); };
-  const handleSearch    = (v)  => { setMemberSearch(v); setMemberPage(1); };
+  const handleToggleRow = id  => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); if (s.size === 0) setShowBulkPanel(false); };
+  const handleFilter    = f   => { setMemberFilter(f); setMemberPage(1); };
+  const handleSearch    = v   => { setMemberSearch(v); setMemberPage(1); };
 
   // Leaderboards
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekAgo  = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const weeklyCI = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
   const checkInLB = Object.values(weeklyCI.reduce((acc, c) => {
     if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: c.user_name, userAvatar: avatarMap[c.user_id] || null, count: 0 };
     acc[c.user_id].count++;
     return acc;
   }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-
   const streakLB = memberRows.map(m => ({ userId: m.user_id, userName: m.name, userAvatar: m.avatar_url, streak: m.streak }))
     .sort((a, b) => b.streak - a.streak).slice(0, 10);
 
+  // ── Table column widths ────────────────────────────────────────────────────
+  const COLS = '32px 2.5fr 1fr 1fr 1fr 1fr';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
       {/* Segment summary */}
-      {!isMobile && (
-        <SegmentSummary memberRows={memberRows} totalMembers={totalMembers} setMemberFilter={handleFilter} activeFilter={memberFilter} />
-      )}
+      {!isMobile && <SegmentSummary memberRows={memberRows} totalMembers={totalMembers} setMemberFilter={handleFilter} activeFilter={memberFilter} />}
 
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 268px', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 272px', gap: 14, alignItems: 'start' }}>
 
-        {/* ── Member Table ── */}
-        <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+        {/* ── Member table ─────────────────────────────────────────────────── */}
+        <SCard style={{ overflow: 'hidden' }}>
 
-          {/* Filter bar */}
-          <div style={{ padding: isMobile ? '12px 12px 10px' : '12px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => openModal('members')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: T.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>
+          {/* Toolbar */}
+          <div style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {/* Add member */}
+            <button onClick={() => openModal('members')}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: T.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>
               <Plus style={{ width: 12, height: 12 }} /> Add Member
             </button>
+
+            {/* Filter tabs */}
             <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
               {[
                 { id: 'all',      label: 'All',      count: filterCounts.all      },
@@ -587,23 +602,30 @@ export default function TabMembers({
                 { id: 'inactive', label: 'Inactive', count: filterCounts.inactive },
                 { id: 'atRisk',   label: 'At Risk',  count: filterCounts.atRisk,  danger: true },
                 { id: 'new',      label: 'New',      count: filterCounts.new      },
-              ].map(f => (
-                <button key={f.id} onClick={() => handleFilter(f.id)}
-                  style={{ padding: '5px 11px', borderRadius: 7, fontSize: 11, fontWeight: memberFilter === f.id ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', background: memberFilter === f.id ? (f.danger ? `${T.red}14` : `${T.blue}14`) : 'transparent', color: memberFilter === f.id ? (f.danger ? T.red : T.blue) : T.text3, border: `1px solid ${memberFilter === f.id ? (f.danger ? T.red + '30' : T.blue + '30') : 'transparent'}`, transition: 'all 0.12s' }}>
-                  {f.label}
-                  {f.danger && f.count > 0 && <span style={{ marginLeft: 4, background: T.red, color: '#fff', borderRadius: 99, padding: '0 5px', fontSize: 9, fontWeight: 800 }}>{f.count}</span>}
-                </button>
-              ))}
+              ].map(f => {
+                const on = memberFilter === f.id;
+                return (
+                  <button key={f.id} onClick={() => handleFilter(f.id)}
+                    style={{ padding: '5px 11px', borderRadius: 7, fontSize: 11, fontWeight: on ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', background: on ? (f.danger ? `${T.red}14` : `${T.blue}14`) : 'transparent', color: on ? (f.danger ? T.red : T.blue) : T.text3, border: `1px solid ${on ? (f.danger ? T.red + '30' : T.blue + '30') : 'transparent'}`, transition: 'all 0.12s' }}>
+                    {f.label}
+                    {f.danger && f.count > 0 && <span style={{ marginLeft: 4, background: T.red, color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: 9, fontWeight: 800 }}>{f.count}</span>}
+                  </button>
+                );
+              })}
             </div>
+
             <div style={{ flex: 1 }} />
+
+            {/* Search */}
             <div style={{ position: 'relative' }}>
-              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: T.text3 }} />
+              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: T.text3, pointerEvents: 'none' }} />
               <input placeholder="Search members…" value={memberSearch} onChange={e => handleSearch(e.target.value)}
-                style={{ padding: '7px 12px 7px 28px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, color: T.text1, fontSize: 12, outline: 'none', fontFamily: 'inherit', width: 180 }} />
+                style={{ padding: '7px 12px 7px 28px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, color: T.text1, fontSize: 12, outline: 'none', fontFamily: 'inherit', width: 180 }}
+                onFocus={e => e.target.style.borderColor = `${T.blue}40`} onBlur={e => e.target.style.borderColor = T.border} />
             </div>
           </div>
 
-          {/* Sort + hint bar */}
+          {/* Sort + hint */}
           <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 11, color: T.text3, fontWeight: 600 }}>Sort</span>
             <select value={memberSort} onChange={e => setMemberSort(e.target.value)}
@@ -629,14 +651,17 @@ export default function TabMembers({
             <div style={{ padding: '10px 16px', background: `${T.blue}08`, borderBottom: `1px solid ${T.blue}20`, display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ display: 'flex' }}>
                 {memberRows.filter(m => selectedRows.has(m.id)).slice(0, 3).map((m, i) => (
-                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: '2px solid var(--card)', borderRadius: '50%' }}>
+                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: `2px solid ${T.card}`, borderRadius: '50%' }}>
                     <Avatar name={m.name} size={20} src={m.avatar_url || m.member_avatar} />
                   </div>
                 ))}
               </div>
               <span style={{ fontSize: 12, fontWeight: 700, color: T.blue }}>{selectedRows.size} {selectedRows.size === 1 ? 'member' : 'members'} selected</span>
               <div style={{ flex: 1 }} />
-              <button onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }} style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: T.divider, border: `1px solid ${T.border}`, color: T.text3, fontFamily: 'inherit' }}>Clear</button>
+              <button onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }}
+                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: T.divider, border: `1px solid ${T.border}`, color: T.text3, fontFamily: 'inherit' }}>
+                Clear
+              </button>
               <button onClick={() => setShowBulkPanel(v => !v)}
                 style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: showBulkPanel ? `${T.blue}20` : `${T.blue}12`, border: `1px solid ${T.blue}40`, color: T.blue, fontFamily: 'inherit', transition: 'all 0.12s' }}>
                 <Bell style={{ width: 11, height: 11 }} />
@@ -645,14 +670,14 @@ export default function TabMembers({
             </div>
           )}
 
-          {/* Bulk push */}
+          {/* Bulk push panel */}
           {showBulkPanel && selectedRows.size > 0 && (
             <BulkPushPanel selectedRows={selectedRows} memberRows={memberRows} gymName={gymName} gymId={selectedGym?.id} onClose={() => setShowBulkPanel(false)} onSuccess={() => setSelectedRows(new Set())} />
           )}
 
           {/* Table header */}
           {!isMobile && (
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 2.5fr 1fr 1fr 1fr 1fr', gap: 8, padding: '8px 16px', borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 8, padding: '8px 16px', borderBottom: `1px solid ${T.border}`, background: `${T.divider}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 13, height: 13, accentColor: T.blue, cursor: 'pointer' }} />
               </div>
@@ -664,7 +689,7 @@ export default function TabMembers({
             </div>
           )}
 
-          {/* Table body */}
+          {/* Table rows */}
           <div style={{ minHeight: 280 }}>
             {paginated.length === 0 ? (
               <div style={{ padding: '40px 20px', textAlign: 'center' }}>
@@ -678,28 +703,31 @@ export default function TabMembers({
                   <div onClick={() => { setExpandedMember(isExp ? null : m.id); if (showBulkPanel) setShowBulkPanel(false); }}
                     style={{
                       display: isMobile ? 'block' : 'grid',
-                      gridTemplateColumns: isMobile ? undefined : '32px 2.5fr 1fr 1fr 1fr 1fr',
-                      gap: 8, padding: isMobile ? '10px 12px' : '12px 16px',
+                      gridTemplateColumns: isMobile ? undefined : COLS,
+                      gap: 8,
+                      padding: isMobile ? '10px 12px' : '12px 16px',
                       borderBottom: !isExp && idx < paginated.length - 1 ? `1px solid ${T.divider}` : 'none',
-                      borderLeft: isExp ? `3px solid ${T.blue}60` : isSel ? `3px solid ${T.blue}35` : '3px solid transparent',
-                      background: isSel && !isExp ? `${T.blue}05` : 'transparent',
-                      cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+                      borderLeft: isExp ? `3px solid ${T.blue}70` : isSel ? `3px solid ${T.blue}40` : '3px solid transparent',
+                      background: isExp ? `${T.blue}06` : isSel ? `${T.blue}04` : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.12s, border-color 0.12s',
                       alignItems: 'center',
                     }}
                     onMouseEnter={e => { if (!isExp && !isSel) e.currentTarget.style.background = T.divider; }}
                     onMouseLeave={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'transparent'; }}>
 
                     {/* Checkbox */}
-                    <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
+                    <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
                       <input type="checkbox" checked={isSel} onChange={() => handleToggleRow(m.id)} style={{ width: 13, height: 13, accentColor: T.blue, cursor: 'pointer' }} />
                     </div>
 
-                    {/* Member name */}
+                    {/* Member name + avatar */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginBottom: isMobile ? 8 : 0 }}>
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <Avatar name={m.name} size={32} src={m.avatar_url || m.member_avatar} />
                         {m.daysSince >= 14 && (
-                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 9, height: 9, borderRadius: '50%', background: T.red, border: '2px solid var(--card)' }} />
+                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 9, height: 9, borderRadius: '50%', background: T.red, border: `2px solid ${T.card}` }} />
                         )}
                         {m.streak >= 7 && (
                           <div style={{ position: 'absolute', top: -3, right: -3, fontSize: 9, lineHeight: 1 }}>🔥</div>
@@ -713,9 +741,7 @@ export default function TabMembers({
                         <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>
                           {m.streak > 1
                             ? <span style={{ color: T.amber, fontWeight: 600 }}>🔥 {m.streak}-day streak</span>
-                            : m.visits30 > 0
-                              ? <span>{m.tier}</span>
-                              : 'No visits this month'
+                            : m.visits30 > 0 ? <span>{m.tier}</span> : 'No visits this month'
                           }
                         </div>
                       </div>
@@ -728,7 +754,10 @@ export default function TabMembers({
                     {!isMobile && (
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? T.green : m.daysSince >= 14 ? T.red : T.text1 }}>
-                          {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 400, fontSize: 11, color: T.text3 }}>visits</span></> : '—'}
+                          {m.visits30 > 0
+                            ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 400, fontSize: 11, color: T.text3 }}>visits</span></>
+                            : '—'
+                          }
                         </div>
                         <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>{m.lastVisitDisplay}</div>
                       </div>
@@ -763,16 +792,17 @@ export default function TabMembers({
           </div>
 
           {/* Pagination */}
-          <div style={{ padding: '10px 16px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ padding: '10px 16px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: 3 }}>
-              <button disabled={memberPage <= 1} onClick={() => setMemberPage(p => Math.max(1, p - 1))}
-                style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.divider, border: `1px solid ${T.border}`, color: memberPage <= 1 ? T.text3 : T.text2, cursor: memberPage <= 1 ? 'default' : 'pointer' }}>
-                <ChevronLeft style={{ width: 12, height: 12 }} />
-              </button>
-              <button disabled={memberPage >= totalPages} onClick={() => setMemberPage(p => Math.min(totalPages, p + 1))}
-                style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.divider, border: `1px solid ${T.border}`, color: memberPage >= totalPages ? T.text3 : T.text2, cursor: memberPage >= totalPages ? 'default' : 'pointer' }}>
-                <ChevronRight style={{ width: 12, height: 12 }} />
-              </button>
+              {[
+                { icon: ChevronLeft,  disabled: memberPage <= 1,          action: () => setMemberPage(p => Math.max(1, p - 1)) },
+                { icon: ChevronRight, disabled: memberPage >= totalPages,  action: () => setMemberPage(p => Math.min(totalPages, p + 1)) },
+              ].map(({ icon: Icon, disabled, action }, i) => (
+                <button key={i} disabled={disabled} onClick={action}
+                  style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.divider, border: `1px solid ${T.border}`, color: disabled ? T.text3 : T.text2, cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1 }}>
+                  <Icon style={{ width: 12, height: 12 }} />
+                </button>
+              ))}
             </div>
             {!isMobile && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let page = i + 1;
@@ -791,18 +821,18 @@ export default function TabMembers({
             <div style={{ flex: 1 }} />
             <span style={{ fontSize: 11, color: T.text3 }}>{sorted.length} members · Page {memberPage} of {totalPages}</span>
           </div>
-        </div>
+        </SCard>
 
-        {/* ── Right Sidebar ── */}
+        {/* ── Right sidebar ────────────────────────────────────────────────── */}
         {!isMobile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
             {/* Alerts */}
-            <div style={{ padding: 18, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>Alerts</div>
+            <SCard style={{ padding: 18 }} accent={atRisk > 0 ? T.red : T.green}>
+              <CardHeader title="Alerts" />
               {atRisk > 0 ? (
-                <div style={{ padding: '12px', borderRadius: 9, background: `${T.red}08`, border: `1px solid ${T.red}20`, marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ padding: 12, borderRadius: 9, background: `${T.red}08`, border: `1px solid ${T.red}20`, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     <AlertTriangle style={{ width: 13, height: 13, color: T.red, flexShrink: 0 }} />
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>{atRisk} Members At Risk</div>
@@ -821,7 +851,7 @@ export default function TabMembers({
                 </div>
               )}
               {memberRows.filter(m => m.risk === 'High').length > 0 && (
-                <div style={{ padding: '12px', borderRadius: 9, background: `${T.amber}08`, border: `1px solid ${T.amber}20` }}>
+                <div style={{ padding: 12, borderRadius: 9, background: `${T.amber}08`, border: `1px solid ${T.amber}20` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     <Zap style={{ width: 13, height: 13, color: T.amber, flexShrink: 0 }} />
                     <div>
@@ -835,50 +865,49 @@ export default function TabMembers({
                   </button>
                 </div>
               )}
-            </div>
+            </SCard>
 
-            {/* Drop-off patterns */}
             <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
-
-            {/* Week-1 follow-up */}
             <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
 
             {/* Growth snapshot */}
-            <div style={{ padding: 18, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>Growth</div>
+            <SCard style={{ padding: 18 }}>
+              <CardHeader title="Growth" />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <StatRow label="Retention"    value={`${retentionRate}%`}  valueColor={retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red} />
-                  <StatRow label="Active / week" value={activeThisWeek}       valueColor={T.blue} />
+                <div style={{ flex: 1 }}>
+                  <StatRow label="Retention"     value={`${retentionRate}%`} valueColor={retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red} />
+                  <StatRow label="Active / week" value={activeThisWeek}      valueColor={T.blue} />
                   <StatRow label="New this month" value={newSignUps}          valueColor={newSignUps > 0 ? T.green : T.text1} last />
                 </div>
                 <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great!' : gymHealthScore >= 50 ? 'Keep going' : 'Needs work'} />
               </div>
-            </div>
+            </SCard>
 
-            {/* Quick actions */}
-            <div style={{ padding: 18, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 12 }}>Quick Actions</div>
+            {/* Quick actions — matches Overview Quick Actions */}
+            <SCard style={{ padding: 18 }}>
+              <CardHeader title="Quick Actions" />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {[
                   { icon: UserPlus, label: 'Add Member',    fn: () => openModal('members')   },
                   { icon: QrCode,   label: 'Scan Check-in', fn: () => openModal('qrScanner') },
                   { icon: Trophy,   label: 'New Challenge', fn: () => openModal('challenge') },
-                  { icon: Send,     label: 'Send Message',  fn: () => openModal('post')       },
+                  { icon: Send,     label: 'Send Message',  fn: () => openModal('post')      },
                 ].map(({ icon: Icon, label, fn }, i) => {
                   const [hov, setHov] = useState(false);
                   return (
-                    <button key={i} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+                    <button key={i} onClick={fn}
+                      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
                       style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px', borderRadius: 8, background: hov ? `${T.blue}10` : T.divider, border: `1px solid ${hov ? T.blue + '30' : T.border}`, cursor: 'pointer', transition: 'all 0.12s', fontSize: 11, fontWeight: 600, color: hov ? T.text1 : T.text2, fontFamily: 'inherit' }}>
-                      <Icon style={{ width: 12, height: 12, color: T.blue, flexShrink: 0 }} />
+                      <div style={{ width: 22, height: 22, borderRadius: 6, background: `${T.blue}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon style={{ width: 11, height: 11, color: T.blue }} />
+                      </div>
                       {label}
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </SCard>
 
-            {/* Leaderboard */}
             <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
           </div>
         )}
