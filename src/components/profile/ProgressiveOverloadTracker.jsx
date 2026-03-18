@@ -10,17 +10,17 @@ import { format, subMonths } from 'date-fns';
 
 // ─── Muscle group → exercise keyword map ─────────────────────────────────────
 const MUSCLE_GROUPS = [
-  { id: 'chest',     label: 'Chest',     emoji: '💪',
+  { id: 'chest',     label: 'Chest',
     keywords: ['bench','chest','fly','flye','flies','pec','push','dip','incline press','decline','cable cross'] },
-  { id: 'back',      label: 'Back',      emoji: '🏋️',
+  { id: 'back',      label: 'Back',
     keywords: ['row','pull','lat','deadlift','pulldown','chin','rdl','cable row','t-bar','back'] },
-  { id: 'shoulders', label: 'Shoulders', emoji: '🔝',
+  { id: 'shoulders', label: 'Shoulders',
     keywords: ['shoulder','press','lateral','front raise','face pull','arnold','overhead','ohp','delt','shrug'] },
-  { id: 'arms',      label: 'Arms',      emoji: '💪',
+  { id: 'arms',      label: 'Arms',
     keywords: ['curl','bicep','hammer','preacher','incline curl','concentration','ez bar curl'] },
-  { id: 'triceps',   label: 'Triceps',   emoji: '🔱',
+  { id: 'triceps',   label: 'Triceps',
     keywords: ['tricep','skull','pushdown','extension','overhead tri','close grip','dip'] },
-  { id: 'legs',      label: 'Legs',      emoji: '🦵',
+  { id: 'legs',      label: 'Legs',
     keywords: ['squat','leg','lunge','deadlift','calf','hip thrust','glute','hamstring','quad','rdl','hack'] },
 ];
 
@@ -94,16 +94,15 @@ function MuscleGroupSelector({ selected, onSelect }) {
         onClick={() => setOpen(o => !o)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '8px 14px', borderRadius: 12, width: '100%',
+          padding: '6px 10px', borderRadius: 10, width: '100%',
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.10)',
-          color: '#e2e8f0', fontSize: 13, fontWeight: 700,
+          color: '#e2e8f0', fontSize: 12, fontWeight: 700,
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           transition: 'border-color 0.15s',
         }}>
-        <span style={{ fontSize: 15 }}>{current?.emoji}</span>
-        <span style={{ flex: 1, textAlign: 'left' }}>{current?.label ?? 'Select muscle group'}</span>
-        <ChevronDown size={14} color="#64748b"
+        <span style={{ flex: 1, textAlign: 'left' }}>{current?.label ?? 'Select'}</span>
+        <ChevronDown size={13} color="#64748b"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
 
@@ -123,15 +122,14 @@ function MuscleGroupSelector({ selected, onSelect }) {
                 onClick={() => { onSelect(g.id); setOpen(false); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  width: '100%', padding: '11px 14px',
+                  width: '100%', padding: '10px 12px',
                   background: selected === g.id ? 'rgba(96,165,250,0.12)' : 'transparent',
                   border: 'none', cursor: 'pointer',
                   borderBottom: '1px solid rgba(255,255,255,0.05)',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                <span style={{ fontSize: 15 }}>{g.emoji}</span>
                 <span style={{
-                  fontSize: 13, fontWeight: 700,
+                  fontSize: 12, fontWeight: 700,
                   color: selected === g.id ? '#60a5fa' : '#94a3b8',
                 }}>{g.label}</span>
                 {selected === g.id && (
@@ -343,19 +341,24 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
       <div style={{ padding: '18px 18px 20px' }}>
 
-        {/* ── Header row ────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-          <div>
-            <h2 style={{ fontSize: 15, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
-              Progressive Overload
-            </h2>
-            <p style={{ fontSize: 10, color: '#475569', fontWeight: 600, margin: '3px 0 0',
-              letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              % weight change from baseline
-            </p>
+        {/* ── Title — full width ────────────────────────────────────────── */}
+        <h2 style={{
+          fontSize: 18, fontWeight: 900, color: '#f1f5f9',
+          letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2,
+          width: '100%',
+        }}>
+          Progressive Overload Tracker
+        </h2>
+
+        {/* ── Controls row: muscle group selector + period picker ─────── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+
+          {/* Muscle group dropdown — takes remaining space */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <MuscleGroupSelector selected={muscleGroup} onSelect={setMuscleGroup} />
           </div>
 
-          {/* Period selector */}
+          {/* Period selector — fixed width, compact */}
           <div style={{
             display: 'flex', gap: 2, padding: 3, borderRadius: 10,
             background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
@@ -364,7 +367,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             {PERIODS.map(p => (
               <button key={p.key} onClick={() => setPeriod(p.key)}
                 style={{
-                  padding: '4px 9px', borderRadius: 7, border: 'none',
+                  padding: '4px 8px', borderRadius: 7, border: 'none',
                   fontSize: 11, fontWeight: 700, cursor: 'pointer',
                   background: period === p.key ? 'rgba(255,255,255,0.11)' : 'transparent',
                   color: period === p.key ? '#f1f5f9' : '#475569',
@@ -375,15 +378,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* ── Muscle Group selector ──────────────────────────────────────── */}
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, color: '#334155',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-            Muscle Group
-          </p>
-          <MuscleGroupSelector selected={muscleGroup} onSelect={setMuscleGroup} />
         </div>
 
         {/* ── Chart area ────────────────────────────────────────────────── */}
@@ -409,7 +403,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         ) : (
           <>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(255,255,255,0.04)"
@@ -437,7 +431,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                   tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
                   tickLine={false}
                   axisLine={false}
-                  width={38}
+                  width={52}
                   domain={yDomain}
                   tickFormatter={v => `${v > 0 ? '+' : ''}${v}%`}
                 />
