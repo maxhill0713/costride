@@ -230,7 +230,10 @@ export default function GymOwnerDashboard() {
   const [memberPage, setMemberPage]     = useState(1);
   const [memberPageSize]                = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
-  const openModal  = (name) => setModal(name);
+  const openModal  = (name) => {
+    if (name === 'message') { setTab('members'); return; }
+    setModal(name);
+  };
   const closeModal = ()     => setModal(null);
   const queryClient = useQueryClient();
   const navigate    = useNavigate();
