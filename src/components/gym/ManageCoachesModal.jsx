@@ -1,367 +1,172 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { GraduationCap, Trash2, Plus, X, Edit } from 'lucide-react';
+import { X, UserPlus, GraduationCap, Trash2, MoreHorizontal, Mail, Shield, Clock } from 'lucide-react';
+import AddCoachModal from './AddCoachModal';
 
-export default function ManageCoachesModal({ open, onClose, coaches = [], onCreateCoach, onDeleteCoach, onUpdateCoach, gym, isLoading }) {
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingCoach, setEditingCoach] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    user_email: '',
-    bio: '',
-    avatar_url: '',
-    specialties: [],
-    certifications: [],
-    experience_years: 0,
-    rating: 5,
-    can_post: false,
-    can_manage_events: true,
-    can_manage_classes: true
-  });
-  const [newSpecialty, setNewSpecialty] = useState('');
-  const [newCertification, setNewCertification] = useState('');
+const T = {
+  bg:     '#060c18',
+  card:   '#0c1a2e',
+  card2:  '#0d1b30',
+  border: 'rgba(255,255,255,0.08)',
+  borderM:'rgba(255,255,255,0.13)',
+  text1:  '#f0f4f8',
+  text2:  '#8ba0b8',
+  text3:  '#3a5070',
+  blue:   '#0ea5e9',
+  green:  '#10b981',
+  amber:  '#f59e0b',
+  red:    '#ef4444',
+  purple: '#8b5cf6',
+};
 
-  const addSpecialty = () => {
-    if (newSpecialty && !formData.specialties.includes(newSpecialty)) {
-      setFormData({
-        ...formData,
-        specialties: [...formData.specialties, newSpecialty]
-      });
-      setNewSpecialty('');
-    }
+const ROLE_COLORS = { admin: T.amber, coach: T.blue, viewer: T.purple };
+
+function CoachRow({ coach, onDelete, onUpdateRole }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isPending = coach.invite_status === 'pending' || !coach.invite_status;
+  const roleColor = ROLE_COLORS[coach.role] || T.blue;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: `1px solid ${T.border}`, position: 'relative' }}>
+      {/* Avatar */}
+      <div style={{ width: 36, height: 36, borderRadius: '50%', background: coach.avatar_url ? 'transparent' : `${roleColor}20`, border: `1.5px solid ${roleColor}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: roleColor, flexShrink: 0, overflow: 'hidden' }}>
+        {coach.avatar_url ? <img src={coach.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={coach.name} /> : (coach.name || 'C').charAt(0).toUpperCase()}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.name}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: roleColor, background: `${roleColor}12`, border: `1px solid ${roleColor}28`, borderRadius: 5, padding: '1px 7px', flexShrink: 0 }}>
+            {coach.role || 'Coach'}
+          </span>
+          {isPending && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, color: T.amber, background: `${T.amber}10`, border: `1px solid ${T.amber}25`, borderRadius: 5, padding: '1px 6px', flexShrink: 0 }}>
+              <Clock style={{ width: 8, height: 8 }} /> Pending
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: 11, color: T.text3, marginTop: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <Mail style={{ width: 10, height: 10 }} />
+          <span>{coach.user_email}</span>
+          {coach.total_clients > 0 && <><span>·</span><span>{coach.total_clients} members</span></>}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        {/* Role selector */}
+        <select
+          value={coach.role || 'coach'}
+          onChange={e => onUpdateRole(coach.id, e.target.value)}
+          onClick={e => e.stopPropagation()}
+          style={{ padding: '5px 8px', borderRadius: 7, background: T.card2, border: `1px solid ${T.border}`, color: T.text2, fontSize: 11, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <option value="coach">Coach</option>
+          <option value="admin">Admin</option>
+          <option value="viewer">Viewer</option>
+        </select>
+
+        <button onClick={() => onDelete(coach.id)}
+          style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', cursor: 'pointer', color: T.red, flexShrink: 0 }}>
+          <Trash2 style={{ width: 12, height: 12 }} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function ManageCoachesModal({ open, onClose, coaches = [], onCreateCoach, onDeleteCoach, onUpdateCoach, gym, isLoading, allMemberships = [], classes = [] }) {
+  const [showAdd, setShowAdd] = useState(false);
+
+  if (!open) return null;
+
+  const handleCreate = async (data) => {
+    await onCreateCoach(data);
+    setShowAdd(false);
   };
 
-  const removeSpecialty = (specialty) => {
-    setFormData({
-      ...formData,
-      specialties: formData.specialties.filter(s => s !== specialty)
-    });
-  };
-
-  const addCertification = () => {
-    if (newCertification && !formData.certifications.includes(newCertification)) {
-      setFormData({
-        ...formData,
-        certifications: [...formData.certifications, newCertification]
-      });
-      setNewCertification('');
-    }
-  };
-
-  const removeCertification = (cert) => {
-    setFormData({
-      ...formData,
-      certifications: formData.certifications.filter(c => c !== cert)
-    });
-  };
-
-  const handleCreate = () => {
-    onCreateCoach({
-      ...formData,
-      gym_id: gym.id,
-      gym_name: gym.name,
-      total_clients: 0
-    });
-    setFormData({
-      name: '',
-      user_email: '',
-      bio: '',
-      avatar_url: '',
-      specialties: [],
-      certifications: [],
-      experience_years: 0,
-      rating: 5,
-      can_post: false,
-      can_manage_events: true,
-      can_manage_classes: true
-    });
-    setShowCreateForm(false);
-  };
-
-  const togglePermission = (coach, permission) => {
-    onUpdateCoach(coach.id, { [permission]: !coach[permission] });
+  const handleUpdateRole = (coachId, role) => {
+    const ROLE_PERMS = {
+      coach:  { can_post: true,  can_manage_events: true,  can_manage_classes: true  },
+      admin:  { can_post: true,  can_manage_events: true,  can_manage_classes: true  },
+      viewer: { can_post: false, can_manage_events: false, can_manage_classes: false },
+    };
+    onUpdateCoach(coachId, { role, ...ROLE_PERMS[role] });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-blue-500" />
-            Manage Coaches
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(5px)' }} />
 
-        <div className="space-y-4">
-          {!showCreateForm && (
-            <Button
-              onClick={() => setShowCreateForm(true)}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Coach
-            </Button>
-          )}
+        <div style={{ position: 'relative', width: '100%', maxWidth: 540, background: T.card, border: `1px solid ${T.borderM}`, borderRadius: 16, boxShadow: '0 24px 64px rgba(0,0,0,0.7)', overflow: 'hidden', fontFamily: 'DM Sans, system-ui, sans-serif', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
 
-          {showCreateForm && (
-            <Card className="p-4 bg-blue-50 border-2 border-blue-200">
-              <h3 className="font-bold text-gray-900 mb-4">New Coach</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label>Coach Name *</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="John Doe"
-                    className="rounded-2xl"
-                  />
-                </div>
-
-                <div>
-                  <Label>Coach Email *</Label>
-                  <Input
-                    type="email"
-                    value={formData.user_email}
-                    onChange={(e) => setFormData({ ...formData, user_email: e.target.value })}
-                    placeholder="coach@example.com"
-                    className="rounded-2xl"
-                  />
-                  <p className="text-xs text-gray-600 mt-1">Coach can manage events & classes with this email</p>
-                </div>
-
-                <div>
-                  <Label>Bio</Label>
-                  <Textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    placeholder="Coach bio and background..."
-                    className="rounded-2xl"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <Label>Profile Photo URL</Label>
-                  <Input
-                    value={formData.avatar_url}
-                    onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-                    placeholder="https://..."
-                    className="rounded-2xl"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Years of Experience</Label>
-                    <Input
-                      type="number"
-                      value={formData.experience_years}
-                      onChange={(e) => setFormData({ ...formData, experience_years: parseInt(e.target.value) || 0 })}
-                      className="rounded-2xl"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Rating (out of 5)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="5"
-                      value={formData.rating}
-                      onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) || 0 })}
-                      className="rounded-2xl"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Specialties</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={newSpecialty}
-                      onChange={(e) => setNewSpecialty(e.target.value)}
-                      placeholder="e.g., Strength Training"
-                      className="rounded-2xl"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
-                    />
-                    <Button type="button" onClick={addSpecialty} variant="outline" className="rounded-2xl">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {formData.specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.specialties.map((specialty, idx) => (
-                        <Badge key={idx} className="bg-blue-100 text-blue-700 flex items-center gap-1">
-                          {specialty}
-                          <X className="w-3 h-3 cursor-pointer" onClick={() => removeSpecialty(specialty)} />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <Label>Certifications</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={newCertification}
-                      onChange={(e) => setNewCertification(e.target.value)}
-                      placeholder="e.g., NASM-CPT"
-                      className="rounded-2xl"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
-                    />
-                    <Button type="button" onClick={addCertification} variant="outline" className="rounded-2xl">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {formData.certifications.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.certifications.map((cert, idx) => (
-                        <Badge key={idx} variant="outline" className="flex items-center gap-1">
-                          {cert}
-                          <X className="w-3 h-3 cursor-pointer" onClick={() => removeCertification(cert)} />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3 pt-2 border-t">
-                  <Label className="font-semibold">Permissions</Label>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Post on Feed</p>
-                      <p className="text-xs text-gray-600">Allow coach to create posts</p>
-                    </div>
-                    <Switch
-                      checked={formData.can_post}
-                      onCheckedChange={(checked) => setFormData({ ...formData, can_post: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Manage Events</p>
-                      <p className="text-xs text-gray-600">Create and edit events</p>
-                    </div>
-                    <Switch
-                      checked={formData.can_manage_events}
-                      onCheckedChange={(checked) => setFormData({ ...formData, can_manage_events: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Manage Classes</p>
-                      <p className="text-xs text-gray-600">Create and edit classes</p>
-                    </div>
-                    <Switch
-                      checked={formData.can_manage_classes}
-                      onCheckedChange={(checked) => setFormData({ ...formData, can_manage_classes: checked })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleCreate}
-                    disabled={!formData.name || !formData.user_email || isLoading}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 rounded-2xl"
-                  >
-                    {isLoading ? 'Adding...' : 'Add Coach'}
-                  </Button>
-                  <Button
-                    onClick={() => setShowCreateForm(false)}
-                    variant="outline"
-                    className="rounded-2xl"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: `${T.blue}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <GraduationCap style={{ width: 15, height: 15, color: T.blue }} />
               </div>
-            </Card>
-          )}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: T.text1 }}>Coaches & Team</div>
+                <div style={{ fontSize: 11, color: T.text3, marginTop: 1 }}>{coaches.length} {coaches.length === 1 ? 'coach' : 'coaches'} · {gym?.name}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowAdd(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: T.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <UserPlus style={{ width: 13, height: 13 }} /> Add Coach
+              </button>
+              <button onClick={onClose}
+                style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, cursor: 'pointer', color: T.text3 }}>
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          </div>
 
-          <div className="space-y-3">
-            <h3 className="font-bold text-gray-900">Current Coaches ({coaches.length})</h3>
+          {/* Body */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
             {coaches.length === 0 ? (
-              <Card className="p-8 text-center border-2 border-dashed border-gray-300">
-                <GraduationCap className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No coaches added yet</p>
-              </Card>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: `${T.blue}0d`, border: `1px solid ${T.blue}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <GraduationCap style={{ width: 22, height: 22, color: T.blue, opacity: 0.5 }} />
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.text1, marginBottom: 6 }}>Add your first coach</div>
+                <div style={{ fontSize: 12, color: T.text3, marginBottom: 20, lineHeight: 1.5 }}>Invite coaches to help manage members, run classes, and create content</div>
+                <button onClick={() => setShowAdd(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', borderRadius: 9, background: T.blue, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <UserPlus style={{ width: 14, height: 14 }} /> + Add Coach
+                </button>
+              </div>
             ) : (
-              coaches.map((coach) => (
-                <Card key={coach.id} className="p-4 bg-white border-2 border-gray-200">
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900">{coach.name}</h4>
-                        <p className="text-xs text-gray-500">{coach.user_email}</p>
-                        {coach.bio && (
-                          <p className="text-sm text-gray-600 mt-1">{coach.bio}</p>
-                        )}
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {coach.specialties && coach.specialties.map((spec, idx) => (
-                            <Badge key={idx} className="bg-blue-100 text-blue-700">{spec}</Badge>
-                          ))}
-                          {coach.experience_years > 0 && (
-                            <Badge variant="outline">{coach.experience_years} years</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDeleteCoach(coach.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2 pt-2 border-t">
-                      <p className="text-xs font-semibold text-gray-700">Permissions</p>
-                      
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-600">Post on Feed</p>
-                        <Switch
-                          checked={coach.can_post ?? false}
-                          onCheckedChange={() => togglePermission(coach, 'can_post')}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-600">Manage Events</p>
-                        <Switch
-                          checked={coach.can_manage_events ?? true}
-                          onCheckedChange={() => togglePermission(coach, 'can_manage_events')}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-600">Manage Classes</p>
-                        <Switch
-                          checked={coach.can_manage_classes ?? true}
-                          onCheckedChange={() => togglePermission(coach, 'can_manage_classes')}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))
+              <div>
+                {coaches.map(coach => (
+                  <CoachRow key={coach.id} coach={coach} onDelete={onDeleteCoach} onUpdateRole={handleUpdateRole} />
+                ))}
+              </div>
             )}
           </div>
+
+          {/* Pending count footer */}
+          {coaches.some(c => c.invite_status === 'pending' || !c.invite_status) && (
+            <div style={{ padding: '10px 16px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+              <Clock style={{ width: 11, height: 11, color: T.amber }} />
+              <span style={{ fontSize: 11, color: T.text3 }}>
+                {coaches.filter(c => c.invite_status === 'pending' || !c.invite_status).length} invite{coaches.filter(c => !c.invite_status || c.invite_status === 'pending').length > 1 ? 's' : ''} pending — coach will join once they accept
+              </span>
+            </div>
+          )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      {/* Add Coach Modal (layered on top) */}
+      <AddCoachModal
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        gym={gym}
+        allMemberships={allMemberships}
+        classes={classes}
+        onCreate={handleCreate}
+      />
+    </>
   );
 }
