@@ -475,7 +475,7 @@ export default function TabCoachOverview({
 
             {/* 30-Day Engagement Breakdown */}
             <SCard style={{ padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', marginBottom: 14 }}>30-Day Engagement</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>30-Day Engagement</div>
               <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 14 }}>
                 {totalM > 0 && [
                   { val: superActive, color: '#10b981' },
