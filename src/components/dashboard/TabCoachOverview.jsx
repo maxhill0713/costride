@@ -737,8 +737,8 @@ export default function TabCoachOverview({
         {/* ── Top Members This Week ─────────────────────────────────────── */}
         {weekStars.length > 0 && (
           <SCard style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Top Members This Week</span>
+            <div style={{ padding: '12px 14px 8px', borderBottom: `1px solid ${T.border}` }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Top Members This Week</span>
             </div>
             <div style={{ padding: '8px 14px' }}>
               {weekStars.map((m, i) => {
