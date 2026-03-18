@@ -468,10 +468,10 @@ export default function TabCoachOverview({
                   <div key={i} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 15, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
                     <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    </div>
+                    ))}
+                    </div>
+                    </SCard>
 
             {/* 30-Day Engagement Breakdown */}
             <SCard style={{ padding: 16 }}>
