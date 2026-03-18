@@ -629,6 +629,8 @@ export default function GymOwnerDashboard() {
         <ManageEquipmentModal  open={modal==='equipment'}  onClose={closeModal} equipment={selectedGym?.equipment||[]} onSave={e=>updateGymM.mutate({equipment:e})} isLoading={updateGymM.isPending}/>
         <ManageAmenitiesModal  open={modal==='amenities'}  onClose={closeModal} amenities={selectedGym?.amenities||[]} onSave={a=>updateGymM.mutate({amenities:a})} isLoading={updateGymM.isPending}/>
         <EditBasicInfoModal    open={modal==='editInfo'}   onClose={closeModal} gym={selectedGym}   onSave={d=>updateGymM.mutate(d)} isLoading={updateGymM.isPending}/>
+        <EditGymLogoModal      open={modal==='logo'}       onClose={closeModal} currentLogoUrl={selectedGym?.logo_url} onSave={url=>updateGymM.mutate({logo_url:url})} isLoading={updateGymM.isPending}/>
+        <EditPricingModal      open={modal==='pricing'}    onClose={closeModal} gym={selectedGym}   onSave={d=>updateGymM.mutate(d)} isLoading={updateGymM.isPending}/>
         <AlertDialog open={modal==='deleteGym'} onOpenChange={v=>!v&&closeModal()}>
           <AlertDialogContent style={{background:'rgba(4,10,22,0.96)',backdropFilter:'blur(20px)',border:'1px solid rgba(239,68,68,0.25)'}} className="max-w-md">
             <AlertDialogHeader><AlertDialogTitle style={{color:'#f1f5f9',display:'flex',alignItems:'center',gap:8}}><Trash2 style={{width:17,height:17,color:'#f87171'}}/>Delete Gym Permanently?</AlertDialogTitle><AlertDialogDescription style={{color:'#5a7a96',fontSize:13}}>Deletes <strong style={{color:'#f1f5f9'}}>{selectedGym?.name}</strong> and all its data. <span style={{color:'#f87171',fontWeight:700}}>Cannot be undone.</span></AlertDialogDescription></AlertDialogHeader>
