@@ -307,7 +307,7 @@ export default function TabCoachOverview({
         <section>
           <SectionLabel accent="#a78bfa">My Classes Today</SectionLabel>
           {classStats.length === 0 ? (
-            <div style={{ padding: '20px', borderRadius: 14, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+            <div style={{ padding: '20px', borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, textAlign: 'center' }}>
               <Dumbbell style={{ width: 20, height: 20, color: '#3a5070', margin: '0 auto 8px' }}/>
               <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 10px' }}>No classes assigned today</p>
               <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>Manage Classes</button>
