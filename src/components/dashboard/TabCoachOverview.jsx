@@ -681,7 +681,7 @@ export default function TabCoachOverview({
 
         {/* ── Quick Actions ─────────────────────────────────────────────── */}
         <SCard style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Quick Actions</span>
           </div>
           <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
