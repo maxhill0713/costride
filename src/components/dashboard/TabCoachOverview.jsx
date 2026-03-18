@@ -655,7 +655,7 @@ export default function TabCoachOverview({
 
               {/* Birthdays */}
               {upcomingBirthdays.length > 0 && (
-                <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(244,114,182,0.15)', padding: '12px 14px' }}>
+                <SCard accent="#f472b6" style={{ padding: '12px 14px' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: '#f0f4f8', marginBottom: 8 }}>🎂 Birthdays This Week</div>
                   {upcomingBirthdays.map((m, i) => (
                     <div key={m.user_id||i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < upcomingBirthdays.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
