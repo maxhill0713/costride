@@ -681,25 +681,25 @@ export default function TabCoachOverview({
 
         {/* ── Quick Actions ─────────────────────────────────────────────── */}
         <SCard style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Quick Actions</span>
+          <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${T.border}` }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Quick Actions</span>
           </div>
           <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
             {[
-              { icon: QrCode,   label: 'Scan Check-In',  sub: 'Start a class',       color: '#10b981', fn: () => openModal('qrScanner') },
-              { icon: Calendar, label: 'Create Event',   sub: 'Schedule something',  color: '#34d399', fn: () => openModal('event')     },
-              { icon: Bell,     label: 'Send Reminder',  sub: 'Post to members',     color: '#38bdf8', fn: () => openModal('post')      },
-              { icon: Dumbbell, label: 'Manage Classes', sub: 'Edit your timetable', color: '#a78bfa', fn: () => openModal('classes')   },
-            ].map(({ icon: Ic, label, sub, color, fn }, i) => (
-              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 11px', borderRadius: 11, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'all 0.12s', textAlign: 'left', width: '100%' }}
-                onMouseEnter={e => { e.currentTarget.style.background = `${color}0f`; e.currentTarget.style.borderColor = `${color}30`; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: `${color}16`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Ic style={{ width: 13, height: 13, color }}/>
+              { icon: QrCode,   label: 'Scan Check-In',  sub: 'Start a class',       color: T.green,  fn: () => openModal('qrScanner') },
+              { icon: Calendar, label: 'Create Event',   sub: 'Schedule something',  color: T.green,  fn: () => openModal('event')     },
+              { icon: Bell,     label: 'Send Reminder',  sub: 'Post to members',     color: T.blue,   fn: () => openModal('post')      },
+              { icon: Dumbbell, label: 'Manage Classes', sub: 'Edit your timetable', color: T.purple, fn: () => openModal('classes')   },
+            ].map(({ icon: Icon, label, sub, color, fn }, i) => (
+              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, cursor: 'pointer', transition: 'all 0.12s', textAlign: 'left', width: '100%', fontFamily: 'inherit' }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${color}10`; e.currentTarget.style.borderColor = `${color}30`; }}
+                onMouseLeave={e => { e.currentTarget.style.background = T.divider; e.currentTarget.style.borderColor = T.border; }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}14`, border: `1px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon style={{ width: 12, height: 12, color }}/>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{label}</div>
-                  <div style={{ fontSize: 10, color: '#3a5070' }}>{sub}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>{label}</div>
+                  <div style={{ fontSize: 10, color: T.text3 }}>{sub}</div>
                 </div>
               </button>
             ))}
