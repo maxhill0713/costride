@@ -72,21 +72,21 @@ function Spark({ data = [], color = '#a78bfa', height = 28, width = 60 }) {
 // ─── KPI card ─────────────────────────────────────────────────────────────────
 function KpiCard({ icon: Icon, label, value, sub, subColor, accent, spark, bar }) {
   return (
-    <div style={{ borderRadius: 16, padding: '15px 17px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accent}40,transparent)` }}/>
-      <div style={{ position: 'absolute', bottom: -14, right: -14, width: 56, height: 56, borderRadius: '50%', background: accent, opacity: 0.07, filter: 'blur(20px)' }}/>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 9 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 9, background: `${accent}18`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon style={{ width: 13, height: 13, color: accent }}/>
+    <div style={{ borderRadius: 12, padding: '16px 18px 14px', background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${accent}28,transparent)`, pointerEvents: 'none' }}/>
+      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accent, opacity: 0.07, filter: 'blur(20px)', pointerEvents: 'none' }}/>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: `${accent}14`, border: `1px solid ${accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon style={{ width: 12, height: 12, color: accent }}/>
         </div>
         {spark && <Spark data={spark} color={accent}/>}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{value}</div>
-      <div style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 10, color: subColor || '#64748b', fontWeight: 600 }}>{sub}</div>
+      <div style={{ fontSize: 36, fontWeight: 800, color: T.text1, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: T.text3, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 10, color: subColor || T.text3, fontWeight: 600 }}>{sub}</div>
       {bar != null && (
-        <div style={{ marginTop: 9, height: 3, borderRadius: 99, background: `${accent}14`, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: `linear-gradient(90deg,${accent},${accent}bb)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
+        <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: accent, borderRadius: 99, transition: 'width 0.8s ease' }}/>
         </div>
       )}
     </div>
