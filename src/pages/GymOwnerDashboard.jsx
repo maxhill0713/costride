@@ -620,7 +620,7 @@ export default function GymOwnerDashboard() {
       {/* Owner-only modals */}
       {isGymOwner && <>
         <ManageRewardsModal    open={modal==='rewards'}    onClose={closeModal} rewards={rewards}   onCreateReward={d=>createRewardM.mutate(d)}  onDeleteReward={id=>deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending}/>
-        <ManageCoachesModal    open={modal==='coaches'}    onClose={closeModal} coaches={coaches}   onCreateCoach={d=>createCoachM.mutate(d)}    onDeleteCoach={id=>deleteCoachM.mutate(id)}  gym={selectedGym} isLoading={createCoachM.isPending}/>
+        <ManageCoachesModal    open={modal==='coaches'}    onClose={closeModal} coaches={coaches}   onCreateCoach={d=>createCoachM.mutate(d)}    onDeleteCoach={id=>deleteCoachM.mutate(id)}  onUpdateCoach={(id,data)=>updateCoachM.mutate({id,data})} gym={selectedGym} isLoading={createCoachM.isPending} allMemberships={allMemberships} classes={classes}/>
         <EditGymPhotoModal     open={modal==='heroPhoto'}  onClose={closeModal} gym={selectedGym}   onSave={url=>updateGymM.mutate({image_url:url})} isLoading={updateGymM.isPending}/>
         <ManageGymPhotosModal  open={modal==='photos'}     onClose={closeModal} gallery={selectedGym?.gallery||[]} onSave={g=>updateGalleryM.mutate(g)} isLoading={updateGalleryM.isPending}/>
         <ManageMembersModal    open={modal==='members'}    onClose={closeModal} gym={selectedGym}   onBanMember={id=>banMemberM.mutate(id)}      onUnbanMember={id=>unbanMemberM.mutate(id)}/>
