@@ -9,6 +9,38 @@ import {
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
+// ── Design tokens — identical to owner Overview ───────────────────────────────
+const T = {
+  blue:    '#0ea5e9',
+  green:   '#10b981',
+  red:     '#ef4444',
+  amber:   '#f59e0b',
+  purple:  '#8b5cf6',
+  text1:   '#f0f4f8',
+  text2:   '#94a3b8',
+  text3:   '#475569',
+  border:  'rgba(255,255,255,0.07)',
+  borderM: 'rgba(255,255,255,0.11)',
+  card:    '#0b1120',
+  divider: 'rgba(255,255,255,0.05)',
+};
+
+// Shimmer — 1px top accent line on every card
+const Shimmer = ({ color = T.blue }) => (
+  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}28,transparent)`, pointerEvents: 'none' }} />
+);
+
+// Shared card shell
+function SCard({ children, style = {}, accent }) {
+  const c = accent || T.blue;
+  return (
+    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden', ...style }}>
+      <Shimmer color={c} />
+      {children}
+    </div>
+  );
+}
+
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 function Spark({ data = [], color = '#a78bfa', height = 28, width = 60 }) {
   if (!data.length || Math.max(...data) === 0) return (
