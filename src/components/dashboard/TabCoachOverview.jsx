@@ -370,8 +370,8 @@ export default function TabCoachOverview({
             <span style={{ fontSize: 11, color: '#34d399', fontWeight: 700, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 99, padding: '2px 10px' }}>{todayMemberIds.length} checked in</span>
           </div>
           {todayMemberIds.length === 0 ? (
-            <div style={{ padding: '18px', borderRadius: 14, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
-              <Clock style={{ width: 18, height: 18, color: '#3a5070', margin: '0 auto 7px' }}/>
+            <div style={{ padding: '18px', borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, textAlign: 'center' }}>
+              <Clock style={{ width: 18, height: 18, color: T.text3, margin: '0 auto 7px' }}/>
               <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 8px' }}>No check-ins yet today</p>
               <button onClick={() => openModal('qrScanner')} style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>Scan First Check-in</button>
             </div>
