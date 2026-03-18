@@ -845,6 +845,36 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         )}
       </AnimatePresence>
 
+      {/* Incomplete workout warning popup */}
+      <AnimatePresence>
+        {showIncompleteWarning && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => setShowIncompleteWarning(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 10010, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.34, 1.3, 0.64, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ background: 'rgba(15,20,40,0.96)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 24, padding: '28px 24px', maxWidth: 340, width: '100%', boxShadow: '0 24px 64px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)', textAlign: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <span style={{ fontSize: 22 }}>⚠️</span>
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.02em', marginBottom: 8 }}>Can't log your workout</h3>
+              <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, marginBottom: 20 }}>Check you have logged everything — all exercises need sets, reps, and weight filled in.</p>
+              <button
+                onClick={() => setShowIncompleteWarning(false)}
+                style={{ width: '100%', padding: '12px', borderRadius: 12, background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', border: 'none', borderBottom: '3px solid #1a3fa8', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 5px 0 0 #1a3fa8, 0 8px 24px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2)', transition: 'transform 0.1s ease' }}>
+                Got it
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <WorkoutSwitcherModal
         open={showSwitcher}
         onClose={() => setShowSwitcher(false)}
