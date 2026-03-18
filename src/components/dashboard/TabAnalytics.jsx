@@ -1115,16 +1115,7 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </SCard>
 
-        {/* Traffic Heatmap */}
-        <SCard accent={T.cyan} style={{ padding: 20 }}>
-          <CardHeader title="Traffic Heatmap" sub="Check-in density by day and time"
-            right={<div style={{ width: 26, height: 26, borderRadius: 7, background: `${T.cyan}14`, border: `1px solid ${T.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Flame style={{ width: 12, height: 12, color: T.cyan }} /></div>}
-          />
-          <HeatmapChart gymId={gymId} />
-        </SCard>
 
-        {/* Peak Hours */}
-        <RankedBarList title="Peak Hours" icon={Clock} accent={T.amber} items={peakHours} emptyLabel="No check-in data yet" />
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
@@ -1173,14 +1164,7 @@ export default function TabAnalytics({
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} accent={T.amber} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
 
-        <SegmentBreakdown title="Engagement Breakdown" total={totalMembers} segments={[
-          { label: 'Super Active', sub: '15+ visits', val: superActive, color: T.green  },
-          { label: 'Active',       sub: '8–14',       val: active,      color: T.blue   },
-          { label: 'Casual',       sub: '1–7',        val: casual,      color: T.purple },
-          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.amber  },
-        ]} />
 
-        <MilestoneProgressWidget checkIns={checkIns} />
       </div>
     </div>
   );
