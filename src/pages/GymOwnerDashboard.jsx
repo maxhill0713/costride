@@ -558,6 +558,7 @@ export default function GymOwnerDashboard() {
           checkIns={checkIns}
           ci30={ci30}
           avatarMap={avatarMap}
+          currentUser={currentUser}
           leaderboardView={leaderboardView}
           setLeaderboardView={setLeaderboardView}
           openModal={openModal}
