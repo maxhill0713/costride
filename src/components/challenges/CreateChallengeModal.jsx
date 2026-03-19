@@ -155,12 +155,11 @@ function TypePicker({ value, onChange }) {
  );
 }
 
-// Live challenge card preview 
+// Live challenge card preview — mirrors GymChallengeCard exactly
 function ChallengePreview({ form, gyms }) {
  const cat = categoryFor(form.category);
- const typ = typeFor(form.type);
- const TypeIcon = typ.icon;
- const hasContent = form.title || form.start_date;
+ const hasContent = form.title;
+ const targetValue = form.target_value || 50;
 
  const durationDays = useMemo(() => {
  if (!form.start_date || !form.end_date) return null;
@@ -172,105 +171,88 @@ function ChallengePreview({ form, gyms }) {
  <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
  {/* Preview label */}
  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
- <div style={{ width: 6, height: 6, borderRadius: '50%', background: cat.color, boxShadow: `0 0 6px ${cat.color}` }} />
+ <Eye style={{ width: 11, height: 11, color: T.text3 }} />
  <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
  </div>
 
- {/* Challenge card */}
- <div style={{ borderRadius: 12, background: T.card2, border: `1px solid ${cat.color}22`, overflow: 'hidden', position: 'relative' }}>
- <Shimmer color={cat.color} />
- <div style={{ height: 3, background: `linear-gradient(90deg,${cat.color},${cat.color}50)` }} />
+ {/* Real GymChallengeCard style */}
+ <div style={{ borderRadius: 16, padding: 20, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
+ {/* Decorative glow */}
+ <div style={{ position: 'absolute', top: -48, right: -48, width: 96, height: 96, borderRadius: '50%', background: 'rgba(245,158,11,0.1)', filter: 'blur(24px)', pointerEvents: 'none' }} />
 
- <div style={{ padding: '16px 16px 14px' }}>
  {!hasContent ? (
- <div style={{ textAlign: 'center', padding: '24px 0' }}>
-  <div style={{ fontSize: 12, color: T.text3, fontWeight: 500, marginTop: 8 }}>Fill in details to preview</div>
+ <div style={{ textAlign: 'center', padding: '28px 0' }}>
+ <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Fill in details to preview</div>
  </div>
  ) : (
- <>
- {/* Header badges */}
- <div style={{ display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap' }}>
- <span style={{ fontSize: 9, fontWeight: 800, color: cat.color, background: `${cat.color}14`, border: `1px solid ${cat.color}28`, borderRadius: 5, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-  {cat.label}
- </span>
- <span style={{ fontSize: 9, fontWeight: 700, color: T.amber, background: `${T.amber}10`, border: `1px solid ${T.amber}22`, borderRadius: 5, padding: '2px 7px', display: 'flex', alignItems: 'center', gap: 3 }}>
- <TypeIcon style={{ width: 8, height: 8 }} /> {typ.label}
- </span>
- {form.status === 'active' && <span style={{ fontSize: 9, fontWeight: 700, color: T.green, background: `${T.green}10`, border: `1px solid ${T.green}22`, borderRadius: 5, padding: '2px 7px' }}> Live</span>}
+ <div style={{ position: 'relative' }}>
+ {/* Header row */}
+ <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+ <div style={{ flex: 1, minWidth: 0, paddingRight: 12 }}>
+ <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 4, lineHeight: 1.3 }}>
+  {form.title || 'Challenge Title'}
  </div>
-
- {/* Title */}
- <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em', marginBottom: form.description ? 8 : 12, lineHeight: 1.25 }}>
- {form.title || 'Challenge Title'}
- </div>
-
- {/* Description */}
  {form.description && (
- <div style={{ fontSize: 11, color: T.text2, lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
- {form.description}
- </div>
+  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+  {form.description}
+  </div>
  )}
-
- {/* Goal detail */}
- {form.category === 'lifting' && form.exercise && (
- <div style={{ padding: '8px 11px', borderRadius: 8, background: `${cat.color}08`, border: `1px solid ${cat.color}18`, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
- <Dumbbell style={{ width: 11, height: 11, color: cat.color, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text2, fontWeight: 500 }}>
- {form.exercise.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
- {form.goal_type ? ` · ${GOAL_TYPES.find(g => g.value === form.goal_type)?.label}` : ''}
+ <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, color: '#fcd34d', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 4, padding: '2px 7px' }}>
+  {targetValue} {form.goal_type === 'participation' ? 'participants' : form.category === 'streak' ? 'day streak' : 'check-ins'}
  </span>
  </div>
- )}
- {(form.category === 'attendance' || form.category === 'streak') && form.target_value > 0 && (
- <div style={{ padding: '8px 11px', borderRadius: 8, background: `${cat.color}08`, border: `1px solid ${cat.color}18`, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
- <Target style={{ width: 11, height: 11, color: cat.color, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text2 }}>
- Target: <strong style={{ color: cat.color }}>{form.target_value}</strong> {form.category === 'streak' ? 'consecutive days' : 'check-ins'}
- </span>
+ <div style={{ width: 52, height: 52, borderRadius: 12, background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }}>
+ <Trophy style={{ width: 26, height: 26, color: '#fff' }} />
  </div>
- )}
+ </div>
 
- {/* Date range */}
+ {/* Progress bar */}
+ <div style={{ height: 16, borderRadius: 99, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(71,85,105,0.5)', marginBottom: 4 }}>
+ <div style={{ width: '0%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b, #f97316)', borderRadius: 99 }} />
+ </div>
+ <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+ <span style={{ fontSize: 9, color: '#64748b' }}>0 joined</span>
+ <span style={{ fontSize: 9, color: '#64748b' }}>goal: {targetValue}</span>
+ </div>
+
+ {/* Reward section */}
+ <div style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(51,65,85,0.4))', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+ <div style={{ width: 36, height: 36, borderRadius: 9, background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+  <Gift style={{ width: 16, height: 16, color: '#fff' }} />
+ </div>
+ <div style={{ minWidth: 0 }}>
+  <div style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Challenge Reward</div>
+  <div style={{ fontSize: 13, fontWeight: 800, color: '#fde68a' }}>{form.reward || 'Challenge Badge'}</div>
+ </div>
+ </div>
+
+ {/* Date + meta info */}
  {(form.start_date || form.end_date) && (
- <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: form.reward ? 10 : 0, padding: '8px 11px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}` }}>
- <Calendar style={{ width: 10, height: 10, color: T.text3, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text2, fontWeight: 500 }}>
- {form.start_date ? format(parseISO(form.start_date), 'MMM d') : '?'}
- {' → '}
- {form.end_date ? format(parseISO(form.end_date), 'MMM d, yyyy') : '?'}
- </span>
- {durationDays != null && durationDays > 0 && (
- <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: T.text3 }}>{durationDays}d</span>
- )}
+ <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+  <Calendar style={{ width: 9, height: 9, color: '#64748b', flexShrink: 0 }} />
+  <span style={{ fontSize: 10, color: '#94a3b8' }}>
+  {form.start_date ? format(parseISO(form.start_date), 'MMM d') : '?'} → {form.end_date ? format(parseISO(form.end_date), 'MMM d') : '?'}
+  </span>
+  {durationDays != null && durationDays > 0 && <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748b', fontWeight: 700 }}>{durationDays} days</span>}
  </div>
  )}
 
- {/* Reward */}
- {form.reward && (
- <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 11px', borderRadius: 8, background: `${T.amber}08`, border: `1px solid ${T.amber}18` }}>
- <Gift style={{ width: 11, height: 11, color: T.amber, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text2 }}>{form.reward}</span>
- </div>
- )}
-
- {/* Participants placeholder */}
- <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
- <span style={{ fontSize: 11, color: T.text3 }}>0 participants</span>
- <span style={{ fontSize: 10, fontWeight: 700, color: T.amber, background: `${T.amber}10`, border: `1px solid ${T.amber}22`, borderRadius: 6, padding: '2px 8px' }}>Upcoming</span>
- </div>
- </>
- )}
- </div>
+ {/* Join button */}
+ <div style={{ width: '100%', padding: '10px', borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', fontWeight: 700, fontSize: 13, textAlign: 'center', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }}>
+ Join Challenge
  </div>
 
- {/* Gym vs Gym matchup strip */}
+ {/* Gym vs Gym */}
  {form.type === 'gym_vs_gym' && form.gym_id && form.competing_gym_id && (
- <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 10, background: T.card2, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
- <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.gym_id)?.name || 'Home Gym'}</span>
- <span style={{ fontSize: 13, fontWeight: 800, color: T.amber }}>VS</span>
- <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.competing_gym_id)?.name || 'Away Gym'}</span>
+  <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 9, background: T.card2, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+  <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.gym_id)?.name || 'Home Gym'}</span>
+  <span style={{ fontSize: 12, fontWeight: 800, color: T.amber }}>VS</span>
+  <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.competing_gym_id)?.name || 'Away Gym'}</span>
+  </div>
+ )}
  </div>
  )}
+ </div>
  </div>
  );
 }
