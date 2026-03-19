@@ -49,8 +49,8 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             {/* Gym image thumbnail */}
             <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-              {challenge.image_url || challenge.gym_image_url ? (
-                <img src={challenge.image_url || challenge.gym_image_url} alt={challenge.gym_name || 'Gym'} className="w-full h-full object-cover" />
+              {gymImageUrl || challenge.image_url || challenge.gym_image_url ? (
+                <img src={gymImageUrl || challenge.image_url || challenge.gym_image_url} alt={challenge.gym_name || 'Gym'} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"
                   style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)' }}>
