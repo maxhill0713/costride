@@ -1335,6 +1335,8 @@ export default function GymCommunity() {
             {/* ── ACTIVITY ── */}
             <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+                {/* Busy times */}
+                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Events */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
