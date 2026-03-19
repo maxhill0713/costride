@@ -521,7 +521,6 @@ export default function TabGym({
             </div>
           </SCard>
           <PricingSection selectedGym={selectedGym} openModal={openModal} />
-          <NudgeSettings settings={nudgeSettings} onUpdate={setNudgeSettings} />
           {/* Danger Zone */}
           <div style={{ borderRadius: 12, border: `1px solid ${T.red}18`, background: `${T.red}04`, padding: '16px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>

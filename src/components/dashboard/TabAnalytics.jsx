@@ -1184,16 +1184,7 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </SCard>
 
-        {/* Traffic Heatmap */}
-        <SCard accent={T.cyan} style={{ padding: 20 }}>
-          <CardHeader title="Traffic Heatmap" sub="Check-in density by day and time"
-            right={<div style={{ width: 26, height: 26, borderRadius: 7, background: `${T.cyan}14`, border: `1px solid ${T.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Flame style={{ width: 12, height: 12, color: T.cyan }} /></div>}
-          />
-          <HeatmapChart gymId={gymId} />
-        </SCard>
 
-        {/* Peak Hours */}
-        <RankedBarList title="Peak Hours" icon={Clock} accent={T.cyan} items={peakHours} emptyLabel="No check-in data yet" />
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
@@ -1241,30 +1232,6 @@ export default function TabAnalytics({
         <Week1ReturnTrendWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
         <ChurnSignalWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
 
-        {/* Gym Health Radar */}
-        <SCard accent={T.cyan} style={{ padding: 20 }}>
-          <CardHeader title="Gym Health Radar" sub="6-metric performance overview" />
-          <ResponsiveContainer width="100%" height={190}>
-            <RadarChart data={radarData} margin={{ top: 4, right: 10, bottom: 4, left: 10 }}>
-              <PolarGrid stroke={T.border} radialLines={false} />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: T.text2, fontSize: 9, fontFamily: 'DM Sans, system-ui', fontWeight: 700 }} />
-              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar dataKey="A" stroke={T.cyan} fill={T.cyan} fillOpacity={0.1} strokeWidth={2} dot={{ r: 3, fill: T.cyan, strokeWidth: 0 }} />
-              <Tooltip content={<RadarTip />} />
-            </RadarChart>
-          </ResponsiveContainer>
-          {/* Quick interpretation */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 12 }}>
-            {radarData.map((d, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 7, background: d.A >= 70 ? `${T.green}08` : d.A >= 40 ? T.divider : `${T.red}07`, border: `1px solid ${d.A >= 70 ? T.green + '18' : d.A >= 40 ? T.border : T.red + '18'}` }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: d.A >= 70 ? T.green : d.A >= 40 ? T.cyan : T.red, flexShrink: 0 }} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: T.text2, flex: 1 }}>{d.subject}</span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: d.A >= 70 ? T.green : d.A >= 40 ? T.cyan : T.red }}>{Math.round(d.A)}</span>
-              </div>
-            ))}
-          </div>
-        </SCard>
-
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} accent={T.cyan} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
 
@@ -1275,7 +1242,7 @@ export default function TabAnalytics({
           { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.red  },
         ]} />
 
-        <MilestoneProgressWidget checkIns={checkIns} />
+
       </div>
     </div>
   );
