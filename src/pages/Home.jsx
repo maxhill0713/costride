@@ -1179,7 +1179,7 @@ export default function Home() {
                           transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                           animation: pressedDay === day ? 'none' : getAnimation(),
                           opacity: pressedDay === day ? 0.65 : 1,
-                          transform: 'none',
+                          transform: pressedDay === day ? 'scale(0.82) translateY(3px)' : 'none',
                           willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                           touchAction: 'manipulation',
