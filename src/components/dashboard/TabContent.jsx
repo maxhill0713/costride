@@ -10,8 +10,8 @@ import { Avatar } from './DashboardPrimitives';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
-  blue:    '#0ea5e9', green:  '#10b981', red:    '#ef4444',
-  amber:   '#f59e0b', purple: '#8b5cf6',
+  blue:    '#06b6d4', green:  '#10b981', red:    '#ef4444',
+  amber:   '#06b6d4', purple: '#06b6d4',
   text1:   '#f0f4f8', text2:  '#94a3b8', text3:  '#475569',
   border:  'rgba(255,255,255,0.07)', borderM: 'rgba(255,255,255,0.11)',
   card:    '#0b1120', divider: 'rgba(255,255,255,0.05)',
@@ -48,14 +48,14 @@ const MOBILE_CSS = `
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 // Lighter shimmer — reduced glow per request #3
-const Shimmer = ({ color = T.blue }) => (
+const Shimmer = ({ color = T.cyan }) => (
   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}1e,transparent)`, pointerEvents: 'none' }} />
 );
 
 function SCard({ children, style, accent }) {
   return (
     <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${accent ? `${accent}25` : T.border}`, padding: 20, position: 'relative', overflow: 'hidden', flexShrink: 0, ...style }}>
-      <Shimmer color={accent || T.blue} />
+      <Shimmer color={accent || T.cyan} />
       {children}
     </div>
   );
@@ -114,7 +114,7 @@ function DeleteBtn({ onDelete }) {
         <MoreHorizontal style={{ width: 13, height: 13, color: T.text3 }} />
       </button>
       {open && (
-        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: '#0d1528', border: `1px solid ${T.borderM}`, borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: T.card, border: `1px solid ${T.borderM}`, borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
           <button onClick={e => { e.stopPropagation(); setOpen(false); onDelete(); }}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, color: T.red, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
             onMouseEnter={e => e.currentTarget.style.background = `${T.red}12`}
@@ -147,9 +147,9 @@ function FeedCard({ post, onDelete, isTopPerformer, isLowPerformer, totalMembers
   const accent   = isTopPerformer ? T.green : null;
   return (
     <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${accent ? `${accent}25` : T.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      <Shimmer color={accent || T.blue} />
+      <Shimmer color={accent || T.cyan} />
       {isTopPerformer && (
-        <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}><Pill label="⭐ Top post" color={T.green} /></div>
+        <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}><Pill label="Top post" color={T.green} /></div>
       )}
 
       {/* Header — clean, minimal */}
@@ -189,7 +189,7 @@ function FeedCard({ post, onDelete, isTopPerformer, isLowPerformer, totalMembers
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: likes > 0 ? T.red : T.text3 }}>
           <Heart style={{ width: 11, height: 11 }} /> {likes}
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: comments > 0 ? T.blue : T.text3 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: comments > 0 ? T.green : T.text3 }}>
           <MessageCircle style={{ width: 11, height: 11 }} /> {comments}
         </span>
         {seenBy > 0 && (
@@ -198,7 +198,7 @@ function FeedCard({ post, onDelete, isTopPerformer, isLowPerformer, totalMembers
           </span>
         )}
         {engRate !== null && engRate > 0 && (
-          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: engRate >= 20 ? T.green : engRate >= 10 ? T.amber : T.text3, background: engRate >= 20 ? `${T.green}10` : engRate >= 10 ? `${T.amber}10` : T.divider, borderRadius: 5, padding: '2px 6px' }}>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: engRate >= 20 ? T.green : engRate >= 10 ? T.cyan : T.text3, background: engRate >= 20 ? `${T.green}10` : engRate >= 10 ? `${T.cyan}08` : T.divider, borderRadius: 5, padding: '2px 6px' }}>
             {engRate}% engaged
           </span>
         )}
@@ -239,22 +239,22 @@ function ChallengeCard({ challenge, now, onDelete }) {
   const pct       = Math.min(100, Math.round((elapsed / totalD) * 100));
   const parts     = challenge.participants?.length || 0;
   return (
-    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.amber}20`, overflow: 'hidden', position: 'relative' }}>
-      <Shimmer color={T.amber} />
+    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.cyan}20`, overflow: 'hidden', position: 'relative' }}>
+      <Shimmer color={T.cyan} />
       <div style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-          <IconBadge icon={Trophy} color={T.amber} />
-          <Pill label="Challenge" color={T.amber} />
+          <IconBadge icon={Trophy} color={T.cyan} />
+          <Pill label="Challenge" color={T.cyan} />
           <Pill label={`${remaining}d left`} color={remaining <= 3 ? T.red : T.text3} />
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(challenge.id)} /></div>
         </div>
         <p style={{ fontSize: 13, fontWeight: 700, color: T.text1, margin: '0 0 10px', lineHeight: 1.3 }}>{challenge.title}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
           <span style={{ fontSize: 11, color: T.text3 }}>{parts} joined</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: pct >= 75 ? T.amber : T.purple }}>{pct}% done</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: T.cyan }}>{pct}% done</span>
         </div>
         <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${T.purple},${T.amber})`, transition: 'width 0.8s ease' }} />
+          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: T.cyan, transition: 'width 0.8s ease' }} />
         </div>
       </div>
     </div>
@@ -263,9 +263,9 @@ function ChallengeCard({ challenge, now, onDelete }) {
 
 const CLASS_CFG = {
   hiit:     { color: T.red,    label: 'HIIT'     }, yoga:     { color: T.green,  label: 'Yoga'     },
-  strength: { color: '#818cf8',label: 'Strength' }, cardio:   { color: '#fb7185',label: 'Cardio'   },
-  spin:     { color: T.blue,   label: 'Spin'     }, boxing:   { color: T.amber,  label: 'Boxing'   },
-  pilates:  { color: T.purple, label: 'Pilates'  }, default:  { color: T.blue,   label: 'Class'    },
+  strength: { color: '#06b6d4',label: 'Strength' }, cardio:   { color: '#ef4444',label: 'Cardio'   },
+  spin:     { color: T.cyan,   label: 'Spin'     }, boxing:   { color: T.cyan,  label: 'Boxing'   },
+  pilates:  { color: T.cyan, label: 'Pilates'  }, default:  { color: T.cyan,   label: 'Class'    },
 };
 const CLASS_IMGS = {
   hiit: 'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
@@ -327,17 +327,17 @@ function PollCard({ poll, onDelete, allMemberships }) {
   const total   = allMemberships?.length || 0;
   const partPct = total > 0 ? Math.round((votes / total) * 100) : 0;
   return (
-    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.purple}20`, padding: '12px 14px 14px', position: 'relative', overflow: 'hidden' }}>
-      <Shimmer color={T.purple} />
+    <div style={{ borderRadius: 12, background: T.card, border: `1px solid ${T.cyan}20`, padding: '12px 14px 14px', position: 'relative', overflow: 'hidden' }}>
+      <Shimmer color={T.cyan} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-        <IconBadge icon={BarChart2} color={T.purple} />
-        <Pill label="Poll" color={T.purple} />
-        {partPct > 0 && <Pill label={`${partPct}% voted`} color={partPct >= 50 ? T.green : T.amber} />}
+        <IconBadge icon={BarChart2} color={T.cyan} />
+        <Pill label="Poll" color={T.cyan} />
+        {partPct > 0 && <Pill label={`${partPct}% voted`} color={partPct >= 50 ? T.green : T.cyan} />}
         <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(poll.id)} /></div>
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, color: T.text1, margin: '0 0 10px', lineHeight: 1.3 }}>{poll.title}</p>
       <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: 7 }}>
-        <div style={{ height: '100%', width: `${partPct}%`, borderRadius: 99, background: `linear-gradient(90deg,${T.purple},#a78bfa)`, transition: 'width 0.6s ease' }} />
+        <div style={{ height: '100%', width: `${partPct}%`, borderRadius: 99, background: T.cyan, transition: 'width 0.6s ease' }} />
       </div>
       <div style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{votes} {votes === 1 ? 'vote' : 'votes'}{total > 0 ? ` of ${total} members` : ''}</div>
     </div>
@@ -384,16 +384,16 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         : bestDayName
           ? `No post in ${days} days (best engagement: ${bestDayName})`
           : `No post in ${days} days — keep your feed active`;
-      items.push({ color: T.amber, icon: MessageSquarePlus, label, action: 'Post now', fn: () => openModal('post') });
+      items.push({ color: T.cyan, icon: MessageSquarePlus, label, action: 'Post now', fn: () => openModal('post') });
     }
 
     // Poll with engagement stat
     if (!polls.filter(p => !p.ended_at).length)
-      items.push({ color: T.purple, icon: BarChart2, label: 'No active poll — polls increase engagement by ~40%', action: 'Create poll', fn: () => openModal('poll') });
+      items.push({ color: T.cyan, icon: BarChart2, label: 'No active poll — polls increase engagement by ~40%', action: 'Create poll', fn: () => openModal('poll') });
 
     // Challenge
     if (!challenges.find(c => c.status === 'active'))
-      items.push({ color: T.amber, icon: Trophy, label: 'No active challenge — members are 2× more likely to check in', action: 'Start one', fn: () => openModal('challenge') });
+      items.push({ color: T.cyan, icon: Trophy, label: 'No active challenge — members are 2× more likely to check in', action: 'Start one', fn: () => openModal('challenge') });
 
     // Event
     if (!events.find(e => new Date(e.event_date) >= now))
@@ -406,7 +406,7 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
     return (
       <SCard>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-          <Sparkles style={{ width: 13, height: 13, color: T.blue }} />
+          <Sparkles style={{ width: 13, height: 13, color: T.cyan }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Content Suggestions</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, background: `${T.green}0a`, border: `1px solid ${T.green}18` }}>
@@ -420,7 +420,7 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
   return (
     <SCard>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-        <Sparkles style={{ width: 13, height: 13, color: T.blue }} />
+        <Sparkles style={{ width: 13, height: 13, color: T.cyan }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Content Suggestions</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -450,13 +450,13 @@ function BestTimeToPost({ allPosts, now, openModal }) {
   return (
     <SCard>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-        <Clock style={{ width: 13, height: 13, color: T.blue }} />
+        <Clock style={{ width: 13, height: 13, color: T.cyan }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Best Time to Post</span>
       </div>
 
       {bestDayName && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, background: isTodayBest ? `${T.green}0a` : `${T.blue}08`, border: `1px solid ${isTodayBest ? T.green + '20' : T.blue + '1e'}`, marginBottom: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: isTodayBest ? T.green : T.blue, flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, background: isTodayBest ? `${T.green}0a` : `${T.cyan}08`, border: `1px solid ${isTodayBest ? T.green + '20' : T.cyan + '1e'}`, marginBottom: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: isTodayBest ? T.green : T.cyan, flexShrink: 0 }} />
           <span style={{ fontSize: 11, fontWeight: 500, color: T.text2, lineHeight: 1.4 }}>
             {isTodayBest
               ? <><span style={{ fontWeight: 700, color: T.text1 }}>{todayName}</span> is your best day — post now for max reach</>
@@ -472,9 +472,9 @@ function BestTimeToPost({ allPosts, now, openModal }) {
       </div>
 
       <button onClick={() => openModal('post')}
-        style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: `${T.blue}10`, border: `1px solid ${T.blue}28`, color: T.blue, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'background 0.12s' }}
-        onMouseEnter={e => e.currentTarget.style.background = `${T.blue}1c`}
-        onMouseLeave={e => e.currentTarget.style.background = `${T.blue}10`}>
+        style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: `${T.cyan}10`, border: `1px solid ${T.cyan}28`, color: T.cyan, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'background 0.12s' }}
+        onMouseEnter={e => e.currentTarget.style.background = `${T.cyan}1c`}
+        onMouseLeave={e => e.currentTarget.style.background = `${T.cyan}10`}>
         <Plus style={{ width: 12, height: 12 }} /> Schedule a post
       </button>
     </SCard>
@@ -491,16 +491,16 @@ function EngagementScoreCard({ allPosts, polls, activeChallenges, events, totalC
   , [allPosts, polls, activeChallenges, events]);
   return (
     <SCard>
-      <CardHeader title="Engagement Score" right={<Zap style={{ width: 14, height: 14, color: T.amber }} />} />
+      <CardHeader title="Engagement Score" right={<Zap style={{ width: 14, height: 14, color: T.cyan }} />} />
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
         <span style={{ fontSize: 36, fontWeight: 800, color: T.text1, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</span>
         <span style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>total interactions</span>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"        color={T.red}    />
-        <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"     color={T.blue}   />
-        <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes"   color={T.purple} />
-        <Chip val={totalChalPart}                                                label="In challenge" color={T.amber}  />
+        <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"     color={T.cyan}   />
+        <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes"   color={T.cyan} />
+        <Chip val={totalChalPart}                                                label="In challenge" color={T.cyan}  />
       </div>
     </SCard>
   );
@@ -558,7 +558,7 @@ function ActivityChart({ allPosts, now }) {
   return (
     <SCard>
       <CardHeader title="Community Activity" sub="Posts, likes & comments"
-        right={<div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 20, fontWeight: 800, color: up ? T.green : T.amber, letterSpacing: '-0.04em' }}>{sum}</span>{up ? <TrendingUp style={{ width: 12, height: 12, color: T.green }} /> : <TrendingDown style={{ width: 12, height: 12, color: T.amber }} />}</div>}
+        right={<div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 20, fontWeight: 800, color: up ? T.green : T.cyan, letterSpacing: '-0.04em' }}>{sum}</span>{up ? <TrendingUp style={{ width: 12, height: 12, color: T.green }} /> : <TrendingDown style={{ width: 12, height: 12, color: T.cyan }} />}</div>}
       />
       <div style={{ display: 'flex', gap: 4, height: 36, alignItems: 'flex-end', marginBottom: 6 }}>
         {days.map((d, i) => (
@@ -566,9 +566,9 @@ function ActivityChart({ allPosts, now }) {
             {d.total === 0
               ? <div style={{ height: 3, borderRadius: 2, background: T.divider }} />
               : <>
-                  {d.comments > 0 && <div style={{ height: Math.max(3, (d.comments / maxV) * 28), borderRadius: 2, background: T.blue, opacity: 0.85 }} />}
+                  {d.comments > 0 && <div style={{ height: Math.max(3, (d.comments / maxV) * 28), borderRadius: 2, background: T.green, opacity: 0.85 }} />}
                   {d.likes    > 0 && <div style={{ height: Math.max(3, (d.likes    / maxV) * 28), borderRadius: 2, background: T.red, opacity: 0.85 }} />}
-                  {d.posts    > 0 && <div style={{ height: Math.max(3, (d.posts    / maxV) * 28), borderRadius: 2, background: T.purple, opacity: 0.85 }} />}
+                  {d.posts    > 0 && <div style={{ height: Math.max(3, (d.posts    / maxV) * 28), borderRadius: 2, background: T.cyan, opacity: 0.85 }} />}
                 </>
             }
           </div>
@@ -578,7 +578,7 @@ function ActivityChart({ allPosts, now }) {
         {days.map((d, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: T.text3 }}>{d.label}</div>)}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        {[{ color: T.purple, label: 'Posts' }, { color: T.red, label: 'Likes' }, { color: T.blue, label: 'Comments' }].map((l, i) => (
+        {[{ color: T.cyan, label: 'Posts' }, { color: T.red, label: 'Likes' }, { color: T.green, label: 'Comments' }].map((l, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div style={{ width: 7, height: 7, borderRadius: 2, background: l.color }} />
             <span style={{ fontSize: 9, fontWeight: 600, color: T.text3 }}>{l.label}</span>
@@ -605,8 +605,8 @@ function TopPostsCard({ allPosts, openModal }) {
             <span style={{ flex: 1, fontSize: 11, fontWeight: 500, color: T.text2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {(p.title || p.content || '').split('\n')[0].slice(0, 38) || 'Post'}
             </span>
-            <span style={{ fontSize: 10, color: T.red, flexShrink: 0 }}>♥ {p.likes?.length || 0}</span>
-            <span style={{ fontSize: 10, color: T.blue, flexShrink: 0 }}>💬 {p.comments?.length || 0}</span>
+            <span style={{ fontSize: 10, color: T.red, flexShrink: 0 }}>{p.likes?.length || 0} lk</span>
+            <span style={{ fontSize: 10, color: T.green, flexShrink: 0 }}>{p.comments?.length || 0} cmt</span>
           </div>
         ))}
       </div>
@@ -626,18 +626,18 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
     const tot = allPosts.length + events.length + polls.length + challenges.length;
     if (!tot) return null;
     return [
-      { label: 'Posts', count: allPosts.length, color: T.blue, pct: Math.round(allPosts.length / tot * 100) },
+      { label: 'Posts', count: allPosts.length, color: T.cyan, pct: Math.round(allPosts.length / tot * 100) },
       { label: 'Events', count: events.length, color: T.green, pct: Math.round(events.length / tot * 100) },
-      { label: 'Polls', count: polls.length, color: T.purple, pct: Math.round(polls.length / tot * 100) },
-      { label: 'Challenges', count: challenges.length, color: T.amber, pct: Math.round(challenges.length / tot * 100) },
+      { label: 'Polls', count: polls.length, color: T.cyan, pct: Math.round(polls.length / tot * 100) },
+      { label: 'Challenges', count: challenges.length, color: T.cyan, pct: Math.round(challenges.length / tot * 100) },
     ].filter(c => c.count > 0);
   }, [allPosts, events, polls, challenges]);
   return (
     <SCard>
-      <CardHeader title="Posting Cadence" right={<TrendingUp style={{ width: 13, height: 13, color: T.blue }} />} />
+      <CardHeader title="Posting Cadence" right={<TrendingUp style={{ width: 13, height: 13, color: T.cyan }} />} />
       <div style={{ display: 'flex', gap: 4, height: 32, alignItems: 'flex-end', marginBottom: 6 }}>
         {cadence.map((d, i) => (
-          <div key={i} style={{ flex: 1, height: d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28), borderRadius: 3, background: d.count === 0 ? T.divider : `linear-gradient(180deg,${T.blue},#0284c7)`, transition: 'height 0.4s ease' }} />
+          <div key={i} style={{ flex: 1, height: d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28), borderRadius: 3, background: d.count === 0 ? T.divider : `linear-gradient(180deg,${T.cyan},#06b6d4)`, transition: 'height 0.4s ease' }} />
         ))}
       </div>
       <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
@@ -645,7 +645,7 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
       </div>
       <div style={{ fontSize: 11, color: T.text3, fontWeight: 500, marginBottom: mix ? 16 : 0 }}>
         {activeDays} active {activeDays === 1 ? 'day' : 'days'} this week
-        {activeDays < 3 && <span style={{ color: T.amber, marginLeft: 6, fontWeight: 700 }}>— try posting 3× for better reach</span>}
+        {activeDays < 3 && <span style={{ color: T.cyan, marginLeft: 6, fontWeight: 700 }}>— try posting 3× for better reach</span>}
       </div>
       {mix && (
         <>
@@ -679,25 +679,25 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
   return (
     <>
       <SCard>
-        <CardHeader title="My Content Impact" right={<Zap style={{ width: 14, height: 14, color: T.purple }} />} />
+        <CardHeader title="My Content Impact" right={<Zap style={{ width: 14, height: 14, color: T.cyan }} />} />
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 36, fontWeight: 800, color: T.text1, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</span>
           <span style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>interactions</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"      color={T.red}    />
-          <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"   color={T.blue}   />
-          <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes" color={T.purple} />
+          <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"   color={T.cyan}   />
+          <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes" color={T.cyan} />
         </div>
       </SCard>
       <EngagementTrend allPosts={allPosts} polls={polls} now={now} />
       <SCard>
         <CardHeader title="My Schedule" />
         {[
-          { label: 'My Classes',        value: classes.length,          color: T.purple },
+          { label: 'My Classes',        value: classes.length,          color: T.cyan },
           { label: 'Upcoming Events',   value: upcomingEvents.length,   color: T.green  },
-          { label: 'Active Challenges', value: activeChallenges.length, color: T.amber  },
-          { label: 'Active Polls',      value: polls.length,            color: T.blue   },
+          { label: 'Active Challenges', value: activeChallenges.length, color: T.cyan  },
+          { label: 'Active Polls',      value: polls.length,            color: T.cyan   },
         ].map((s, i, arr) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: i < arr.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
             <span style={{ fontSize: 12, color: T.text2, fontWeight: 500 }}>{s.label}</span>
@@ -772,15 +772,15 @@ export default function TabContent({
 
   // Secondary action buttons (smaller, after primary CTA)
   const secondaryActions = (isCoach ? [
-    { icon: Dumbbell,  label: 'My Classes',    sub: `${classes.length} classes`,          color: T.purple, fn: () => openModal('classes')   },
+    { icon: Dumbbell,  label: 'My Classes',    sub: `${classes.length} classes`,          color: T.cyan, fn: () => openModal('classes')   },
     { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`,  color: T.green,  fn: () => openModal('event')     },
     { icon: Trophy,    label: 'Challenge',     sub: `${activeChallenges.length} active`,  color: T.red,    fn: () => openModal('challenge') },
-    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,             color: T.purple, fn: () => openModal('poll')      },
+    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,             color: T.cyan, fn: () => openModal('poll')      },
   ] : [
     { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`,  color: T.green,  fn: () => openModal('event')     },
-    { icon: Dumbbell,  label: 'Classes',       sub: `${classes.length} total`,            color: T.blue,   fn: () => openModal('classes')   },
+    { icon: Dumbbell,  label: 'Classes',       sub: `${classes.length} total`,            color: T.cyan,   fn: () => openModal('classes')   },
     { icon: Trophy,    label: 'New Challenge', sub: `${activeChallenges.length} active`,  color: T.red,    fn: () => openModal('challenge') },
-    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,             color: T.purple, fn: () => openModal('poll')      },
+    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,             color: T.cyan, fn: () => openModal('poll')      },
   ]);
 
   return (
@@ -796,7 +796,7 @@ export default function TabContent({
 
             {/* Primary: New Post — large, prominent */}
             <button onClick={() => openModal('post')}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderRadius: 12, background: T.blue, color: '#fff', border: 'none', fontSize: 14, fontWeight: 800, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', transition: 'opacity 0.12s', position: 'relative', overflow: 'hidden' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderRadius: 12, background: T.cyan, color: '#fff', border: 'none', fontSize: 14, fontWeight: 800, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', transition: 'opacity 0.12s', position: 'relative', overflow: 'hidden' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(255,255,255,0.1),transparent)', pointerEvents: 'none' }} />
@@ -830,7 +830,7 @@ export default function TabContent({
             <span style={{ fontSize: 13, fontWeight: 700, color: T.text1, padding: '8px 14px 8px 0', marginBottom: -1, flexShrink: 0 }}>Feed</span>
             {FILTERS.map(f => (
               <button key={f.id} onClick={() => setActiveFilter(f.id)} className="tc-tab-btn"
-                style={{ fontWeight: activeFilter === f.id ? 700 : 500, color: activeFilter === f.id ? T.text1 : T.text3, borderBottom: `2px solid ${activeFilter === f.id ? T.purple : 'transparent'}`, marginBottom: -1 }}>
+                style={{ fontWeight: activeFilter === f.id ? 700 : 500, color: activeFilter === f.id ? T.text1 : T.text3, borderBottom: `2px solid ${activeFilter === f.id ? T.cyan : 'transparent'}`, marginBottom: -1 }}>
                 {f.label}
               </button>
             ))}
@@ -845,13 +845,13 @@ export default function TabContent({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${T.blue}0a`, border: `1px solid ${T.blue}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <MessageSquarePlus style={{ width: 18, height: 18, color: `${T.blue}55` }} />
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${T.cyan}0a`, border: `1px solid ${T.cyan}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MessageSquarePlus style={{ width: 18, height: 18, color: `${T.cyan}55` }} />
                 </div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: T.text2, margin: 0 }}>Nothing here yet</p>
                 <p style={{ fontSize: 11, color: T.text3, margin: 0 }}>Create your first post to get the community going</p>
                 <button onClick={() => openModal('post')}
-                  style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: T.blue, border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: T.cyan, border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   Create first post
                 </button>
               </div>
