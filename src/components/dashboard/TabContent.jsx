@@ -833,7 +833,7 @@ export default function TabContent({
   const col2 = flatItems.filter((_, i) => i % 2 === 1);
 
   const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedCard      key={item.data.id || i} post={item.data}      onDelete={onDeletePost}      isTopPerformer={topPostIds.has(item.data.id)} isLowPerformer={lowPostIds.has(item.data.id)} totalMembers={totalMembers} />;
+    if (item.type === 'post')      return <PostCard      key={item.data.id || i} post={item.data}      currentUser={currentUser} isOwnProfile={item.data.created_by === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => onDeletePost(item.data.id)} fullWidth={true} />;
     if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
     if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} onDelete={onDeleteChallenge} now={now} />;
     if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
