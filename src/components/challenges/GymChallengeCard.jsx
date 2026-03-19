@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
-  const [showStats, setShowStats] = React.useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const participantCount = challenge.participants?.length || 0;
   const targetValue = challenge.target_value || 50;
