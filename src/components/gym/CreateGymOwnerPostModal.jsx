@@ -55,12 +55,13 @@ function CharRing({ count, max = 500 }) {
  );
 }
 
-// Live post preview 
+// Live post preview — matches actual PostCard feed style
+const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
+
 function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned, scheduledDate, gym }) {
  const type = POST_TYPES.find(t => t.value === postType) || POST_TYPES[0];
  const Icon = type.icon;
  const empty = !content.trim() && !imageUrl;
- const now = new Date();
 
  return (
  <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -70,74 +71,85 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
  <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
  </div>
 
- {/* Post card */}
- <div style={{ borderRadius: 12, background: T.card2, border: `1px solid ${type.color}20`, overflow: 'hidden', position: 'relative', flex: empty ? 'none' : 1 }}>
- <Shimmer color={type.color} />
+ {/* Post card — exact PostCard feed style */}
+ <div style={{
+  borderRadius: 16, overflow: 'hidden', position: 'relative',
+  background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  backdropFilter: 'blur(20px)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+ }}>
+ {/* Top shine line */}
+ <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
+ {/* Indigo glow */}
+ <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
  {/* Post header */}
- <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
- <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${type.color}30,${type.color}15)`, border: `1px solid ${type.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
- {gym?.logo_url
- ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 9 }} />
- : <Icon style={{ width: 16, height: 16, color: type.color }} />
- }
+ {empty ? (
+ <div style={{ padding: '28px 16px 28px', textAlign: 'center' }}>
+ <Icon style={{ width: 24, height: 24, color: `${type.color}50`, margin: '0 auto 8px', display: 'block' }} />
+ <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Start typing to see your post preview</div>
  </div>
- <div style={{ flex: 1, minWidth: 0 }}>
- <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
- <span style={{ fontSize: 13, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym?.name || 'Your Gym'}</span>
- {isPinned && <span style={{ fontSize: 9, fontWeight: 800, color: T.amber, background: `${T.amber}12`, border: `1px solid ${T.amber}25`, borderRadius: 5, padding: '1px 6px', flexShrink: 0 }}> Pinned</span>}
+ ) : (
+ <>
+ <div style={{ position: 'relative', zIndex: 1, padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+ <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+ {gym?.logo_url || gym?.image_url
+ ? <img src={gym.logo_url || gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+ : <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{(gym?.name || 'G').charAt(0).toUpperCase()}</span>}
  </div>
- <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
- <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 7px', borderRadius: 99, background: `${type.color}12`, border: `1px solid ${type.color}22` }}>
- <Icon style={{ width: 9, height: 9, color: type.color }} />
+ <div>
+ <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gym?.name || 'Your Gym'}</div>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '1px 6px', borderRadius: 99, background: `${type.color}15`, border: `1px solid ${type.color}25` }}>
+ <Icon style={{ width: 8, height: 8, color: type.color }} />
  <span style={{ fontSize: 9, fontWeight: 700, color: type.color }}>{type.label}</span>
  </div>
- <span style={{ fontSize: 10, color: T.text3 }}>
- {scheduledDate ? `Scheduled · ${format(new Date(scheduledDate), 'MMM d, h:mma')}` : 'Just now'}
+ <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
+ {scheduledDate ? `Scheduled · ${format(new Date(scheduledDate), 'MMM d')}` : 'Just now'}
  </span>
+ {isPinned && <span style={{ fontSize: 9, fontWeight: 800, color: T.amber }}>📌</span>}
+ </div>
  </div>
  </div>
  </div>
 
  {/* Content */}
- {empty ? (
- <div style={{ padding: '20px 16px 24px', textAlign: 'center' }}>
- <Icon style={{ width: 24, height: 24, color: `${type.color}40`, margin: '0 auto 8px', display: 'block' }} />
- <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Start typing to see your post preview</div>
+ <div style={{ position: 'relative', zIndex: 1, padding: '0 16px 12px' }}>
+ <p style={{ fontSize: 13, color: 'rgba(203,213,225,1)', lineHeight: 1.65, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</p>
  </div>
- ) : (
- <>
+
+ {/* Image */}
  {imageUrl && (
- <div style={{ margin: '0 16px 12px', borderRadius: 9, overflow: 'hidden', maxHeight: 180 }}>
- <img src={imageUrl} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block' }} />
+ <div style={{ width: '100%', overflow: 'hidden', maxHeight: 200 }}>
+ <img src={imageUrl} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block', maxHeight: 200 }} />
  </div>
  )}
- {content.trim() && (
- <div style={{ padding: '0 16px 12px', fontSize: 12, color: T.text2, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
- {content}
- </div>
- )}
+
+ {/* Tags */}
  {tags.length > 0 && (
- <div style={{ padding: '0 16px 12px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+ <div style={{ padding: '8px 16px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
  {tags.map((t, i) => (
  <span key={i} style={{ fontSize: 10, fontWeight: 700, color: type.color, background: `${type.color}10`, border: `1px solid ${type.color}20`, borderRadius: 5, padding: '2px 7px' }}>#{t}</span>
  ))}
  </div>
  )}
+
+ {/* CTA */}
  {callToAction.enabled && callToAction.text && (
- <div style={{ margin: '0 16px 14px', padding: '9px 14px', borderRadius: 9, background: `${type.color}10`, border: `1px solid ${type.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ <div style={{ margin: '0 16px 12px', padding: '9px 14px', borderRadius: 9, background: `${type.color}10`, border: `1px solid ${type.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
  <span style={{ fontSize: 12, fontWeight: 700, color: type.color }}>{callToAction.text}</span>
  <ArrowUpRight style={{ width: 12, height: 12, color: type.color }} />
  </div>
  )}
- {/* Engagement row */}
- <div style={{ padding: '10px 16px', borderTop: `1px solid ${T.divider}`, display: 'flex', gap: 16 }}>
- {[['', '0'], ['', '0'], ['', '']].map(([emoji, count], i) => (
- <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
- <span style={{ fontSize: 12 }}>{emoji}</span>
- {count && <span style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{count}</span>}
+
+ {/* Reaction bar */}
+ <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', minHeight: 44 }}>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+ <img src={STREAK_ICON_URL} alt="react" style={{ width: 40, height: 40, objectFit: 'contain', opacity: 0.35 }} />
+ <Send style={{ width: 18, height: 18, color: 'rgba(148,163,184,0.6)', marginLeft: 4 }} />
  </div>
- ))}
  </div>
  </>
  )}
