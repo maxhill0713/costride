@@ -39,9 +39,13 @@ import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// ── Card style — matches TodayWorkout home page cards exactly ─────────────────
+const CARD_BG = 'linear-gradient(135deg, rgba(20,24,48,0.94) 0%, rgba(8,10,22,0.98) 100%)';
+const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
+
 const CARD_STYLE = {
-  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
-  border: '1px solid rgba(255,255,255,0.07)',
+  background: CARD_BG,
+  border: CARD_BORDER,
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
 };
@@ -194,17 +198,19 @@ function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
   return (
     <div style={{
       borderRadius: 20,
-      background: booked
-        ? `linear-gradient(135deg, rgba(12,18,34,0.98), rgba(8,12,24,0.99))`
-        : 'linear-gradient(135deg, rgba(14,18,36,0.97), rgba(8,12,24,0.99))',
-      border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.08)'}`,
+      background: CARD_BG,
+      border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
       overflow: 'hidden',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       boxShadow: booked
         ? `0 0 0 1px ${cfg.border}, 0 12px 40px rgba(0,0,0,0.5)`
         : '0 4px 20px rgba(0,0,0,0.35)',
     }}>
-      {/* Coloured top bar */}
-      <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)` }} />
+      {/* Shimmer line — matches home card */}
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
+      {/* Coloured type bar */}
+      <div style={{ height: 2, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)` }} />
 
       <div style={{ padding: '16px 16px 0' }}>
         {/* Row 1: icon + name + delete */}
@@ -332,18 +338,6 @@ function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
 }
 
 // ── Today's quick-book strip ──────────────────────────────────────────────────
-// Gradient backgrounds per class type
-const TYPE_CARD_GRAD = {
-  hiit:     'linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 50%, #1a0505 100%)',
-  yoga:     'linear-gradient(135deg, #031a10 0%, #063320 50%, #021a10 100%)',
-  strength: 'linear-gradient(135deg, #080b1f 0%, #0f1540 50%, #080b1f 100%)',
-  cardio:   'linear-gradient(135deg, #1a0510 0%, #2d0a1c 50%, #1a0510 100%)',
-  spin:     'linear-gradient(135deg, #040d1a 0%, #071a33 50%, #040d1a 100%)',
-  boxing:   'linear-gradient(135deg, #150800 0%, #2a1200 50%, #150800 100%)',
-  pilates:  'linear-gradient(135deg, #0f0520 0%, #1e0a40 50%, #0f0520 100%)',
-  default:  'linear-gradient(135deg, #060c1f 0%, #0a1535 50%, #060c1f 100%)',
-};
-
 function TodayStrip({ classes, bookedIds, onBook }) {
   const todayName = DAYS_SHORT[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
   const todayClasses = classes.filter(c => {
@@ -368,7 +362,6 @@ function TodayStrip({ classes, bookedIds, onBook }) {
         {todayClasses.map(c => {
           const typeKey = getClassType(c);
           const cfg = CLASS_TYPE_CONFIG[typeKey];
-          const grad = TYPE_CARD_GRAD[typeKey] || TYPE_CARD_GRAD.default;
           const booked = bookedIds.has(c.id);
           const capacity  = c.capacity || c.max_participants || null;
           const enrolled  = c.enrolled  || c.participants_count || 0;
@@ -378,17 +371,22 @@ function TodayStrip({ classes, bookedIds, onBook }) {
 
           return (
             <div key={c.id} style={{
-              flexShrink: 0, width: 168, borderRadius: 20, background: grad,
-              border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.08)'}`,
+              flexShrink: 0, width: 168, borderRadius: 20,
+              background: CARD_BG,
+              border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
               boxShadow: booked ? `0 0 0 1px ${cfg.border}, 0 8px 32px rgba(0,0,0,0.5)` : '0 8px 32px rgba(0,0,0,0.45)',
               overflow: 'hidden', position: 'relative', cursor: isFull ? 'default' : 'pointer',
             }} onClick={() => !isFull && onBook(c.id)}>
 
-              {/* Colour accent top bar */}
-              <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}cc, ${cfg.color}44)` }} />
+              {/* Shimmer line */}
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
+              {/* Colour accent bar */}
+              <div style={{ height: 2, background: `linear-gradient(90deg, ${cfg.color}cc, ${cfg.color}44)` }} />
 
               {/* Large decorative emoji */}
-              <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 52, lineHeight: 1, opacity: 0.18, filter: 'blur(1px)', pointerEvents: 'none', userSelect: 'none' }}>
+              <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 52, lineHeight: 1, opacity: 0.1, filter: 'blur(1px)', pointerEvents: 'none', userSelect: 'none' }}>
                 {cfg.emoji}
               </div>
 
@@ -496,16 +494,22 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
   return (
     <div style={{
       borderRadius: 18, overflow: 'hidden', flexShrink: 0,
-      background: 'linear-gradient(160deg, #0d1535 0%, #080c1e 100%)',
-      border: `1px solid ${booked ? cfg.border : 'rgba(255,255,255,0.08)'}`,
+      background: CARD_BG,
+      border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
       display: 'flex', flexDirection: 'column',
       width: 220,
+      position: 'relative',
     }}>
+      {/* Shimmer line */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)', zIndex: 2, pointerEvents: 'none' }} />
+
       {/* Image */}
       <div style={{ position: 'relative', height: 130, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(8,12,28,0.85) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(8,10,22,0.88) 100%)' }} />
         {/* Type badge */}
         <div style={{ position: 'absolute', top: 9, left: 9, fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: cfg.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '3px 8px', backdropFilter: 'blur(6px)' }}>
           {cfg.emoji} {cfg.label}
@@ -633,7 +637,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
       </div>
 
       {classes.length === 0 ? (
-        <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center', background:'rgba(12,16,32,0.8)', border:'1px dashed rgba(255,255,255,0.08)' }}>
+        <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center', background: CARD_BG, border:`1px dashed ${CARD_BORDER}`, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
           <div style={{ width:64, height:64, borderRadius:20, background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.2)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px', fontSize:28 }}>🏋️</div>
           <div style={{ fontSize:16, fontWeight:900, color:'rgba(255,255,255,0.4)', marginBottom:8 }}>No classes scheduled</div>
           <div style={{ fontSize:13, color:'rgba(255,255,255,0.22)', lineHeight:1.5 }}>Check another day or ask your<br/>gym to add classes.</div>
@@ -668,7 +672,8 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
               <button key={d} onClick={() => setActiveDay(active && val !== 'all' ? 'all' : val)} style={{
                 flexShrink:0, padding:'8px 14px', borderRadius:99, fontSize:13, fontWeight:700,
                 cursor:'pointer', border:`1px solid ${active ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.12)'}`,
-                background: active ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : 'rgba(255,255,255,0.05)',
+                background: active ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : CARD_BG,
+                backdropFilter: 'blur(20px)',
                 color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                 boxShadow: active ? '0 4px 14px rgba(37,99,235,0.35)' : 'none',
                 transition:'all 0.15s',
@@ -689,7 +694,8 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
                   <button key={f.id} onClick={() => setActiveType(f.id)} style={{
                     padding:'7px 14px', borderRadius:99, fontSize:12, fontWeight:700, cursor:'pointer',
                     border:`1px solid ${active ? (cfg2.border || 'rgba(59,130,246,0.6)') : 'rgba(255,255,255,0.1)'}`,
-                    background: active ? (cfg2.bg || 'rgba(59,130,246,0.15)') : 'rgba(255,255,255,0.04)',
+                    background: active ? (cfg2.bg || 'rgba(59,130,246,0.15)') : CARD_BG,
+                    backdropFilter: 'blur(20px)',
                     color: active ? (cfg2.color || '#fff') : 'rgba(255,255,255,0.45)',
                     transition:'all 0.15s',
                   }}>{f.label}</button>
@@ -700,7 +706,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ borderRadius:18, padding:'36px 20px', textAlign:'center', background:'rgba(12,16,32,0.7)', border:'1px dashed rgba(255,255,255,0.06)' }}>
+          <div style={{ borderRadius:18, padding:'36px 20px', textAlign:'center', background: CARD_BG, border:`1px dashed ${CARD_BORDER}`, backdropFilter:'blur(20px)' }}>
             <div style={{ fontSize:28, marginBottom:10 }}>📭</div>
             <div style={{ fontSize:14, fontWeight:800, color:'rgba(255,255,255,0.3)', marginBottom:6 }}>No classes match this filter</div>
           </div>
@@ -735,10 +741,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     <>
       <style>{LBOARD_ANIM}</style>
       <button onClick={() => setOpen(true)} className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
-        style={{ background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)', border:'1px solid rgba(255,215,0,0.18)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+        style={{ background: CARD_BG, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', border:`1px solid rgba(255,215,0,0.18)`, boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ position:'absolute',top:0,left:0,right:0,bottom:0,overflow:'hidden',pointerEvents:'none',borderRadius:'inherit' }}>
           <div style={{ position:'absolute',top:0,bottom:0,width:'30%',background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)',animation:'lb-shimmer 3.5s ease-in-out infinite' }}/>
         </div>
+        <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)',borderRadius:'inherit' }}/>
         <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.6) 30%,rgba(255,215,0,0.9) 50%,rgba(255,215,0,0.6) 70%,transparent 100%)',borderRadius:'inherit' }}/>
         <div className="flex items-center gap-3 px-4 py-3.5">
           <div style={{ width:44,height:44,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,180,0,0.08))',border:'1px solid rgba(255,215,0,0.25)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
@@ -888,7 +895,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   const pct = Math.max(4, Math.round((getVal(m)/maxVal)*100));
                   const R = NAV_ROW[i] || NAV_ROW[NAV_ROW.length-1];
                   return (
-                    <div key={m.userId||i} style={{ borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,position:'relative',overflow:'hidden',background:'linear-gradient(135deg,rgba(15,24,58,0.82) 0%,rgba(8,14,36,0.92) 100%)',border:'1px solid rgba(255,255,255,0.06)',borderTop:'1px solid rgba(255,255,255,0.09)',boxShadow:'0 2px 12px rgba(0,0,0,0.35)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)' }}>
+                    <div key={m.userId||i} style={{ borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,position:'relative',overflow:'hidden',background: CARD_BG,border: CARD_BORDER,borderTop:'1px solid rgba(255,255,255,0.09)',boxShadow:'0 2px 12px rgba(0,0,0,0.35)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)' }}>
                       <div style={{ position:'absolute',left:0,top:'18%',bottom:'18%',width:2,borderRadius:99,background:`rgba(${current.accentRgb},${R.rankOpacity*0.35})`,pointerEvents:'none' }}/>
                       <div style={{ width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity*0.7})`,letterSpacing:'-0.02em' }}>{globalRank}</div>
                       <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:'rgba(255,255,255,0.06)',border:`1px solid rgba(255,255,255,${R.rankOpacity*0.12})` }}>
@@ -1214,7 +1221,7 @@ export default function GymCommunity() {
                       </RippleButton>
                     </div>
                     <SlidePanel open={joinPanel==='code'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background:'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border:'1px solid rgba(59,130,246,0.25)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background: CARD_BG, border: CARD_BORDER, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
                         <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
                         <p className="text-[11px] mb-3" style={{ color:'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
                         {joinCodeSuccess ? (
@@ -1239,7 +1246,7 @@ export default function GymCommunity() {
                       </div>
                     </SlidePanel>
                     <SlidePanel open={joinPanel==='primary'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background:'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border:'1px solid rgba(251,191,36,0.2)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background: CARD_BG, border: CARD_BORDER, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 8px 32px rgba(0,0,0,0.4)' }}>
                         {primaryConfirmed ? (
                           <div className="flex flex-col items-center py-4 gap-2">
                             <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background:'rgba(251,191,36,0.15)', border:'2px solid rgba(251,191,36,0.4)' }}>⭐</div>
@@ -1317,7 +1324,7 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-            {/* ── CLASSES (new) ── */}
+            {/* ── CLASSES ── */}
             <TabsContent value="classes" className="space-y-3 mt-0 w-full">
               <ClassesTabContent
                 classes={classes}
