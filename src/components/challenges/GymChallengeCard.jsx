@@ -4,7 +4,7 @@ import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
+export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false, gymImageUrl = null }) {
   const [showStats, setShowStats] = useState(false);
 
   const participantCount = challenge.participants?.length || 0;
