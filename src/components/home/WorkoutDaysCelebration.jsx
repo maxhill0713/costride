@@ -105,11 +105,13 @@ export default function WorkoutDaysCelebration({
   onDismiss,
 }) {
   const [animated, setAnimated] = useState(false);
-  const [exiting, setExiting] = useState(false);
+  const [backdropExiting, setBackdropExiting] = useState(false);
+  const [circlesExiting, setCirclesExiting] = useState(false);
   const todayRef = useRef(null);
 
-  // EXIT_DUR must match the exit transition duration below (ms)
-  const EXIT_DUR = 600;
+  // Backdrop fades ~1000ms after the circle pops, circles fade shortly after
+  const BACKDROP_FADE = 1200; // backdrop fade duration
+  const CIRCLES_FADE  = 500;  // circles fade duration after backdrop gone
 
   useEffect(() => {
     injectStyles();
@@ -118,10 +120,13 @@ export default function WorkoutDaysCelebration({
       playCircleLevelUp();
       spawnBlueParticles(todayRef.current);
     }, 1230);
-    // Start the exit animation EXIT_DUR ms before actually unmounting
-    const t2 = setTimeout(() => setExiting(true), 4600 - EXIT_DUR);
-    const t3 = setTimeout(() => { onDismiss?.(); }, 4600);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // Start fading backdrop ~900ms after the pop (lets particles finish)
+    const t2 = setTimeout(() => setBackdropExiting(true), 2130);
+    // Start fading circles once backdrop is mostly gone
+    const t3 = setTimeout(() => setCirclesExiting(true), 2130 + BACKDROP_FADE - 100);
+    // Unmount after everything has faded
+    const t4 = setTimeout(() => { onDismiss?.(); }, 2130 + BACKDROP_FADE + CIRCLES_FADE);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
 
   const trainingDays = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
@@ -264,27 +269,28 @@ export default function WorkoutDaysCelebration({
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
+        // Backdrop fades first, independently of the circles
+        background: `rgba(0,0,0,${backdropExiting ? 0 : 0.8})`,
+        backdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
+        WebkitBackdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
+        transition: `background ${BACKDROP_FADE}ms ease-in-out, backdrop-filter ${BACKDROP_FADE}ms ease-in-out`,
+        // Circles sit below centre — matching home screen position after workout card collapses
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        // Fade overlay out on exit
-        opacity: exiting ? 0 : 1,
-        transition: `opacity ${EXIT_DUR}ms ease-in-out`,
+        paddingTop: '20vh', // push circles into lower-middle of screen
+        pointerEvents: 'none',
       }}
     >
       <div
         style={{
-          padding: '32px 24px 32px',
+          padding: '12px 24px 32px',
           width: 'min(340px, 90vw)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          // Slide card down + fade on exit; spring entrance via keyframe
-          animation: !exiting ? 'wdcCardEnter 0.55s cubic-bezier(0.34,1.15,0.64,1) forwards' : 'none',
-          opacity: exiting ? 0 : 1,
-          transform: exiting ? 'translateY(28px) scale(0.96)' : undefined,
-          transition: exiting ? `opacity ${EXIT_DUR}ms cubic-bezier(0.4,0,1,1), transform ${EXIT_DUR}ms cubic-bezier(0.4,0,1,1)` : 'none',
+          // Circles enter with spring, then gently fade in place (no translate down)
+          animation: !circlesExiting ? 'wdcCardEnter 0.55s cubic-bezier(0.34,1.15,0.64,1) forwards' : 'none',
+          opacity: circlesExiting ? 0 : 1,
+          transition: circlesExiting ? `opacity ${CIRCLES_FADE}ms ease-in` : 'none',
         }}
       >
 
