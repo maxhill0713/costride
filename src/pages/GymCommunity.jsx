@@ -1294,7 +1294,7 @@ export default function GymCommunity() {
                     </div>
                     <div className="space-y-2">
                       {gymChallenges.slice(0,1).map(challenge => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
+                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} gymImageUrl={gym?.image_url} />
                       ))}
                     </div>
                   </div>
