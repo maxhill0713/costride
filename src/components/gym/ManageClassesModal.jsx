@@ -23,14 +23,14 @@ function Shimmer({ color = T.purple }) {
 
 // Class type catalogue 
 const CLASS_TYPES = [
- { value: 'hiit', label: 'HIIT' color: '#f87171' },
- { value: 'yoga', label: 'Yoga' color: T.green },
- { value: 'strength', label: 'Strength' color: T.purple },
- { value: 'cardio', label: 'Cardio' color: '#fb7185' },
- { value: 'spin', label: 'Spin' color: T.blue },
- { value: 'boxing', label: 'Boxing' color: T.amber },
- { value: 'pilates', label: 'Pilates' color: '#c084fc' },
- { value: 'other', label: 'Other' color: T.blue },
+ { value: 'hiit',     label: 'HIIT',     emoji: '⚡', color: '#f87171' },
+ { value: 'yoga',     label: 'Yoga',     emoji: '🧘', color: T.green   },
+ { value: 'strength', label: 'Strength', emoji: '🏋️', color: T.purple  },
+ { value: 'cardio',   label: 'Cardio',   emoji: '🏃', color: '#fb7185' },
+ { value: 'spin',     label: 'Spin',     emoji: '🚴', color: T.blue    },
+ { value: 'boxing',   label: 'Boxing',   emoji: '🥊', color: T.amber   },
+ { value: 'pilates',  label: 'Pilates',  emoji: '🌸', color: '#c084fc' },
+ { value: 'other',    label: 'Other',    emoji: '🎯', color: T.blue    },
 ];
 
 const DIFFICULTIES = [
