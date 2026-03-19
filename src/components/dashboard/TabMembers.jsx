@@ -194,6 +194,26 @@ function SendBtn({ onClick, disabled, sending, sent, label }) {
   );
 }
 
+
+// ── Inline stat-backed nudge (data-driven, no invented numbers) ───────────────
+function StatNudge({ color = T.blue, icon: Icon, stat, detail, action, onAction }) {
+  return (
+    <div style={{ marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 11px', borderRadius: 8, background: `${color}07`, border: `1px solid ${color}18` }}>
+      {Icon && <Icon style={{ width: 12, height: 12, color, flexShrink: 0, marginTop: 1 }} />}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{stat} </span>
+        <span style={{ fontSize: 11, color: T.text3, lineHeight: 1.45 }}>{detail}</span>
+      </div>
+      {action && onAction && (
+        <button onClick={e => { e.stopPropagation(); onAction(); }}
+          style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color, background: `${color}12`, border: `1px solid ${color}28`, borderRadius: 5, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+          {action}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function MemberPushPanel({ member, gymName, gymId, onClose }) {
   const [preset, setPreset] = useState('miss');
   const [custom, setCustom] = useState('');
@@ -380,7 +400,23 @@ function AlertsPanel({ memberRows, atRisk, setMemberFilter, setMemberSort, openM
               <span style={{ fontWeight: 600, color: T.text2 }}>{m.name}</span> — was {m.prevVisits30}/mo, now {m.visits30}/mo
             </div>
           ))}
+          <StatNudge
+            color={T.amber}
+            icon={TrendingDown}
+            stat={`${frequencyDroppers.length} member${frequencyDroppers.length > 1 ? 's' : ''} visited much less than usual.`}
+            detail="A drop in frequency is an early churn signal — reaching out now is more effective than waiting until they go fully absent."
+            action="Message them"
+            onAction={() => openModal('message')}
+          />
         </div>
+      )}
+      {noAlerts && (
+        <StatNudge
+          color={T.green}
+          icon={CheckCircle}
+          stat="No alerts right now."
+          detail="Check back regularly — the earliest signs of churn show up here before members disappear entirely."
+        />
       )}
     </SCard>
   );
@@ -466,6 +502,26 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
               <button onClick={() => setMemberFilter('new')} style={{ fontSize: 11, fontWeight: 600, color: T.red, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>View new members <ChevronRight style={{ width: 11, height: 11 }} /></button>
             </div>
           )}
+          {total > 0 && (
+            <StatNudge
+              color={pct >= 60 ? T.green : pct >= 40 ? T.amber : T.red}
+              icon={pct >= 60 ? CheckCircle : AlertTriangle}
+              stat={pct >= 60
+                ? `${returned} out of ${total} new members came back.`
+                : didnt === 1
+                  ? `${names[0] || '1 member'} hasn't returned yet.`
+                  : `${didnt} new members haven't come back yet.`
+              }
+              detail={pct >= 60
+                ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.'
+                : pct >= 40
+                  ? 'A direct message to those who haven't returned yet is worth the effort — they're still in the decision window.'
+                  : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is to get them back.'
+              }
+              action={didnt > 0 ? 'Message them' : undefined}
+              onAction={didnt > 0 ? () => setMemberFilter('new') : undefined}
+            />
+          )}
         </>
       )}
     </SCard>
@@ -496,6 +552,22 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
           <a href={`mailto:${m.user_email}`} style={{ fontSize: 12, fontWeight: 600, color: T.blue, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>{m.user_email}</a>
         </div>
       )}
+      {/* Per-member contextual nudge — text changes based on their actual data */}
+      {(() => {
+        if (m.daysSince >= 21)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.red} icon={AlertTriangle} stat={`${m.daysSince} days since last visit.`} detail={`${m.name.split(' ')[0]} was visiting ${m.prevVisits30 > 0 ? `${m.prevVisits30}/mo before — now inactive.` : 'regularly before going quiet.'} This is the window to reach out.`} /></div>;
+        if (m.daysSince >= 14)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.amber} icon={AlertTriangle} stat={`${m.daysSince} days away.`} detail={`${m.name.split(' ')[0]} is showing early churn signals. A quick check-in now is more effective than waiting.`} /></div>;
+        if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.visitsTotal < 2)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.amber} icon={Zap} stat="New member — hasn't returned yet." detail={`${m.name.split(' ')[0]} joined ${m.joinedDaysAgo} day${m.joinedDaysAgo !== 1 ? 's' : ''} ago. A personal welcome message in the first two weeks makes a real difference.`} /></div>;
+        if (m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.amber} icon={TrendingDown} stat={`Visits down from ${m.prevVisits30} to ${m.visits30} this month.`} detail={`${m.name.split(' ')[0]}'s frequency has dropped noticeably — worth checking in before it drops further.`} /></div>;
+        if (m.streak >= 14)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.green} icon={CheckCircle} stat={`${m.streak}-day streak.`} detail={`${m.name.split(' ')[0]} is highly consistent right now — a great candidate for a challenge or a referral ask.`} /></div>;
+        if (m.visitsTotal === 1)
+          return <div style={{ padding: '8px 16px', borderBottom: `1px solid ${T.divider}` }}><StatNudge color={T.amber} icon={Zap} stat="Only 1 visit so far." detail={`First impressions matter — reach out to ${m.name.split(' ')[0]} to make sure their experience was good.`} /></div>;
+        return null;
+      })()}
       <MemberPushPanel member={m} gymName={gymName} gymId={gymId} onClose={onClose} />
     </>
   );
