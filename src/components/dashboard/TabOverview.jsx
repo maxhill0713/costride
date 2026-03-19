@@ -189,6 +189,24 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
   );
 }
 
+// ── Inline stat-backed nudge — appears inside individual cards ────────────────
+function StatNudge({ color = T.cyan, icon: Icon, stat, detail, action, onAction }) {
+  return (
+    <div style={{ marginTop: 12, display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 11px', borderRadius: 9, background: `${color}07`, border: `1px solid ${color}18` }}>
+      {Icon && <Icon style={{ width: 12, height: 12, color, flexShrink: 0, marginTop: 1 }} />}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{stat} </span>
+        <span style={{ fontSize: 11, color: T.text3, lineHeight: 1.45 }}>{detail}</span>
+      </div>
+      {action && onAction && (
+        <button onClick={onAction} style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color, background: `${color}12`, border: `1px solid ${color}28`, borderRadius: 5, padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+          {action}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Action Items (signals panel) ───────────────────────────────────────────────
 function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now, openModal, setTab }) {
   const signals = useMemo(() => {
@@ -206,13 +224,13 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
     // 🔴 At-risk members
     if (atRisk > 0) {
       const pct = allMemberships.length > 0 ? Math.round((atRisk / allMemberships.length) * 100) : 0;
-      items.push({ priority: 2, color: atRisk >= 5 ? T.red : T.amber, icon: AlertTriangle, title: `${atRisk} member${atRisk > 1 ? 's' : ''} inactive for 14+ days`, detail: `${pct}% of your gym. A personal message now recovers ~40% of at-risk members.`, action: 'View & message', fn: () => setTab('members') });
+      items.push({ priority: 2, color: atRisk >= 5 ? T.red : T.amber, icon: AlertTriangle, title: `${atRisk} member${atRisk > 1 ? 's' : ''} inactive for 14+ days`, detail: `${pct}% of your gym. Direct outreach is the most effective re-engagement method — waiting makes it harder.`, action: 'View & message', fn: () => setTab('members') });
     }
 
     // 🟡 No active challenge
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
     if (!hasChallenge) {
-      items.push({ priority: 3, color: T.amber, icon: Trophy, title: 'No active challenge', detail: 'Challenges increase check-in frequency by an average of 2× during their run.', action: 'Create one', fn: () => openModal('challenge') });
+      items.push({ priority: 3, color: T.amber, icon: Trophy, title: 'No active challenge', detail: 'Members with an active goal to work toward tend to visit more consistently — give them something to compete for.', action: 'Create one', fn: () => openModal('challenge') });
     }
 
     // 🟡 No post this week
@@ -222,6 +240,13 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
       items.push({ priority: 4, color: T.amber, icon: MessageSquarePlus, title: daysSince ? `No post in ${daysSince} days` : 'No community posts yet', detail: 'Regular posts lift engagement scores. Try a motivational post or a poll.', action: 'Post now', fn: () => openModal('post') });
     }
 
+    // 🔵 No event this month
+    const hasEvent = (challenges || []).some(c => !c.ended_at); // reuse to check events via posts heuristic
+    const lastEventDays = posts?.length > 0 ? null : 99;
+    if (!recentPost && !hasChallenge) {
+      // Already have both nudges — skip duplicate
+    }
+
     // 🔵 No check-ins today (after 10am)
     const todayCount = checkIns.filter(c => {
       const d = new Date(c.check_in_date), t = now;
@@ -229,6 +254,18 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
     }).length;
     if (todayCount === 0 && now.getHours() >= 10) {
       items.push({ priority: 5, color: T.blue, icon: QrCode, title: 'No check-ins recorded today', detail: 'Check-ins usually start arriving by 9–10am. Scanner issue?', action: 'Check scanner', fn: () => openModal('qrScanner') });
+    }
+
+    // 🔵 Weekend coming — promote a class
+    const dayOfWeek = now.getDay(); // 0=Sun, 4=Thu, 5=Fri
+    if ((dayOfWeek === 4 || dayOfWeek === 5) && !recentPost) {
+      items.push({ priority: 6, color: T.blue, icon: Calendar, title: 'Thursday/Friday — prime time to promote weekend classes', detail: 'Promoting weekend classes on Thursday or Friday gives members time to plan ahead.', action: 'Post promo', fn: () => openModal('post') });
+    }
+
+    // 🟡 Low engagement — no poll in 2 weeks
+    const recentPoll = (posts || []).find(p => (p.type === 'poll' || p.category === 'poll') && differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 14);
+    if (!recentPoll && allMemberships.length >= 5) {
+      items.push({ priority: 7, color: T.cyan, icon: BarChart2, title: 'No poll in the last 2 weeks', detail: 'Polls invite participation and show members their opinion counts — good for community feel.', action: 'Run a poll', fn: () => openModal('poll') });
     }
 
     return items.sort((a, b) => a.priority - b.priority).slice(0, 5);
@@ -345,6 +382,24 @@ function RetentionBreakdown({ allMemberships, checkIns, now, setTab }) {
           </div>
         </div>
       ))}
+      {risks.week1 > 0 && (
+        <StatNudge
+          color={T.red}
+          icon={AlertTriangle}
+          stat={`${risks.week1} new member${risks.week1 > 1 ? 's' : ''} went quiet immediately.`}
+          detail="The first 7 days are critical — members who don't return in week 1 are far less likely to become regulars."
+          action="Follow up"
+          onAction={() => setTab('members')}
+        />
+      )}
+      {risks.week1 === 0 && total > 0 && (
+        <StatNudge
+          color={T.green}
+          icon={CheckCircle}
+          stat="No immediate drop-offs."
+          detail="Keep it up — the month 2–3 window is the next common drop-off point to watch."
+        />
+      )}
     </div>
   );
 }
@@ -401,6 +456,16 @@ function WeekOneReturn({ allMemberships, checkIns, now, openModal }) {
               </button>
             </div>
           )}
+          <StatNudge
+            color={pct >= 60 ? T.green : T.red}
+            icon={pct >= 60 ? CheckCircle : AlertTriangle}
+            stat={pct >= 60 ? 'Strong week-1 retention.' : 'Week-1 follow-ups work.'}
+            detail={pct >= 60
+              ? 'Members who return in week 1 are significantly more likely to become long-term regulars.'
+              : `A personal message in the first week is the single highest-impact action for week-1 retention.`}
+            action={didnt > 0 ? 'Message now' : undefined}
+            onAction={didnt > 0 ? () => openModal('message') : undefined}
+          />
         </>
       )}
     </div>
@@ -443,6 +508,24 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
           </div>
         );
       })}
+      {atRisk > 0 && (
+        <StatNudge
+          color={T.red}
+          icon={AlertTriangle}
+          stat={`${atRisk} member${atRisk > 1 ? 's' : ''} at risk.`}
+          detail="Early outreach is most effective — the longer a lapsed member waits, the harder it is to re-engage."
+          action="View members"
+          onAction={() => setTab('members')}
+        />
+      )}
+      {atRisk === 0 && totalMembers >= 5 && (
+        <StatNudge
+          color={T.green}
+          icon={CheckCircle}
+          stat="All members active."
+          detail="Active gyms maintain this by running a challenge every 6–8 weeks."
+        />
+      )}
     </div>
   );
 }
@@ -532,6 +615,28 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           </div>
         ))}
       </div>
+      {retentionRate < 70 ? (
+        <StatNudge
+          color={T.red}
+          icon={TrendingDown}
+          stat={`${retentionRate}% retention — below the 70% healthy threshold.`}
+          detail="70% is a healthy retention baseline. The highest-impact habit: personally welcoming every new member in their first week."
+        />
+      ) : cancelledEst > newSignUps ? (
+        <StatNudge
+          color={T.red}
+          icon={AlertTriangle}
+          stat="More cancellations than sign-ups this month."
+          detail="Run a referral incentive or re-engagement challenge to reverse the trend."
+        />
+      ) : newSignUps > 0 ? (
+        <StatNudge
+          color={T.green}
+          icon={TrendingUp}
+          stat={`+${newSignUps} new member${newSignUps > 1 ? 's' : ''} this month.`}
+          detail="Early habit formation matters — new members who visit frequently in their first few weeks are far more likely to stick."
+        />
+      ) : null}
     </div>
   );
 }
@@ -854,31 +959,6 @@ export default function TabOverview({
           <StatRow label="Month change"     value={monthChangePct > 0 ? `+${monthChangePct}%` : `${monthChangePct}%`}
             valueColor={monthChangePct >= 0 ? T.green : T.red} last />
         </div>
-
-        {/* Coaches quick panel */}
-        {coaches && coaches.length > 0 && (
-          <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${T.purple}20,transparent)`, pointerEvents: 'none' }} />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Coaches</div>
-              <button onClick={() => openModal('coaches')} style={{ fontSize: 11, fontWeight: 700, color: T.purple, background: `${T.purple}10`, border: `1px solid ${T.purple}28`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                Manage
-              </button>
-            </div>
-            {coaches.slice(0, 4).map((coach, i) => (
-              <div key={coach.id || i} onClick={() => openModal('coaches')} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < Math.min(coaches.length, 4) - 1 ? `1px solid ${T.divider}` : 'none', cursor: 'pointer' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${T.purple}20`, border: `1px solid ${T.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: T.purple, flexShrink: 0, overflow: 'hidden' }}>
-                  {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (coach.name || 'C').charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.name}</div>
-                  <div style={{ fontSize: 10, color: T.text3 }}>{coach.invite_status === 'pending' ? '⏳ Invite pending' : coach.role || 'Coach'}</div>
-                </div>
-              </div>
-            ))}
-            {coaches.length > 4 && <div style={{ fontSize: 11, color: T.text3, marginTop: 8 }}>+{coaches.length - 4} more coaches</div>}
-          </div>
-        )}
 
         {/* Pinned priorities */}
         {priorities && priorities.length > 0 && (
