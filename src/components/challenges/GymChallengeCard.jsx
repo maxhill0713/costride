@@ -31,7 +31,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
       <div
         className="rounded-2xl overflow-hidden relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+          background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
