@@ -580,6 +580,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       <Button
                         onClick={() => {
                           setIsExpanded(false);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
                           const captured = workoutDuration;
                           frozenDurationRef.current = captured;
                           setFrozenDuration(captured);
