@@ -513,10 +513,10 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
                   : `${didnt} new members haven't come back yet.`
               }
               detail={pct >= 60
-                ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.'
+                ? `Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.`
                 : pct >= 40
-                  ? 'A direct message to those who haven't returned yet is worth the effort — they're still in the decision window.'
-                  : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is to get them back.'
+                  ? `A direct message to those who haven't returned yet is worth the effort — they're still in the decision window.`
+                  : `Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is to get them back.`
               }
               action={didnt > 0 ? 'Message them' : undefined}
               onAction={didnt > 0 ? () => setMemberFilter('new') : undefined}
