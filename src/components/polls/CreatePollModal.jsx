@@ -19,12 +19,12 @@ function Shimmer({ color = T.purple }) {
 }
 
 const CATEGORIES = [
- { value: 'equipment_replacement', label: 'Equipment Replacement', color: T.amber },
- { value: 'favorite_equipment', label: 'Favourite Equipment', color: T.blue },
- { value: 'rewards', label: 'Rewards & Perks', color: T.green },
- { value: 'playlist', label: 'Gym Playlist', color: T.purple },
- { value: 'schedule', label: 'Class Schedule', color: T.blue },
- { value: 'other', label: 'Other', color: T.text3 },
+ { value: 'equipment_replacement', label: 'Equipment Replacement', emoji: '🔧', color: T.amber  },
+ { value: 'favorite_equipment',    label: 'Favourite Equipment',   emoji: '💪', color: T.blue   },
+ { value: 'rewards',               label: 'Rewards & Perks',       emoji: '🎁', color: T.green  },
+ { value: 'playlist',              label: 'Gym Playlist',          emoji: '🎵', color: T.purple },
+ { value: 'schedule',              label: 'Class Schedule',        emoji: '📅', color: T.blue   },
+ { value: 'other',                 label: 'Other',                 emoji: '💬', color: T.text3  },
 ];
 
 function catFor(val) { return CATEGORIES.find(c => c.value === val) || null; }
