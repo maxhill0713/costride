@@ -30,7 +30,7 @@ const POST_TYPES = [
   { value: 'event',           icon: Calendar,   label: 'Event',           color: T.green,  placeholder: 'Tell members about an upcoming event or class…'                    },
   { value: 'offer',           icon: Gift,       label: 'Special Offer',   color: T.red,    placeholder: 'Share a promotion, discount, or special deal…'                     },
   { value: 'tip',             icon: Lightbulb,  label: 'Fitness Tip',     color: T.purple, placeholder: 'Share a workout tip, nutrition advice, or coaching insight…'        },
-  { value: 'member_spotlight',icon: Star,       label: 'Member Spotlight',color: T.amber,  placeholder: 'Highlight an amazing member's progress or story…'                  },
+  { value: 'member_spotlight',icon: Star,       label: 'Member Spotlight',color: T.amber,  placeholder: "Highlight an amazing member's progress or story…"                  },
 ];
 
 // ── Character ring ─────────────────────────────────────────────────────────────
