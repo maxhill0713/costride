@@ -785,7 +785,7 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
-  openModal, now, allMemberships = [], classes = [],
+  openModal, now, allMemberships = [], classes = [], currentUser = null,
   onDeletePost = () => {}, onDeleteEvent = () => {}, onDeleteChallenge = () => {},
   onDeleteClass = () => {}, onDeletePoll = () => {},
   isCoach = false,
