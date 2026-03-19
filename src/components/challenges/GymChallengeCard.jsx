@@ -46,10 +46,17 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
 
           {/* ── Header ── */}
           <div className="flex items-start gap-3 mb-1">
-            {/* Trophy icon — amber, gym challenge identity */}
-            <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }}>
-              <Trophy className="w-6 h-6 text-white" />
+            {/* Gym image thumbnail */}
+            <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative"
+              style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+              {challenge.image_url || challenge.gym_image_url ? (
+                <img src={challenge.image_url || challenge.gym_image_url} alt={challenge.gym_name || 'Gym'} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)' }}>
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+              )}
             </div>
 
             {/* Title + meta */}
