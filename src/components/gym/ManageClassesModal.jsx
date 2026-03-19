@@ -608,7 +608,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  </div>
 
  {/* Right — preview */}
- <div style={{ padding: '20px 18px', background: T.bg, overflowY: 'auto' }}>
+ <div className="mc-body" style={{ padding: '20px 18px', background: T.bg, overflowY: 'auto' }}>
  <ClassPreview form={form} />
  </div>
  </div>
