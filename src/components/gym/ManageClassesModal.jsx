@@ -23,14 +23,14 @@ function Shimmer({ color = T.purple }) {
 
 // Class type catalogue 
 const CLASS_TYPES = [
- { value: 'hiit',     label: 'HIIT',     emoji: '⚡', color: '#f87171' },
- { value: 'yoga',     label: 'Yoga',     emoji: '🧘', color: T.green   },
- { value: 'strength', label: 'Strength', emoji: '🏋️', color: T.purple  },
- { value: 'cardio',   label: 'Cardio',   emoji: '🏃', color: '#fb7185' },
- { value: 'spin',     label: 'Spin',     emoji: '🚴', color: T.blue    },
- { value: 'boxing',   label: 'Boxing',   emoji: '🥊', color: T.amber   },
- { value: 'pilates',  label: 'Pilates',  emoji: '🌸', color: '#c084fc' },
- { value: 'other',    label: 'Other',    emoji: '🎯', color: T.blue    },
+ { value: 'hiit', label: 'HIIT', color: '#f87171' },
+ { value: 'yoga', label: 'Yoga', color: T.green },
+ { value: 'strength', label: 'Strength', color: T.purple },
+ { value: 'cardio', label: 'Cardio', color: '#fb7185' },
+ { value: 'spin', label: 'Spin', color: T.blue },
+ { value: 'boxing', label: 'Boxing', color: T.amber },
+ { value: 'pilates', label: 'Pilates', color: '#c084fc' },
+ { value: 'other', label: 'Other', color: T.blue },
 ];
 
 const DIFFICULTIES = [
@@ -252,25 +252,11 @@ function ImageUploader({ value, onChange }) {
  );
 }
 
-// Class images per type — matches GymCommunity
-const CLASS_IMAGES = {
- hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
- yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
- strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
- cardio:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
- spin:     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
- boxing:   'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&q=80',
- pilates:  'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80',
- other:    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-};
-
-// Form preview panel — matches PremiumClassCard from GymCommunity
+// Form preview panel 
 function ClassPreview({ form }) {
  const type = typeFor(form.class_type);
  const diff = diffFor(form.difficulty);
  const hasContent = form.name || form.instructor;
- const img = form.image_url || CLASS_IMAGES[form.class_type] || CLASS_IMAGES.other;
- const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
  return (
  <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -279,87 +265,91 @@ function ClassPreview({ form }) {
  <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
  </div>
 
- {/* PremiumClassCard style */}
- <div style={{
-  borderRadius: 18, overflow: 'hidden',
-  background: 'linear-gradient(160deg, #0d1535 0%, #080c1e 100%)',
-  border: `1px solid ${hasContent ? type.color + '30' : 'rgba(255,255,255,0.08)'}`,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-  display: 'flex', flexDirection: 'column',
- }}>
- {/* Image */}
- <div style={{ position: 'relative', height: 130, overflow: 'hidden', flexShrink: 0 }}>
-  <img src={img} alt={form.name || 'Class'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(8,12,28,0.85) 100%)' }} />
-  {/* Type badge */}
-  <div style={{ position: 'absolute', top: 9, left: 9, fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: type.color, background: 'rgba(0,0,0,0.6)', border: `1px solid ${type.color}50`, borderRadius: 5, padding: '3px 8px', backdropFilter: 'blur(6px)' }}>
-  {type.emoji} {type.label}
+ {/* Class card */}
+ <div style={{ borderRadius: 12, background: T.card2, border: `1px solid ${type.color}20`, overflow: 'hidden', position: 'relative' }}>
+ <Shimmer color={type.color} />
+ {/* Top colour bar */}
+ <div style={{ height: 3, background: `linear-gradient(90deg,${type.color},${type.color}50)` }} />
+
+ {/* Image or placeholder */}
+ {form.image_url ? (
+ <div style={{ height: 120, overflow: 'hidden', position: 'relative' }}>
+ <img src={form.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+ <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,transparent 30%,rgba(13,22,48,0.85) 100%)' }} />
+ </div>
+ ) : (
+ <div style={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${type.color}07` }}>
   </div>
+ )}
+
+ <div style={{ padding: '14px 16px 16px' }}>
+ {!hasContent ? (
+ <div style={{ textAlign: 'center', padding: '8px 0' }}>
+ <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Fill in details to see preview</div>
+ </div>
+ ) : (
+ <>
+ {/* Badges */}
+ <div style={{ display: 'flex', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
+ <span style={{ fontSize: 9, fontWeight: 800, color: type.color, background: `${type.color}14`, border: `1px solid ${type.color}28`, borderRadius: 5, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+  {type.label}
+ </span>
+ <span style={{ fontSize: 9, fontWeight: 700, color: diff.color, background: `${diff.color}12`, border: `1px solid ${diff.color}25`, borderRadius: 5, padding: '2px 7px' }}>
+ {diff.label}
+ </span>
  </div>
 
- {/* Content */}
- <div style={{ padding: '12px 12px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
-  {!hasContent ? (
-  <div style={{ textAlign: 'center', padding: '16px 0' }}>
-   <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Fill in details to see preview</div>
-  </div>
-  ) : (
-  <>
-  {/* Title */}
-  <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, marginBottom: 6 }}>
-   {form.name || 'Class Name'}
-  </div>
-  {/* Meta */}
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 8 }}>
-   {form.duration_minutes > 0 && (
-   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{form.duration_minutes} min</div>
-   )}
-   {form.difficulty && (
-   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
-    {diff.label} · {type.label}
-   </div>
-   )}
-   {form.description && (
-   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-    {form.description}
-   </div>
-   )}
-  </div>
-  {/* Instructor */}
-  {form.instructor && (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-   <div style={{ width: 26, height: 26, borderRadius: '50%', background: `linear-gradient(135deg, ${type.color}44, ${type.color}22)`, border: `1px solid ${type.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: type.color, flexShrink: 0 }}>
-   {initials(form.instructor)}
-   </div>
-   <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{form.instructor}</span>
-  </div>
-  )}
-  {/* Schedule chips */}
-  {form.schedule?.length > 0 && (
-  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-   {form.schedule.map((s, i) => (
-   <span key={i} style={{ fontSize: 9, fontWeight: 700, color: type.color, background: `${type.color}12`, border: `1px solid ${type.color}30`, borderRadius: 5, padding: '2px 7px' }}>
-    {DAYS_SHORT[s.day]} {formatTime(s.time)}
-   </span>
-   ))}
-  </div>
-  )}
-  {/* Location */}
-  {form.location && (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-   <MapPin style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-   <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>{form.location}</span>
-  </div>
-  )}
-  </>
-  )}
+ {/* Name */}
+ <div style={{ fontSize: 15, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em', marginBottom: form.instructor ? 5 : 10 }}>
+ {form.name || 'Class Name'}
  </div>
 
- {/* Book button preview */}
- <div style={{ padding: '0 12px 12px' }}>
-  <div style={{ padding: '10px', borderRadius: 11, textAlign: 'center', fontSize: 12, fontWeight: 800, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: '#fff', boxShadow: '0 4px 16px rgba(37,99,235,0.4)', letterSpacing: '-0.01em' }}>
-  Book Now{form.max_capacity > 0 ? ` (${form.max_capacity} spots)` : ''}
-  </div>
+ {/* Instructor */}
+ {form.instructor && (
+ <div style={{ fontSize: 11, color: T.text3, marginBottom: 10 }}>with {form.instructor}</div>
+ )}
+
+ {/* Description */}
+ {form.description && (
+ <div style={{ fontSize: 11, color: T.text2, lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+ {form.description}
+ </div>
+ )}
+
+ {/* Meta row */}
+ <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: form.schedule?.length ? 10 : 0 }}>
+ {form.duration_minutes > 0 && (
+ <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+ <Clock style={{ width: 10, height: 10, color: T.text3 }} />
+ <span style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{form.duration_minutes}min</span>
+ </div>
+ )}
+ {form.max_capacity > 0 && (
+ <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+ <Users style={{ width: 10, height: 10, color: T.text3 }} />
+ <span style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{form.max_capacity} max</span>
+ </div>
+ )}
+ {form.location && (
+ <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+ <MapPin style={{ width: 10, height: 10, color: T.text3 }} />
+ <span style={{ fontSize: 11, color: T.text3, fontWeight: 500 }}>{form.location}</span>
+ </div>
+ )}
+ </div>
+
+ {/* Schedule chips */}
+ {form.schedule?.length > 0 && (
+ <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+ {form.schedule.map((s, i) => (
+ <span key={i} style={{ fontSize: 10, fontWeight: 700, color: T.purple, background: `${T.purple}10`, border: `1px solid ${T.purple}25`, borderRadius: 6, padding: '2px 8px' }}>
+ {DAYS_SHORT[s.day]} {formatTime(s.time)}
+ </span>
+ ))}
+ </div>
+ )}
+ </>
+ )}
  </div>
  </div>
  </div>
@@ -499,7 +489,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  )}
  <div style={{ width: 38, height: 38, borderRadius: 11, background: view === 'form' ? `${activeType.color}14` : `${T.purple}14`, border: `1px solid ${view === 'form' ? activeType.color + '28' : T.purple + '28'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: view === 'form' ? 18 : 'inherit', transition: 'all 0.2s' }}>
  {view === 'form'
- ? <span>{activeType.emoji}</span> : <Dumbbell style={{ width: 17, height: 17, color: T.purple }} />
+ ?  : <Dumbbell style={{ width: 17, height: 17, color: T.purple }} />
  }
  </div>
  <div>
@@ -552,9 +542,9 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  {/* FORM VIEW — two columns */}
  {view === 'form' && (
  <>
- <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 280px', minHeight: 0, overflow: 'hidden' }}>
+ <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 280px', minHeight: 0,  }}>
  {/* Left — fields */}
- <div className="mc-body" style={{ padding: '20px 24px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+ <div className="mc-body" style={{ padding: '20px 24px 32px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
 
  {/* Class type */}
  <Field label="Class type">
@@ -608,7 +598,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  </div>
 
  {/* Right — preview */}
- <div className="mc-body" style={{ padding: '20px 18px', background: T.bg, overflowY: 'auto' }}>
+ <div style={{ padding: '20px 18px', background: T.bg, overflow: 'hidden' }}>
  <ClassPreview form={form} />
  </div>
  </div>
