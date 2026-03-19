@@ -10,8 +10,8 @@ import { Avatar } from './DashboardPrimitives';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
-  blue:    '#06b6d4', green:  '#10b981', red:    '#ef4444',
-  amber:   '#06b6d4', purple: '#06b6d4',
+  cyan:    '#06b6d4', green:  '#10b981', red:    '#ef4444',
+  blue:    '#06b6d4', amber:  '#06b6d4', purple: '#06b6d4',
   text1:   '#f0f4f8', text2:  '#94a3b8', text3:  '#475569',
   border:  'rgba(255,255,255,0.07)', borderM: 'rgba(255,255,255,0.11)',
   card:    '#0b1120', divider: 'rgba(255,255,255,0.05)',
@@ -389,15 +389,15 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
 
     // Poll with engagement stat
     if (!polls.filter(p => !p.ended_at).length)
-      items.push({ color: T.cyan, icon: BarChart2, label: 'No active poll — polls increase engagement by ~40%', action: 'Create poll', fn: () => openModal('poll') });
+      items.push({ color: T.cyan, icon: BarChart2, label: 'No active poll — polls invite members to share their opinion and tend to generate more replies than standard posts', action: 'Create poll', fn: () => openModal('poll') });
 
     // Challenge
     if (!challenges.find(c => c.status === 'active'))
-      items.push({ color: T.cyan, icon: Trophy, label: 'No active challenge — members are 2× more likely to check in', action: 'Start one', fn: () => openModal('challenge') });
+      items.push({ color: T.cyan, icon: Trophy, label: 'No active challenge — challenges give members a goal to work toward and tend to drive more consistent attendance', action: 'Start one', fn: () => openModal('challenge') });
 
     // Event
     if (!events.find(e => new Date(e.event_date) >= now))
-      items.push({ color: T.green, icon: Calendar, label: 'No upcoming events — events drive new member retention', action: 'Add event', fn: () => openModal('event') });
+      items.push({ color: T.green, icon: Calendar, label: 'No upcoming events — events give members something to look forward to and can re-engage people who\'ve been quiet', action: 'Add event', fn: () => openModal('event') });
 
     return items.slice(0, 3);
   }, [allPosts, polls, challenges, events, now, bestDayName, isTodayBest, dayName]);
@@ -411,7 +411,10 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, background: `${T.green}0a`, border: `1px solid ${T.green}18` }}>
           <CheckCircle style={{ width: 12, height: 12, color: T.green, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 500, color: T.text2 }}>Content is up to date — great job</span>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>Content is up to date.</div>
+            <div style={{ fontSize: 10, color: T.text3, marginTop: 2 }}>Active poll, challenge, and recent posts — keep the cadence going.</div>
+          </div>
         </div>
       </SCard>
     );
@@ -444,7 +447,7 @@ function BestTimeToPost({ allPosts, now, openModal }) {
   const { bestDayName, isTodayBest } = useBestPostTime(allPosts);
   const hour = now.getHours();
   // Peak engagement windows based on general gym data + their own post history
-  const peakWindow = hour < 12 ? 'Evening posts (6–8pm) typically get 2× more engagement' : hour < 17 ? 'Evening (6–8pm) is your peak window today' : 'Now is peak time — post in the next 2 hours';
+  const peakWindow = hour < 12 ? 'Members tend to engage with posts in the evening when they\'re winding down — 6–8pm is worth targeting' : hour < 17 ? 'Evening is generally the most active window — worth posting before 8pm today' : 'Peak engagement window — your members are likely online right now';
   const todayName  = format(now, 'EEEE');
   if (!bestDayName && allPosts.length < 3) return null;
   return (
@@ -538,8 +541,22 @@ function EngagementTrend({ allPosts, polls, now }) {
         ))}
       </div>
       {change < 0 && (
-        <div style={{ padding: '8px 10px', borderRadius: 8, background: `${T.red}08`, border: `1px solid ${T.red}18` }}>
-          <div style={{ fontSize: 10, color: T.red, fontWeight: 600 }}>Engagement dropped — try a new challenge or poll</div>
+        <div style={{ padding: '9px 11px', borderRadius: 8, background: `${T.red}08`, border: `1px solid ${T.red}18` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.text1, marginBottom: 2 }}>Engagement dropped this week.</div>
+          <div style={{ fontSize: 11, color: T.text3, lineHeight: 1.45 }}>
+            {thisWeek === 0
+              ? 'No interactions at all this week — try posting something that invites a response, like a poll or a question.'
+              : lastWeek > 0 && thisWeek < lastWeek
+                ? `Down from ${lastWeek} to ${thisWeek} interactions. A new poll or challenge can give members a reason to respond.`
+                : 'A drop in engagement is normal — a timely post or poll can turn it around quickly.'
+            }
+          </div>
+        </div>
+      )}
+      {change > 20 && thisWeek > 3 && (
+        <div style={{ padding: '9px 11px', borderRadius: 8, background: `${T.green}08`, border: `1px solid ${T.green}18`, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.green, marginBottom: 2 }}>Strong week.</div>
+          <div style={{ fontSize: 11, color: T.text3 }}>Keep the momentum — consistent posting is the most reliable way to maintain it.</div>
         </div>
       )}
     </SCard>
@@ -585,6 +602,28 @@ function ActivityChart({ allPosts, now }) {
           </div>
         ))}
       </div>
+      {sum === 0 && (
+        <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.cyan}07`, border: `1px solid ${T.cyan}18` }}>
+          <span style={{ fontSize: 11, color: T.text3 }}>No activity in the last 7 days. Publishing a post now will start filling this chart.</span>
+        </div>
+      )}
+      {sum > 0 && (() => {
+        const bestDay = days.reduce((best, d) => d.total > best.total ? d : best, days[0]);
+        const worstStreak = days.filter(d => d.total === 0).length;
+        if (worstStreak >= 4) return (
+          <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.cyan}07`, border: `1px solid ${T.cyan}18` }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{worstStreak} days with no activity. </span>
+            <span style={{ fontSize: 11, color: T.text3 }}>Posting on quieter days keeps members engaged between high-activity days.</span>
+          </div>
+        );
+        if (bestDay && bestDay.total > 0) return (
+          <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.green}07`, border: `1px solid ${T.green}18` }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{bestDay.label} was your most active day. </span>
+            <span style={{ fontSize: 11, color: T.text3 }}>Try posting on {bestDay.label}s consistently to build a rhythm members expect.</span>
+          </div>
+        );
+        return null;
+      })()}
     </SCard>
   );
 }
@@ -610,6 +649,30 @@ function TopPostsCard({ allPosts, openModal }) {
           </div>
         ))}
       </div>
+      {top3.length > 0 && (() => {
+        const best = top3[0];
+        const likes    = best.likes?.length || 0;
+        const comments = best.comments?.length || 0;
+        const hasImage = !!(best.image_url || best.media_url);
+        if (comments > likes && comments > 2) return (
+          <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.green}07`, border: `1px solid ${T.green}18` }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>Your top post got {comments} comment{comments !== 1 ? 's' : ''}. </span>
+            <span style={{ fontSize: 11, color: T.text3 }}>Posts that invite a response drive the most conversation — worth repeating this format.</span>
+          </div>
+        );
+        if (hasImage && likes > 2) return (
+          <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.green}07`, border: `1px solid ${T.green}18` }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>Your top post included an image. </span>
+            <span style={{ fontSize: 11, color: T.text3 }}>Visual posts tend to catch more attention in the feed.</span>
+          </div>
+        );
+        if (likes > 0 || comments > 0) return (
+          <div style={{ marginTop: 10, padding: '9px 11px', borderRadius: 8, background: `${T.cyan}07`, border: `1px solid ${T.cyan}18` }}>
+            <span style={{ fontSize: 11, color: T.text3 }}>Look at what made your top post work — format, topic, or timing — and try repeating it.</span>
+          </div>
+        );
+        return null;
+      })()}
     </SCard>
   );
 }
@@ -643,10 +706,17 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
       <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
         {cadence.map((d, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: T.text3 }}>{d.label}</div>)}
       </div>
-      <div style={{ fontSize: 11, color: T.text3, fontWeight: 500, marginBottom: mix ? 16 : 0 }}>
+      <div style={{ fontSize: 11, color: T.text3, fontWeight: 500, marginBottom: 10 }}>
         {activeDays} active {activeDays === 1 ? 'day' : 'days'} this week
-        {activeDays < 3 && <span style={{ color: T.cyan, marginLeft: 6, fontWeight: 700 }}>— try posting 3× for better reach</span>}
+        {activeDays === 0 && <span style={{ color: T.red, marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
+        {activeDays >= 1 && activeDays < 3 && <span style={{ color: T.cyan, marginLeft: 6, fontWeight: 700 }}>— spacing posts across more days keeps the feed active</span>}
+        {activeDays >= 3 && <span style={{ color: T.green, marginLeft: 6, fontWeight: 700 }}>— good posting consistency</span>}
       </div>
+      {activeDays === 0 && (
+        <div style={{ padding: '9px 11px', borderRadius: 8, background: `${T.red}07`, border: `1px solid ${T.red}18`, marginBottom: mix ? 12 : 0 }}>
+          <span style={{ fontSize: 11, color: T.text3 }}>Nothing posted this week. Even a short update keeps the community feeling alive.</span>
+        </div>
+      )}
       {mix && (
         <>
           <div style={{ width: '100%', height: 1, background: T.divider, marginBottom: 14 }} />
@@ -796,7 +866,7 @@ export default function TabContent({
 
             {/* Primary: New Post — large, prominent */}
             <button onClick={() => openModal('post')}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderRadius: 12, background: T.cyan, color: '#fff', border: 'none', fontSize: 14, fontWeight: 800, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', transition: 'opacity 0.12s', position: 'relative', overflow: 'hidden' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderRadius: 12, background: '#0ea5e9', color: '#fff', border: 'none', fontSize: 14, fontWeight: 800, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', transition: 'opacity 0.12s', position: 'relative', overflow: 'hidden' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(255,255,255,0.1),transparent)', pointerEvents: 'none' }} />
