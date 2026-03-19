@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Clock, Trophy, Trash2 } from 'lucide-react';
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
