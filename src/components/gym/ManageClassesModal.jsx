@@ -487,11 +487,8 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <ChevronLeft style={{ width: 14, height: 14, color: T.text2 }} />
  </button>
  )}
- <div style={{ width: 38, height: 38, borderRadius: 11, background: view === 'form' ? `${activeType.color}14` : `${T.purple}14`, border: `1px solid ${view === 'form' ? activeType.color + '28' : T.purple + '28'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: view === 'form' ? 18 : 'inherit', transition: 'all 0.2s' }}>
- {view === 'form'
- ? <span>{activeType.emoji}</span>
- : <Dumbbell style={{ width: 17, height: 17, color: T.purple }} />
- }
+ <div style={{ width: 38, height: 38, borderRadius: 11, background: view === 'form' ? `${activeType.color}14` : `${T.purple}14`, border: `1px solid ${view === 'form' ? activeType.color + '28' : T.purple + '28'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+ <Dumbbell style={{ width: 17, height: 17, color: view === 'form' ? activeType.color : T.purple }} />
  </div>
  <div>
  <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em', transition: 'color 0.2s' }}>
@@ -545,7 +542,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <>
  <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 280px', minHeight: 0,  }}>
  {/* Left — fields */}
- <div className="mc-body" style={{ padding: '20px 24px 32px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+ <div className="mc-body" style={{ padding: '20px 24px 64px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
 
  {/* Class type */}
  <Field label="Class type">
