@@ -910,9 +910,8 @@ export default function TabContent({
           {/* Feed */}
           <div className="tc-feed">
             {flatItems.length > 0 ? (
-              <div className="tc-feed-grid">
-                <div className="tc-feed-col" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>{col1.map(renderItem)}</div>
-                <div className="tc-feed-col" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>{col2.map(renderItem)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 28 }}>
+                {flatItems.map(renderItem)}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
