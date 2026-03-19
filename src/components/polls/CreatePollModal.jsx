@@ -234,7 +234,7 @@ export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
  <div style={{ position: 'absolute', top: -40, left: -20, width: 180, height: 100, borderRadius: '50%', background: accent, opacity: 0.04, filter: 'blur(40px)', pointerEvents: 'none', transition: 'background 0.3s' }} />
  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
  <div style={{ width: 38, height: 38, borderRadius: 11, background: `${accent}14`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 18 : 'inherit', transition: 'all 0.2s' }}>
- {cat ?  : <BarChart2 style={{ width: 17, height: 17, color: T.purple }} />}
+ {cat ? <span>{cat.emoji}</span> : <BarChart2 style={{ width: 17, height: 17, color: T.purple }} />}
  </div>
  <div>
  <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>Create Poll</div>
