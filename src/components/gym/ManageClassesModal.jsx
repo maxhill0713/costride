@@ -510,7 +510,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
 
  {/* LIST VIEW */}
  {view === 'list' && (
- <div className="mc-body" style={{ flex: 1, overflowY: 'auto', padding: '18px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+ <div className="mc-body" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '18px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
  {/* Add button */}
  <button className="mc-add" onClick={openCreate}
  style={{ width: '100%', padding: '13px', borderRadius: 12, cursor: 'pointer', border: `1px solid ${T.purple}30`, background: `${T.purple}0e`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: T.purple, fontSize: 13, fontWeight: 800, fontFamily: 'inherit', transition: 'all 0.15s' }}>
@@ -542,7 +542,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <>
  <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 280px', minHeight: 0,  }}>
  {/* Left — fields */}
- <div className="mc-body" style={{ padding: '20px 24px 64px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+ <div className="mc-body" style={{ padding: '20px 24px 64px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', minHeight: 0 }}>
 
  {/* Class type */}
  <Field label="Class type">
@@ -596,7 +596,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  </div>
 
  {/* Right — preview */}
- <div style={{ padding: '20px 18px', background: T.bg, overflow: 'hidden' }}>
+ <div style={{ padding: '20px 18px', background: T.bg, overflow: 'hidden', minHeight: 0 }}>
  <ClassPreview form={form} />
  </div>
  </div>
