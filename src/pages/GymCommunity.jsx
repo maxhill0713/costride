@@ -1334,9 +1334,10 @@ export default function GymCommunity() {
               />
             </TabsContent>
 
-            {/* ── EVENTS ── */}
-            <TabsContent value="events" className="space-y-3 mt-0 w-full" asChild>
+            {/* ── ACTIVITY ── */}
+            <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+                {/* Events */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
                     <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div><h3 className="text-[13px] font-black text-white">Upcoming Events</h3></div>
@@ -1349,6 +1350,9 @@ export default function GymCommunity() {
                     }
                   </div>
                 </div>
+                {/* Leaderboard */}
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
+                {/* Coaches */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
                     <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(96,165,250,0.15)' }}><GraduationCap className="w-3.5 h-3.5 text-blue-400" /></div><h3 className="text-[13px] font-black text-white">Coaches</h3></div>
