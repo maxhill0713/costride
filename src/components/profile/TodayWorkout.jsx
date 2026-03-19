@@ -579,6 +579,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       )}
                       <Button
                         onClick={() => {
+                          setIsExpanded(false);
                           const captured = workoutDuration;
                           frozenDurationRef.current = captured;
                           setFrozenDuration(captured);
