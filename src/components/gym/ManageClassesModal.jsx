@@ -489,7 +489,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  )}
  <div style={{ width: 38, height: 38, borderRadius: 11, background: view === 'form' ? `${activeType.color}14` : `${T.purple}14`, border: `1px solid ${view === 'form' ? activeType.color + '28' : T.purple + '28'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: view === 'form' ? 18 : 'inherit', transition: 'all 0.2s' }}>
  {view === 'form'
- ?  : <Dumbbell style={{ width: 17, height: 17, color: T.purple }} />
+ ? <span>{activeType.emoji}</span> : <Dumbbell style={{ width: 17, height: 17, color: T.purple }} />
  }
  </div>
  <div>
