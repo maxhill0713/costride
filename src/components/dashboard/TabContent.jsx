@@ -7,6 +7,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { Avatar } from './DashboardPrimitives';
+import PostCard from '../feed/PostCard';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
