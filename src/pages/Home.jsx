@@ -249,15 +249,17 @@ function soundTransition(ctx) {
 
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
-    0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
-    60%  { transform: scale(1.08) translateY(-5px); opacity: 1; }
-    80%  { transform: scale(0.97) translateY(2px); }
+    0%   { transform: scale(0.4) translateY(40px); opacity: 0; }
+    55%  { transform: scale(1.12) translateY(-8px); opacity: 1; }
+    75%  { transform: scale(0.95) translateY(2px); }
+    88%  { transform: scale(1.04) translateY(0); }
     100% { transform: scale(1) translateY(0); opacity: 1; }
   }
   @keyframes streakNumPop {
-    0%   { transform: scale(0.5); opacity: 0; }
-    65%  { transform: scale(1.1); opacity: 1; }
-    85%  { transform: scale(0.97); }
+    0%   { transform: scale(0.3); opacity: 0; }
+    55%  { transform: scale(1.18); opacity: 1; }
+    75%  { transform: scale(0.93); }
+    88%  { transform: scale(1.06); }
     100% { transform: scale(1); opacity: 1; }
   }
   @keyframes streakFadeUp {
@@ -270,10 +272,11 @@ const STREAK_KEYFRAMES = `
     100% { transform: scale(1) rotate(0deg); }
   }
   @keyframes streakIconPop {
-    0%   { transform: scale(0.5); }
-    55%  { transform: scale(1.12); }
-    72%  { transform: scale(0.96); }
-    85%  { transform: scale(1.05); }
+    0%   { transform: scale(0.3); }
+    50%  { transform: scale(1.22); }
+    68%  { transform: scale(0.92); }
+    82%  { transform: scale(1.08); }
+    92%  { transform: scale(0.97); }
     100% { transform: scale(1); }
   }
   @keyframes streakGlowPulse {
@@ -348,41 +351,45 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const lbl = document.getElementById('streak-anim-lbl');
   if (!stage || !p1 || !p2 || !num || !lbl) return;
   const actx = audioCtxRef.current;
+
+  // ── Stage bounces in with a snappy Duolingo-style overshoot ──────────────
   if (actx) soundBounceIn(actx);
-  trigAnim(stage, 'streakBounceIn', 750, 'cubic-bezier(0.34,1.3,0.64,1)');
+  trigAnim(stage, 'streakBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
+
+  // ── Number pops in below icon shortly after ───────────────────────────────
   const t1 = setTimeout(() => {
     if (actx) soundNumPop(actx);
-    trigAnim(num, 'streakNumPop', 520, 'cubic-bezier(0.34,1.3,0.64,1)');
-    trigAnim(lbl, 'streakFadeUp', 400, 'ease');
-  }, 700);
+    trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.6,0.64,1)');
+  }, 500);
+
+  // ── Quick wind-up before pose swap ────────────────────────────────────────
   const t2 = setTimeout(() => {
     stage.style.opacity = '1';
-    trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
-  }, 1600);
+    trigAnim(stage, 'streakWindup', 280, 'ease-in-out');
+  }, 1300);
+
+  // ── Pose swap with hard rubber-band + immediate number update ────────────
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
     p1.style.display = 'none';
     p2.style.display = 'block';
     p2.style.opacity = '1';
     void p2.offsetWidth;
-    p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
-    setTimeout(() => {
-      if (actx) soundNumPop(actx);
-      if (navigator.vibrate) navigator.vibrate([60, 80, 100]);
-      num.textContent = String(newStreak);
-      trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.25,0.64,1)');
-    }, 160);
-  }, 1980);
+    // Harder overshoot — Duolingo-style thunk
+    p2.style.animation = 'streakIconPop 480ms cubic-bezier(0.34,1.8,0.64,1) forwards';
+    // Number updates immediately on the thunk
+    if (actx) soundNumPop(actx);
+    if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
+    num.textContent = String(newStreak);
+    trigAnim(num, 'streakNumPop', 380, 'cubic-bezier(0.34,1.8,0.64,1)');
+  }, 1580);
+
+  // ── Transition out sound ──────────────────────────────────────────────────
   const t4 = setTimeout(() => {
-    if (actx) soundGlowPulse(actx);
-    p2.style.animation = 'none';
-    void p2.offsetWidth;
-    p2.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
-  }, 2800);
-  const t5 = setTimeout(() => {
     if (actx) soundTransition(actx);
-  }, 3200);
-  celebTimers.current = [t1, t2, t3, t4, t5];
+  }, 2800);
+
+  celebTimers.current = [t1, t2, t3, t4];
 }
 
 export default function Home() {
@@ -1172,7 +1179,7 @@ export default function Home() {
                           transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                           animation: pressedDay === day ? 'none' : getAnimation(),
                           opacity: pressedDay === day ? 0.65 : 1,
-                          transform: pressedDay === day ? 'scale(0.82) translateY(3px)' : 'none',
+                          transform: 'none',
                           willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                           touchAction: 'manipulation',
@@ -1395,12 +1402,12 @@ export default function Home() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.45 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-              <div id="streak-anim-stage" style={{ position: 'relative', width: 180, height: 180, filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))', opacity: 0, willChange: 'transform, opacity, filter' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+              <div id="streak-anim-stage" style={{ position: 'relative', width: 180, height: 180, opacity: 0, willChange: 'transform, opacity' }}>
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="streak pose 1" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
                 <img id="streak-anim-p2" src={POSE_2_URL} alt="streak pose 2" onError={(e) => { console.error('p2 image failed:', e.target.src); }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
-              <div id="streak-anim-num" style={{ fontSize: 120, fontWeight: 900, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.04em', lineHeight: 1, opacity: 0, transform: 'scale(0.5)' }}>
+              <div id="streak-anim-num" style={{ fontSize: 96, fontWeight: 900, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.04em', lineHeight: 1, opacity: 0, transform: 'scale(0.5)' }}>
                 {celebrationStreakNum - 1}
               </div>
               <div id="streak-anim-lbl" style={{ display: 'none' }} />
