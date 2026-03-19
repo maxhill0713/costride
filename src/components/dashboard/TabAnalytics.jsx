@@ -16,11 +16,11 @@ import {
 
 // ── Design tokens — identical to Overview ─────────────────────────────────────
 const T = {
-  blue:    '#0ea5e9',
+  blue:    '#06b6d4',
   green:   '#10b981',
   red:     '#ef4444',
-  amber:   '#f59e0b',
-  purple:  '#8b5cf6',
+  amber:   '#06b6d4',
+  purple:  '#06b6d4',
   cyan:    '#06b6d4',
   text1:   '#f0f4f8',
   text2:   '#94a3b8',
@@ -35,7 +35,7 @@ const tickStyle = { fill: T.text3, fontSize: 10, fontFamily: 'DM Sans, system-ui
 
 // ── Shared card shell — matches Overview exactly ───────────────────────────────
 function SCard({ children, style = {}, accent }) {
-  const c = accent || T.blue;
+  const c = accent || T.cyan;
   return (
     <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, position: 'relative', overflow: 'hidden', ...style }}>
       {/* 1px shimmer line — same as every Overview KPI card */}
@@ -98,13 +98,13 @@ const RadarTip = ({ active, payload }) => {
   return (
     <div style={{ background: '#070e1c', border: `1px solid ${T.borderM}`, borderRadius: 8, padding: '8px 12px' }}>
       <p style={{ color: T.text2, fontSize: 11, fontWeight: 700, margin: '0 0 3px' }}>{payload[0].payload.subject}</p>
-      <p style={{ color: T.purple, fontWeight: 800, fontSize: 14, margin: 0 }}>{Math.round(payload[0].value)}%</p>
+      <p style={{ color: T.cyan, fontWeight: 800, fontSize: 14, margin: 0 }}>{Math.round(payload[0].value)}%</p>
     </div>
   );
 };
 
 // ── Inline mini sparkline ─────────────────────────────────────────────────────
-function Spark({ data = [], color = T.blue, w = 64, h = 26 }) {
+function Spark({ data = [], color = T.cyan, w = 64, h = 26 }) {
   if (!data || data.length < 2) return <div style={{ width: w, height: h }} />;
   const max = Math.max(...data, 1), min = Math.min(...data, 0), range = max - min || 1;
   const pts = data.map((v, i) => {
@@ -207,20 +207,20 @@ function HeatmapChart({ gymId }) {
   grid.forEach((row, di) => row.forEach((val, si) => { if (val > grid[peakDay][peakSlot]) { peakDay = di; peakSlot = si; } }));
   const getCellStyle = (val, di, si) => {
     const pct = val / maxVal; const isPeak = di === peakDay && si === peakSlot && val > 0;
-    if (isPeak) return { bg: `linear-gradient(135deg,${T.amber}cc,${T.red}aa)`, border: `${T.amber}99`, shadow: `0 0 10px ${T.amber}30` };
+    if (isPeak) return { bg: T.red, border: `${T.red}99`, shadow: `0 0 10px ${T.red}40` };
     if (val === 0) return { bg: T.divider, border: T.border, shadow: 'none' };
-    if (pct < 0.2) return { bg: `${T.blue}18`, border: `${T.blue}28`, shadow: 'none' };
-    if (pct < 0.4) return { bg: `${T.blue}38`, border: `${T.blue}45`, shadow: 'none' };
-    if (pct < 0.6) return { bg: `${T.blue}58`, border: `${T.blue}70`, shadow: `0 0 6px ${T.blue}20` };
-    if (pct < 0.8) return { bg: `${T.blue}80`, border: `${T.blue}95`, shadow: `0 0 8px ${T.blue}28` };
-    return { bg: T.blue, border: T.blue, shadow: `0 0 10px ${T.blue}40` };
+    if (pct < 0.2) return { bg: `${T.cyan}18`, border: `${T.cyan}28`, shadow: 'none' };
+    if (pct < 0.4) return { bg: `${T.cyan}38`, border: `${T.cyan}45`, shadow: 'none' };
+    if (pct < 0.6) return { bg: `${T.cyan}58`, border: `${T.cyan}70`, shadow: `0 0 6px ${T.cyan}20` };
+    if (pct < 0.8) return { bg: `${T.cyan}80`, border: `${T.cyan}95`, shadow: `0 0 8px ${T.cyan}28` };
+    return { bg: T.cyan, border: T.cyan, shadow: `0 0 10px ${T.cyan}40` };
   };
   return (
     <div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
         {[{ label: '4W', val: 4 }, { label: '12W', val: 12 }, { label: 'All', val: 0 }].map(opt => (
           <button key={opt.val} onClick={() => setWeeks(opt.val)}
-            style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 99, cursor: 'pointer', fontFamily: 'inherit', background: weeks === opt.val ? `${T.blue}18` : T.divider, color: weeks === opt.val ? T.blue : T.text3, border: `1px solid ${weeks === opt.val ? T.blue + '40' : T.border}`, transition: 'all 0.15s' }}>
+            style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 99, cursor: 'pointer', fontFamily: 'inherit', background: weeks === opt.val ? `${T.cyan}18` : T.divider, color: weeks === opt.val ? T.cyan : T.text3, border: `1px solid ${weeks === opt.val ? T.cyan + '40' : T.border}`, transition: 'all 0.15s' }}>
             {opt.label}
           </button>
         ))}
@@ -250,14 +250,14 @@ function HeatmapChart({ gymId }) {
         ))}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, paddingTop: 12, borderTop: `1px solid ${T.divider}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: `${T.amber}0f`, border: `1px solid ${T.amber}28` }}>
-          <Flame style={{ width: 11, height: 11, color: T.amber }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: T.amber }}>Peak: {days[peakDay]} {slotConfig[peakSlot]?.label}</span>
-          <span style={{ fontSize: 9, color: `${T.amber}99`, fontWeight: 600 }}>· {grid[peakDay][peakSlot]} visits</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: `${T.red}0f`, border: `1px solid ${T.red}28` }}>
+          <Flame style={{ width: 11, height: 11, color: T.red }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: T.red }}>Peak: {days[peakDay]} {slotConfig[peakSlot]?.label}</span>
+          <span style={{ fontSize: 9, color: `${T.red}80`, fontWeight: 600 }}>· {grid[peakDay][peakSlot]} visits</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <span style={{ fontSize: 9, color: T.text3, fontWeight: 600 }}>Low</span>
-          {[T.divider, `${T.blue}18`, `${T.blue}38`, `${T.blue}58`, `${T.blue}80`, T.blue].map((bg, i) => (
+          {[T.divider, `${T.cyan}18`, `${T.cyan}38`, `${T.cyan}58`, `${T.cyan}80`, T.cyan].map((bg, i) => (
             <div key={i} style={{ width: 16, height: 9, borderRadius: 3, background: bg, border: `1px solid ${T.border}` }} />
           ))}
           <span style={{ fontSize: 9, color: T.text3, fontWeight: 600 }}>High</span>
@@ -291,27 +291,27 @@ function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
       return last && differenceInDays(now, new Date(last.check_in_date)) <= 21;
     }).length;
     return [
-      { label: 'Joined',           val: total,          color: T.blue,   icon: UserPlus,    desc: 'Total members' },
+      { label: 'Joined',           val: total,          color: T.cyan,   icon: UserPlus,    desc: 'Total members' },
       { label: 'Week-1 return',    val: w1Return,       color: T.green,  icon: RefreshCw,   desc: 'Came back in first week' },
-      { label: 'Month-1 active',   val: month1Active,   color: T.purple, icon: Activity,    desc: '4+ visits in first month' },
-      { label: 'Month-3 retained', val: month3Retained, color: T.amber,  icon: CheckCircle, desc: 'Still active at 3 months' },
+      { label: 'Month-1 active',   val: month1Active,   color: T.cyan, icon: Activity,    desc: '4+ visits in first month' },
+      { label: 'Month-3 retained', val: month3Retained, color: T.cyan,  icon: CheckCircle, desc: 'Still active at 3 months' },
     ];
   }, [allMemberships, checkIns, now]);
 
   const hasData = allMemberships.length > 0;
 
   return (
-    <SCard accent={T.blue} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <CardHeader title="Retention Funnel" sub="Member lifecycle — where people drop off"
         right={
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: `${T.blue}14`, border: `1px solid ${T.blue}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Target style={{ width: 13, height: 13, color: T.blue }} />
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: `${T.cyan}14`, border: `1px solid ${T.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Target style={{ width: 13, height: 13, color: T.cyan }} />
           </div>
         }
       />
 
       {!hasData ? (
-        <div style={{ padding: '14px', borderRadius: 9, background: `${T.blue}06`, border: `1px solid ${T.blue}18`, textAlign: 'center' }}>
+        <div style={{ padding: '14px', borderRadius: 9, background: `${T.cyan}06`, border: `1px solid ${T.cyan}18`, textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: T.text3, lineHeight: 1.5 }}>Funnel populates once members have joined and checked in. Add members to get started.</div>
         </div>
       ) : (
@@ -345,7 +345,7 @@ function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
                       </div>
                     </div>
                     <div style={{ height: 5, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${barWidth}%`, borderRadius: 99, background: `linear-gradient(90deg,${stage.color},${stage.color}80)`, transition: 'width 0.8s ease' }} />
+                      <div style={{ height: '100%', width: `${barWidth}%`, borderRadius: 99, background: stage.color, transition: 'width 0.8s ease' }} />
                     </div>
                   </div>
                 </div>
@@ -358,7 +358,7 @@ function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
                     {/* Conversion badge */}
                     {convFromPrev !== null && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: -4 }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: dropPct > 40 ? T.red : dropPct > 20 ? T.amber : T.green, background: dropPct > 40 ? `${T.red}10` : dropPct > 20 ? `${T.amber}10` : `${T.green}10`, border: `1px solid ${dropPct > 40 ? T.red + '25' : dropPct > 20 ? T.amber + '25' : T.green + '25'}`, borderRadius: 5, padding: '1px 6px' }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: dropPct > 40 ? T.red : dropPct > 20 ? T.cyan : T.green, background: dropPct > 40 ? `${T.red}10` : dropPct > 20 ? `${T.cyan}10` : `${T.green}10`, border: `1px solid ${dropPct > 40 ? T.red + '25' : dropPct > 20 ? T.cyan + '25' : T.green + '25'}`, borderRadius: 5, padding: '1px 6px' }}>
                           {convFromPrev}% converted
                         </span>
                         {dropPct > 0 && (
@@ -382,9 +382,9 @@ function DropOffAnalysis({ allMemberships, checkIns, now }) {
   const data = useMemo(() => {
     const buckets = [
       { label: 'Week 1',    min: 0,  max: 14,   daysInactive: 7,  color: T.red   },
-      { label: 'Month 1',  min: 14, max: 30,   daysInactive: 7,  color: T.amber },
-      { label: 'Month 2',  min: 30, max: 60,   daysInactive: 14, color: '#fb923c' },
-      { label: 'Month 3',  min: 60, max: 90,   daysInactive: 14, color: '#fbbf24' },
+      { label: 'Month 1',  min: 14, max: 30,   daysInactive: 7,  color: T.cyan },
+      { label: 'Month 2',  min: 30, max: 60,   daysInactive: 14, color: '#06b6d4' },
+      { label: 'Month 3',  min: 60, max: 90,   daysInactive: 14, color: '#06b6d4' },
       { label: '3+ months',min: 90, max: 9999, daysInactive: 21, color: T.text3  },
     ];
     return buckets.map(b => {
@@ -467,7 +467,7 @@ function ChurnSignalWidget({ allMemberships, checkIns, now }) {
   }).filter(m => m.score >= 40).sort((a, b) => b.score - a.score).slice(0, 5), [allMemberships, checkIns, now]);
 
   const riskLabel = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
-  const riskColor = s => s >= 90 ? T.red : s >= 70 ? '#f97316' : T.amber;
+  const riskColor = s => s >= 50 ? T.red : T.cyan;
 
   return (
     <SCard accent={T.red} style={{ padding: 20 }}>
@@ -491,7 +491,7 @@ function ChurnSignalWidget({ allMemberships, checkIns, now }) {
           {signals.map((m, i) => {
             const color = riskColor(m.score);
             return (
-              <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: m.score >= 80 ? `${T.red}07` : `${T.amber}07`, border: `1px solid ${color}1e` }}>
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: m.score >= 80 ? `${T.red}07` : `${T.cyan}07`, border: `1px solid ${color}1e` }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
                     <div style={{ flexShrink: 0, fontSize: 8, fontWeight: 800, color, background: `${color}15`, border: `1px solid ${color}28`, borderRadius: 4, padding: '2px 5px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -509,7 +509,7 @@ function ChurnSignalWidget({ allMemberships, checkIns, now }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 9, color: T.text3 }}>Score <span style={{ fontWeight: 700, color }}>{m.score}</span>/100</span>
                   {m.freqDrop && m.prev30 > 0 && (
-                    <span style={{ fontSize: 9, color: T.amber, fontWeight: 600 }}>↓ {m.last30} vs {m.prev30} visits last month</span>
+                    <span style={{ fontSize: 9, color: T.cyan, fontWeight: 600 }}>↓ {m.last30} vs {m.prev30} visits last month</span>
                   )}
                   {!m.freqDrop && m.last30 > 0 && (
                     <span style={{ fontSize: 9, color: T.text3 }}>{m.last30} visit{m.last30 !== 1 ? 's' : ''} this month</span>
@@ -536,7 +536,7 @@ function Week1ReturnTrendWidget({ allMemberships, checkIns, now }) {
   const latest = data[data.length - 1]?.pct || 0;
   const prev   = data[data.length - 2]?.pct || 0;
   const trend  = latest - prev;
-  const color  = latest >= 60 ? T.green : latest >= 40 ? T.amber : T.red;
+  const color  = latest >= 60 ? T.green : latest >= 40 ? T.cyan : T.red;
   return (
     <SCard accent={T.green} style={{ padding: 20 }}>
       <CardHeader title="Week-1 Return Rate" sub="New member cohort trend"
@@ -556,8 +556,8 @@ function Week1ReturnTrendWidget({ allMemberships, checkIns, now }) {
         <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="w1Grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={T.green} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={T.green} stopOpacity={0} />
+              <stop offset="0%" stopColor={T.cyan} stopOpacity={0.2} />
+              <stop offset="100%" stopColor={T.cyan} stopOpacity={0} />
             </linearGradient>
           </defs>
           <Tooltip content={({ active, payload, label }) => active && payload?.length
@@ -567,12 +567,12 @@ function Week1ReturnTrendWidget({ allMemberships, checkIns, now }) {
               </div> : null}
             cursor={false}
           />
-          <Area type="monotone" dataKey="pct" stroke={T.green} strokeWidth={2} fill="url(#w1Grad)" dot={false} />
+          <Area type="monotone" dataKey="pct" stroke={T.cyan} strokeWidth={2} fill="url(#w1Grad)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
       <div style={{ marginTop: 10, padding: '7px 10px', borderRadius: 8, background: latest < 40 ? `${T.red}08` : `${T.green}08`, border: `1px solid ${latest < 40 ? T.red + '18' : T.green + '15'}` }}>
-        <div style={{ fontSize: 10, color: latest < 40 ? T.red : latest < 60 ? T.amber : T.green, fontWeight: 600 }}>
-          {latest < 40 ? '⚠️ Below target — follow up with new members in week 1' : latest < 60 ? 'Room to improve — a personal welcome message helps' : '✓ Strong week-1 return rate'}
+        <div style={{ fontSize: 10, color: latest < 40 ? T.red : latest < 60 ? T.cyan : T.green, fontWeight: 600 }}>
+          {latest < 40 ? 'Below target — follow up with new members in week 1' : latest < 60 ? 'Room to improve — a personal welcome message helps' : 'Strong week-1 return rate'}
         </div>
       </div>
     </SCard>
@@ -586,11 +586,11 @@ function SmartInsightsPanel({ checkIns, ci30, allMemberships, atRisk, retentionR
 
     // ── Too small for meaningful analytics ────────────────────────────────────
     if (totalMembers < 5) {
-      items.push({ color: T.blue, icon: Users, label: `Only ${totalMembers} member${totalMembers === 1 ? '' : 's'} so far`, detail: `Analytics become meaningful at 10+ members. Add ${10 - totalMembers} more to unlock trend insights.`, priority: 0, isInfo: true });
+      items.push({ color: T.cyan, icon: Users, label: `Only ${totalMembers} member${totalMembers === 1 ? '' : 's'} so far`, detail: `Analytics become meaningful at 10+ members. Add ${10 - totalMembers} more to unlock trend insights.`, priority: 0, isInfo: true });
       return items;
     }
     if (totalMembers < 10) {
-      items.push({ color: T.blue, icon: Users, label: `${totalMembers} members — growing`, detail: `Retention data will be more reliable at 10+ members. Keep ${10 - totalMembers} more joining.`, priority: 0, isInfo: true });
+      items.push({ color: T.cyan, icon: Users, label: `${totalMembers} members — growing`, detail: `Retention data will be more reliable at 10+ members. Keep ${10 - totalMembers} more joining.`, priority: 0, isInfo: true });
     }
 
     // ── Retention ─────────────────────────────────────────────────────────────
@@ -605,28 +605,28 @@ function SmartInsightsPanel({ checkIns, ci30, allMemberships, atRisk, retentionR
 
     // ── Month change ──────────────────────────────────────────────────────────
     if (checkIns.length < 20) {
-      items.push({ color: T.blue, icon: Activity, label: 'Not enough check-in data yet', detail: 'Month-over-month comparisons populate after 7+ days of check-ins.', priority: 2, isInfo: true });
+      items.push({ color: T.cyan, icon: Activity, label: 'Not enough check-in data yet', detail: 'Month-over-month comparisons populate after 7+ days of check-ins.', priority: 2, isInfo: true });
     } else if (monthChangePct < -10) {
-      items.push({ color: T.amber, icon: TrendingDown, label: `Check-ins down ${Math.abs(monthChangePct)}% vs last month`, detail: 'Consider a new challenge or event to re-activate attendance.', priority: 2 });
+      items.push({ color: T.cyan, icon: TrendingDown, label: `Check-ins down ${Math.abs(monthChangePct)}% vs last month`, detail: 'Consider a new challenge or event to re-activate attendance.', priority: 2 });
     } else if (monthChangePct > 15) {
       items.push({ color: T.green, icon: TrendingUp, label: `Strong growth — up ${monthChangePct}% this month`, detail: 'Great momentum. Make sure your schedule can handle demand.', priority: 4 });
     }
 
     // ── Visit frequency ───────────────────────────────────────────────────────
     const visitRatio = totalMembers > 0 ? (ci30.length / 30) / totalMembers : 0;
-    if (visitRatio < 0.05 && totalMembers > 10) items.push({ color: T.amber, icon: Activity, label: 'Visit frequency is low', detail: 'Less than 5% of members check in per day. Try promoting morning classes.', priority: 2 });
+    if (visitRatio < 0.05 && totalMembers > 10) items.push({ color: T.cyan, icon: Activity, label: 'Visit frequency is low', detail: 'Less than 5% of members check in per day. Try promoting morning classes.', priority: 2 });
 
     // ── Weekend attendance ─────────────────────────────────────────────────────
     const weekendCI = checkIns.filter(c => [0, 6].includes(new Date(c.check_in_date).getDay())).length;
-    if (weekendCI / Math.max(checkIns.length, 1) < 0.15 && checkIns.length > 50) items.push({ color: T.blue, icon: Calendar, label: 'Weekend attendance is low (<15% of visits)', detail: 'A weekend challenge or Saturday event could drive more footfall.', priority: 3 });
+    if (weekendCI / Math.max(checkIns.length, 1) < 0.15 && checkIns.length > 50) items.push({ color: T.cyan, icon: Calendar, label: 'Weekend attendance is low (<15% of visits)', detail: 'A weekend challenge or Saturday event could drive more footfall.', priority: 3 });
 
     return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [checkIns, ci30, allMemberships, atRisk, retentionRate, monthChangePct, totalMembers, now]);
 
   return (
-    <SCard accent={T.blue} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-        <Sparkles style={{ width: 13, height: 13, color: T.blue }} />
+        <Sparkles style={{ width: 13, height: 13, color: T.cyan }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Smart Insights</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -663,16 +663,16 @@ function ClassPerformanceWidget({ classes, checkIns, ci30, now }) {
   }).sort((a, b) => b.fillRate - a.fillRate), [classes, ci30, now]);
   if (!classData.length) return null;
   return (
-    <SCard accent={T.purple} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <CardHeader title="Class Performance" sub="Fill rates & attendance trends (30 days)"
-        right={<Trophy style={{ width: 14, height: 14, color: T.purple }} />}
+        right={<Trophy style={{ width: 14, height: 14, color: T.cyan }} />}
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {classData.map((cls, i) => (
           <div key={cls.id || i}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: cls.fillRate >= 75 ? T.green : cls.fillRate >= 40 ? T.amber : T.red, flexShrink: 0 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: cls.fillRate >= 75 ? T.green : cls.fillRate >= 40 ? T.cyan : T.red, flexShrink: 0 }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: T.text1 }}>{cls.name}</span>
                 {cls.trending !== 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -682,12 +682,12 @@ function ClassPerformanceWidget({ classes, checkIns, ci30, now }) {
                 )}
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: cls.fillRate >= 75 ? T.green : cls.fillRate >= 40 ? T.amber : T.red }}>{cls.fillRate}%</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: cls.fillRate >= 75 ? T.green : cls.fillRate >= 40 ? T.cyan : T.red }}>{cls.fillRate}%</span>
                 <span style={{ fontSize: 10, color: T.text3 }}>fill</span>
               </div>
             </div>
             <div style={{ height: 4, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${cls.fillRate}%`, borderRadius: 99, background: cls.fillRate >= 75 ? `linear-gradient(90deg,${T.green},#34d399)` : cls.fillRate >= 40 ? `linear-gradient(90deg,#d97706,${T.amber})` : `linear-gradient(90deg,${T.red},#f87171)`, transition: 'width 0.8s ease' }} />
+              <div style={{ height: '100%', width: `${cls.fillRate}%`, borderRadius: 99, background: cls.fillRate >= 65 ? T.green : cls.fillRate >= 30 ? T.cyan : T.red, transition: 'width 0.8s ease' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
               <span style={{ fontSize: 9, color: T.text3 }}>~{cls.avgAtt} avg / session</span>
@@ -728,11 +728,11 @@ function CoachImpactWidget({ coaches, checkIns, ci30, allMemberships, now }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 10, color: T.text3 }}>{coach.uniqueMembers} members</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: coach.retentionImpact >= 70 ? T.green : coach.retentionImpact >= 50 ? T.amber : T.red, letterSpacing: '-0.02em' }}>{coach.retentionImpact}%</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: coach.retentionImpact >= 70 ? T.green : coach.retentionImpact >= 50 ? T.cyan : T.red, letterSpacing: '-0.02em' }}>{coach.retentionImpact}%</span>
               </div>
             </div>
             <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${coach.retentionImpact}%`, borderRadius: 99, background: coach.retentionImpact >= 70 ? `linear-gradient(90deg,${T.green},#34d399)` : coach.retentionImpact >= 50 ? `linear-gradient(90deg,#d97706,${T.amber})` : `linear-gradient(90deg,${T.red},#f87171)`, transition: 'width 0.8s ease' }} />
+              <div style={{ height: '100%', width: `${coach.retentionImpact}%`, borderRadius: 99, background: coach.retentionImpact >= 70 ? `linear-gradient(90deg,${T.green},#10b981)` : coach.retentionImpact >= 50 ? `linear-gradient(90deg,#06b6d4,${T.cyan})` : `linear-gradient(90deg,${T.red},#ef4444)`, transition: 'width 0.8s ease' }} />
             </div>
           </div>
         ))}
@@ -753,16 +753,16 @@ function MilestoneProgressWidget({ checkIns }) {
   }, [checkIns]);
   if (!milestones.length) return null;
   return (
-    <SCard accent={T.amber} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-        <Award style={{ width: 13, height: 13, color: T.amber }} />
+        <Award style={{ width: 13, height: 13, color: T.cyan }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Upcoming Milestones</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {milestones.map((m, i) => (
           <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < milestones.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: m.toNext === 1 ? `${T.amber}22` : T.divider, border: `1px solid ${m.toNext === 1 ? T.amber + '30' : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: m.toNext === 1 ? T.amber : T.text3 }}>{m.total}</span>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: m.toNext === 1 ? `${T.cyan}22` : T.divider, border: `1px solid ${m.toNext === 1 ? T.cyan + '30' : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: m.toNext === 1 ? T.cyan : T.text3 }}>{m.total}</span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
@@ -771,7 +771,7 @@ function MilestoneProgressWidget({ checkIns }) {
               </div>
             </div>
             {/* Mini ring */}
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `conic-gradient(${T.amber} ${Math.round((m.total / m.next) * 360)}deg, ${T.divider} 0deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `conic-gradient(${T.cyan} ${Math.round((m.total / m.next) * 360)}deg, ${T.divider} 0deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <div style={{ width: 18, height: 18, borderRadius: '50%', background: T.card }} />
             </div>
           </div>
@@ -784,7 +784,7 @@ function MilestoneProgressWidget({ checkIns }) {
 // ── Engagement / Frequency breakdown (reusable) ───────────────────────────────
 function SegmentBreakdown({ title, segments, total }) {
   return (
-    <SCard accent={T.purple} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <CardHeader title={title} />
       {total > 0 && (
         <div style={{ height: 5, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 1, marginBottom: 14 }}>
@@ -810,7 +810,7 @@ function SegmentBreakdown({ title, segments, total }) {
                 </div>
               </div>
               <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${s.color},${s.color}99)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
+                <div style={{ height: '100%', width: `${pct}%`, background: s.color, borderRadius: 99, transition: 'width 0.8s ease' }} />
               </div>
             </div>
           );
@@ -831,12 +831,12 @@ function RankedBarList({ title, icon: Icon, accent, items, emptyIcon, emptyLabel
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {items.map((h, i) => (
             <div key={h.label || h.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, color: i === 0 ? T.amber : T.text3, width: 18, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, color: T.text3, width: 18, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: T.text1, width: 38, flexShrink: 0 }}>{h.label || h.name}</span>
               <div style={{ flex: 1, height: 5, borderRadius: 99, overflow: 'hidden', background: T.divider }}>
-                <div style={{ height: '100%', width: `${h.pct ?? ((h.count / items[0].count) * 100)}%`, borderRadius: 99, background: i === 0 ? `linear-gradient(90deg,${T.amber},${T.red})` : `linear-gradient(90deg,${T.blue},${T.cyan})`, transition: 'width 0.7s ease' }} />
+                <div style={{ height: '100%', width: `${h.pct ?? ((h.count / items[0].count) * 100)}%`, borderRadius: 99, background: T.cyan, transition: 'width 0.7s ease' }} />
               </div>
-              <span style={{ fontSize: 12, fontWeight: 800, color: i === 0 ? T.amber : T.text2, width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: T.text2, width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
             </div>
           ))}
         </div>
@@ -874,14 +874,14 @@ function TrendsSummaryCard({ ci30, ciPrev30, allMemberships, retentionRate, atRi
   const prevRetention = prevActive !== null && totalMembers > 0 ? Math.round((prevActive / totalMembers) * 100) : null;
 
   const rows = [
-    { label: 'Check-ins',        curr: thisTotalCI,  prev: prevTotalCI,   fmt: v => v,          color: T.blue   },
+    { label: 'Check-ins',        curr: thisTotalCI,  prev: prevTotalCI,   fmt: v => v,          color: T.cyan   },
     { label: 'Active members',   curr: thisActive,   prev: prevActive,    fmt: v => v,          color: T.green  },
-    { label: 'Retention rate',   curr: retentionRate,prev: prevRetention, fmt: v => `${v}%`,    color: retentionRate >= 70 ? T.green : T.amber },
+    { label: 'Retention rate',   curr: retentionRate,prev: prevRetention, fmt: v => `${v}%`,    color: retentionRate >= 70 ? T.green : T.cyan },
     { label: 'At-risk members',  curr: atRisk,       prev: null,          fmt: v => v,          color: atRisk > 0 ? T.red : T.green },
   ];
 
   return (
-    <SCard accent={T.blue} style={{ padding: 20 }}>
+    <SCard accent={T.cyan} style={{ padding: 20 }}>
       <CardHeader title="Month Comparison" sub="This month vs last month" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {rows.map((r, i) => (
@@ -895,7 +895,7 @@ function TrendsSummaryCard({ ci30, ciPrev30, allMemberships, retentionRate, atRi
         ))}
       </div>
       {prevTotalCI === 0 && (
-        <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 8, background: `${T.blue}06`, border: `1px solid ${T.blue}15` }}>
+        <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 8, background: `${T.cyan}06`, border: `1px solid ${T.cyan}15` }}>
           <div style={{ fontSize: 10, color: T.text3, lineHeight: 1.5 }}>Comparison data populates after your first full month of check-ins.</div>
         </div>
       )}
@@ -1000,14 +1000,14 @@ export default function TabAnalytics({
     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: 18, alignItems: 'start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-          <KpiCard icon={Activity}   label="Monthly Check-ins"  value={ci30.length}     unit="this month"             color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (ci30.length / (totalMembers * 4)) * 100 : 0} />
+          <KpiCard icon={Activity}   label="Monthly Check-ins"  value={ci30.length}     unit="this month"             color={T.cyan}   trend={monthChangePct} footerBar={totalMembers > 0 ? (ci30.length / (totalMembers * 4)) * 100 : 0} />
           <KpiCard icon={Users}      label="Active Members"     value={activeThisMonth} unit={`of ${totalMembers}`}   color={T.green}  footerBar={totalMembers > 0 ? (activeThisMonth / totalMembers) * 100 : 0} />
-          <KpiCard icon={TrendingUp} label="Avg Visits/Member"  value={avgPerMem}       unit="this month"             color={T.purple} />
+          <KpiCard icon={TrendingUp} label="Avg Visits/Member"  value={avgPerMem}       unit="this month"             color={T.cyan} />
           <KpiCard icon={Zap}        label="At Risk"            value={atRisk}          unit="14+ days absent"        color={atRisk > 0 ? T.red : T.green} />
         </div>
 
         {classAttendance.length > 0 && (
-          <SCard accent={T.purple} style={{ padding: 20 }}>
+          <SCard accent={T.cyan} style={{ padding: 20 }}>
             <CardHeader title="My Class Attendance (30 days)" sub="Estimated from check-in time slots" />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {classAttendance.map((cls, i) => (
@@ -1018,12 +1018,12 @@ export default function TabAnalytics({
                       {cls.schedule && <span style={{ fontSize: 10, color: T.text3, marginLeft: 8 }}>{cls.schedule}</span>}
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: cls.fill >= 75 ? T.green : cls.fill >= 40 ? T.amber : T.red }}>{cls.attended}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: cls.fill >= 75 ? T.green : cls.fill >= 40 ? T.cyan : T.red }}>{cls.attended}</span>
                       <span style={{ fontSize: 9, color: T.text3, marginLeft: 4 }}>/ {cls.capacity} cap</span>
                     </div>
                   </div>
                   <div style={{ height: 5, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${cls.fill}%`, background: cls.fill >= 75 ? `linear-gradient(90deg,${T.green},#34d399)` : cls.fill >= 40 ? `linear-gradient(90deg,#d97706,${T.amber})` : `linear-gradient(90deg,${T.red},#f87171)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
+                    <div style={{ height: '100%', width: `${cls.fill}%`, background: cls.fill >= 75 ? `linear-gradient(90deg,${T.green},#10b981)` : cls.fill >= 40 ? `linear-gradient(90deg,#06b6d4,${T.cyan})` : `linear-gradient(90deg,${T.red},#ef4444)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
                   </div>
                   <div style={{ fontSize: 9, color: T.text3, marginTop: 3, textAlign: 'right' }}>{cls.fill}% fill rate</div>
                 </div>
@@ -1032,21 +1032,21 @@ export default function TabAnalytics({
           </SCard>
         )}
 
-        <SCard accent={T.blue} style={{ padding: 20 }}>
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
           <CardHeader title="Class Attendance Trend" sub="8-week rolling view" />
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={classWeeklyTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="coachTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={T.purple} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={T.purple} stopOpacity={0} />
+                  <stop offset="0%" stopColor={T.cyan} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={T.cyan} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={T.divider} vertical={false} />
               <XAxis dataKey="label" tick={tickStyle} axisLine={{ stroke: T.border }} tickLine={false} interval={1} />
               <YAxis tick={tickStyle} axisLine={{ stroke: T.border }} tickLine={false} width={28} allowDecimals={false} />
-              <Tooltip content={<ChartTip />} cursor={{ stroke: `${T.purple}28`, strokeWidth: 1, strokeDasharray: '4 4' }} />
-              <Area type="monotone" dataKey="value" stroke={T.purple} strokeWidth={2} fill="url(#coachTrendGrad)" dot={false} activeDot={{ r: 4, fill: T.purple, stroke: T.text1, strokeWidth: 2 }} />
+              <Tooltip content={<ChartTip />} cursor={{ stroke: `${T.cyan}28`, strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Area type="monotone" dataKey="value" stroke={T.cyan} strokeWidth={2} fill="url(#coachTrendGrad)" dot={false} activeDot={{ r: 4, fill: T.cyan, stroke: T.text1, strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
         </SCard>
@@ -1060,24 +1060,24 @@ export default function TabAnalytics({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <SCard accent={T.blue} style={{ padding: 20 }}>
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
           <CardHeader title="30-Day Snapshot" />
-          <SRow label="Total check-ins"   value={ci30.length}                                              color={T.blue}   />
+          <SRow label="Total check-ins"   value={ci30.length}                                              color={T.cyan}   />
           <SRow label="Active members"    value={activeThisMonth}                                          color={T.green}  />
           <SRow label="At-risk members"   value={atRisk}                                                   color={atRisk > 0 ? T.red : T.green} />
-          <SRow label="My classes"        value={myClasses.length}                                         color={T.purple} />
-          <SRow label="Avg visits/member" value={totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—'} color={T.amber}  />
+          <SRow label="My classes"        value={myClasses.length}                                         color={T.cyan} />
+          <SRow label="Avg visits/member" value={totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—'} color={T.cyan}  />
         </SCard>
 
         <SegmentBreakdown title="Member Frequency" total={totalMembers} segments={[
           { label: 'Frequent',   sub: '12+/mo', val: memberFrequency.frequent,   color: T.green  },
-          { label: 'Occasional', sub: '4–11',   val: memberFrequency.occasional, color: T.blue   },
-          { label: 'Rare',       sub: '1–3',    val: memberFrequency.rare,       color: T.purple },
-          { label: 'Inactive',   sub: '0',      val: memberFrequency.inactive,   color: T.amber  },
+          { label: 'Occasional', sub: '4–11',   val: memberFrequency.occasional, color: T.cyan   },
+          { label: 'Rare',       sub: '1–3',    val: memberFrequency.rare,       color: 'rgba(6,182,212,0.5)' },
+          { label: 'Inactive',   sub: '0',      val: memberFrequency.inactive,   color: T.red  },
         ]} />
 
-        <RankedBarList title="Busiest Days" icon={Calendar} accent={T.amber} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
-        <RankedBarList title="Peak Hours"   icon={Clock}    accent={T.amber} items={peakHours.slice(0, 5)} emptyLabel="No check-in data yet" />
+        <RankedBarList title="Busiest Days" icon={Calendar} accent={T.cyan} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
+        <RankedBarList title="Peak Hours"   icon={Clock}    accent={T.cyan} items={peakHours.slice(0, 5)} emptyLabel="No check-in data yet" />
       </div>
     </div>
   );
@@ -1093,8 +1093,8 @@ export default function TabAnalytics({
           // Too little data — friendly placeholder instead of a row of zeros
           <SCard style={{ padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${T.blue}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Activity style={{ width: 16, height: 16, color: T.blue }} />
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${T.cyan}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Activity style={{ width: 16, height: 16, color: T.cyan }} />
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Analytics data loading</div>
@@ -1104,10 +1104,10 @@ export default function TabAnalytics({
           </SCard>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-            <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"   color={T.blue}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} spark={weekTrend.slice(-7).map(d => d.value)} subContext={`${weekTrend.reduce((a,d)=>a+d.value,0)} in 12 weeks`} />
+            <KpiCard icon={Activity}   label="Daily Avg"       value={dailyAvg}   unit="check-ins / day"   color={T.cyan}   trend={monthChangePct} footerBar={totalMembers > 0 ? (dailyAvg / totalMembers) * 100 : 0} spark={weekTrend.slice(-7).map(d => d.value)} subContext={`${weekTrend.reduce((a,d)=>a+d.value,0)} in 12 weeks`} />
             <KpiCard icon={TrendingUp} label="Monthly Change"  value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`} unit="vs last month"   color={trendColor} trend={monthChangePct} subContext={monthChangePct > 0 ? 'Growing' : monthChangePct < 0 ? 'Declining' : 'Flat'} />
-            <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month"  color={T.purple} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} subContext={`${superActive} members at 15+`} />
-            <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="repeat check-ins" color={T.amber} footerBar={returnRate} subContext={returnRate >= 70 ? 'Strong loyalty' : 'Needs work'} />
+            <KpiCard icon={Users}      label="Avg / Member"    value={avgPerMem}  unit="visits this month"  color={T.cyan} footerBar={totalMembers > 0 ? Math.min(100, (parseFloat(avgPerMem) / 20) * 100) : 0} subContext={`${superActive} members at 15+`} />
+            <KpiCard icon={Zap}        label="Return Rate"     value={`${returnRate}%`} unit="repeat check-ins" color={T.cyan} footerBar={returnRate} subContext={returnRate >= 70 ? 'Strong loyalty' : 'Needs work'} />
           </div>
         )}
 
@@ -1117,23 +1117,23 @@ export default function TabAnalytics({
 
         {/* Weekly Trend — only show once there's meaningful data */}
         {weekTrend.some(d => d.value > 0) ? (
-        <SCard accent={T.blue} style={{ padding: 20 }}>
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
           <CardHeader title="Weekly Check-in Trend" sub="12-week rolling view"
-            right={<span style={{ fontSize: 10, fontWeight: 700, color: T.blue, background: `${T.blue}12`, border: `1px solid ${T.blue}25`, borderRadius: 7, padding: '2px 9px' }}>{weekTrend.reduce((s, d) => s + d.value, 0)} total</span>}
+            right={<span style={{ fontSize: 10, fontWeight: 700, color: T.cyan, background: `${T.cyan}12`, border: `1px solid ${T.cyan}25`, borderRadius: 7, padding: '2px 9px' }}>{weekTrend.reduce((s, d) => s + d.value, 0)} total</span>}
           />
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={weekTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={T.blue} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={T.blue} stopOpacity={0} />
+                  <stop offset="0%" stopColor={T.cyan} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={T.cyan} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={T.divider} vertical={false} />
               <XAxis dataKey="label" tick={tickStyle} axisLine={{ stroke: T.border }} tickLine={false} interval={2} />
               <YAxis tick={tickStyle} axisLine={{ stroke: T.border }} tickLine={false} width={28} allowDecimals={false} />
-              <Tooltip content={<ChartTip />} cursor={{ stroke: `${T.blue}28`, strokeWidth: 1, strokeDasharray: '4 4' }} />
-              <Area type="monotone" dataKey="value" stroke={T.blue} strokeWidth={2} fill="url(#wtGrad)" dot={false} activeDot={{ r: 4, fill: T.blue, stroke: T.text1, strokeWidth: 2 }} />
+              <Tooltip content={<ChartTip />} cursor={{ stroke: `${T.cyan}28`, strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Area type="monotone" dataKey="value" stroke={T.cyan} strokeWidth={2} fill="url(#wtGrad)" dot={false} activeDot={{ r: 4, fill: T.cyan, stroke: T.text1, strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
         </SCard>
@@ -1165,8 +1165,8 @@ export default function TabAnalytics({
             <BarChart data={monthGrowthData} barSize={20} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="mgGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={T.green} stopOpacity={0.85} />
-                  <stop offset="100%" stopColor={T.green} stopOpacity={0.3} />
+                  <stop offset="0%" stopColor={T.cyan} stopOpacity={0.7} />
+                  <stop offset="100%" stopColor={T.cyan} stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={T.divider} vertical={false} />
@@ -1179,7 +1179,7 @@ export default function TabAnalytics({
                   </div> : null}
                 cursor={{ fill: `${T.green}06` }}
               />
-              <Bar dataKey="value" fill="url(#mgGrad)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" fill={T.cyan} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </SCard>
@@ -1193,29 +1193,29 @@ export default function TabAnalytics({
         </SCard>
 
         {/* Peak Hours */}
-        <RankedBarList title="Peak Hours" icon={Clock} accent={T.amber} items={peakHours} emptyLabel="No check-in data yet" />
+        <RankedBarList title="Peak Hours" icon={Clock} accent={T.cyan} items={peakHours} emptyLabel="No check-in data yet" />
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* 30-Day Snapshot — dense metrics with status dots */}
-        <SCard accent={T.blue} style={{ padding: 20 }}>
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>30-Day Snapshot</div>
               <div style={{ fontSize: 10, color: T.text3, marginTop: 2 }}>{format(now, 'MMM d')} rolling window</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 7, background: `${T.blue}12`, border: `1px solid ${T.blue}22` }}>
-              <Activity style={{ width: 10, height: 10, color: T.blue }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: T.blue }}>Live</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 7, background: `${T.cyan}12`, border: `1px solid ${T.cyan}22` }}>
+              <Activity style={{ width: 10, height: 10, color: T.cyan }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: T.cyan }}>Live</span>
             </div>
           </div>
           {[
-            { label: 'Check-ins',       value: ci30.length,            color: T.blue,   icon: Activity,   sub: `${dailyAvg}/day avg` },
+            { label: 'Check-ins',       value: ci30.length,            color: T.cyan,   icon: Activity,   sub: `${dailyAvg}/day avg` },
             { label: 'New sign-ups',    value: newSignUps,             color: T.green,  icon: UserPlus,   sub: `+${newSignUps} joined` },
-            { label: 'Retention',       value: `${retentionRate}%`,    color: retentionRate >= 70 ? T.green : T.amber, icon: Shield, sub: retentionRate >= 70 ? 'Healthy' : 'Below target' },
+            { label: 'Retention',       value: `${retentionRate}%`,    color: retentionRate >= 70 ? T.green : T.cyan, icon: Shield, sub: retentionRate >= 70 ? 'Healthy' : 'Below target' },
             { label: 'At risk',         value: atRisk,                 color: atRisk > 0 ? T.red : T.green, icon: AlertTriangle, sub: atRisk > 0 ? `${Math.round((atRisk / Math.max(totalMembers,1)) * 100)}% of gym` : 'None' },
-            { label: 'Active classes',  value: (classes || []).length, color: T.purple, icon: Calendar,   sub: 'on schedule' },
+            { label: 'Active classes',  value: (classes || []).length, color: T.cyan, icon: Calendar,   sub: 'on schedule' },
             { label: 'Avg visits/mem',  value: avgPerMem,              color: T.cyan,   icon: BarChart2,  sub: 'this month' },
           ].map((s, i, arr) => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < arr.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
@@ -1242,14 +1242,14 @@ export default function TabAnalytics({
         <ChurnSignalWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
 
         {/* Gym Health Radar */}
-        <SCard accent={T.purple} style={{ padding: 20 }}>
+        <SCard accent={T.cyan} style={{ padding: 20 }}>
           <CardHeader title="Gym Health Radar" sub="6-metric performance overview" />
           <ResponsiveContainer width="100%" height={190}>
             <RadarChart data={radarData} margin={{ top: 4, right: 10, bottom: 4, left: 10 }}>
               <PolarGrid stroke={T.border} radialLines={false} />
               <PolarAngleAxis dataKey="subject" tick={{ fill: T.text2, fontSize: 9, fontFamily: 'DM Sans, system-ui', fontWeight: 700 }} />
               <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar dataKey="A" stroke={T.purple} fill={T.purple} fillOpacity={0.15} strokeWidth={2} dot={{ r: 3, fill: T.purple, strokeWidth: 0 }} />
+              <Radar dataKey="A" stroke={T.cyan} fill={T.cyan} fillOpacity={0.1} strokeWidth={2} dot={{ r: 3, fill: T.cyan, strokeWidth: 0 }} />
               <Tooltip content={<RadarTip />} />
             </RadarChart>
           </ResponsiveContainer>
@@ -1257,22 +1257,22 @@ export default function TabAnalytics({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 12 }}>
             {radarData.map((d, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 7, background: d.A >= 70 ? `${T.green}08` : d.A >= 40 ? T.divider : `${T.red}07`, border: `1px solid ${d.A >= 70 ? T.green + '18' : d.A >= 40 ? T.border : T.red + '18'}` }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: d.A >= 70 ? T.green : d.A >= 40 ? T.amber : T.red, flexShrink: 0 }} />
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: d.A >= 70 ? T.green : d.A >= 40 ? T.cyan : T.red, flexShrink: 0 }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: T.text2, flex: 1 }}>{d.subject}</span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: d.A >= 70 ? T.green : d.A >= 40 ? T.amber : T.red }}>{Math.round(d.A)}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: d.A >= 70 ? T.green : d.A >= 40 ? T.cyan : T.red }}>{Math.round(d.A)}</span>
               </div>
             ))}
           </div>
         </SCard>
 
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
-        <RankedBarList title="Busiest Days" icon={Calendar} accent={T.amber} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
+        <RankedBarList title="Busiest Days" icon={Calendar} accent={T.cyan} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
 
         <SegmentBreakdown title="Engagement Breakdown" total={totalMembers} segments={[
           { label: 'Super Active', sub: '15+ visits', val: superActive, color: T.green  },
-          { label: 'Active',       sub: '8–14',       val: active,      color: T.blue   },
-          { label: 'Casual',       sub: '1–7',        val: casual,      color: T.purple },
-          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.amber  },
+          { label: 'Active',       sub: '8–14',       val: active,      color: T.cyan   },
+          { label: 'Casual',       sub: '1–7',        val: casual,      color: T.cyan },
+          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: T.red  },
         ]} />
 
         <MilestoneProgressWidget checkIns={checkIns} />
