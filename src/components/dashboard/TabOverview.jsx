@@ -16,6 +16,7 @@ import { RingChart, Avatar } from './DashboardPrimitives';
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
   blue:    '#0ea5e9',
+  cyan:    '#06b6d4',
   green:   '#10b981',
   red:     '#ef4444',
   amber:   '#f59e0b',
