@@ -4,7 +4,7 @@ import {
  CheckCircle, Pin, Image as ImageIcon, Megaphone,
  Trophy, Gift, Lightbulb, Star, Users, Eye,
  ChevronRight, Zap, Clock, Send, ArrowUpRight,
- // Send already imported above
+
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
