@@ -233,7 +233,7 @@ function SetActiveButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-1 whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+      className="inline-flex items-center justify-center gap-1 whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
     >
       Set Active <Star className="w-3.5 h-3.5 flex-shrink-0" />
     </button>
@@ -426,7 +426,7 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
             <Button
               onClick={() => { if (selected) onSave(selected); else onClose(); }}
               disabled={isSaving}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
             >
               {isSaving ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
             </Button>
@@ -685,22 +685,22 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
         {/* ── HEADER ── */}
-        <div className="flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
+        <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
 
           {/* Left: back button — fixed width so title stays centred */}
-          <div className="flex-shrink-0" style={{ minWidth: 40 }}>
+          <div className="flex-shrink-0">
             <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
               <ChevronLeft className="w-6 h-6 text-slate-300" />
             </button>
           </div>
 
           {/* Centre: title */}
-          <div className="flex-1 flex justify-center">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
 
           {/* Right: context-sensitive buttons */}
-          <div className="flex-shrink-0 flex items-center justify-end gap-2" style={{ minWidth: 40 }}>
+          <div className="flex-shrink-0 flex items-center justify-end gap-2 ml-auto">
 
             {/* ── PICK (hub) page ── */}
             {step === 'pick' && (
