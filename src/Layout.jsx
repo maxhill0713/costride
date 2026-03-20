@@ -291,9 +291,7 @@ export default function Layout({ children, currentPageName }) {
                   to={getTabLink(item)}
                   onClick={(e) => handleTabClick(item, e)}
                   className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${
-                    isActive
-                      ? 'scale-110'
-                      : 'hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'
+                    isActive ? 'scale-110' : 'hover:scale-105'
                   }`}
                 >
                   <div
