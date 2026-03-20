@@ -199,8 +199,13 @@ const colorForUser = (userId) =>
   AV_COLORS[(userId || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
 
 function ActiveNowStrip({ checkIns, memberAvatarMap }) {
+  // Try every possible timestamp field, pick whichever gives the most recent value
   const getTimestamp = (c) => {
-    const candidates = [c.created_date, c.created_at, c.timestamp, c.check_in_time, c.checkin_time, c.date_created, c.check_in_date];
+    const candidates = [
+      c.created_date, c.created_at, c.timestamp,
+      c.check_in_time, c.checkin_time, c.date_created,
+      c.check_in_date,
+    ];
     let best = null;
     for (const v of candidates) {
       if (!v) continue;
@@ -213,40 +218,35 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
   const recentCheckIns = checkIns
-    .filter(c => { const ts = getTimestamp(c); return ts && ts >= twoHoursAgo; })
-    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
+    .filter(c => {
+      const ts = getTimestamp(c);
+      return ts && ts >= twoHoursAgo;
+    })
+    .reduce((acc, c) => {
+      if (!acc.find(a => a.user_id === c.user_id)) acc.push(c);
+      return acc;
+    }, [])
     .slice(0, 10);
 
-  const hasActive = recentCheckIns.length > 0;
-
-  // Fallback: unique members from all check-ins
-  const fallbackMembers = checkIns
-    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
-    .slice(0, 10);
-
-  const displayList = hasActive ? recentCheckIns : fallbackMembers;
-
-  if (displayList.length === 0) return null;
+  if (recentCheckIns.length === 0) return null;
 
   const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <div style={{ ...CARD_STYLE, borderRadius: 14, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-        {hasActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />}
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>
-          {hasActive ? 'Active Now' : 'Members'}
-        </span>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>Active Now</span>
       </div>
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'flex-end' }}>
-        {displayList.map((c, i) => {
+        {recentCheckIns.map((c, i) => {
           const col = AV_COLORS[i % AV_COLORS.length];
           const avatar = memberAvatarMap[c.user_id];
           return (
             <div key={c.user_id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: hasActive ? '1.5px solid rgba(34,197,94,0.45)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
+              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(34,197,94,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
                 {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(c.user_name)}
-                {hasActive && <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />}
+                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />
               </div>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, textAlign: 'center', maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {(c.user_name || '').split(' ')[0]}
@@ -260,7 +260,7 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
 }
 
 // ── Gym Activity Feed ─────────────────────────────────────────────────────────
-function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap }) {
+function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
 
   const toggleLike = (id) => setLikedIds(prev => {
@@ -287,14 +287,8 @@ function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap 
     lifts.slice(0, 10).forEach(l =>
       items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l })
     );
-    (posts || []).slice(0, 15).forEach(p =>
-      items.push({ type: 'post', id: `po-${p.id}`, userId: p.member_id, userName: p.member_name, date: p.created_date, data: p })
-    );
-    (workoutLogs || []).slice(0, 15).forEach(w =>
-      items.push({ type: 'workout', id: `wl-${w.id}`, userId: w.user_id, userName: w.user_name, date: w.completed_date, data: w })
-    );
-    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
-  }, [checkIns, lifts, posts, workoutLogs]);
+    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+  }, [checkIns, lifts]);
 
   if (feedItems.length === 0) return null;
 
@@ -308,8 +302,8 @@ function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap 
         <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Activity Feed</span>
       </div>
 
-      {/* Scrollable feed */}
-      <div style={{ maxHeight: 380, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      {/* Scrollable feed — fixed height shows ~4 cards, scroll for more */}
+      <div style={{ maxHeight: 300, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {feedItems.map((item, index) => {
           const avatar = memberAvatarMap[item.userId];
           const col = colorForUser(item.userId);
@@ -326,7 +320,7 @@ function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap 
             );
             headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' checked in'}</>;
             sub = item.data.notes || 'At the gym';
-          } else if (item.type === 'lift') {
+          } else {
             const isNewPR = item.data.is_personal_record || item.data.is_pr;
             iconEl = (
               <div style={{ width: 26, height: 26, borderRadius: 7, background: isNewPR ? 'rgba(234,179,8,0.12)' : 'rgba(168,85,247,0.12)', border: `1px solid ${isNewPR ? 'rgba(234,179,8,0.22)' : 'rgba(168,85,247,0.22)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -339,23 +333,6 @@ function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap 
               ? <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' hit a new PR 🔥'}</>
               : <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' logged a lift'}</>;
             sub = `${item.data.exercise || 'Exercise'}: ${item.data.weight_lbs || item.data.weight || '—'} lbs`;
-          } else if (item.type === 'post') {
-            iconEl = (
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <MessageCircle style={{ width: 11, height: 11, color: '#2dd4bf' }} />
-              </div>
-            );
-            headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' posted'}</>;
-            sub = item.data.content ? item.data.content.slice(0, 60) + (item.data.content.length > 60 ? '…' : '') : (item.data.workout_name || 'Shared a post');
-          } else {
-            // workout log
-            iconEl = (
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Dumbbell style={{ width: 11, height: 11, color: '#4ade80' }} />
-              </div>
-            );
-            headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' finished a workout'}</>;
-            sub = item.data.workout_name || item.data.workout_type || `${item.data.exercises?.length || 0} exercises`;
           }
 
           return (
@@ -367,7 +344,7 @@ function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap 
               {/* Text */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.85)', lineHeight: 1.35 }}>{headline}</div>
-                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
+                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1 }}>{sub}</div>
               </div>
               {/* Right: icon + time + like */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
@@ -1220,8 +1197,6 @@ export default function GymCommunity() {
   const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: gymPosts = [] } = useQuery({ queryKey: ['gymPosts', gymId], queryFn: () => base44.entities.Post.filter({ gym_id: gymId, is_hidden: false }, '-created_date', 30), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
-  const { data: gymWorkoutLogs = [] } = useQuery({ queryKey: ['gymWorkoutLogs', gymId], queryFn: async () => { const allLogs = await base44.entities.WorkoutLog.filter({}, '-completed_date', 50); const memberIds = new Set(members.map(m => m.user_id).filter(Boolean)); return allLogs.filter(l => memberIds.has(l.user_id)); }, enabled: !!gymId && members.length > 0, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10*60*1000, gcTime: 30*60*1000 });
@@ -1547,64 +1522,99 @@ export default function GymCommunity() {
                 {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
-                <GymActivityFeed checkIns={checkIns} lifts={lifts} posts={gymPosts} workoutLogs={gymWorkoutLogs} memberAvatarMap={memberAvatarMap} />
+                <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
                 {/* Busy times */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                {/* Events */}
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div><h3 className="text-[13px] font-black text-white">Upcoming Events</h3></div>
-                    {showOwnerControls && <button onClick={() => setShowCreateEvent(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform" style={{ background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)' }}><Plus className="w-3 h-3" />Create</button>}
+                {/* Coaches */}
+                {coaches.length > 0 && (
+                  <div className="rounded-2xl" style={CARD_STYLE}>
+                    <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <GraduationCap style={{ width: 11, height: 11, color: '#60a5fa' }} />
+                        </div>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Coaches</span>
+                      </div>
+                      {showOwnerControls && (
+                        <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>Manage</button>
+                      )}
+                    </div>
+                    <div style={{ padding: '10px 13px 12px', display: 'flex', gap: 14, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                      {coaches.slice(0, 8).map(coach => {
+                        const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                        const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
+                        return (
+                          <div key={coach.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }} onClick={handleCopyEmail}>
+                            <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff' }}>
+                              {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(coach.name)}
+                              {copiedCoachId === coach.id && (
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(16,185,129,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✓</div>
+                              )}
+                            </div>
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 600, maxWidth: 52, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {coach.name.split(' ')[0]} {coach.name.split(' ')[1]?.[0] ? coach.name.split(' ')[1][0] + '.' : ''}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="px-3 pb-4">
-                    {events.filter(e => new Date(e.event_date) >= now).length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor:'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No upcoming events</p></div>
-                      : <div className="space-y-2">{events.filter(e => new Date(e.event_date) >= now).slice(0,5).map(event => (<EventCard key={event.id} event={event} onRSVP={eventId => { const e=events.find(e=>e.id===eventId); rsvpMutation.mutate({ eventId, currentAttendees:e.attendees||0 }); }} isOwner={showOwnerControls} onDelete={showOwnerControls ? eventId => { if(window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />))}</div>
-                    }
+                )}
+
+                {/* Upcoming Event */}
+                {events.filter(e => new Date(e.event_date) >= now).length > 0 && (
+                  <div className="rounded-2xl" style={CARD_STYLE}>
+                    <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(251,146,60,0.15)', border: '1px solid rgba(251,146,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Calendar style={{ width: 11, height: 11, color: '#fb923c' }} />
+                        </div>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Upcoming Event</span>
+                      </div>
+                      {showOwnerControls && (
+                        <button onClick={() => setShowCreateEvent(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <Plus style={{ width: 10, height: 10 }} />Create
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ padding: '10px 13px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {events.filter(e => new Date(e.event_date) >= now).slice(0, 3).map(event => (
+                        <div key={event.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title || event.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                              {event.event_date && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.6)' }}>
+                                  <Calendar style={{ width: 10, height: 10 }} />
+                                  {new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                </span>
+                              )}
+                              {event.attendees > 0 && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.6)' }}>
+                                  <Users style={{ width: 10, height: 10 }} />
+                                  {event.attendees} attending
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {!showOwnerControls && (
+                            <button onClick={() => rsvpMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })} style={{ flexShrink: 0, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              RSVP
+                            </button>
+                          )}
+                          {showOwnerControls && (
+                            <button onClick={() => { if (window.confirm('Delete?')) deleteEventMutation.mutate(event.id); }} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}>
+                              <Trash2 style={{ width: 11, height: 11, color: '#f87171' }} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
                 {/* Leaderboard */}
                 <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
-                {/* Coaches */}
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(96,165,250,0.15)' }}><GraduationCap className="w-3.5 h-3.5 text-blue-400" /></div><h3 className="text-[13px] font-black text-white">Coaches</h3></div>
-                    {showOwnerControls && <button onClick={() => setShowManageCoaches(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
-                  </div>
-                  <div className="px-3 pb-4">
-                    {coaches.length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor:'rgba(255,255,255,0.06)' }}><GraduationCap className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No coaches listed</p></div>
-                      : <div className="space-y-2">{coaches.slice(0,5).map(coach => {
-                          const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
-                          return (
-                            <div key={coach.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background:'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
-                                {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" /> : <span className="text-base font-black text-white">{coach.name.charAt(0)}</span>}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                  <h4 className="font-bold text-white text-[13px] truncate">{coach.name}</h4>
-                                  {coach.rating && <div className="flex items-center gap-0.5"><Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" /><span className="text-[10px] font-bold text-slate-300">{coach.rating}</span></div>}
-                                </div>
-                                {coach.specialties?.length > 0 && (<div className="flex flex-wrap gap-1">{coach.specialties.slice(0,2).map((s,i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background:'rgba(59,130,246,0.12)' }}>{s}</span>)}</div>)}
-                              </div>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background:'rgba(59,130,246,0.1)' }}><Mail className="w-3.5 h-3.5 text-blue-400" /></button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-3 bg-slate-800 border-slate-700">
-                                  <div className="flex items-center gap-2">
-                                    <a href={`mailto:${coach.user_email}`} className="text-blue-400 text-xs font-medium break-all flex-1">{coach.user_email}</a>
-                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors"><Copy className={`w-3.5 h-3.5 ${copiedCoachId===coach.id?'text-green-400':'text-slate-400'}`} /></button>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                          );
-                        })}</div>
-                    }
-                  </div>
-                </div>
               </motion.div>
             </TabsContent>
 
