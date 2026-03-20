@@ -24,7 +24,6 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import InviteOwnerModal from '../components/gym/InviteOwnerModal';
-import ClassDetailModal from '../components/gym/ClassDetailModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
@@ -540,7 +539,7 @@ function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) { return nul
 function TodayStrip({ classes, bookedIds, onBook }) { return null; }
 
 
-// ── Class images ─────────────────────────────────────────────────────────────
+// ── Class images ──────────────────────────────────────────────────────────────
 const CLASS_IMAGES = {
   hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=800&q=80',
   yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
@@ -554,108 +553,138 @@ const CLASS_IMAGES = {
 
 const CLASS_CSS = `
 @keyframes cl-shimmer{0%{transform:translateX(-100%);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(220%);opacity:0}}
-@keyframes cl-bar{from{width:0}}
-@keyframes cl-hot{0%,100%{opacity:.8}50%{opacity:1}}
-@keyframes cl-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes cl-press{to{transform:scale(0.97) translateY(2px)}}
+@keyframes cl-bar    {from{width:0}}
+@keyframes cl-hot    {0%,100%{opacity:.8}50%{opacity:1}}
+@keyframes cl-in     {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 `;
 function injectClassCSS(){
   if(!document.getElementById('cl-css')){const s=document.createElement('style');s.id='cl-css';s.textContent=CLASS_CSS;document.head.appendChild(s);}
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const TIME_SLOTS = ['Morning','Afternoon','Evening'];
 const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const TIME_SLOTS = ['Morning','Afternoon','Evening'];
 
 function getMockTime(gymClass, index) {
-  const s = typeof gymClass.schedule === 'string' ? gymClass.schedule : '';
-  const m = s.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
-  if (m) return s.match(/\d{1,2}:\d{2}/)[0];
+  const s = gymClass.schedule || '';
+  const m = s.match(/(\d{1,2}):(\d{2})/);
+  if (m) return m[0];
   const times = ['06:00','07:30','09:00','10:30','12:00','13:30','16:00','17:30','18:00','19:30','20:00'];
   return times[index % times.length];
 }
-function getTimeSlot(timeStr) {
-  const h = parseInt((timeStr || '12').split(':')[0]);
+function getTimeSlot(t) {
+  const h = parseInt((t||'12').split(':')[0]);
   if (h < 12) return 'Morning';
   if (h < 17) return 'Afternoon';
   return 'Evening';
 }
-function classMatchesTimeSlot(gymClass, slot, index) {
-  return getTimeSlot(getMockTime(gymClass, index)) === slot;
+
+// ── 3D button helper — your app's exact button DNA ────────────────────────────
+// active bg / border-color / shadow-color / text-color
+function btn3D(active, activeProps, inactiveProps) {
+  return {
+    style: active ? activeProps : inactiveProps,
+    onMouseDown: e => {
+      e.currentTarget.style.transform = 'translateY(3px)';
+      e.currentTarget.style.boxShadow = 'none';
+      e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)';
+    },
+    onMouseUp:    e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+    onMouseLeave: e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+    onTouchStart: e => {
+      e.currentTarget.style.transform = 'translateY(3px)';
+      e.currentTarget.style.boxShadow = 'none';
+      e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)';
+    },
+    onTouchEnd: e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+  };
 }
 
-// ── Date header ───────────────────────────────────────────────────────────────
+// ── Date + time-of-day picker ─────────────────────────────────────────────────
 function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot }) {
   const today = new Date();
-  const todayDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
-
-  // Build 7 days starting from Monday of this week
+  const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
   const monday = new Date(today);
-  monday.setDate(today.getDate() - todayDayIdx);
+  monday.setDate(today.getDate() - todayIdx);
+
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return {
-      idx: i,
-      label: DAY_LABELS[i],
-      num: d.getDate(),
-      isToday: i === todayDayIdx,
-      date: d,
-    };
+    return { idx: i, label: DAY_LABELS[i], num: d.getDate(), isToday: i === todayIdx };
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Day scroller */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Day pills */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
         {days.map(d => {
           const active = activeDay === d.idx;
+          const b = btn3D(
+            active,
+            {
+              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
+              border: '1px solid transparent',
+              borderBottom: '3px solid #1a3fa8',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 6px 20px rgba(37,99,235,0.35)',
+              color: '#fff',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            },
+            {
+              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              background: d.isToday ? 'rgba(37,99,235,0.12)' : 'rgba(20,28,60,0.8)',
+              border: `1px solid ${d.isToday ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.09)'}`,
+              borderBottom: '3px solid rgba(0,0,0,0.5)',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)',
+              color: d.isToday ? 'rgba(147,197,253,0.9)' : 'rgba(255,255,255,0.45)',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            }
+          );
           return (
-            <button key={d.idx} onClick={() => setActiveDay(d.idx)}
-              style={{
-                flexShrink: 0, minWidth: 50, padding: '8px 6px', borderRadius: 14, cursor: 'pointer',
-                border: `1px solid ${active ? 'rgba(20,184,166,0.7)' : d.isToday ? 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.09)'}`,
-                background: active
-                  ? 'linear-gradient(145deg, #0d9488, #0f766e)'
-                  : d.isToday ? 'rgba(13,148,136,0.12)' : CARD_BG,
-                backdropFilter: 'blur(20px)',
-                boxShadow: active ? '0 4px 16px rgba(13,148,136,0.45), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
-                transition: 'all 0.18s ease',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              }}>
-              <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: active ? 'rgba(255,255,255,0.75)' : d.isToday ? 'rgba(20,184,166,0.8)' : 'rgba(255,255,255,0.35)' }}>
+            <button key={d.idx} onClick={() => setActiveDay(d.idx)} {...b}>
+              <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: active ? 'rgba(255,255,255,0.7)' : d.isToday ? 'rgba(147,197,253,0.75)' : 'rgba(255,255,255,0.35)' }}>
                 {d.label}
               </span>
-              <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1,
-                color: active ? '#fff' : d.isToday ? 'rgba(20,184,166,0.9)' : 'rgba(255,255,255,0.55)' }}>
+              <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>
                 {d.num}
               </span>
               {d.isToday && !active && (
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(20,184,166,0.8)' }} />
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 5px rgba(96,165,250,0.8)' }} />
               )}
-              {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
             </button>
           );
         })}
       </div>
 
       {/* Time-of-day pills */}
-      <div style={{ display: 'flex', gap: 7 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         {TIME_SLOTS.map(slot => {
           const active = activeSlot === slot;
+          const b = btn3D(
+            active,
+            {
+              flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer', fontSize: 12, fontWeight: 800,
+              background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
+              border: '1px solid transparent',
+              borderBottom: '3px solid #1a3fa8',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px rgba(37,99,235,0.3)',
+              color: '#fff',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
+            },
+            {
+              flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer', fontSize: 12, fontWeight: 700,
+              background: 'rgba(20,28,60,0.8)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderBottom: '3px solid rgba(0,0,0,0.5)',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)',
+              color: 'rgba(255,255,255,0.45)',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
+            }
+          );
           return (
-            <button key={slot} onClick={() => setActiveSlot(active ? null : slot)}
-              style={{
-                flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer',
-                border: `1px solid ${active ? 'rgba(20,184,166,0.6)' : 'rgba(255,255,255,0.1)'}`,
-                background: active ? 'rgba(13,148,136,0.2)' : CARD_BG,
-                backdropFilter: 'blur(20px)',
-                color: active ? '#2dd4bf' : 'rgba(255,255,255,0.42)',
-                fontSize: 12, fontWeight: 700,
-                boxShadow: active ? '0 0 12px rgba(13,148,136,0.25)' : 'none',
-                transition: 'all 0.15s',
-              }}>
+            <button key={slot} onClick={() => setActiveSlot(active ? null : slot)} {...b}>
               {slot}
             </button>
           );
@@ -665,29 +694,25 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
   );
 }
 
-// ── Class card — portrait, full-bleed image ───────────────────────────────────
+// ── Portrait class card ───────────────────────────────────────────────────────
 function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick, timeStr, index }) {
   useEffect(() => { injectClassCSS(); }, []);
   const [pressed, setPressed] = useState(false);
 
-  const typeKey = getClassType(gymClass);
-  const cfg     = CLASS_TYPE_CONFIG[typeKey];
-  const img     = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
-  const cap     = gymClass.capacity || gymClass.max_participants || null;
-  const enr     = gymClass.enrolled  || gymClass.participants_count || 0;
-  const left    = cap ? cap - enr : null;
-  const full    = left !== null && left <= 0;
-  const pct     = cap ? Math.min(100, Math.round((enr / cap) * 100)) : null;
-  const hot     = left !== null && left <= 5 && !full;
-  const isPremium = gymClass.price_drop_in || gymClass.price_member || gymClass.is_premium;
-  const ini     = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const difficulty = gymClass.difficulty
-    ? gymClass.difficulty.replace('_',' ').replace(/\b\w/g, l => l.toUpperCase())
-    : 'All Levels';
-
-  // Teal accent colour to match the reference design
-  const TEAL = '#14b8a6';
-  const TEAL_DIM = 'rgba(20,184,166,0.25)';
+  const typeKey  = getClassType(gymClass);
+  const cfg      = CLASS_TYPE_CONFIG[typeKey];
+  const img      = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
+  const cap      = gymClass.capacity || gymClass.max_participants || null;
+  const enr      = gymClass.enrolled  || gymClass.participants_count || 0;
+  const left     = cap ? cap - enr : null;
+  const full     = left !== null && left <= 0;
+  const pct      = cap ? Math.min(100, Math.round((enr / cap) * 100)) : null;
+  const hot      = left !== null && left <= 5 && !full;
+  const isPrem   = !!(gymClass.price_drop_in || gymClass.price_member || gymClass.is_premium);
+  const ini      = (n='') => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const diff     = gymClass.difficulty
+    ? gymClass.difficulty.replace('_',' ').replace(/\b\w/g,l=>l.toUpperCase())
+    : null;
 
   return (
     <div
@@ -699,157 +724,184 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
       onTouchEnd={() => setPressed(false)}
       style={{
         borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
-        background: '#0c1020',
-        border: `1px solid ${booked ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.08)'}`,
+        background: CARD_BG,
+        border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
+        borderBottom: booked
+          ? `3px solid ${cfg.color}66`
+          : '3px solid rgba(0,0,0,0.55)',
         boxShadow: booked
-          ? `0 0 0 1.5px rgba(20,184,166,0.4), 0 12px 40px rgba(0,0,0,0.6)`
-          : '0 6px 28px rgba(0,0,0,0.55)',
+          ? `0 0 0 1px ${cfg.border}, 0 3px 0 rgba(0,0,0,0.4), 0 12px 36px rgba(0,0,0,0.6)`
+          : '0 3px 0 rgba(0,0,0,0.45), 0 8px 28px rgba(0,0,0,0.5)',
         transform: pressed ? 'scale(0.965) translateY(3px)' : 'scale(1)',
-        transition: 'transform 0.16s cubic-bezier(0.34,1.5,0.64,1), box-shadow 0.2s ease',
-        animation: `cl-in 0.35s ease ${index * 0.06}s both`,
+        transition: 'transform 0.1s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.1s ease',
+        animation: `cl-in 0.32s ease ${index * 0.055}s both`,
         display: 'flex', flexDirection: 'column',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
 
-      {/* ── Hero image (taller, cinematic) ── */}
-      <div style={{ position: 'relative', height: 200, overflow: 'hidden', flexShrink: 0 }}>
+      {/* Top shimmer line — matches home cards */}
+      <div style={{ height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)', flexShrink: 0 }} />
+      {/* Colour accent bar */}
+      <div style={{ height: 3, background: `linear-gradient(90deg,${cfg.color}cc,${cfg.color}44)`, flexShrink: 0 }} />
+
+      {/* ── Hero image ── */}
+      <div style={{ position: 'relative', height: 185, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover',
-            transform: pressed ? 'scale(1.06)' : 'scale(1)',
-            transition: 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)',
-            filter: full ? 'brightness(0.7) saturate(0.6)' : 'none' }} />
+          style={{ width:'100%', height:'100%', objectFit:'cover',
+            transform: pressed ? 'scale(1.05)' : 'scale(1)',
+            transition: 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)',
+            filter: full ? 'brightness(0.65) saturate(0.5)' : 'none' }} />
 
-        {/* Deep gradient — heavy at bottom for text legibility */}
-        <div style={{ position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 30%, rgba(8,10,22,0.98) 100%)' }} />
+        {/* Gradient */}
+        <div style={{ position:'absolute', inset:0,
+          background:'linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.12) 35%,rgba(8,10,22,0.97) 100%)' }} />
+        {/* Colour haze */}
+        <div style={{ position:'absolute', inset:0,
+          background:`radial-gradient(ellipse at 75% 15%,rgba(${cfg.color.slice(1).match(/../g).map(h=>parseInt(h,16)).join(',')},0.18) 0%,transparent 60%)` }} />
+        {/* Shimmer */}
+        <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
+          <div style={{ position:'absolute',top:0,bottom:0,width:'50%',
+            background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)',
+            animation:'cl-shimmer 5s ease-in-out infinite' }} />
+        </div>
 
-        {/* Shimmer sweep */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, bottom: 0, width: '50%',
-            background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)',
-            animation: 'cl-shimmer 5s ease-in-out infinite' }} />
+        {/* Type pill — top left */}
+        <div style={{ position:'absolute',top:10,left:10,display:'flex',alignItems:'center',gap:4,
+          fontSize:9,fontWeight:900,letterSpacing:'0.12em',textTransform:'uppercase',
+          color:cfg.color,background:'rgba(0,0,0,0.65)',border:`1px solid ${cfg.border}`,
+          borderRadius:20,padding:'3px 9px',backdropFilter:'blur(12px)' }}>
+          <span style={{fontSize:11}}>{cfg.emoji}</span>{cfg.label}
         </div>
 
         {/* Premium badge */}
-        {isPremium && (
-          <div style={{ position: 'absolute', top: 12, left: 12,
-            display: 'flex', alignItems: 'center', gap: 4,
-            fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: '#fbbf24', background: 'rgba(0,0,0,0.65)',
-            border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, padding: '4px 8px',
-            backdropFilter: 'blur(10px)' }}>
+        {isPrem && (
+          <div style={{ position:'absolute',top:10,left:10,marginTop:0,display:'none' }} />
+        )}
+        {isPrem && (
+          <div style={{ position:'absolute',top:38,left:10,
+            fontSize:8,fontWeight:900,letterSpacing:'0.1em',textTransform:'uppercase',
+            color:'#fbbf24',background:'rgba(0,0,0,0.65)',
+            border:'1px solid rgba(251,191,36,0.4)',borderRadius:20,padding:'2px 8px' }}>
             ★ PREMIUM
           </div>
         )}
 
-        {/* Status badges top-right */}
-        <div style={{ position: 'absolute', top: 12, right: isOwner ? 44 : 12,
-          display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-          {booked && <span style={{ fontSize: 9, fontWeight: 900, color: TEAL,
-            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(20,184,166,0.5)',
-            borderRadius: 6, padding: '4px 9px', letterSpacing: '0.05em' }}>✓ BOOKED</span>}
-          {full && !booked && <span style={{ fontSize: 9, fontWeight: 900, color: '#f87171',
-            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(248,113,113,0.45)',
-            borderRadius: 6, padding: '4px 9px', letterSpacing: '0.05em' }}>FULL</span>}
-          {hot && !full && <span style={{ fontSize: 9, fontWeight: 900, color: '#fbbf24',
-            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(251,191,36,0.4)',
-            borderRadius: 6, padding: '4px 9px', animation: 'cl-hot 1.8s ease-in-out infinite' }}>🔥 {left} LEFT</span>}
+        {/* Status — top right */}
+        <div style={{ position:'absolute',top:10,right:isOwner?42:10,display:'flex',flexDirection:'column',gap:4,alignItems:'flex-end' }}>
+          {booked && <span style={{ fontSize:9,fontWeight:900,color:'#34d399',background:'rgba(0,0,0,0.68)',border:'1px solid rgba(52,211,153,0.45)',borderRadius:20,padding:'3px 8px' }}>✓ Booked</span>}
+          {full&&!booked && <span style={{ fontSize:9,fontWeight:900,color:'#f87171',background:'rgba(0,0,0,0.68)',border:'1px solid rgba(248,113,113,0.45)',borderRadius:20,padding:'3px 8px' }}>Full</span>}
+          {hot&&!full && <span style={{ fontSize:9,fontWeight:900,color:'#fbbf24',background:'rgba(0,0,0,0.68)',border:'1px solid rgba(251,191,36,0.4)',borderRadius:20,padding:'3px 8px',animation:'cl-hot 1.8s ease-in-out infinite' }}>🔥 {left} left</span>}
         </div>
 
-        {/* Owner delete */}
         {isOwner && (
-          <button onClick={e => { e.stopPropagation(); onDelete && onDelete(gymClass.id); }}
-            style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30,
-              borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(239,68,68,0.75)', border: 'none', cursor: 'pointer', zIndex: 5 }}>
-            <Trash2 style={{ width: 12, height: 12, color: '#fff' }} />
+          <button onClick={e=>{e.stopPropagation();onDelete&&onDelete(gymClass.id);}}
+            style={{ position:'absolute',top:9,right:9,width:28,height:28,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(239,68,68,0.75)',border:'none',cursor:'pointer',zIndex:5 }}>
+            <Trash2 style={{width:12,height:12,color:'#fff'}} />
           </button>
         )}
 
-        {/* Instructor avatar — bottom right of image */}
-        {(gymClass.instructor || gymClass.coach_name) && (
-          <div style={{ position: 'absolute', bottom: 12, right: 14,
-            width: 36, height: 36, borderRadius: '50%',
-            background: `linear-gradient(135deg,${cfg.color}44,${cfg.color}1a)`,
-            border: `2px solid rgba(20,184,166,0.6)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 900, color: TEAL,
-            boxShadow: '0 0 12px rgba(20,184,166,0.35), 0 2px 8px rgba(0,0,0,0.5)' }}>
-            {ini(gymClass.instructor || gymClass.coach_name)}
+        {/* Instructor avatar — bottom right */}
+        {(gymClass.instructor||gymClass.coach_name) && (
+          <div style={{ position:'absolute',bottom:10,right:12,
+            width:34,height:34,borderRadius:'50%',
+            background:`linear-gradient(135deg,${cfg.color}44,${cfg.color}1a)`,
+            border:`2px solid ${cfg.border}`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontSize:10,fontWeight:900,color:cfg.color,
+            boxShadow:`0 0 10px ${cfg.color}33,0 2px 8px rgba(0,0,0,0.5)` }}>
+            {ini(gymClass.instructor||gymClass.coach_name)}
           </div>
         )}
+
+        {/* Class name — bottom left */}
+        <div style={{ position:'absolute',bottom:0,left:0,right:50,padding:'0 12px 11px' }}>
+          <div style={{ fontSize:16,fontWeight:900,color:'#fff',letterSpacing:'-0.025em',lineHeight:1.18,textShadow:'0 2px 10px rgba(0,0,0,0.9)' }}>
+            {gymClass.name||gymClass.title}
+          </div>
+        </div>
       </div>
 
-      {/* ── Info panel ── */}
-      <div style={{ padding: '14px 14px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* ── Info ── */}
+      <div style={{ padding:'10px 12px 0',display:'flex',flexDirection:'column',gap:7,flex:1 }}>
 
-        {/* Class name */}
-        <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-          {gymClass.name || gymClass.title}
-        </div>
-
-        {/* Time · Duration · Difficulty · Spots */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 10px' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: TEAL }}>{timeStr}</span>
-          {gymClass.duration_minutes && (
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>({gymClass.duration_minutes} min)</span>
-          )}
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>·</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{difficulty}</span>
-          {left !== null && (
-            <>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>·</span>
-              <span style={{ fontSize: 12, fontWeight: 800,
-                color: full ? '#f87171' : hot ? '#fbbf24' : 'rgba(255,255,255,0.5)' }}>
-                {full ? 'Full' : `${left} Spot${left === 1 ? '' : 's'} Left`}
-              </span>
-            </>
-          )}
+        {/* Time · duration · difficulty · spots */}
+        <div style={{ display:'flex',flexWrap:'wrap',gap:'2px 8px',alignItems:'center' }}>
+          <span style={{ fontSize:12,fontWeight:800,color:'#60a5fa' }}>{timeStr}</span>
+          {gymClass.duration_minutes && <span style={{ fontSize:11,color:'rgba(255,255,255,0.38)',fontWeight:600 }}>({gymClass.duration_minutes} min)</span>}
+          {diff && <><span style={{ fontSize:10,color:'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.58)' }}>{diff}</span></>}
+          {left!==null && <><span style={{ fontSize:10,color:'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize:11,fontWeight:800,color:full?'#f87171':hot?'#fbbf24':'rgba(255,255,255,0.45)' }}>{full?'Full':`${left} Spot${left===1?'':'s'} Left`}</span></>}
         </div>
 
         {/* Capacity bar */}
-        {pct !== null && (
-          <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: 99, width: `${pct}%`,
-              background: full ? '#f87171' : pct > 65 ? '#fbbf24' : TEAL,
-              animation: 'cl-bar 1s cubic-bezier(0.16,1,0.3,1) both' }} />
+        {pct!==null && (
+          <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.07)',overflow:'hidden' }}>
+            <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,
+              background:full?'#f87171':pct>65?'linear-gradient(90deg,#d97706,#fbbf24)':`linear-gradient(90deg,${cfg.color}88,${cfg.color})`,
+              animation:'cl-bar 1s cubic-bezier(0.16,1,0.3,1) both' }} />
+          </div>
+        )}
+
+        {/* Schedule days */}
+        {getScheduleDays(gymClass).length > 0 && (
+          <div style={{ display:'flex',gap:3 }}>
+            {DAY_LABELS.map(d => {
+              const on = getScheduleDays(gymClass).includes(d);
+              return <div key={d} style={{ flex:1,textAlign:'center',padding:'3px 0',borderRadius:6,fontSize:7.5,fontWeight:900,
+                background:on?cfg.bg:'rgba(255,255,255,0.03)',border:`1px solid ${on?cfg.border:'rgba(255,255,255,0.05)'}`,color:on?cfg.color:'rgba(255,255,255,0.18)' }}>{d}</div>;
+            })}
           </div>
         )}
       </div>
 
-      {/* ── Book button ── */}
+      {/* ── Book button — 3D style ── */}
       {!isOwner && (
-        <div style={{ padding: '12px 14px 14px' }}>
+        <div style={{ padding:'10px 12px 12px' }}>
           <button
-            onClick={e => { e.stopPropagation(); if (!full || booked) onBook && onBook(gymClass.id); }}
-            disabled={full && !booked}
+            onClick={e => { e.stopPropagation(); if (!full||booked) onBook&&onBook(gymClass.id); }}
+            disabled={full&&!booked}
+            onMouseDown={e=>{if(full&&!booked)return;e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onMouseUp={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+            onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+            onTouchStart={e=>{if(full&&!booked)return;e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onTouchEnd={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
             style={{
-              width: '100%', padding: '13px', borderRadius: 14,
-              fontSize: 13, fontWeight: 900, letterSpacing: '-0.01em',
-              cursor: full && !booked ? 'default' : 'pointer',
-              border: 'none', position: 'relative', overflow: 'hidden',
-              background: booked
-                ? 'rgba(20,184,166,0.18)'
-                : full ? 'rgba(255,255,255,0.05)'
-                : 'linear-gradient(135deg,#0d9488,#0f766e)',
-              color: booked ? TEAL : full ? 'rgba(255,255,255,0.22)' : '#fff',
-              boxShadow: !booked && !full ? '0 4px 18px rgba(13,148,136,0.5), inset 0 1px 0 rgba(255,255,255,0.18)' : 'none',
-              outline: booked ? `1px solid rgba(20,184,166,0.4)` : 'none',
-              transition: 'all 0.18s ease',
+              width:'100%', padding:'11px', borderRadius:13,
+              fontSize:12, fontWeight:900, letterSpacing:'-0.01em',
+              cursor:full&&!booked?'default':'pointer', border:'none',
+              position:'relative', overflow:'hidden',
+              ...(booked ? {
+                background:'rgba(16,185,129,0.18)',
+                borderBottom:'3px solid rgba(5,150,105,0.5)',
+                boxShadow:'0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
+                color:'#34d399',
+                outline:'1px solid rgba(52,211,153,0.28)',
+              } : full ? {
+                background:'rgba(255,255,255,0.05)',
+                borderBottom:'3px solid rgba(0,0,0,0.5)',
+                boxShadow:'0 2px 0 rgba(0,0,0,0.35)',
+                color:'rgba(255,255,255,0.22)',
+              } : {
+                background:'linear-gradient(to bottom,#3b82f6,#2563eb,#1d4ed8)',
+                borderBottom:'3px solid #1a3fa8',
+                boxShadow:'0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 16px rgba(37,99,235,0.45)',
+                color:'#fff',
+              }),
+              transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
             }}>
-            {!booked && !full && (
-              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
-                <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%',
-                  background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
-                  animation: 'cl-shimmer 3s ease-in-out infinite 1s' }} />
+            {!booked&&!full && (
+              <div style={{ position:'absolute',inset:0,overflow:'hidden',borderRadius:'inherit' }}>
+                <div style={{ position:'absolute',top:0,bottom:0,width:'40%',
+                  background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
+                  animation:'cl-shimmer 3.5s ease-in-out infinite 1.2s' }} />
               </div>
             )}
-            <span style={{ position: 'relative', zIndex: 1 }}>
-              {booked ? '✓ Booked' : full ? 'Join Waitlist' : left !== null ? `Book Spot · ${left} left` : 'Book Spot'}
+            <span style={{ position:'relative',zIndex:1 }}>
+              {booked ? '✓ Booked' : full ? 'Join Waitlist' : left!==null ? `Book Spot · ${left} left` : 'Book Spot'}
             </span>
           </button>
         </div>
       )}
-      {isOwner && <div style={{ height: 14 }} />}
+      {isOwner && <div style={{ height:12 }} />}
     </div>
   );
 }
@@ -858,10 +910,12 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 // ClassesTabContent
 // ─────────────────────────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
-  const today = new Date();
-  const todayDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+  const today      = new Date();
+  const todayIdx   = today.getDay() === 0 ? 6 : today.getDay() - 1;
+  const monday     = new Date(today);
+  monday.setDate(today.getDate() - todayIdx);
 
-  const [activeDay,  setActiveDay]  = useState(todayDayIdx);
+  const [activeDay,  setActiveDay]  = useState(todayIdx);
   const [activeSlot, setActiveSlot] = useState(null);
   const [activeType, setActiveType] = useState('all');
   const [bookedIds,  setBookedIds]  = useState(new Set());
@@ -871,130 +925,129 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
   });
 
-  // Assign each class a time string and filter
-  const classesWithTime = React.useMemo(() => {
-    return classes.map((c, i) => ({
-      ...c,
-      _time: getMockTime(c, i),
-      _slot: getTimeSlot(getMockTime(c, i)),
-    }));
-  }, [classes]);
+  // Attach time strings
+  const withTime = React.useMemo(() =>
+    classes.map((c, i) => ({ ...c, _time: getMockTime(c, i), _slot: getTimeSlot(getMockTime(c, i)) })),
+    [classes]
+  );
 
-  // Filter by active day schedule
-  const dayName = DAY_LABELS[activeDay];
-  const filteredByDay = classesWithTime.filter(c => {
-    const d = getScheduleDays(c);
-    return d.length === 0 || d.includes(dayName);
-  });
+  const dayName  = DAY_LABELS[activeDay];
+  const isToday  = activeDay === todayIdx;
 
-  // Filter by time slot
-  const filteredBySlot = activeSlot
-    ? filteredByDay.filter(c => c._slot === activeSlot)
-    : filteredByDay;
-
-  // Filter by type
-  const filtered = activeType === 'all'
-    ? filteredBySlot
-    : filteredBySlot.filter(c => getClassType(c) === activeType);
-
-  // Sort by time
-  const sorted = [...filtered].sort((a, b) => a._time.localeCompare(b._time));
+  const filtered = React.useMemo(() => {
+    let list = withTime.filter(c => {
+      const d = getScheduleDays(c);
+      return d.length === 0 || d.includes(dayName);
+    });
+    if (activeSlot) list = list.filter(c => c._slot === activeSlot);
+    if (activeType !== 'all') list = list.filter(c => getClassType(c) === activeType);
+    return list.sort((a, b) => a._time.localeCompare(b._time));
+  }, [withTime, dayName, activeSlot, activeType]);
 
   const typeOptions = [
-    { id: 'all', label: 'All Types', emoji: '✨' },
+    { id:'all', label:'All', emoji:'✨' },
     ...Array.from(new Set(classes.map(getClassType)))
-      .map(t => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' })),
+      .map(t => ({ id:t, label:CLASS_TYPE_CONFIG[t]?.label||t, emoji:CLASS_TYPE_CONFIG[t]?.emoji||'🎯' })),
   ];
 
-  const dayFull = DAY_LABELS[activeDay];
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - todayDayIdx);
   const activeDate = new Date(monday);
   activeDate.setDate(monday.getDate() + activeDay);
-  const dateStr = activeDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  const isToday = activeDay === todayDayIdx;
 
   if (classes.length === 0) return (
-    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}>
-      <div style={{ borderRadius: 22, padding: '56px 24px', textAlign: 'center',
-        background: CARD_BG, border: `1px dashed ${CARD_BORDER}`, backdropFilter: 'blur(20px)' }}>
-        <div style={{ fontSize: 36, marginBottom: 14 }}>🏋️</div>
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>No classes scheduled</div>
+    <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}}>
+      <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center',
+        background:CARD_BG, border:`1px dashed ${CARD_BORDER}`, backdropFilter:'blur(20px)' }}>
+        <div style={{ fontSize:36,marginBottom:14 }}>🏋️</div>
+        <div style={{ fontSize:16,fontWeight:900,color:'rgba(255,255,255,0.4)',marginBottom:8 }}>No classes scheduled</div>
         {showOwnerControls && (
-          <button onClick={onManage} style={{ marginTop: 16, padding: '10px 24px', borderRadius: 12,
-            background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
-            color: '#2dd4bf', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>+ Add Classes</button>
+          <button onClick={onManage} style={{ marginTop:16,padding:'10px 24px',borderRadius:12,
+            background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',
+            color:'#818cf8',fontSize:13,fontWeight:800,cursor:'pointer' }}>+ Add Classes</button>
         )}
       </div>
     </motion.div>
   );
 
   return (
-    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}
-      style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}}
+      style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
-      {/* ── Page header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      {/* ── Header ── */}
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.28)',
-            letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>Classes</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-            {isToday ? "Today's Sessions" : `${dayFull}'s Sessions`}
+          <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.28)',
+            letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:4 }}>Classes</div>
+          <div style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.04em', lineHeight:1 }}>
+            {isToday ? "Today's Sessions" : `${dayName}'s Sessions`}
           </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 600, marginTop: 4 }}>
-            {dateStr}
-            {activeSlot && <span style={{ color: 'rgba(20,184,166,0.7)', fontWeight: 700 }}> · {activeSlot}</span>}
+          <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.28)', fontWeight:600, marginTop:4 }}>
+            {activeDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}
+            {activeSlot && <span style={{ color:'rgba(147,197,253,0.7)',fontWeight:700 }}> · {activeSlot}</span>}
           </div>
         </div>
         {showOwnerControls && (
           <button onClick={onManage}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12,
-              background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)',
-              color: '#2dd4bf', fontSize: 12, fontWeight: 800, cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>
-            <Plus style={{ width: 13, height: 13 }} />Manage
+            onMouseDown={e=>{e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onMouseUp={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+            onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+            onTouchStart={e=>{e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onTouchEnd={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+            style={{ display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:12,
+              background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',
+              borderBottom:'3px solid rgba(55,48,163,0.6)',
+              boxShadow:'0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)',
+              color:'#818cf8',fontSize:12,fontWeight:800,cursor:'pointer',flexShrink:0,marginTop:4,
+              transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
+            <Plus style={{width:13,height:13}}/>Manage
           </button>
         )}
       </div>
 
-      {/* ── Date + time-slot picker ── */}
+      {/* ── Date + time picker ── */}
       <ClassDateHeader
         activeDay={activeDay} setActiveDay={setActiveDay}
         activeSlot={activeSlot} setActiveSlot={setActiveSlot}
       />
 
-      {/* ── Type filter chips ── */}
+      {/* ── Type chips ── */}
       {typeOptions.length > 2 && (
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+        <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none' }}>
           {typeOptions.map(f => {
             const active = activeType === f.id;
             const cfg2   = CLASS_TYPE_CONFIG[f.id] || {};
             return (
               <button key={f.id} onClick={() => setActiveType(f.id)}
-                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '6px 13px', borderRadius: 99, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
-                  border: `1px solid ${active ? (cfg2.border || 'rgba(20,184,166,0.5)') : 'rgba(255,255,255,0.09)'}`,
-                  background: active ? (cfg2.bg || 'rgba(20,184,166,0.12)') : CARD_BG,
-                  backdropFilter: 'blur(20px)',
-                  color: active ? (cfg2.color || '#2dd4bf') : 'rgba(255,255,255,0.42)',
-                  transition: 'all 0.15s' }}>
-                <span style={{ fontSize: 12 }}>{f.emoji}</span>{f.label}
+                onMouseDown={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                onMouseUp={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                onTouchStart={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                onTouchEnd={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                style={{ flexShrink:0,display:'flex',alignItems:'center',gap:5,
+                  padding:'6px 13px',borderRadius:99,fontSize:11.5,fontWeight:700,cursor:'pointer',
+                  border:`1px solid ${active?(cfg2.border||'rgba(59,130,246,0.5)'):'rgba(255,255,255,0.09)'}`,
+                  borderBottom:active?`3px solid ${cfg2.border||'rgba(37,99,235,0.6)'}`:'3px solid rgba(0,0,0,0.5)',
+                  background:active?(cfg2.bg||'rgba(37,99,235,0.15)'):'rgba(20,28,60,0.8)',
+                  boxShadow:active?'0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12)':'0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
+                  color:active?(cfg2.color||'#60a5fa'):'rgba(255,255,255,0.42)',
+                  transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
+                <span style={{fontSize:12}}>{f.emoji}</span>{f.label}
               </button>
             );
           })}
         </div>
       )}
 
-      {/* ── Session count ── */}
-      {sorted.length > 0 && (
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, marginTop: -8 }}>
-          {sorted.length} session{sorted.length !== 1 ? 's' : ''} · tap to view details &amp; book
+      {/* ── Count hint ── */}
+      {filtered.length > 0 && (
+        <div style={{ fontSize:11,color:'rgba(255,255,255,0.2)',fontWeight:600,marginTop:-4 }}>
+          {filtered.length} session{filtered.length!==1?'s':''} · tap to book
         </div>
       )}
 
-      {/* ── 2-column card grid ── */}
-      {sorted.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {sorted.map((gymClass, i) => (
+      {/* ── 2-col card grid ── */}
+      {filtered.length > 0 ? (
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          {filtered.map((gymClass, i) => (
             <PremiumClassCard
               key={gymClass.id}
               gymClass={gymClass}
@@ -1002,37 +1055,37 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
               booked={bookedIds.has(gymClass.id)}
               onBook={handleBook}
               onClick={() => setSelectedClass(gymClass)}
-              onDelete={showOwnerControls ? id => { if (window.confirm('Delete?')) onDelete(id); } : null}
+              onDelete={showOwnerControls ? id => { if(window.confirm('Delete?')) onDelete(id); } : null}
               timeStr={gymClass._time}
               index={i}
             />
           ))}
         </div>
       ) : (
-        <div style={{ borderRadius: 18, padding: '36px 20px', textAlign: 'center',
-          background: CARD_BG, border: `1px dashed ${CARD_BORDER}`, backdropFilter: 'blur(20px)' }}>
-          <div style={{ fontSize: 28, marginBottom: 10 }}>📭</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>
-            No classes {activeSlot ? `in the ${activeSlot.toLowerCase()}` : 'this day'}
+        <div style={{ borderRadius:18,padding:'36px 20px',textAlign:'center',
+          background:CARD_BG,border:`1px dashed ${CARD_BORDER}`,backdropFilter:'blur(20px)' }}>
+          <div style={{fontSize:28,marginBottom:10}}>📭</div>
+          <div style={{fontSize:14,fontWeight:800,color:'rgba(255,255,255,0.3)',marginBottom:10}}>
+            No classes {activeSlot?`this ${activeSlot.toLowerCase()}`:'this day'}
           </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>
             {activeSlot && (
               <button onClick={() => setActiveSlot(null)}
-                style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)',
-                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)',
-                  borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>Show all times</button>
+                style={{fontSize:12,fontWeight:700,color:'rgba(255,255,255,0.45)',
+                  background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.09)',
+                  borderRadius:10,padding:'7px 16px',cursor:'pointer'}}>All times</button>
             )}
-            {activeType !== 'all' && (
+            {activeType!=='all' && (
               <button onClick={() => setActiveType('all')}
-                style={{ fontSize: 12, fontWeight: 700, color: '#2dd4bf',
-                  background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)',
-                  borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>Clear type filter</button>
+                style={{fontSize:12,fontWeight:700,color:'#60a5fa',
+                  background:'rgba(37,99,235,0.1)',border:'1px solid rgba(59,130,246,0.25)',
+                  borderRadius:10,padding:'7px 16px',cursor:'pointer'}}>Clear filter</button>
             )}
           </div>
         </div>
       )}
 
-      {/* ── ClassDetailModal ── */}
+      {/* ── Detail modal ── */}
       <ClassDetailModal
         gymClass={selectedClass}
         open={!!selectedClass}
