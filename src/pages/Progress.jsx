@@ -170,11 +170,6 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
         <WeeklyVolumeChart currentUser={currentUser} />
       </div>
 
-      {/* Per-exercise strength chart */}
-      <div className="mt-6">
-        <StrengthProgress currentUser={currentUser} />
-      </div>
-
       {/* Exercise insights */}
       <div className="mt-6">
         <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
