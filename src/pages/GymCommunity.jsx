@@ -1382,6 +1382,14 @@ export default function GymCommunity() {
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {/* Busy times — top of home tab */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
+                {/* Polls — below busy times */}
+                {polls.length > 0 && (
+                  <div className="space-y-3">
+                    {polls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? optionId => votePollMutation.mutate({ pollId:poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
+                    ))}
+                  </div>
+                )}
                 {isGhostGym && !isMember && !showOwnerControls && (
                   <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
