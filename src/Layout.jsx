@@ -227,6 +227,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── Bottom Navigation (Mobile) ── */}
       {!hideNavigation && (
         <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+          <style>{`.nav-tab-link { -webkit-tap-highlight-color: transparent !important; outline: none !important; background: none !important; box-shadow: none !important; } .nav-tab-link:focus, .nav-tab-link:focus-visible, .nav-tab-link:active, .nav-tab-link:visited { outline: none !important; background: none !important; box-shadow: none !important; }`}</style>
           <div className="flex justify-around items-start pt-1 h-[79px] px-2">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
@@ -240,13 +241,15 @@ export default function Layout({ children, currentPageName }) {
                     if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
                   }}
                   aria-label={item.name}
-                  className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 bg-transparent focus:outline-none focus:bg-transparent active:bg-transparent"
-                  style={{ transition: 'transform 60ms ease-in-out', WebkitTapHighlightColor: 'transparent' }}
-                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
-                  onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                  onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                  className="nav-tab-link relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1"
+                  style={{ transition: 'transform 60ms ease-in-out', WebkitTapHighlightColor: 'transparent', outline: 'none', background: 'none', border: 'none' }}
+                  onFocus={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onBlur={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onMouseDown={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                  onMouseUp={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                  onTouchStart={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                  onTouchEnd={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 >
                   <div
                     className="relative"
@@ -290,10 +293,10 @@ export default function Layout({ children, currentPageName }) {
                   key={item.page}
                   to={getTabLink(item)}
                   onClick={(e) => handleTabClick(item, e)}
-                  className={`relative flex items-center justify-center w-14 h-14 transition-all duration-300 bg-transparent focus:outline-none focus:bg-transparent active:bg-transparent ${
-                    isActive ? 'scale-110' : 'hover:scale-105'
-                  }`}
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  className={`nav-tab-link relative flex items-center justify-center w-14 h-14 transition-all duration-300 ${isActive ? 'scale-110' : 'hover:scale-105'}`}
+                  style={{ WebkitTapHighlightColor: 'transparent', outline: 'none', background: 'none', border: 'none' }}
+                  onFocus={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onBlur={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <div
                     className="relative"
