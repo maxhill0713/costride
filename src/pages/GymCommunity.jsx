@@ -260,7 +260,7 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
 }
 
 // ── Gym Activity Feed ─────────────────────────────────────────────────────────
-function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
+function GymActivityFeed({ checkIns, lifts, posts, workoutLogs, memberAvatarMap }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
 
   const toggleLike = (id) => setLikedIds(prev => {
@@ -287,8 +287,14 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
     lifts.slice(0, 10).forEach(l =>
       items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l })
     );
-    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
-  }, [checkIns, lifts]);
+    (posts || []).slice(0, 15).forEach(p =>
+      items.push({ type: 'post', id: `po-${p.id}`, userId: p.member_id, userName: p.member_name, date: p.created_date, data: p })
+    );
+    (workoutLogs || []).slice(0, 15).forEach(w =>
+      items.push({ type: 'workout', id: `wl-${w.id}`, userId: w.user_id, userName: w.user_name, date: w.completed_date, data: w })
+    );
+    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
+  }, [checkIns, lifts, posts, workoutLogs]);
 
   if (feedItems.length === 0) return null;
 
@@ -302,8 +308,8 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
         <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Activity Feed</span>
       </div>
 
-      {/* Scrollable feed — fixed height shows ~4 cards, scroll for more */}
-      <div style={{ maxHeight: 300, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      {/* Scrollable feed */}
+      <div style={{ maxHeight: 380, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {feedItems.map((item, index) => {
           const avatar = memberAvatarMap[item.userId];
           const col = colorForUser(item.userId);
@@ -320,7 +326,7 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
             );
             headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' checked in'}</>;
             sub = item.data.notes || 'At the gym';
-          } else {
+          } else if (item.type === 'lift') {
             const isNewPR = item.data.is_personal_record || item.data.is_pr;
             iconEl = (
               <div style={{ width: 26, height: 26, borderRadius: 7, background: isNewPR ? 'rgba(234,179,8,0.12)' : 'rgba(168,85,247,0.12)', border: `1px solid ${isNewPR ? 'rgba(234,179,8,0.22)' : 'rgba(168,85,247,0.22)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -333,6 +339,23 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
               ? <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' hit a new PR 🔥'}</>
               : <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' logged a lift'}</>;
             sub = `${item.data.exercise || 'Exercise'}: ${item.data.weight_lbs || item.data.weight || '—'} lbs`;
+          } else if (item.type === 'post') {
+            iconEl = (
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MessageCircle style={{ width: 11, height: 11, color: '#2dd4bf' }} />
+              </div>
+            );
+            headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' posted'}</>;
+            sub = item.data.content ? item.data.content.slice(0, 60) + (item.data.content.length > 60 ? '…' : '') : (item.data.workout_name || 'Shared a post');
+          } else {
+            // workout log
+            iconEl = (
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Dumbbell style={{ width: 11, height: 11, color: '#4ade80' }} />
+              </div>
+            );
+            headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' finished a workout'}</>;
+            sub = item.data.workout_name || item.data.workout_type || `${item.data.exercises?.length || 0} exercises`;
           }
 
           return (
@@ -344,7 +367,7 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
               {/* Text */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.85)', lineHeight: 1.35 }}>{headline}</div>
-                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1 }}>{sub}</div>
+                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
               </div>
               {/* Right: icon + time + like */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
