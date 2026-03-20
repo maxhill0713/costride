@@ -242,7 +242,6 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex justify-around items-start pt-1 h-[79px] px-2">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
-              const IconComponent = item.icon;
               return (
                 <Link
                   key={item.page}
@@ -264,7 +263,7 @@ export default function Layout({ children, currentPageName }) {
                     className="relative"
                     style={isActive ? { filter: 'drop-shadow(0 1px 6px rgba(85,128,200,0.45))' } : {}}
                   >
-                    <IconComponent isActive={isActive} />
+                    {getIcon(item.iconKey, isActive)}
                     {item.badge > 0 && (
                       <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                         {item.badge > 9 ? '9+' : item.badge}
