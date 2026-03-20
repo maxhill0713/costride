@@ -179,19 +179,31 @@ export default function Layout({ children, currentPageName }) {
     currentUser?.primary_gym_id ||
     (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
-  // navItems — icon is now a React component accepting { isActive }
+  // navItems — icon is now a string key to avoid serialization issues
   const navItems = isDashboardUser
     ? [
-        { name: 'Dashboard', icon: ({ isActive }) => <Building2 className={`w-7 h-7 ${isActive ? 'text-orange-500' : 'text-slate-400'}`} strokeWidth={isActive ? 2.5 : 2} />, page: 'GymOwnerDashboard', activeColor: 'text-orange-500' },
-        { name: 'Gyms',      icon: GymsIcon, page: 'Gyms', activeColor: 'text-[#7aa8e8]' }
+        { name: 'Dashboard', iconKey: 'dashboard', page: 'GymOwnerDashboard', activeColor: 'text-orange-500' },
+        { name: 'Gyms',      iconKey: 'gyms',      page: 'Gyms',             activeColor: 'text-[#7aa8e8]' }
       ]
     : [
-        { name: 'Home',       icon: HomeIcon,       page: 'Home',         activeColor: 'text-[#7aa8e8]' },
-        { name: 'Gyms',       icon: GymsIcon,       page: 'Gyms',         activeColor: 'text-[#7aa8e8]' },
-        { name: 'Progress',   icon: ProgressIcon,   page: 'Progress',     activeColor: 'text-[#7aa8e8]' },
-        { name: 'Challenges', icon: ChallengesIcon, page: 'RedeemReward', activeColor: 'text-[#7aa8e8]' },
-        { name: 'Profile',    icon: ProfileIcon,    page: 'Profile',      activeColor: 'text-[#7aa8e8]' }
+        { name: 'Home',       iconKey: 'home',       page: 'Home',         activeColor: 'text-[#7aa8e8]' },
+        { name: 'Gyms',       iconKey: 'gyms',       page: 'Gyms',         activeColor: 'text-[#7aa8e8]' },
+        { name: 'Progress',   iconKey: 'progress',   page: 'Progress',     activeColor: 'text-[#7aa8e8]' },
+        { name: 'Challenges', iconKey: 'challenges', page: 'RedeemReward', activeColor: 'text-[#7aa8e8]' },
+        { name: 'Profile',    iconKey: 'profile',    page: 'Profile',      activeColor: 'text-[#7aa8e8]' }
       ];
+
+  const getIcon = (iconKey, isActive) => {
+    const icons = {
+      dashboard: <Building2 className={`w-7 h-7 ${isActive ? 'text-orange-500' : 'text-slate-400'}`} strokeWidth={isActive ? 2.5 : 2} />,
+      gyms: <GymsIcon isActive={isActive} />,
+      home: <HomeIcon isActive={isActive} />,
+      progress: <ProgressIcon isActive={isActive} />,
+      challenges: <ChallengesIcon isActive={isActive} />,
+      profile: <ProfileIcon isActive={isActive} />
+    };
+    return icons[iconKey];
+  };
 
   // Preserve tab navigation history
   useEffect(() => {
