@@ -41,20 +41,29 @@ Deno.serve(async (req) => {
 
     // Increment user streak
     const newStreak = (user.current_streak || 0) + 1;
-    await base44.auth.updateMe({ current_streak: newStreak });
 
-    // Update challenge progress immediately
-    try {
-      await base44.functions.invoke('updateChallengeProgress', {
-        event: {
-          type: 'update',
-          entity_name: 'User',
-          data: { id: user.id, current_streak: newStreak }
-        }
-      });
-    } catch (e) {
-      console.warn('Failed to update challenge progress:', e.message);
-    }
+    // ── Monthly challenge progress update ──────────────────────────────────
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const dayOfWeek = now.getDay(); // 0=Sunday, 6=Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    const prevProgress = user.monthly_challenge_progress || {};
+    const isNewMonth = prevProgress.month !== currentMonth;
+
+    const newMonthlyProgress = {
+      month: currentMonth,
+      streak_master: Math.min(7, newStreak),
+      discipline_builder: isNewMonth ? 1 : (prevProgress.discipline_builder || 0) + 1,
+      weekend_warrior: isNewMonth
+        ? (isWeekend ? 1 : 0)
+        : (prevProgress.weekend_warrior || 0) + (isWeekend ? 1 : 0),
+    };
+
+    await base44.auth.updateMe({
+      current_streak: newStreak,
+      monthly_challenge_progress: newMonthlyProgress,
+    });
 
     return Response.json({ workoutLog, newStreak });
   } catch (error) {
