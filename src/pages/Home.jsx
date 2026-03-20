@@ -1471,15 +1471,10 @@ export default function Home() {
                       {/* Progress bar */}
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] font-bold text-slate-400">
-                            {challenge.previous_value} <span className="text-emerald-400">→ {challenge.new_value}</span> / {challenge.target_value}
-                          </span>
-                          <motion.span
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + idx * 0.1 }}
-                            className="text-[11px] font-bold"
-                            style={{ color: isComplete ? '#34d399' : '#64748b' }}>
+                          <span className="text-[11px] font-bold text-slate-400">{challenge.new_value} / {challenge.target_value}</span>
+                          <span className="text-[11px] font-bold" style={{ color: isComplete ? '#34d399' : '#64748b' }}>
                             {isComplete ? '✓ Complete' : `${newPct}%`}
-                          </motion.span>
+                          </span>
                         </div>
                         <div className="h-4 rounded-full overflow-hidden"
                           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
