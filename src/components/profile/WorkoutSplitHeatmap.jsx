@@ -1,121 +1,173 @@
-import React, { useMemo, useState } from 'react';
-import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
-import { Edit2 } from 'lucide-react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import {
+  format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval,
+  startOfWeek, endOfWeek, getMonth, getYear, subMonths, addMonths
+} from 'date-fns';
+import { ChevronDown } from 'lucide-react';
 
-export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {} }) {
-  const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
-  // Define split schedules
+// ─── Month picker dropdown ────────────────────────────────────────────────────
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+
+function MonthPicker({ selectedYear, selectedMonth, onChange, onClose }) {
+  // Show current year and previous year months — 24 options
+  const today = new Date();
+  const options = [];
+  for (let i = 0; i < 24; i++) {
+    const d = subMonths(today, i);
+    options.push({ year: getYear(d), month: getMonth(d) });
+  }
+
+  return (
+    <>
+      {/* backdrop */}
+      <div
+        className="fixed inset-0 z-40"
+        onClick={onClose}
+      />
+      {/* dropdown */}
+      <div
+        className="absolute right-0 top-[calc(100%+6px)] z-50 rounded-2xl overflow-hidden"
+        style={{
+          background: 'rgba(10,14,30,0.98)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(20px)',
+          minWidth: 160,
+          maxHeight: 280,
+          overflowY: 'auto',
+        }}
+      >
+        {options.map(({ year, month }) => {
+          const isSelected = year === selectedYear && month === selectedMonth;
+          return (
+            <button
+              key={`${year}-${month}`}
+              onClick={() => { onChange(year, month); onClose(); }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: '10px 14px',
+                background: isSelected ? 'rgba(99,102,241,0.18)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
+              }}
+            >
+              <span style={{
+                fontSize: 13, fontWeight: isSelected ? 800 : 600,
+                color: isSelected ? '#a5b4fc' : '#94a3b8',
+              }}>
+                {MONTH_NAMES[month]}
+              </span>
+              <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>
+                {year}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function WorkoutSplitHeatmap({
+  checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}
+}) {
+  const today = new Date();
+  const [selectedYear, setSelectedYear]   = useState(getYear(today));
+  const [selectedMonth, setSelectedMonth] = useState(getMonth(today));
+  const [pickerOpen, setPickerOpen]       = useState(false);
+
+  // ── Split colour definitions ──────────────────────────────────────────────
   const splitSchedules = {
     ppl: {
       name: 'Push/Pull/Legs',
-      schedule: ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'],
+      schedule: ['Push','Pull','Legs','Push','Pull','Legs','Rest'],
       colors: {
         'Push': 'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
         'Pull': 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
         'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
-        'Rest': 'bg-white/90 shadow-sm'
-      }
+        'Rest': 'bg-white/90 shadow-sm',
+      },
     },
     upper_lower: {
       name: 'Upper/Lower',
-      schedule: ['Upper', 'Lower', 'Rest', 'Upper', 'Lower', 'Rest', 'Rest'],
+      schedule: ['Upper','Lower','Rest','Upper','Lower','Rest','Rest'],
       colors: {
         'Upper': 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm',
         'Lower': 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm',
-        'Rest': 'bg-white/90 shadow-sm'
-      }
+        'Rest': 'bg-white/90 shadow-sm',
+      },
     },
     full_body: {
       name: 'Full Body',
-      schedule: ['Full Body', 'Rest', 'Full Body', 'Rest', 'Full Body', 'Rest', 'Rest'],
+      schedule: ['Full Body','Rest','Full Body','Rest','Full Body','Rest','Rest'],
       colors: {
         'Full Body': 'bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm',
-        'Rest': 'bg-white/90 shadow-sm'
-      }
+        'Rest': 'bg-white/90 shadow-sm',
+      },
     },
     bro_split: {
       name: 'Bro Split',
-      schedule: ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Rest', 'Rest'],
+      schedule: ['Chest','Back','Shoulders','Arms','Legs','Rest','Rest'],
       colors: {
-        'Chest': 'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
-        'Back': 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
+        'Chest':     'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
+        'Back':      'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
         'Shoulders': 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-sm',
-        'Arms': 'bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm',
-        'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
-        'Rest': 'bg-white/90 shadow-sm'
-      }
-    }
+        'Arms':      'bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm',
+        'Legs':      'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
+        'Rest':      'bg-white/90 shadow-sm',
+      },
+    },
   };
 
-  const { weeks, splitInfo, hasCheckIn, today, customSplitName } = useMemo(() => {
-    const today = new Date();
-    const weeksToShow = timeRange === 'weekly' ? 4 : 12; // 4 weeks or 12 weeks
-    
-    // Start from the beginning of the week (Monday)
-    const endDate = endOfWeek(today, { weekStartsOn: 1 });
-    const startDate = startOfWeek(subWeeks(endDate, weeksToShow - 1), { weekStartsOn: 1 });
-    
-    const allDays = eachDayOfInterval({ start: startDate, end: endDate });
-    
-    // Group days by week (starting Monday)
+  // ── Build weeks for selected month ────────────────────────────────────────
+  const { weeks, splitInfo, hasCheckIn } = useMemo(() => {
+    const monthStart = startOfMonth(new Date(selectedYear, selectedMonth, 1));
+    const monthEnd   = endOfMonth(monthStart);
+
+    // Pad to full Mon–Sun rows
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const gridEnd   = endOfWeek(monthEnd,   { weekStartsOn: 1 });
+
+    const allDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
+
     const weeks = [];
-    let currentWeek = [];
-    
-    allDays.forEach((day) => {
-      currentWeek.push(day);
-      
-      if (currentWeek.length === 7) {
-        weeks.push(currentWeek);
-        currentWeek = [];
-      }
-    });
-    
-    if (currentWeek.length > 0) {
-      weeks.push(currentWeek);
+    for (let i = 0; i < allDays.length; i += 7) {
+      weeks.push(allDays.slice(i, i + 7));
     }
-    
-    const hasCheckIn = (day) => {
-      return checkIns.some(checkIn => 
-        isSameDay(new Date(checkIn.check_in_date), day)
-      );
-    };
-    
-    // Get split info
-    let splitInfo = workoutSplit && splitSchedules[workoutSplit] 
+
+    const hasCheckIn = (day) =>
+      checkIns.some(c => isSameDay(new Date(c.check_in_date), day));
+
+    // Resolve split info
+    let splitInfo = workoutSplit && splitSchedules[workoutSplit]
       ? splitSchedules[workoutSplit]
       : null;
-    
-    // Handle custom split
-    let customSplitName = null;
+
     if (workoutSplit === 'custom') {
-      customSplitName = 'Custom Split';
-
-      // Build schedule and colors from custom workout types
-      const schedule = [];
-      const colors = { 'Rest': 'bg-white/90 shadow-sm' };
-
-      // Color mapping for custom workout types
       const colorGradients = {
         purple: 'from-purple-500 to-purple-600',
-        blue: 'from-blue-500 to-blue-600',
-        green: 'from-green-500 to-green-600',
-        red: 'from-red-500 to-red-600',
+        blue:   'from-blue-500 to-blue-600',
+        green:  'from-green-500 to-green-600',
+        red:    'from-red-500 to-red-600',
         orange: 'from-orange-500 to-orange-600',
-        pink: 'from-pink-500 to-pink-600',
+        pink:   'from-pink-500 to-pink-600',
         yellow: 'from-yellow-500 to-yellow-600',
-        cyan: 'from-cyan-500 to-cyan-600',
+        cyan:   'from-cyan-500 to-cyan-600',
       };
+      const schedule = [];
+      const colors   = { 'Rest': 'bg-white/90 shadow-sm' };
 
-      // If user has custom workout types, use them
-      if (trainingDays && trainingDays.length > 0 && Object.keys(customWorkoutTypes).length > 0) {
+      if (trainingDays.length > 0 && Object.keys(customWorkoutTypes).length > 0) {
         for (let i = 1; i <= 7; i++) {
           if (trainingDays.includes(i) && customWorkoutTypes[i]) {
-            const workoutName = customWorkoutTypes[i].name || 'Train';
-            const workoutColor = customWorkoutTypes[i].color || 'purple';
-            schedule.push(workoutName);
-            colors[workoutName] = `bg-gradient-to-br ${colorGradients[workoutColor]} shadow-sm`;
+            const name  = customWorkoutTypes[i].name  || 'Train';
+            const color = customWorkoutTypes[i].color || 'purple';
+            schedule.push(name);
+            colors[name] = `bg-gradient-to-br ${colorGradients[color]} shadow-sm`;
           } else if (trainingDays.includes(i)) {
             schedule.push('Train');
             colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
@@ -123,147 +175,97 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
             schedule.push('Rest');
           }
         }
-      } else if (trainingDays && trainingDays.length > 0) {
+      } else if (trainingDays.length > 0) {
         for (let i = 1; i <= 7; i++) {
-          if (trainingDays.includes(i)) {
-            schedule.push('Train');
-          } else {
-            schedule.push('Rest');
-          }
+          schedule.push(trainingDays.includes(i) ? 'Train' : 'Rest');
         }
         colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
       } else {
-        schedule.push('Train', 'Train', 'Rest', 'Train', 'Train', 'Rest', 'Rest');
+        schedule.push('Train','Train','Rest','Train','Train','Rest','Rest');
         colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
       }
 
-      splitInfo = {
-        name: customSplitName,
-        schedule,
-        colors
-      };
+      splitInfo = { name: 'Custom Split', schedule, colors };
     }
-    
-    return { weeks, splitInfo, hasCheckIn, today, customSplitName };
-  }, [checkIns, workoutSplit, timeRange]);
-  
-  // Calculate expected workout day based on split
+
+    return { weeks, splitInfo, hasCheckIn };
+  }, [checkIns, workoutSplit, selectedYear, selectedMonth, trainingDays, customWorkoutTypes]);
+
+  // ── Expected workout for a given day ─────────────────────────────────────
   const getExpectedWorkout = (day) => {
     if (!splitInfo) return null;
 
-    // For custom splits, flow continuously across weeks with custom workout names
-    if (workoutSplit === 'custom' && trainingDays && trainingDays.length > 0 && Object.keys(customWorkoutTypes).length > 0) {
-      const firstCheckIn = checkIns.length > 0 
+    if (
+      workoutSplit === 'custom' &&
+      trainingDays.length > 0 &&
+      Object.keys(customWorkoutTypes).length > 0
+    ) {
+      const firstCheckIn = checkIns.length > 0
         ? new Date(checkIns[checkIns.length - 1].check_in_date)
         : startOfWeek(today, { weekStartsOn: 1 });
 
-      const daysDiff = Math.floor((day - firstCheckIn) / (1000 * 60 * 60 * 24));
-
-      // Build ordered list of custom workout types based on training days
+      const daysDiff = Math.floor((day - firstCheckIn) / 86400000);
       const orderedWorkouts = trainingDays
         .filter(d => customWorkoutTypes[d]?.name)
         .map(d => customWorkoutTypes[d].name);
 
-      if (orderedWorkouts.length === 0) {
-        // Fallback if no custom names set
-        const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
+      const dayOfWeek   = day.getDay();
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
 
+      if (trainingDays.includes(adjustedDay)) {
+        if (orderedWorkouts.length === 0) return 'Train';
         let trainingDaysPassed = 0;
         for (let i = 0; i < daysDiff; i++) {
-          const checkDay = new Date(firstCheckIn);
-          checkDay.setDate(checkDay.getDate() + i);
-          const checkDayOfWeek = checkDay.getDay();
-          const adjustedCheckDay = checkDayOfWeek === 0 ? 7 : checkDayOfWeek;
-          if (trainingDays.includes(adjustedCheckDay)) {
-            trainingDaysPassed++;
-          }
+          const d = new Date(firstCheckIn);
+          d.setDate(d.getDate() + i);
+          const dow = d.getDay() === 0 ? 7 : d.getDay();
+          if (trainingDays.includes(dow)) trainingDaysPassed++;
         }
-
-        const dayOfWeek = day.getDay();
-        const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-
-        if (trainingDays.includes(adjustedDay)) {
-          return workoutTypes[trainingDaysPassed % workoutTypes.length];
-        } else {
-          return 'Rest';
-        }
-      }
-
-      // Count how many training days have passed
-      let trainingDaysPassed = 0;
-      for (let i = 0; i < daysDiff; i++) {
-        const checkDay = new Date(firstCheckIn);
-        checkDay.setDate(checkDay.getDate() + i);
-        const checkDayOfWeek = checkDay.getDay();
-        const adjustedCheckDay = checkDayOfWeek === 0 ? 7 : checkDayOfWeek;
-        if (trainingDays.includes(adjustedCheckDay)) {
-          trainingDaysPassed++;
-        }
-      }
-
-      const dayOfWeek = day.getDay();
-      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-
-      if (trainingDays.includes(adjustedDay)) {
-        // This is a training day - use continuous flow through custom workouts
         return orderedWorkouts[trainingDaysPassed % orderedWorkouts.length];
-      } else {
-        return 'Rest';
       }
+      return 'Rest';
     }
 
-    // If custom training days are set (non-custom splits), use them
-    if (trainingDays && trainingDays.length > 0) {
-      const dayOfWeek = day.getDay();
+    if (trainingDays.length > 0) {
+      const dayOfWeek   = day.getDay();
       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-
       if (trainingDays.includes(adjustedDay)) {
-        const trainingDayIndex = trainingDays.indexOf(adjustedDay);
+        const idx = trainingDays.indexOf(adjustedDay);
         const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
-        return workoutTypes[trainingDayIndex % workoutTypes.length];
-      } else {
-        return 'Rest';
+        return workoutTypes[idx % workoutTypes.length];
       }
+      return 'Rest';
     }
 
-    // Otherwise use default schedule (resets weekly)
-    const firstCheckIn = checkIns.length > 0 
+    const firstCheckIn = checkIns.length > 0
       ? new Date(checkIns[checkIns.length - 1].check_in_date)
       : startOfWeek(today, { weekStartsOn: 1 });
-
-    const daysDiff = Math.floor((day - firstCheckIn) / (1000 * 60 * 60 * 24));
-    const scheduleIndex = ((daysDiff % 7) + 7) % 7;
-
-    return splitInfo.schedule[scheduleIndex];
+    const daysDiff     = Math.floor((day - firstCheckIn) / 86400000);
+    const scheduleIdx  = ((daysDiff % 7) + 7) % 7;
+    return splitInfo.schedule[scheduleIdx];
   };
 
+  // ── Stats ─────────────────────────────────────────────────────────────────
   const getConsistencyRate = () => {
-    const totalDays = weeks.flat().length;
-    const checkedInDays = weeks.flat().filter(day => hasCheckIn(day)).length;
-    return Math.round((checkedInDays / totalDays) * 100);
+    const past = weeks.flat().filter(d => d <= today);
+    if (!past.length) return 0;
+    return Math.round((past.filter(d => hasCheckIn(d)).length / past.length) * 100);
   };
 
   const getWeeklyAverage = () => {
-    const weekCounts = weeks.map(week => 
-      week.filter(day => hasCheckIn(day) && day <= today).length
-    );
-    const avg = weekCounts.reduce((sum, count) => sum + count, 0) / weeks.length;
-    return avg.toFixed(1);
+    const counts = weeks.map(w => w.filter(d => hasCheckIn(d) && d <= today).length);
+    return (counts.reduce((s, c) => s + c, 0) / weeks.length).toFixed(1);
   };
+
+  const monthLabel = `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
 
   return (
     <div className="space-y-3">
-      {/* Header with Filter */}
+
+      {/* ── Header row ── */}
       <div className="flex items-center justify-between">
-        {!splitInfo && (
-          <Link 
-            to={createPageUrl('Profile') + '?tab=workout'}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl px-4 py-3 font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
-          >
-            <Edit2 className="w-4 h-4" />
-            Edit Your Split
-          </Link>
-        )}
+
+        {/* Split legend */}
         {splitInfo && (
           <div>
             <h4 className="text-sm font-semibold text-white mb-2">{splitInfo.name}</h4>
@@ -277,77 +279,87 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
             </div>
           </div>
         )}
-        
-        {/* Time Range Toggle */}
-        <div className="flex gap-1 bg-slate-800/60 rounded-lg p-1 border border-slate-700/40">
+
+        {/* Month picker button */}
+        <div className="relative flex-shrink-0">
           <button
-            onClick={() => setTimeRange('weekly')}
-            className={`
-              px-3 py-1.5 rounded-md text-xs font-bold transition-all
-              ${timeRange === 'weekly'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-              }
-            `}
+            onClick={() => setPickerOpen(o => !o)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px',
+              borderRadius: 10,
+              background: 'rgba(99,102,241,0.15)',
+              border: '1px solid rgba(99,102,241,0.35)',
+              color: '#a5b4fc',
+              fontSize: 13, fontWeight: 800,
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'background 0.15s',
+            }}
           >
-            4W
+            {monthLabel}
+            <ChevronDown
+              size={13}
+              color="#a5b4fc"
+              style={{
+                transform: pickerOpen ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s',
+                flexShrink: 0,
+              }}
+            />
           </button>
-          <button
-            onClick={() => setTimeRange('monthly')}
-            className={`
-              px-3 py-1.5 rounded-md text-xs font-bold transition-all
-              ${timeRange === 'monthly'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-              }
-            `}
-          >
-            3M
-          </button>
+
+          {pickerOpen && (
+            <MonthPicker
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              onChange={(y, m) => { setSelectedYear(y); setSelectedMonth(m); }}
+              onClose={() => setPickerOpen(false)}
+            />
+          )}
         </div>
       </div>
 
-      {/* Mobile-Optimized Heatmap Grid */}
+      {/* ── Calendar grid ── */}
       <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
-        {/* Days of week header - Abbreviated for mobile */}
+        {/* Day-of-week header */}
         <div className="grid grid-cols-7 gap-1.5 mb-2">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-            <div key={i} className="text-center text-[10px] text-slate-400 font-bold">
-              {day}
-            </div>
+          {['M','T','W','T','F','S','S'].map((d, i) => (
+            <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
           ))}
         </div>
 
-        {/* Week rows - Optimized spacing */}
+        {/* Week rows */}
         <div className="space-y-1.5">
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid grid-cols-7 gap-1.5">
-              {week.map((day, dayIndex) => {
+          {weeks.map((week, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-1.5">
+              {week.map((day, di) => {
+                const inMonth    = getMonth(day) === selectedMonth && getYear(day) === selectedYear;
                 const isCheckedIn = hasCheckIn(day);
-                const isToday = isSameDay(day, today);
-                const isFuture = day > today;
-                const expectedWorkout = getExpectedWorkout(day);
-                const expectedColor = splitInfo?.colors[expectedWorkout] || 'bg-slate-700/50';
-                
+                const isToday     = isSameDay(day, today);
+                const expected    = getExpectedWorkout(day);
+                const expectedColor = splitInfo?.colors[expected] || 'bg-slate-700/50';
+
                 return (
                   <div
-                    key={dayIndex}
+                    key={di}
                     className={`
                       aspect-square rounded-lg relative overflow-hidden
                       transition-all duration-200 active:scale-95
-                      ${isFuture ? 'opacity-30' : ''}
-                      ${isCheckedIn 
-                        ? splitInfo ? `${expectedColor} border border-white/20 shadow-sm` : 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md border border-emerald-400/30'
+                      ${!inMonth ? 'opacity-15' : ''}
+                      ${isCheckedIn
+                        ? splitInfo
+                          ? `${expectedColor} border border-white/20 shadow-sm`
+                          : 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md border border-emerald-400/30'
                         : 'bg-slate-800/60 border border-slate-700/40'
                       }
                       ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-900/50' : ''}
                     `}
                   >
-                    {/* Day number - Better positioned for mobile */}
                     <div className="absolute top-0.5 left-1 text-[8px] font-bold text-white/60">
                       {format(day, 'd')}
                     </div>
-                    
+
                     {isCheckedIn && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg className="w-3.5 h-3.5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
@@ -355,7 +367,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
                         </svg>
                       </div>
                     )}
-                    
+
                     {isToday && !isCheckedIn && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -369,7 +381,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
         </div>
       </div>
 
-      {/* Mobile-Optimized Stats Cards */}
+      {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 rounded-xl p-3 border border-emerald-500/20">
           <div className="flex items-baseline gap-1.5 mb-0.5">
@@ -386,6 +398,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
           <p className="text-[10px] text-slate-300 font-medium">Per Week</p>
         </div>
       </div>
+
     </div>
   );
 }
