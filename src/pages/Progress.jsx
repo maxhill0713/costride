@@ -143,8 +143,8 @@ function GoalsPage({ currentUser, onBack }) {
   );
 }
 
-// ─── Split sub-page ────────────────────────────────────────────────────────────
-function SplitPage({ currentUser, checkIns, onBack }) {
+// ─── (Split and Analytics sub-pages removed — content inlined on hub) ─────────
+function _unused({ currentUser, checkIns, onBack }) {
   return (
     <SubPage title="Workout Split" onBack={onBack}>
       {currentUser?.workout_split && (
