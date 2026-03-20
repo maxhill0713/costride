@@ -25,6 +25,7 @@ import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import InviteOwnerModal from '../components/gym/InviteOwnerModal';
 import CoachProfileModal from '../components/gym/CoachProfileModal';
+import ClassDetailModal from '../components/gym/ClassDetailModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
