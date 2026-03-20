@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function WeeklyChallengeCard({ challenge, currentUser, userProgress, isMonthly = false }) {
-  const [showStats] = React.useState(false);
+  const [showStats, setShowStats] = React.useState(false);
   const queryClient = useQueryClient();
 
   const isParticipant = challenge.participants?.includes(currentUser?.id);
