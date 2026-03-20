@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,43 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Flame, Gift, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
+
+// ── Hardcoded monthly app challenges ──────────────────────────────────────────
+const now = new Date();
+const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+const MONTHLY_CHALLENGES = [
+  {
+    id: 'streak_master',
+    title: 'Streak Master',
+    description: 'Maintain your gym streak for 7 consecutive days',
+    goal_type: 'longest_streak',
+    target_value: 7,
+    reward: '🏅 Streak Master Badge',
+    end_date: monthEnd.toISOString(),
+    progressKey: 'streak_master',
+  },
+  {
+    id: 'discipline_builder',
+    title: 'Discipline Builder',
+    description: 'Log 15 workouts this month',
+    goal_type: 'total_workouts',
+    target_value: 15,
+    reward: '💪 Discipline Builder Badge',
+    end_date: monthEnd.toISOString(),
+    progressKey: 'discipline_builder',
+  },
+  {
+    id: 'weekend_warrior',
+    title: 'Weekend Warrior',
+    description: 'Stay active on the weekend! Log your workout on Saturday or Sunday 5 times!',
+    goal_type: 'weekend_workouts',
+    target_value: 5,
+    reward: '⚔️ Weekend Warrior Badge',
+    end_date: monthEnd.toISOString(),
+    progressKey: 'weekend_warrior',
+  },
+];
 
 export default function RedeemReward() {
   const [activeSection, setActiveSection] = useState('weekly');
