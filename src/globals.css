@@ -468,6 +468,10 @@ html {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
   }
+
+  .nav-tab-link:focus-visible {
+    outline: none !important;
+  }
 }
 
 /* Prevent text selection on interactive elements for native feel */
