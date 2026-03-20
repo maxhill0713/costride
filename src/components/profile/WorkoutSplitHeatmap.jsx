@@ -267,16 +267,8 @@ export default function WorkoutSplitHeatmap({
 
       {/* ── Calendar grid ── */}
       <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
-        {/* Top bar: day labels + month/year pickers in top-right */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="grid grid-cols-7 gap-1.5 flex-1">
-            {['M','T','W','T','F','S','S'].map((d, i) => (
-              <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
-            ))}
-          </div>
-
-          {/* Month + Year pickers */}
-          <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+        {/* Row 1: month/year pickers — sits above the day-letter headers */}
+        <div className="flex items-center justify-end gap-1.5 mb-2">
 
             {/* Month pill */}
             <div className="relative">
@@ -342,7 +334,13 @@ export default function WorkoutSplitHeatmap({
               )}
             </div>
 
-          </div>
+        </div>
+
+        {/* Row 2: day-of-week letters — full width so each sits above its column */}
+        <div className="grid grid-cols-7 gap-1.5 mb-2">
+          {['M','T','W','T','F','S','S'].map((d, i) => (
+            <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
+          ))}
         </div>
 
         {/* Week rows */}
