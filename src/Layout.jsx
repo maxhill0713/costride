@@ -179,31 +179,19 @@ export default function Layout({ children, currentPageName }) {
     currentUser?.primary_gym_id ||
     (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
-  // navItems — icon is now a string key to avoid serialization issues
+  // navItems — icon is now a React component accepting { isActive }
   const navItems = isDashboardUser
     ? [
-        { name: 'Dashboard', iconKey: 'dashboard', page: 'GymOwnerDashboard', activeColor: 'text-orange-500' },
-        { name: 'Gyms',      iconKey: 'gyms',      page: 'Gyms',             activeColor: 'text-[#7aa8e8]' }
+        { name: 'Dashboard', icon: ({ isActive }) => <Building2 className={`w-7 h-7 ${isActive ? 'text-orange-500' : 'text-slate-400'}`} strokeWidth={isActive ? 2.5 : 2} />, page: 'GymOwnerDashboard', activeColor: 'text-orange-500' },
+        { name: 'Gyms',      icon: GymsIcon, page: 'Gyms', activeColor: 'text-[#7aa8e8]' }
       ]
     : [
-        { name: 'Home',       iconKey: 'home',       page: 'Home',         activeColor: 'text-[#7aa8e8]' },
-        { name: 'Gyms',       iconKey: 'gyms',       page: 'Gyms',         activeColor: 'text-[#7aa8e8]' },
-        { name: 'Progress',   iconKey: 'progress',   page: 'Progress',     activeColor: 'text-[#7aa8e8]' },
-        { name: 'Challenges', iconKey: 'challenges', page: 'RedeemReward', activeColor: 'text-[#7aa8e8]' },
-        { name: 'Profile',    iconKey: 'profile',    page: 'Profile',      activeColor: 'text-[#7aa8e8]' }
+        { name: 'Home',       icon: HomeIcon,       page: 'Home',         activeColor: 'text-[#7aa8e8]' },
+        { name: 'Gyms',       icon: GymsIcon,       page: 'Gyms',         activeColor: 'text-[#7aa8e8]' },
+        { name: 'Progress',   icon: ProgressIcon,   page: 'Progress',     activeColor: 'text-[#7aa8e8]' },
+        { name: 'Challenges', icon: ChallengesIcon, page: 'RedeemReward', activeColor: 'text-[#7aa8e8]' },
+        { name: 'Profile',    icon: ProfileIcon,    page: 'Profile',      activeColor: 'text-[#7aa8e8]' }
       ];
-
-  const getIcon = (iconKey, isActive) => {
-    const icons = {
-      dashboard: <Building2 className={`w-7 h-7 ${isActive ? 'text-orange-500' : 'text-slate-400'}`} strokeWidth={isActive ? 2.5 : 2} />,
-      gyms: <GymsIcon isActive={isActive} />,
-      home: <HomeIcon isActive={isActive} />,
-      progress: <ProgressIcon isActive={isActive} />,
-      challenges: <ChallengesIcon isActive={isActive} />,
-      profile: <ProfileIcon isActive={isActive} />
-    };
-    return icons[iconKey];
-  };
 
   // Preserve tab navigation history
   useEffect(() => {
@@ -242,6 +230,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex justify-around items-start pt-1 h-[79px] px-2">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
+              const IconComponent = item.icon;
               return (
                 <Link
                   key={item.page}
@@ -251,8 +240,8 @@ export default function Layout({ children, currentPageName }) {
                     if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
                   }}
                   aria-label={item.name}
-                  className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 rounded-xl"
-                  style={{ transition: 'transform 60ms ease-in-out' }}
+                  className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 bg-transparent focus:outline-none focus:bg-transparent active:bg-transparent"
+                  style={{ transition: 'transform 60ms ease-in-out', WebkitTapHighlightColor: 'transparent' }}
                   onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
                   onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
@@ -263,7 +252,7 @@ export default function Layout({ children, currentPageName }) {
                     className="relative"
                     style={isActive ? { filter: 'drop-shadow(0 1px 6px rgba(85,128,200,0.45))' } : {}}
                   >
-                    {getIcon(item.iconKey, isActive)}
+                    <IconComponent isActive={isActive} />
                     {item.badge > 0 && (
                       <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                         {item.badge > 9 ? '9+' : item.badge}
@@ -295,20 +284,22 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex flex-col gap-3">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
+              const IconComponent = item.icon;
               return (
                 <Link
                   key={item.page}
                   to={getTabLink(item)}
                   onClick={(e) => handleTabClick(item, e)}
-                  className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${
+                  className={`relative flex items-center justify-center w-14 h-14 transition-all duration-300 bg-transparent focus:outline-none focus:bg-transparent active:bg-transparent ${
                     isActive ? 'scale-110' : 'hover:scale-105'
                   }`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div
                     className="relative"
                     style={isActive ? { filter: 'drop-shadow(0 1px 6px rgba(85,128,200,0.45))' } : {}}
                   >
-                    {getIcon(item.iconKey, isActive)}
+                    <IconComponent isActive={isActive} />
                     {item.badge > 0 && (
                       <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                         {item.badge > 9 ? '9+' : item.badge}
