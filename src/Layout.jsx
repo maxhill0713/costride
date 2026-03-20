@@ -185,7 +185,7 @@ export default function Layout({ children, currentPageName }) {
                 `}>
 
                 <div className="relative">
-                  <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className="w-[24px] h-[24px]" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: isActive ? 'white' : 'inherit' }} />
                   {item.badge > 0 &&
                   <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {item.badge > 9 ? '9+' : item.badge}
