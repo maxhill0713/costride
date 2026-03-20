@@ -24,7 +24,6 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import InviteOwnerModal from '../components/gym/InviteOwnerModal';
-import ClassDetailModal from '../components/gym/ClassDetailModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
@@ -391,78 +390,31 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
 }
 
 // ── Stats summary row ─────────────────────────────────────────────────────────
-function ActivityStats({ checkIns, lifts }) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const weekAgo = new Date(Date.now() - 7*86400000);
-  const todayCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= today).length;
-  const weekCheckIns  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo).length;
-  const totalPRs      = lifts.filter(l => l.is_personal_record || l.is_pr).length;
-  const uniqueToday   = new Set(checkIns.filter(c => new Date(c.check_in_date) >= today).map(c => c.user_id)).size;
-  const stats = [
-    { label: 'Today', value: todayCheckIns, sub: `${uniqueToday} member${uniqueToday !== 1 ? 's' : ''}`, color: '#22c55e', emoji: '📍' },
-    { label: 'This Week', value: weekCheckIns, sub: 'check-ins', color: '#60a5fa', emoji: '📅' },
-    { label: 'PRs Logged', value: totalPRs, sub: 'all time', color: '#fbbf24', emoji: '🏆' },
-  ];
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-      {stats.map(s => (
-        <div key={s.label} style={{ ...CARD_STYLE, borderRadius: 14, padding: '12px 10px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-            background: `linear-gradient(90deg, transparent, ${s.color}88, transparent)` }} />
-          <div style={{ fontSize: 11, marginBottom: 4 }}>{s.emoji}</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
-          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>{s.label}</div>
-          <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{s.sub}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
+function ActivityStats() { return null; }
 
-// ── Main Activity Feed ────────────────────────────────────────────────────────
-function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
+// ── Main Activity Feed — check-ins only, fully scrollable ────────────────────
+function GymActivityFeed({ checkIns, memberAvatarMap }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
-  const [filter, setFilter] = React.useState('all'); // all | checkins | lifts | prs
-  const [showAll, setShowAll] = React.useState(false);
 
   const toggleLike = (id) => setLikedIds(prev => {
     const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
   });
 
-  const allItems = React.useMemo(() => {
-    const items = [];
-    // Deduplicate check-ins per user per day
-    const seenCheckIns = new Set();
-    checkIns.forEach(c => {
-      const dayKey = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
-      if (seenCheckIns.has(dayKey)) return;
-      seenCheckIns.add(dayKey);
-      items.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c });
-    });
-    lifts.forEach(l => {
-      items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l });
-    });
-    return items.sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [checkIns, lifts]);
+  const items = React.useMemo(() => {
+    const seen = new Set();
+    return checkIns
+      .filter(c => {
+        const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map(c => ({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 50);
+  }, [checkIns]);
 
-  const filtered = React.useMemo(() => {
-    if (filter === 'checkins') return allItems.filter(i => i.type === 'checkin');
-    if (filter === 'lifts')    return allItems.filter(i => i.type === 'lift' && !i.data?.is_personal_record && !i.data?.is_pr);
-    if (filter === 'prs')      return allItems.filter(i => i.type === 'lift' && (i.data?.is_personal_record || i.data?.is_pr));
-    return allItems;
-  }, [allItems, filter]);
-
-  const visible = showAll ? filtered : filtered.slice(0, 8);
-  const prCount = allItems.filter(i => i.type === 'lift' && (i.data?.is_personal_record || i.data?.is_pr)).length;
-
-  if (allItems.length === 0) return null;
-
-  const filterBtns = [
-    { id: 'all',      label: 'All',      count: allItems.length },
-    { id: 'checkins', label: '📍 Check-ins', count: allItems.filter(i => i.type === 'checkin').length },
-    { id: 'lifts',    label: '💪 Lifts',    count: allItems.filter(i => i.type === 'lift').length },
-    ...(prCount > 0 ? [{ id: 'prs', label: '🏆 PRs', count: prCount }] : []),
-  ];
+  if (items.length === 0) return null;
 
   return (
     <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
@@ -472,65 +424,16 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
           <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Activity style={{ width: 13, height: 13, color: '#818cf8' }} />
           </div>
-          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Activity Feed</span>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Gym Activity Feed</span>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{filtered.length} items</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} check-ins</span>
       </div>
-
-      {/* Filter pills */}
-      <div style={{ display: 'flex', gap: 6, padding: '10px 14px 8px', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        {filterBtns.map(f => {
-          const active = filter === f.id;
-          return (
-            <button key={f.id} onClick={() => setFilter(f.id)}
-              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-                padding: '5px 11px', borderRadius: 99, fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                border: `1px solid ${active ? 'rgba(99,102,241,0.55)' : 'rgba(255,255,255,0.09)'}`,
-                background: active ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
-                color: active ? '#818cf8' : 'rgba(255,255,255,0.4)',
-                transition: 'all 0.15s' }}>
-              {f.label}
-              <span style={{ fontSize: 9.5, fontWeight: 800,
-                color: active ? 'rgba(129,140,248,0.8)' : 'rgba(255,255,255,0.22)',
-                background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-                borderRadius: 99, padding: '1px 6px' }}>{f.count}</span>
-            </button>
-          );
-        })}
+      {/* Scrollable feed */}
+      <div style={{ maxHeight: 320, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+        {items.map((item, i) => (
+          <FeedCard key={item.id} item={item} memberAvatarMap={memberAvatarMap} liked={likedIds.has(item.id)} onLike={toggleLike} index={i} />
+        ))}
       </div>
-
-      {/* Feed items */}
-      <div style={{ maxHeight: showAll ? 'none' : 420, overflowY: showAll ? 'visible' : 'hidden', position: 'relative' }}>
-        {visible.length === 0 ? (
-          <div style={{ padding: '32px 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>🏃</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>No {filter === 'all' ? '' : filter} activity yet</div>
-          </div>
-        ) : (
-          visible.map((item, i) => (
-            <FeedCard key={item.id} item={item} memberAvatarMap={memberAvatarMap} liked={likedIds.has(item.id)} onLike={toggleLike} index={i} />
-          ))
-        )}
-        {/* Fade-out gradient when collapsed */}
-        {!showAll && filtered.length > 8 && (
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-            background: 'linear-gradient(to bottom, transparent, rgba(8,10,20,0.95))',
-            pointerEvents: 'none' }} />
-        )}
-      </div>
-
-      {/* Show more / less */}
-      {filtered.length > 8 && (
-        <button onClick={() => setShowAll(s => !s)}
-          style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)', cursor: 'pointer',
-            background: 'rgba(255,255,255,0.03)', border: 'none',
-            borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          {showAll
-            ? <><ChevronDown style={{ width: 14, height: 14, transform: 'rotate(180deg)' }} />Show Less</>
-            : <><ChevronDown style={{ width: 14, height: 14 }} />Show {filtered.length - 8} More</>}
-        </button>
-      )}
     </div>
   );
 }
@@ -566,7 +469,7 @@ const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const TIME_SLOTS = ['Morning','Afternoon','Evening'];
 
 function getMockTime(gymClass, index) {
-  const s = typeof gymClass.schedule === 'string' ? gymClass.schedule : '';
+  const s = gymClass.schedule || '';
   const m = s.match(/(\d{1,2}):(\d{2})/);
   if (m) return m[0];
   const times = ['06:00','07:30','09:00','10:30','12:00','13:30','16:00','17:30','18:00','19:30','20:00'];
@@ -616,13 +519,13 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Day pills */}
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
         {days.map(d => {
           const active = activeDay === d.idx;
           const b = btn3D(
             active,
             {
-              minWidth: 42, padding: '6px 2px', borderRadius: 12, cursor: 'pointer',
+              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
               background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
               border: '1px solid transparent',
               borderBottom: '3px solid #1a3fa8',
@@ -632,7 +535,7 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
             },
             {
-              minWidth: 42, padding: '6px 2px', borderRadius: 12, cursor: 'pointer',
+              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
               background: d.isToday ? 'rgba(37,99,235,0.12)' : 'rgba(20,28,60,0.8)',
               border: `1px solid ${d.isToday ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.09)'}`,
               borderBottom: '3px solid rgba(0,0,0,0.5)',
@@ -975,6 +878,17 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
 
       {/* ── Header ── */}
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+        <div>
+          <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.28)',
+            letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:4 }}>Classes</div>
+          <div style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.04em', lineHeight:1 }}>
+            {isToday ? "Today's Sessions" : `${dayName}'s Sessions`}
+          </div>
+          <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.28)', fontWeight:600, marginTop:4 }}>
+            {activeDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}
+            {activeSlot && <span style={{ color:'rgba(147,197,253,0.7)',fontWeight:700 }}> · {activeSlot}</span>}
+          </div>
+        </div>
         {showOwnerControls && (
           <button onClick={onManage}
             onMouseDown={e=>{e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
@@ -1710,10 +1624,8 @@ export default function GymCommunity() {
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
-                {/* Stats */}
-                <ActivityStats checkIns={checkIns} lifts={lifts} />
                 {/* Activity Feed */}
-                <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
+                <GymActivityFeed checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Busy times */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Coaches + Event — side by side grid */}
