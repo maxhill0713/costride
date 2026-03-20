@@ -80,9 +80,20 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  a:focus,
+  a:focus-visible,
+  a:active {
+    outline: none !important;
+    background: none !important;
+    background-color: transparent !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-shadow: none !important;
   }
 }
