@@ -1478,12 +1478,20 @@ export default function GymCommunity() {
                 </div>
               </div>
             </div>
-            <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', overflowX:'auto', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
-              <TabsList className="flex justify-start bg-transparent px-3 py-2 h-auto gap-1.5" style={{ width:'max-content', minWidth:'100%' }}>
-                <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
-                <TabsTrigger value="activity"   className={tabTriggerClass}><Activity  className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
-                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy    className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
-                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell  className="w-3.5 h-3.5" /><span>Classes</span></TabsTrigger>
+            <div className="relative z-10" style={{ borderBottom:'1px solid rgba(255,255,255,0.08)', overflowX:'auto', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
+              <TabsList className="flex justify-start bg-transparent px-2 pb-0 pt-1 h-auto gap-0" style={{ width:'max-content', minWidth:'100%' }}>
+                {[
+                  { value: 'home',       Icon: Home,     label: 'Home'       },
+                  { value: 'activity',   Icon: Activity, label: 'Activity'   },
+                  { value: 'challenges', Icon: Trophy,   label: 'Challenges' },
+                  { value: 'classes',    Icon: Dumbbell, label: 'Classes'    },
+                ].map(({ value, Icon, label }) => (
+                  <TabsTrigger key={value} value={value}
+                    className="whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 relative text-slate-500 font-medium rounded-none px-4 py-2.5 flex items-center gap-1.5 justify-center transition-colors duration-150 text-[13px] data-[state=active]:text-white data-[state=active]:font-semibold active:opacity-60 border-b-2 border-transparent data-[state=active]:border-blue-500"
+                  >
+                    <Icon className="w-3.5 h-3.5" />{label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </div>
           </div>
