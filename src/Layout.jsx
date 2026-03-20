@@ -9,44 +9,55 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PersistentRestTimer from './components/PersistentRestTimer';
 import { TimerProvider } from './components/TimerContext';
 
-// ── Custom SVG Icons from design ──────────────────────────────────────────
+// ── Simple SVG Icons ─────────────────────────────────────────────────────
 
 function HomeIcon({ color }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 600 400" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M363 2284 c-283 -251 -283 -251 -283 -284 0 -36 23 -50 85 -50 l46 0 -1 -197 -2 -198 136 -3 136 -3 0 113 c0 125 9 151 56 162 34 9 78 -9 93 -37 6 -12 12 -69 13 -127 l3 -105 133 -3 132 -3 0 203 0 203 48 -3 c36 -3 53 1 65 13 39 38 26 54 -217 274 -129 116 -239 211 -245 211 -6 0 -95 -75 -198 -166z m333 6 c70 -63 170 -153 221 -199 51 -47 90 -88 86 -92 -5 -4 -35 -9 -68 -11 l-60 -3 3 -200 3 -200 -101 1 -102 2 -2 98 c-1 75 -6 105 -19 125 -34 51 -107 64 -164 29 -41 -25 -57 -80 -51 -180 l4 -75 -103 0 -103 0 0 203 0 202 -66 0 c-50 0 -65 3 -62 13 2 8 61 65 132 128 72 63 171 151 220 196 50 45 94 81 97 80 4 -1 64 -54 135 -117z"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10L12 3L21 10V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20Z"/>
+      <path d="M9 22V12H15V22"/>
     </svg>
   );
 }
 
 function GymIcon({ color }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 600 400" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4030 2460 l0 -40 -55 0 c-47 0 -60 -4 -82 -26 -22 -22 -25 -32 -21 -74 6 -63 66 -185 114 -234 22 -21 69 -59 107 -83 37 -25 67 -49 67 -54 0 -4 29 -38 65 -74 93 -95 93 -96 -49 -220 -25 -22 -49 -49 -52 -60 -4 -11 -15 -26 -26 -33 -14 -10 -18 -23 -16 -50 l3 -37 275 0 275 0 3 32 c2 22 -3 38 -17 52 -11 11 -23 32 -27 46 -3 14 -10 25 -15 25 -5 0 -23 14 -41 30 -18 17 -49 43 -67 59 -27 22 -35 36 -35 62 0 29 12 46 91 124 50 50 117 108 150 131 93 65 162 188 163 290 0 69 -26 94 -98 94 l-51 0 -3 38 -3 37 -327 3 -328 2 0 -40z"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="5" cy="12" r="3"/>
+      <circle cx="19" cy="12" r="3"/>
+      <path d="M8 12H16"/>
+      <path d="M6 9V15M18 9V15"/>
     </svg>
   );
 }
 
 function ProgressIcon({ color }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 600 400" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3290 2018 l0 -503 -30 -1 -30 -1 0 373 0 373 -96 3 c-53 2 -98 1 -100 -1 -2 -2 -4 -172 -4 -376 l0 -372 -30 -1 -30 -1 -2 267 -3 267 -102 3 -103 3 0 -269 0 -269 -30 0 -30 0 0 164 0 163 -105 0 -105 0 0 -163 0 -163 -34 4 c-24 3 -35 -1 -39 -12 -4 -9 -1 -19 6 -21 6 -3 269 -4 582 -3 499 3 570 5 570 18 0 11 -10 15 -37 14 l-38 -1 0 503 0 504 -105 0 -105 0 0 -502z m180 -15 l0 -488 -72 2 -73 2 -3 485 -2 486 75 0 75 0 0 -487z m-270 -130 l0 -358 -70 0 -70 0 0 358 0 357 70 0 70 0 0 -357z m-265 -104 l0 -251 -73 -1 -72 -2 0 253 0 252 73 0 73 0 -1 -251z m-265 -106 l0 -148 -71 2 -70 1 -2 146 -2 146 73 0 72 0 0 -147z"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 20H21"/>
+      <rect x="3" y="14" width="3" height="6" rx="0.5"/>
+      <rect x="9" y="10" width="3" height="10" rx="0.5"/>
+      <rect x="15" y="5" width="3" height="15" rx="0.5"/>
     </svg>
   );
 }
 
 function ChallengesIcon({ color }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 600 400" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5592 2507 c-45 -14 -118 -81 -144 -130 -89 -175 45 -387 244 -387 146 1 254 101 266 247 12 157 -109 284 -268 282 -36 -1 -80 -6 -98 -12z m169 -29 c51 -15 114 -70 140 -121 40 -78 23 -195 -39 -260 -46 -49 -100 -71 -173 -72 -56 0 -73 4 -114 30 -27 17 -63 50 -80 73 -25 37 -30 55 -33 116 -5 88 15 135 80 190 63 54 137 69 219 44z"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9C6 7.89543 6.89543 7 8 7H16C17.1046 7 18 7.89543 18 9V14C18 17.3137 15.3137 20 12 20C8.68629 20 6 17.3137 6 14V9Z"/>
+      <path d="M6 9L4 6"/>
+      <path d="M18 9L20 6"/>
+      <path d="M12 20V22"/>
     </svg>
   );
 }
 
 function ProfileIcon({ color }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 600 400" fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1830 2470 c-11 -11 -20 -25 -20 -31 0 -7 -10 -5 -25 5 -39 25 -90 21 -114 -10 -39 -49 -27 -90 50 -170 l49 -50 -166 -172 -166 -173 -63 61 c-72 68 -105 76 -151 36 -34 -28 -38 -84 -9 -116 15 -16 15 -20 3 -20 -20 0 -46 -30 -48 -55 -5 -42 1 -57 29 -85 24 -24 26 -31 15 -41 -21 -17 -17 -76 6 -99 28 -28 69 -36 98 -19 23 13 28 12 55 -13 17 -16 40 -28 56 -28 32 0 71 25 71 46 0 18 10 17 34 -1 69 -52 166 40 121 113 -10 15 -39 48 -65 73 l-47 45 167 170 168 170 60 -58 c51 -49 66 -58 96 -58 69 0 109 73 71 127 -14 20 -13 24 16 53 26 26 30 36 25 63 -3 17 -19 44 -33 59 -23 25 -26 32 -15 48 19 32 14 74 -12 99 -26 25 -77 31 -100 11 -13 -10 -21 -8 -47 14 -37 31 -81 34 -109 6z"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20C4 16.134 7.13401 13 12 13C16.866 13 20 16.134 20 20"/>
     </svg>
   );
 }
