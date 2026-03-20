@@ -1525,8 +1525,6 @@ export default function GymCommunity() {
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
                 <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
-                {/* Busy times */}
-                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Coaches */}
                 {coaches.length > 0 && (
                   <div className="rounded-2xl" style={CARD_STYLE}>
