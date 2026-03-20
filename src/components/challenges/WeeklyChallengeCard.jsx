@@ -5,17 +5,21 @@ import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function WeeklyChallengeCard({ challenge, currentUser }) {
-  const [showStats, setShowStats] = React.useState(false);
+export default function WeeklyChallengeCard({ challenge, currentUser, userProgress, isMonthly = false }) {
+  const [showStats] = React.useState(false);
   const queryClient = useQueryClient();
 
   const isParticipant = challenge.participants?.includes(currentUser?.id);
   const participantCount = challenge.participants?.length || 0;
   const targetValue = challenge.target_value || 50;
-  const progress = Math.min(100, Math.floor((participantCount / targetValue) * 100));
-  const remaining = Math.max(0, targetValue - participantCount);
+
+  // For monthly challenges use personal progress, otherwise use participant count
+  const currentValue = isMonthly ? (userProgress || 0) : participantCount;
+  const progress = Math.min(100, Math.floor((currentValue / targetValue) * 100));
+  const remaining = Math.max(0, targetValue - currentValue);
   const daysLeft = Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24));
   const isExpired = daysLeft <= 0;
+  const isCompleted = isMonthly && currentValue >= targetValue;
 
   const joinMutation = useMutation({
     mutationFn: async () => {
