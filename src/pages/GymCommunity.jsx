@@ -616,13 +616,13 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Day pills */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
         {days.map(d => {
           const active = activeDay === d.idx;
           const b = btn3D(
             active,
             {
-              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              minWidth: 42, padding: '6px 2px', borderRadius: 12, cursor: 'pointer',
               background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
               border: '1px solid transparent',
               borderBottom: '3px solid #1a3fa8',
