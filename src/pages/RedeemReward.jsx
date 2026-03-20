@@ -89,6 +89,16 @@ export default function RedeemReward() {
     placeholderData: (prev) => prev
   });
 
+  // Attach personal progress to each monthly challenge
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const monthlyProgress = currentUser?.monthly_challenge_progress || {};
+  const isCurrentMonth = monthlyProgress.month === currentMonth;
+
+  const monthlyChallengesWithProgress = MONTHLY_CHALLENGES.map(c => ({
+    ...c,
+    userProgress: isCurrentMonth ? (monthlyProgress[c.progressKey] || 0) : 0,
+  }));
+
   const weeklyChallenges = allChallenges.slice(0, 3);
 
   const challenges = allChallenges.filter((challenge) => {
