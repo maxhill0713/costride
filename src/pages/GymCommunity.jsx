@@ -1593,10 +1593,8 @@ export default function GymCommunity() {
                     <div style={{ display: 'flex', gap: 10, padding: '12px 14px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
                       {coaches.map(coach => {
                         const ci = (n='') => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-                        const copied = copiedCoachId === coach.id;
-                        const handleBook = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
                         return (
-                          <div key={coach.id} style={{ flexShrink: 0, width: 130, borderRadius: 16, background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px 12px', gap: 6, position: 'relative' }}>
+                          <div key={coach.id} onClick={() => setSelectedCoach(coach)} style={{ flexShrink: 0, width: 110, borderRadius: 16, background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px 14px', gap: 6, position: 'relative', cursor: 'pointer' }}>
                             {/* Shimmer line */}
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)' }} />
                             {/* Avatar */}
@@ -1616,22 +1614,6 @@ export default function GymCommunity() {
                                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{coach.rating}</span>
                               </div>
                             )}
-                            {/* Book button */}
-                            <button
-                              onClick={handleBook}
-                              onMouseDown={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
-                              onMouseUp={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
-                              onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
-                              onTouchStart={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
-                              onTouchEnd={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
-                              style={{ marginTop: 2, width: '100%', padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                background: copied ? 'rgba(16,185,129,0.18)' : 'linear-gradient(to bottom,#3b82f6,#2563eb,#1d4ed8)',
-                                borderBottom: copied ? '2px solid rgba(5,150,105,0.5)' : '2px solid #1a3fa8',
-                                boxShadow: copied ? '0 1px 0 rgba(0,0,0,0.3)' : '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18)',
-                                color: copied ? '#34d399' : '#fff',
-                                transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
-                              {copied ? '✓ Copied' : 'Book'}
-                            </button>
                           </div>
                         );
                       })}
