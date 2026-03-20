@@ -288,25 +288,24 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       };
 
       await base44.auth.updateMe({ current_streak: newStreak, monthly_challenge_progress: newMonthlyProgress });
-      let challengesData = [];
-      try {
-        const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id, status: 'active' });
-        challengesData = await Promise.all(
-          participants.map(async (p) => {
-            try {
-              const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
-              return {
-                id: p.id,
-                title: challenge[0]?.title || 'Challenge',
-                target_value: p.target_value,
-                current_progress: p.current_progress,
-                previous_progress: Math.max(0, p.current_progress - 1),
-              };
-            } catch (err) { return null; }
-          })
-        );
-        challengesData = challengesData.filter(Boolean);
-      } catch (err) {}
+
+      // Build monthly challenge progress data for celebration screen
+      const MONTHLY_CHALLENGE_DEFS = [
+        { id: 'streak_master', title: 'Streak Master', progressKey: 'streak_master', target: 7, emoji: '🏅' },
+        { id: 'discipline_builder', title: 'Discipline Builder', progressKey: 'discipline_builder', target: 15, emoji: '💪' },
+        { id: 'weekend_warrior', title: 'Weekend Warrior', progressKey: 'weekend_warrior', target: 5, emoji: '⚔️' },
+      ];
+      const challengesData = MONTHLY_CHALLENGE_DEFS
+        .map(def => {
+          const prevVal = isNewMonth ? 0 : (prevProgress[def.progressKey] || 0);
+          const newVal = newMonthlyProgress[def.progressKey] || 0;
+          if (newVal > prevVal) {
+            return { id: def.id, title: def.title, emoji: def.emoji, target_value: def.target, previous_value: prevVal, new_value: newVal };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
       return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData };
     },
     onSuccess: (data) => {
