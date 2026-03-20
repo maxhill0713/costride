@@ -291,9 +291,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       // Build monthly challenge progress data for celebration screen
       const MONTHLY_CHALLENGE_DEFS = [
-        { id: 'streak_master', title: 'Streak Master', progressKey: 'streak_master', target: 7, emoji: '🏅' },
-        { id: 'discipline_builder', title: 'Discipline Builder', progressKey: 'discipline_builder', target: 15, emoji: '💪' },
-        { id: 'weekend_warrior', title: 'Weekend Warrior', progressKey: 'weekend_warrior', target: 5, emoji: '⚔️' },
+        { id: 'streak_master', title: 'Streak Master', progressKey: 'streak_master', target: 7, emoji: '🏅', description: 'Maintain your gym streak for 7 consecutive days', reward: '🏅 Streak Master Badge' },
+        { id: 'discipline_builder', title: 'Discipline Builder', progressKey: 'discipline_builder', target: 15, emoji: '💪', description: 'Log 15 workouts this month', reward: '💪 Discipline Builder Badge' },
+        { id: 'weekend_warrior', title: 'Weekend Warrior', progressKey: 'weekend_warrior', target: 5, emoji: '⚔️', description: 'Log your workout on Saturday or Sunday 5 times!', reward: '⚔️ Weekend Warrior Badge' },
       ];
       const challengesData = MONTHLY_CHALLENGE_DEFS
         .map(def => {
