@@ -1328,7 +1328,7 @@ export default function GymCommunity() {
               <div className="absolute inset-0" style={{ background:'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
               <div className="absolute inset-0" style={{ background:'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
             </div>
-            <div className="relative z-10 px-4 pt-4 pb-0" style={{ minHeight:'140px' }}>
+            <div className="relative z-10 px-4 pt-3 pb-0" style={{ minHeight:'110px' }}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 mr-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -1380,16 +1380,6 @@ export default function GymCommunity() {
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
-                {/* Busy times — top of home tab */}
-                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                {/* Polls — below busy times */}
-                {polls.length > 0 && (
-                  <div className="space-y-3">
-                    {polls.map(poll => (
-                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? optionId => votePollMutation.mutate({ pollId:poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
-                    ))}
-                  </div>
-                )}
                 {isGhostGym && !isMember && !showOwnerControls && (
                   <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
@@ -1465,6 +1455,13 @@ export default function GymCommunity() {
                     </SlidePanel>
                   </div>
                 )}
+                {polls.length > 0 && (
+                  <div className="space-y-3">
+                    {polls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? optionId => votePollMutation.mutate({ pollId:poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
+                    ))}
+                  </div>
+                )}
                 {upcomingEvents.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
@@ -1526,34 +1523,38 @@ export default function GymCommunity() {
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
                 <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
+                {/* Busy times */}
+                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Coaches */}
                 {coaches.length > 0 && (
-                  <div className="rounded-2xl" style={CARD_STYLE}>
+                  <div style={{ ...CARD_STYLE, borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <GraduationCap style={{ width: 11, height: 11, color: '#60a5fa' }} />
                         </div>
                         <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Coaches</span>
                       </div>
                       {showOwnerControls && (
-                        <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>Manage</button>
+                        <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer', flexShrink: 0 }}>Manage</button>
                       )}
                     </div>
-                    <div style={{ padding: '10px 13px 12px', display: 'flex', gap: 14, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                    <div style={{ padding: '12px 13px 13px', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
                       {coaches.slice(0, 8).map(coach => {
-                        const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                        const coachInitials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
                         const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
                         return (
-                          <div key={coach.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }} onClick={handleCopyEmail}>
-                            <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff' }}>
-                              {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(coach.name)}
+                          <div key={coach.id} onClick={handleCopyEmail} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 0, cursor: 'pointer', width: 48 }}>
+                            <div style={{ position: 'relative', width: 42, height: 42, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                              {coach.avatar_url
+                                ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : coachInitials(coach.name)}
                               {copiedCoachId === coach.id && (
-                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(16,185,129,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✓</div>
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(16,185,129,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>✓</div>
                               )}
                             </div>
-                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 600, maxWidth: 52, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {coach.name.split(' ')[0]} {coach.name.split(' ')[1]?.[0] ? coach.name.split(' ')[1][0] + '.' : ''}
+                            <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.6)', fontWeight: 600, width: 48, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {coach.name.split(' ')[0]}
                             </span>
                           </div>
                         );
@@ -1564,47 +1565,46 @@ export default function GymCommunity() {
 
                 {/* Upcoming Event */}
                 {events.filter(e => new Date(e.event_date) >= now).length > 0 && (
-                  <div className="rounded-2xl" style={CARD_STYLE}>
+                  <div style={{ ...CARD_STYLE, borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(251,146,60,0.15)', border: '1px solid rgba(251,146,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(251,146,60,0.15)', border: '1px solid rgba(251,146,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <Calendar style={{ width: 11, height: 11, color: '#fb923c' }} />
                         </div>
                         <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Upcoming Event</span>
                       </div>
                       {showOwnerControls && (
-                        <button onClick={() => setShowCreateEvent(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <button onClick={() => setShowCreateEvent(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                           <Plus style={{ width: 10, height: 10 }} />Create
                         </button>
                       )}
                     </div>
-                    <div style={{ padding: '10px 13px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ padding: '10px 13px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
                       {events.filter(e => new Date(e.event_date) >= now).slice(0, 3).map(event => (
-                        <div key={event.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div key={event.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 11, padding: '9px 11px', display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title || event.name}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title || event.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               {event.event_date && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.6)' }}>
-                                  <Calendar style={{ width: 10, height: 10 }} />
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.55)' }}>
+                                  <Calendar style={{ width: 9, height: 9 }} />
                                   {new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </span>
                               )}
-                              {event.attendees > 0 && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.6)' }}>
-                                  <Users style={{ width: 10, height: 10 }} />
+                              {(event.attendees || 0) > 0 && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, color: 'rgba(148,163,184,0.55)' }}>
+                                  <Users style={{ width: 9, height: 9 }} />
                                   {event.attendees} attending
                                 </span>
                               )}
                             </div>
                           </div>
-                          {!showOwnerControls && (
-                            <button onClick={() => rsvpMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })} style={{ flexShrink: 0, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          {!showOwnerControls ? (
+                            <button onClick={() => rsvpMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })} style={{ flexShrink: 0, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: 8, padding: '7px 13px', fontSize: 11.5, fontWeight: 800, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.4)' }}>
                               RSVP
                             </button>
-                          )}
-                          {showOwnerControls && (
-                            <button onClick={() => { if (window.confirm('Delete?')) deleteEventMutation.mutate(event.id); }} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}>
+                          ) : (
+                            <button onClick={() => { if (window.confirm('Delete?')) deleteEventMutation.mutate(event.id); }} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '7px 9px', cursor: 'pointer' }}>
                               <Trash2 style={{ width: 11, height: 11, color: '#f87171' }} />
                             </button>
                           )}
