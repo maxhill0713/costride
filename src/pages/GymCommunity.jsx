@@ -1480,19 +1480,8 @@ export default function GymCommunity() {
                     </div>
                   </div>
                 )}
-                {gymChallenges.length > 0 && (
-                  <div className="rounded-2xl p-4" style={CARD_STYLE}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(167,139,250,0.15)' }}><Trophy className="w-3.5 h-3.5 text-purple-400" /></div>
-                      <h3 className="text-[13px] font-black text-white">New Challenges</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {gymChallenges.slice(0,1).map(challenge => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} gymImageUrl={gym?.image_url} />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Leaderboard */}
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
               </motion.div>
             </TabsContent>
 
