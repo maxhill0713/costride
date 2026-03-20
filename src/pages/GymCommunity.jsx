@@ -199,13 +199,8 @@ const colorForUser = (userId) =>
   AV_COLORS[(userId || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
 
 function ActiveNowStrip({ checkIns, memberAvatarMap }) {
-  // Try every possible timestamp field, pick whichever gives the most recent value
   const getTimestamp = (c) => {
-    const candidates = [
-      c.created_date, c.created_at, c.timestamp,
-      c.check_in_time, c.checkin_time, c.date_created,
-      c.check_in_date,
-    ];
+    const candidates = [c.created_date, c.created_at, c.timestamp, c.check_in_time, c.checkin_time, c.date_created, c.check_in_date];
     let best = null;
     for (const v of candidates) {
       if (!v) continue;
@@ -218,35 +213,40 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
   const recentCheckIns = checkIns
-    .filter(c => {
-      const ts = getTimestamp(c);
-      return ts && ts >= twoHoursAgo;
-    })
-    .reduce((acc, c) => {
-      if (!acc.find(a => a.user_id === c.user_id)) acc.push(c);
-      return acc;
-    }, [])
+    .filter(c => { const ts = getTimestamp(c); return ts && ts >= twoHoursAgo; })
+    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
     .slice(0, 10);
 
-  if (recentCheckIns.length === 0) return null;
+  const hasActive = recentCheckIns.length > 0;
+
+  // Fallback: unique members from all check-ins
+  const fallbackMembers = checkIns
+    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
+    .slice(0, 10);
+
+  const displayList = hasActive ? recentCheckIns : fallbackMembers;
+
+  if (displayList.length === 0) return null;
 
   const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <div style={{ ...CARD_STYLE, borderRadius: 14, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>Active Now</span>
+        {hasActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />}
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>
+          {hasActive ? 'Active Now' : 'Members'}
+        </span>
       </div>
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'flex-end' }}>
-        {recentCheckIns.map((c, i) => {
+        {displayList.map((c, i) => {
           const col = AV_COLORS[i % AV_COLORS.length];
           const avatar = memberAvatarMap[c.user_id];
           return (
             <div key={c.user_id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(34,197,94,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
+              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: hasActive ? '1.5px solid rgba(34,197,94,0.45)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
                 {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(c.user_name)}
-                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />
+                {hasActive && <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />}
               </div>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, textAlign: 'center', maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {(c.user_name || '').split(' ')[0]}
