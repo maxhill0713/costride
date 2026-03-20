@@ -278,7 +278,7 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
 }
 
 // ─── Illustrations ────────────────────────────────────────────────────────────
-function AnalyticsIllustration() {
+function _AnalyticsIllustration() {
   return (
     <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
       <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
