@@ -1526,8 +1526,6 @@ export default function GymCommunity() {
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
                 <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
-                {/* Busy times */}
-                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Coaches + Event — side by side grid */}
                 {(coaches.length > 0 || events.filter(e => new Date(e.event_date) >= now).length > 0) && (
                   <div style={{ display: 'grid', gridTemplateColumns: coaches.length > 0 && events.filter(e => new Date(e.event_date) >= now).length > 0 ? '1fr 1fr' : '1fr', gap: 10 }}>
