@@ -1421,27 +1421,75 @@ export default function Home() {
         {showChallengesCelebration && celebrationChallenges.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }} className="w-full max-w-sm space-y-8">
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                className="text-2xl font-black text-white text-center tracking-tight">
-                Challenge Progress
-              </motion.p>
-              <div className="space-y-6">
-                {celebrationChallenges.map((challenge, idx) => (
-                  <motion.div key={challenge.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + idx * 0.15 }} className="space-y-3">
-                    <p className="text-base font-bold text-slate-200 truncate">{challenge.title}</p>
-                    <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
-                      <motion.div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
-                        initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ delay: 0.5 + idx * 0.15, duration: 1.4, ease: 'easeOut' }} />
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6">
+            <motion.p
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
+              className="text-2xl font-black text-white text-center tracking-tight mb-6">
+              Challenge Progress 🎯
+            </motion.p>
+            <div className="w-full max-w-sm space-y-4">
+              {celebrationChallenges.map((challenge, idx) => {
+                const prevPct = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
+                const newPct = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
+                return (
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + idx * 0.12, duration: 0.4 }}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(20,24,48,0.97) 0%, rgba(8,10,22,0.99) 100%)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 20,
+                      padding: '18px 18px 16px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    }}>
+                    {/* Title row */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span style={{ fontSize: 22 }}>{challenge.emoji}</span>
+                      <p className="text-[15px] font-black text-white leading-tight">{challenge.title}</p>
                     </div>
+                    {/* Progress numbers */}
+                    <div className="flex items-end justify-between mb-2">
+                      <motion.span
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + idx * 0.12 }}
+                        className="text-[13px] font-bold text-slate-300">
+                        {challenge.previous_value} → <span className="text-emerald-400">{challenge.new_value}</span>
+                        <span className="text-slate-500"> / {challenge.target_value}</span>
+                      </motion.span>
+                      <motion.span
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 + idx * 0.12 }}
+                        className="text-[13px] font-bold text-emerald-400">
+                        {newPct}%
+                      </motion.span>
+                    </div>
+                    {/* Animated progress bar */}
+                    <div style={{ height: 10, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                      <motion.div
+                        initial={{ width: `${prevPct}%` }}
+                        animate={{ width: `${newPct}%` }}
+                        transition={{ delay: 0.45 + idx * 0.12, duration: 1.2, ease: 'easeOut' }}
+                        style={{
+                          height: '100%', borderRadius: 99,
+                          background: newPct >= 100
+                            ? 'linear-gradient(90deg, #34d399, #10b981)'
+                            : 'linear-gradient(90deg, #38bdf8, #60a5fa)',
+                        }}
+                      />
+                    </div>
+                    {newPct >= 100 && (
+                      <motion.p
+                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.2 + idx * 0.12, type: 'spring', stiffness: 300 }}
+                        className="text-center text-emerald-400 font-black text-[13px] mt-2">
+                        ✓ Challenge Complete!
+                      </motion.p>
+                    )}
                   </motion.div>
-                ))}
-              </div>
-            </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
