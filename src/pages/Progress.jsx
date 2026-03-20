@@ -11,7 +11,6 @@ import GoalCard from '../components/goals/GoalCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
-import StrengthProgress from '../components/profile/StrengthProgress';
 import ProgressiveOverloadTracker from '../components/profile/ProgressiveOverloadTracker';
 import WeeklyVolumeChart from '../components/profile/WeeklyVolumeChart';
 
