@@ -36,10 +36,29 @@ const IMGS = {
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const CSS = `
-@keyframes cdm-shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
-@keyframes cdm-pop{0%{transform:scale(0.75);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-@keyframes cdm-bar{from{width:0}}
-@keyframes cdm-tick{from{stroke-dashoffset:28}to{stroke-dashoffset:0}}
+@keyframes cdm-shimmer {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(220%); opacity: 0; }
+}
+@keyframes cdm-pop {
+  0%   { transform: scale(0.6) translateY(10px); opacity: 0; }
+  55%  { transform: scale(1.07) translateY(-2px); opacity: 1; }
+  78%  { transform: scale(0.97) translateY(0); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes cdm-bar {
+  from { width: 0; }
+}
+@keyframes cdm-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cdm-hero-in {
+  from { opacity: 0.6; transform: scale(1.05); }
+  to   { opacity: 1; transform: scale(1); }
+}
 `;
 
 function injectCSS(){if(!document.getElementById('cdm-css')){const s=document.createElement('style');s.id='cdm-css';s.textContent=CSS;document.head.appendChild(s);}}
@@ -68,9 +87,9 @@ function ini(name=''){return(name||'?').split(' ').map(w=>w[0]).join('').toUpper
 function Bar({pct,color,anim=true,h=6}){
   return(
     <div style={{height:h,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden',position:'relative'}}>
-      <div style={{height:'100%',width:`${pct}%`,borderRadius:99,background:color,animation:anim?'cdm-bar 1s cubic-bezier(0.34,1.2,0.64,1) both':'none'}}/>
+      <div style={{height:'100%',width:`${pct}%`,borderRadius:99,background:color,animation:anim?'cdm-bar 1.1s cubic-bezier(0.16,1,0.3,1) both':'none'}}/>
       <div style={{position:'absolute',inset:0,overflow:'hidden',borderRadius:99,pointerEvents:'none'}}>
-        <div style={{position:'absolute',top:0,bottom:0,width:'50%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',animation:'cdm-shimmer 2.5s ease-in-out infinite'}}/>
+        <div style={{position:'absolute',top:0,bottom:0,width:'50%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',animation:'cdm-shimmer 3.2s cubic-bezier(0.4,0,0.6,1) infinite'}}/>
       </div>
     </div>
   );
@@ -101,7 +120,7 @@ function QRModal({open,onClose,gymClass,c}){
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}
             style={{position:'fixed',inset:0,zIndex:10100,background:'rgba(2,4,10,0.92)',backdropFilter:'blur(14px)'}}/>
           <motion.div initial={{scale:0.82,opacity:0}} animate={{scale:1,opacity:1}} exit={{scale:0.82,opacity:0}}
-            transition={{type:'spring',stiffness:360,damping:28}}
+            transition={{type:'spring',stiffness:300,damping:30}}
             style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:10101,width:300,
               background:'linear-gradient(160deg,#0d1232 0%,#060810 100%)',
               border:`1px solid rgba(${c.rgb},0.28)`,borderRadius:24,padding:'26px 22px 22px',
@@ -147,7 +166,7 @@ function RateSheet({open,onClose,c,className}){
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}
             style={{position:'fixed',inset:0,zIndex:10200,background:'rgba(2,4,10,0.88)',backdropFilter:'blur(12px)'}}/>
           <motion.div initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
-            transition={{type:'spring',stiffness:340,damping:34}}
+            transition={{type:'spring',stiffness:280,damping:32,mass:1.1}}
             style={{position:'fixed',bottom:0,left:0,right:0,zIndex:10201,borderRadius:'24px 24px 0 0',
               background:'linear-gradient(160deg,#0d1232 0%,#060810 100%)',
               border:'1px solid rgba(255,255,255,0.08)',borderBottom:'none',padding:'10px 18px 42px'}}>
@@ -311,14 +330,14 @@ export default function ClassDetailModal({
         {open&&(
           <>
             {/* Backdrop */}
-            <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.22}}
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.28,ease:'easeOut'}}
               onClick={onClose}
               style={{position:'fixed',inset:0,zIndex:9998,background:'rgba(2,4,10,0.87)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)'}}/>
 
             {/* Toast */}
             <AnimatePresence>
               {toast&&(
-                <motion.div key="t" initial={{opacity:0,y:14,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:14}}
+                <motion.div key="t" initial={{opacity:0,y:18,scale:0.92}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:10,scale:0.96}} transition={{duration:0.28,ease:[0.34,1.1,0.64,1]}}
                   style={{position:'fixed',bottom:130,left:'50%',transform:'translateX(-50%)',zIndex:10300,
                     background:'rgba(12,16,36,0.98)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:14,
                     padding:'11px 20px',fontSize:13,fontWeight:700,color:'#fff',whiteSpace:'nowrap',
@@ -330,7 +349,7 @@ export default function ClassDetailModal({
 
             {/* Sheet */}
             <motion.div initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
-              transition={{type:'spring',stiffness:340,damping:34,mass:0.85}}
+              transition={{type:'spring',stiffness:280,damping:32,mass:1.1}}
               style={{position:'fixed',bottom:0,left:0,right:0,zIndex:9999,
                 maxHeight:'95vh',display:'flex',flexDirection:'column',
                 borderRadius:'26px 26px 0 0',
@@ -351,20 +370,20 @@ export default function ClassDetailModal({
 
                 {/* ── HERO ── */}
                 <div style={{position:'relative',height:245,overflow:'hidden',flexShrink:0}}>
-                  <img src={img} alt={gymClass.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                  <img src={img} alt={gymClass.name} style={{width:'100%',height:'100%',objectFit:'cover',animation:'cdm-hero-in 0.6s cubic-bezier(0.16,1,0.3,1) both'}}/>
                   <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(6,8,18,0.97) 100%)'}}/>
                   <div style={{position:'absolute',inset:0,background:`radial-gradient(ellipse at 75% 25%,rgba(${c.rgb},0.14) 0%,transparent 60%)`}}/>
 
                   {/* Actions row */}
                   <div style={{position:'absolute',top:13,left:14,right:14,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                    <motion.div initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{delay:0.1}}
+                    <motion.div initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{delay:0.08,duration:0.35,ease:[0.25,0.46,0.45,0.94]}}
                       style={{display:'flex',alignItems:'center',gap:5,fontSize:10,fontWeight:900,letterSpacing:'0.12em',textTransform:'uppercase',color:c.color,background:'rgba(0,0,0,0.62)',border:`1px solid ${c.border}`,borderRadius:20,padding:'5px 11px',backdropFilter:'blur(12px)'}}>
                       <span style={{fontSize:13}}>{c.emoji}</span>{c.label}
                       {gymClass.is_virtual&&<><span style={{margin:'0 2px',opacity:0.4}}>·</span><Wifi style={{width:10,height:10}}/>Virtual</>}
                     </motion.div>
                     <div style={{display:'flex',gap:7}}>
                       {[{I:Heart,act:()=>setSaved(s=>!s),on:saved,ac:'#f472b6'},{I:Share2,act:()=>{try{navigator.clipboard.writeText(gymClass.name||'Class');}catch{}showToast('Link copied 🔗');}},{I:X,act:onClose}].map(({I,act,on,ac},i)=>(
-                        <motion.button key={i} initial={{opacity:0,scale:0.7}} animate={{opacity:1,scale:1}} transition={{delay:0.12+i*0.04}}
+                        <motion.button key={i} initial={{opacity:0,scale:0.7}} animate={{opacity:1,scale:1}} transition={{delay:0.1+i*0.05,type:'spring',stiffness:260,damping:24}}
                           onClick={act}
                           style={{width:35,height:35,borderRadius:'50%',background:'rgba(0,0,0,0.58)',border:'1px solid rgba(255,255,255,0.14)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',backdropFilter:'blur(12px)'}}>
                           <I style={{width:14,height:14,color:on?ac:'#fff',fill:on&&ac?ac:'none',transition:'all 0.2s'}}/>
@@ -375,7 +394,7 @@ export default function ClassDetailModal({
 
                   {/* Title */}
                   <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'0 18px 16px'}}>
-                    <motion.div initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{delay:0.09,type:'spring',stiffness:260,damping:22}}>
+                    <motion.div initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{delay:0.05,type:'spring',stiffness:220,damping:28,mass:1.05}}>
                       {/* Status pills */}
                       <div style={{display:'flex',gap:6,marginBottom:9,flexWrap:'wrap'}}>
                         {booked&&<span style={{display:'inline-flex',alignItems:'center',gap:4,fontSize:10,fontWeight:900,letterSpacing:'0.07em',textTransform:'uppercase',color:'#34d399',background:'rgba(16,185,129,0.18)',border:'1px solid rgba(52,211,153,0.35)',borderRadius:20,padding:'3px 9px'}}><CheckCircle style={{width:9,height:9}}/>Booked</span>}
@@ -415,7 +434,7 @@ export default function ClassDetailModal({
                 <div style={{display:'flex',borderBottom:'1px solid rgba(255,255,255,0.06)',paddingLeft:18}}>
                   {['details','schedule','reviews'].map(s=>(
                     <button key={s} onClick={()=>setTab(s)}
-                      style={{padding:'12px 16px',fontSize:12,fontWeight:800,textTransform:'capitalize',letterSpacing:'0.02em',cursor:'pointer',background:'none',border:'none',borderBottom:`2px solid ${tab===s?c.color:'transparent'}`,color:tab===s?c.color:'rgba(255,255,255,0.32)',transition:'all 0.15s',marginBottom:-1}}>
+                      style={{padding:'12px 16px',fontSize:12,fontWeight:800,textTransform:'capitalize',letterSpacing:'0.02em',cursor:'pointer',background:'none',border:'none',borderBottom:`2px solid ${tab===s?c.color:'transparent'}`,color:tab===s?c.color:'rgba(255,255,255,0.32)',transition:'color 0.2s ease, border-color 0.2s ease',marginBottom:-1}}>
                       {s}
                     </button>
                   ))}
@@ -426,7 +445,7 @@ export default function ClassDetailModal({
 
                   {/* ===== DETAILS ===== */}
                   {tab==='details'&&(
-                    <motion.div key="d" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.18}}
+                    <motion.div key="d" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.22,ease:[0.25,0.46,0.45,0.94]}}
                       style={{display:'flex',flexDirection:'column',gap:18}}>
 
                       {/* Stats */}
@@ -557,7 +576,7 @@ export default function ClassDetailModal({
 
                   {/* ===== SCHEDULE ===== */}
                   {tab==='schedule'&&(
-                    <motion.div key="s" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.18}}
+                    <motion.div key="s" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.22,ease:[0.25,0.46,0.45,0.94]}}
                       style={{display:'flex',flexDirection:'column',gap:16}}>
 
                       {/* Day pills */}
@@ -589,8 +608,8 @@ export default function ClassDetailModal({
                             <div style={{fontSize:11,color:'rgba(255,255,255,0.32)',marginTop:2}}>Auto-book this class weekly</div>
                           </div>
                           <div onClick={()=>{setRecurring(r=>!r);showToast(recurring?'Recurring booking removed':'Weekly booking enabled 🔄');}}
-                            style={{width:44,height:26,borderRadius:13,background:recurring?c.color:'rgba(255,255,255,0.12)',position:'relative',cursor:'pointer',transition:'background 0.2s',flexShrink:0}}>
-                            <div style={{position:'absolute',top:3,left:recurring?21:3,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 4px rgba(0,0,0,0.3)'}}/>
+                            style={{width:44,height:26,borderRadius:13,background:recurring?c.color:'rgba(255,255,255,0.12)',position:'relative',cursor:'pointer',transition:'background 0.25s cubic-bezier(0.4,0,0.2,1)',flexShrink:0}}>
+                            <div style={{position:'absolute',top:3,left:recurring?21:3,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.25s cubic-bezier(0.34,1.4,0.64,1)',boxShadow:'0 1px 4px rgba(0,0,0,0.3)'}}/>
                           </div>
                         </div>
                       )}
@@ -641,7 +660,7 @@ export default function ClassDetailModal({
 
                   {/* ===== REVIEWS ===== */}
                   {tab==='reviews'&&(
-                    <motion.div key="r" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.18}}
+                    <motion.div key="r" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.22,ease:[0.25,0.46,0.45,0.94]}}
                       style={{display:'flex',flexDirection:'column',gap:16}}>
 
                       {/* Rating overview */}
@@ -660,7 +679,7 @@ export default function ClassDetailModal({
                                 <span style={{fontSize:10,color:'rgba(255,255,255,0.32)',fontWeight:700,width:8,flexShrink:0}}>{s}</span>
                                 <Star style={{width:9,height:9,fill:'#fbbf24',color:'#fbbf24',flexShrink:0}}/>
                                 <div style={{flex:1,height:5,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden'}}>
-                                  <div style={{height:'100%',width:`${p}%`,background:'#fbbf24',borderRadius:99,transition:'width 0.8s ease'}}/>
+                                  <div style={{height:'100%',width:`${p}%`,background:'#fbbf24',borderRadius:99,transition:'width 1s cubic-bezier(0.16,1,0.3,1)'}}/>
                                 </div>
                                 <span style={{fontSize:10,color:'rgba(255,255,255,0.22)',width:12,textAlign:'right',flexShrink:0}}>{n}</span>
                               </div>
@@ -693,7 +712,7 @@ export default function ClassDetailModal({
 
               {/* ── Fixed CTA ── */}
               {!isOwner&&(
-                <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.28}}
+                <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.18,type:'spring',stiffness:200,damping:28}}
                   style={{flexShrink:0,padding:'12px 18px 34px',background:'linear-gradient(to top,#060810 55%,transparent)',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
                   {pct!==null&&!full&&(
                     <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
@@ -709,10 +728,10 @@ export default function ClassDetailModal({
                       color:booked?'#34d399':waitlist?'#fbbf24':full?'rgba(255,255,255,0.28)':'#fff',
                       boxShadow:booked?'0 4px 20px rgba(16,185,129,0.25),inset 0 1px 0 rgba(255,255,255,0.1)':waitlist?'0 4px 20px rgba(251,191,36,0.2)':full?'none':'0 6px 28px rgba(37,99,235,0.5),inset 0 1px 0 rgba(255,255,255,0.2)',
                       outline:booked?'1px solid rgba(52,211,153,0.3)':waitlist?'1px solid rgba(251,191,36,0.3)':'none',
-                      transform:bookAnim?'scale(0.97)':'scale(1)',transition:'transform 0.15s ease,background 0.25s ease,box-shadow 0.25s ease'}}>
+                      transform:bookAnim?'scale(0.96) translateY(2px)':'scale(1) translateY(0)',transition:'transform 0.18s cubic-bezier(0.34,1.5,0.64,1),background 0.3s ease,box-shadow 0.3s ease'}}>
                     {!booked&&!waitlist&&!full&&(
                       <div style={{position:'absolute',inset:0,overflow:'hidden',borderRadius:'inherit'}}>
-                        <div style={{position:'absolute',top:0,bottom:0,width:'40%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',animation:'cdm-shimmer 3s ease-in-out infinite 1.5s'}}/>
+                        <div style={{position:'absolute',top:0,bottom:0,width:'40%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',animation:'cdm-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 2s'}}/>
                       </div>
                     )}
                     <span style={{position:'relative',zIndex:1}}>
