@@ -1483,6 +1483,7 @@ export default function GymCommunity() {
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+                {/* Join prompts — keep */}
                 {isGhostGym && !isMember && !showOwnerControls && (
                   <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
@@ -1558,6 +1559,11 @@ export default function GymCommunity() {
                     </SlidePanel>
                   </div>
                 )}
+
+                {/* ── Busy Times ── */}
+                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
+
+                {/* ── Active poll ── */}
                 {polls.length > 0 && (
                   <div className="space-y-3">
                     {polls.map(poll => (
@@ -1565,35 +1571,77 @@ export default function GymCommunity() {
                     ))}
                   </div>
                 )}
-                {upcomingEvents.length > 0 && (
-                  <div className="rounded-2xl p-4" style={CARD_STYLE}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div>
-                      <h3 className="text-[13px] font-black text-white">This Week</h3>
+
+                {/* ── Featured Coaches — horizontal scroll ── */}
+                {coaches.length > 0 && (
+                  <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
+                    {/* Header */}
+                    <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <GraduationCap style={{ width: 13, height: 13, color: '#60a5fa' }} />
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Featured Coaches</span>
+                      </div>
+                      {showOwnerControls && (
+                        <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 7, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>Edit</button>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      {upcomingEvents.map(event => (
-                        <WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? eventId => { const e=events.find(e=>e.id===eventId); rsvpMutation.mutate({ eventId, currentAttendees:e.attendees||0 }); } : null} disabled={showOwnerControls} />
-                      ))}
+                    {/* Horizontal scroll */}
+                    <div style={{ display: 'flex', gap: 10, padding: '12px 14px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+                      {coaches.map(coach => {
+                        const ci = (n='') => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+                        const copied = copiedCoachId === coach.id;
+                        const handleBook = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
+                        return (
+                          <div key={coach.id} style={{ flexShrink: 0, width: 130, borderRadius: 16, background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px 12px', gap: 6, position: 'relative' }}>
+                            {/* Shimmer line */}
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)' }} />
+                            {/* Avatar */}
+                            <div style={{ width: 52, height: 52, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,#3b82f6,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: '#fff', flexShrink: 0, border: '2px solid rgba(96,165,250,0.35)', boxShadow: '0 0 12px rgba(59,130,246,0.3)' }}>
+                              {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ci(coach.name)}
+                            </div>
+                            {/* Name */}
+                            <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{coach.name}</div>
+                            {/* Specialty */}
+                            {coach.specialties?.length > 0 && (
+                              <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.55)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{coach.specialties.slice(0,2).join(' · ')}</div>
+                            )}
+                            {/* Rating */}
+                            {coach.rating && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <Star style={{ width: 10, height: 10, fill: '#fbbf24', color: '#fbbf24' }} />
+                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{coach.rating}</span>
+                              </div>
+                            )}
+                            {/* Book button */}
+                            <button
+                              onClick={handleBook}
+                              onMouseDown={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                              onMouseUp={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                              onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                              onTouchStart={e=>{e.currentTarget.style.transform='translateY(2px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                              onTouchEnd={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderBottom='';}}
+                              style={{ marginTop: 2, width: '100%', padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                background: copied ? 'rgba(16,185,129,0.18)' : 'linear-gradient(to bottom,#3b82f6,#2563eb,#1d4ed8)',
+                                borderBottom: copied ? '2px solid rgba(5,150,105,0.5)' : '2px solid #1a3fa8',
+                                boxShadow: copied ? '0 1px 0 rgba(0,0,0,0.3)' : '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18)',
+                                color: copied ? '#34d399' : '#fff',
+                                transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
+                              {copied ? '✓ Copied' : 'Book'}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
-                {gymChallenges.length > 0 && (
-                  <div className="rounded-2xl p-4" style={CARD_STYLE}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:'rgba(167,139,250,0.15)' }}><Trophy className="w-3.5 h-3.5 text-purple-400" /></div>
-                      <h3 className="text-[13px] font-black text-white">New Challenges</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {gymChallenges.slice(0,1).map(challenge => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} gymImageUrl={gym?.image_url} />
-                      ))}
-                    </div>
-                  </div>
-                )}
+
+                {/* ── Community Leaderboard ── */}
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
+
               </motion.div>
             </TabsContent>
-
             {/* ── CHALLENGES ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
@@ -1626,120 +1674,6 @@ export default function GymCommunity() {
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
                 <GymActivityFeed checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
-                {/* Busy times */}
-                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                {/* Coaches + Event — side by side grid */}
-                {(coaches.length > 0 || events.filter(e => new Date(e.event_date) >= now).length > 0) && (
-                  <div style={{ display: 'grid', gridTemplateColumns: coaches.length > 0 && events.filter(e => new Date(e.event_date) >= now).length > 0 ? '1fr 1fr' : '1fr', gap: 10 }}>
-
-                    {/* Coaches column */}
-                    {coaches.length > 0 && (
-                      <div style={{ ...CARD_STYLE, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                        {/* Header */}
-                        <div style={{ padding: '10px 11px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <div style={{ width: 20, height: 20, borderRadius: 6, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <GraduationCap style={{ width: 10, height: 10, color: '#60a5fa' }} />
-                            </div>
-                            <span style={{ fontSize: 11.5, fontWeight: 800, color: '#fff' }}>Gym Coaches</span>
-                          </div>
-                          {showOwnerControls && (
-                            <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>Edit</button>
-                          )}
-                        </div>
-                        {/* Coach list */}
-                        <div style={{ padding: '8px 10px 10px', display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
-                          {coaches.slice(0, 3).map(coach => {
-                            const ci = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-                            const handleCopy = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
-                            return (
-                              <div key={coach.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                {/* Avatar */}
-                                <div style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
-                                  {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ci(coach.name)}
-                                </div>
-                                {/* Info */}
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.name}</div>
-                                  {coach.specialties?.length > 0 && (
-                                    <div style={{ fontSize: 9.5, color: 'rgba(148,163,184,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.specialties.slice(0, 2).join(' · ')}</div>
-                                  )}
-                                  {coach.rating && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 1 }}>
-                                      <Star style={{ width: 9, height: 9, fill: '#fbbf24', color: '#fbbf24' }} />
-                                      <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{coach.rating}</span>
-                                    </div>
-                                  )}
-                                </div>
-                                {/* Book button */}
-                                <button onClick={handleCopy} style={{ flexShrink: 0, background: copiedCoachId === coach.id ? 'rgba(16,185,129,0.15)' : 'rgba(37,99,235,0.15)', border: `1px solid ${copiedCoachId === coach.id ? 'rgba(16,185,129,0.35)' : 'rgba(37,99,235,0.35)'}`, borderRadius: 7, padding: '4px 7px', fontSize: 9, fontWeight: 800, color: copiedCoachId === coach.id ? '#34d399' : '#93c5fd', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                  {copiedCoachId === coach.id ? '✓' : 'Book'}
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Event column */}
-                    {events.filter(e => new Date(e.event_date) >= now).length > 0 && (() => {
-                      const event = events.filter(e => new Date(e.event_date) >= now)[0];
-                      const dateStr = event.event_date
-                        ? new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()
-                        : '';
-                      const timeStr = event.event_time || event.time || '';
-                      return (
-                        <div style={{ ...CARD_STYLE, borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                          {/* Header */}
-                          <div style={{ padding: '10px 11px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <div style={{ width: 20, height: 20, borderRadius: 6, background: 'rgba(251,146,60,0.15)', border: '1px solid rgba(251,146,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <Calendar style={{ width: 10, height: 10, color: '#fb923c' }} />
-                              </div>
-                              <span style={{ fontSize: 11.5, fontWeight: 800, color: '#fff' }}>Upcoming Event</span>
-                            </div>
-                            {showOwnerControls && (
-                              <button onClick={() => setShowCreateEvent(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>+ New</button>
-                            )}
-                          </div>
-                          {/* Event body */}
-                          <div style={{ padding: '10px 11px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', lineHeight: 1.25, letterSpacing: '-0.01em', textTransform: 'uppercase' }}>{event.title || event.name}</div>
-                            {dateStr && (
-                              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'rgba(251,146,60,0.85)', letterSpacing: '0.05em', lineHeight: 1.4 }}>
-                                {dateStr}{timeStr ? ` | ${timeStr}` : ''}
-                              </div>
-                            )}
-                            {event.description && (
-                              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                {event.description}
-                              </div>
-                            )}
-                          </div>
-                          {/* RSVP */}
-                          {!showOwnerControls ? (
-                            <div style={{ padding: '0 11px 11px' }}>
-                              <button onClick={() => rsvpMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })} style={{ width: '100%', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: 9, padding: '9px 0', fontSize: 12, fontWeight: 800, color: '#fff', cursor: 'pointer', letterSpacing: '0.03em', boxShadow: '0 3px 12px rgba(37,99,235,0.45)' }}>
-                                RSVP Now
-                              </button>
-                            </div>
-                          ) : (
-                            <div style={{ padding: '0 11px 11px', display: 'flex', gap: 6 }}>
-                              <button onClick={() => setShowCreateEvent(true)} style={{ flex: 1, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: 9, padding: '8px 0', fontSize: 11, fontWeight: 700, color: '#93c5fd', cursor: 'pointer' }}>+ Add</button>
-                              <button onClick={() => { if (window.confirm('Delete?')) deleteEventMutation.mutate(event.id); }} style={{ width: 34, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                <Trash2 style={{ width: 11, height: 11, color: '#f87171' }} />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-
-                {/* Leaderboard */}
-                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
               </motion.div>
             </TabsContent>
 
@@ -1762,3 +1696,4 @@ export default function GymCommunity() {
     </PullToRefresh>
   );
 }
+
