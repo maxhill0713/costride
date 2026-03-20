@@ -363,6 +363,10 @@ html {
       border-radius: inherit;
       animation: tapRipple 0.6s ease-out;
     }
+
+    .nav-tab-link:active::after {
+      display: none !important;
+    }
   }
 
   /* Safe Area Padding for Notches */
