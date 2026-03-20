@@ -209,19 +209,11 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
 // The Activity TabsContent block should look like this after the edit:
 // ─────────────────────────────────────────────────────────────────────────────
 
-/*
-  <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
-    <motion.div ...>
-
-      ← ADD HERE →
-      {/* Active Now */}
-      <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
-      {/* Activity Feed */}
-      <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
-
-      {/* Busy times */}           ← existing content starts here
-      <BusyTimesChart ... />
-      ...
-    </motion.div>
-  </TabsContent>
-*/
+// <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
+//   <motion.div ...>
+//     ADD HERE:
+//     <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
+//     <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
+//     ... existing content (BusyTimesChart etc.)
+//   </motion.div>
+// </TabsContent>
