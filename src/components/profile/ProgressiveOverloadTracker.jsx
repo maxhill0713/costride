@@ -263,28 +263,28 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
   return (
     <div>
-      {/* ── Title ── */}
-      <h2 style={{
-        fontSize: 18, fontWeight: 900, color: '#f1f5f9',
-        letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, width: '100%',
-      }}>
-        Progressive Overload Tracker
-      </h2>
-
-      {/* ── Workout selector ── */}
-      {workoutOptions.length > 0 ? (
-        <div style={{ marginBottom: 16 }}>
-          <WorkoutSelector
-            options={workoutOptions}
-            selected={validKey}
-            onSelect={setSelectedWorkoutKey}
-          />
-        </div>
-      ) : (
-        <p style={{ fontSize: 11, color: '#475569', marginBottom: 16 }}>
-          No workout split configured yet.
-        </p>
-      )}
+      {/* ── Title + Workout selector on same row ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <h2 style={{
+          fontSize: 18, fontWeight: 900, color: '#f1f5f9',
+          letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2, flexShrink: 0,
+        }}>
+          Overload Tracker
+        </h2>
+        {workoutOptions.length > 0 ? (
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <WorkoutSelector
+              options={workoutOptions}
+              selected={validKey}
+              onSelect={setSelectedWorkoutKey}
+            />
+          </div>
+        ) : (
+          <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>
+            No split configured yet.
+          </p>
+        )}
+      </div>
 
       {/* ── Chart ── */}
       {isLoading ? (
