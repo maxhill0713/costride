@@ -93,13 +93,13 @@ export default function Layout({ children, currentPageName }) {
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
   const navItems = isDashboardUser ? [
-  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
+  { name: 'Dashboard', icon: Home, page: 'GymOwnerDashboard', color: 'text-orange-500' },
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' }] :
   [
   { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
   { name: 'Progress', icon: BarChart3, page: 'Progress', color: 'text-green-500' },
-  { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+  { name: 'Challenges', icon: Trophy, page: 'RedeemReward', color: 'text-amber-500' },
   { name: 'Profile', icon: User, page: 'Profile', color: 'text-pink-500' }];
 
 
