@@ -24,7 +24,6 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import InviteOwnerModal from '../components/gym/InviteOwnerModal';
-import ClassDetailModal from '../components/gym/ClassDetailModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
@@ -199,14 +198,11 @@ const AV_COLORS = [
 const colorForUser = (userId) =>
   AV_COLORS[(userId || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
 
+
+// ── Active Now Strip ──────────────────────────────────────────────────────────
 function ActiveNowStrip({ checkIns, memberAvatarMap }) {
-  // Try every possible timestamp field, pick whichever gives the most recent value
   const getTimestamp = (c) => {
-    const candidates = [
-      c.created_date, c.created_at, c.timestamp,
-      c.check_in_time, c.checkin_time, c.date_created,
-      c.check_in_date,
-    ];
+    const candidates = [c.created_date, c.created_at, c.timestamp, c.check_in_time, c.checkin_time, c.date_created, c.check_in_date];
     let best = null;
     for (const v of candidates) {
       if (!v) continue;
@@ -215,932 +211,834 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
     }
     return best;
   };
-
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-
-  const recentCheckIns = checkIns
-    .filter(c => {
-      const ts = getTimestamp(c);
-      return ts && ts >= twoHoursAgo;
-    })
-    .reduce((acc, c) => {
-      if (!acc.find(a => a.user_id === c.user_id)) acc.push(c);
-      return acc;
-    }, [])
-    .slice(0, 10);
-
-  if (recentCheckIns.length === 0) return null;
-
-  const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
+  const recent = checkIns
+    .filter(c => { const ts = getTimestamp(c); return ts && ts >= twoHoursAgo; })
+    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
+    .slice(0, 12);
+  if (recent.length === 0) return null;
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
-    <div style={{ ...CARD_STYLE, borderRadius: 14, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>Active Now</span>
+    <div style={{ ...CARD_STYLE, borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+        <span style={{ position: 'relative', width: 8, height: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ position: 'absolute', width: 14, height: 14, borderRadius: '50%', background: 'rgba(34,197,94,0.25)', animation: 'an-ping 1.5s ease-in-out infinite' }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.9)', flexShrink: 0 }} />
+        </span>
+        <span style={{ fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>
+          {recent.length} Active Now
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'flex-end' }}>
-        {recentCheckIns.map((c, i) => {
+      <div style={{ display: 'flex', alignItems: 'center', overflowX: 'hidden' }}>
+        {recent.slice(0, 8).map((c, i) => {
           const col = AV_COLORS[i % AV_COLORS.length];
           const avatar = memberAvatarMap[c.user_id];
           return (
-            <div key={c.user_id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(34,197,94,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
-                {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(c.user_name)}
-                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />
-              </div>
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, textAlign: 'center', maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {(c.user_name || '').split(' ')[0]}
-              </span>
+            <div key={c.user_id || i} title={c.user_name}
+              style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                background: col.bg, border: '2px solid rgba(6,8,18,0.9)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 800, color: col.color,
+                overflow: 'hidden', marginLeft: i > 0 ? -8 : 0, zIndex: 10 - i,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              {avatar
+                ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : ini(c.user_name)}
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-// ── Gym Activity Feed ─────────────────────────────────────────────────────────
-function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
-  const [likedIds, setLikedIds] = React.useState(new Set());
-
-  const toggleLike = (id) => setLikedIds(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-
-  const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
-  const timeAgo = (dateStr) => {
-    const diff = (Date.now() - new Date(dateStr)) / 1000;
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  };
-
-  const feedItems = React.useMemo(() => {
-    const items = [];
-    checkIns.slice(0, 20).forEach(c =>
-      items.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c })
-    );
-    lifts.slice(0, 10).forEach(l =>
-      items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l })
-    );
-    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
-  }, [checkIns, lifts]);
-
-  if (feedItems.length === 0) return null;
-
-  return (
-    <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-      {/* Header */}
-      <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
-        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Activity style={{ width: 11, height: 11, color: '#818cf8' }} />
-        </div>
-        <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Activity Feed</span>
-      </div>
-
-      {/* Scrollable feed — fixed height shows ~4 cards, scroll for more */}
-      <div style={{ maxHeight: 300, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
-        {feedItems.map((item, index) => {
-          const avatar = memberAvatarMap[item.userId];
-          const col = colorForUser(item.userId);
-          const liked = likedIds.has(item.id);
-          const fakeLikes = ((item.userId || '').charCodeAt(0) % 18) + 2;
-
-          let iconEl, headline, sub;
-
-          if (item.type === 'checkin') {
-            iconEl = (
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <MapPin style={{ width: 11, height: 11, color: '#60a5fa' }} />
-              </div>
-            );
-            headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' checked in'}</>;
-            sub = item.data.notes || 'At the gym';
-          } else {
-            const isNewPR = item.data.is_personal_record || item.data.is_pr;
-            iconEl = (
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: isNewPR ? 'rgba(234,179,8,0.12)' : 'rgba(168,85,247,0.12)', border: `1px solid ${isNewPR ? 'rgba(234,179,8,0.22)' : 'rgba(168,85,247,0.22)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {isNewPR
-                  ? <Trophy style={{ width: 11, height: 11, color: '#eab308' }} />
-                  : <Dumbbell style={{ width: 11, height: 11, color: '#a78bfa' }} />}
-              </div>
-            );
-            headline = isNewPR
-              ? <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' hit a new PR 🔥'}</>
-              : <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' logged a lift'}</>;
-            sub = `${item.data.exercise || 'Exercise'}: ${item.data.weight_lbs || item.data.weight || '—'} lbs`;
-          }
-
-          return (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 13px', borderBottom: index < feedItems.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-              {/* Avatar */}
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: col.color, overflow: 'hidden', flexShrink: 0 }}>
-                {avatar ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(item.userName)}
-              </div>
-              {/* Text */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.85)', lineHeight: 1.35 }}>{headline}</div>
-                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1 }}>{sub}</div>
-              </div>
-              {/* Right: icon + time + like */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {iconEl}
-                  <span style={{ fontSize: 10, color: 'rgba(148,163,184,0.4)', fontWeight: 500, whiteSpace: 'nowrap' }}>{timeAgo(item.date)}</span>
-                </div>
-                <button
-                  onClick={() => toggleLike(item.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 3, color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)', fontSize: 10, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'color 0.15s' }}
-                >
-                  <Heart style={{ width: 11, height: 11, fill: liked ? '#f472b6' : 'none', transition: 'fill 0.15s' }} />
-                  {fakeLikes + (liked ? 1 : 0)}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Single class card ─────────────────────────────────────────────────────────
-function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {
-  const cfg = CLASS_TYPE_CONFIG[getClassType(gymClass)];
-  const scheduleDays = getScheduleDays(gymClass);
-  const capacity = gymClass.capacity || gymClass.max_participants || null;
-  const enrolled  = gymClass.enrolled || gymClass.participants_count || 0;
-  const spotsLeft = capacity ? capacity - enrolled : null;
-  const isFull    = spotsLeft !== null && spotsLeft <= 0;
-  const fillPct   = capacity ? Math.min(100, Math.round((enrolled / capacity) * 100)) : null;
-  const isPopular = fillPct !== null && fillPct >= 65;
-
-  return (
-    <div style={{
-      borderRadius: 20,
-      background: CARD_BG,
-      border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
-      overflow: 'hidden',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      boxShadow: booked
-        ? `0 0 0 1px ${cfg.border}, 0 12px 40px rgba(0,0,0,0.5)`
-        : '0 4px 20px rgba(0,0,0,0.35)',
-    }}>
-      {/* Shimmer line — matches home card */}
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
-      {/* Coloured type bar */}
-      <div style={{ height: 2, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)` }} />
-
-      <div style={{ padding: '16px 16px 0' }}>
-        {/* Row 1: icon + name + delete */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          <div style={{
-            width: 50, height: 50, borderRadius: 15, flexShrink: 0,
-            background: cfg.bg, border: `1px solid ${cfg.border}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-          }}>{cfg.emoji}</div>
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Badges */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
-              <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</span>
-              {isPopular && !isFull && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fb923c', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.25)', borderRadius: 5, padding: '2px 7px' }}>🔥 Popular</span>}
-              {booked && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#34d399', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 5, padding: '2px 7px' }}>✓ Booked</span>}
-              {isFull && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 5, padding: '2px 7px' }}>Full</span>}
-            </div>
-
-            {/* Title */}
-            <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-              {gymClass.name || gymClass.title}
-            </div>
-            {(gymClass.instructor || gymClass.coach_name) && (
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 3, fontWeight: 600 }}>
-                {gymClass.instructor || gymClass.coach_name}
-              </div>
-            )}
-          </div>
-
-          {isOwner && (
-            <button onClick={() => onDelete && onDelete(gymClass.id)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', flexShrink: 0, cursor: 'pointer' }}>
-              <Trash2 style={{ width: 13, height: 13, color: '#f87171' }} />
-            </button>
-          )}
-        </div>
-
-        {/* Info grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', marginTop: 14 }}>
-          {gymClass.schedule && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Clock style={{ width: 12, height: 12, color: cfg.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{gymClass.schedule}</span>
-            </div>
-          )}
-          {gymClass.duration_minutes && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Timer style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>{gymClass.duration_minutes} min</span>
-            </div>
-          )}
-          {gymClass.location && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <MapPin style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gymClass.location}</span>
-            </div>
-          )}
-          {capacity !== null && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Users style={{ width: 12, height: 12, color: isFull ? '#f87171' : spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: isFull ? '#f87171' : spotsLeft <= 3 ? '#fbbf24' : 'rgba(255,255,255,0.55)' }}>
-                {isFull ? 'Class full' : `${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left`}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Spots bar */}
-        {fillPct !== null && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{enrolled} / {capacity} spots filled</span>
-              <span style={{ fontSize: 10, fontWeight: 800, color: isFull ? '#f87171' : fillPct >= 65 ? '#fbbf24' : cfg.color }}>{fillPct}%</span>
-            </div>
-            <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${fillPct}%`, borderRadius: 99, background: isFull ? '#ef4444' : fillPct >= 65 ? 'linear-gradient(90deg,#d97706,#fbbf24)' : `linear-gradient(90deg,${cfg.color}aa,${cfg.color})`, transition: 'width 0.6s ease' }} />
-            </div>
+        {recent.length > 8 && (
+          <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(6,8,18,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.5)',
+            marginLeft: -8, zIndex: 0 }}>
+            +{recent.length - 8}
           </div>
         )}
-
-        {/* Day pills */}
-        {scheduleDays.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, marginTop: 12 }}>
-            {DAYS_SHORT.map(d => {
-              const on = scheduleDays.includes(d);
-              return <div key={d} style={{ flex: 1, textAlign: 'center', padding: '5px 0', borderRadius: 8, fontSize: 9, fontWeight: 900, background: on ? cfg.bg : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? cfg.border : 'rgba(255,255,255,0.06)'}`, color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>;
-            })}
-          </div>
-        )}
-
-        {/* Description */}
-        {gymClass.description && (
-          <p style={{ margin: '12px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {gymClass.description}
-          </p>
-        )}
-      </div>
-
-      {/* Book button */}
-      {!isOwner && (
-        <div style={{ padding: '14px 16px 16px' }}>
-          <button
-            onClick={() => !isFull && onBook && onBook(gymClass.id)}
-            disabled={isFull}
-            style={{
-              width: '100%', padding: '13px', borderRadius: 14,
-              fontSize: 14, fontWeight: 800, cursor: isFull ? 'default' : 'pointer',
-              border: 'none', letterSpacing: '-0.01em',
-              background: booked
-                ? 'rgba(16,185,129,0.12)'
-                : isFull
-                  ? 'rgba(255,255,255,0.04)'
-                  : `linear-gradient(135deg, ${cfg.color}22, ${cfg.color}14)`,
-              color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
-              outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
-              transition: 'all 0.18s',
-            }}>
-            {booked ? '✓ Booked — tap to cancel' : isFull ? 'Class Full' : 'Book Spot'}
-          </button>
-        </div>
-      )}
-      {isOwner && <div style={{ height: 16 }} />}
-    </div>
-  );
-}
-
-// ── Today's quick-book strip ──────────────────────────────────────────────────
-function TodayStrip({ classes, bookedIds, onBook }) {
-  const todayName = DAYS_SHORT[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
-  const todayClasses = classes.filter(c => {
-    const days = getScheduleDays(c);
-    return days.length === 0 || days.includes(todayName);
-  }).slice(0, 8);
-
-  if (todayClasses.length === 0) return null;
-
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-          Today's Classes
-        </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.25)' }}>
-          {todayClasses.length} scheduled
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-        {todayClasses.map(c => {
-          const typeKey = getClassType(c);
-          const cfg = CLASS_TYPE_CONFIG[typeKey];
-          const booked = bookedIds.has(c.id);
-          const capacity  = c.capacity || c.max_participants || null;
-          const enrolled  = c.enrolled  || c.participants_count || 0;
-          const spotsLeft = capacity ? capacity - enrolled : null;
-          const isFull    = spotsLeft !== null && spotsLeft <= 0;
-          const isHot     = spotsLeft !== null && spotsLeft <= 3 && !isFull;
-
-          return (
-            <div key={c.id} style={{
-              flexShrink: 0, width: 168, borderRadius: 20,
-              background: CARD_BG,
-              border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: booked ? `0 0 0 1px ${cfg.border}, 0 8px 32px rgba(0,0,0,0.5)` : '0 8px 32px rgba(0,0,0,0.45)',
-              overflow: 'hidden', position: 'relative', cursor: isFull ? 'default' : 'pointer',
-            }} onClick={() => !isFull && onBook(c.id)}>
-
-              {/* Shimmer line */}
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
-              {/* Colour accent bar */}
-              <div style={{ height: 2, background: `linear-gradient(90deg, ${cfg.color}cc, ${cfg.color}44)` }} />
-
-              {/* Large decorative emoji */}
-              <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 52, lineHeight: 1, opacity: 0.1, filter: 'blur(1px)', pointerEvents: 'none', userSelect: 'none' }}>
-                {cfg.emoji}
-              </div>
-
-              {/* Booked / hot / full badge */}
-              {(booked || isHot || isFull) && (
-                <div style={{
-                  position: 'absolute', top: 11, right: 10, fontSize: 9, fontWeight: 900,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: booked ? '#34d399' : isFull ? '#f87171' : '#fbbf24',
-                  background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)',
-                  border: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(239,68,68,0.3)' : 'rgba(251,191,36,0.3)'}`,
-                  borderRadius: 6, padding: '2px 7px',
-                }}>
-                  {booked ? '✓ Booked' : isFull ? 'Full' : '🔥 Hot'}
-                </div>
-              )}
-
-              <div style={{ padding: '12px 14px 0' }}>
-                {/* Type chip */}
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8, fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: '2px 8px' }}>
-                  {cfg.emoji} {cfg.label}
-                </div>
-
-                {/* Name */}
-                <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.2, marginBottom: 4 }}>
-                  {c.name || c.title}
-                </div>
-
-                {/* Instructor */}
-                {(c.instructor || c.coach_name) && (
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 600, marginBottom: 10 }}>
-                    {c.instructor || c.coach_name}
-                  </div>
-                )}
-
-                {/* Meta */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
-                  {c.schedule && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Clock style={{ width: 10, height: 10, color: cfg.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{c.schedule}</span>
-                      {c.duration_minutes && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>· {c.duration_minutes}min</span>}
-                    </div>
-                  )}
-                  {c.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <MapPin style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.location}</span>
-                    </div>
-                  )}
-                  {spotsLeft !== null && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Users style={{ width: 10, height: 10, color: isFull ? '#f87171' : isHot ? '#fbbf24' : 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: isFull ? '#f87171' : isHot ? '#fbbf24' : 'rgba(255,255,255,0.45)' }}>
-                        {isFull ? 'Class full' : `${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left`}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Book button */}
-              <div style={{ padding: '0 10px 12px' }}>
-                <div style={{
-                  padding: '9px 0', borderRadius: 12, textAlign: 'center', fontSize: 12, fontWeight: 800,
-                  background: booked ? 'rgba(16,185,129,0.15)' : isFull ? 'rgba(255,255,255,0.04)' : cfg.bg,
-                  color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.2)' : cfg.color,
-                  outline: `1px solid ${booked ? 'rgba(16,185,129,0.3)' : isFull ? 'rgba(255,255,255,0.06)' : cfg.border}`,
-                  letterSpacing: '-0.01em',
-                }}>
-                  {booked ? '✓ Booked' : isFull ? 'Class Full' : 'Book Spot'}
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
 }
 
-// ── Class images per type ─────────────────────────────────────────────────────
-const CLASS_IMAGES = {
-  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
-  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
-  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  cardio:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
-  spin:     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
-  boxing:   'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&q=80',
-  pilates:  'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80',
-  default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-};
-
-// Inject card CSS once
-const CLASS_CARD_CSS = `
-@keyframes cc-shimmer { 0%{transform:translateX(-100%);opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{transform:translateX(220%);opacity:0} }
-@keyframes cc-bar { from{width:0} }
-@keyframes cc-hot { 0%,100%{opacity:0.75} 50%{opacity:1} }
-@keyframes cc-press-in { to{transform:scale(0.97) translateY(2px)} }
+// ── Activity feed CSS ─────────────────────────────────────────────────────────
+const ACTIVITY_CSS = `
+@keyframes an-ping   { 0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.8);opacity:0} }
+@keyframes af-in     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes af-like   { 0%{transform:scale(1)} 40%{transform:scale(1.35)} 70%{transform:scale(0.9)} 100%{transform:scale(1)} }
+@keyframes af-pr-glow{ 0%,100%{text-shadow:0 0 8px rgba(234,179,8,0.6)} 50%{text-shadow:0 0 18px rgba(234,179,8,1)} }
 `;
-function injectClassCSS() {
-  if (!document.getElementById('cc-css')) {
-    const s = document.createElement('style');
-    s.id = 'cc-css'; s.textContent = CLASS_CARD_CSS;
+function injectActivityCSS() {
+  if (!document.getElementById('af-css')) {
+    const s = document.createElement('style'); s.id = 'af-css'; s.textContent = ACTIVITY_CSS;
     document.head.appendChild(s);
   }
 }
 
-// ── Premium class card ────────────────────────────────────────────────────────
-function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick }) {
+// ── Feed item types ───────────────────────────────────────────────────────────
+const FEED_TYPES = {
+  checkin: { icon: MapPin,   iconColor: '#60a5fa', iconBg: 'rgba(37,99,235,0.14)',  iconBorder: 'rgba(37,99,235,0.22)',  verb: 'checked in',         label: '📍 Check-in' },
+  lift_pr: { icon: Trophy,   iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.14)',  iconBorder: 'rgba(234,179,8,0.25)',  verb: 'hit a new PR 🔥',    label: '🏆 New PR' },
+  lift:    { icon: Dumbbell, iconColor: '#a78bfa', iconBg: 'rgba(168,85,247,0.12)', iconBorder: 'rgba(168,85,247,0.22)', verb: 'logged a lift',      label: '💪 Lift' },
+};
+
+function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
+  useEffect(() => { injectActivityCSS(); }, []);
+  const col  = colorForUser(item.userId);
+  const avatar = memberAvatarMap[item.userId];
+  const ini  = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const type = item.type === 'checkin' ? FEED_TYPES.checkin
+             : item.data?.is_personal_record || item.data?.is_pr ? FEED_TYPES.lift_pr
+             : FEED_TYPES.lift;
+  const isPR = item.type !== 'checkin' && (item.data?.is_personal_record || item.data?.is_pr);
+  const fakeLikes = ((item.userId || '').charCodeAt(0) % 14) + 2;
+
+  const timeAgo = (d) => {
+    const s = (Date.now() - new Date(d)) / 1000;
+    if (s < 60) return 'just now';
+    if (s < 3600) return `${Math.floor(s/60)}m`;
+    if (s < 86400) return `${Math.floor(s/3600)}h`;
+    return `${Math.floor(s/86400)}d`;
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 12, padding: '13px 14px',
+      borderBottom: '1px solid rgba(255,255,255,0.045)',
+      animation: `af-in 0.3s ease ${index * 0.04}s both` }}>
+
+      {/* Avatar */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+          background: col.bg, border: `2px solid ${isPR ? 'rgba(234,179,8,0.5)' : 'rgba(255,255,255,0.08)'}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, fontWeight: 800, color: col.color,
+          boxShadow: isPR ? '0 0 12px rgba(234,179,8,0.35)' : '0 2px 8px rgba(0,0,0,0.35)' }}>
+          {avatar
+            ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : ini(item.userName)}
+        </div>
+        {/* Type dot */}
+        <div style={{ position: 'absolute', bottom: -2, right: -2,
+          width: 16, height: 16, borderRadius: '50%',
+          background: type.iconBg, border: `1.5px solid rgba(6,8,18,0.9)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+          <type.icon style={{ width: 8, height: 8, color: type.iconColor }} />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Name + action */}
+        <div style={{ fontSize: 13.5, color: 'rgba(226,232,240,0.9)', lineHeight: 1.4, marginBottom: 3 }}>
+          <span style={{ fontWeight: 800, color: '#fff' }}>{item.userName}</span>
+          {' '}
+          <span style={{ color: isPR ? '#fbbf24' : 'rgba(226,232,240,0.7)',
+            animation: isPR ? 'af-pr-glow 2s ease-in-out infinite' : 'none' }}>
+            {type.verb}
+          </span>
+        </div>
+
+        {/* Sub info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {item.type === 'checkin' ? (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
+              {item.data?.notes || 'At the gym'}
+            </span>
+          ) : (
+            <>
+              <span style={{ fontSize: 11, fontWeight: 700,
+                color: isPR ? 'rgba(251,191,36,0.9)' : 'rgba(167,139,250,0.9)',
+                background: isPR ? 'rgba(234,179,8,0.1)' : 'rgba(168,85,247,0.1)',
+                border: `1px solid ${isPR ? 'rgba(234,179,8,0.2)' : 'rgba(168,85,247,0.2)'}`,
+                borderRadius: 99, padding: '2px 8px' }}>
+                {item.data?.exercise || 'Exercise'}
+              </span>
+              {(item.data?.weight_lbs || item.data?.weight) && (
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>
+                  {item.data.weight_lbs || item.data.weight} lbs
+                </span>
+              )}
+              {item.data?.reps && (
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>× {item.data.reps} reps</span>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Right side: time + like */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+        justifyContent: 'space-between', flexShrink: 0, minWidth: 40 }}>
+        <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
+          {timeAgo(item.date)}
+        </span>
+        <button onClick={() => onLike(item.id)}
+          style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 6px',
+            borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: liked ? 'rgba(244,114,182,0.12)' : 'transparent',
+            color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)',
+            fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
+          <Heart style={{ width: 12, height: 12, fill: liked ? '#f472b6' : 'none',
+            transition: 'fill 0.15s',
+            animation: liked ? 'af-like 0.3s ease' : 'none' }} />
+          {fakeLikes + (liked ? 1 : 0)}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Stats summary row ─────────────────────────────────────────────────────────
+function ActivityStats({ checkIns, lifts }) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekAgo = new Date(Date.now() - 7*86400000);
+  const todayCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= today).length;
+  const weekCheckIns  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo).length;
+  const totalPRs      = lifts.filter(l => l.is_personal_record || l.is_pr).length;
+  const uniqueToday   = new Set(checkIns.filter(c => new Date(c.check_in_date) >= today).map(c => c.user_id)).size;
+  const stats = [
+    { label: 'Today', value: todayCheckIns, sub: `${uniqueToday} member${uniqueToday !== 1 ? 's' : ''}`, color: '#22c55e', emoji: '📍' },
+    { label: 'This Week', value: weekCheckIns, sub: 'check-ins', color: '#60a5fa', emoji: '📅' },
+    { label: 'PRs Logged', value: totalPRs, sub: 'all time', color: '#fbbf24', emoji: '🏆' },
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      {stats.map(s => (
+        <div key={s.label} style={{ ...CARD_STYLE, borderRadius: 14, padding: '12px 10px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+            background: `linear-gradient(90deg, transparent, ${s.color}88, transparent)` }} />
+          <div style={{ fontSize: 11, marginBottom: 4 }}>{s.emoji}</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>{s.label}</div>
+          <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{s.sub}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Main Activity Feed ────────────────────────────────────────────────────────
+function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
+  const [likedIds, setLikedIds] = React.useState(new Set());
+  const [filter, setFilter] = React.useState('all'); // all | checkins | lifts | prs
+  const [showAll, setShowAll] = React.useState(false);
+
+  const toggleLike = (id) => setLikedIds(prev => {
+    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
+  });
+
+  const allItems = React.useMemo(() => {
+    const items = [];
+    // Deduplicate check-ins per user per day
+    const seenCheckIns = new Set();
+    checkIns.forEach(c => {
+      const dayKey = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
+      if (seenCheckIns.has(dayKey)) return;
+      seenCheckIns.add(dayKey);
+      items.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c });
+    });
+    lifts.forEach(l => {
+      items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l });
+    });
+    return items.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [checkIns, lifts]);
+
+  const filtered = React.useMemo(() => {
+    if (filter === 'checkins') return allItems.filter(i => i.type === 'checkin');
+    if (filter === 'lifts')    return allItems.filter(i => i.type === 'lift' && !i.data?.is_personal_record && !i.data?.is_pr);
+    if (filter === 'prs')      return allItems.filter(i => i.type === 'lift' && (i.data?.is_personal_record || i.data?.is_pr));
+    return allItems;
+  }, [allItems, filter]);
+
+  const visible = showAll ? filtered : filtered.slice(0, 8);
+  const prCount = allItems.filter(i => i.type === 'lift' && (i.data?.is_personal_record || i.data?.is_pr)).length;
+
+  if (allItems.length === 0) return null;
+
+  const filterBtns = [
+    { id: 'all',      label: 'All',      count: allItems.length },
+    { id: 'checkins', label: '📍 Check-ins', count: allItems.filter(i => i.type === 'checkin').length },
+    { id: 'lifts',    label: '💪 Lifts',    count: allItems.filter(i => i.type === 'lift').length },
+    ...(prCount > 0 ? [{ id: 'prs', label: '🏆 PRs', count: prCount }] : []),
+  ];
+
+  return (
+    <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Activity style={{ width: 13, height: 13, color: '#818cf8' }} />
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Activity Feed</span>
+        </div>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{filtered.length} items</span>
+      </div>
+
+      {/* Filter pills */}
+      <div style={{ display: 'flex', gap: 6, padding: '10px 14px 8px', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        {filterBtns.map(f => {
+          const active = filter === f.id;
+          return (
+            <button key={f.id} onClick={() => setFilter(f.id)}
+              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 11px', borderRadius: 99, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                border: `1px solid ${active ? 'rgba(99,102,241,0.55)' : 'rgba(255,255,255,0.09)'}`,
+                background: active ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
+                color: active ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                transition: 'all 0.15s' }}>
+              {f.label}
+              <span style={{ fontSize: 9.5, fontWeight: 800,
+                color: active ? 'rgba(129,140,248,0.8)' : 'rgba(255,255,255,0.22)',
+                background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
+                borderRadius: 99, padding: '1px 6px' }}>{f.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Feed items */}
+      <div style={{ maxHeight: showAll ? 'none' : 420, overflowY: showAll ? 'visible' : 'hidden', position: 'relative' }}>
+        {visible.length === 0 ? (
+          <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>🏃</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>No {filter === 'all' ? '' : filter} activity yet</div>
+          </div>
+        ) : (
+          visible.map((item, i) => (
+            <FeedCard key={item.id} item={item} memberAvatarMap={memberAvatarMap} liked={likedIds.has(item.id)} onLike={toggleLike} index={i} />
+          ))
+        )}
+        {/* Fade-out gradient when collapsed */}
+        {!showAll && filtered.length > 8 && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+            background: 'linear-gradient(to bottom, transparent, rgba(8,10,20,0.95))',
+            pointerEvents: 'none' }} />
+        )}
+      </div>
+
+      {/* Show more / less */}
+      {filtered.length > 8 && (
+        <button onClick={() => setShowAll(s => !s)}
+          style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)', cursor: 'pointer',
+            background: 'rgba(255,255,255,0.03)', border: 'none',
+            borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          {showAll
+            ? <><ChevronDown style={{ width: 14, height: 14, transform: 'rotate(180deg)' }} />Show Less</>
+            : <><ChevronDown style={{ width: 14, height: 14 }} />Show {filtered.length - 8} More</>}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Unused legacy components (kept for compatibility) ─────────────────────────
+function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) { return null; }
+function TodayStrip({ classes, bookedIds, onBook }) { return null; }
+
+
+// ── Class images ─────────────────────────────────────────────────────────────
+const CLASS_IMAGES = {
+  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=800&q=80',
+  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
+  cardio:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
+  spin:     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
+  boxing:   'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=800&q=80',
+  pilates:  'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80',
+  default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
+};
+
+const CLASS_CSS = `
+@keyframes cl-shimmer{0%{transform:translateX(-100%);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(220%);opacity:0}}
+@keyframes cl-bar{from{width:0}}
+@keyframes cl-hot{0%,100%{opacity:.8}50%{opacity:1}}
+@keyframes cl-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cl-press{to{transform:scale(0.97) translateY(2px)}}
+`;
+function injectClassCSS(){
+  if(!document.getElementById('cl-css')){const s=document.createElement('style');s.id='cl-css';s.textContent=CLASS_CSS;document.head.appendChild(s);}
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const TIME_SLOTS = ['Morning','Afternoon','Evening'];
+const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function getMockTime(gymClass, index) {
+  // Use schedule string if it looks like a time, else generate a plausible one
+  const s = gymClass.schedule || '';
+  const m = s.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+  if (m) return s.match(/\d{1,2}:\d{2}/)[0];
+  const times = ['06:00','07:30','09:00','10:30','12:00','13:30','16:00','17:30','18:00','19:30','20:00'];
+  return times[index % times.length];
+}
+function getTimeSlot(timeStr) {
+  const h = parseInt((timeStr || '12').split(':')[0]);
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  return 'Evening';
+}
+function classMatchesTimeSlot(gymClass, slot, index) {
+  return getTimeSlot(getMockTime(gymClass, index)) === slot;
+}
+
+// ── Date header ───────────────────────────────────────────────────────────────
+function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot }) {
+  const today = new Date();
+  const todayDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+
+  // Build 7 days starting from Monday of this week
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - todayDayIdx);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return {
+      idx: i,
+      label: DAY_LABELS[i],
+      num: d.getDate(),
+      isToday: i === todayDayIdx,
+      date: d,
+    };
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Day scroller */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
+        {days.map(d => {
+          const active = activeDay === d.idx;
+          return (
+            <button key={d.idx} onClick={() => setActiveDay(d.idx)}
+              style={{
+                flexShrink: 0, minWidth: 50, padding: '8px 6px', borderRadius: 14, cursor: 'pointer',
+                border: `1px solid ${active ? 'rgba(20,184,166,0.7)' : d.isToday ? 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.09)'}`,
+                background: active
+                  ? 'linear-gradient(145deg, #0d9488, #0f766e)'
+                  : d.isToday ? 'rgba(13,148,136,0.12)' : CARD_BG,
+                backdropFilter: 'blur(20px)',
+                boxShadow: active ? '0 4px 16px rgba(13,148,136,0.45), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
+                transition: 'all 0.18s ease',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+              }}>
+              <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: active ? 'rgba(255,255,255,0.75)' : d.isToday ? 'rgba(20,184,166,0.8)' : 'rgba(255,255,255,0.35)' }}>
+                {d.label}
+              </span>
+              <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1,
+                color: active ? '#fff' : d.isToday ? 'rgba(20,184,166,0.9)' : 'rgba(255,255,255,0.55)' }}>
+                {d.num}
+              </span>
+              {d.isToday && !active && (
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(20,184,166,0.8)' }} />
+              )}
+              {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Time-of-day pills */}
+      <div style={{ display: 'flex', gap: 7 }}>
+        {TIME_SLOTS.map(slot => {
+          const active = activeSlot === slot;
+          return (
+            <button key={slot} onClick={() => setActiveSlot(active ? null : slot)}
+              style={{
+                flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer',
+                border: `1px solid ${active ? 'rgba(20,184,166,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                background: active ? 'rgba(13,148,136,0.2)' : CARD_BG,
+                backdropFilter: 'blur(20px)',
+                color: active ? '#2dd4bf' : 'rgba(255,255,255,0.42)',
+                fontSize: 12, fontWeight: 700,
+                boxShadow: active ? '0 0 12px rgba(13,148,136,0.25)' : 'none',
+                transition: 'all 0.15s',
+              }}>
+              {slot}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Class card — portrait, full-bleed image ───────────────────────────────────
+function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick, timeStr, index }) {
   useEffect(() => { injectClassCSS(); }, []);
   const [pressed, setPressed] = useState(false);
 
-  const typeKey  = getClassType(gymClass);
-  const cfg      = CLASS_TYPE_CONFIG[typeKey];
-  const img      = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
-  const cap      = gymClass.capacity || gymClass.max_participants || null;
-  const enr      = gymClass.enrolled || gymClass.participants_count || 0;
-  const left     = cap ? cap - enr : null;
-  const isFull   = left !== null && left <= 0;
-  const fillPct  = cap ? Math.min(100, Math.round((enr / cap) * 100)) : null;
-  const isHot    = left !== null && left <= 5 && !isFull;
-  const ini      = (n = '') => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const barCol   = isFull ? '#f87171' : fillPct > 65 ? '#fbbf24' : cfg.color;
+  const typeKey = getClassType(gymClass);
+  const cfg     = CLASS_TYPE_CONFIG[typeKey];
+  const img     = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
+  const cap     = gymClass.capacity || gymClass.max_participants || null;
+  const enr     = gymClass.enrolled  || gymClass.participants_count || 0;
+  const left    = cap ? cap - enr : null;
+  const full    = left !== null && left <= 0;
+  const pct     = cap ? Math.min(100, Math.round((enr / cap) * 100)) : null;
+  const hot     = left !== null && left <= 5 && !full;
+  const isPremium = gymClass.price_drop_in || gymClass.price_member || gymClass.is_premium;
+  const ini     = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const difficulty = gymClass.difficulty
+    ? gymClass.difficulty.replace('_',' ').replace(/\b\w/g, l => l.toUpperCase())
+    : 'All Levels';
+
+  // Teal accent colour to match the reference design
+  const TEAL = '#14b8a6';
+  const TEAL_DIM = 'rgba(20,184,166,0.25)';
 
   return (
     <div
       onClick={onClick}
-      onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
-      onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
       style={{
-        width: 210, flexShrink: 0, borderRadius: 22, overflow: 'hidden',
-        background: CARD_BG,
-        border: `1px solid ${booked ? cfg.border : CARD_BORDER}`,
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
+        background: '#0c1020',
+        border: `1px solid ${booked ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.08)'}`,
         boxShadow: booked
-          ? `0 0 0 1px ${cfg.border}, 0 12px 40px rgba(0,0,0,0.55)`
-          : '0 8px 32px rgba(0,0,0,0.5)',
-        cursor: 'pointer', display: 'flex', flexDirection: 'column',
-        transform: pressed ? 'scale(0.97) translateY(2px)' : 'scale(1) translateY(0)',
+          ? `0 0 0 1.5px rgba(20,184,166,0.4), 0 12px 40px rgba(0,0,0,0.6)`
+          : '0 6px 28px rgba(0,0,0,0.55)',
+        transform: pressed ? 'scale(0.965) translateY(3px)' : 'scale(1)',
         transition: 'transform 0.16s cubic-bezier(0.34,1.5,0.64,1), box-shadow 0.2s ease',
-        position: 'relative',
+        animation: `cl-in 0.35s ease ${index * 0.06}s both`,
+        display: 'flex', flexDirection: 'column',
       }}>
 
-      {/* Colour accent top bar */}
-      <div style={{ position:'absolute', top:0, left:0, right:0, height:3, zIndex:3,
-        background: `linear-gradient(90deg, ${cfg.color}cc 0%, ${cfg.color} 50%, ${cfg.color}66 100%)` }} />
-
-      {/* ── Hero image ── */}
-      <div style={{ position:'relative', height:148, overflow:'hidden', flexShrink:0 }}>
+      {/* ── Hero image (taller, cinematic) ── */}
+      <div style={{ position: 'relative', height: 200, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name}
-          style={{ width:'100%', height:'100%', objectFit:'cover',
-            transform: pressed ? 'scale(1.04)' : 'scale(1)',
-            transition: 'transform 0.4s ease' }} />
-        {/* Gradient */}
-        <div style={{ position:'absolute', inset:0,
-          background:'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,10,22,0.92) 100%)' }} />
-        {/* Colour tint */}
-        <div style={{ position:'absolute', inset:0,
-          background:`radial-gradient(ellipse at 80% 20%, rgba(${cfg.color.slice(1).match(/../g).map(h=>parseInt(h,16)).join(',')},0.2) 0%, transparent 65%)` }} />
+          style={{ width: '100%', height: '100%', objectFit: 'cover',
+            transform: pressed ? 'scale(1.06)' : 'scale(1)',
+            transition: 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)',
+            filter: full ? 'brightness(0.7) saturate(0.6)' : 'none' }} />
+
+        {/* Deep gradient — heavy at bottom for text legibility */}
+        <div style={{ position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 30%, rgba(8,10,22,0.98) 100%)' }} />
+
         {/* Shimmer sweep */}
-        <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
-          <div style={{ position:'absolute', top:0, bottom:0, width:'40%',
-            background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent)',
-            animation:'cc-shimmer 4.5s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 0, bottom: 0, width: '50%',
+            background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)',
+            animation: 'cl-shimmer 5s ease-in-out infinite' }} />
         </div>
 
-        {/* Type badge */}
-        <div style={{ position:'absolute', top:12, left:12, display:'flex', alignItems:'center', gap:4,
-          fontSize:9, fontWeight:900, letterSpacing:'0.12em', textTransform:'uppercase',
-          color:cfg.color, background:'rgba(0,0,0,0.65)', border:`1px solid ${cfg.border}`,
-          borderRadius:20, padding:'4px 9px', backdropFilter:'blur(10px)' }}>
-          <span style={{ fontSize:11 }}>{cfg.emoji}</span>{cfg.label}
-        </div>
+        {/* Premium badge */}
+        {isPremium && (
+          <div style={{ position: 'absolute', top: 12, left: 12,
+            display: 'flex', alignItems: 'center', gap: 4,
+            fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+            color: '#fbbf24', background: 'rgba(0,0,0,0.65)',
+            border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, padding: '4px 8px',
+            backdropFilter: 'blur(10px)' }}>
+            ★ PREMIUM
+          </div>
+        )}
 
-        {/* Status badges */}
-        <div style={{ position:'absolute', top:12, right: isOwner ? 42 : 12, display:'flex', flexDirection:'column', gap:4, alignItems:'flex-end' }}>
-          {booked && (
-            <span style={{ fontSize:9, fontWeight:900, color:'#34d399',
-              background:'rgba(0,0,0,0.68)', border:'1px solid rgba(52,211,153,0.45)',
-              borderRadius:20, padding:'3px 9px' }}>✓ Booked</span>
-          )}
-          {isFull && !booked && (
-            <span style={{ fontSize:9, fontWeight:900, color:'#f87171',
-              background:'rgba(0,0,0,0.68)', border:'1px solid rgba(248,113,113,0.45)',
-              borderRadius:20, padding:'3px 9px' }}>Full</span>
-          )}
-          {isHot && !isFull && (
-            <span style={{ fontSize:9, fontWeight:900, color:'#fbbf24',
-              background:'rgba(0,0,0,0.68)', border:'1px solid rgba(251,191,36,0.4)',
-              borderRadius:20, padding:'3px 9px', animation:'cc-hot 1.8s ease-in-out infinite' }}>🔥 {left} left</span>
-          )}
+        {/* Status badges top-right */}
+        <div style={{ position: 'absolute', top: 12, right: isOwner ? 44 : 12,
+          display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+          {booked && <span style={{ fontSize: 9, fontWeight: 900, color: TEAL,
+            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(20,184,166,0.5)',
+            borderRadius: 6, padding: '4px 9px', letterSpacing: '0.05em' }}>✓ BOOKED</span>}
+          {full && !booked && <span style={{ fontSize: 9, fontWeight: 900, color: '#f87171',
+            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(248,113,113,0.45)',
+            borderRadius: 6, padding: '4px 9px', letterSpacing: '0.05em' }}>FULL</span>}
+          {hot && !full && <span style={{ fontSize: 9, fontWeight: 900, color: '#fbbf24',
+            background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(251,191,36,0.4)',
+            borderRadius: 6, padding: '4px 9px', animation: 'cl-hot 1.8s ease-in-out infinite' }}>🔥 {left} LEFT</span>}
         </div>
 
         {/* Owner delete */}
         {isOwner && (
           <button onClick={e => { e.stopPropagation(); onDelete && onDelete(gymClass.id); }}
-            style={{ position:'absolute', top:10, right:10, width:28, height:28, borderRadius:9,
-              display:'flex', alignItems:'center', justifyContent:'center',
-              background:'rgba(239,68,68,0.75)', border:'none', cursor:'pointer', zIndex:4 }}>
-            <Trash2 style={{ width:12, height:12, color:'#fff' }} />
+            style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30,
+              borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(239,68,68,0.75)', border: 'none', cursor: 'pointer', zIndex: 5 }}>
+            <Trash2 style={{ width: 12, height: 12, color: '#fff' }} />
           </button>
         )}
 
-        {/* Title on image */}
-        <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'0 13px 11px' }}>
-          <div style={{ fontSize:16, fontWeight:900, color:'#fff', letterSpacing:'-0.03em',
-            lineHeight:1.18, textShadow:'0 2px 10px rgba(0,0,0,0.8)' }}>
-            {gymClass.name || gymClass.title}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Content ── */}
-      <div style={{ padding:'11px 13px 0', flex:1, display:'flex', flexDirection:'column', gap:8 }}>
-
-        {/* Instructor */}
+        {/* Instructor avatar — bottom right of image */}
         {(gymClass.instructor || gymClass.coach_name) && (
-          <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-            <div style={{ width:26, height:26, borderRadius:'50%', flexShrink:0,
-              background:`linear-gradient(135deg,${cfg.color}44,${cfg.color}18)`,
-              border:`1.5px solid ${cfg.border}`,
-              display:'flex', alignItems:'center', justifyContent:'center',
-              fontSize:9, fontWeight:900, color:cfg.color,
-              boxShadow:`0 0 8px ${cfg.color}22` }}>
-              {ini(gymClass.instructor || gymClass.coach_name)}
-            </div>
-            <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.7)',
-              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-              {gymClass.instructor || gymClass.coach_name}
-            </span>
+          <div style={{ position: 'absolute', bottom: 12, right: 14,
+            width: 36, height: 36, borderRadius: '50%',
+            background: `linear-gradient(135deg,${cfg.color}44,${cfg.color}1a)`,
+            border: `2px solid rgba(20,184,166,0.6)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11, fontWeight: 900, color: TEAL,
+            boxShadow: '0 0 12px rgba(20,184,166,0.35), 0 2px 8px rgba(0,0,0,0.5)' }}>
+            {ini(gymClass.instructor || gymClass.coach_name)}
           </div>
         )}
+      </div>
 
-        {/* Key stats row */}
-        <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+      {/* ── Info panel ── */}
+      <div style={{ padding: '14px 14px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+        {/* Class name */}
+        <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+          {gymClass.name || gymClass.title}
+        </div>
+
+        {/* Time · Duration · Difficulty · Spots */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 10px' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: TEAL }}>{timeStr}</span>
           {gymClass.duration_minutes && (
-            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-              <Clock style={{ width:10, height:10, color:cfg.color, flexShrink:0 }} />
-              <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.62)' }}>{gymClass.duration_minutes} min</span>
-            </div>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>({gymClass.duration_minutes} min)</span>
           )}
-          {gymClass.difficulty && (
-            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-              <Zap style={{ width:10, height:10, color:cfg.color, flexShrink:0 }} />
-              <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.62)' }}>
-                {gymClass.difficulty.replace('_',' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </span>
-            </div>
-          )}
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>·</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{difficulty}</span>
           {left !== null && (
-            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-              <Users style={{ width:10, height:10, color: isFull?'#f87171':isHot?'#fbbf24':'rgba(255,255,255,0.3)', flexShrink:0 }} />
-              <span style={{ fontSize:11, fontWeight:700, color: isFull?'#f87171':isHot?'#fbbf24':'rgba(255,255,255,0.48)' }}>
-                {isFull ? 'Full' : `${left} spots`}
+            <>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>·</span>
+              <span style={{ fontSize: 12, fontWeight: 800,
+                color: full ? '#f87171' : hot ? '#fbbf24' : 'rgba(255,255,255,0.5)' }}>
+                {full ? 'Full' : `${left} Spot${left === 1 ? '' : 's'} Left`}
               </span>
-            </div>
+            </>
           )}
         </div>
 
         {/* Capacity bar */}
-        {fillPct !== null && (
-          <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.07)', overflow:'hidden' }}>
-            <div style={{ height:'100%', width:`${fillPct}%`, borderRadius:99, background:barCol,
-              animation:'cc-bar 1.1s cubic-bezier(0.16,1,0.3,1) both' }} />
-          </div>
-        )}
-
-        {/* Schedule days */}
-        {getScheduleDays(gymClass).length > 0 && (
-          <div style={{ display:'flex', gap:3 }}>
-            {DAYS_SHORT.map(d => {
-              const on = getScheduleDays(gymClass).includes(d);
-              return (
-                <div key={d} style={{ flex:1, textAlign:'center', padding:'4px 0', borderRadius:7,
-                  fontSize:8.5, fontWeight:900,
-                  background: on ? cfg.bg : 'rgba(255,255,255,0.03)',
-                  border:`1px solid ${on ? cfg.border : 'rgba(255,255,255,0.06)'}`,
-                  color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>
-              );
-            })}
+        {pct !== null && (
+          <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 99, width: `${pct}%`,
+              background: full ? '#f87171' : pct > 65 ? '#fbbf24' : TEAL,
+              animation: 'cl-bar 1s cubic-bezier(0.16,1,0.3,1) both' }} />
           </div>
         )}
       </div>
 
       {/* ── Book button ── */}
       {!isOwner && (
-        <div style={{ padding:'10px 13px 13px' }}>
+        <div style={{ padding: '12px 14px 14px' }}>
           <button
-            onClick={e => { e.stopPropagation(); if (!isFull || booked) onBook && onBook(gymClass.id); }}
-            disabled={isFull && !booked}
+            onClick={e => { e.stopPropagation(); if (!full || booked) onBook && onBook(gymClass.id); }}
+            disabled={full && !booked}
             style={{
-              width:'100%', padding:'11px', borderRadius:13,
-              fontSize:12, fontWeight:900,
-              cursor: isFull && !booked ? 'default' : 'pointer',
-              border:'none', letterSpacing:'-0.01em',
-              position:'relative', overflow:'hidden',
+              width: '100%', padding: '13px', borderRadius: 14,
+              fontSize: 13, fontWeight: 900, letterSpacing: '-0.01em',
+              cursor: full && !booked ? 'default' : 'pointer',
+              border: 'none', position: 'relative', overflow: 'hidden',
               background: booked
-                ? 'linear-gradient(135deg,rgba(16,185,129,0.22),rgba(5,150,105,0.18))'
-                : isFull
-                  ? 'rgba(255,255,255,0.05)'
-                  : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
-              color: booked ? '#34d399' : isFull ? 'rgba(255,255,255,0.22)' : '#fff',
-              boxShadow: !booked && !isFull
-                ? '0 4px 16px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.18)' : 'none',
-              outline: booked ? '1px solid rgba(52,211,153,0.3)' : 'none',
-              transition:'all 0.18s ease',
+                ? 'rgba(20,184,166,0.18)'
+                : full ? 'rgba(255,255,255,0.05)'
+                : 'linear-gradient(135deg,#0d9488,#0f766e)',
+              color: booked ? TEAL : full ? 'rgba(255,255,255,0.22)' : '#fff',
+              boxShadow: !booked && !full ? '0 4px 18px rgba(13,148,136,0.5), inset 0 1px 0 rgba(255,255,255,0.18)' : 'none',
+              outline: booked ? `1px solid rgba(20,184,166,0.4)` : 'none',
+              transition: 'all 0.18s ease',
             }}>
-            {!booked && !isFull && (
-              <div style={{ position:'absolute', inset:0, overflow:'hidden', borderRadius:'inherit' }}>
-                <div style={{ position:'absolute', top:0, bottom:0, width:'40%',
-                  background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
-                  animation:'cc-shimmer 3.5s ease-in-out infinite 1.2s' }} />
+            {!booked && !full && (
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
+                <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%',
+                  background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
+                  animation: 'cl-shimmer 3s ease-in-out infinite 1s' }} />
               </div>
             )}
-            <span style={{ position:'relative', zIndex:1 }}>
-              {booked ? '✓ Booked' : isFull ? 'Class Full' : left !== null ? `Book Now · ${left} left` : 'Book Now'}
+            <span style={{ position: 'relative', zIndex: 1 }}>
+              {booked ? '✓ Booked' : full ? 'Join Waitlist' : left !== null ? `Book Spot · ${left} left` : 'Book Spot'}
             </span>
           </button>
         </div>
       )}
-      {isOwner && <div style={{ height:13 }} />}
+      {isOwner && <div style={{ height: 14 }} />}
     </div>
   );
 }
 
-// ── Classes tab ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// ClassesTabContent
+// ─────────────────────────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
+  const today = new Date();
+  const todayDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+
+  const [activeDay,  setActiveDay]  = useState(todayDayIdx);
+  const [activeSlot, setActiveSlot] = useState(null);
   const [activeType, setActiveType] = useState('all');
-  const [activeDay,  setActiveDay]  = useState('all');
   const [bookedIds,  setBookedIds]  = useState(new Set());
   const [selectedClass, setSelectedClass] = useState(null);
 
-  const filtered = React.useMemo(() => classes.filter(c => {
-    if (activeType !== 'all' && getClassType(c) !== activeType) return false;
-    if (activeDay !== 'all') {
-      const days = getScheduleDays(c);
-      if (days.length > 0 && !days.includes(activeDay)) return false;
-    }
-    return true;
-  }), [classes, activeType, activeDay]);
-
   const handleBook = id => setBookedIds(prev => {
-    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
   });
 
-  const todayIdx  = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-  const todayName = DAYS_SHORT[todayIdx];
-  const todayClasses = classes.filter(c => {
-    const d = getScheduleDays(c); return d.length === 0 || d.includes(todayName);
+  // Assign each class a time string and filter
+  const classesWithTime = React.useMemo(() => {
+    return classes.map((c, i) => ({
+      ...c,
+      _time: getMockTime(c, i),
+      _slot: getTimeSlot(getMockTime(c, i)),
+    }));
+  }, [classes]);
+
+  // Filter by active day schedule
+  const dayName = DAY_LABELS[activeDay];
+  const filteredByDay = classesWithTime.filter(c => {
+    const d = getScheduleDays(c);
+    return d.length === 0 || d.includes(dayName);
   });
+
+  // Filter by time slot
+  const filteredBySlot = activeSlot
+    ? filteredByDay.filter(c => c._slot === activeSlot)
+    : filteredByDay;
+
+  // Filter by type
+  const filtered = activeType === 'all'
+    ? filteredBySlot
+    : filteredBySlot.filter(c => getClassType(c) === activeType);
+
+  // Sort by time
+  const sorted = [...filtered].sort((a, b) => a._time.localeCompare(b._time));
 
   const typeOptions = [
-    { id:'all', label:'All Types', emoji:'✨' },
+    { id: 'all', label: 'All Types', emoji: '✨' },
     ...Array.from(new Set(classes.map(getClassType)))
-      .map(t => ({ id:t, label: CLASS_TYPE_CONFIG[t]?.label||t, emoji: CLASS_TYPE_CONFIG[t]?.emoji||'🎯' }))
+      .map(t => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' })),
   ];
+
+  const dayFull = DAY_LABELS[activeDay];
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - todayDayIdx);
+  const activeDate = new Date(monday);
+  activeDate.setDate(monday.getDate() + activeDay);
+  const dateStr = activeDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const isToday = activeDay === todayDayIdx;
+
+  if (classes.length === 0) return (
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}>
+      <div style={{ borderRadius: 22, padding: '56px 24px', textAlign: 'center',
+        background: CARD_BG, border: `1px dashed ${CARD_BORDER}`, backdropFilter: 'blur(20px)' }}>
+        <div style={{ fontSize: 36, marginBottom: 14 }}>🏋️</div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>No classes scheduled</div>
+        {showOwnerControls && (
+          <button onClick={onManage} style={{ marginTop: 16, padding: '10px 24px', borderRadius: 12,
+            background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+            color: '#2dd4bf', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>+ Add Classes</button>
+        )}
+      </div>
+    </motion.div>
+  );
 
   return (
     <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }}
-      style={{ display:'flex', flexDirection:'column', gap:20 }}>
+      style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ── Page header ── */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.28)',
-            letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:5 }}>Premium Classes</div>
-          <div style={{ fontSize:23, fontWeight:900, color:'#fff', letterSpacing:'-0.035em', lineHeight:1 }}>
-            {filtered.length} Available This Week
+          <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.28)',
+            letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>Classes</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
+            {isToday ? "Today's Sessions" : `${dayFull}'s Sessions`}
+          </div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 600, marginTop: 4 }}>
+            {dateStr}
+            {activeSlot && <span style={{ color: 'rgba(20,184,166,0.7)', fontWeight: 700 }}> · {activeSlot}</span>}
           </div>
         </div>
         {showOwnerControls && (
           <button onClick={onManage}
-            style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:12,
-              background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)',
-              color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer', flexShrink:0 }}>
-            <Plus style={{ width:14, height:14 }} />Manage
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12,
+              background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)',
+              color: '#2dd4bf', fontSize: 12, fontWeight: 800, cursor: 'pointer', flexShrink: 0, marginTop: 4 }}>
+            <Plus style={{ width: 13, height: 13 }} />Manage
           </button>
         )}
       </div>
 
-      {classes.length === 0 ? (
-        <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center',
-          background: CARD_BG, border:`1px dashed ${CARD_BORDER}`,
-          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
-          <div style={{ width:64, height:64, borderRadius:20, background:'rgba(99,102,241,0.1)',
-            border:'1px solid rgba(99,102,241,0.2)', display:'flex', alignItems:'center',
-            justifyContent:'center', margin:'0 auto 16px', fontSize:28 }}>🏋️</div>
-          <div style={{ fontSize:16, fontWeight:900, color:'rgba(255,255,255,0.4)', marginBottom:8 }}>No classes scheduled</div>
-          <div style={{ fontSize:13, color:'rgba(255,255,255,0.22)', lineHeight:1.5 }}>
-            Check back soon or ask your gym to add classes.
-          </div>
-          {showOwnerControls && (
-            <button onClick={onManage}
-              style={{ marginTop:20, padding:'10px 24px', borderRadius:12,
-                background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)',
-                color:'#818cf8', fontSize:13, fontWeight:800, cursor:'pointer' }}>
-              + Add Classes
-            </button>
-          )}
+      {/* ── Date + time-slot picker ── */}
+      <ClassDateHeader
+        activeDay={activeDay} setActiveDay={setActiveDay}
+        activeSlot={activeSlot} setActiveSlot={setActiveSlot}
+      />
+
+      {/* ── Type filter chips ── */}
+      {typeOptions.length > 2 && (
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {typeOptions.map(f => {
+            const active = activeType === f.id;
+            const cfg2   = CLASS_TYPE_CONFIG[f.id] || {};
+            return (
+              <button key={f.id} onClick={() => setActiveType(f.id)}
+                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 13px', borderRadius: 99, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+                  border: `1px solid ${active ? (cfg2.border || 'rgba(20,184,166,0.5)') : 'rgba(255,255,255,0.09)'}`,
+                  background: active ? (cfg2.bg || 'rgba(20,184,166,0.12)') : CARD_BG,
+                  backdropFilter: 'blur(20px)',
+                  color: active ? (cfg2.color || '#2dd4bf') : 'rgba(255,255,255,0.42)',
+                  transition: 'all 0.15s' }}>
+                <span style={{ fontSize: 12 }}>{f.emoji}</span>{f.label}
+              </button>
+            );
+          })}
         </div>
-      ) : (<>
+      )}
 
-        {/* ── Today strip — compact list rows ── */}
-        {todayClasses.length > 0 && (
-          <div>
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-              <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e',
-                display:'inline-block', boxShadow:'0 0 6px rgba(34,197,94,0.8)', flexShrink:0 }} />
-              <span style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.5)',
-                letterSpacing:'0.12em', textTransform:'uppercase' }}>
-                Today · {todayClasses.length} class{todayClasses.length > 1 ? 'es' : ''}
-              </span>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-              {todayClasses.slice(0, 3).map(c => {
-                const cfg2  = CLASS_TYPE_CONFIG[getClassType(c)];
-                const bk    = bookedIds.has(c.id);
-                const cap2  = c.capacity || c.max_participants || null;
-                const enr2  = c.enrolled  || c.participants_count || 0;
-                const left2 = cap2 ? cap2 - enr2 : null;
-                const full2 = left2 !== null && left2 <= 0;
-                const hot2  = left2 !== null && left2 <= 5 && !full2;
-                return (
-                  <div key={c.id} onClick={() => setSelectedClass(c)}
-                    style={{ display:'flex', alignItems:'center', gap:12,
-                      padding:'11px 14px', borderRadius:16,
-                      background: bk ? `rgba(${cfg2.border.replace(/rgba?\(|\)/g,'').split(',').slice(0,3).join(',')},0.08)` : CARD_BG,
-                      border: bk ? `1px solid ${cfg2.border}` : CARD_BORDER,
-                      cursor:'pointer', transition:'opacity 0.15s',
-                      backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)' }}>
-                    <div style={{ width:40, height:40, borderRadius:12, flexShrink:0,
-                      background:cfg2.bg, border:`1px solid ${cfg2.border}`,
-                      display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>
-                      {cfg2.emoji}
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:13.5, fontWeight:800, color:'#fff',
-                        overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        {c.name || c.title}
-                      </div>
-                      <div style={{ display:'flex', gap:8, marginTop:2.5 }}>
-                        {c.schedule && <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)', fontWeight:600 }}>{c.schedule}</span>}
-                        {c.duration_minutes && <span style={{ fontSize:11, color:'rgba(255,255,255,0.28)' }}>{c.duration_minutes} min</span>}
-                        {left2 !== null && (
-                          <span style={{ fontSize:11, fontWeight:700,
-                            color: full2?'#f87171':hot2?'#fbbf24':'rgba(255,255,255,0.32)' }}>
-                            {full2 ? 'Full' : `${left2} spots`}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {!showOwnerControls && (
-                      <button onClick={e => { e.stopPropagation(); handleBook(c.id); }}
-                        style={{ fontSize:11, fontWeight:800,
-                          color: bk ? '#34d399' : cfg2.color,
-                          background: bk ? 'rgba(16,185,129,0.12)' : cfg2.bg,
-                          border:`1px solid ${bk ? 'rgba(52,211,153,0.3)' : cfg2.border}`,
-                          borderRadius:10, padding:'6px 12px', cursor:'pointer',
-                          flexShrink:0, whiteSpace:'nowrap', transition:'all 0.15s' }}>
-                        {bk ? '✓ Booked' : 'Book'}
-                      </button>
-                    )}
-                    <ChevronRight style={{ width:14, height:14, color:'rgba(255,255,255,0.18)', flexShrink:0 }} />
-                  </div>
-                );
-              })}
-            </div>
+      {/* ── Session count ── */}
+      {sorted.length > 0 && (
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, marginTop: -8 }}>
+          {sorted.length} session{sorted.length !== 1 ? 's' : ''} · tap to view details &amp; book
+        </div>
+      )}
+
+      {/* ── 2-column card grid ── */}
+      {sorted.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {sorted.map((gymClass, i) => (
+            <PremiumClassCard
+              key={gymClass.id}
+              gymClass={gymClass}
+              isOwner={showOwnerControls}
+              booked={bookedIds.has(gymClass.id)}
+              onBook={handleBook}
+              onClick={() => setSelectedClass(gymClass)}
+              onDelete={showOwnerControls ? id => { if (window.confirm('Delete?')) onDelete(id); } : null}
+              timeStr={gymClass._time}
+              index={i}
+            />
+          ))}
+        </div>
+      ) : (
+        <div style={{ borderRadius: 18, padding: '36px 20px', textAlign: 'center',
+          background: CARD_BG, border: `1px dashed ${CARD_BORDER}`, backdropFilter: 'blur(20px)' }}>
+          <div style={{ fontSize: 28, marginBottom: 10 }}>📭</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>
+            No classes {activeSlot ? `in the ${activeSlot.toLowerCase()}` : 'this day'}
           </div>
-        )}
-
-        {/* ── Filters ── */}
-        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {/* Day pills */}
-          <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', paddingBottom:2 }}>
-            {['All', ...DAYS_SHORT].map(d => {
-              const val    = d === 'All' ? 'all' : d;
-              const active = activeDay === val;
-              const isToday = d === todayName;
-              return (
-                <button key={d}
-                  onClick={() => setActiveDay(active && val !== 'all' ? 'all' : val)}
-                  style={{ flexShrink:0, padding:'7px 14px', borderRadius:99, fontSize:12, fontWeight:700,
-                    cursor:'pointer', position:'relative',
-                    border:`1px solid ${active ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.1)'}`,
-                    background: active ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : CARD_BG,
-                    backdropFilter:'blur(20px)',
-                    color: active ? '#fff' : isToday ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.45)',
-                    boxShadow: active ? '0 4px 14px rgba(37,99,235,0.35)' : 'none',
-                    transition:'all 0.15s' }}>
-                  {d}
-                  {isToday && !active && (
-                    <span style={{ position:'absolute', top:3, right:4, width:5, height:5,
-                      borderRadius:'50%', background:'#22c55e',
-                      boxShadow:'0 0 4px rgba(34,197,94,0.9)' }} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Type pills */}
-          <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', paddingBottom:2 }}>
-            {typeOptions.map(f => {
-              const active = activeType === f.id;
-              const cfg3   = CLASS_TYPE_CONFIG[f.id] || {};
-              return (
-                <button key={f.id} onClick={() => setActiveType(f.id)}
-                  style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5,
-                    padding:'6px 13px', borderRadius:99, fontSize:12, fontWeight:700, cursor:'pointer',
-                    border:`1px solid ${active ? (cfg3.border||'rgba(59,130,246,0.5)') : 'rgba(255,255,255,0.09)'}`,
-                    background: active ? (cfg3.bg||'rgba(59,130,246,0.12)') : CARD_BG,
-                    backdropFilter:'blur(20px)',
-                    color: active ? (cfg3.color||'#fff') : 'rgba(255,255,255,0.42)',
-                    transition:'all 0.15s' }}>
-                  <span style={{ fontSize:12 }}>{f.emoji}</span>{f.label}
-                </button>
-              );
-            })}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {activeSlot && (
+              <button onClick={() => setActiveSlot(null)}
+                style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)',
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)',
+                  borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>Show all times</button>
+            )}
+            {activeType !== 'all' && (
+              <button onClick={() => setActiveType('all')}
+                style={{ fontSize: 12, fontWeight: 700, color: '#2dd4bf',
+                  background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)',
+                  borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>Clear type filter</button>
+            )}
           </div>
         </div>
+      )}
 
-        {/* Results hint */}
-        {filtered.length > 0 && (
-          <div style={{ fontSize:11, color:'rgba(255,255,255,0.22)', fontWeight:600 }}>
-            {filtered.length} class{filtered.length > 1 ? 'es' : ''} · tap a card for details
-          </div>
-        )}
-
-        {/* ── Cards scroll ── */}
-        {filtered.length > 0 ? (
-          <div style={{ display:'flex', gap:14, overflowX:'auto', scrollbarWidth:'none',
-            paddingBottom:6, marginLeft:-3, paddingLeft:3, paddingRight:3 }}>
-            {filtered.map(gymClass => (
-              <PremiumClassCard
-                key={gymClass.id}
-                gymClass={gymClass}
-                isOwner={showOwnerControls}
-                booked={bookedIds.has(gymClass.id)}
-                onBook={handleBook}
-                onClick={() => setSelectedClass(gymClass)}
-                onDelete={showOwnerControls ? id => { if (window.confirm('Delete this class?')) onDelete(id); } : null}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ borderRadius:18, padding:'36px 20px', textAlign:'center',
-            background: CARD_BG, border:`1px dashed ${CARD_BORDER}`, backdropFilter:'blur(20px)' }}>
-            <div style={{ fontSize:28, marginBottom:10 }}>📭</div>
-            <div style={{ fontSize:14, fontWeight:800, color:'rgba(255,255,255,0.3)', marginBottom:10 }}>
-              No classes match this filter
-            </div>
-            <button onClick={() => { setActiveType('all'); setActiveDay('all'); }}
-              style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.42)',
-                background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.09)',
-                borderRadius:10, padding:'7px 18px', cursor:'pointer' }}>
-              Clear Filters
-            </button>
-          </div>
-        )}
-      </>)}
-
-      {/* ── Detail modal ── */}
+      {/* ── ClassDetailModal ── */}
       <ClassDetailModal
         gymClass={selectedClass}
         open={!!selectedClass}
         onClose={() => setSelectedClass(null)}
         booked={selectedClass ? bookedIds.has(selectedClass.id) : false}
-        onBook={id => { handleBook(id); }}
+        onBook={handleBook}
         isOwner={showOwnerControls}
       />
     </motion.div>
@@ -1769,6 +1667,8 @@ export default function GymCommunity() {
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
+                {/* Stats */}
+                <ActivityStats checkIns={checkIns} lifts={lifts} />
                 {/* Activity Feed */}
                 <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
                 {/* Busy times */}
