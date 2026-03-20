@@ -233,26 +233,23 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
   const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="rounded-2xl p-4" style={CARD_STYLE}>
-      <div className="flex items-center gap-2 mb-3">
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 6px rgba(34,197,94,0.8)', flexShrink: 0 }} />
-        <h3 className="text-[13px] font-black text-white">Active Now</h3>
-        <span className="text-[11px] font-bold ml-auto" style={{ color: 'rgba(148,163,184,0.5)' }}>{recentCheckIns.length} members</span>
+    <div style={{ ...CARD_STYLE, borderRadius: 14, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.9)' }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>Active Now</span>
       </div>
-      <div style={{ display: 'flex', gap: 14, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'flex-end' }}>
         {recentCheckIns.map((c, i) => {
           const col = AV_COLORS[i % AV_COLORS.length];
           const avatar = memberAvatarMap[c.user_id];
           return (
-            <div key={c.user_id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-              <div style={{ position: 'relative', width: 42, height: 42, borderRadius: '50%', background: col.bg, border: '2px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: col.color, overflow: 'hidden', flexShrink: 0 }}>
-                {avatar
-                  ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : initials(c.user_name)}
-                <span style={{ position: 'absolute', bottom: 1, right: 1, width: 10, height: 10, borderRadius: '50%', background: '#22c55e', border: '2px solid #0d1232' }} />
+            <div key={c.user_id || i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+              <div style={{ position: 'relative', width: 30, height: 30, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(34,197,94,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: col.color, overflow: 'hidden' }}>
+                {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(c.user_name)}
+                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #0d1232' }} />
               </div>
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9.5, textAlign: 'center', maxWidth: 50, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {(c.user_name || 'Member').split(' ')[0]}
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, textAlign: 'center', maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {(c.user_name || '').split(' ')[0]}
               </span>
             </div>
           );
@@ -290,42 +287,46 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
     lifts.slice(0, 10).forEach(l =>
       items.push({ type: 'lift', id: `lf-${l.id}`, userId: l.member_id, userName: l.member_name, date: l.lift_date, data: l })
     );
-    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
+    return items.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
   }, [checkIns, lifts]);
 
   if (feedItems.length === 0) return null;
 
   return (
     <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-      <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Activity style={{ width: 13, height: 13, color: '#818cf8' }} />
+      {/* Header */}
+      <div style={{ padding: '11px 13px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
+        <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Activity style={{ width: 11, height: 11, color: '#818cf8' }} />
         </div>
-        <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>Gym Activity Feed</span>
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: '#fff' }}>Gym Activity Feed</span>
       </div>
-      <div>
+
+      {/* Scrollable feed — fixed height shows ~4 cards, scroll for more */}
+      <div style={{ maxHeight: 300, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {feedItems.map((item, index) => {
           const avatar = memberAvatarMap[item.userId];
           const col = colorForUser(item.userId);
           const liked = likedIds.has(item.id);
           const fakeLikes = ((item.userId || '').charCodeAt(0) % 18) + 2;
-          let icon, headline, sub;
+
+          let iconEl, headline, sub;
 
           if (item.type === 'checkin') {
-            icon = (
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <MapPin style={{ width: 14, height: 14, color: '#60a5fa' }} />
+            iconEl = (
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MapPin style={{ width: 11, height: 11, color: '#60a5fa' }} />
               </div>
             );
             headline = <><span style={{ color: '#fff', fontWeight: 700 }}>{item.userName}</span>{' checked in'}</>;
             sub = item.data.notes || 'At the gym';
           } else {
             const isNewPR = item.data.is_personal_record || item.data.is_pr;
-            icon = (
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: isNewPR ? 'rgba(234,179,8,0.12)' : 'rgba(168,85,247,0.12)', border: `1px solid ${isNewPR ? 'rgba(234,179,8,0.22)' : 'rgba(168,85,247,0.22)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            iconEl = (
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: isNewPR ? 'rgba(234,179,8,0.12)' : 'rgba(168,85,247,0.12)', border: `1px solid ${isNewPR ? 'rgba(234,179,8,0.22)' : 'rgba(168,85,247,0.22)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {isNewPR
-                  ? <Trophy style={{ width: 14, height: 14, color: '#eab308' }} />
-                  : <Dumbbell style={{ width: 14, height: 14, color: '#a78bfa' }} />}
+                  ? <Trophy style={{ width: 11, height: 11, color: '#eab308' }} />
+                  : <Dumbbell style={{ width: 11, height: 11, color: '#a78bfa' }} />}
               </div>
             );
             headline = isNewPR
@@ -335,33 +336,28 @@ function GymActivityFeed({ checkIns, lifts, memberAvatarMap }) {
           }
 
           return (
-            <div key={item.id} style={{ padding: '11px 13px', borderBottom: index < feedItems.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <div style={{ position: 'relative', width: 36, height: 36, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: col.color, overflow: 'hidden', flexShrink: 0 }}>
-                  {avatar
-                    ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : initials(item.userName)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.8)', lineHeight: 1.4 }}>{headline}</div>
-                  <div style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.5)', marginTop: 2 }}>{sub}</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                  {icon}
-                  <span style={{ fontSize: 10, color: 'rgba(148,163,184,0.35)', fontWeight: 500 }}>{timeAgo(item.date)}</span>
-                </div>
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 13px', borderBottom: index < feedItems.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+              {/* Avatar */}
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: col.bg, border: '1.5px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: col.color, overflow: 'hidden', flexShrink: 0 }}>
+                {avatar ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(item.userName)}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 9, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+              {/* Text */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.85)', lineHeight: 1.35 }}>{headline}</div>
+                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.45)', marginTop: 1 }}>{sub}</div>
+              </div>
+              {/* Right: icon + time + like */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {iconEl}
+                  <span style={{ fontSize: 10, color: 'rgba(148,163,184,0.4)', fontWeight: 500, whiteSpace: 'nowrap' }}>{timeAgo(item.date)}</span>
+                </div>
                 <button
                   onClick={() => toggleLike(item.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, color: liked ? '#f472b6' : 'rgba(148,163,184,0.4)', fontSize: 11, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'color 0.15s' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)', fontSize: 10, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'color 0.15s' }}
                 >
-                  <Heart style={{ width: 13, height: 13, fill: liked ? '#f472b6' : 'none', transition: 'fill 0.15s' }} />
+                  <Heart style={{ width: 11, height: 11, fill: liked ? '#f472b6' : 'none', transition: 'fill 0.15s' }} />
                   {fakeLikes + (liked ? 1 : 0)}
-                </button>
-                <button style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(148,163,184,0.4)', fontSize: 11, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                  <MessageCircle style={{ width: 13, height: 13 }} />
-                  {Math.floor(fakeLikes / 4)}
                 </button>
               </div>
             </div>
