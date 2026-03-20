@@ -10,7 +10,6 @@ import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
-import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import ProgressiveOverloadTracker from '../components/profile/ProgressiveOverloadTracker';
 import WeeklyVolumeChart from '../components/profile/WeeklyVolumeChart';
 
@@ -142,8 +141,6 @@ function GoalsPage({ currentUser, onBack }) {
     </SubPage>
   );
 }
-
-
 
 // ─── Badge definitions & logic ───────────────────────────────────────────────
 const BADGE_LIBRARY = [
@@ -278,40 +275,6 @@ function RankPage({ currentUser, onBack, checkIns = [] }) {
 }
 
 // ─── Illustrations ────────────────────────────────────────────────────────────
-function _AnalyticsIllustration() {
-  return (
-    <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
-      <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
-      <rect x="30" y="38" width="16" height="50" rx="5" fill="url(#ab2)" />
-      <rect x="52" y="20" width="16" height="68" rx="5" fill="url(#ab3)" />
-      <rect x="74" y="30" width="16" height="58" rx="5" fill="url(#ab4)" />
-      <rect x="96" y="10" width="16" height="78" rx="5" fill="url(#ab5)" />
-      <polyline points="16,56 38,38 60,20 82,30 104,10" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.75" />
-      {[[16,56],[38,38],[60,20],[82,30],[104,10]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="3.5" fill="#e879f9" opacity="0.9" />
-      ))}
-      <defs>
-        <linearGradient id="ab1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
-        <linearGradient id="ab2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#9333ea" stopOpacity="0.25"/></linearGradient>
-        <linearGradient id="ab3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e879f9" stopOpacity="0.9"/><stop offset="100%" stopColor="#a855f7" stopOpacity="0.25"/></linearGradient>
-        <linearGradient id="ab4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
-        <linearGradient id="ab5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f0abfc" stopOpacity="0.9"/><stop offset="100%" stopColor="#c026d3" stopOpacity="0.25"/></linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function SplitIllustration() {
-  const src = "data:image/png;base64,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";
-  return (
-    <img
-      src={src}
-      alt="split"
-      style={{ display: 'block', width: 84, height: 68, objectFit: "cover", borderRadius: 8, pointerEvents: 'none' }}
-    />
-  );
-}
-
 function GoalsIllustration() {
   return (
     <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
@@ -358,38 +321,24 @@ function CommunityIllustration() {
 function RankIllustration() {
   return (
     <svg width="84" height="68" viewBox="0 0 120 96" fill="none">
-      <polygon
-        points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28"
-        fill="url(#ri1)"
-        opacity="0.92"
-      />
+      <polygon points="60,6 68,28 92,28 73,43 80,66 60,52 40,66 47,43 28,28 52,28" fill="url(#ri1)" opacity="0.92" />
       <circle cx="60" cy="37" r="9" fill="white" opacity="0.12" />
       <circle cx="60" cy="37" r="5" fill="white" opacity="0.2" />
       <path d="M51,64 L46,82 L60,73 L74,82 L69,64" fill="url(#ri4)" opacity="0.85" />
       <polygon points="22,34 27,46 39,46 30,53 33,65 22,58 11,65 14,53 5,46 17,46" fill="url(#ri2)" opacity="0.6" />
       <polygon points="98,34 103,46 115,46 106,53 109,65 98,58 87,65 90,53 81,46 93,46" fill="url(#ri3)" opacity="0.6" />
-      <circle cx="100" cy="12" r="2.5" fill="#fde68a" opacity="0.9" />
-      <circle cx="108" cy="22" r="1.5" fill="#fde68a" opacity="0.55" />
-      <circle cx="14"  cy="16" r="1.8" fill="#fde68a" opacity="0.65" />
-      <circle cx="20"  cy="8"  r="1.2" fill="#fde68a" opacity="0.4" />
-      <ellipse cx="55" cy="24" rx="7" ry="3" fill="white" opacity="0.12" transform="rotate(-20 55 24)" />
       <defs>
         <linearGradient id="ri1" x1="60" y1="6" x2="60" y2="66" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fde68a"/>
-          <stop offset="50%" stopColor="#f59e0b"/>
-          <stop offset="100%" stopColor="#b45309"/>
+          <stop offset="0%" stopColor="#fde68a"/><stop offset="50%" stopColor="#f59e0b"/><stop offset="100%" stopColor="#b45309"/>
         </linearGradient>
         <linearGradient id="ri2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#e2e8f0"/>
-          <stop offset="100%" stopColor="#64748b"/>
+          <stop offset="0%" stopColor="#e2e8f0"/><stop offset="100%" stopColor="#64748b"/>
         </linearGradient>
         <linearGradient id="ri3" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fdba74"/>
-          <stop offset="100%" stopColor="#92400e"/>
+          <stop offset="0%" stopColor="#fdba74"/><stop offset="100%" stopColor="#92400e"/>
         </linearGradient>
         <linearGradient id="ri4" x1="60" y1="64" x2="60" y2="82" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#f59e0b"/>
-          <stop offset="100%" stopColor="#78350f" stopOpacity="0.5"/>
+          <stop offset="0%" stopColor="#f59e0b"/><stop offset="100%" stopColor="#78350f" stopOpacity="0.5"/>
         </linearGradient>
       </defs>
     </svg>
@@ -417,40 +366,28 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         transform: pressed ? 'translateY(4px)' : 'translateY(0)',
-        boxShadow: pressed
-          ? 'none'
-          : `0 4px 0 0 rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.45)`,
+        boxShadow: pressed ? 'none' : `0 4px 0 0 rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.45)`,
         transition: pressed
           ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '16px 0 16px 20px',
-        gap: 0,
+        display: 'flex', alignItems: 'center', padding: '16px 0 16px 20px', gap: 0,
       }}
     >
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }}/>
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 20% 50%, ${glowColor} 0%, transparent 55%)`, opacity: pressed ? 0.2 : 0.08, transition: 'opacity 0.1s ease' }}/>
-
       <div className="relative flex-1 min-w-0" style={{ zIndex: 1, paddingRight: 20 }}>
         <p className="text-[17px] font-black text-white tracking-tight leading-tight mb-1.5">{label}</p>
         {description && (
           <p className="text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.72)' }}>{description}</p>
         )}
       </div>
-
-      <div className="relative flex-shrink-0 flex items-center justify-center"
-        style={{ width: 84, zIndex: 1 }}>
+      <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 84, zIndex: 1 }}>
         <Illustration />
       </div>
-
-      <div className="flex-shrink-0 flex items-center justify-center"
-        style={{ width: 44, zIndex: 1 }}>
-        <motion.div
-          animate={{ x: [0, 4, 0] }}
-          transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 44, zIndex: 1 }}>
+        <motion.div animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
           <ChevronRight style={{ width: 22, height: 22, color: iconColor }} />
         </motion.div>
       </div>
@@ -516,29 +453,31 @@ export default function Progress() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-6">
 
-        {/* ── Heatmap / Calendar ── */}
+        {/* ── 1. Progressive Overload Tracker ── */}
+        <ProgressiveOverloadTracker currentUser={currentUser} />
+
+        {/* ── 2. Weekly Rep Volume ── */}
+        <WeeklyVolumeChart currentUser={currentUser} />
+
+        {/* ── 3. Heatmap / Calendar — no wrapper box ── */}
         {currentUser?.workout_split && (
-          <div className="rounded-2xl p-4" style={CARD}>
-            <WorkoutSplitHeatmap
-              checkIns={checkIns}
-              workoutSplit={currentUser?.workout_split}
-              weeklyGoal={currentUser?.weekly_goal}
-              trainingDays={currentUser?.training_days}
-              customWorkoutTypes={currentUser?.custom_workout_types || {}}
-            />
-          </div>
+          <WorkoutSplitHeatmap
+            checkIns={checkIns}
+            workoutSplit={currentUser?.workout_split}
+            weeklyGoal={currentUser?.weekly_goal}
+            trainingDays={currentUser?.training_days}
+            customWorkoutTypes={currentUser?.custom_workout_types || {}}
+          />
         )}
 
-        {/* ── Analytics ── */}
-        <ProgressiveOverloadTracker currentUser={currentUser} />
-        <WeeklyVolumeChart currentUser={currentUser} />
+        {/* ── 4. Exercise Insights ── */}
         <ExerciseInsights
           workoutLogs={workoutLogs}
           workoutSplit={currentUser?.custom_workout_types}
           trainingDays={currentUser?.training_days}
         />
 
-        {/* ── Nav cards ── */}
+        {/* ── 5. Nav cards ── */}
         <div className="space-y-3">
           {cards.map((card) => (
             <TallCard
@@ -549,6 +488,7 @@ export default function Progress() {
             />
           ))}
         </div>
+
       </div>
     </div>
   );
