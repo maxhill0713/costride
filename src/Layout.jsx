@@ -248,8 +248,8 @@ export default function Layout({ children, currentPageName }) {
                   onMouseDown={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
                   onMouseUp={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onTouchStart={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                  onTouchEnd={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                  onTouchStart={e => { e.currentTarget.style.outline = 'none'; e.currentTarget.style.background = 'none'; e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                  onTouchEnd={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.outline = 'none'; e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 >
                   <div
                     className="relative"
