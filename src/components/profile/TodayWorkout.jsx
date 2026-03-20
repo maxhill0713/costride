@@ -269,7 +269,25 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       });
 
       const newStreak = (currentUser.current_streak || 0) + 1;
-      await base44.auth.updateMe({ current_streak: newStreak });
+
+      // ── Monthly challenge progress update ──────────────────────────────────
+      const nowDate = new Date();
+      const currentMonth = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}`;
+      const logDayOfWeek = nowDate.getDay(); // 0=Sunday, 6=Saturday
+      const isWeekend = logDayOfWeek === 0 || logDayOfWeek === 6;
+      const prevProgress = currentUser.monthly_challenge_progress || {};
+      const isNewMonth = prevProgress.month !== currentMonth;
+
+      const newMonthlyProgress = {
+        month: currentMonth,
+        streak_master: Math.min(7, newStreak),
+        discipline_builder: isNewMonth ? 1 : (prevProgress.discipline_builder || 0) + 1,
+        weekend_warrior: isNewMonth
+          ? (isWeekend ? 1 : 0)
+          : (prevProgress.weekend_warrior || 0) + (isWeekend ? 1 : 0),
+      };
+
+      await base44.auth.updateMe({ current_streak: newStreak, monthly_challenge_progress: newMonthlyProgress });
       let challengesData = [];
       try {
         const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id, status: 'active' });
