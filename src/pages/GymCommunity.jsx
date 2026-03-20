@@ -228,8 +228,6 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
     }, [])
     .slice(0, 10);
 
-  if (recentCheckIns.length === 0) return null;
-
   const initials = (name = '') => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
