@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Snowflake } from 'lucide-react';
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -111,7 +111,13 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
           {/* ── Reward ── */}
           <div className="flex items-center gap-3 rounded-xl px-3 py-2"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <UniqueBadge reward={challenge.reward} size="sm" />
+            {challenge.reward?.toLowerCase().includes('streak freeze') ? (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-cyan-400 shadow-lg shadow-cyan-500/60 flex items-center justify-center flex-shrink-0">
+                <Snowflake className="w-6 h-6 text-white" strokeWidth={1.5} />
+              </div>
+            ) : (
+              <UniqueBadge reward={challenge.reward} size="sm" />
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
               <p className="text-[13px] font-black text-white truncate">{challenge.reward || 'Weekly Challenge Badge'}</p>
