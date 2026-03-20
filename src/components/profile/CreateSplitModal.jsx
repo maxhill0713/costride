@@ -228,6 +228,18 @@ function colorGradient(c) {
 }
 const INPUT_BASE = { fontSize: '16px', WebkitAppearance: 'none', MozAppearance: 'textfield' };
 
+// ─── Reusable "Set Active" button ─────────────────────────────────────────────
+function SetActiveButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-3 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+    >
+      Set Active <Star className="w-3.5 h-3.5 flex-shrink-0" />
+    </button>
+  );
+}
+
 function SmallInput({ value, onChange, placeholder }) {
   return (
     <input
@@ -335,7 +347,6 @@ function SplitCard({ onClick, isActive, selectingActive, accentColor, glowColor,
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-
       {/* Background glow blob */}
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{
@@ -343,19 +354,17 @@ function SplitCard({ onClick, isActive, selectingActive, accentColor, glowColor,
           opacity: pressed ? 0.22 : isActive ? 0.14 : 0.09,
           transition: 'opacity 0.1s ease',
         }} />
-
       {children}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SET ACTIVE SPLIT MODAL — mirrors Set Primary Gym dialog from Gyms page
+// SET ACTIVE SPLIT MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, isSaving }) {
   const [selected, setSelected] = useState(null);
 
-  // Reset selection when modal opens
   useEffect(() => {
     if (open) setSelected(null);
   }, [open]);
@@ -373,12 +382,10 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Info banner — mirrors the purple info box on the Gyms modal */}
           <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
             <p className="text-purple-200 text-sm">Your active split is the workout plan shown on your Home page and used when you log training sessions.</p>
           </div>
 
-          {/* Split list */}
           <div className="space-y-2">
             {allSplits.map((entry, i) => {
               const isPrimary = effectiveActive === entry.id;
@@ -409,7 +416,6 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
             })}
           </div>
 
-          {/* Cancel / Save row — exact same layout as Gyms modal */}
           <div className="flex gap-3">
             <Button
               onClick={onClose}
@@ -449,8 +455,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [editingSplitId, setEditingSplitId] = useState(null);
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState('');
-
-  // ── NEW: controls the Set Active Split modal ──
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
 
   const queryClient = useQueryClient();
@@ -510,7 +514,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     }
   };
 
-  // Build the combined list shown in the Set Active modal
   const allSplitsForModal = [
     ...DEFAULT_SPLITS.map((def) => ({
       id: def.id,
@@ -532,14 +535,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       })),
   ];
 
-  // Called when the user picks a split inside the Set Active modal and taps Save
   const handleSetActiveFromModal = (splitId) => {
     const entry = allSplitsForModal.find((s) => s.id === splitId);
     if (!entry) return;
-
     setActiveSplitId(entry.id);
     toast.success(`"${entry.name}" set as active!`);
-
     const updated = [
       ...savedSplits.filter((s) => s.id !== entry.id),
       { ...entry, created_at: new Date().toISOString() },
@@ -686,59 +686,73 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
         {/* ── HEADER ── */}
         <div className="flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
-          <div className="flex-shrink-0 flex items-center" style={{ minWidth: step === 'pick' ? '76px' : '40px' }}>
+
+          {/* Left: back button — fixed width so title stays centred */}
+          <div className="flex-shrink-0" style={{ minWidth: 40 }}>
             <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
               <ChevronLeft className="w-6 h-6 text-slate-300" />
             </button>
           </div>
+
+          {/* Centre: title */}
           <div className="flex-1 flex justify-center">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
-          <div className="flex-shrink-0 flex items-center justify-end gap-2" style={{ minWidth: step === 'pick' ? '76px' : '40px' }}>
+
+          {/* Right: context-sensitive buttons */}
+          <div className="flex-shrink-0 flex items-center justify-end gap-2" style={{ minWidth: 40 }}>
+
+            {/* ── PICK (hub) page ── */}
             {step === 'pick' && (
               <>
-                {/* Plus button — unchanged */}
+                {/* Add custom split */}
                 <button
                   onClick={openCustomConfigure}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
-                    bg-gradient-to-b from-blue-400 to-blue-600
-                    shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
-                    active:shadow-none active:translate-y-[3px] active:scale-90"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90"
                 >
                   <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
                 </button>
-
-                {/* ── SET ACTIVE button — now purple Star, matching the Gyms page Set Home Gym button ── */}
-                <button
-                  onClick={() => setShowSetActiveModal(true)}
-                  className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8 w-8 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
-                >
-                  <Star className="w-4 h-4" />
-                </button>
+                {/* Set Active — wider with label */}
+                <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
               </>
             )}
-            {step === 'configure' && editingSplitId && (
-              <div className="relative">
-                <button
-                  onClick={() => setDotsMenuOpen((prev) => !prev)}
-                  className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
-                >
-                  <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
-                </button>
-                {dotsMenuOpen && (
-                  <div
-                    className="absolute right-0 top-10 z-20 rounded-xl overflow-hidden shadow-xl"
-                    style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  >
+
+            {/* ── PREVIEW (default split detail) page ── */}
+            {step === 'preview' && (
+              <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
+            )}
+
+            {/* ── CONFIGURE (custom split edit) page ── */}
+            {step === 'configure' && (
+              <>
+                {/* Set Active sits left of the 3-dots */}
+                <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
+
+                {/* 3-dots — only shown when editing an existing custom split */}
+                {editingSplitId && (
+                  <div className="relative">
                     <button
-                      onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }}
-                      className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap"
+                      onClick={() => setDotsMenuOpen((prev) => !prev)}
+                      className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
                     >
-                      Delete Split
+                      <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
                     </button>
+                    {dotsMenuOpen && (
+                      <div
+                        className="absolute right-0 top-10 z-20 rounded-xl overflow-hidden shadow-xl"
+                        style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+                      >
+                        <button
+                          onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }}
+                          className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap"
+                        >
+                          Delete Split
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -764,16 +778,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
                   if (item.type === 'default') {
                     const def = item.def;
-                    const splitEntry = {
-                      id: def.id, preset_id: def.id, name: def.name,
-                      training_days: def.days, workouts: def.workouts,
-                    };
                     return (
                       <SplitCard
                         key={def.id}
                         onClick={() => openDefaultPreview(def)}
                         isActive={isActive}
-                        selectingActive={false}
                         accentColor={def.accentColor}
                         glowColor={def.glowColor}
                       >
@@ -787,6 +796,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               ))}
                             </div>
                           </div>
+                          {/* Active star — same position as custom cards: left of chevron */}
                           {isActive && (
                             <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0">
                               <Star className="w-[19px] h-[19px] text-white" />
@@ -803,16 +813,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         key={split.id}
                         onClick={() => openEditCustom(split)}
                         isActive={isActive}
-                        selectingActive={false}
                         accentColor="rgba(99,102,241,0.45)"
                         glowColor="rgba(99,102,241,0.35)"
                       >
-                        <div className="relative flex items-center gap-4 p-4">
-                          {isActive && (
-                            <div className="absolute top-3 right-3 w-7 h-7 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
-                              <Star className="w-4 h-4 text-white" />
-                            </div>
-                          )}
+                        {/* ── Custom card: active star now sits left of chevron, inline ── */}
+                        <div className="flex items-center gap-4 p-4">
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
                             <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
@@ -822,6 +827,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               ))}
                             </div>
                           </div>
+                          {/* Active star — same position as default cards */}
+                          {isActive && (
+                            <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0">
+                              <Star className="w-[19px] h-[19px] text-white" />
+                            </div>
+                          )}
                           <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                         </div>
                       </SplitCard>
