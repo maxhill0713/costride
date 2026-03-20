@@ -1478,8 +1478,8 @@ export default function GymCommunity() {
                 </div>
               </div>
             </div>
-            <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
-              <TabsList className="flex justify-between bg-transparent px-3 py-2 h-auto gap-1.5 w-full" style={{ width:'100%' }}>
+            <div className="relative z-10 pt-1" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
+              <TabsList className="flex justify-between bg-transparent px-2 py-1 h-auto gap-1 w-full" style={{ width:'100%' }}>
                 <TabsTrigger value="home"       className={tabTriggerClass}><span>Home</span></TabsTrigger>
                 <TabsTrigger value="activity"   className={tabTriggerClass}><span>Activity</span></TabsTrigger>
                 <TabsTrigger value="challenges" className={tabTriggerClass}><span>Challenges</span></TabsTrigger>
