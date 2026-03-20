@@ -165,6 +165,11 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
       {/* Progressive Overload Tracker — top of analytics */}
       <ProgressiveOverloadTracker currentUser={currentUser} />
 
+      {/* Weekly Rep Volume chart */}
+      <div className="mt-6">
+        <WeeklyVolumeChart currentUser={currentUser} />
+      </div>
+
       {/* Per-exercise strength chart */}
       <div className="mt-6">
         <StrengthProgress currentUser={currentUser} />
