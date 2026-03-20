@@ -127,20 +127,14 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
 
           {/* ── Status for monthly / join button for weekly ── */}
           {isMonthly ? (
-            <div
-              className="w-full h-9 rounded-xl font-black text-[13px] flex items-center justify-center"
-              style={isCompleted ? {
-                background: 'rgba(52,211,153,0.1)',
-                border: '1px solid rgba(52,211,153,0.2)',
-                color: '#34d399',
-              } : {
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                color: 'rgba(255,255,255,0.4)',
-              }}
-            >
-              {isCompleted ? '✓ Challenge Complete!' : 'Log workouts to progress'}
-            </div>
+            isCompleted && (
+              <div
+                className="w-full h-9 rounded-xl font-black text-[13px] flex items-center justify-center"
+                style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }}
+              >
+                ✓ Challenge Complete!
+              </div>
+            )
           ) : !isExpired && (
             <motion.div whileTap={!isParticipant ? { scale: 0.97 } : {}}>
               <button
