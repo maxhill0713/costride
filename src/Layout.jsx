@@ -100,7 +100,7 @@ export default function Layout({ children, currentPageName }) {
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
   { name: 'Progress', icon: BarChart3, page: 'Progress', color: 'text-green-500' },
   { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
-  { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' }];
+  { name: 'Profile', icon: User, page: 'Profile', color: 'text-pink-500' }];
 
 
   // Get preserved link for tab
