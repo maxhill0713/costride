@@ -5,29 +5,16 @@ import {
 } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 
-// ─── Month picker dropdown ────────────────────────────────────────────────────
+// ─── Shared dropdown shell ───────────────────────────────────────────────────
 const MONTH_NAMES = [
   'January','February','March','April','May','June',
   'July','August','September','October','November','December',
 ];
 
-function MonthPicker({ selectedYear, selectedMonth, onChange, onClose }) {
-  // Show current year and previous year months — 24 options
-  const today = new Date();
-  const options = [];
-  for (let i = 0; i < 24; i++) {
-    const d = subMonths(today, i);
-    options.push({ year: getYear(d), month: getMonth(d) });
-  }
-
+function DropdownPicker({ items, onClose, children }) {
   return (
     <>
-      {/* backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
-      {/* dropdown */}
+      <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
         className="absolute right-0 top-[calc(100%+6px)] z-50 rounded-2xl overflow-hidden"
         style={{
@@ -35,39 +22,33 @@ function MonthPicker({ selectedYear, selectedMonth, onChange, onClose }) {
           border: '1px solid rgba(255,255,255,0.10)',
           boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           backdropFilter: 'blur(20px)',
-          minWidth: 160,
-          maxHeight: 280,
+          minWidth: 130,
+          maxHeight: 260,
           overflowY: 'auto',
         }}
       >
-        {options.map(({ year, month }) => {
-          const isSelected = year === selectedYear && month === selectedMonth;
-          return (
-            <button
-              key={`${year}-${month}`}
-              onClick={() => { onChange(year, month); onClose(); }}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                width: '100%', padding: '10px 14px',
-                background: isSelected ? 'rgba(99,102,241,0.18)' : 'transparent',
-                border: 'none', cursor: 'pointer',
-                borderBottom: '1px solid rgba(255,255,255,0.04)',
-              }}
-            >
-              <span style={{
-                fontSize: 13, fontWeight: isSelected ? 800 : 600,
-                color: isSelected ? '#a5b4fc' : '#94a3b8',
-              }}>
-                {MONTH_NAMES[month]}
-              </span>
-              <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>
-                {year}
-              </span>
-            </button>
-          );
-        })}
+        {children}
       </div>
     </>
+  );
+}
+
+function PickerItem({ label, isSelected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'block', width: '100%', padding: '9px 14px',
+        textAlign: 'left',
+        background: isSelected ? 'rgba(99,102,241,0.18)' : 'transparent',
+        border: 'none', cursor: 'pointer',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        fontSize: 13, fontWeight: isSelected ? 800 : 600,
+        color: isSelected ? '#a5b4fc' : '#94a3b8',
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -78,7 +59,8 @@ export default function WorkoutSplitHeatmap({
   const today = new Date();
   const [selectedYear, setSelectedYear]   = useState(getYear(today));
   const [selectedMonth, setSelectedMonth] = useState(getMonth(today));
-  const [pickerOpen, setPickerOpen]       = useState(false);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [yearPickerOpen,  setYearPickerOpen]  = useState(false);
 
   // ── Split colour definitions ──────────────────────────────────────────────
   const splitSchedules = {
@@ -257,7 +239,8 @@ export default function WorkoutSplitHeatmap({
     return (counts.reduce((s, c) => s + c, 0) / weeks.length).toFixed(1);
   };
 
-  const monthLabel = `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+  const today_year = getYear(today);
+  const yearOptions = [today_year, today_year - 1, today_year - 2];
 
   return (
     <div className="space-y-3">
@@ -284,50 +267,81 @@ export default function WorkoutSplitHeatmap({
 
       {/* ── Calendar grid ── */}
       <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
-        {/* Top bar: day labels + month picker in top-right */}
+        {/* Top bar: day labels + month/year pickers in top-right */}
         <div className="flex items-center justify-between mb-2">
           <div className="grid grid-cols-7 gap-1.5 flex-1">
             {['M','T','W','T','F','S','S'].map((d, i) => (
               <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
             ))}
           </div>
-          {/* Month picker */}
-          <div className="relative flex-shrink-0 ml-2">
-            <button
-              onClick={() => setPickerOpen(o => !o)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px',
-                borderRadius: 8,
-                background: 'rgba(99,102,241,0.15)',
-                border: '1px solid rgba(99,102,241,0.35)',
-                color: '#a5b4fc',
-                fontSize: 12, fontWeight: 800,
-                cursor: 'pointer',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'background 0.15s',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {monthLabel}
-              <ChevronDown
-                size={12}
-                color="#a5b4fc"
+
+          {/* Month + Year pickers */}
+          <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+
+            {/* Month pill */}
+            <div className="relative">
+              <button
+                onClick={() => { setMonthPickerOpen(o => !o); setYearPickerOpen(false); }}
                 style={{
-                  transform: pickerOpen ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.2s',
-                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '4px 8px', borderRadius: 8,
+                  background: 'rgba(99,102,241,0.15)',
+                  border: '1px solid rgba(99,102,241,0.35)',
+                  color: '#a5b4fc', fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
-              />
-            </button>
-            {pickerOpen && (
-              <MonthPicker
-                selectedYear={selectedYear}
-                selectedMonth={selectedMonth}
-                onChange={(y, m) => { setSelectedYear(y); setSelectedMonth(m); }}
-                onClose={() => setPickerOpen(false)}
-              />
-            )}
+              >
+                {MONTH_NAMES[selectedMonth].slice(0, 3)}
+                <ChevronDown size={11} color="#a5b4fc"
+                  style={{ transform: monthPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              {monthPickerOpen && (
+                <DropdownPicker onClose={() => setMonthPickerOpen(false)}>
+                  {MONTH_NAMES.map((name, idx) => (
+                    <PickerItem
+                      key={idx}
+                      label={name}
+                      isSelected={idx === selectedMonth}
+                      onClick={() => { setSelectedMonth(idx); setMonthPickerOpen(false); }}
+                    />
+                  ))}
+                </DropdownPicker>
+              )}
+            </div>
+
+            {/* Year pill */}
+            <div className="relative">
+              <button
+                onClick={() => { setYearPickerOpen(o => !o); setMonthPickerOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '4px 8px', borderRadius: 8,
+                  background: 'rgba(99,102,241,0.15)',
+                  border: '1px solid rgba(99,102,241,0.35)',
+                  color: '#a5b4fc', fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {selectedYear}
+                <ChevronDown size={11} color="#a5b4fc"
+                  style={{ transform: yearPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              {yearPickerOpen && (
+                <DropdownPicker onClose={() => setYearPickerOpen(false)}>
+                  {yearOptions.map(yr => (
+                    <PickerItem
+                      key={yr}
+                      label={String(yr)}
+                      isSelected={yr === selectedYear}
+                      onClick={() => { setSelectedYear(yr); setYearPickerOpen(false); }}
+                    />
+                  ))}
+                </DropdownPicker>
+              )}
+            </div>
+
           </div>
         </div>
 
