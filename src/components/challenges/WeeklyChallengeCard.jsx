@@ -85,14 +85,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
               <p className="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">{challenge.description}</p>
             </div>
 
-            {/* Days left pill — only shown when not expired, Ended pill removed */}
-            {!isExpired && (
-              <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <Clock className="w-3 h-3 text-slate-500" />
-                <span className="text-[10px] font-bold text-slate-400">{daysLeft}d</span>
-              </div>
-            )}
+
           </div>
 
           {/* ── Progress bar ── */}
