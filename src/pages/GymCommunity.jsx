@@ -1465,13 +1465,6 @@ export default function GymCommunity() {
                     </SlidePanel>
                   </div>
                 )}
-                {polls.length > 0 && (
-                  <div className="space-y-3">
-                    {polls.map(poll => (
-                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? optionId => votePollMutation.mutate({ pollId:poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
-                    ))}
-                  </div>
-                )}
                 {upcomingEvents.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
