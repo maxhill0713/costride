@@ -295,7 +295,6 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex flex-col gap-3">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
-              const IconComponent = item.icon;
               return (
                 <Link
                   key={item.page}
@@ -309,7 +308,7 @@ export default function Layout({ children, currentPageName }) {
                     className="relative"
                     style={isActive ? { filter: 'drop-shadow(0 1px 6px rgba(85,128,200,0.45))' } : {}}
                   >
-                    <IconComponent isActive={isActive} />
+                    {getIcon(item.iconKey, isActive)}
                     {item.badge > 0 && (
                       <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                         {item.badge > 9 ? '9+' : item.badge}
