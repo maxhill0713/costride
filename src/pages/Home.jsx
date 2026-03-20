@@ -1422,70 +1422,87 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6">
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-4">
             <motion.p
               initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
-              className="text-2xl font-black text-white text-center tracking-tight mb-6">
+              className="text-2xl font-black text-white text-center tracking-tight mb-5">
               Challenge Progress 🎯
             </motion.p>
-            <div className="w-full max-w-sm space-y-4">
+            <div className="w-full max-w-sm space-y-3">
               {celebrationChallenges.map((challenge, idx) => {
                 const prevPct = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
                 const newPct = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
+                const isComplete = newPct >= 100;
                 return (
                   <motion.div
                     key={challenge.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + idx * 0.12, duration: 0.4 }}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.15 + idx * 0.1, duration: 0.3 }}
+                    className="rounded-2xl overflow-hidden relative"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(20,24,48,0.97) 0%, rgba(8,10,22,0.99) 100%)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 20,
-                      padding: '18px 18px 16px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                      background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
                     }}>
-                    {/* Title row */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span style={{ fontSize: 22 }}>{challenge.emoji}</span>
-                      <p className="text-[15px] font-black text-white leading-tight">{challenge.title}</p>
+                    {/* Top shine */}
+                    <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                      style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
+
+                    <div className="relative p-4 space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+                          style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <img
+                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
+                            alt="Challenge"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[15px] font-black text-white leading-tight truncate">{challenge.title}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{challenge.description}</p>
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] font-bold text-slate-400">
+                            {challenge.previous_value} <span className="text-emerald-400">→ {challenge.new_value}</span> / {challenge.target_value}
+                          </span>
+                          <motion.span
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + idx * 0.1 }}
+                            className="text-[11px] font-bold"
+                            style={{ color: isComplete ? '#34d399' : '#64748b' }}>
+                            {isComplete ? '✓ Complete' : `${newPct}%`}
+                          </motion.span>
+                        </div>
+                        <div className="h-4 rounded-full overflow-hidden"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <motion.div
+                            initial={{ width: `${prevPct}%` }}
+                            animate={{ width: `${newPct}%` }}
+                            transition={{ delay: 0.4 + idx * 0.1, duration: 1.2, ease: 'easeOut' }}
+                            className="h-full rounded-full"
+                            style={{ background: isComplete ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Reward row */}
+                      <div className="flex items-center gap-3 rounded-xl px-3 py-2"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <span style={{ fontSize: 20 }}>{challenge.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
+                          <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
+                        </div>
+                      </div>
                     </div>
-                    {/* Progress numbers */}
-                    <div className="flex items-end justify-between mb-2">
-                      <motion.span
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + idx * 0.12 }}
-                        className="text-[13px] font-bold text-slate-300">
-                        {challenge.previous_value} → <span className="text-emerald-400">{challenge.new_value}</span>
-                        <span className="text-slate-500"> / {challenge.target_value}</span>
-                      </motion.span>
-                      <motion.span
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 + idx * 0.12 }}
-                        className="text-[13px] font-bold text-emerald-400">
-                        {newPct}%
-                      </motion.span>
-                    </div>
-                    {/* Animated progress bar */}
-                    <div style={{ height: 10, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-                      <motion.div
-                        initial={{ width: `${prevPct}%` }}
-                        animate={{ width: `${newPct}%` }}
-                        transition={{ delay: 0.45 + idx * 0.12, duration: 1.2, ease: 'easeOut' }}
-                        style={{
-                          height: '100%', borderRadius: 99,
-                          background: newPct >= 100
-                            ? 'linear-gradient(90deg, #34d399, #10b981)'
-                            : 'linear-gradient(90deg, #38bdf8, #60a5fa)',
-                        }}
-                      />
-                    </div>
-                    {newPct >= 100 && (
-                      <motion.p
-                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 1.2 + idx * 0.12, type: 'spring', stiffness: 300 }}
-                        className="text-center text-emerald-400 font-black text-[13px] mt-2">
-                        ✓ Challenge Complete!
-                      </motion.p>
-                    )}
                   </motion.div>
                 );
               })}
