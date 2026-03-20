@@ -1207,8 +1207,9 @@ export default function GymCommunity() {
   const leaderboardUserIds = React.useMemo(() => {
     const seen = new Set();
     checkIns.forEach(c => { if (c.user_id) seen.add(c.user_id); });
-    return [...seen].slice(0, 50);
-  }, [checkIns]);
+    lifts.forEach(l => { if (l.member_id) seen.add(l.member_id); });
+    return [...seen].slice(0, 80);
+  }, [checkIns, lifts]);
 
   const { data: leaderboardUsers = [] } = useQuery({
     queryKey: ['leaderboardUsers', gymId, leaderboardUserIds.length],
