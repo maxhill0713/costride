@@ -899,6 +899,14 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
           </div>
         )}
       </>)}
+      <ClassDetailModal
+        gymClass={selectedClass}
+        open={!!selectedClass}
+        onClose={() => setSelectedClass(null)}
+        booked={selectedClass ? bookedIds.has(selectedClass.id) : false}
+        onBook={id => { handleBook(id); setSelectedClass(null); }}
+        isOwner={showOwnerControls}
+      />
     </motion.div>
   );
 }
