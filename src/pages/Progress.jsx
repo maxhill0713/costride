@@ -143,39 +143,7 @@ function GoalsPage({ currentUser, onBack }) {
   );
 }
 
-// ─── (Split and Analytics sub-pages removed — content inlined on hub) ─────────
-function _unused({ currentUser, checkIns, onBack }) {
-  return (
-    <SubPage title="Workout Split" onBack={onBack}>
-      {currentUser?.workout_split && (
-        <div className="rounded-2xl p-4 mb-4" style={CARD}>
-          <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
-        </div>
-      )}
 
-    </SubPage>
-  );
-}
-
-// ─── Analytics sub-page ───────────────────────────────────────────────────────
-function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
-  return (
-    <SubPage title="Analytics" onBack={onBack}>
-      {/* Progressive Overload Tracker — top of analytics */}
-      <ProgressiveOverloadTracker currentUser={currentUser} />
-
-      {/* Weekly Rep Volume chart */}
-      <div className="mt-6">
-        <WeeklyVolumeChart currentUser={currentUser} />
-      </div>
-
-      {/* Exercise insights */}
-      <div className="mt-6">
-        <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
-      </div>
-    </SubPage>
-  );
-}
 
 // ─── Badge definitions & logic ───────────────────────────────────────────────
 const BADGE_LIBRARY = [
