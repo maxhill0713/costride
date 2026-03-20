@@ -838,14 +838,15 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         {/* ── Horizontal scrolling cards ── */}
         <div style={{ display:'flex', gap:14, overflowX:'auto', scrollbarWidth:'none', paddingBottom:4, marginLeft:-3, paddingLeft:3 }}>
           {filtered.map(gymClass => (
-            <PremiumClassCard
-              key={gymClass.id}
-              gymClass={gymClass}
-              isOwner={showOwnerControls}
-              booked={bookedIds.has(gymClass.id)}
-              onBook={handleBook}
-              onDelete={showOwnerControls ? id => { if(window.confirm('Delete this class?')) onDelete(id); } : null}
-            />
+            <div key={gymClass.id} onClick={() => setSelectedClass(gymClass)} style={{ cursor: 'pointer' }}>
+              <PremiumClassCard
+                gymClass={gymClass}
+                isOwner={showOwnerControls}
+                booked={bookedIds.has(gymClass.id)}
+                onBook={handleBook}
+                onDelete={showOwnerControls ? id => { if(window.confirm('Delete this class?')) onDelete(id); } : null}
+              />
+            </div>
           ))}
         </div>
 
