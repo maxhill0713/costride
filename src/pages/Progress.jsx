@@ -465,11 +465,6 @@ function TallCard({ label, description, iconColor, accentColor, accentBorder, gl
 export default function Progress() {
   const [view, setView] = useState('hub');
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
-  const { data: goals = [] } = useQuery({
-    queryKey: ['goals', currentUser?.id],
-    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
-    enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
-  });
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
     queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
@@ -480,54 +475,17 @@ export default function Progress() {
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
     enabled: !!currentUser, staleTime: 2 * 60 * 1000, placeholderData: (prev) => prev,
   });
-  const { data: gymMemberships = [] } = useQuery({
-    queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
-    enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
-  });
 
   if (!currentUser) return null;
-  if (view === 'goals')     return <GoalsPage     currentUser={currentUser} onBack={() => setView('hub')} />;
-  if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
-  if (view === 'split')     return <SplitPage     currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
-  if (view === 'rank')      return <RankPage      currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
-
-  const activeGoals    = goals.filter((g) => g.status === 'active');
-  const completedGoals = goals.filter((g) => g.status === 'completed');
+  if (view === 'goals') return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
+  if (view === 'rank')  return <RankPage  currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
   const cards = [
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      description: 'Dive into your performance data, track personal records, and see how your lifts have progressed over time.',
-      icon: BarChart3,
-      iconColor: '#e879f9',
-      iconBg: 'rgba(168,85,247,0.18)',
-      accentColor: '#d946ef',
-      accentBorder: 'rgba(168,85,247,0.45)',
-      glowColor: 'rgba(168,85,247,0.35)',
-      illustration: AnalyticsIllustration,
-    },
-    {
-      id: 'split',
-      label: 'Workout Split',
-      description: "View your weekly training schedule, heatmap, and track which sessions you've completed.",
-      icon: Dumbbell,
-      iconColor: '#818cf8',
-      iconBg: 'rgba(99,102,241,0.18)',
-      accentColor: '#a5b4fc',
-      accentBorder: 'rgba(99,102,241,0.45)',
-      glowColor: 'rgba(99,102,241,0.35)',
-      illustration: SplitIllustration,
-    },
     {
       id: 'goals',
       label: 'Goals',
       description: 'Set targets, log milestones, and track your progress toward every fitness goal you set.',
-      icon: Target,
       iconColor: '#60a5fa',
-      iconBg: 'rgba(59,130,246,0.18)',
-      accentColor: '#93c5fd',
       accentBorder: 'rgba(59,130,246,0.45)',
       glowColor: 'rgba(59,130,246,0.35)',
       illustration: GoalsIllustration,
@@ -536,10 +494,7 @@ export default function Progress() {
       id: 'community',
       label: 'Community',
       description: "See the leaderboard, check who's training today, and stay motivated with your gym crew.",
-      icon: Users,
       iconColor: '#34d399',
-      iconBg: 'rgba(16,185,129,0.18)',
-      accentColor: '#6ee7b7',
       accentBorder: 'rgba(16,185,129,0.45)',
       glowColor: 'rgba(16,185,129,0.35)',
       illustration: CommunityIllustration,
@@ -550,10 +505,7 @@ export default function Progress() {
       id: 'rank',
       label: 'Rank',
       description: 'Earn badges for hitting milestones, consistency streaks, and personal records across your training journey.',
-      icon: Award,
       iconColor: '#fbbf24',
-      iconBg: 'rgba(245,158,11,0.18)',
-      accentColor: '#fde68a',
       accentBorder: 'rgba(245,158,11,0.45)',
       glowColor: 'rgba(245,158,11,0.35)',
       illustration: RankIllustration,
@@ -562,15 +514,41 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-3">
-        {cards.map((card) => (
-          <TallCard
-            key={card.id}
-            {...card}
-            as={card.isLink ? 'link' : 'button'}
-            onClick={card.isLink ? undefined : () => setView(card.id)}
-          />
-        ))}
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-6">
+
+        {/* ── Heatmap / Calendar ── */}
+        {currentUser?.workout_split && (
+          <div className="rounded-2xl p-4" style={CARD}>
+            <WorkoutSplitHeatmap
+              checkIns={checkIns}
+              workoutSplit={currentUser?.workout_split}
+              weeklyGoal={currentUser?.weekly_goal}
+              trainingDays={currentUser?.training_days}
+              customWorkoutTypes={currentUser?.custom_workout_types || {}}
+            />
+          </div>
+        )}
+
+        {/* ── Analytics ── */}
+        <ProgressiveOverloadTracker currentUser={currentUser} />
+        <WeeklyVolumeChart currentUser={currentUser} />
+        <ExerciseInsights
+          workoutLogs={workoutLogs}
+          workoutSplit={currentUser?.custom_workout_types}
+          trainingDays={currentUser?.training_days}
+        />
+
+        {/* ── Nav cards ── */}
+        <div className="space-y-3">
+          {cards.map((card) => (
+            <TallCard
+              key={card.id}
+              {...card}
+              as={card.isLink ? 'link' : 'button'}
+              onClick={card.isLink ? undefined : () => setView(card.id)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
