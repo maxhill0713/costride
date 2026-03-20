@@ -565,7 +565,7 @@ const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const TIME_SLOTS = ['Morning','Afternoon','Evening'];
 
 function getMockTime(gymClass, index) {
-  const s = gymClass.schedule || '';
+  const s = typeof gymClass.schedule === 'string' ? gymClass.schedule : '';
   const m = s.match(/(\d{1,2}):(\d{2})/);
   if (m) return m[0];
   const times = ['06:00','07:30','09:00','10:30','12:00','13:30','16:00','17:30','18:00','19:30','20:00'];
