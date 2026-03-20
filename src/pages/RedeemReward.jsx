@@ -236,22 +236,18 @@ export default function RedeemReward() {
 
         {activeSection === 'weekly' && (
           <div>
-            <h2 className="text-xl font-black text-white mb-3">Weekly Challenges</h2>
-            {weeklyChallenges.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {weeklyChallenges.map((challenge) => (
-                  <WeeklyChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    currentUser={currentUser}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
-                <p className="text-slate-400">No weekly challenges available</p>
-              </Card>
-            )}
+            <h2 className="text-xl font-black text-white mb-3">Monthly Challenges</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {monthlyChallengesWithProgress.map((challenge) => (
+                <WeeklyChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  currentUser={currentUser}
+                  userProgress={challenge.userProgress}
+                  isMonthly={true}
+                />
+              ))}
+            </div>
           </div>
         )}
 
