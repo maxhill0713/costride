@@ -632,7 +632,7 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
             },
             {
-              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              minWidth: 42, padding: '6px 2px', borderRadius: 12, cursor: 'pointer',
               background: d.isToday ? 'rgba(37,99,235,0.12)' : 'rgba(20,28,60,0.8)',
               border: `1px solid ${d.isToday ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.09)'}`,
               borderBottom: '3px solid rgba(0,0,0,0.5)',
