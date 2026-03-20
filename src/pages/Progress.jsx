@@ -153,7 +153,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
           <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
         </div>
       )}
-      <WorkoutProgressTracker currentUser={currentUser} />
+
     </SubPage>
   );
 }
