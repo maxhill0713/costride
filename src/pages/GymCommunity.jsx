@@ -782,6 +782,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   const [activeType, setActiveType] = useState('all');
   const [activeDay,  setActiveDay]  = useState('all');
   const [bookedIds,  setBookedIds]  = useState(new Set());
+  const [selectedClass, setSelectedClass] = useState(null);
 
   const allTypes = React.useMemo(() => {
     const seen = new Set();
