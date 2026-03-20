@@ -199,9 +199,29 @@ const colorForUser = (userId) =>
   AV_COLORS[(userId || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
 
 function ActiveNowStrip({ checkIns, memberAvatarMap }) {
-  const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+  // Try every possible timestamp field, pick whichever gives the most recent value
+  const getTimestamp = (c) => {
+    const candidates = [
+      c.created_date, c.created_at, c.timestamp,
+      c.check_in_time, c.checkin_time, c.date_created,
+      c.check_in_date,
+    ];
+    let best = null;
+    for (const v of candidates) {
+      if (!v) continue;
+      const d = new Date(v);
+      if (!isNaN(d.getTime()) && (best === null || d > best)) best = d;
+    }
+    return best;
+  };
+
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
   const recentCheckIns = checkIns
-    .filter(c => new Date(c.check_in_date) >= fifteenMinsAgo)
+    .filter(c => {
+      const ts = getTimestamp(c);
+      return ts && ts >= twoHoursAgo;
+    })
     .reduce((acc, c) => {
       if (!acc.find(a => a.user_id === c.user_id)) acc.push(c);
       return acc;
