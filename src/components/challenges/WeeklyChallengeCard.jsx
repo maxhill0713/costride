@@ -95,43 +95,24 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
             )}
           </div>
 
-          {/* ── Progress bar — percentage only, joined count removed ── */}
+          {/* ── Progress bar ── */}
           <div>
-            <div className="flex items-center justify-end mb-1">
-              <span className="text-[11px] font-bold text-slate-500">{progress}%</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-bold text-slate-400">{currentValue} / {targetValue}</span>
+              <span className="text-[11px] font-bold" style={{ color: isCompleted ? '#34d399' : '#64748b' }}>
+                {isCompleted ? '✓ Complete' : `${progress}%`}
+              </span>
             </div>
-            <button onClick={() => setShowStats(!showStats)} className="w-full">
-              <div className="h-4 rounded-full overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
-                />
-              </div>
-            </button>
-            {showStats && (
+            <div className="h-4 rounded-full overflow-hidden"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 rounded-xl px-3 py-2 text-center"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                {challenge.goal_type === 'longest_streak' ? (
-                  <>
-                    <p className="text-sm font-black text-white">{currentUser?.streak || 0} / {targetValue}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">days in streak</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-black text-white">{participantCount} / {targetValue}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{remaining} more needed</p>
-                  </>
-                )}
-              </motion.div>
-            )}
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="h-full rounded-full"
+                style={{ background: isCompleted ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
+              />
+            </div>
           </div>
 
           {/* ── Reward ── */}
