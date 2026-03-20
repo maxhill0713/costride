@@ -34,7 +34,7 @@ export default function CoachProfileModal({ coach, open, onClose }) {
               borderBottom: 'none',
               boxShadow: '0 -8px 48px rgba(0,0,0,0.6)',
               padding: '0 0 40px',
-              maxHeight: '85vh',
+              maxHeight: '95vh',
               overflowY: 'auto',
             }}>
 
