@@ -300,7 +300,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           const prevVal = isNewMonth ? 0 : (prevProgress[def.progressKey] || 0);
           const newVal = newMonthlyProgress[def.progressKey] || 0;
           if (newVal > prevVal) {
-            return { id: def.id, title: def.title, emoji: def.emoji, target_value: def.target, previous_value: prevVal, new_value: newVal };
+            return { id: def.id, title: def.title, emoji: def.emoji, description: def.description, reward: def.reward, target_value: def.target, previous_value: prevVal, new_value: newVal };
           }
           return null;
         })
