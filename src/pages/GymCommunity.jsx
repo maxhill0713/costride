@@ -664,18 +664,6 @@ const CLASS_IMAGES = {
   default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
 };
 
-// ── Class images per type ─────────────────────────────────────────────────────
-const CLASS_IMAGES = {
-  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=600&q=80',
-  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&q=80',
-  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80',
-  cardio:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80',
-  spin:     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80',
-  boxing:   'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=600&q=80',
-  pilates:  'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80',
-  default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80',
-};
-
 // Inject card CSS once
 const CLASS_CARD_CSS = `
 @keyframes cc-shimmer { 0%{transform:translateX(-100%);opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{transform:translateX(220%);opacity:0} }
