@@ -1627,8 +1627,6 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-                {/* Leaderboard */}
-                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
               </motion.div>
             </TabsContent>
 
