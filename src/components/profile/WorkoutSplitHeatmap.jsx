@@ -280,53 +280,55 @@ export default function WorkoutSplitHeatmap({
           </div>
         )}
 
-        {/* Month picker button */}
-        <div className="relative flex-shrink-0">
-          <button
-            onClick={() => setPickerOpen(o => !o)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: 'rgba(99,102,241,0.15)',
-              border: '1px solid rgba(99,102,241,0.35)',
-              color: '#a5b4fc',
-              fontSize: 13, fontWeight: 800,
-              cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'background 0.15s',
-            }}
-          >
-            {monthLabel}
-            <ChevronDown
-              size={13}
-              color="#a5b4fc"
-              style={{
-                transform: pickerOpen ? 'rotate(180deg)' : 'none',
-                transition: 'transform 0.2s',
-                flexShrink: 0,
-              }}
-            />
-          </button>
-
-          {pickerOpen && (
-            <MonthPicker
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              onChange={(y, m) => { setSelectedYear(y); setSelectedMonth(m); }}
-              onClose={() => setPickerOpen(false)}
-            />
-          )}
-        </div>
       </div>
 
       {/* ── Calendar grid ── */}
       <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
-        {/* Day-of-week header */}
-        <div className="grid grid-cols-7 gap-1.5 mb-2">
-          {['M','T','W','T','F','S','S'].map((d, i) => (
-            <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
-          ))}
+        {/* Top bar: day labels + month picker in top-right */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="grid grid-cols-7 gap-1.5 flex-1">
+            {['M','T','W','T','F','S','S'].map((d, i) => (
+              <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
+            ))}
+          </div>
+          {/* Month picker */}
+          <div className="relative flex-shrink-0 ml-2">
+            <button
+              onClick={() => setPickerOpen(o => !o)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px',
+                borderRadius: 8,
+                background: 'rgba(99,102,241,0.15)',
+                border: '1px solid rgba(99,102,241,0.35)',
+                color: '#a5b4fc',
+                fontSize: 12, fontWeight: 800,
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'background 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {monthLabel}
+              <ChevronDown
+                size={12}
+                color="#a5b4fc"
+                style={{
+                  transform: pickerOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s',
+                  flexShrink: 0,
+                }}
+              />
+            </button>
+            {pickerOpen && (
+              <MonthPicker
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                onChange={(y, m) => { setSelectedYear(y); setSelectedMonth(m); }}
+                onClose={() => setPickerOpen(false)}
+              />
+            )}
+          </div>
         </div>
 
         {/* Week rows */}
