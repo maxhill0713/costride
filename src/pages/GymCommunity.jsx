@@ -975,17 +975,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
 
       {/* ── Header ── */}
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
-        <div>
-          <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.28)',
-            letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:4 }}>Classes</div>
-          <div style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.04em', lineHeight:1 }}>
-            {isToday ? "Today's Sessions" : `${dayName}'s Sessions`}
-          </div>
-          <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.28)', fontWeight:600, marginTop:4 }}>
-            {activeDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}
-            {activeSlot && <span style={{ color:'rgba(147,197,253,0.7)',fontWeight:700 }}> · {activeSlot}</span>}
-          </div>
-        </div>
         {showOwnerControls && (
           <button onClick={onManage}
             onMouseDown={e=>{e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
