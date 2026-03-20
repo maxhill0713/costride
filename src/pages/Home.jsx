@@ -431,36 +431,36 @@ export default function Home() {
   const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
-  const scrollTicking = useRef(false);
 
   useEffect(() => {
-    // Must match the ghost spacer height below (px-4 py-2.5 + compact header ~44px = ~52px total)
-    const SCROLL_UP_TRIGGER = 8;
-
     const handleScroll = () => {
-      if (scrollTicking.current) return;
-      scrollTicking.current = true;
-      requestAnimationFrame(() => {
-        const currentY = window.scrollY;
+      const currentY = window.scrollY;
+      const spacer = document.getElementById('home-header-spacer');
+      const spacerH = spacer ? spacer.offsetHeight : 52;
+      const atTop = currentY <= 4;
+
+      setIsAtTop(atTop);
+
+      if (atTop) {
+        // Always show at top
+        setStickyHeaderVisible(true);
+      } else if (currentY <= spacerH) {
+        // In the ghost spacer zone — keep visible
+        setStickyHeaderVisible(true);
+      } else {
         const delta = lastScrollY.current - currentY;
-        // Use the actual ghost spacer element height so the threshold is always correct
-        const spacer = document.getElementById('home-header-spacer');
-        const spacerH = spacer ? spacer.offsetHeight : 52;
-        const atTop = currentY <= spacerH;
-        setIsAtTop(atTop);
-        if (atTop) {
+        if (delta > 0) {
+          // Scrolling up — show
           setStickyHeaderVisible(true);
-        } else if (delta > SCROLL_UP_TRIGGER) {
-          setStickyHeaderVisible(true);
-        } else if (delta < -4) {
+        } else if (delta < -6) {
+          // Scrolling down past threshold — hide
           setStickyHeaderVisible(false);
         }
-        lastScrollY.current = currentY;
-        scrollTicking.current = false;
-      });
+      }
+
+      lastScrollY.current = currentY;
     };
 
-    setStickyHeaderVisible(true);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
