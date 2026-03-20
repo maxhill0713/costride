@@ -142,7 +142,6 @@ function ExerciseSummaryBadge({ name, diff, color }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProgressiveOverloadTracker({ currentUser }) {
-  // Derive workout options from the user's active split
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
@@ -153,7 +152,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
       }))
-      // Deduplicate by label (same workout on multiple days)
       .filter((opt, idx, arr) => arr.findIndex(o => o.label === opt.label) === idx);
   }, [currentUser]);
 
@@ -176,11 +174,9 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
     placeholderData: prev => prev,
   });
 
-  // ── Build per-exercise time series (all-time, for accurate baseline) ──────
   const exerciseSeriesMap = useMemo(() => {
     if (!targetExercises.length) return {};
     const map = {};
-
     workoutLogs.forEach(log => {
       const logDate = new Date(log.completed_date || log.created_date);
       (log.exercises || []).forEach(ex => {
@@ -194,27 +190,20 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         map[matched].push({ rawDate: logDate, weight: w });
       });
     });
-
     Object.values(map).forEach(arr => arr.sort((a, b) => a.rawDate - b.rawDate));
     return map;
   }, [workoutLogs, targetExercises]);
 
   const allExerciseNames = useMemo(() => Object.keys(exerciseSeriesMap), [exerciseSeriesMap]);
 
-  // ── Build chart data — 3 months fixed, every log = one point ─────────────
   const { chartData, exerciseMeta } = useMemo(() => {
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
-
     const cutoff = subMonths(new Date(), CUTOFF_MONTHS);
-
-    // Baseline = very first ever log for each exercise
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (series?.length) baselines[name] = series[0].weight;
     });
-
-    // Collect every session within the 3-month window
     const allPoints = [];
     allExerciseNames.forEach(name => {
       exerciseSeriesMap[name].forEach(({ rawDate, weight }) => {
@@ -222,57 +211,39 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         allPoints.push({ rawDate, name, weight });
       });
     });
-
     allPoints.sort((a, b) => a.rawDate - b.rawDate);
-
-    // Group by date string
     const dateGroups = {};
     allPoints.forEach(pt => {
       const dateStr = format(pt.rawDate, 'MMM d');
       if (!dateGroups[dateStr]) dateGroups[dateStr] = { pts: [], ts: pt.rawDate.getTime() };
       dateGroups[dateStr].pts.push(pt);
     });
-
-    const sortedDateStrs = Object.keys(dateGroups)
-      .sort((a, b) => dateGroups[a].ts - dateGroups[b].ts);
-
+    const sortedDateStrs = Object.keys(dateGroups).sort((a, b) => dateGroups[a].ts - dateGroups[b].ts);
     const rows = sortedDateStrs.map(dateStr => {
       const row = { date: dateStr };
       const { pts, ts } = dateGroups[dateStr];
       const dayTimestamp = new Date(ts);
-
       allExerciseNames.forEach(name => {
         const baseline = baselines[name];
         const firstEntry = exerciseSeriesMap[name]?.[0];
         const exerciseStarted = firstEntry && firstEntry.rawDate <= dayTimestamp;
-
         if (!exerciseStarted) {
-          // Not introduced yet — sit at 0
           row[name] = 0;
         } else {
           const dayEntry = pts.find(pt => pt.name === name);
           row[name] = dayEntry ? kgDiff(dayEntry.weight, baseline) : null;
         }
       });
-
       return row;
     });
-
     const meta = allExerciseNames.map((name, i) => {
       const lastRow = [...rows].reverse().find(r => r[name] !== null && r[name] !== undefined);
-      return {
-        name,
-        color: LINE_COLORS[i % LINE_COLORS.length],
-        finalDiff: lastRow ? lastRow[name] : 0,
-      };
+      return { name, color: LINE_COLORS[i % LINE_COLORS.length], finalDiff: lastRow ? lastRow[name] : 0 };
     });
-
     meta.sort((a, b) => b.finalDiff - a.finalDiff);
-
     return { chartData: rows, exerciseMeta: meta };
   }, [allExerciseNames, exerciseSeriesMap]);
 
-  // ── Y-axis domain ─────────────────────────────────────────────────────────
   const yDomain = useMemo(() => {
     if (!chartData.length) return [-5, 10];
     let min = 0, max = 0;
@@ -290,150 +261,137 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
   const hasData = chartData.length > 0 && exerciseMeta.length > 0;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{
-      borderRadius: 20, overflow: 'hidden',
-      background: 'linear-gradient(160deg, rgba(15,20,45,0.88) 0%, rgba(8,11,26,0.96) 100%)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-    }}>
-      {/* Top accent bar */}
-      <div style={{ height: 3, background: 'linear-gradient(90deg, #60a5fa, #a78bfa, transparent)' }} />
+    <div>
+      {/* ── Title ── */}
+      <h2 style={{
+        fontSize: 18, fontWeight: 900, color: '#f1f5f9',
+        letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, width: '100%',
+      }}>
+        Progressive Overload Tracker
+      </h2>
 
-      <div style={{ padding: '18px 18px 20px' }}>
+      {/* ── Workout selector ── */}
+      {workoutOptions.length > 0 ? (
+        <div style={{ marginBottom: 16 }}>
+          <WorkoutSelector
+            options={workoutOptions}
+            selected={validKey}
+            onSelect={setSelectedWorkoutKey}
+          />
+        </div>
+      ) : (
+        <p style={{ fontSize: 11, color: '#475569', marginBottom: 16 }}>
+          No workout split configured yet.
+        </p>
+      )}
 
-        {/* ── Title ─────────────────────────────────────────────────────── */}
-        <h2 style={{
-          fontSize: 18, fontWeight: 900, color: '#f1f5f9',
-          letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, width: '100%',
-        }}>
-          Progressive Overload Tracker
-        </h2>
-
-        {/* ── Workout selector ──────────────────────────────────────────── */}
-        {workoutOptions.length > 0 ? (
-          <div style={{ marginBottom: 16 }}>
-            <WorkoutSelector
-              options={workoutOptions}
-              selected={validKey}
-              onSelect={setSelectedWorkoutKey}
-            />
-          </div>
-        ) : (
-          <p style={{ fontSize: 11, color: '#475569', marginBottom: 16 }}>
-            No workout split configured yet.
+      {/* ── Chart ── */}
+      {isLoading ? (
+        <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <div style={{ width: 18, height: 18, borderRadius: '50%',
+            border: '2px solid rgba(96,165,250,0.25)', borderTopColor: '#60a5fa',
+            animation: 'spin 0.7s linear infinite' }} />
+          <span style={{ color: '#475569', fontSize: 12 }}>Loading…</span>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : !hasData ? (
+        <div style={{ height: 220, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
+            No data for {selectedWorkout?.label ?? 'this workout'} yet
           </p>
-        )}
-
-        {/* ── Chart ─────────────────────────────────────────────────────── */}
-        {isLoading ? (
-          <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%',
-              border: '2px solid rgba(96,165,250,0.25)', borderTopColor: '#60a5fa',
-              animation: 'spin 0.7s linear infinite' }} />
-            <span style={{ color: '#475569', fontSize: 12 }}>Loading…</span>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        ) : !hasData ? (
-          <div style={{ height: 220, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
-              No data for {selectedWorkout?.label ?? 'this workout'} yet
-            </p>
-            <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
-              Log this workout to start tracking progressive overload
-            </p>
-          </div>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
-                <XAxis
-                  dataKey="date"
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
-                  tickLine={false} axisLine={false}
-                  interval="preserveStartEnd"
+          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
+            Log this workout to start tracking progressive overload
+          </p>
+        </div>
+      ) : (
+        <>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
+              <XAxis
+                dataKey="date"
+                stroke="rgba(255,255,255,0.05)"
+                tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                tickLine={false} axisLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                stroke="rgba(255,255,255,0.05)"
+                tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                tickLine={false} axisLine={false}
+                width={44}
+                domain={yDomain}
+                tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
+              {exerciseMeta.map(({ name, color }) => (
+                <Line
+                  key={name}
+                  type="monotone"
+                  dataKey={name}
+                  stroke={color}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
+                  connectNulls={false}
                 />
-                <YAxis
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
-                  tickLine={false} axisLine={false}
-                  width={44}
-                  domain={yDomain}
-                  tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
-                {exerciseMeta.map(({ name, color }) => (
-                  <Line
-                    key={name}
-                    type="monotone"
-                    dataKey={name}
-                    stroke={color}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
-                    connectNulls={false}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-
-            {/* ── Exercise badges ──────────────────────────────────────── */}
-            <div style={{
-              display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12,
-              paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)',
-            }}>
-              {exerciseMeta.map(({ name, color, finalDiff }) => (
-                <ExerciseSummaryBadge key={name} name={name} diff={finalDiff} color={color} />
               ))}
-            </div>
+            </LineChart>
+          </ResponsiveContainer>
 
-            {/* ── Insight callout ──────────────────────────────────────── */}
-            {exerciseMeta.length > 1 && (() => {
-              const best   = exerciseMeta[0];
-              const worst  = exerciseMeta[exerciseMeta.length - 1];
-              const stalled = exerciseMeta.filter(e => Math.abs(e.finalDiff) < 0.5);
-              return (
-                <div style={{
-                  marginTop: 10, padding: '10px 12px', borderRadius: 10,
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  fontSize: 11, color: '#64748b', lineHeight: 1.5,
-                }}>
-                  {best.finalDiff > 0.5 && (
-                    <span>
-                      <span style={{ color: '#34d399', fontWeight: 700 }}>↑ {best.name}</span>
-                      {' '}is your best gainer (+{best.finalDiff}kg).{' '}
+          {/* ── Exercise badges ── */}
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12,
+            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)',
+          }}>
+            {exerciseMeta.map(({ name, color, finalDiff }) => (
+              <ExerciseSummaryBadge key={name} name={name} diff={finalDiff} color={color} />
+            ))}
+          </div>
+
+          {/* ── Insight callout ── */}
+          {exerciseMeta.length > 1 && (() => {
+            const best  = exerciseMeta[0];
+            const worst = exerciseMeta[exerciseMeta.length - 1];
+            const stalled = exerciseMeta.filter(e => Math.abs(e.finalDiff) < 0.5);
+            return (
+              <div style={{
+                marginTop: 10, padding: '10px 12px', borderRadius: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                fontSize: 11, color: '#64748b', lineHeight: 1.5,
+              }}>
+                {best.finalDiff > 0.5 && (
+                  <span>
+                    <span style={{ color: '#34d399', fontWeight: 700 }}>↑ {best.name}</span>
+                    {' '}is your best gainer (+{best.finalDiff}kg).{' '}
+                  </span>
+                )}
+                {worst.finalDiff < -0.5 && (
+                  <span>
+                    <span style={{ color: '#f87171', fontWeight: 700 }}>↓ {worst.name}</span>
+                    {' '}has regressed ({worst.finalDiff}kg).{' '}
+                  </span>
+                )}
+                {stalled.length > 0 && stalled.length < exerciseMeta.length && (
+                  <span>
+                    <span style={{ color: '#fbbf24', fontWeight: 700 }}>
+                      {stalled.map(e => e.name).join(', ')}
                     </span>
-                  )}
-                  {worst.finalDiff < -0.5 && (
-                    <span>
-                      <span style={{ color: '#f87171', fontWeight: 700 }}>↓ {worst.name}</span>
-                      {' '}has regressed ({worst.finalDiff}kg).{' '}
-                    </span>
-                  )}
-                  {stalled.length > 0 && stalled.length < exerciseMeta.length && (
-                    <span>
-                      <span style={{ color: '#fbbf24', fontWeight: 700 }}>
-                        {stalled.map(e => e.name).join(', ')}
-                      </span>
-                      {' '}{stalled.length === 1 ? 'has' : 'have'} plateaued — consider increasing weight.
-                    </span>
-                  )}
-                  {best.finalDiff <= 0.5 && worst.finalDiff >= -0.5 && (
-                    <span>All exercises are holding steady. Push the weight up to drive overload.</span>
-                  )}
-                </div>
-              );
-            })()}
-          </>
-        )}
-      </div>
+                    {' '}{stalled.length === 1 ? 'has' : 'have'} plateaued — consider increasing weight.
+                  </span>
+                )}
+                {best.finalDiff <= 0.5 && worst.finalDiff >= -0.5 && (
+                  <span>All exercises are holding steady. Push the weight up to drive overload.</span>
+                )}
+              </div>
+            );
+          })()}
+        </>
+      )}
     </div>
   );
 }
