@@ -1547,7 +1547,7 @@ export default function GymCommunity() {
                 {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
-                <GymActivityFeed checkIns={checkIns} lifts={lifts} memberAvatarMap={memberAvatarMap} />
+                <GymActivityFeed checkIns={checkIns} lifts={lifts} posts={gymPosts} workoutLogs={gymWorkoutLogs} memberAvatarMap={memberAvatarMap} />
                 {/* Busy times */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
                 {/* Events */}
