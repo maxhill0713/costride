@@ -242,147 +242,162 @@ export default function WorkoutSplitHeatmap({
   const today_year = getYear(today);
   const yearOptions = [today_year, today_year - 1, today_year - 2];
 
+  // ── Pill button style matching app aesthetic ─────────────────────────────
+  const pillBtn = (isOpen) => ({
+    display: 'flex', alignItems: 'center', gap: 4,
+    padding: '5px 10px', borderRadius: 10,
+    background: isOpen ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.10)',
+    color: '#e2e8f0', fontSize: 12, fontWeight: 700,
+    cursor: 'pointer', whiteSpace: 'nowrap',
+    WebkitTapHighlightColor: 'transparent',
+    boxShadow: '0 2px 0 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
+    transition: 'background 0.12s ease',
+    outline: 'none',
+  });
+
   return (
-    <div className="space-y-3">
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: 'linear-gradient(160deg, rgba(15,20,45,0.88) 0%, rgba(8,11,26,0.96) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      <div className="p-3 space-y-3">
 
-      {/* ── Header row ── */}
-      <div className="flex items-center justify-between">
+        {/* ── Top row: consistency stat (left) + month/year pickers (right) ── */}
+        <div className="flex items-center justify-between">
 
-        {/* Split legend */}
-        {splitInfo && (
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-2">{splitInfo.name}</h4>
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(splitInfo.colors).map(([name, color]) => (
-                <div key={name} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/30 border border-slate-600/30">
-                  <div className={`w-2.5 h-2.5 rounded ${color}`} />
-                  <span className="text-[10px] text-slate-200 font-medium">{name}</span>
-                </div>
-              ))}
-            </div>
+          {/* Consistency badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: '#34d399', lineHeight: 1, letterSpacing: '-0.02em' }}>
+              {getConsistencyRate()}<span style={{ fontSize: 13, fontWeight: 700, color: '#6ee7b7' }}>%</span>
+            </span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Consistency
+            </span>
           </div>
-        )}
 
-      </div>
+          {/* Month + Year pickers */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
-      {/* ── Calendar grid ── */}
-      <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
-        {/* Row 1: month/year pickers — sits above the day-letter headers */}
-        <div className="flex items-center justify-end gap-1.5 mb-2">
-
-            {/* Month pill */}
+            {/* Month */}
             <div className="relative">
               <button
                 onClick={() => { setMonthPickerOpen(o => !o); setYearPickerOpen(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  padding: '4px 8px', borderRadius: 8,
-                  background: 'rgba(99,102,241,0.15)',
-                  border: '1px solid rgba(99,102,241,0.35)',
-                  color: '#a5b4fc', fontSize: 12, fontWeight: 800,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
+                style={pillBtn(monthPickerOpen)}
               >
                 {MONTH_NAMES[selectedMonth].slice(0, 3)}
-                <ChevronDown size={11} color="#a5b4fc"
+                <ChevronDown size={11} color="#94a3b8"
                   style={{ transform: monthPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {monthPickerOpen && (
                 <DropdownPicker onClose={() => setMonthPickerOpen(false)}>
                   {MONTH_NAMES.map((name, idx) => (
-                    <PickerItem
-                      key={idx}
-                      label={name}
-                      isSelected={idx === selectedMonth}
-                      onClick={() => { setSelectedMonth(idx); setMonthPickerOpen(false); }}
-                    />
+                    <PickerItem key={idx} label={name} isSelected={idx === selectedMonth}
+                      onClick={() => { setSelectedMonth(idx); setMonthPickerOpen(false); }} />
                   ))}
                 </DropdownPicker>
               )}
             </div>
 
-            {/* Year pill */}
+            {/* Year */}
             <div className="relative">
               <button
                 onClick={() => { setYearPickerOpen(o => !o); setMonthPickerOpen(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  padding: '4px 8px', borderRadius: 8,
-                  background: 'rgba(99,102,241,0.15)',
-                  border: '1px solid rgba(99,102,241,0.35)',
-                  color: '#a5b4fc', fontSize: 12, fontWeight: 800,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
+                style={pillBtn(yearPickerOpen)}
               >
                 {selectedYear}
-                <ChevronDown size={11} color="#a5b4fc"
+                <ChevronDown size={11} color="#94a3b8"
                   style={{ transform: yearPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {yearPickerOpen && (
                 <DropdownPicker onClose={() => setYearPickerOpen(false)}>
                   {yearOptions.map(yr => (
-                    <PickerItem
-                      key={yr}
-                      label={String(yr)}
-                      isSelected={yr === selectedYear}
-                      onClick={() => { setSelectedYear(yr); setYearPickerOpen(false); }}
-                    />
+                    <PickerItem key={yr} label={String(yr)} isSelected={yr === selectedYear}
+                      onClick={() => { setSelectedYear(yr); setYearPickerOpen(false); }} />
                   ))}
                 </DropdownPicker>
               )}
             </div>
 
+          </div>
         </div>
 
-        {/* Row 2: day-of-week letters — full width so each sits above its column */}
-        <div className="grid grid-cols-7 gap-1.5 mb-2">
+        {/* ── Day-of-week letters ── */}
+        <div className="grid grid-cols-7 gap-1.5">
           {['M','T','W','T','F','S','S'].map((d, i) => (
-            <div key={i} className="text-center text-[10px] text-slate-400 font-bold">{d}</div>
+            <div key={i} className="text-center text-[10px] text-slate-500 font-bold">{d}</div>
           ))}
         </div>
 
-        {/* Week rows */}
+        {/* ── Week rows ── */}
         <div className="space-y-1.5">
           {weeks.map((week, wi) => (
             <div key={wi} className="grid grid-cols-7 gap-1.5">
               {week.map((day, di) => {
-                const inMonth    = getMonth(day) === selectedMonth && getYear(day) === selectedYear;
+                const inMonth     = getMonth(day) === selectedMonth && getYear(day) === selectedYear;
                 const isCheckedIn = hasCheckIn(day);
                 const isToday     = isSameDay(day, today);
+                const isPast      = day < today && !isToday;
                 const expected    = getExpectedWorkout(day);
-                const expectedColor = splitInfo?.colors[expected] || 'bg-slate-700/50';
+                const isRestDay   = expected === 'Rest';
+                // Missed = past training day with no check-in
+                const isMissed    = inMonth && isPast && !isCheckedIn && !isRestDay;
+
+                // Colour logic
+                let bgClass = '';
+                let borderClass = '';
+                if (isCheckedIn) {
+                  bgClass = 'bg-gradient-to-br from-blue-500 to-blue-700';
+                  borderClass = 'border border-blue-400/30';
+                } else if (isRestDay && inMonth) {
+                  bgClass = 'bg-gradient-to-br from-emerald-500 to-emerald-700';
+                  borderClass = 'border border-emerald-400/30';
+                } else if (isMissed) {
+                  bgClass = 'bg-slate-950';
+                  borderClass = 'border border-slate-700/60';
+                } else {
+                  bgClass = 'bg-slate-800/60';
+                  borderClass = 'border border-slate-700/40';
+                }
 
                 return (
                   <div
                     key={di}
                     className={`
                       aspect-square rounded-lg relative overflow-hidden
-                      transition-all duration-200 active:scale-95
+                      transition-all duration-200
                       ${!inMonth ? 'opacity-15' : ''}
-                      ${isCheckedIn
-                        ? splitInfo
-                          ? `${expectedColor} border border-white/20 shadow-sm`
-                          : 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md border border-emerald-400/30'
-                        : 'bg-slate-800/60 border border-slate-700/40'
-                      }
-                      ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-900/50' : ''}
+                      ${bgClass} ${borderClass}
+                      ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-900' : ''}
                     `}
                   >
-                    <div className="absolute top-0.5 left-1 text-[8px] font-bold text-white/60">
+                    <div className="absolute top-0.5 left-1 text-[8px] font-bold text-white/50">
                       {format(day, 'd')}
                     </div>
 
+                    {/* Check-in tick */}
                     {isCheckedIn && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <svg className="w-3.5 h-3.5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-3.5 h-3.5 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </div>
                     )}
 
-                    {isToday && !isCheckedIn && (
+                    {/* Missed workout cross */}
+                    {isMissed && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" d="M5 5l10 10M15 5L5 15" />
+                        </svg>
+                      </div>
+                    )}
+
+                    {/* Today pulse dot */}
+                    {isToday && !isCheckedIn && !isRestDay && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                       </div>
@@ -393,26 +408,8 @@ export default function WorkoutSplitHeatmap({
             </div>
           ))}
         </div>
-      </div>
 
-      {/* ── Stats ── */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 rounded-xl p-3 border border-emerald-500/20">
-          <div className="flex items-baseline gap-1.5 mb-0.5">
-            <p className="text-xl font-bold text-emerald-400">{getConsistencyRate()}</p>
-            <p className="text-xs text-emerald-300 font-semibold">%</p>
-          </div>
-          <p className="text-[10px] text-slate-300 font-medium">Consistency</p>
-        </div>
-        <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-xl p-3 border border-blue-500/20">
-          <div className="flex items-baseline gap-1.5 mb-0.5">
-            <p className="text-xl font-bold text-blue-400">{getWeeklyAverage()}</p>
-            <p className="text-xs text-blue-300 font-semibold">/ {weeklyGoal}</p>
-          </div>
-          <p className="text-[10px] text-slate-300 font-medium">Per Week</p>
-        </div>
       </div>
-
     </div>
   );
 }
