@@ -1426,7 +1426,7 @@ export default function GymCommunity() {
     </div>
   );
 
-  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-1.5 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
+  const tabTriggerClass = "whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 text-slate-400 font-semibold rounded-lg px-3.5 py-2 flex items-center gap-2 justify-center transition-all duration-150 text-[13px] data-[state=active]:text-white data-[state=active]:bg-white/10 data-[state=active]:font-bold active:opacity-70";
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
