@@ -635,7 +635,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 <SLabel>Verification Status</SLabel>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
-                    { key: 'id', icon: ScanFace, label: 'ID Verified' },
+                    { key: 'id', icon: Fingerprint, label: 'ID Verified' },
                     { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' },
                     { key: 'background', icon: ClipboardCheck, label: 'Background Checked' },
                   ].map(({ key, icon: Ic, label }) => {
