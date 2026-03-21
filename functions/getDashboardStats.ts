@@ -25,6 +25,7 @@ Deno.serve(async (req) => {
     const yesterdayStart = new Date(todayStart - DAY);
 
     const ci7      = checkIns.filter(c => new Date(c.check_in_date) >= t7);
+    const ci7p     = checkIns.filter(c => { const d = new Date(c.check_in_date); return d >= t14 && d < t7; });
     const ci30     = checkIns.filter(c => new Date(c.check_in_date) >= t30);
     const ciPrev30 = checkIns.filter(c => { const d = new Date(c.check_in_date); return d >= t60 && d < t30; });
 
