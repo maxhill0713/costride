@@ -3,14 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Star, Upload, Plus, X, GraduationCap, Award,
-  Edit2, Loader2, Eye, Camera, Save, ChevronRight,
-  Clock, Trophy, Shield,
-  MessageSquare, BadgeCheck, Fingerprint, ClipboardCheck,
-  AlertCircle, Package, Calendar,
-  Image, Trash2, Info,
+  Star, Upload, Plus, X, GraduationCap, Briefcase, Award, Users,
+  Edit2, Check, Loader2, Eye, Camera, Save, ChevronRight,
+  Clock, MapPin, Languages, Zap, Trophy, Shield, Tag,
+  MessageSquare, BadgeCheck, ScanFace, ClipboardCheck,
+  ArrowUpRight, Sparkles, AlertCircle, Package, Calendar,
+  Image, Trash2, ToggleLeft, ToggleRight, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import CoachProfileModal from '@/components/CoachProfileModal';
 
 /* ─── Design tokens (match CoachProfileModal exactly) ───────── */
 const BG       = '#060810';
@@ -462,7 +463,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
               Create your public profile at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span>. Members will see your bio, classes, certifications, and booking options.
             </div>
             <button
-              onClick={() => { if (!selectedGym?.id) return; createMutation.mutate({
+              onClick={() => createMutation.mutate({
                 gym_id: selectedGym.id,
                 user_email: currentUser.email,
                 user_id: currentUser.id,
@@ -478,7 +479,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 ],
                 verification: { id: false, certifications: false, background: false },
                 free_consultation: false,
-              }); }}
+              })}
               className="tcp-btn"
               disabled={creating}
               style={{ width: "100%", padding: 15, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", color: "#fff", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 24px rgba(37,99,235,0.4)", cursor: creating ? "default" : "pointer", opacity: creating ? 0.7 : 1 }}>
@@ -635,7 +636,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 <SLabel>Verification Status</SLabel>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
-                    { key: 'id', icon: Fingerprint, label: 'ID Verified' },
+                    { key: 'id', icon: ScanFace, label: 'ID Verified' },
                     { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' },
                     { key: 'background', icon: ClipboardCheck, label: 'Background Checked' },
                   ].map(({ key, icon: Ic, label }) => {
@@ -810,6 +811,13 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
 
       {/* ── Floating save bar ───────────────────────────── */}
       <SaveBar dirty={dirty} saving={updateMutation.isPending} onSave={handleSave} onDiscard={handleDiscard} />
+
+      {/* ── Full profile preview modal ───────────────────── */}
+      <CoachProfileModal
+        coach={draft}
+        open={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+      />
     </div>
   );
 }
