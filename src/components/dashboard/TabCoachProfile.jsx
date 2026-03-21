@@ -447,22 +447,6 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     </div>
   );
 
-  // No gym selected — coach not linked to a gym yet
-  if (!selectedGym?.id) return (
-    <div className="tcp-root" style={{ fontFamily: "Figtree,system-ui,sans-serif", minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <style>{CSS}</style>
-      <div style={{ maxWidth: 420, width: "100%", textAlign: "center" }}>
-        <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-          <AlertCircle style={{ width: 28, height: 28, color: "#fbbf24" }} />
-        </div>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 8 }}>Not linked to a gym</div>
-        <div style={{ fontSize: 13, color: SUB, lineHeight: 1.65 }}>
-          You need to be added as a coach at a gym before you can create your profile. Ask the gym owner to add you from their Coaches settings.
-        </div>
-      </div>
-    </div>
-  );
-
   // No coach record yet — show Create Profile onboarding
   if (!isLoading && !coach && !draft) {
     const creating = createMutation.isPending;
