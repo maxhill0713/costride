@@ -385,25 +385,7 @@ export default function GymOwnerDashboard() {
 
   // ── Tab content — coach gets scoped data, owner gets full data ───────────
   const tabContent = {
-    overview: isCoach
-      ? <TabCoachOverview
-          myClasses={myClasses}
-          checkIns={coachCheckIns}
-          allMemberships={coachMemberships}
-          avatarMap={avatarMapFull}
-          openModal={openModal}
-          now={now}
-          selectedGym={selectedGym}
-          posts={coachPosts}
-          events={coachEvents}
-          challenges={coachChallenges}
-          weekSpark={weekSpark}
-          engagementSegmentsCoach={engagementSegmentsCoach}
-          ci7Count={ci7Count}
-          ci7pCount={ci7pCount}
-          weeklyTrendCoach={weeklyTrendCoach}
-        />
-      : <TabOverview
+    overview: <TabOverview
           todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
           activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
           newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={[]}
