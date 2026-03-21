@@ -1324,12 +1324,8 @@ export default function GymCommunity() {
   }, [checkIns]);
 
   const { data: leaderboardUsers = [] } = useQuery({
-    queryKey: ['leaderboardUsers', gymId, leaderboardUserIds.length],
-    queryFn: async () => {
-      if (leaderboardUserIds.length === 0) return [];
-      const results = await Promise.allSettled(leaderboardUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(r => (r && r[0]) ? r[0] : null)));
-      return results.filter(r => r.status === 'fulfilled' && r.value != null).map(r => r.value);
-    },
+    queryKey: ['leaderboardUsers', gymId],
+    queryFn: async () => base44.entities.User.list('-created_date', 100),
     enabled: leaderboardUserIds.length > 0,
     staleTime: 10*60*1000,
     gcTime: 20*60*1000,

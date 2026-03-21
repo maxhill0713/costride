@@ -385,18 +385,7 @@ html {
     transform: translateY(-4px);
   }
 
-  /* Smooth opacity transitions */
-  [class*="bg-"] {
-    transition: background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  [class*="text-"] {
-    transition: color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  [class*="border-"] {
-    transition: border-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+  /* Removed wildcard transitions — they caused repaints on every element */
 }
 
 @layer utilities {
