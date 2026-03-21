@@ -326,11 +326,27 @@ export default function GymOwnerDashboard() {
 
   const now = new Date();
 
-  const memberUserIds = useMemo(() => { const s = new Set(); checkIns.forEach(c => { if (c.user_id) s.add(c.user_id); }); allMemberships.forEach(m => { if (m.user_id) s.add(m.user_id); }); return [...s].slice(0, 100); }, [checkIns, allMemberships]);
-  const { data: memberUsers = [] } = useQuery({ queryKey: ['memberUsers', selectedGym?.id, memberUserIds.length], queryFn: async () => { if (!memberUserIds.length) return []; const r = await Promise.allSettled(memberUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(x => x?.[0] || null))); return r.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value); }, enabled: memberUserIds.length > 0 && on, staleTime: 10 * 60 * 1000 });
-  const avatarMap = useMemo(() => { const m = {}; memberUsers.forEach(u => { if (u?.id) { const av = u.avatar_url || u.profile_picture || u.photo_url || null; if (av) m[u.id] = av; } }); return m; }, [memberUsers]);
+  // All computed stats from backend
+  const {
+    todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
+    activeThisWeek = 0, weeklyChangePct = 0,
+    activeThisMonth = 0, totalMembers: totalMembersRaw = 0, retentionRate = 0,
+    monthChangePct = 0, monthCiPer = [],
+    newSignUps = 0, cancelledEst = 0,
+    atRisk = 0, atRiskMembersData: atRiskMembersList = [],
+    memberLastCheckIn = {},
+    sparkData7 = [], monthGrowthData = [],
+    peakLabel = null, peakEndLabel = null, peakEntry = null,
+    satVsAvg = 0, chartDays = [], streaks = [], recentActivity = [],
+    avatarMap = {},
+  } = stats;
 
-  // Classes this coach teaches (match by name/email/id)
+  const totalMembers = stats.totalMembers ?? totalMembersRaw;
+  const ci30 = [];  // not needed on frontend anymore
+
+  const avatarMapFull = useMemo(() => avatarMap, [stats]);
+
+  // Classes this coach teaches
   const myClasses = useMemo(() => {
     if (!isCoach || !currentUser) return classes;
     return classes.filter(c =>
@@ -342,134 +358,19 @@ export default function GymOwnerDashboard() {
     );
   }, [classes, currentUser, isCoach]);
 
-  // ── Coach-scoped data: only what's relevant to this coach ─────────────────
-  // Members who have ever checked in during one of the coach's class time slots
-  const coachMemberIds = useMemo(() => {
-    if (!isCoach) return null;
-    // If coach has no classes, show all members so the dashboard isn't empty
-    if (!myClasses.length) return new Set(allMemberships.map(m => m.user_id));
-    // Build hour sets for each class schedule
-    const classHours = new Set(
-      myClasses.flatMap(cls => {
-        const s = cls.schedule || '';
-        const match = s.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
-        if (!match) return [];
-        let h = parseInt(match[1]);
-        if (match[2].toLowerCase() === 'pm' && h !== 12) h += 12;
-        if (match[2].toLowerCase() === 'am' && h === 12) h = 0;
-        return [h, h + 1];
-      })
-    );
-    // Fall back to all members if we can't parse any schedule
-    if (!classHours.size) return new Set(allMemberships.map(m => m.user_id));
-    const ids = new Set();
-    checkIns.forEach(c => {
-      const h = new Date(c.check_in_date).getHours();
-      if (classHours.has(h)) ids.add(c.user_id);
-    });
-    // Always include members with no check-ins so they're visible as at-risk
-    allMemberships.forEach(m => { if (!ids.has(m.user_id)) ids.add(m.user_id); });
-    return ids;
-  }, [isCoach, myClasses, checkIns, allMemberships]);
+  // Coach-scoped memberships/checkins (light filter on already-lean data)
+  const coachMemberships = allMemberships;
+  const coachCheckIns    = checkIns;
+  const coachCi30        = [];
+  const coachPosts       = isCoach ? posts.filter(p => p.author_id === currentUser?.id || p.created_by === currentUser?.id || !p.author_id) : posts;
+  const coachEvents      = isCoach ? events.filter(e => e.created_by === currentUser?.id || e.coach_id === currentUser?.id || !e.created_by) : events;
+  const coachChallenges  = isCoach ? challenges.filter(c => c.created_by === currentUser?.id || c.coach_id === currentUser?.id || !c.created_by) : challenges;
+  const coachPolls       = isCoach ? polls.filter(p => p.created_by === currentUser?.id || !p.created_by) : polls;
 
-  // Filtered versions passed to coach tabs — coaches only see their slice
-  const coachMemberships = useMemo(() =>
-    isCoach && coachMemberIds
-      ? allMemberships.filter(m => coachMemberIds.has(m.user_id))
-      : allMemberships,
-    [isCoach, allMemberships, coachMemberIds]
-  );
-  const coachCheckIns = useMemo(() =>
-    isCoach && coachMemberIds
-      ? checkIns.filter(c => coachMemberIds.has(c.user_id))
-      : checkIns,
-    [isCoach, checkIns, coachMemberIds]
-  );
-  // Coach sees only their own posts, events, challenges, polls
-  const coachPosts = useMemo(() =>
-    isCoach
-      ? posts.filter(p => p.author_id === currentUser?.id || p.created_by === currentUser?.id || !p.author_id)
-      : posts,
-    [isCoach, posts, currentUser]
-  );
-  const coachEvents = useMemo(() =>
-    isCoach
-      ? events.filter(e => e.created_by === currentUser?.id || e.coach_id === currentUser?.id || !e.created_by)
-      : events,
-    [isCoach, events, currentUser]
-  );
-  const coachChallenges = useMemo(() =>
-    isCoach
-      ? challenges.filter(c => c.created_by === currentUser?.id || c.coach_id === currentUser?.id || !c.created_by)
-      : challenges,
-    [isCoach, challenges, currentUser]
-  );
-  const coachPolls = useMemo(() =>
-    isCoach
-      ? polls.filter(p => p.created_by === currentUser?.id || !p.created_by)
-      : polls,
-    [isCoach, polls, currentUser]
-  );
-  // Coach-scoped ci30
-  const coachCi30 = useMemo(() =>
-    coachCheckIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })),
-    [coachCheckIns, now]
-  );
-
-  const ci7              = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now }));
-  const ci30             = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
-  const ciPrev30         = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,60), end: subDays(now,30) }));
-  const todayCI          = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()).length;
-  const yesterdayCI      = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now,1)).getTime()).length;
-  const todayVsYest      = yesterdayCI > 0 ? Math.round(((todayCI - yesterdayCI) / yesterdayCI) * 100) : 0;
-  const totalMembers     = allMemberships.length;
-  const activeThisWeek   = new Set(ci7.map(c => c.user_id)).size;
-  const activeLastWeek   = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) })).map(c => c.user_id)).size;
-  const weeklyChangePct  = activeLastWeek > 0 ? Math.round(((activeThisWeek - activeLastWeek) / activeLastWeek) * 100) : 0;
-  const activeThisMonth  = new Set(ci30.map(c => c.user_id)).size;
-  const retentionRate    = totalMembers > 0 ? Math.round((activeThisMonth / totalMembers) * 100) : 0;
-  const monthCiPer       = (() => { const acc={}; ci30.forEach(c=>{acc[c.user_id]=(acc[c.user_id]||0)+1;}); return Object.values(acc); })();
-  const memberLastCheckIn = {};
-  checkIns.forEach(c => { if (!memberLastCheckIn[c.user_id] || new Date(c.check_in_date) > new Date(memberLastCheckIn[c.user_id])) memberLastCheckIn[c.user_id] = c.check_in_date; });
-  const atRiskMembersList = allMemberships.filter(m => { const last = memberLastCheckIn[m.user_id]; if (!last) return true; return Math.floor((now - new Date(last)) / 86400000) >= atRiskDays; });
-  const atRisk           = atRiskMembersList.length;
-  const monthChangePct   = ciPrev30.length > 0 ? Math.round(((ci30.length - ciPrev30.length) / ciPrev30.length) * 100) : 0;
-  const newSignUps       = allMemberships.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now,30), end: now })).length;
-  const newSignUpsPrev   = allMemberships.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now,60), end: subDays(now,30) })).length;
-  const cancelledEst     = Math.max(0, newSignUpsPrev - newSignUps);
-  const sparkData7 = Array.from({ length: 7 }, (_, i) =>
-    checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6 - i)).getTime()).length
-  );
-  const monthGrowthData  = Array.from({length:6},(_,i)=>{ const e=subDays(now,i*30), s=subDays(e,30); return { label: format(e,'MMM'), value: new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size }; }).reverse();
-  const hourAcc = {};
-  checkIns.forEach(c => { const h = new Date(c.check_in_date).getHours(); hourAcc[h] = (hourAcc[h]||0)+1; });
-  const peakEntry    = Object.entries(hourAcc).sort(([,a],[,b])=>b-a)[0];
-  const peakLabel    = peakEntry ? (() => { const h = parseInt(peakEntry[0]); return h < 12 ? `${h || 12}AM` : `${h===12?12:h-12}PM`; })() : null;
-  const peakEndLabel = peakEntry ? (() => { const h = parseInt(peakEntry[0]) + 1; return h < 12 ? `${h}AM` : `${h===12?12:h-12}PM`; })() : null;
-  const satCI    = checkIns.filter(c => new Date(c.check_in_date).getDay() === 6);
-  const otherCI  = checkIns.filter(c => new Date(c.check_in_date).getDay() !== 6);
-  const satAvg   = satCI.length / Math.max(Math.ceil(checkIns.length / 7), 1);
-  const otherAvg = otherCI.length / Math.max(Math.ceil(checkIns.length / 7) * 6, 1);
-  const satVsAvg = otherAvg > 0 ? Math.round(((satAvg - otherAvg) / otherAvg) * 100) : 0;
-  const chartDays = useMemo(() => {
-    const days = chartRange <= 7 ? 7 : chartRange <= 30 ? 30 : 90;
-    return Array.from({length: days}, (_, i) => {
-      const d = subDays(now, days - 1 - i);
-      return { day: format(d, days <= 7 ? 'EEE' : 'MMM d'), value: checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length };
-    });
-  }, [chartRange, checkIns]);
-  const streaks = useMemo(() => {
-    const acc = {};
-    checkIns.forEach(c => { acc[c.user_name] = (acc[c.user_name] || new Set()); acc[c.user_name].add(startOfDay(new Date(c.check_in_date)).getTime()); });
-    return Object.entries(acc).map(([name, days]) => ({ name, streak: days.size })).sort((a,b)=>b.streak-a.streak).slice(0,5);
-  }, [checkIns]);
-  const recentActivity = useMemo(() => {
-    return [...checkIns].slice(0, 8).map(c => ({ name: c.user_name || 'Member', user_id: c.user_id, action: 'checked in', time: c.check_in_date, color: '#10b981' }));
-  }, [checkIns]);
   const priorities = [
-    atRisk > 0        && { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)', label: `${atRisk} Members Inactive`, action: 'Send Message', fn: () => setTab('members') },
-    !challenges.some(c=>c.status==='active') && { icon: Trophy, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', label: 'No Active Challenges', action: 'Create One', fn: () => openModal('challenge') },
-    polls.length===0  && { icon: BarChart2, color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', label: 'No Active Polls', action: 'Create Poll', fn: () => openModal('poll') },
+    atRisk > 0         && { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)', label: `${atRisk} Members Inactive`, action: 'Send Message', fn: () => setTab('members') },
+    !challenges.some(c => c.status === 'active') && { icon: Trophy, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', label: 'No Active Challenges', action: 'Create One', fn: () => openModal('challenge') },
+    polls.length === 0 && { icon: BarChart2, color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', label: 'No Active Polls', action: 'Create Poll', fn: () => openModal('poll') },
     monthChangePct < 0 && { icon: TrendingDown, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', label: 'Attendance Down', action: 'View Insight', fn: () => setTab('analytics') },
   ].filter(Boolean).slice(0, 4);
 
