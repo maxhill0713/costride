@@ -410,7 +410,7 @@ export default function GymOwnerDashboard() {
           events={coachEvents}
           challenges={coachChallenges}
           allMemberships={coachMemberships}
-          avatarMap={avatarMap}
+          avatarMap={avatarMapFull}
           openModal={openModal}
           now={now}
         />
