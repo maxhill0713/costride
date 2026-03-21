@@ -83,7 +83,6 @@ export default function WeeklyVolumeChart({ currentUser }) {
       let totalReps = 0;
       workout.exercises.forEach(ex => {
         const sets = parseFloat(ex.sets) || 0;
-        // reps can live in ex.reps directly or inside ex.setsReps like "3x10"
         const reps =
           parseFloat(ex.reps) ||
           parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
@@ -103,140 +102,79 @@ export default function WeeklyVolumeChart({ currentUser }) {
     return [0, Math.ceil(max * 1.18)];
   }, [chartData]);
 
-  const insight = useMemo(() => {
-    const training = chartData.filter(d => !d.isRest && d.totalReps > 0);
-    if (!training.length) return null;
-    const peak = training.reduce((a, b) => b.totalReps > a.totalReps ? b : a);
-    const restCount = chartData.filter(d => d.isRest).length;
-    const totalWeekReps = training.reduce((s, d) => s + d.totalReps, 0);
-    return { peak, restCount, totalWeekReps };
-  }, [chartData]);
-
   return (
     <div>
+      {/* Header */}
+      <h2 style={{
+        fontSize: 18, fontWeight: 900, color: '#f1f5f9',
+        letterSpacing: '-0.02em', margin: '0 0 4px', lineHeight: 1.2,
+      }}>
+        Weekly Rep Volume
+      </h2>
+      <p style={{ fontSize: 11, color: '#475569', margin: '0 0 18px', fontWeight: 600 }}>
+        Planned reps per day · current active split
+      </p>
 
-        {/* Header */}
-        <h2 style={{
-          fontSize: 18, fontWeight: 900, color: '#f1f5f9',
-          letterSpacing: '-0.02em', margin: '0 0 4px', lineHeight: 1.2,
+      {/* Empty state */}
+      {!hasAnyData ? (
+        <div style={{
+          height: 220, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 10,
         }}>
-          Weekly Rep Volume
-        </h2>
-        <p style={{ fontSize: 11, color: '#475569', margin: '0 0 18px', fontWeight: 600 }}>
-          Planned reps per day · current active split
-        </p>
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
+            No workout split configured yet
+          </p>
+          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
+            Set up your active split to see weekly rep volume here
+          </p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={chartData} margin={{ top: 12, right: 8, left: -6, bottom: 0 }}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.04)"
+              vertical={false}
+            />
+            <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
 
-        {/* Empty state */}
-        {!hasAnyData ? (
-          <div style={{
-            height: 220, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 10,
-          }}>
-            <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
-              No workout split configured yet
-            </p>
-            <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
-              Set up your active split to see weekly rep volume here
-            </p>
-          </div>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 12, right: 8, left: -6, bottom: 0 }}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.04)"
-                  vertical={false}
-                />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+            <XAxis
+              dataKey="day"
+              stroke="rgba(255,255,255,0.05)"
+              tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="rgba(255,255,255,0.05)"
+              tick={{ fill: '#475569', fontSize: 9, fontWeight: 600 }}
+              tickLine={false}
+              axisLine={false}
+              width={44}
+              domain={yDomain}
+              tickFormatter={v => `${v}`}
+            />
 
-                <XAxis
-                  dataKey="day"
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#475569', fontSize: 9, fontWeight: 600 }}
-                  tickLine={false}
-                  axisLine={false}
-                  width={44}
-                  domain={yDomain}
-                  tickFormatter={v => `${v}`}
-                />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
+            />
 
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
-                />
-
-                <Line
-                  type="monotone"
-                  dataKey="totalReps"
-                  stroke="#34d399"
-                  strokeWidth={2.5}
-                  dot={<CustomDot />}
-                  activeDot={<CustomActiveDot />}
-                  connectNulls={false}
-                  isAnimationActive={true}
-                  animationDuration={900}
-                  animationEasing="ease-out"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-
-            {/* Stat strip */}
-            {insight && (
-              <div style={{
-                display: 'flex',
-                gap: 8,
-                marginTop: 12,
-                paddingTop: 12,
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-              }}>
-                {[
-                  {
-                    label: 'Weekly Reps',
-                    value: insight.totalWeekReps.toLocaleString(),
-                    color: '#34d399',
-                  },
-                  {
-                    label: 'Peak Day',
-                    value: `${insight.peak.day} · ${insight.peak.totalReps}`,
-                    color: '#60a5fa',
-                  },
-                  {
-                    label: 'Rest Days',
-                    value: insight.restCount,
-                    color: '#475569',
-                  },
-                ].map(stat => (
-                  <div key={stat.label} style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    borderRadius: 10,
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    textAlign: 'center',
-                  }}>
-                    <p style={{
-                      fontSize: 13, fontWeight: 900,
-                      color: stat.color, margin: '0 0 2px',
-                      letterSpacing: '-0.02em',
-                    }}>{stat.value}</p>
-                    <p style={{
-                      fontSize: 9, fontWeight: 700,
-                      color: '#334155', margin: 0,
-                      textTransform: 'uppercase', letterSpacing: '0.06em',
-                    }}>{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+            <Line
+              type="monotone"
+              dataKey="totalReps"
+              stroke="#34d399"
+              strokeWidth={2.5}
+              dot={<CustomDot />}
+              activeDot={<CustomActiveDot />}
+              connectNulls={false}
+              isAnimationActive={true}
+              animationDuration={900}
+              animationEasing="ease-out"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }
