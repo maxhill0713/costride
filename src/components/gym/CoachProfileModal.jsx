@@ -635,8 +635,8 @@ export default function CoachProfilePage({ coach: propCoach, onBack, open, onClo
         transition: 'background 0.2s, border-color 0.2s',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        {onBack && (
-          <button onClick={onBack} style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+        {handleBack && (
+          <button onClick={handleBack} style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <ArrowLeft style={{ width: 15, height: 15, color: '#fff' }} />
           </button>
         )}
