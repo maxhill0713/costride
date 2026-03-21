@@ -407,20 +407,24 @@ function AboutTab({ coach }) {
       <div>
         <SLabel>Certifications</SLabel>
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {coach.certifications.map((c, i) => (
-            <motion.div key={i}
-              initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ delay:i*.07 }}
-              style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:16, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
-              <div style={{ width:36, height:36, borderRadius:12, background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                <Award size={15} color="#3B82F6" />
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.85)', lineHeight:1.3 }}>{c.name}</div>
-                <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:500, marginTop:2 }}>{c.org} · {c.year}</div>
-              </div>
-              <Check size={14} color="#3B82F6" strokeWidth={2.5} />
-            </motion.div>
-          ))}
+          {(coach.certifications || []).map((c, i) => {
+            const name = typeof c === 'string' ? c : c.name;
+            const sub  = typeof c === 'string' ? null : `${c.org} · ${c.year}`;
+            return (
+              <motion.div key={i}
+                initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ delay:i*.07 }}
+                style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:16, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ width:36, height:36, borderRadius:12, background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <Award size={15} color="#3B82F6" />
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.85)', lineHeight:1.3 }}>{name}</div>
+                  {sub && <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:500, marginTop:2 }}>{sub}</div>}
+                </div>
+                <Check size={14} color="#3B82F6" strokeWidth={2.5} />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
