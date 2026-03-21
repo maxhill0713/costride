@@ -478,7 +478,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 ],
                 verification: { id: false, certifications: false, background: false },
                 free_consultation: false,
-              })}
+              }); }}
               className="tcp-btn"
               disabled={creating}
               style={{ width: "100%", padding: 15, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", color: "#fff", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 24px rgba(37,99,235,0.4)", cursor: creating ? "default" : "pointer", opacity: creating ? 0.7 : 1 }}>
