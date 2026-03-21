@@ -604,7 +604,7 @@ function ReviewsTab({ coach }) {
       </div>
 
       {/* Review cards */}
-      {coach.reviews.map((r, i) => (
+      {reviews.map((r, i) => (
         <motion.div key={i}
           initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:i*.08 }}
           style={{ padding:'16px', borderRadius:18, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
