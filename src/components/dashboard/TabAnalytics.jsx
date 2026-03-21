@@ -477,14 +477,8 @@ function ChurnSignalWidget({ churnSignals = [] }) {
 }
 
 // ── Week-1 Return Rate Trend ──────────────────────────────────────────────────
-function Week1ReturnTrendWidget({ allMemberships, checkIns, now }) {
-  const data = useMemo(() => Array.from({ length: 8 }, (_, i) => {
-    const s = subDays(now, (7 - i) * 14), e = subDays(now, (6 - i) * 14);
-    const cohort = allMemberships.filter(m => { const jd = new Date(m.created_at || m.join_date || now); return jd >= s && jd < e; });
-    if (!cohort.length) return { label: format(s, 'MMM d'), pct: 0, total: 0 };
-    const returned = cohort.filter(m => checkIns.filter(c => c.user_id === m.user_id).length >= 2).length;
-    return { label: format(s, 'MMM d'), pct: Math.round((returned / cohort.length) * 100), total: cohort.length };
-  }), [allMemberships, checkIns, now]);
+function Week1ReturnTrendWidget({ week1ReturnTrend = [] }) {
+  const data = week1ReturnTrend;
   const latest = data[data.length - 1]?.pct || 0;
   const prev   = data[data.length - 2]?.pct || 0;
   const trend  = latest - prev;
