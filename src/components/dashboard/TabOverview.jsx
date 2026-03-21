@@ -350,7 +350,7 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 2 }}>Drop-off Risk</div>
           <div style={{ fontSize: 11, color: T.text3 }}>Where members go quiet</div>
         </div>
-        <button onClick={() => setTab('members')} style={{ fontSize: 11, fontWeight: 600, color: T.blue, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
+        <button onClick={() => setTab && setTab('members')} style={{ fontSize: 11, fontWeight: 600, color: T.blue, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
           View all <ChevronRight style={{ width: 12, height: 12 }} />
         </button>
       </div>
