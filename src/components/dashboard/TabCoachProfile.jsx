@@ -3,12 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Star, Upload, Plus, X, GraduationCap, Briefcase, Award, Users,
-  Edit2, Check, Loader2, Eye, Camera, Save, ChevronRight,
-  Clock, MapPin, Languages, Zap, Trophy, Shield, Tag,
-  MessageSquare, BadgeCheck, ScanFace, ClipboardCheck,
-  ArrowUpRight, Sparkles, AlertCircle, Package, Calendar,
-  Image, Trash2, ToggleLeft, ToggleRight, Info,
+  Star, Upload, Plus, X, GraduationCap, Award,
+  Edit2, Loader2, Eye, Camera, Save, ChevronRight,
+  Clock, Trophy, Shield,
+  MessageSquare, BadgeCheck, Fingerprint, ClipboardCheck,
+  AlertCircle, Package, Calendar,
+  Image, Trash2, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
