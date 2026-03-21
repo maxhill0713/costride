@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { format, subDays, startOfDay, isWithinInterval, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import ManageRewardsModal    from '../components/gym/ManageRewardsModal';
 import ManageClassesModal    from '../components/gym/ManageClassesModal';
 import ManageCoachesModal    from '../components/gym/ManageCoachesModal';
