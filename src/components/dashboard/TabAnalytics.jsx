@@ -275,7 +275,7 @@ function RetentionFunnelWidget({ retentionFunnel = [] }) {
     icon: [UserPlus, RefreshCw, Activity, CheckCircle][i] || CheckCircle,
   }));
 
-  const hasData = allMemberships.length > 0;
+  const hasData = funnel.length > 0 && funnel[0]?.val > 0;
 
   return (
     <SCard accent={T.cyan} style={{ padding: 20 }}>
