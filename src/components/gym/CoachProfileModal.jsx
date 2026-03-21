@@ -818,6 +818,7 @@ export default function CoachProfilePage({ coach: propCoach, onBack }) {
               </div>
 
               {/* Achievements */}
+              {coach.achievements?.length > 0 && (
               <div>
                 <SectionHead>Achievements</SectionHead>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
