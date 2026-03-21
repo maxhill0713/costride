@@ -355,25 +355,12 @@ function RetentionFunnelWidget({ retentionFunnel = [] }) {
 }
 
 // ── Drop-off Analysis ─────────────────────────────────────────────────────────
-function DropOffAnalysis({ allMemberships, checkIns, now }) {
-  const data = useMemo(() => {
-    const buckets = [
-      { label: 'Week 1',    min: 0,  max: 14,   daysInactive: 7,  color: T.red   },
-      { label: 'Month 1',  min: 14, max: 30,   daysInactive: 7,  color: T.cyan },
-      { label: 'Month 2',  min: 30, max: 60,   daysInactive: 14, color: '#06b6d4' },
-      { label: 'Month 3',  min: 60, max: 90,   daysInactive: 14, color: '#06b6d4' },
-      { label: '3+ months',min: 90, max: 9999, daysInactive: 21, color: T.text3  },
-    ];
-    return buckets.map(b => {
-      const count = allMemberships.filter(m => {
-        const age = differenceInDays(now, new Date(m.created_at || m.join_date || now));
-        if (age < b.min || age >= b.max) return false;
-        const last = checkIns.filter(c => c.user_id === m.user_id).sort((a, x) => new Date(x.check_in_date) - new Date(a.check_in_date))[0];
-        return (last ? differenceInDays(now, new Date(last.check_in_date)) : 999) >= b.daysInactive;
-      }).length;
-      return { ...b, count };
-    });
-  }, [allMemberships, checkIns, now]);
+const DROP_COLORS = ['Week 1', 'Month 1', 'Month 2', 'Month 3', '3+ months'];
+function DropOffAnalysis({ dropOffBuckets = [] }) {
+  const data = dropOffBuckets.map(b => ({
+    ...b,
+    color: b.label === 'Week 1' ? T.red : b.label.includes('3+') ? T.text3 : T.cyan,
+  }));
   const total = data.reduce((s, d) => s + d.count, 0);
   return (
     <SCard accent={T.red} style={{ padding: 20 }}>
