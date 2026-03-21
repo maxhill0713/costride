@@ -5,7 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 
 const LINE_COLORS = [
@@ -112,30 +112,6 @@ function WorkoutSelector({ options, selected, onSelect }) {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-// ─── Summary badges ───────────────────────────────────────────────────────────
-function ExerciseSummaryBadge({ name, diff, color }) {
-  const Icon = diff > 0.5 ? TrendingUp : diff < -0.5 ? TrendingDown : Minus;
-  const textColor = diff > 0.5 ? '#34d399' : diff < -0.5 ? '#f87171' : '#64748b';
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 6,
-      padding: '5px 10px', borderRadius: 8,
-      background: 'rgba(255,255,255,0.04)',
-      border: `1px solid ${color}30`, flexShrink: 0,
-    }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-      <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8',
-        maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Icon size={10} color={textColor} />
-        <span style={{ fontSize: 10, fontWeight: 800, color: textColor }}>
-          {diff > 0 ? '+' : ''}{diff}kg
-        </span>
-      </div>
     </div>
   );
 }
@@ -286,7 +262,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         )}
       </div>
 
-      {/* ── Chart ── */}
+      {/* ── Chart + Legend side by side ── */}
       {isLoading ? (
         <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
           <div style={{ width: 18, height: 18, borderRadius: '50%',
@@ -306,91 +282,70 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
           </p>
         </div>
       ) : (
-        <>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
-              <XAxis
-                dataKey="date"
-                stroke="rgba(255,255,255,0.05)"
-                tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
-                tickLine={false} axisLine={false}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                stroke="rgba(255,255,255,0.05)"
-                tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
-                tickLine={false} axisLine={false}
-                width={44}
-                domain={yDomain}
-                tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
-              {exerciseMeta.map(({ name, color }) => (
-                <Line
-                  key={name}
-                  type="monotone"
-                  dataKey={name}
-                  stroke={color}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
-                  connectNulls={false}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}>
+          {/* Chart — 85% width */}
+          <div style={{ width: '85%', flexShrink: 0 }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
+                <XAxis
+                  dataKey="date"
+                  stroke="rgba(255,255,255,0.05)"
+                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                  tickLine={false} axisLine={false}
+                  interval="preserveStartEnd"
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-
-          {/* ── Exercise badges ── */}
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12,
-            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)',
-          }}>
-            {exerciseMeta.map(({ name, color, finalDiff }) => (
-              <ExerciseSummaryBadge key={name} name={name} diff={finalDiff} color={color} />
-            ))}
+                <YAxis
+                  stroke="rgba(255,255,255,0.05)"
+                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                  tickLine={false} axisLine={false}
+                  width={44}
+                  domain={yDomain}
+                  tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
+                {exerciseMeta.map(({ name, color }) => (
+                  <Line
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    stroke={color}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
+                    connectNulls={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
-          {/* ── Insight callout ── */}
-          {exerciseMeta.length > 1 && (() => {
-            const best  = exerciseMeta[0];
-            const worst = exerciseMeta[exerciseMeta.length - 1];
-            const stalled = exerciseMeta.filter(e => Math.abs(e.finalDiff) < 0.5);
-            return (
-              <div style={{
-                marginTop: 10, padding: '10px 12px', borderRadius: 10,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                fontSize: 11, color: '#64748b', lineHeight: 1.5,
-              }}>
-                {best.finalDiff > 0.5 && (
-                  <span>
-                    <span style={{ color: '#34d399', fontWeight: 700 }}>↑ {best.name}</span>
-                    {' '}is your best gainer (+{best.finalDiff}kg).{' '}
-                  </span>
-                )}
-                {worst.finalDiff < -0.5 && (
-                  <span>
-                    <span style={{ color: '#f87171', fontWeight: 700 }}>↓ {worst.name}</span>
-                    {' '}has regressed ({worst.finalDiff}kg).{' '}
-                  </span>
-                )}
-                {stalled.length > 0 && stalled.length < exerciseMeta.length && (
-                  <span>
-                    <span style={{ color: '#fbbf24', fontWeight: 700 }}>
-                      {stalled.map(e => e.name).join(', ')}
-                    </span>
-                    {' '}{stalled.length === 1 ? 'has' : 'have'} plateaued — consider increasing weight.
-                  </span>
-                )}
-                {best.finalDiff <= 0.5 && worst.finalDiff >= -0.5 && (
-                  <span>All exercises are holding steady. Push the weight up to drive overload.</span>
-                )}
+          {/* Legend — 15% width, dot + name only */}
+          <div style={{
+            width: '15%',
+            paddingLeft: 10,
+            paddingTop: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 7,
+            alignSelf: 'center',
+          }}>
+            {exerciseMeta.map(({ name, color }) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: color, flexShrink: 0,
+                }} />
+                <span style={{
+                  fontSize: 10, fontWeight: 600, color: '#94a3b8',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  lineHeight: 1.3,
+                }}>{name}</span>
               </div>
-            );
-          })()}
-        </>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
