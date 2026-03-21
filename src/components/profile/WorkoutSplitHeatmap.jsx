@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval,
-  startOfWeek, endOfWeek, getMonth, getYear, subMonths, addMonths
+  startOfWeek, endOfWeek, getMonth, getYear,
 } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 
@@ -11,7 +11,7 @@ const MONTH_NAMES = [
   'July','August','September','October','November','December',
 ];
 
-function DropdownPicker({ items, onClose, children }) {
+function DropdownPicker({ onClose, children }) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
@@ -110,7 +110,6 @@ export default function WorkoutSplitHeatmap({
     const monthStart = startOfMonth(new Date(selectedYear, selectedMonth, 1));
     const monthEnd   = endOfMonth(monthStart);
 
-    // Pad to full Mon–Sun rows
     const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
     const gridEnd   = endOfWeek(monthEnd,   { weekStartsOn: 1 });
 
@@ -124,7 +123,6 @@ export default function WorkoutSplitHeatmap({
     const hasCheckIn = (day) =>
       checkIns.some(c => isSameDay(new Date(c.check_in_date), day));
 
-    // Resolve split info
     let splitInfo = workoutSplit && splitSchedules[workoutSplit]
       ? splitSchedules[workoutSplit]
       : null;
@@ -234,15 +232,9 @@ export default function WorkoutSplitHeatmap({
     return Math.round((past.filter(d => hasCheckIn(d)).length / past.length) * 100);
   };
 
-  const getWeeklyAverage = () => {
-    const counts = weeks.map(w => w.filter(d => hasCheckIn(d) && d <= today).length);
-    return (counts.reduce((s, c) => s + c, 0) / weeks.length).toFixed(1);
-  };
-
   const today_year = getYear(today);
   const yearOptions = [today_year, today_year - 1, today_year - 2];
 
-  // ── Pill button style matching app aesthetic ─────────────────────────────
   const pillBtn = (isOpen) => ({
     display: 'flex', alignItems: 'center', gap: 4,
     padding: '5px 10px', borderRadius: 10,
@@ -266,10 +258,8 @@ export default function WorkoutSplitHeatmap({
     >
       <div className="p-3 space-y-3">
 
-        {/* ── Top row: consistency stat (left) + month/year pickers (right) ── */}
+        {/* ── Top row ── */}
         <div className="flex items-center justify-between">
-
-          {/* Consistency badge */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: '#34d399', lineHeight: 1, letterSpacing: '-0.02em' }}>
               {getConsistencyRate()}<span style={{ fontSize: 13, fontWeight: 700, color: '#6ee7b7' }}>%</span>
@@ -279,10 +269,7 @@ export default function WorkoutSplitHeatmap({
             </span>
           </div>
 
-          {/* Month + Year pickers */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-
-            {/* Month */}
             <div className="relative">
               <button
                 onClick={() => { setMonthPickerOpen(o => !o); setYearPickerOpen(false); }}
@@ -302,7 +289,6 @@ export default function WorkoutSplitHeatmap({
               )}
             </div>
 
-            {/* Year */}
             <div className="relative">
               <button
                 onClick={() => { setYearPickerOpen(o => !o); setMonthPickerOpen(false); }}
@@ -321,7 +307,6 @@ export default function WorkoutSplitHeatmap({
                 </DropdownPicker>
               )}
             </div>
-
           </div>
         </div>
 
@@ -340,25 +325,33 @@ export default function WorkoutSplitHeatmap({
                 const inMonth     = getMonth(day) === selectedMonth && getYear(day) === selectedYear;
                 const isCheckedIn = hasCheckIn(day);
                 const isToday     = isSameDay(day, today);
+                const isFuture    = day > today && !isToday;
                 const isPast      = day < today && !isToday;
                 const expected    = getExpectedWorkout(day);
                 const isRestDay   = expected === 'Rest';
-                // Missed = past training day with no check-in
                 const isMissed    = inMonth && isPast && !isCheckedIn && !isRestDay;
 
-                // Colour logic
+                // Colour logic:
+                // - checked in → blue
+                // - past rest day → green (already rested)
+                // - future rest day → grey (not yet, don't colour)
+                // - missed training → dark
+                // - future/unvisited → default grey
                 let bgClass = '';
                 let borderClass = '';
+
                 if (isCheckedIn) {
                   bgClass = 'bg-gradient-to-br from-blue-500 to-blue-700';
                   borderClass = 'border border-blue-400/30';
-                } else if (isRestDay && inMonth) {
+                } else if (isRestDay && inMonth && !isFuture) {
+                  // Past or today rest day → green
                   bgClass = 'bg-gradient-to-br from-emerald-500 to-emerald-700';
                   borderClass = 'border border-emerald-400/30';
                 } else if (isMissed) {
                   bgClass = 'bg-slate-950';
                   borderClass = 'border border-slate-700/60';
                 } else {
+                  // Future days (including future rest days) and padding days → grey
                   bgClass = 'bg-slate-800/60';
                   borderClass = 'border border-slate-700/40';
                 }
