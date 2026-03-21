@@ -378,8 +378,8 @@ return (
     );
   };
 return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <Tabs defaultValue={gymMemberships.length > 0 ? "my-gyms" : "explore"} className="w-full">
+  <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+    <Tabs defaultValue={userGyms.length > 0 ? "my-gyms" : "explore"} className="w-full">
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center h-18 gap-6">
