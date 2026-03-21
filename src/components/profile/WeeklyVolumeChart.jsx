@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
@@ -6,8 +6,25 @@ import {
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+// Keywords that identify compound / heavy movements
+const COMPOUND_KEYWORDS = [
+  'squat', 'deadlift', 'bench', 'press', 'row', 'pull-up', 'pullup',
+  'chin-up', 'chinup', 'lunge', 'clean', 'snatch', 'jerk', 'thruster',
+  'hip thrust', 'rdl', 'romanian', 'overhead', 'ohp', 'incline', 'decline',
+  'dumbbell press', 'db press', 'barbell', 'weighted',
+];
+
+function isCompound(exerciseName = '', weight = 0) {
+  const lower = exerciseName.toLowerCase();
+  const nameMatch = COMPOUND_KEYWORDS.some(k => lower.includes(k));
+  return nameMatch || weight >= 30;
+}
+
+// Premium colour — muted slate-blue, not green
+const LINE_COLOR = '#818cf8'; // indigo-400 — cool, premium, distinct
+
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload, label }) {
+function CustomTooltip({ active, payload, label, compoundOnly }) {
   if (!active || !payload?.length) return null;
   const val = payload[0]?.value ?? 0;
   const isRest = val === 0;
@@ -16,7 +33,7 @@ function CustomTooltip({ active, payload, label }) {
       background: 'rgba(8,12,28,0.97)',
       border: '1px solid rgba(255,255,255,0.10)',
       borderRadius: 10, padding: '10px 14px',
-      backdropFilter: 'blur(12px)', minWidth: 130,
+      backdropFilter: 'blur(12px)', minWidth: 140,
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
     }}>
       <p style={{
@@ -27,9 +44,11 @@ function CustomTooltip({ active, payload, label }) {
         <span style={{ fontSize: 11, fontWeight: 500, color: '#475569' }}>Rest day</span>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
-          <span style={{ color: '#94a3b8', fontSize: 10 }}>Reps</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399', marginLeft: 'auto' }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: LINE_COLOR, flexShrink: 0 }} />
+          <span style={{ color: '#94a3b8', fontSize: 10 }}>
+            {compoundOnly ? 'Compound reps' : 'Reps'}
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: LINE_COLOR, marginLeft: 'auto' }}>
             {val.toLocaleString()}
           </span>
         </div>
@@ -38,21 +57,61 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-// ─── Custom dot — only on training days ──────────────────────────────────────
 function CustomDot(props) {
   const { cx, cy, payload } = props;
   if (!payload || payload.totalReps === 0) return null;
-  return <circle cx={cx} cy={cy} r={3.5} fill="#34d399" stroke="#0a0e1e" strokeWidth={2} />;
+  return <circle cx={cx} cy={cy} r={3.5} fill={LINE_COLOR} stroke="#0a0e1e" strokeWidth={2} />;
 }
 
 function CustomActiveDot(props) {
   const { cx, cy, payload } = props;
   if (!payload || payload.totalReps === 0) return null;
-  return <circle cx={cx} cy={cy} r={5} fill="#34d399" stroke="#0a0e1e" strokeWidth={2} />;
+  return <circle cx={cx} cy={cy} r={5} fill={LINE_COLOR} stroke="#0a0e1e" strokeWidth={2} />;
+}
+
+// ─── Compound toggle checkbox ─────────────────────────────────────────────────
+function CompoundToggle({ checked, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '5px 9px', borderRadius: 8, flexShrink: 0,
+        background: checked ? 'rgba(129,140,248,0.15)' : 'rgba(255,255,255,0.05)',
+        border: checked ? '1px solid rgba(129,140,248,0.4)' : '1px solid rgba(255,255,255,0.10)',
+        cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+        transition: 'background 0.15s, border-color 0.15s',
+      }}
+    >
+      {/* Checkbox */}
+      <div style={{
+        width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+        background: checked ? LINE_COLOR : 'rgba(255,255,255,0.08)',
+        border: checked ? `1px solid ${LINE_COLOR}` : '1px solid rgba(255,255,255,0.2)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background 0.15s, border-color 0.15s',
+      }}>
+        {checked && (
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <path d="M1 4l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+      <span style={{
+        fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap',
+        color: checked ? '#a5b4fc' : '#64748b',
+        transition: 'color 0.15s',
+      }}>
+        Compound
+      </span>
+    </button>
+  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WeeklyVolumeChart({ currentUser }) {
+  const [compoundOnly, setCompoundOnly] = useState(false);
+
   const chartData = useMemo(() => {
     const workoutTypes = currentUser?.custom_workout_types;
     const trainingDays = currentUser?.training_days || [];
@@ -73,12 +132,16 @@ export default function WeeklyVolumeChart({ currentUser }) {
           parseFloat(ex.reps) ||
           parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
           0;
+        const weight = parseFloat(ex.weight) || 0;
+        const name = ex.exercise || ex.name || '';
+
+        if (compoundOnly && !isCompound(name, weight)) return;
         totalReps += sets * reps;
       });
 
       return { day: label, totalReps, isRest: false };
     });
-  }, [currentUser]);
+  }, [currentUser, compoundOnly]);
 
   const hasAnyData = chartData.some(d => d.totalReps > 0);
 
@@ -95,16 +158,21 @@ export default function WeeklyVolumeChart({ currentUser }) {
 
   return (
     <div>
-      {/* Header — font-bold not font-black, subtitle readable */}
-      <h2 style={{
-        fontSize: 16, fontWeight: 700, color: '#e2e8f0',
-        letterSpacing: '-0.01em', margin: '0 0 3px', lineHeight: 1.2,
-      }}>
-        Weekly Rep Volume
-      </h2>
-      <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 16px', fontWeight: 500 }}>
-        Planned reps · current split
-      </p>
+      {/* ── Header row: title left, toggle right — mirrors Overload Tracker ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
+        <div style={{ flexShrink: 0 }}>
+          <h2 style={{
+            fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+            letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+          }}>
+            Weekly Rep Volume
+          </h2>
+          <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
+            Planned reps · current split
+          </p>
+        </div>
+        <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} />
+      </div>
 
       {!hasAnyData ? (
         <div style={{
@@ -112,26 +180,20 @@ export default function WeeklyVolumeChart({ currentUser }) {
           alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
           <p style={{ color: '#475569', fontSize: 13, fontWeight: 600, margin: 0 }}>
-            No workout split configured
+            {compoundOnly ? 'No compound lifts configured' : 'No workout split configured'}
           </p>
           <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 200 }}>
-            Set up your split to see weekly rep volume
+            {compoundOnly ? 'Add weighted compound exercises to your split' : 'Set up your split to see weekly rep volume'}
           </p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={198}>
           <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(255,255,255,0.04)"
-              vertical={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
-
             <XAxis
               dataKey="day"
               stroke="rgba(255,255,255,0.04)"
-              // Lighter weight so it doesn't compete with data
               tick={{ fill: '#475569', fontSize: 10, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
@@ -141,28 +203,25 @@ export default function WeeklyVolumeChart({ currentUser }) {
               tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              // Removed rotated label — suffix on tick is cleaner on mobile
               width={32}
               domain={yDomain}
               ticks={yTicks}
               tickFormatter={v => `${v}r`}
             />
-
             <Tooltip
-              content={<CustomTooltip />}
+              content={<CustomTooltip compoundOnly={compoundOnly} />}
               cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
             />
-
             <Line
               type="monotone"
               dataKey="totalReps"
-              stroke="#34d399"
+              stroke={LINE_COLOR}
               strokeWidth={2}
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
               isAnimationActive={true}
-              animationDuration={800}
+              animationDuration={600}
               animationEasing="ease-out"
             />
           </LineChart>
