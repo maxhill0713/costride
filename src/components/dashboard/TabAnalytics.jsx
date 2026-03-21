@@ -909,6 +909,11 @@ export default function TabAnalytics({
   monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
   allMemberships = [], classes = [], coaches = [], avatarMap = {},
   isCoach = false, myClasses = [],
+  // Pre-computed from backend
+  weekTrend: weekTrendProp = [], peakHours: peakHoursProp = [], busiestDays: busiestDaysProp = [],
+  returnRate: returnRateProp = 0, dailyAvg: dailyAvgProp = 0, engagementSegments = {},
+  retentionFunnel: retentionFunnelProp = [], dropOffBuckets: dropOffBucketsProp = [],
+  churnSignals: churnSignalsProp = [], week1ReturnTrend: week1ReturnTrendProp = [],
 }) {
   const now = new Date();
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -918,33 +923,18 @@ export default function TabAnalytics({
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  const weekTrend = Array.from({ length: 12 }, (_, i) => {
-    const s = subDays(now, (11 - i) * 7), e = subDays(now, (10 - i) * 7);
-    return { label: format(s, 'MMM d'), value: checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: s, end: e })).length };
-  });
+  // Use backend pre-computed values, fall back to local only if not available
+  const weekTrend   = weekTrendProp.length  > 0 ? weekTrendProp   : [];
+  const peakHours   = peakHoursProp.length  > 0 ? peakHoursProp   : [];
+  const busiestDays = busiestDaysProp.length > 0 ? busiestDaysProp : [];
+  const dailyAvg    = dailyAvgProp  || Math.round(ci30.length / 30);
+  const returnRate  = returnRateProp || 0;
+  const avgPerMem   = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
 
-  const hourAcc = {};
-  checkIns.forEach(c => { const h = new Date(c.check_in_date).getHours(); hourAcc[h] = (hourAcc[h] || 0) + 1; });
-  const hourMax   = Math.max(...Object.values(hourAcc), 1);
-  const peakHours = Object.entries(hourAcc).sort(([, a], [, b]) => b - a).slice(0, 8).map(([hour, count]) => {
-    const h = parseInt(hour);
-    return { label: h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`, count, pct: (count / hourMax) * 100 };
-  });
-
-  const dayAcc   = {};
-  checkIns.forEach(c => { const d = new Date(c.check_in_date).getDay(); dayAcc[d] = (dayAcc[d] || 0) + 1; });
-  const dayMax   = Math.max(...Object.values(dayAcc), 1);
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const busiestDays = dayNames.map((name, idx) => ({ name, count: dayAcc[idx] || 0 })).sort((a, b) => b.count - a.count);
-
-  const dailyAvg   = Math.round(ci30.length / 30);
-  const avgPerMem  = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
-  const returnRate = checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0;
-
-  const superActive = monthCiPer.filter(v => v >= 15).length;
-  const active      = monthCiPer.filter(v => v >= 8 && v < 15).length;
-  const casual      = monthCiPer.filter(v => v >= 1 && v < 8).length;
-  const inactive    = Math.max(0, totalMembers - monthCiPer.length);
+  const superActive = (engagementSegments.superActive != null) ? engagementSegments.superActive : (monthCiPer || []).filter(v => v >= 15).length;
+  const active      = (engagementSegments.active      != null) ? engagementSegments.active      : (monthCiPer || []).filter(v => v >= 8 && v < 15).length;
+  const casual      = (engagementSegments.casual      != null) ? engagementSegments.casual      : (monthCiPer || []).filter(v => v >= 1 && v < 8).length;
+  const inactive    = (engagementSegments.inactive    != null) ? engagementSegments.inactive    : Math.max(0, totalMembers - (monthCiPer || []).length);
 
   const radarData = [
     { subject: 'Retention',    A: retentionRate },
