@@ -337,10 +337,10 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
     month2to3: risks.month2to3 || 0, beyond: risks.beyond || 0,
   };
   const rows = [
-    { label: 'New — went quiet',  sub: 'Joined < 2 wks, no return', val: risks.week1,     color: T.red   },
-    { label: 'Early drop-off',    sub: 'Weeks 2–4 inactivity',      val: risks.week2to4,  color: T.amber },
-    { label: 'Month 2–3 slip',    sub: 'Common churn window',       val: risks.month2to3, color: T.amber },
-    { label: 'Long inactive',     sub: '21+ days absent',           val: risks.beyond,    color: T.text3 },
+    { label: 'New — went quiet',  sub: 'Joined < 2 wks, no return', val: computed.week1,     color: T.red   },
+    { label: 'Early drop-off',    sub: 'Weeks 2–4 inactivity',      val: computed.week2to4,  color: T.amber },
+    { label: 'Month 2–3 slip',    sub: 'Common churn window',       val: computed.month2to3, color: T.amber },
+    { label: 'Long inactive',     sub: '21+ days absent',           val: computed.beyond,    color: T.text3 },
   ];
   const total = rows.reduce((s, r) => s + r.val, 0);
   return (
