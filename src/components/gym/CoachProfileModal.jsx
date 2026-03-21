@@ -483,12 +483,15 @@ function ScheduleTab({ coach, day, setDay, timeFilter, setTimeFilter, bookedClas
 
       {/* Session count */}
       <div style={{ fontSize:12, color:'rgba(255,255,255,0.3)', fontWeight:600, marginTop:-8 }}>
-        {coach.classes.length} sessions available · tap to book
+        {classes.length} sessions available · tap to book
       </div>
 
       {/* Class cards — 2-column grid */}
+      {classes.length === 0 && (
+        <div style={{ textAlign:'center', padding:'32px 0', color:'rgba(255,255,255,0.3)', fontSize:14 }}>No classes scheduled yet.</div>
+      )}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-        {coach.classes.map((cls, i) => {
+        {classes.map((cls, i) => {
           const booked = bookedClasses.has(i);
           const lm = levelMeta[cls.level];
           const spotsLow = cls.spots <= 2;
