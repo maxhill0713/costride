@@ -530,6 +530,9 @@ export default function GymOwnerDashboard() {
           churnSignals={churnSignals}
           week1ReturnTrend={week1ReturnTrend}
         />,
+    profile: isCoach
+      ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />
+      : null,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate}/>,
   };
 
