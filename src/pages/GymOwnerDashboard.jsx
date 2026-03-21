@@ -406,6 +406,9 @@ export default function GymOwnerDashboard() {
           chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMapFull}
           priorities={priorities} selectedGym={selectedGym} now={now}
           openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta}
+          retentionBreakdown={retentionBreakdown}
+          week1ReturnRate={week1ReturnRate}
+          newNoReturnCount={newNoReturnCount}
         />,
     schedule: isCoach
       ? <TabCoachSchedule
