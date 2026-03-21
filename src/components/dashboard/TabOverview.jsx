@@ -866,8 +866,8 @@ export default function TabOverview({
 
         {/* Drop-off Risk + Week-1 Return */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
-          <RetentionBreakdown allMemberships={allMemberships} checkIns={checkIns} now={now} setTab={setTab} />
-          <WeekOneReturn allMemberships={allMemberships} checkIns={checkIns} now={now} openModal={openModal} />
+          <RetentionBreakdown retentionBreakdown={retentionBreakdown} setTab={setTab} />
+          <WeekOneReturn week1ReturnRate={week1ReturnRate} openModal={openModal} />
         </div>
 
         {/* Engagement + Activity */}
