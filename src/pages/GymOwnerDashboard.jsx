@@ -758,7 +758,7 @@ export default function GymOwnerDashboard() {
               <div style={{ fontSize: 11, color: '#1e3a54', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
                 {tab === 'members'
                   ? <><span style={{ color: accentColor, fontWeight: 800 }}>{isCoach ? coachMemberships.length : allMemberships.length}</span><span> {isCoach ? 'clients' : 'members'} · {selectedGym?.name}</span></>
-                  : <><span>{format(now, 'EEEE, d MMMM yyyy')}</span><span style={{ color: '#112030' }}>·</span><Sun style={{ width: 10, height: 10 }}/><span>18°C</span></>
+                  : null
                 }
               </div>
             </div>
