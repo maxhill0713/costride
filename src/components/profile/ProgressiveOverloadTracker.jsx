@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown } from 'lucide-react';
-import { format, subMonths, eachWeekOfInterval, startOfDay } from 'date-fns';
+import { format, subMonths, startOfDay } from 'date-fns';
 
 const LINE_COLORS = [
   '#60a5fa','#34d399','#f97316','#f472b6','#a78bfa','#fbbf24',
@@ -20,6 +20,11 @@ function kgDiff(current, baseline) {
   return +(current - baseline).toFixed(1);
 }
 
+function truncateName(name, max = 13) {
+  if (!name) return '';
+  return name.length > max ? name.slice(0, max).trimEnd() + '…' : name;
+}
+
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -31,17 +36,17 @@ function CustomTooltip({ active, payload, label }) {
       backdropFilter: 'blur(12px)', minWidth: 160,
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
     }}>
-      <p style={{ color: '#64748b', fontSize: 10, fontWeight: 700,
-        letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</p>
+      <p style={{ color: '#64748b', fontSize: 10, fontWeight: 600,
+        letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</p>
       {payload
         .filter(p => p.value !== null && p.value !== undefined)
         .sort((a, b) => b.value - a.value)
         .map(p => (
           <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, flexShrink: 0 }} />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: p.color, flexShrink: 0 }} />
             <span style={{ color: '#94a3b8', fontSize: 10, flex: 1, overflow: 'hidden',
               textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 110 }}>{p.name}</span>
-            <span style={{ fontSize: 11, fontWeight: 800,
+            <span style={{ fontSize: 11, fontWeight: 700,
               color: p.value > 0 ? '#34d399' : p.value < 0 ? '#f87171' : '#64748b' }}>
               {p.value > 0 ? '+' : ''}{p.value}kg
             </span>
@@ -57,23 +62,23 @@ function WorkoutSelector({ options, selected, onSelect }) {
   const current = options.find(o => o.key === selected);
 
   return (
-    <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+    <div style={{ position: 'relative', minWidth: 0 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '6px 10px', borderRadius: 10, width: '100%',
-          background: 'rgba(255,255,255,0.05)',
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 10px', borderRadius: 8,
+          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.10)',
-          color: '#e2e8f0', fontSize: 12, fontWeight: 700,
+          color: '#cbd5e1', fontSize: 11, fontWeight: 600,
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-          transition: 'border-color 0.15s',
+          transition: 'background 0.15s',
+          whiteSpace: 'nowrap',
         }}>
-        <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden',
-          textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {current?.label ?? 'Select workout'}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+          {current?.label ?? 'Select'}
         </span>
-        <ChevronDown size={13} color="#64748b"
+        <ChevronDown size={11} color="#64748b"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
       </button>
 
@@ -81,9 +86,9 @@ function WorkoutSelector({ options, selected, onSelect }) {
         <>
           <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
           <div style={{
-            position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 20,
+            position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 20,
             background: 'rgba(10,14,30,0.98)', border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: 12, overflow: 'hidden',
+            borderRadius: 10, overflow: 'hidden', minWidth: 130,
             boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
             backdropFilter: 'blur(20px)',
           }}>
@@ -92,19 +97,19 @@ function WorkoutSelector({ options, selected, onSelect }) {
                 key={opt.key}
                 onClick={() => { onSelect(opt.key); setOpen(false); }}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  width: '100%', padding: '10px 12px',
-                  background: selected === opt.key ? 'rgba(96,165,250,0.12)' : 'transparent',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '9px 12px',
+                  background: selected === opt.key ? 'rgba(96,165,250,0.10)' : 'transparent',
                   border: 'none', cursor: 'pointer',
                   borderBottom: '1px solid rgba(255,255,255,0.05)',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                <span style={{ fontSize: 12, fontWeight: 700,
+                <span style={{ fontSize: 12, fontWeight: selected === opt.key ? 700 : 500,
                   color: selected === opt.key ? '#60a5fa' : '#94a3b8' }}>
                   {opt.label}
                 </span>
                 {selected === opt.key && (
-                  <div style={{ marginLeft: 'auto', width: 6, height: 6,
+                  <div style={{ marginLeft: 'auto', width: 5, height: 5,
                     borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
                 )}
               </button>
@@ -178,15 +183,12 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
     const now = new Date();
     const cutoff = subMonths(now, CUTOFF_MONTHS);
 
-    // Build baselines from earliest data point per exercise (all time)
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (series?.length) baselines[name] = series[0].weight;
     });
 
-    // Build a fixed date spine: one tick per week from cutoff to today
-    // We'll use ~8 evenly spaced ticks across the 2-month window
     const totalDays = Math.round((now - cutoff) / 86400000);
     const tickCount = Math.min(9, Math.max(5, Math.round(totalDays / 7)));
     const tickDates = Array.from({ length: tickCount }, (_, i) => {
@@ -194,15 +196,12 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
       return startOfDay(t);
     });
 
-    // For each tick date, find the most recent logged weight at or before that date for each exercise
     const rows = tickDates.map(tickDate => {
       const row = { date: format(tickDate, 'MMM d') };
       allExerciseNames.forEach(name => {
         const series = exerciseSeriesMap[name] || [];
-        // find last entry on or before tickDate
         const candidates = series.filter(pt => pt.rawDate <= tickDate);
         if (candidates.length === 0) {
-          // no data yet for this exercise at this point in time
           row[name] = null;
         } else {
           const latest = candidates[candidates.length - 1];
@@ -239,81 +238,83 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
   return (
     <div>
-      {/* ── Title + Workout selector on same row ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <h2 style={{
-          fontSize: 18, fontWeight: 900, color: '#f1f5f9',
-          letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2, flexShrink: 0,
-        }}>
-          Overload Tracker
-        </h2>
-        {workoutOptions.length > 0 ? (
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <WorkoutSelector
-              options={workoutOptions}
-              selected={validKey}
-              onSelect={setSelectedWorkoutKey}
-            />
-          </div>
-        ) : (
-          <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>
-            No split configured yet.
+      {/* ── Title left, selector right — with breathing room ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <h2 style={{
+            fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+            letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+          }}>
+            Overload Tracker
+          </h2>
+          <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
+            Weight change vs. baseline · 2 months
           </p>
+        </div>
+        {workoutOptions.length > 0 && (
+          <WorkoutSelector
+            options={workoutOptions}
+            selected={validKey}
+            onSelect={setSelectedWorkoutKey}
+          />
         )}
       </div>
 
-      {/* ── Chart + Legend side by side ── */}
+      {/* ── Chart + Legend ── */}
       {isLoading ? (
-        <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <div style={{ width: 18, height: 18, borderRadius: '50%',
-            border: '2px solid rgba(96,165,250,0.25)', borderTopColor: '#60a5fa',
+        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <div style={{ width: 16, height: 16, borderRadius: '50%',
+            border: '2px solid rgba(96,165,250,0.2)', borderTopColor: '#60a5fa',
             animation: 'spin 0.7s linear infinite' }} />
-          <span style={{ color: '#475569', fontSize: 12 }}>Loading…</span>
+          <span style={{ color: '#475569', fontSize: 11 }}>Loading…</span>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : !hasData ? (
-        <div style={{ height: 220, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
+        <div style={{ height: 200, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 600, margin: 0 }}>
             No data for {selectedWorkout?.label ?? 'this workout'} yet
           </p>
-          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
-            Log this workout to start tracking progressive overload
+          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 200 }}>
+            Log this workout to start tracking overload
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 10, right: 4, left: -6, bottom: 0 }}>
+            <ResponsiveContainer width="100%" height={210}>
+              <LineChart data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
+                {/* Zero baseline — solid, readable */}
+                <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
                   dataKey="date"
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                  stroke="rgba(255,255,255,0.04)"
+                  tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
                   tickLine={false} axisLine={false}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  stroke="rgba(255,255,255,0.05)"
-                  tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                  stroke="rgba(255,255,255,0.04)"
+                  // Bumped from #334155 to #475569 so ticks are actually readable
+                  tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
                   tickLine={false} axisLine={false}
-                  width={44}
+                  width={40}
                   domain={yDomain}
                   tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }} />
                 {exerciseMeta.map(({ name, color }) => (
                   <Line
                     key={name}
                     type="monotone"
                     dataKey={name}
                     stroke={color}
-                    strokeWidth={2}
+                    strokeWidth={1.75}
                     dot={false}
-                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
+                    activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
                   />
                 ))}
@@ -321,30 +322,28 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             </ResponsiveContainer>
           </div>
 
-          {/* Legend — 20% width, dot + name only */}
+          {/* Legend — 20% width, dot + truncated name, no extra info */}
           <div style={{
             width: '20%',
-            paddingLeft: 6,
-            paddingTop: 10,
+            paddingLeft: 8,
             display: 'flex',
             flexDirection: 'column',
-            gap: 7,
-            alignSelf: 'center',
+            gap: 9,
           }}>
             {exerciseMeta.map(({ name, color }) => (
-              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{
-                  width: 8, height: 8, borderRadius: '50%',
+                  width: 6, height: 6, borderRadius: '50%',
                   background: color, flexShrink: 0,
                 }} />
                 <span style={{
-                  fontSize: 10, fontWeight: 600, color: '#94a3b8',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  fontSize: 9.5, fontWeight: 500, color: '#64748b',
                   lineHeight: 1.3,
-                }}>{name}</span>
+                }}>{truncateName(name)}</span>
               </div>
             ))}
           </div>
+
         </div>
       )}
     </div>
