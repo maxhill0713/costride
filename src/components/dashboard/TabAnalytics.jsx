@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { subDays, format, isWithinInterval, differenceInDays } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import {
   Activity, TrendingUp, TrendingDown, Users, Zap, ArrowUpRight,
   Calendar, Clock, Flame, CheckCircle, AlertTriangle, Shield,
