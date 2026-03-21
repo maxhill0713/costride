@@ -326,8 +326,8 @@ export default function TabCoachAnalytics({
             {/* Summary row */}
             <div style={{ display: 'flex', gap: 16, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 8 }}>
               {[
-                { label: 'This week',  value: ci7.length,                               color: '#38bdf8' },
-                { label: 'Last week',  value: ci7p.length,                              color: '#64748b' },
+                { label: 'This week',  value: ci7Count,                               color: '#38bdf8' },
+                { label: 'Last week',  value: ci7pCount,                              color: '#64748b' },
                 { label: 'Avg/week',   value: Math.round(weeklyChart.reduce((s, d) => s + d.value, 0) / 8), color: '#a78bfa' },
               ].map((s, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
