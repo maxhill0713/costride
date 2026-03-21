@@ -462,9 +462,9 @@ export default function TabCoachOverview({
               </div>
               <div style={{ display: 'flex', gap: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 {[
-                  { label: 'check-ins', value: ci7.length,                    color: '#38bdf8' },
+                  { label: 'check-ins', value: ci7Count,                       color: '#38bdf8' },
                   { label: 'unique',    value: activeW,                        color: '#a78bfa' },
-                  { label: 'avg/day',   value: (ci7.length / 7).toFixed(1),   color: '#fbbf24' },
+                  { label: 'avg/day',   value: (ci7Count / 7).toFixed(1),     color: '#fbbf24' },
                 ].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 15, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
