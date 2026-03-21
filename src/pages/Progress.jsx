@@ -455,13 +455,13 @@ export default function Progress() {
                   value="goals"
                   className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
                 >
-                  <Target className="w-5 h-5 mr-2" />Goals
+                  <Target className="w-5 h-5 mr-2" />Targets
                 </TabsTrigger>
                 <TabsTrigger
                   value="rank"
                   className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
                 >
-                  <Award className="w-5 h-5 mr-2" />Rank
+                  <Award className="w-5 h-5 mr-2" />Trainer
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -479,23 +479,26 @@ export default function Progress() {
           </div>
         </TabsContent>
 
-        {/* ── Goals ── */}
+        {/* ── Targets (goals + rank/badges) ── */}
         <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-5">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-end mb-4">
-              <button onClick={() => setShowAddGoal(true)} className={btnCyan}>
-                <Plus className="w-3.5 h-3.5" />New Goal
-              </button>
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div>
+              <div className="flex justify-end mb-4">
+                <button onClick={() => setShowAddGoal(true)} className={btnCyan}>
+                  <Plus className="w-3.5 h-3.5" />New Goal
+                </button>
+              </div>
+              <GoalsTab currentUser={currentUser} showAddGoal={showAddGoal} setShowAddGoal={setShowAddGoal} />
             </div>
-            <GoalsTab currentUser={currentUser} showAddGoal={showAddGoal} setShowAddGoal={setShowAddGoal} />
+            <div>
+              <RankTab currentUser={currentUser} checkIns={checkIns} />
+            </div>
           </div>
         </TabsContent>
 
-        {/* ── Rank ── */}
+        {/* ── Trainer (empty — to be populated) ── */}
         <TabsContent value="rank" className="mt-0 px-3 md:px-4 py-5">
-          <div className="max-w-4xl mx-auto">
-            <RankTab currentUser={currentUser} checkIns={checkIns} />
-          </div>
+          <div className="max-w-4xl mx-auto" />
         </TabsContent>
 
       </Tabs>
