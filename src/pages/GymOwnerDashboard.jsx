@@ -209,6 +209,10 @@ const GRADIENT_OVERRIDE = `
 // ── Main dashboard ────────────────────────────────────────────────────────────
 export default function GymOwnerDashboard() {
   const [tab, setTab]               = useState('overview');
+  // When role changes, reset to the correct default tab
+  useEffect(() => {
+    setTab(isCoach ? 'schedule' : 'overview');
+  }, [isCoach]);
   const [collapsed, setCollapsed]   = useState(false);
   const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
   useEffect(() => {
