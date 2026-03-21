@@ -11,7 +11,7 @@ import {
   Image, Trash2, ToggleLeft, ToggleRight, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import CoachProfileModal from '@/components/CoachProfileModal';
+import CoachProfileModal from '@/components/gym/CoachProfileModal';
 
 /* ─── Design tokens (match CoachProfileModal exactly) ───────── */
 const BG       = '#060810';
