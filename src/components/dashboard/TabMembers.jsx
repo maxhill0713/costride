@@ -592,22 +592,16 @@ export default function TabMembers({
 
   const gymName = selectedGym?.name || 'Your Gym';
 
+  // allMemberships already enriched from backend (ci30Count, prevCi30Count, visitsTotal, daysSince, streak, lastCheckIn)
   const memberRows = useMemo(() => {
-    const prev30Map = {};
-    checkIns.forEach(c => {
-      const d = differenceInDays(now, new Date(c.check_in_date));
-      if (d > 30 && d <= 60) prev30Map[c.user_id] = (prev30Map[c.user_id] || 0) + 1;
-    });
+    const bannedSet = new Set(selectedGym?.banned_members || []);
     return allMemberships.map(m => {
-      const userCI    = checkIns.filter(c => c.user_id === m.user_id);
-      const visits30  = ci30.filter(c => c.user_id === m.user_id).length;
-      const prevVisits30 = prev30Map[m.user_id] || 0;
-      const lastVisit = memberLastCheckIn[m.user_id];
-      const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
-      const isBanned  = (selectedGym?.banned_members || []).includes(m.user_id);
-      const name      = userCI[0]?.user_name || m.user_name || 'Member';
-      const joinDate  = m.join_date || m.created_date || m.created_at;
-      const joinedDaysAgo = joinDate ? differenceInDays(now, new Date(joinDate)) : null;
+      const lastVisit  = m.lastCheckIn || null;
+      const daysSince  = m.daysSince != null ? m.daysSince : 999;
+      const isBanned   = bannedSet.has(m.user_id);
+      const name       = m.user_name || 'Member';
+      const joinDate   = m.join_date || m.created_date || m.created_at;
+      const joinedDaysAgo = joinDate ? Math.floor((now - new Date(joinDate)) / 86400000) : null;
       let risk = 'Low';
       if (daysSince >= 21) risk = 'High'; else if (daysSince >= 14) risk = 'Medium';
       let lastVisitDisplay = 'Never';
@@ -619,19 +613,18 @@ export default function TabMembers({
         else if (daysSince < 30)  lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
         else                      lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
       }
-      const sortedCI = userCI.sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-      let streak = sortedCI.length > 0 ? 1 : 0, cur = sortedCI.length > 0 ? new Date(sortedCI[0].check_in_date) : null;
-      if (cur) {
-        cur.setHours(0, 0, 0, 0);
-        for (let i = 1; i < sortedCI.length; i++) {
-          const d = new Date(sortedCI[i].check_in_date); d.setHours(0, 0, 0, 0);
-          const diff = Math.floor((cur - d) / 86400000);
-          if (diff === 1) { streak++; cur = d; } else if (diff > 1) break;
-        }
-      }
-      return { ...m, name, visits30, prevVisits30, visitsTotal: userCI.length, lastVisit, daysSince, risk, lastVisitDisplay, plan: m.plan || m.membership_type || m.type || 'Standard', isBanned, avatar_url: avatarMap[m.user_id] || null, joinedDaysAgo, streak };
+      return {
+        ...m, name,
+        visits30:    m.ci30Count    || 0,
+        prevVisits30: m.prevCi30Count || 0,
+        visitsTotal: m.visitsTotal  || 0,
+        lastVisit, daysSince, risk, lastVisitDisplay,
+        plan: m.plan || m.membership_type || m.type || 'Standard',
+        isBanned, avatar_url: avatarMap[m.user_id] || null,
+        joinedDaysAgo, streak: m.streak || 0,
+      };
     });
-  }, [allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym?.banned_members, avatarMap, now]);
+  }, [allMemberships, selectedGym?.banned_members, avatarMap, now]);
 
   const filtered = useMemo(() => memberRows.filter(m => {
     if (memberFilter === 'active')   return m.daysSince < 7;
