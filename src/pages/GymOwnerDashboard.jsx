@@ -245,6 +245,9 @@ export default function GymOwnerDashboard() {
   const isCoach    = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole   = isCoach ? 'coach' : 'gym_owner';
+  useEffect(() => {
+    setTab(isCoach ? 'schedule' : 'overview');
+  }, [isCoach]);
   const roleLabel  = isCoach ? 'Coach' : 'Gym Owner';
   const NAV        = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
     ...item,
