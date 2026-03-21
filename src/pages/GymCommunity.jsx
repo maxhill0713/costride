@@ -1359,53 +1359,12 @@ export default function GymCommunity() {
   const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
   const isMember = !!gymMembership || isGymOwner;
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
-  const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
-  const upcomingEvents = events.filter(e => { const d = new Date(e.event_date); return d >= now && d <= new Date(now.getTime() + 7*86400000); }).slice(0, 2);
 
-  const checkInLeaderboard = Object.values(
-    weeklyCheckIns.reduce((acc, c) => {
-      const id = c.user_id;
-      if (!acc[id]) acc[id] = { userId:id, userName:c.user_name, userAvatar:memberAvatarMap[id]||null, count:0 };
-      acc[id].count++;
-      return acc;
-    }, {})
-  ).sort((a,b) => b.count-a.count).slice(0,10);
-
-  const calcUserStreak = (userId) => {
-    const uci = checkIns.filter(c => c.user_id === userId).sort((a,b) => new Date(b.check_in_date)-new Date(a.check_in_date));
-    if (!uci.length) return 0;
-    let streak = 1, cur = new Date(uci[0].check_in_date); cur.setHours(0,0,0,0);
-    for (let i=1;i<uci.length;i++) { const d=new Date(uci[i].check_in_date); d.setHours(0,0,0,0); const diff=Math.floor((cur-d)/86400000); if (diff===1){streak++;cur=d;}else if(diff>1)break; }
-    return streak;
-  };
-
-  const streakLeaderboard = Object.values(
-    checkIns.reduce((acc,c) => { const id=c.user_id; if (!acc[id]) acc[id]={userId:id,userName:c.user_name,userAvatar:memberAvatarMap[id]||null}; return acc; }, {})
-  ).map(item => ({ ...item, streak:calcUserStreak(item.userId) })).sort((a,b) => b.streak-a.streak).slice(0,10);
-
-  const calculateProgressLeaderboard = (timeFilterDays) => {
-    const cutoffDate = timeFilterDays===null ? new Date(0) : new Date(now.getTime()-timeFilterDays*86400000);
-    const userMaxWeights = {};
-    lifts.forEach(lift => {
-      const liftDate = new Date(lift.lift_date);
-      if (liftDate >= cutoffDate) {
-        const key = `${lift.member_id}-${lift.exercise}`;
-        if (!userMaxWeights[key]) userMaxWeights[key]={ userId:lift.member_id, userName:lift.member_name, userAvatar:memberAvatarMap[lift.member_id]||null, exercise:lift.exercise, maxWeight:lift.weight_lbs, prevMax:0 };
-        if (lift.weight_lbs > userMaxWeights[key].maxWeight) { userMaxWeights[key].prevMax=userMaxWeights[key].maxWeight; userMaxWeights[key].maxWeight=lift.weight_lbs; }
-      }
-    });
-    return Object.values(userMaxWeights)
-      .map(item => ({ userId:item.userId, userName:item.userName, userAvatar:item.userAvatar||null, increase:item.maxWeight-item.prevMax }))
-      .filter(item => item.increase > 0)
-      .reduce((acc,item) => { const ex=acc.find(a=>a.userId===item.userId); if(ex) ex.increase+=item.increase; else acc.push(item); return acc; }, [])
-      .sort((a,b) => b.increase-a.increase).slice(0,10);
-  };
-
-  const progressLeaderboardWeek = calculateProgressLeaderboard(7);
-  const progressLeaderboardMonth = calculateProgressLeaderboard(30);
-  const progressLeaderboardAllTime = calculateProgressLeaderboard(null);
+  const checkInLeaderboard = leaderboards.checkInLeaderboard || [];
+  const streakLeaderboard = leaderboards.streakLeaderboard || [];
+  const progressLeaderboardWeek = leaderboards.progressLeaderboardWeek || [];
+  const progressLeaderboardMonth = leaderboards.progressLeaderboardMonth || [];
+  const progressLeaderboardAllTime = leaderboards.progressLeaderboardAllTime || [];
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
