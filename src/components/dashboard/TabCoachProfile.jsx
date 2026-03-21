@@ -463,23 +463,28 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
               Create your public profile at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span>. Members will see your bio, classes, certifications, and booking options.
             </div>
             <button
-              onClick={() => { if (!selectedGym?.id) return; createMutation.mutate({
-                gym_id: selectedGym.id,
-                user_email: currentUser.email,
-                user_id: currentUser.id,
-                name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
-                title: "Personal Coach",
-                specialties: [],
-                certifications: [],
-                languages: ["English"],
-                packages: [
-                  { sessions: 1, price: 60, label: "Single", popular: false, discount: null },
-                  { sessions: 5, price: 270, label: "5 Pack", popular: true, discount: "Save 10%" },
-                  { sessions: 10, price: 510, label: "10 Pack", popular: false, discount: "Save 15%" },
-                ],
-                verification: { id: false, certifications: false, background: false },
-                free_consultation: false,
-              }); }}
+              onClick={() => {
+                if (!selectedGym?.id) return;
+                const newProfile = {
+                  gym_id: selectedGym.id,
+                  user_email: currentUser.email,
+                  user_id: currentUser.id,
+                  name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
+                  title: "Personal Coach",
+                  specialties: [],
+                  certifications: [],
+                  languages: ["English"],
+                  packages: [
+                    { sessions: 1, price: 60, label: "Single", popular: false, discount: null },
+                    { sessions: 5, price: 270, label: "5 Pack", popular: true, discount: "Save 10%" },
+                    { sessions: 10, price: 510, label: "10 Pack", popular: false, discount: "Save 15%" },
+                  ],
+                  verification: { id: false, certifications: false, background: false },
+                  free_consultation: false,
+                };
+                setDraft(newProfile);
+                createMutation.mutate(newProfile);
+              }}
               className="tcp-btn"
               disabled={creating}
               style={{ width: "100%", padding: 15, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", color: "#fff", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 24px rgba(37,99,235,0.4)", cursor: creating ? "default" : "pointer", opacity: creating ? 0.7 : 1 }}>
