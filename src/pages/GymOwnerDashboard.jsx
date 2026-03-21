@@ -37,7 +37,6 @@ import TabMembersComponent from '../components/dashboard/TabMembers';
 import TabContentComponent from '../components/dashboard/TabContent';
 import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
 import TabGym        from '../components/dashboard/TabGym';
-import TabCoachOverview  from '../components/dashboard/TabCoachOverview';
 import TabCoachSchedule  from '../components/dashboard/TabCoachSchedule';
 import TabCoachMembers   from '../components/dashboard/TabCoachMembers';
 import TabCoachContent   from '../components/dashboard/TabCoachContent';
