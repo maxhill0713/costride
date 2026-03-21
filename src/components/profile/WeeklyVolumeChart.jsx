@@ -96,10 +96,16 @@ export default function WeeklyVolumeChart({ currentUser }) {
 
   const hasAnyData = chartData.some(d => d.totalReps > 0);
 
-  const yDomain = useMemo(() => {
+  const { yDomain, yTicks } = useMemo(() => {
     const max = Math.max(...chartData.map(d => d.totalReps));
-    if (max === 0) return [0, 50];
-    return [0, Math.ceil(max * 1.18)];
+    if (max === 0) {
+      const ticks = [0, 15, 30, 45, 60];
+      return { yDomain: [0, 60], yTicks: ticks };
+    }
+    const domainMax = Math.ceil(max / 15) * 15 + 15;
+    const ticks = [];
+    for (let v = 0; v <= domainMax; v += 15) ticks.push(v);
+    return { yDomain: [0, domainMax], yTicks: ticks };
   }, [chartData]);
 
   return (
@@ -129,8 +135,8 @@ export default function WeeklyVolumeChart({ currentUser }) {
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={chartData} margin={{ top: 12, right: 8, left: -6, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={198}>
+          <LineChart data={chartData} margin={{ top: 12, right: 8, left: 16, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="rgba(255,255,255,0.04)"
@@ -150,9 +156,23 @@ export default function WeeklyVolumeChart({ currentUser }) {
               tick={{ fill: '#475569', fontSize: 9, fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
-              width={44}
+              width={36}
               domain={yDomain}
+              ticks={yTicks}
               tickFormatter={v => `${v}`}
+              label={{
+                value: 'Total\nReps',
+                angle: -90,
+                position: 'insideLeft',
+                offset: -4,
+                style: {
+                  fill: '#475569',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  textAnchor: 'middle',
+                  whiteSpace: 'pre',
+                },
+              }}
             />
 
             <Tooltip
