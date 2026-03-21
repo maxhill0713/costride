@@ -671,8 +671,8 @@ export default function CoachProfilePage({ coach: propCoach, onBack, open, onClo
           <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 80% 20%, rgba(${sc.rgb},0.18) 0%, transparent 65%)` }} />
 
           {/* Back button */}
-          {onBack && (
-            <button onClick={onBack} style={{ position: 'absolute', top: 52, left: 16, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
+          {handleBack && (
+            <button onClick={handleBack} style={{ position: 'absolute', top: 52, left: 16, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
               <ArrowLeft style={{ width: 15, height: 15, color: '#fff' }} />
             </button>
           )}
