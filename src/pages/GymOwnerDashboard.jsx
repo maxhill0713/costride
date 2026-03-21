@@ -506,7 +506,7 @@ export default function GymOwnerDashboard() {
           allMemberships={allMemberships}
           classes={classes}
           coaches={coaches}
-          avatarMap={avatarMap}
+          avatarMap={avatarMapFull}
           sparkData={sparkData7}
           Spark={Spark}
           Delta={Delta}
