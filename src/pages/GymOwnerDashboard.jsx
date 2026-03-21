@@ -50,6 +50,7 @@ const ALL_NAV = [
   { id: 'members',   label: 'Members',   coachLabel: 'Clients', icon: Users,           roles: ['gym_owner', 'coach'] },
   { id: 'content',   label: 'Content',   icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3,       roles: ['gym_owner', 'coach'] },
+  { id: 'profile',   label: 'Profile',   icon: Crown,           roles: ['coach'] },
   { id: 'gym',       label: 'Settings',  icon: Settings,        roles: ['gym_owner'] },
 ];
 
