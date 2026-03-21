@@ -299,7 +299,7 @@ export default function GymOwnerDashboard() {
   const checkIns        = stats.recentCheckIns || [];
   const allMemberships  = stats.membersWithActivity || [];
 
-  const inv     = (...keys) => keys.forEach(k => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] }));
+  const inv     = (...keys) => { keys.forEach(k => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] })); queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] }); };
   const invGyms = () => queryClient.invalidateQueries({ queryKey: ['gyms'] });
 
   const createRewardM    = useMutation({ mutationFn: d  => base44.entities.Reward.create(d),     onSuccess: () => inv('rewards') });
