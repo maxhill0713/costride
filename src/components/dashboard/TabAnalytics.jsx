@@ -1165,8 +1165,8 @@ export default function TabAnalytics({
           monthChangePct={monthChangePct} totalMembers={totalMembers} now={now}
         />
 
-        <Week1ReturnTrendWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
-        <ChurnSignalWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
+        <Week1ReturnTrendWidget week1ReturnTrend={week1ReturnTrendProp} />
+        <ChurnSignalWidget churnSignals={churnSignalsProp} />
 
         <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} accent={T.cyan} items={busiestDays.map(d => ({ ...d, label: d.name, pct: (d.count / dayMax) * 100 }))} emptyLabel="No data yet" />
