@@ -391,8 +391,9 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     { id: 'settings',      label: 'Settings',       icon: Shield },
   ];
 
-  if (isLoading) return (
+  if (isLoading || !currentUser) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240, fontFamily: 'Figtree,system-ui,sans-serif' }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <Loader2 style={{ width: 28, height: 28, color: BLUE_LT, animation: 'spin 1s linear infinite' }} />
     </div>
   );
