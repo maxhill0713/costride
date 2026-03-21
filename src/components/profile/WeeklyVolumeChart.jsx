@@ -20,16 +20,16 @@ function CustomTooltip({ active, payload, label }) {
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
     }}>
       <p style={{
-        color: '#64748b', fontSize: 10, fontWeight: 700,
-        letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4,
+        color: '#64748b', fontSize: 10, fontWeight: 600,
+        letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4,
       }}>{label}</p>
       {isRest ? (
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>Rest Day</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: '#475569' }}>Rest day</span>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
-          <span style={{ color: '#94a3b8', fontSize: 10 }}>Total Reps</span>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#34d399', marginLeft: 'auto' }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
+          <span style={{ color: '#94a3b8', fontSize: 10 }}>Reps</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399', marginLeft: 'auto' }}>
             {val.toLocaleString()}
           </span>
         </div>
@@ -38,31 +38,17 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-// ─── Custom dot — visible on training days, hidden on rest days ───────────────
+// ─── Custom dot — only on training days ──────────────────────────────────────
 function CustomDot(props) {
   const { cx, cy, payload } = props;
   if (!payload || payload.totalReps === 0) return null;
-  return (
-    <circle
-      cx={cx} cy={cy} r={4}
-      fill="#34d399"
-      stroke="#0a0e1e"
-      strokeWidth={2}
-    />
-  );
+  return <circle cx={cx} cy={cy} r={3.5} fill="#34d399" stroke="#0a0e1e" strokeWidth={2} />;
 }
 
 function CustomActiveDot(props) {
   const { cx, cy, payload } = props;
   if (!payload || payload.totalReps === 0) return null;
-  return (
-    <circle
-      cx={cx} cy={cy} r={5.5}
-      fill="#34d399"
-      stroke="#0a0e1e"
-      strokeWidth={2}
-    />
-  );
+  return <circle cx={cx} cy={cy} r={5} fill="#34d399" stroke="#0a0e1e" strokeWidth={2} />;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -72,7 +58,7 @@ export default function WeeklyVolumeChart({ currentUser }) {
     const trainingDays = currentUser?.training_days || [];
 
     return DAY_LABELS.map((label, i) => {
-      const dayKey = i + 1; // 1=Mon … 7=Sun
+      const dayKey = i + 1;
       const isTrainingDay = trainingDays.includes(dayKey);
       const workout = workoutTypes?.[dayKey];
 
@@ -99,8 +85,7 @@ export default function WeeklyVolumeChart({ currentUser }) {
   const { yDomain, yTicks } = useMemo(() => {
     const max = Math.max(...chartData.map(d => d.totalReps));
     if (max === 0) {
-      const ticks = [0, 15, 30, 45, 60];
-      return { yDomain: [0, 60], yTicks: ticks };
+      return { yDomain: [0, 60], yTicks: [0, 15, 30, 45, 60] };
     }
     const domainMax = Math.ceil(max / 15) * 15 + 15;
     const ticks = [];
@@ -110,69 +95,57 @@ export default function WeeklyVolumeChart({ currentUser }) {
 
   return (
     <div>
-      {/* Header */}
+      {/* Header — font-bold not font-black, subtitle readable */}
       <h2 style={{
-        fontSize: 18, fontWeight: 900, color: '#f1f5f9',
-        letterSpacing: '-0.02em', margin: '0 0 4px', lineHeight: 1.2,
+        fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+        letterSpacing: '-0.01em', margin: '0 0 3px', lineHeight: 1.2,
       }}>
         Weekly Rep Volume
       </h2>
-      <p style={{ fontSize: 11, color: '#475569', margin: '0 0 18px', fontWeight: 600 }}>
-        Planned reps per day · current active split
+      <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 16px', fontWeight: 500 }}>
+        Planned reps · current split
       </p>
 
-      {/* Empty state */}
       {!hasAnyData ? (
         <div style={{
-          height: 220, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 10,
+          height: 198, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
-          <p style={{ color: '#475569', fontSize: 13, fontWeight: 700, margin: 0 }}>
-            No workout split configured yet
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 600, margin: 0 }}>
+            No workout split configured
           </p>
-          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 220 }}>
-            Set up your active split to see weekly rep volume here
+          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 200 }}>
+            Set up your split to see weekly rep volume
           </p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={198}>
-          <LineChart data={chartData} margin={{ top: 12, right: 8, left: 16, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="rgba(255,255,255,0.04)"
               vertical={false}
             />
-            <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+            <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
 
             <XAxis
               dataKey="day"
-              stroke="rgba(255,255,255,0.05)"
-              tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }}
+              stroke="rgba(255,255,255,0.04)"
+              // Lighter weight so it doesn't compete with data
+              tick={{ fill: '#475569', fontSize: 10, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="rgba(255,255,255,0.05)"
-              tick={{ fill: '#475569', fontSize: 9, fontWeight: 600 }}
+              stroke="rgba(255,255,255,0.04)"
+              tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              width={36}
+              // Removed rotated label — suffix on tick is cleaner on mobile
+              width={32}
               domain={yDomain}
               ticks={yTicks}
-              tickFormatter={v => `${v}`}
-              label={{
-                value: 'Total\nReps',
-                angle: -90,
-                position: 'insideLeft',
-                offset: -4,
-                style: {
-                  fill: '#475569',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  textAnchor: 'middle',
-                  whiteSpace: 'pre',
-                },
-              }}
+              tickFormatter={v => `${v}r`}
             />
 
             <Tooltip
@@ -184,12 +157,12 @@ export default function WeeklyVolumeChart({ currentUser }) {
               type="monotone"
               dataKey="totalReps"
               stroke="#34d399"
-              strokeWidth={2.5}
+              strokeWidth={2}
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
               isAnimationActive={true}
-              animationDuration={900}
+              animationDuration={800}
               animationEasing="ease-out"
             />
           </LineChart>
