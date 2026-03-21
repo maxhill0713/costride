@@ -440,29 +440,31 @@ export default function Progress() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <Tabs defaultValue="analytics" className="w-full">
 
-        {/* ── Header ── */}
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-7 pb-0">
+        {/* ── Header — exact Gyms page height/font match ── */}
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
           <div className="max-w-4xl mx-auto">
-            <TabsList className="flex justify-between w-full bg-transparent p-0 h-auto gap-0 border-0">
-              <TabsTrigger
-                value="analytics"
-                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
-              >
-                <BarChart3 className="w-5 h-5 mr-2" />Analytics
-              </TabsTrigger>
-              <TabsTrigger
-                value="goals"
-                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
-              >
-                <Target className="w-5 h-5 mr-2" />Goals
-              </TabsTrigger>
-              <TabsTrigger
-                value="rank"
-                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
-              >
-                <Award className="w-5 h-5 mr-2" />Rank
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex items-center h-18">
+              <TabsList className="flex justify-between w-full bg-transparent p-0 h-10 gap-0 border-0">
+                <TabsTrigger
+                  value="analytics"
+                  className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
+                >
+                  <BarChart3 className="w-5 h-5 mr-2" />Analytics
+                </TabsTrigger>
+                <TabsTrigger
+                  value="goals"
+                  className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
+                >
+                  <Target className="w-5 h-5 mr-2" />Goals
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rank"
+                  className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
+                >
+                  <Award className="w-5 h-5 mr-2" />Rank
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
         </div>
 
