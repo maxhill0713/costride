@@ -392,14 +392,14 @@ export default function GymOwnerDashboard() {
       : <TabOverview
           todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
           activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
-          newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={ciPrev30}
+          newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={[]}
           atRisk={atRisk} sparkData={sparkData7} monthGrowthData={monthGrowthData}
           cancelledEst={cancelledEst} peakLabel={peakLabel} peakEndLabel={peakEndLabel}
           peakEntry={peakEntry} satVsAvg={satVsAvg} monthCiPer={monthCiPer}
           checkIns={checkIns} allMemberships={allMemberships} challenges={challenges}
           posts={posts} polls={polls} classes={classes} coaches={coaches}
           streaks={streaks} recentActivity={recentActivity} chartDays={chartDays}
-          chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMap}
+          chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMapFull}
           priorities={priorities} selectedGym={selectedGym} now={now}
           openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta}
         />,
