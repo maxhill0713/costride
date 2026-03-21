@@ -825,6 +825,7 @@ export default function CoachProfilePage({ coach: propCoach, onBack }) {
                   {coach.achievements.map((a, i) => <AchievementBadge key={i} {...a} />)}
                 </div>
               </div>
+              )}
 
               {/* Certifications */}
               <div>
