@@ -209,17 +209,13 @@ function StatNudge({ color = T.cyan, icon: Icon, stat, detail, action, onAction 
 }
 
 // ── Action Items (signals panel) ───────────────────────────────────────────────
-function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now, openModal, setTab }) {
+function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now, openModal, setTab, newNoReturnCount = 0 }) {
   const signals = useMemo(() => {
     const items = [];
 
-    // 🔴 New members who haven't returned
-    const newNoReturn = allMemberships.filter(m => {
-      const d = differenceInDays(now, new Date(m.created_at || now));
-      return d >= 7 && d <= 14 && checkIns.filter(c => c.user_id === m.user_id).length < 2;
-    });
-    if (newNoReturn.length > 0) {
-      items.push({ priority: 1, color: T.red, icon: UserPlus, title: `${newNoReturn.length} new member${newNoReturn.length > 1 ? 's' : ''} haven't returned`, detail: 'Joined 1–2 weeks ago, no second visit yet. Week-1 follow-up has the highest retention impact.', action: 'Follow up', fn: () => openModal('message') });
+    // 🔴 New members who haven't returned (count from backend)
+    if (newNoReturnCount > 0) {
+      items.push({ priority: 1, color: T.red, icon: UserPlus, title: `${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''} haven't returned`, detail: 'Joined 1–2 weeks ago, no second visit yet. Week-1 follow-up has the highest retention impact.', action: 'Follow up', fn: () => openModal('message') });
     }
 
     // 🔴 At-risk members
