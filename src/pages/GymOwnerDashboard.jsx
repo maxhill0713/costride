@@ -498,15 +498,26 @@ export default function GymOwnerDashboard() {
         />,
     analytics: isCoach
       ? <TabCoachAnalytics
-          checkIns={coachCheckIns}
-          ci30={coachCi30}
+          ci30Count={allMemberships.reduce((s,m)=>s+(m.ci30Count||0),0)}
           totalMembers={coachMemberships.length}
           myClasses={myClasses}
           monthChangePct={monthChangePct}
           retentionRate={retentionRate}
-          activeThisMonth={new Set(coachCi30.map(c => c.user_id)).size}
+          activeThisMonth={activeThisMonth}
           atRisk={atRisk}
           gymId={selectedGym?.id}
+          ci7Count={ci7Count}
+          ci7pCount={ci7pCount}
+          weeklyTrendCoach={weeklyTrendCoach}
+          monthlyTrendCoach={monthlyTrendCoach}
+          returningCount={returningCount}
+          newMembersThis30={newMembersThis30}
+          weeklyChart={weeklyChart}
+          monthlyChart={monthlyChart}
+          engagementSegmentsCoach={engagementSegmentsCoach}
+          weekSpark={weekSpark}
+          peakHours={peakHours}
+          busiestDays={busiestDays}
         />
       : <TabAnalyticsComponent
           checkIns={checkIns}
