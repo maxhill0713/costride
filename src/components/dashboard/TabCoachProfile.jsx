@@ -464,9 +464,8 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
             </div>
             <button
               onClick={() => {
-                if (!selectedGym?.id) return;
                 const newProfile = {
-                  gym_id: selectedGym.id,
+                  gym_id: selectedGym?.id || null,
                   user_email: currentUser.email,
                   user_id: currentUser.id,
                   name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
