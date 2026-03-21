@@ -62,7 +62,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
   const current = options.find(o => o.key === selected);
 
   return (
-    <div style={{ position: 'relative', minWidth: 0 }}>
+    <div style={{ position: 'relative', minWidth: 0, flexShrink: 0 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
@@ -73,9 +73,9 @@ function WorkoutSelector({ options, selected, onSelect }) {
           color: '#cbd5e1', fontSize: 11, fontWeight: 600,
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           transition: 'background 0.15s',
-          whiteSpace: 'nowrap',
+          width: 120, // fixed — roughly "Legs and Abs" width
         }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150 }}>
+        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
           {current?.label ?? 'Select'}
         </span>
         <ChevronDown size={11} color="#64748b"
@@ -88,7 +88,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
           <div style={{
             position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 20,
             background: 'rgba(10,14,30,0.98)', border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: 10, overflow: 'hidden', minWidth: 130,
+            borderRadius: 10, overflow: 'hidden', minWidth: 120,
             boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
             backdropFilter: 'blur(20px)',
           }}>
