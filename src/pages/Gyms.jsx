@@ -403,8 +403,7 @@ return (
             </div>
           </div>
         </div>
-        {userGyms.length > 0 &&
-          <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
+        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
             <div className="max-w-6xl mx-auto">
               {userGyms.length === 0 ?
                 <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
