@@ -219,7 +219,7 @@ export default function Layout({ children, currentPageName }) {
     currentUser?.primary_gym_id ||
     (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
-  const ACTIVE_COLOR   = '#1e3a8a';
+  const ACTIVE_COLOR   = '#3b82f6';
   const INACTIVE_COLOR = '#6b7280';
 
   const navItems = isDashboardUser
