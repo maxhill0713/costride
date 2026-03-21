@@ -775,6 +775,8 @@ export default function TabOverview({
   recentActivity, chartDays, chartRange, setChartRange, avatarMap,
   priorities, selectedGym, now,
   openModal, setTab,
+  // Pre-computed from backend
+  retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
 }) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   useEffect(() => {
