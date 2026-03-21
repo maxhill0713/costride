@@ -288,6 +288,59 @@ Deno.serve(async (req) => {
       return d >= 7 && d <= 14 && (m.visitsTotal || 0) < 2;
     }).length;
 
+    // ── Coach analytics pre-computed ─────────────────────────────────────────
+    const ci7Count  = ci7.length;
+    const ci7pCount = ci7p.length;
+    const weeklyTrendCoach  = ci7p.length > 0 ? Math.round(((ci7.length - ci7p.length) / ci7p.length) * 100) : 0;
+    const monthlyTrendCoach = ciPrev30.length > 0 ? Math.round(((ci30.length - ciPrev30.length) / ciPrev30.length) * 100) : 0;
+
+    // Returning members (visited before last 30 days and came back in last 30)
+    const memberFirstCI = {};
+    [...checkIns].sort((a, b) => new Date(a.check_in_date) - new Date(b.check_in_date))
+      .forEach(c => { if (!memberFirstCI[c.user_id]) memberFirstCI[c.user_id] = c.check_in_date; });
+    const t30Date = t30;
+    const returningIds = new Set(ci30.filter(c => {
+      const first = memberFirstCI[c.user_id];
+      return first && new Date(first) < t30Date;
+    }).map(c => c.user_id));
+    const returningCount = returningIds.size;
+    const newMembersThis30 = Object.values(memberFirstCI).filter(d => new Date(d) >= t30).length;
+
+    // Weekly chart (8 weeks)
+    const weeklyChart = Array.from({ length: 8 }, (_, i) => {
+      const s = new Date(todayStart.getTime() - (7 - i) * 7 * DAY);
+      const e = new Date(s.getTime() + 7 * DAY);
+      const label = s.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+      const value = checkIns.filter(c => { const d = new Date(c.check_in_date); return d >= s && d < e; }).length;
+      return { label, value };
+    });
+
+    // Monthly chart (6 months)
+    const monthlyChart = Array.from({ length: 6 }, (_, i) => {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const monthEnd   = new Date(now.getFullYear(), now.getMonth() - (5 - i) + 1, 0);
+      const label = monthStart.toLocaleDateString('en-GB', { month: 'short' });
+      const value = checkIns.filter(c => { const d = new Date(c.check_in_date); return d >= monthStart && d <= monthEnd; }).length;
+      return { label, value };
+    });
+
+    // Engagement tiers (30-day, same thresholds as analytics tab)
+    const acc30Coach = {};
+    ci30.forEach(c => { acc30Coach[c.user_id] = (acc30Coach[c.user_id] || 0) + 1; });
+    const superActiveCoach = Object.values(acc30Coach).filter(v => v >= 12).length;
+    const activeCoach      = Object.values(acc30Coach).filter(v => v >= 4 && v < 12).length;
+    const casualCoach      = Object.values(acc30Coach).filter(v => v >= 1 && v < 4).length;
+    const inactiveCoach    = Math.max(0, totalMembers - superActiveCoach - activeCoach - casualCoach);
+    const engRateCoach     = totalMembers > 0 ? Math.round(((superActiveCoach + activeCoach) / totalMembers) * 100) : 0;
+    const engagementSegmentsCoach = { superActive: superActiveCoach, active: activeCoach, casual: casualCoach, inactive: inactiveCoach, engRate: engRateCoach };
+
+    // 7-day spark for coach overview
+    const weekSpark = Array.from({ length: 7 }, (_, i) => {
+      const s = new Date(todayStart.getTime() - (6 - i) * DAY);
+      const e = new Date(s.getTime() + DAY);
+      return checkIns.filter(c => { const d = new Date(c.check_in_date); return d >= s && d < e; }).length;
+    });
+
     // ── Streaks leaderboard (top 5) ───────────────────────────────────────────
     const streaks = Object.entries(streakMap)
       .map(([userId, streak]) => {
