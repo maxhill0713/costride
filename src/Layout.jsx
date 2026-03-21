@@ -9,16 +9,18 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PersistentRestTimer from './components/PersistentRestTimer';
 import { TimerProvider } from './components/TimerContext';
 
-// ─── Exact SVG icons extracted from uploaded SVG file ────────────────────────
-// The original SVG uses transform="translate(0,400) scale(0.1,-0.1)"
-// Each icon is cropped via viewBox to show only that icon's region.
-// fill={color} is passed per render so active/inactive states work.
+// ─── Icons from uploaded SVG — all normalised to a 100×100 screen-unit square
+// Original transform: translate(0,400) scale(0.1,-0.1)
+//   screen_x = path_x * 0.1
+//   screen_y = 400 − path_y * 0.1
+// Each viewBox is centred on its icon so all render at identical visual size.
 
 function HomeIcon({ color }) {
+  // icon spans screen ≈ (8,171)→(70,218), centre (39,194) → viewBox "-11 144 100 100"
   return (
-    <svg width="28" height="28" viewBox="8 165 62 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="30" viewBox="-11 144 100 100"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
-        {/* Building outline */}
         <path d="M363 2284 c-283 -251 -283 -251 -283 -284 0 -36 23 -50 85 -50 l46 0
 -1 -197 -2 -198 136 -3 136 -3 0 113 c0 125 9 151 56 162 34 9 78 -9 93 -37 6
 -12 12 -69 13 -127 l3 -105 133 -3 132 -3 0 203 0 203 48 -3 c36 -3 53 1 65
@@ -28,7 +30,6 @@ l-60 -3 3 -200 3 -200 -101 1 -102 2 -2 98 c-1 75 -6 105 -19 125 -34 51 -107
 64 -164 29 -41 -25 -57 -80 -51 -180 l4 -75 -103 0 -103 0 0 203 0 202 -66 0
 c-50 0 -65 3 -62 13 2 8 61 65 132 128 72 63 171 151 220 196 50 45 94 81 97
 80 4 -1 64 -54 135 -117z"/>
-        {/* Window details */}
         <path d="M462 2053 l3 -98 95 0 95 0 3 98 3 97 -101 0 -101 0 3 -97z m86 45
 c-3 -28 -7 -32 -33 -32 -26 0 -30 4 -33 32 -3 31 -2 32 33 32 35 0 36 -1 33
 -32z m90 0 c-3 -29 -7 -33 -35 -34 -31 -2 -33 0 -33 32 0 32 2 34 36 34 34 0
@@ -41,8 +42,10 @@ c-3 -28 -7 -32 -33 -32 -26 0 -30 4 -33 32 -3 31 -2 32 33 32 35 0 36 -1 33
 }
 
 function GymIcon({ color }) {
+  // icon spans screen ≈ (116,152)→(201,214), centre (158,183) → viewBox "108 133 100 100"
   return (
-    <svg width="28" height="28" viewBox="116 146 128 138" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="30" viewBox="108 133 100 100"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M1830 2470 c-11 -11 -20 -25 -20 -31 0 -7 -10 -5 -25 5 -39 25 -90
 21 -114 -10 -39 -49 -27 -90 50 -170 l49 -50 -166 -172 -166 -173 -63 61 c-72
@@ -70,8 +73,10 @@ m-84 -87 c154 -153 163 -165 160 -197 -2 -26 -9 -36 -31 -43 -27 -10 -34 -3
 }
 
 function ProgressIcon({ color }) {
+  // icon spans screen ≈ (255,192)→(340,249), centre (297,220) → viewBox "247 170 100 100"
   return (
-    <svg width="28" height="28" viewBox="203 142 142 102" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="30" viewBox="247 170 100 100"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M3290 2018 l0 -503 -30 -1 -30 -1 0 373 0 373 -96 3 c-53 2 -98 1
 -100 -1 -2 -2 -4 -172 -4 -376 l0 -372 -30 -1 -30 -1 -2 267 -3 267 -102 3
@@ -88,10 +93,11 @@ function ProgressIcon({ color }) {
 }
 
 function ChallengesIcon({ color }) {
+  // icon spans screen ≈ (396,149)→(468,251), centre (432,200) → viewBox "382 150 100 100"
   return (
-    <svg width="28" height="28" viewBox="393 136 98 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="30" viewBox="382 150 100 100"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
-        {/* Trophy body */}
         <path d="M4030 2460 l0 -40 -55 0 c-47 0 -60 -4 -82 -26 -22 -22 -25 -32 -21
 -74 6 -63 66 -185 114 -234 22 -21 69 -59 107 -83 37 -25 67 -49 67 -54 0 -4
 29 -38 65 -74 93 -95 93 -96 -49 -220 -25 -22 -49 -49 -52 -60 -4 -11 -15 -26
@@ -110,7 +116,6 @@ m-614 -94 c10 -78 38 -185 67 -253 15 -37 -86 46 -128 104 -21 30 -48 85 -59
 -18 -200 -18 -191 0 -218 4 -193 28 3 4 93 7 200 7 177 0 193 -1 193 -17z m43
 -68 c5 -12 -29 -15 -239 -17 -135 -2 -248 0 -251 5 -14 23 23 27 247 27 200 0
 239 -2 243 -15z"/>
-        {/* Figure inside trophy */}
         <path d="M4483 2381 c0 -16 -8 -42 -19 -58 l-19 -28 -3 26 c-6 55 -65 81 -106
 48 -23 -18 -27 -27 -22 -53 l6 -31 -26 29 c-14 15 -28 41 -31 57 -8 39 -21 36
 -39 -8 -21 -49 -12 -89 36 -161 22 -33 40 -71 40 -86 0 -35 -25 -95 -52 -123
@@ -127,16 +132,16 @@ m-614 -94 c10 -78 38 -185 67 -253 15 -37 -86 46 -128 104 -21 30 -48 85 -59
 }
 
 function ProfileIcon({ color }) {
+  // icon spans screen ≈ (524,150)→(595,245), centre (559,197) → viewBox "509 147 100 100"
   return (
-    <svg width="28" height="28" viewBox="518 142 88 116" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="30" viewBox="509 147 100 100"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
-        {/* Circle head */}
         <path d="M5592 2507 c-45 -14 -118 -81 -144 -130 -89 -175 45 -387 244 -387
 146 1 254 101 266 247 12 157 -109 284 -268 282 -36 -1 -80 -6 -98 -12z m169
 -29 c51 -15 114 -70 140 -121 40 -78 23 -195 -39 -260 -46 -49 -100 -71 -173
 -72 -56 0 -73 4 -114 30 -27 17 -63 50 -80 73 -25 37 -30 55 -33 116 -5 88 15
 135 80 190 63 54 137 69 219 44z"/>
-        {/* Shoulder arc */}
         <path d="M5563 1895 c-184 -52 -320 -198 -326 -351 l-2 -59 383 -3 c378 -2
 382 -2 382 18 0 20 -4 20 -366 18 l-366 -3 5 47 c14 119 125 241 261 288 74
 25 161 33 235 21 60 -10 160 -51 209 -87 21 -16 22 -15 22 5 0 25 -59 65 -140
@@ -215,7 +220,7 @@ export default function Layout({ children, currentPageName }) {
     (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
   const ACTIVE_COLOR   = '#ffffff';
-  const INACTIVE_COLOR = 'rgba(255,255,255,0.35)';
+  const INACTIVE_COLOR = '#6b7280';
 
   const navItems = isDashboardUser
     ? [
@@ -260,7 +265,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── Bottom Navigation (Mobile) ── */}
       {!hideNavigation && (
         <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-1 h-[79px] px-2">
+          <div className="flex justify-around items-center pt-2 h-[79px] px-1">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
               const IconComponent = item.icon;
@@ -274,7 +279,7 @@ export default function Layout({ children, currentPageName }) {
                     if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
                   }}
                   aria-label={item.name}
-                  className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1"
+                  className="relative flex flex-col items-center justify-center gap-1 min-w-0 flex-1"
                   style={{ WebkitTapHighlightColor: 'transparent', outline: 'none', background: 'none', border: 'none', transition: 'transform 60ms ease-in-out' }}
                   onFocus={clearFocusStyle}
                   onBlur={clearFocusStyle}
@@ -284,7 +289,7 @@ export default function Layout({ children, currentPageName }) {
                   onTouchStart={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
                   onTouchEnd={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 >
-                  <div className="relative">
+                  <div className="relative flex items-center justify-center w-8 h-8">
                     <IconComponent color={iconColor} />
                     {item.badge > 0 && (
                       <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
