@@ -1048,8 +1048,8 @@ export default function TabAnalytics({
         )}
 
         <SmartInsightsPanel checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} totalMembers={totalMembers} now={now} />
-        <RetentionFunnelWidget allMemberships={allMemberships} checkIns={checkIns} now={now} />
-        <DropOffAnalysis allMemberships={allMemberships} checkIns={checkIns} now={now} />
+        <RetentionFunnelWidget retentionFunnel={retentionFunnelProp} />
+        <DropOffAnalysis dropOffBuckets={dropOffBucketsProp} />
 
         {/* Weekly Trend — only show once there's meaningful data */}
         {weekTrend.some(d => d.value > 0) ? (
