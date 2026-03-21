@@ -10,6 +10,28 @@ const MONTH_NAMES = [
   'July','August','September','October','November','December',
 ];
 
+// Maps the colour key stored on each workout to actual CSS gradient stops
+const COLOR_GRADIENTS = {
+  purple: ['#a855f7', '#7c3aed'],
+  blue:   ['#3b82f6', '#1d4ed8'],
+  green:  ['#22c55e', '#15803d'],
+  red:    ['#ef4444', '#b91c1c'],
+  orange: ['#f97316', '#c2410c'],
+  pink:   ['#ec4899', '#be185d'],
+  yellow: ['#eab308', '#a16207'],
+  cyan:   ['#06b6d4', '#0e7490'],
+};
+
+function workoutGradient(colorKey) {
+  const stops = COLOR_GRADIENTS[colorKey] || COLOR_GRADIENTS.blue;
+  return `linear-gradient(135deg, ${stops[0]} 0%, ${stops[1]} 100%)`;
+}
+
+function workoutBorder(colorKey) {
+  const stops = COLOR_GRADIENTS[colorKey] || COLOR_GRADIENTS.blue;
+  return `1px solid ${stops[0]}55`;
+}
+
 // ─── Shared dropdown ─────────────────────────────────────────────────────────
 function DropdownPicker({ onClose, children }) {
   return (
@@ -22,9 +44,7 @@ function DropdownPicker({ onClose, children }) {
           border: '1px solid rgba(255,255,255,0.10)',
           boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           backdropFilter: 'blur(20px)',
-          minWidth: 130,
-          maxHeight: 260,
-          overflowY: 'auto',
+          minWidth: 130, maxHeight: 260, overflowY: 'auto',
         }}
       >
         {children}
@@ -38,8 +58,7 @@ function PickerItem({ label, isSelected, onClick }) {
     <button
       onClick={onClick}
       style={{
-        display: 'block', width: '100%', padding: '9px 14px',
-        textAlign: 'left',
+        display: 'block', width: '100%', padding: '9px 14px', textAlign: 'left',
         background: isSelected ? 'rgba(99,102,241,0.15)' : 'transparent',
         border: 'none', cursor: 'pointer',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
@@ -52,6 +71,44 @@ function PickerItem({ label, isSelected, onClick }) {
   );
 }
 
+// ─── Day tooltip shown on press ──────────────────────────────────────────────
+function DayTooltip({ label, colorKey, onClose }) {
+  const stops = COLOR_GRADIENTS[colorKey] || COLOR_GRADIENTS.blue;
+  return (
+    <>
+      <div className="fixed inset-0 z-[60]" onClick={onClose} />
+      <div style={{
+        position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 70, pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+      }}>
+        <div style={{
+          background: 'rgba(8,12,28,0.97)',
+          border: `1px solid ${stops[0]}66`,
+          borderRadius: 8, padding: '5px 9px',
+          boxShadow: '0 6px 24px rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          <div style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: stops[0], flexShrink: 0,
+          }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0' }}>{label}</span>
+        </div>
+        {/* Arrow */}
+        <div style={{
+          width: 8, height: 5, margin: '0 auto',
+          borderLeft: '4px solid transparent',
+          borderRight: '4px solid transparent',
+          borderTop: `5px solid rgba(8,12,28,0.97)`,
+        }} />
+      </div>
+    </>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WorkoutSplitHeatmap({
   checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}
@@ -61,99 +118,75 @@ export default function WorkoutSplitHeatmap({
   const [selectedMonth, setSelectedMonth] = useState(getMonth(today));
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [yearPickerOpen,  setYearPickerOpen]  = useState(false);
+  const [tappedDay, setTappedDay] = useState(null); // date string 'YYYY-MM-DD'
 
   const splitSchedules = {
-    ppl: {
-      name: 'Push/Pull/Legs',
-      schedule: ['Push','Pull','Legs','Push','Pull','Legs','Rest'],
-    },
-    upper_lower: {
-      name: 'Upper/Lower',
-      schedule: ['Upper','Lower','Rest','Upper','Lower','Rest','Rest'],
-    },
-    full_body: {
-      name: 'Full Body',
-      schedule: ['Full Body','Rest','Full Body','Rest','Full Body','Rest','Rest'],
-    },
-    bro_split: {
-      name: 'Bro Split',
-      schedule: ['Chest','Back','Shoulders','Arms','Legs','Rest','Rest'],
-    },
+    ppl:         { schedule: ['Push','Pull','Legs','Push','Pull','Legs','Rest'] },
+    upper_lower: { schedule: ['Upper','Lower','Rest','Upper','Lower','Rest','Rest'] },
+    full_body:   { schedule: ['Full Body','Rest','Full Body','Rest','Full Body','Rest','Rest'] },
+    bro_split:   { schedule: ['Chest','Back','Shoulders','Arms','Legs','Rest','Rest'] },
   };
 
-  const { weeks, splitInfo, hasCheckIn } = useMemo(() => {
+  // Build a map: day-of-week (1=Mon…7=Sun) → { name, colorKey }
+  const dayWorkoutMap = useMemo(() => {
+    const map = {};
+    if (workoutSplit === 'custom' || !splitSchedules[workoutSplit]) {
+      for (let i = 1; i <= 7; i++) {
+        if (trainingDays.includes(i) && customWorkoutTypes[i]) {
+          map[i] = {
+            name:     customWorkoutTypes[i].name  || 'Train',
+            colorKey: customWorkoutTypes[i].color || 'blue',
+          };
+        }
+      }
+    } else {
+      // Preset splits — assign colours by workout type name
+      const presetColors = {
+        Push: 'red', Pull: 'blue', Legs: 'green',
+        Upper: 'purple', Lower: 'orange',
+        'Full Body': 'cyan',
+        Chest: 'red', Back: 'blue', Shoulders: 'yellow', Arms: 'pink',
+      };
+      const schedule = splitSchedules[workoutSplit]?.schedule || [];
+      schedule.forEach((name, idx) => {
+        const dow = idx + 1; // Mon=1
+        if (name !== 'Rest') {
+          map[dow] = { name, colorKey: presetColors[name] || 'blue' };
+        }
+      });
+    }
+    return map;
+  }, [workoutSplit, trainingDays, customWorkoutTypes]);
+
+  const { weeks, hasCheckIn } = useMemo(() => {
     const monthStart = startOfMonth(new Date(selectedYear, selectedMonth, 1));
     const monthEnd   = endOfMonth(monthStart);
     const gridStart  = startOfWeek(monthStart, { weekStartsOn: 1 });
     const gridEnd    = endOfWeek(monthEnd, { weekStartsOn: 1 });
     const allDays    = eachDayOfInterval({ start: gridStart, end: gridEnd });
-
     const weeks = [];
     for (let i = 0; i < allDays.length; i += 7) weeks.push(allDays.slice(i, i + 7));
-
     const hasCheckIn = (day) => checkIns.some(c => isSameDay(new Date(c.check_in_date), day));
-
-    let splitInfo = workoutSplit && splitSchedules[workoutSplit]
-      ? splitSchedules[workoutSplit]
-      : null;
-
-    if (workoutSplit === 'custom') {
-      const schedule = [];
-      if (trainingDays.length > 0) {
-        for (let i = 1; i <= 7; i++) {
-          schedule.push(trainingDays.includes(i) ? (customWorkoutTypes[i]?.name || 'Train') : 'Rest');
-        }
-      } else {
-        schedule.push('Train','Train','Rest','Train','Train','Rest','Rest');
-      }
-      splitInfo = { name: 'Custom Split', schedule };
-    }
-
-    return { weeks, splitInfo, hasCheckIn };
-  }, [checkIns, workoutSplit, selectedYear, selectedMonth, trainingDays, customWorkoutTypes]);
+    return { weeks, hasCheckIn };
+  }, [checkIns, selectedYear, selectedMonth]);
 
   const getExpectedWorkout = (day) => {
-    if (!splitInfo) return null;
-
-    if (workoutSplit === 'custom' && trainingDays.length > 0) {
-      const dayOfWeek   = day.getDay();
-      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-      if (trainingDays.includes(adjustedDay)) {
-        return customWorkoutTypes[adjustedDay]?.name || 'Train';
-      }
-      return 'Rest';
-    }
-
-    if (trainingDays.length > 0) {
-      const dayOfWeek   = day.getDay();
-      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-      if (trainingDays.includes(adjustedDay)) {
-        const idx = trainingDays.indexOf(adjustedDay);
-        const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
-        return workoutTypes[idx % workoutTypes.length];
-      }
-      return 'Rest';
-    }
-
-    const firstCheckIn = checkIns.length > 0
-      ? new Date(checkIns[checkIns.length - 1].check_in_date)
-      : startOfWeek(today, { weekStartsOn: 1 });
-    const daysDiff    = Math.floor((day - firstCheckIn) / 86400000);
-    const scheduleIdx = ((daysDiff % 7) + 7) % 7;
-    return splitInfo.schedule[scheduleIdx];
+    const dow = day.getDay() === 0 ? 7 : day.getDay();
+    return dayWorkoutMap[dow] ? dayWorkoutMap[dow].name : 'Rest';
   };
 
-  // Consistency: only count training days (not rest days) in denominator
+  const getWorkoutMeta = (day) => {
+    const dow = day.getDay() === 0 ? 7 : day.getDay();
+    return dayWorkoutMap[dow] || null;
+  };
+
   const getConsistencyRate = () => {
-    const pastTrainingDays = weeks.flat().filter(d => {
+    const pastTraining = weeks.flat().filter(d => {
       if (d > today) return false;
-      const expected = getExpectedWorkout(d);
-      return expected !== 'Rest' && expected !== null;
+      return getExpectedWorkout(d) !== 'Rest';
     });
-    if (!pastTrainingDays.length) return 0;
-    return Math.round(
-      (pastTrainingDays.filter(d => hasCheckIn(d)).length / pastTrainingDays.length) * 100
-    );
+    if (!pastTraining.length) return 0;
+    return Math.round((pastTraining.filter(d => hasCheckIn(d)).length / pastTraining.length) * 100);
   };
 
   const today_year = getYear(today);
@@ -167,11 +200,23 @@ export default function WorkoutSplitHeatmap({
     color: '#cbd5e1', fontSize: 11, fontWeight: 600,
     cursor: 'pointer', whiteSpace: 'nowrap',
     WebkitTapHighlightColor: 'transparent',
-    transition: 'background 0.12s ease',
-    outline: 'none',
+    transition: 'background 0.12s ease', outline: 'none',
   });
 
   const consistencyRate = getConsistencyRate();
+
+  // Unique trained workout types for the legend
+  const legendItems = useMemo(() => {
+    const seen = new Set();
+    const items = [];
+    Object.values(dayWorkoutMap).forEach(({ name, colorKey }) => {
+      if (!seen.has(name)) {
+        seen.add(name);
+        items.push({ name, colorKey });
+      }
+    });
+    return items;
+  }, [dayWorkoutMap]);
 
   return (
     <div
@@ -183,36 +228,21 @@ export default function WorkoutSplitHeatmap({
     >
       <div className="p-3 space-y-3">
 
-        {/* ── Top row: consistency + pickers ── */}
+        {/* ── Top row ── */}
         <div className="flex items-center justify-between">
-
-          {/* Consistency — balanced weight between number and label */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-            <span style={{
-              fontSize: 18, fontWeight: 700, color: '#34d399',
-              lineHeight: 1, letterSpacing: '-0.02em',
-            }}>
-              {consistencyRate}
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#4ade80' }}>%</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#34d399', lineHeight: 1, letterSpacing: '-0.02em' }}>
+              {consistencyRate}<span style={{ fontSize: 12, fontWeight: 600, color: '#4ade80' }}>%</span>
             </span>
-            <span style={{
-              fontSize: 11, fontWeight: 500, color: '#64748b',
-              textTransform: 'uppercase', letterSpacing: '0.05em',
-            }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Consistency
             </span>
           </div>
-
-          {/* Month + Year pickers */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div className="relative">
-              <button
-                onClick={() => { setMonthPickerOpen(o => !o); setYearPickerOpen(false); }}
-                style={pillBtn(monthPickerOpen)}
-              >
+              <button onClick={() => { setMonthPickerOpen(o => !o); setYearPickerOpen(false); }} style={pillBtn(monthPickerOpen)}>
                 {MONTH_NAMES[selectedMonth].slice(0, 3)}
-                <ChevronDown size={10} color="#64748b"
-                  style={{ transform: monthPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <ChevronDown size={10} color="#64748b" style={{ transform: monthPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {monthPickerOpen && (
                 <DropdownPicker onClose={() => setMonthPickerOpen(false)}>
@@ -223,15 +253,10 @@ export default function WorkoutSplitHeatmap({
                 </DropdownPicker>
               )}
             </div>
-
             <div className="relative">
-              <button
-                onClick={() => { setYearPickerOpen(o => !o); setMonthPickerOpen(false); }}
-                style={pillBtn(yearPickerOpen)}
-              >
+              <button onClick={() => { setYearPickerOpen(o => !o); setMonthPickerOpen(false); }} style={pillBtn(yearPickerOpen)}>
                 {selectedYear}
-                <ChevronDown size={10} color="#64748b"
-                  style={{ transform: yearPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <ChevronDown size={10} color="#64748b" style={{ transform: yearPickerOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {yearPickerOpen && (
                 <DropdownPicker onClose={() => setYearPickerOpen(false)}>
@@ -245,18 +270,15 @@ export default function WorkoutSplitHeatmap({
           </div>
         </div>
 
-        {/* ── Day-of-week headers ── */}
+        {/* ── Day headers ── */}
         <div className="grid grid-cols-7 gap-1.5">
           {['M','T','W','T','F','S','S'].map((d, i) => (
-            <div key={i} style={{
-              textAlign: 'center', fontSize: 10, fontWeight: 500,
-              color: '#475569', letterSpacing: '0.04em',
-            }}>{d}</div>
+            <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 500, color: '#475569', letterSpacing: '0.04em' }}>{d}</div>
           ))}
         </div>
 
         {/* ── Calendar grid ── */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5" onClick={() => setTappedDay(null)}>
           {weeks.map((week, wi) => (
             <div key={wi} className="grid grid-cols-7 gap-1.5">
               {week.map((day, di) => {
@@ -268,76 +290,83 @@ export default function WorkoutSplitHeatmap({
                 const expected    = getExpectedWorkout(day);
                 const isRestDay   = expected === 'Rest';
                 const isMissed    = inMonth && isPast && !isCheckedIn && !isRestDay;
+                const workoutMeta = getWorkoutMeta(day);
+                const dayKey      = format(day, 'yyyy-MM-dd');
+                const isTooltipOpen = tappedDay === dayKey;
 
-                // ── Colour logic ──
-                // Checked in → blue
-                // Past/today rest day → emerald (earned rest)
-                // Future (training or rest) → uniform dark grey
-                // Missed training → very dark, no cross icon — opacity does the work
-                // Out-of-month padding → near invisible
+                // ── Colour ──
+                let bg, border, opacity = inMonth ? 1 : 0.12;
 
-                let bg = '';
-                let border = '';
-                let opacity = inMonth ? 1 : 0.12;
-
-                if (isCheckedIn) {
-                  bg = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
+                if (isCheckedIn && workoutMeta) {
+                  // Use the workout's own colour
+                  bg     = workoutGradient(workoutMeta.colorKey);
+                  border = workoutBorder(workoutMeta.colorKey);
+                } else if (isCheckedIn) {
+                  // Fallback if no meta (shouldn't normally happen)
+                  bg     = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
                   border = '1px solid rgba(96,165,250,0.3)';
                 } else if (isRestDay && !isFuture && inMonth) {
-                  bg = 'linear-gradient(135deg, #10b981 0%, #065f46 100%)';
+                  bg     = 'linear-gradient(135deg, #10b981 0%, #065f46 100%)';
                   border = '1px solid rgba(52,211,153,0.25)';
                 } else if (isMissed) {
-                  // Missed: slightly darker than future, no icon — clean
-                  bg = 'rgba(15,18,30,0.9)';
-                  border = '1px solid rgba(71,85,105,0.4)';
+                  bg      = 'rgba(15,18,30,0.9)';
+                  border  = '1px solid rgba(71,85,105,0.4)';
                   opacity = inMonth ? 0.55 : 0.12;
                 } else {
-                  // Future days, unlogged training days, padding
-                  bg = 'rgba(30,37,56,0.7)';
+                  bg     = 'rgba(30,37,56,0.7)';
                   border = '1px solid rgba(71,85,105,0.3)';
                 }
 
                 return (
                   <div
                     key={di}
-                    style={{
-                      aspectRatio: '1',
-                      borderRadius: 6,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      background: bg,
-                      border,
-                      opacity,
-                      transition: 'opacity 0.2s ease',
-                      outline: isToday ? '2px solid rgba(96,165,250,0.6)' : 'none',
-                      outlineOffset: isToday ? '1px' : '0',
-                    }}
+                    style={{ position: 'relative', aspectRatio: '1' }}
                   >
-                    {/* Check-in tick — white, centred, no date number */}
-                    {isCheckedIn && (
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
-                          <path d="M4 10.5l4.5 4.5 7.5-9" stroke="rgba(255,255,255,0.9)"
-                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-                    )}
+                    <div
+                      onClick={(e) => {
+                        if (!isCheckedIn || !inMonth) return;
+                        e.stopPropagation();
+                        setTappedDay(isTooltipOpen ? null : dayKey);
+                      }}
+                      style={{
+                        width: '100%', height: '100%',
+                        borderRadius: 6,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        background: bg,
+                        border,
+                        opacity,
+                        cursor: isCheckedIn && inMonth ? 'pointer' : 'default',
+                        transition: 'opacity 0.2s ease, transform 0.1s ease',
+                        transform: isTooltipOpen ? 'scale(1.08)' : 'scale(1)',
+                        outline: isToday ? '2px solid rgba(255,255,255,0.5)' : 'none',
+                        outlineOffset: isToday ? '1px' : '0',
+                      }}
+                    >
+                      {/* Tick */}
+                      {isCheckedIn && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10.5l4.5 4.5 7.5-9" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      )}
 
-                    {/* Today pulse dot — only if not yet checked in */}
-                    {isToday && !isCheckedIn && (
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <div style={{
-                          width: 5, height: 5, borderRadius: '50%',
-                          background: '#60a5fa',
-                          animation: 'pulse 2s ease-in-out infinite',
-                        }} />
-                      </div>
+                      {/* Today pulse */}
+                      {isToday && !isCheckedIn && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#60a5fa', animation: 'pulse 2s ease-in-out infinite' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Workout name tooltip — appears above the cell on tap */}
+                    {isTooltipOpen && workoutMeta && (
+                      <DayTooltip
+                        label={workoutMeta.name}
+                        colorKey={workoutMeta.colorKey}
+                        onClose={() => setTappedDay(null)}
+                      />
                     )}
                   </div>
                 );
@@ -346,28 +375,32 @@ export default function WorkoutSplitHeatmap({
           ))}
         </div>
 
-        {/* ── Legend row ── */}
+        {/* ── Legend — workout colours + rest + missed ── */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          paddingTop: 4,
-          borderTop: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 10px',
+          paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.05)',
         }}>
-          {[
-            { bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', label: 'Trained' },
-            { bg: 'linear-gradient(135deg, #10b981 0%, #065f46 100%)', label: 'Rest' },
-            { bg: 'rgba(15,18,30,0.9)', label: 'Missed', dim: true },
-          ].map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div style={{
-                width: 9, height: 9, borderRadius: 2,
-                background: item.bg,
-                opacity: item.dim ? 0.55 : 1,
-                border: '1px solid rgba(255,255,255,0.1)',
-                flexShrink: 0,
-              }} />
-              <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>{item.label}</span>
-            </div>
-          ))}
+          {legendItems.map(({ name, colorKey }) => {
+            const stops = COLOR_GRADIENTS[colorKey] || COLOR_GRADIENTS.blue;
+            return (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{
+                  width: 9, height: 9, borderRadius: 2,
+                  background: `linear-gradient(135deg, ${stops[0]} 0%, ${stops[1]} 100%)`,
+                  border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0,
+                }} />
+                <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>{name}</span>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 9, height: 9, borderRadius: 2, background: 'linear-gradient(135deg, #10b981 0%, #065f46 100%)', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>Rest</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 9, height: 9, borderRadius: 2, background: 'rgba(15,18,30,0.9)', border: '1px solid rgba(71,85,105,0.4)', opacity: 0.55, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>Missed</span>
+          </div>
         </div>
 
       </div>
