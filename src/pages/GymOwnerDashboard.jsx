@@ -420,7 +420,7 @@ export default function GymOwnerDashboard() {
           allMemberships={coachMemberships}
           checkIns={coachCheckIns}
           ci30={coachCi30}
-          avatarMap={avatarMap}
+          avatarMap={avatarMapFull}
           openModal={openModal}
           now={now}
         />
