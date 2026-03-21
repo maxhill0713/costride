@@ -331,21 +331,11 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
 }
 
 // ── Retention breakdown ────────────────────────────────────────────────────────
-function RetentionBreakdown({ allMemberships, checkIns, now, setTab }) {
-  const risks = useMemo(() => {
-    const b = { week1: 0, week2to4: 0, month2to3: 0, beyond: 0 };
-    allMemberships.forEach(m => {
-      const lastCI = checkIns.filter(c => c.user_id === m.user_id).sort((a, x) => new Date(x.check_in_date) - new Date(a.check_in_date))[0];
-      if (!lastCI) return;
-      const ds = differenceInDays(now, new Date(lastCI.check_in_date));
-      const jd = differenceInDays(now, new Date(m.created_at || now));
-      if      (ds >= 7  && jd <= 14) b.week1++;
-      else if (ds >= 7  && jd <= 30) b.week2to4++;
-      else if (ds >= 14 && jd <= 90) b.month2to3++;
-      else if (ds >= 21)             b.beyond++;
-    });
-    return b;
-  }, [allMemberships, checkIns, now]);
+function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
+  const computed = {
+    week1: risks.week1 || 0, week2to4: risks.week2to4 || 0,
+    month2to3: risks.month2to3 || 0, beyond: risks.beyond || 0,
+  };
   const rows = [
     { label: 'New — went quiet',  sub: 'Joined < 2 wks, no return', val: risks.week1,     color: T.red   },
     { label: 'Early drop-off',    sub: 'Weeks 2–4 inactivity',      val: risks.week2to4,  color: T.amber },
