@@ -330,7 +330,7 @@ export default function GymOwnerDashboard() {
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
     activeThisWeek = 0, weeklyChangePct = 0,
-    activeThisMonth = 0, totalMembers: totalMembersRaw = 0, retentionRate = 0,
+    activeThisMonth = 0, totalMembers = 0, retentionRate = 0,
     monthChangePct = 0, monthCiPer = [],
     newSignUps = 0, cancelledEst = 0,
     atRisk = 0, atRiskMembersData: atRiskMembersList = [],
@@ -339,11 +339,15 @@ export default function GymOwnerDashboard() {
     peakLabel = null, peakEndLabel = null, peakEntry = null,
     satVsAvg = 0, chartDays = [], streaks = [], recentActivity = [],
     avatarMap = {},
+    // Analytics pre-computed
+    weekTrend = [], peakHours = [], busiestDays = [],
+    returnRate = 0, dailyAvg = 0, engagementSegments = {},
+    retentionFunnel = [], dropOffBuckets = [], churnSignals = [], week1ReturnTrend = [],
+    // Overview pre-computed
+    retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
   } = stats;
 
-  const totalMembers = stats.totalMembers ?? totalMembersRaw;
   const ci30 = [];  // not needed on frontend anymore
-
   const avatarMapFull = useMemo(() => avatarMap, [stats]);
 
   // Classes this coach teaches
