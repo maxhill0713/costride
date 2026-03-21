@@ -431,7 +431,7 @@ export default function GymOwnerDashboard() {
           atRisk={atRisk} atRiskMembersList={atRiskMembersList}
           retentionRate={retentionRate} totalMembers={totalMembers}
           activeThisWeek={activeThisWeek} newSignUps={newSignUps}
-          weeklyChangePct={weeklyChangePct} avatarMap={avatarMap}
+          weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull}
           memberFilter={memberFilter} setMemberFilter={setMemberFilter}
           memberSearch={memberSearch} setMemberSearch={setMemberSearch}
           memberSort={memberSort} setMemberSort={setMemberSort}
