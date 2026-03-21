@@ -432,34 +432,33 @@ export default function Progress() {
     enabled: !!currentUser, staleTime: 2 * 60 * 1000, placeholderData: (prev) => prev,
   });
 
-  const [showAddGoal, setShowAddGoal] = useState(false);
-
   if (!currentUser) return null;
+
+  const [showAddGoal, setShowAddGoal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <Tabs defaultValue="analytics" className="w-full">
 
-        {/* ── Header — matches Gyms page exactly ── */}
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-0">
+        {/* ── Header ── */}
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-7 pb-0">
           <div className="max-w-4xl mx-auto">
-            <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-8 border-0">
+            <TabsList className="flex justify-between w-full bg-transparent p-0 h-auto gap-0 border-0">
               <TabsTrigger
                 value="analytics"
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base font-bold"
+                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
               >
                 <BarChart3 className="w-5 h-5 mr-2" />Analytics
               </TabsTrigger>
               <TabsTrigger
                 value="goals"
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base font-bold"
+                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
               >
                 <Target className="w-5 h-5 mr-2" />Goals
-                {/* New goal button inline with tab */}
               </TabsTrigger>
               <TabsTrigger
                 value="rank"
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base font-bold"
+                className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-4 pt-1 transition-colors bg-transparent text-base font-bold justify-center"
               >
                 <Award className="w-5 h-5 mr-2" />Rank
               </TabsTrigger>
