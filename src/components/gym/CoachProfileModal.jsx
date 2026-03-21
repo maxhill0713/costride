@@ -523,7 +523,9 @@ function MessageSheet({ open, onClose, coach, accentColor, accentBorder, accentB
 }
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
-export default function CoachProfilePage({ coach: propCoach, onBack }) {
+export default function CoachProfilePage({ coach: propCoach, onBack, open, onClose }) {
+  const handleBack = onBack || onClose;
+  if (open === false) return null;
   const [tab, setTab] = useState('about');
   const [following, setFollowing] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
