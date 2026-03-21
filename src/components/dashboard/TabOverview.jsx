@@ -396,16 +396,8 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
 }
 
 // ── Week-1 return rate ─────────────────────────────────────────────────────────
-function WeekOneReturn({ allMemberships, checkIns, now, openModal }) {
-  const { returned, didnt, names } = useMemo(() => {
-    const nm = allMemberships.filter(m => { const d = differenceInDays(now, new Date(m.created_at || now)); return d >= 7 && d <= 21; });
-    let returned = 0, didnt = 0; const names = [];
-    nm.forEach(m => {
-      if (checkIns.filter(c => c.user_id === m.user_id).length >= 2) returned++;
-      else { didnt++; if (names.length < 3) names.push(m.name || m.full_name || 'Member'); }
-    });
-    return { returned, didnt, names };
-  }, [allMemberships, checkIns, now]);
+function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
+  const { returned = 0, didnt = 0, names = [] } = week1ReturnRate;
   const total = returned + didnt;
   const pct   = total > 0 ? Math.round((returned / total) * 100) : 0;
   const color = total === 0 ? T.text3 : pct >= 60 ? T.green : pct >= 40 ? T.amber : T.red;
