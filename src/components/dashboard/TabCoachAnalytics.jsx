@@ -366,9 +366,9 @@ export default function TabCoachAnalytics({
             </div>
             <div style={{ display: 'flex', gap: 16, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 8 }}>
               {[
-                { label: 'This month', value: ci30.length,    color: '#a78bfa' },
-                { label: 'Last month', value: ci30prev.length, color: '#64748b' },
-                { label: 'Avg/day',    value: Math.round(ci30.length / 30), color: '#38bdf8' },
+                { label: 'This month', value: ci30Count,                        color: '#a78bfa' },
+                { label: 'Last month', value: monthlyChart[monthlyChart.length - 2]?.value ?? 0, color: '#64748b' },
+                { label: 'Avg/day',    value: Math.round(ci30Count / 30),    color: '#38bdf8' },
               ].map((s, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 16, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
