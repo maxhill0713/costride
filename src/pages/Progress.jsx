@@ -432,9 +432,9 @@ export default function Progress() {
     enabled: !!currentUser, staleTime: 2 * 60 * 1000, placeholderData: (prev) => prev,
   });
 
-  if (!currentUser) return null;
-
   const [showAddGoal, setShowAddGoal] = useState(false);
+
+  if (!currentUser) return null;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
