@@ -249,10 +249,35 @@ const DEMO_COACH = {
    MAIN
 ═══════════════════════════════════════════════════════════ */
 export default function CoachProfileModal({
-  coach=DEMO_COACH, open=true, onClose=()=>{},
+  coach: rawCoach=null, open=true, onClose=()=>{},
   onClassSelect=null, bookedClasses=[],
   userGoals=['Fat Loss','Strength'],
+  gymClasses=[],
 }){
+  // Merge real coach entity data with display-only defaults
+  const coach = rawCoach ? {
+    title: 'Personal Coach',
+    review_count: 0,
+    sessions_completed: (rawCoach.total_clients || 0) * 8,
+    response_time: '< 2 hrs',
+    location: rawCoach.gym_name || 'At the gym',
+    member_since: rawCoach.created_date ? new Date(rawCoach.created_date).getFullYear().toString() : '2023',
+    languages: ['English'],
+    price_per_session: null,
+    free_consultation: false,
+    packages: [],
+    availability_slots: [],
+    transformations: [],
+    achievements: [],
+    weekly_schedule: [],
+    philosophy: null,
+    verification: null,
+    match_score: null,
+    reviews: [],
+    classes: gymClasses,
+    ...rawCoach,
+  } : null;
+
   const [liked,     setLiked]     = useState(false);
   const [reminded,  setReminded]  = useState(false);
   const [tab,       setTab]       = useState('about');
