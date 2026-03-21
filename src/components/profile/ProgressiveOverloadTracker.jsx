@@ -6,14 +6,14 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown } from 'lucide-react';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, eachWeekOfInterval, startOfDay } from 'date-fns';
 
 const LINE_COLORS = [
   '#60a5fa','#34d399','#f97316','#f472b6','#a78bfa','#fbbf24',
   '#38bdf8','#fb7185','#4ade80','#facc15','#c084fc','#f87171',
 ];
 
-const CUTOFF_MONTHS = 3;
+const CUTOFF_MONTHS = 2;
 
 function kgDiff(current, baseline) {
   if (baseline === null || baseline === undefined) return 0;
@@ -174,44 +174,44 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
   const { chartData, exerciseMeta } = useMemo(() => {
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
-    const cutoff = subMonths(new Date(), CUTOFF_MONTHS);
+
+    const now = new Date();
+    const cutoff = subMonths(now, CUTOFF_MONTHS);
+
+    // Build baselines from earliest data point per exercise (all time)
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (series?.length) baselines[name] = series[0].weight;
     });
-    const allPoints = [];
-    allExerciseNames.forEach(name => {
-      exerciseSeriesMap[name].forEach(({ rawDate, weight }) => {
-        if (rawDate < cutoff) return;
-        allPoints.push({ rawDate, name, weight });
-      });
+
+    // Build a fixed date spine: one tick per week from cutoff to today
+    // We'll use ~8 evenly spaced ticks across the 2-month window
+    const totalDays = Math.round((now - cutoff) / 86400000);
+    const tickCount = Math.min(9, Math.max(5, Math.round(totalDays / 7)));
+    const tickDates = Array.from({ length: tickCount }, (_, i) => {
+      const t = new Date(cutoff.getTime() + (i / (tickCount - 1)) * (now.getTime() - cutoff.getTime()));
+      return startOfDay(t);
     });
-    allPoints.sort((a, b) => a.rawDate - b.rawDate);
-    const dateGroups = {};
-    allPoints.forEach(pt => {
-      const dateStr = format(pt.rawDate, 'MMM d');
-      if (!dateGroups[dateStr]) dateGroups[dateStr] = { pts: [], ts: pt.rawDate.getTime() };
-      dateGroups[dateStr].pts.push(pt);
-    });
-    const sortedDateStrs = Object.keys(dateGroups).sort((a, b) => dateGroups[a].ts - dateGroups[b].ts);
-    const rows = sortedDateStrs.map(dateStr => {
-      const row = { date: dateStr };
-      const { pts, ts } = dateGroups[dateStr];
-      const dayTimestamp = new Date(ts);
+
+    // For each tick date, find the most recent logged weight at or before that date for each exercise
+    const rows = tickDates.map(tickDate => {
+      const row = { date: format(tickDate, 'MMM d') };
       allExerciseNames.forEach(name => {
-        const baseline = baselines[name];
-        const firstEntry = exerciseSeriesMap[name]?.[0];
-        const exerciseStarted = firstEntry && firstEntry.rawDate <= dayTimestamp;
-        if (!exerciseStarted) {
-          row[name] = 0;
+        const series = exerciseSeriesMap[name] || [];
+        // find last entry on or before tickDate
+        const candidates = series.filter(pt => pt.rawDate <= tickDate);
+        if (candidates.length === 0) {
+          // no data yet for this exercise at this point in time
+          row[name] = null;
         } else {
-          const dayEntry = pts.find(pt => pt.name === name);
-          row[name] = dayEntry ? kgDiff(dayEntry.weight, baseline) : null;
+          const latest = candidates[candidates.length - 1];
+          row[name] = kgDiff(latest.weight, baselines[name]);
         }
       });
       return row;
     });
+
     const meta = allExerciseNames.map((name, i) => {
       const lastRow = [...rows].reverse().find(r => r[name] !== null && r[name] !== undefined);
       return { name, color: LINE_COLORS[i % LINE_COLORS.length], finalDiff: lastRow ? lastRow[name] : 0 };
@@ -283,10 +283,10 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}>
-          {/* Chart — 85% width */}
-          <div style={{ width: '85%', flexShrink: 0 }}>
+          {/* Chart — 80% width */}
+          <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 4, left: -6, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
                 <XAxis
@@ -321,10 +321,10 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             </ResponsiveContainer>
           </div>
 
-          {/* Legend — 15% width, dot + name only */}
+          {/* Legend — 20% width, dot + name only */}
           <div style={{
-            width: '15%',
-            paddingLeft: 10,
+            width: '20%',
+            paddingLeft: 6,
             paddingTop: 10,
             display: 'flex',
             flexDirection: 'column',
