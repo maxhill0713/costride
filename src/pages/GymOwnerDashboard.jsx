@@ -811,7 +811,7 @@ export default function GymOwnerDashboard() {
 
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto' }}>
-            {tabContent[tab] || tabContent.overview}
+            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
           </div>
         </main>
       </div>
