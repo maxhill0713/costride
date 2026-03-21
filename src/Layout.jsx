@@ -144,7 +144,13 @@ export default function Layout({ children, currentPageName }) {
                 onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
                 <div className="relative">
-                  <item.icon className={`w-[24px] h-[24px] ${isActive ? item.color : 'text-slate-400'}`} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  <item.icon
+                    className={`w-[24px] h-[24px] ${isActive ? item.color : 'text-slate-400'}`}
+                    strokeWidth={isActive ? 0 : 2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isActive ? 'currentColor' : 'none'}
+                  />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
