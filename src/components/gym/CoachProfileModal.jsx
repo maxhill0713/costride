@@ -574,6 +574,7 @@ function ScheduleTab({ coach, day, setDay, timeFilter, setTimeFilter, bookedClas
 
 /* ══ REVIEWS TAB ═════════════════════════════════════════════════════════════ */
 function ReviewsTab({ coach }) {
+  const reviews = coach.reviews || [];
   const barWidths = { 5: 88, 4: 8, 3: 2, 2: 1, 1: 1 };
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
@@ -581,9 +582,9 @@ function ReviewsTab({ coach }) {
       {/* Summary card */}
       <div style={{ padding:'18px', borderRadius:20, background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.18)', display:'flex', alignItems:'center', gap:20 }}>
         <div style={{ textAlign:'center', flexShrink:0 }}>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:52, fontWeight:800, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>{coach.rating}</div>
-          <Stars n={5} size={13}/>
-          <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:6, fontWeight:600 }}>{coach.review_count} reviews</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:52, fontWeight:800, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>{coach.rating || '—'}</div>
+          <Stars n={Math.round(coach.rating || 0)} size={13}/>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:6, fontWeight:600 }}>{coach.review_count || reviews.length} reviews</div>
         </div>
         <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
           {[5,4,3,2,1].map(n => (
