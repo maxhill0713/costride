@@ -411,6 +411,15 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     </div>
   );
 
+  // Still waiting for draft after create — show spinner
+  if (!isLoading && !draft) {
+    if (createMutation.isPending) return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+        <Loader2 style={{ width: 28, height: 28, color: BLUE_LT, animation: 'spin 1s linear infinite' }} />
+      </div>
+    );
+  }
+
   // No coach record yet — show Create Profile onboarding
   if (!isLoading && !coach && !draft) {
     const creating = createMutation.isPending;
