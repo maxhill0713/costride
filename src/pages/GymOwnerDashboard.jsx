@@ -514,6 +514,16 @@ export default function GymOwnerDashboard() {
           sparkData={sparkData7}
           Spark={Spark}
           Delta={Delta}
+          weekTrend={weekTrend}
+          peakHours={peakHours}
+          busiestDays={busiestDays}
+          returnRate={returnRate}
+          dailyAvg={dailyAvg}
+          engagementSegments={engagementSegments}
+          retentionFunnel={retentionFunnel}
+          dropOffBuckets={dropOffBuckets}
+          churnSignals={churnSignals}
+          week1ReturnTrend={week1ReturnTrend}
         />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate}/>,
   };
