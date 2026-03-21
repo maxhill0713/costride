@@ -268,19 +268,14 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
     return items.sort((a, b) => a.priority - b.priority).slice(0, 5);
   }, [atRisk, checkIns, allMemberships, posts, challenges, now]);
 
-  // Health summary
+  // Health summary (no heavy computation — use pre-computed atRisk & challenges)
   const positives = useMemo(() => {
     const items = [];
-    const retRate = allMemberships.length > 0 ? Math.round((new Set(checkIns.filter(c => {
-      const d = differenceInDays(now, new Date(c.check_in_date));
-      return d <= 30;
-    }).map(c => c.user_id)).size / allMemberships.length) * 100) : 0;
-    if (retRate >= 70) items.push(`Retention strong at ${retRate}%`);
     if (atRisk === 0) items.push('All members active');
     const hasActiveChallenge = (challenges || []).some(c => !c.ended_at);
     if (hasActiveChallenge) items.push('Active challenge running');
     return items.slice(0, 2);
-  }, [allMemberships, checkIns, atRisk, challenges, now]);
+  }, [atRisk, challenges]);
 
   return (
     <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden' }}>
