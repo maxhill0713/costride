@@ -855,7 +855,7 @@ export default function CoachProfilePage({ coach: propCoach, onBack, open, onClo
                   {[
                     { I: MapPin, l: 'Location', v: coach.location },
                     { I: Activity, l: 'Gym', v: coach.gym },
-                    { I: Globe, l: 'Languages', v: coach.languages.join(', ') },
+                    { I: Globe, l: 'Languages', v: (coach.languages || []).join(', ') || '—' },
                     { I: Instagram, l: 'Instagram', v: coach.social.instagram, link: true },
                     { I: Youtube, l: 'YouTube', v: coach.social.youtube, link: true },
                   ].map(({ I, l, v, link }, i, arr) => (
