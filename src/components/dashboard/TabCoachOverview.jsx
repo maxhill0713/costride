@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 import {
   Activity, AlertCircle, QrCode, Dumbbell,
   Calendar, CheckCircle, Flame, Clock,
