@@ -75,7 +75,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
           transition: 'background 0.15s',
           whiteSpace: 'nowrap',
         }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150 }}>
           {current?.label ?? 'Select'}
         </span>
         <ChevronDown size={11} color="#64748b"
@@ -238,9 +238,9 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
 
   return (
     <div>
-      {/* ── Title left, selector right — with breathing room ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div>
+      {/* ── Title left, selector right ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
+        <div style={{ flexShrink: 0 }}>
           <h2 style={{
             fontSize: 16, fontWeight: 700, color: '#e2e8f0',
             letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
