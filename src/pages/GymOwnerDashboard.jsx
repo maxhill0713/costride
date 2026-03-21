@@ -41,6 +41,7 @@ import TabCoachSchedule  from '../components/dashboard/TabCoachSchedule';
 import TabCoachMembers   from '../components/dashboard/TabCoachMembers';
 import TabCoachContent   from '../components/dashboard/TabCoachContent';
 import TabCoachAnalytics from '../components/dashboard/TabCoachAnalytics';
+import TabCoachProfile   from '../components/dashboard/TabCoachProfile';
 
 // ── Nav filtered by role ──────────────────────────────────────────────────────
 const ALL_NAV = [
