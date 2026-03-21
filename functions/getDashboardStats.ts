@@ -390,6 +390,10 @@ Deno.serve(async (req) => {
       retentionFunnel, dropOffBuckets, churnSignals, week1ReturnTrend,
       // Overview pre-computed
       retentionBreakdown, week1ReturnRate, newNoReturnCount,
+      // Coach pre-computed
+      ci7Count, ci7pCount, weeklyTrendCoach, monthlyTrendCoach,
+      returningCount, newMembersThis30, weeklyChart, monthlyChart,
+      engagementSegmentsCoach, weekSpark,
     });
   } catch (error) {
     console.error('getDashboardStats error:', error);
