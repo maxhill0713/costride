@@ -6,12 +6,12 @@ import {
   Star, Upload, Plus, X, GraduationCap, Briefcase, Award, Users,
   Edit2, Check, Loader2, Eye, Camera, Save, ChevronRight,
   Clock, MapPin, Languages, Zap, Trophy, Shield, Tag,
-  MessageSquare, BadgeCheck, ScanFace, ClipboardCheck,
+  MessageSquare, BadgeCheck, Fingerprint, ClipboardCheck,
   ArrowUpRight, Sparkles, AlertCircle, Package, Calendar,
   Image, Trash2, ToggleLeft, ToggleRight, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import CoachProfileModal from '@/components/CoachProfileModal';
+import CoachProfileModal from '@/components/gym/CoachProfileModal';
 
 /* ─── Design tokens (match CoachProfileModal exactly) ───────── */
 const BG       = '#060810';
