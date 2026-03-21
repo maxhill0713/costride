@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star, Upload, Plus, X, GraduationCap, Briefcase, Award, Users,
   Edit2, Check, Loader2, Eye, Camera, Save, ChevronRight,
-  Clock, MapPin, Zap, Trophy, Shield,
-  MessageSquare, BadgeCheck, ShieldCheck, ClipboardList,
-  AlertCircle, Package, Calendar,
-  Image, Trash2, Info,
+  Clock, MapPin, Languages, Zap, Trophy, Shield, Tag,
+  MessageSquare, BadgeCheck, ScanFace, ClipboardCheck,
+  ArrowUpRight, Sparkles, AlertCircle, Package, Calendar,
+  Image, Trash2, ToggleLeft, ToggleRight, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -334,9 +334,33 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   const [activeSection, setActiveSection] = useState('identity');
   const sectionRefs = useRef({});
 
+  // ── Query: try multiple field names the Coach entity might use ──
   const { data: coachRecords = [], isLoading } = useQuery({
     queryKey: ['myCoachProfile', currentUser?.email, selectedGym?.id],
-    queryFn: () => base44.entities.Coach.filter({ user_email: currentUser.email, gym_id: selectedGym.id }),
+    queryFn: async () => {
+      // Try user_email first, fall back to email, then fetch all by gym and match client-side
+      let results = [];
+      try { results = await base44.entities.Coach.filter({ user_email: currentUser.email, gym_id: selectedGym.id }); } catch {}
+      if (!results.length) {
+        try { results = await base44.entities.Coach.filter({ email: currentUser.email, gym_id: selectedGym.id }); } catch {}
+      }
+      if (!results.length) {
+        try { results = await base44.entities.Coach.filter({ user_id: currentUser.id, gym_id: selectedGym.id }); } catch {}
+      }
+      if (!results.length) {
+        // Last resort: get all coaches for this gym and find a name/email match
+        try {
+          const all = await base44.entities.Coach.filter({ gym_id: selectedGym.id });
+          results = all.filter(c =>
+            c.user_email === currentUser.email ||
+            c.email === currentUser.email ||
+            c.user_id === currentUser.id ||
+            c.name === currentUser.full_name
+          );
+        } catch {}
+      }
+      return results;
+    },
     enabled: !!currentUser?.email && !!selectedGym?.id,
     staleTime: 2 * 60 * 1000,
   });
@@ -347,8 +371,20 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     if (coach && !dirty) setDraft({ ...coach });
   }, [coach]);
 
+  // ── Create mutation (for when no coach record exists yet) ──
+  const createMutation = useMutation({
+    mutationFn: data => base44.entities.Coach.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myCoachProfile', currentUser?.email, selectedGym?.id] });
+      queryClient.invalidateQueries({ queryKey: ['coaches', selectedGym?.id] });
+      toast.success('Profile created! Fill in your details below ✓');
+      setDirty(false);
+    },
+    onError: () => toast.error('Failed to create profile — check your permissions'),
+  });
+
   const updateMutation = useMutation({
-    mutationFn: data => base44.entities.Coach.update(coach.id, data),
+    mutationFn: data => base44.entities.Coach.update(data.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myCoachProfile', currentUser?.email, selectedGym?.id] });
       queryClient.invalidateQueries({ queryKey: ['coaches', selectedGym?.id] });
@@ -363,8 +399,21 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     setDirty(true);
   };
 
-  const handleSave = () => updateMutation.mutate(draft);
-  const handleDiscard = () => { setDraft({ ...coach }); setDirty(false); };
+  const handleSave = () => {
+    if (draft?.id) {
+      updateMutation.mutate(draft);
+    } else {
+      // No id yet — create the record
+      createMutation.mutate({
+        ...draft,
+        gym_id: selectedGym.id,
+        user_email: currentUser.email,
+        user_id: currentUser.id,
+        name: draft.name || currentUser.full_name || currentUser.email,
+      });
+    }
+  };
+  const handleDiscard = () => { setDraft(coach ? { ...coach } : null); setDirty(false); };
 
   const handleAvatarUpload = async e => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -391,20 +440,80 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
     { id: 'settings',      label: 'Settings',       icon: Shield },
   ];
 
-  if (isLoading || !currentUser) return (
+  if (isLoading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240, fontFamily: 'Figtree,system-ui,sans-serif' }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <Loader2 style={{ width: 28, height: 28, color: BLUE_LT, animation: 'spin 1s linear infinite' }} />
     </div>
   );
 
-  if (!coach || !draft) return (
-    <div style={{ borderRadius: 16, padding: 40, background: SURFACE, border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center', fontFamily: 'Figtree,system-ui,sans-serif' }}>
-      <GraduationCap style={{ width: 36, height: 36, color: MUTE, margin: '0 auto 14px' }} />
-      <p style={{ color: SUB, fontSize: 14, fontWeight: 600, margin: '0 0 6px' }}>No coach profile found for this gym.</p>
-      <p style={{ color: MUTE, fontSize: 12, margin: 0 }}>Ask the gym owner to add you as a coach first.</p>
-    </div>
-  );
+  // No coach record yet — show Create Profile onboarding
+  if (!isLoading && !coach && !draft) {
+    const creating = createMutation.isPending;
+    return (
+      <div className="tcp-root" style={{ fontFamily: "Figtree,system-ui,sans-serif", minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <style>{CSS}</style>
+        <div style={{ maxWidth: 480, width: "100%", display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ borderRadius: 20, background: "linear-gradient(135deg,rgba(37,99,235,0.12),rgba(99,102,241,0.08))", border: "1px solid rgba(37,99,235,0.25)", padding: "32px 28px", textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg,rgba(37,99,235,0.3),rgba(99,102,241,0.2))", border: "1px solid rgba(37,99,235,0.35)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
+              <GraduationCap style={{ width: 28, height: 28, color: BLUE_LT }} />
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", marginBottom: 8 }}>Set up your coach profile</div>
+            <div style={{ fontSize: 13, color: SUB, lineHeight: 1.65, marginBottom: 24 }}>
+              Create your public profile at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span>. Members will see your bio, classes, certifications, and booking options.
+            </div>
+            <button
+              onClick={() => createMutation.mutate({
+                gym_id: selectedGym.id,
+                user_email: currentUser.email,
+                user_id: currentUser.id,
+                name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
+                title: "Personal Coach",
+                specialties: [],
+                certifications: [],
+                languages: ["English"],
+                packages: [
+                  { sessions: 1, price: 60, label: "Single", popular: false, discount: null },
+                  { sessions: 5, price: 270, label: "5 Pack", popular: true, discount: "Save 10%" },
+                  { sessions: 10, price: 510, label: "10 Pack", popular: false, discount: "Save 15%" },
+                ],
+                verification: { id: false, certifications: false, background: false },
+                free_consultation: false,
+              })}
+              className="tcp-btn"
+              disabled={creating}
+              style={{ width: "100%", padding: 15, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", color: "#fff", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 24px rgba(37,99,235,0.4)", cursor: creating ? "default" : "pointer", opacity: creating ? 0.7 : 1 }}>
+              {creating ? <><Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} /> Creating profile…</> : <><GraduationCap style={{ width: 16, height: 16 }} /> Create My Coach Profile</>}
+            </button>
+          </div>
+          <div style={{ borderRadius: 16, background: SURFACE, border: "1px solid rgba(255,255,255,0.07)", padding: "18px 20px" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: LABEL, textTransform: "uppercase", letterSpacing: ".13em", marginBottom: 12 }}>What you get</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {[
+                { icon: Eye,           color: "#38bdf8", label: "Public profile card",   sub: "Visible to all members browsing coaches" },
+                { icon: Calendar,      color: "#34d399", label: "Booking system",         sub: "Let members book sessions from your card" },
+                { icon: Award,         color: "#fbbf24", label: "Credentials display",    sub: "Showcase certifications and achievements" },
+                { icon: Package,       color: "#c084fc", label: "Session packages",       sub: "Sell single sessions or bundles" },
+                { icon: MessageSquare, color: BLUE_LT,   label: "Direct messaging",        sub: "Members can message you from your profile" },
+              ].map(({ icon: Ic, color, label, sub }) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: color+"14", border: "1px solid "+color+"28", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Ic style={{ width: 14, height: 14, color }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>{label}</div>
+                    <div style={{ fontSize: 11, color: MUTE, marginTop: 1 }}>{sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.15)", fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5 }}>
+            <span style={{ color: "#fbbf24", fontWeight: 700 }}>Note:</span> If you already have a coach profile and it is not showing, your gym owner may need to re-link your account. Logged in as: <span style={{ color: BLUE_LT }}>{currentUser?.email}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 0, minHeight: '100vh' }}>
@@ -526,9 +635,9 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 <SLabel>Verification Status</SLabel>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
-                    { key: 'id', icon: ShieldCheck, label: 'ID Verified' },
+                    { key: 'id', icon: ScanFace, label: 'ID Verified' },
                     { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' },
-                    { key: 'background', icon: ClipboardList, label: 'Background Checked' },
+                    { key: 'background', icon: ClipboardCheck, label: 'Background Checked' },
                   ].map(({ key, icon: Ic, label }) => {
                     const ver = draft.verification || {};
                     const on = ver[key];
