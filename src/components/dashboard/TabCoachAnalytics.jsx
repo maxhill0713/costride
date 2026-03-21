@@ -284,7 +284,7 @@ export default function TabCoachAnalytics({
             {/* Average visits per member */}
             <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: '#94a3b8' }}>Avg visits / member (30d)</span>
-              <span style={{ fontSize: 15, fontWeight: 900, color: '#a78bfa' }}>{totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—'}</span>
+              <span style={{ fontSize: 15, fontWeight: 900, color: '#a78bfa' }}>{totalMembers > 0 ? (ci30Count / totalMembers).toFixed(1) : '—'}</span>
             </div>
           </div>
         </div>
