@@ -9,17 +9,21 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PersistentRestTimer from './components/PersistentRestTimer';
 import { TimerProvider } from './components/TimerContext';
 
-// ─── Icons from uploaded SVG — all normalised to a 100×100 screen-unit square
-// Original transform: translate(0,400) scale(0.1,-0.1)
-//   screen_x = path_x * 0.1
-//   screen_y = 400 − path_y * 0.1
-// Each viewBox is centred on its icon so all render at identical visual size.
+// ─── Exact paths from uploaded SVG ───────────────────────────────────────────
+// transform="translate(0,400) scale(0.1,-0.1)"
+// Every icon uses an identical 80×80 screen-unit viewBox centred on that icon,
+// so all 5 render at the same visual size with no clipping.
+//
+//  Home     centre (38.8, 194.5)  → viewBox "-1  154 80 80"
+//  Gym      centre (161,  183.4)  → viewBox "121 143 80 80"
+//  Progress centre (297.3,219.8)  → viewBox "257 180 80 80"
+//  Challenges centre(430.5,200)   → viewBox "390 160 80 80"
+//  Profile  centre (559.4,197.5)  → viewBox "519 157 80 80"
 
 function HomeIcon({ color }) {
-  // icon spans screen ≈ (8,171)→(70,218), centre (39,194) → viewBox "-11 144 100 100"
   return (
-    <svg width="30" height="30" viewBox="-11 144 100 100"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <svg width="28" height="28" viewBox="-1 154 80 80"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" overflow="hidden">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M363 2284 c-283 -251 -283 -251 -283 -284 0 -36 23 -50 85 -50 l46 0
 -1 -197 -2 -198 136 -3 136 -3 0 113 c0 125 9 151 56 162 34 9 78 -9 93 -37 6
@@ -42,10 +46,9 @@ c-3 -28 -7 -32 -33 -32 -26 0 -30 4 -33 32 -3 31 -2 32 33 32 35 0 36 -1 33
 }
 
 function GymIcon({ color }) {
-  // icon spans screen ≈ (116,152)→(201,214), centre (158,183) → viewBox "108 133 100 100"
   return (
-    <svg width="30" height="30" viewBox="108 133 100 100"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <svg width="28" height="28" viewBox="121 143 80 80"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" overflow="hidden">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M1830 2470 c-11 -11 -20 -25 -20 -31 0 -7 -10 -5 -25 5 -39 25 -90
 21 -114 -10 -39 -49 -27 -90 50 -170 l49 -50 -166 -172 -166 -173 -63 61 c-72
@@ -73,10 +76,9 @@ m-84 -87 c154 -153 163 -165 160 -197 -2 -26 -9 -36 -31 -43 -27 -10 -34 -3
 }
 
 function ProgressIcon({ color }) {
-  // icon spans screen ≈ (255,192)→(340,249), centre (297,220) → viewBox "247 170 100 100"
   return (
-    <svg width="30" height="30" viewBox="247 170 100 100"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <svg width="28" height="28" viewBox="257 180 80 80"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" overflow="hidden">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M3290 2018 l0 -503 -30 -1 -30 -1 0 373 0 373 -96 3 c-53 2 -98 1
 -100 -1 -2 -2 -4 -172 -4 -376 l0 -372 -30 -1 -30 -1 -2 267 -3 267 -102 3
@@ -93,10 +95,9 @@ function ProgressIcon({ color }) {
 }
 
 function ChallengesIcon({ color }) {
-  // icon spans screen ≈ (396,149)→(468,251), centre (432,200) → viewBox "382 150 100 100"
   return (
-    <svg width="30" height="30" viewBox="382 150 100 100"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <svg width="28" height="28" viewBox="390 160 80 80"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" overflow="hidden">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M4030 2460 l0 -40 -55 0 c-47 0 -60 -4 -82 -26 -22 -22 -25 -32 -21
 -74 6 -63 66 -185 114 -234 22 -21 69 -59 107 -83 37 -25 67 -49 67 -54 0 -4
@@ -132,10 +133,9 @@ m-614 -94 c10 -78 38 -185 67 -253 15 -37 -86 46 -128 104 -21 30 -48 85 -59
 }
 
 function ProfileIcon({ color }) {
-  // icon spans screen ≈ (524,150)→(595,245), centre (559,197) → viewBox "509 147 100 100"
   return (
-    <svg width="30" height="30" viewBox="509 147 100 100"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <svg width="28" height="28" viewBox="519 157 80 80"
+      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" overflow="hidden">
       <g transform="translate(0,400) scale(0.1,-0.1)" fill={color} stroke="none">
         <path d="M5592 2507 c-45 -14 -118 -81 -144 -130 -89 -175 45 -387 244 -387
 146 1 254 101 266 247 12 157 -109 284 -268 282 -36 -1 -80 -6 -98 -12z m169
@@ -219,7 +219,7 @@ export default function Layout({ children, currentPageName }) {
     currentUser?.primary_gym_id ||
     (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
-  const ACTIVE_COLOR   = '#3b82f6';
+  const ACTIVE_COLOR   = '#ffffff';
   const INACTIVE_COLOR = '#6b7280';
 
   const navItems = isDashboardUser
@@ -265,7 +265,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── Bottom Navigation (Mobile) ── */}
       {!hideNavigation && (
         <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-center pt-2 h-[79px] px-1">
+          <div className="flex items-center justify-around h-[72px] px-1">
             {navItems.map((item) => {
               const isActive = currentPageName === item.page;
               const IconComponent = item.icon;
@@ -279,25 +279,27 @@ export default function Layout({ children, currentPageName }) {
                     if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
                   }}
                   aria-label={item.name}
-                  className="relative flex flex-col items-center justify-center gap-1 min-w-0 flex-1"
-                  style={{ WebkitTapHighlightColor: 'transparent', outline: 'none', background: 'none', border: 'none', transition: 'transform 60ms ease-in-out' }}
+                  className="flex flex-col items-center justify-center gap-[5px] flex-1 h-full"
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    outline: 'none',
+                    background: 'none',
+                    border: 'none',
+                    transition: 'transform 60ms ease-in-out',
+                  }}
                   onFocus={clearFocusStyle}
                   onBlur={clearFocusStyle}
-                  onMouseDown={e => { clearFocusStyle(e); e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                  onMouseDown={e => { clearFocusStyle(e); e.currentTarget.style.transform = 'scale(0.82) translateY(2px)'; }}
                   onMouseUp={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                   onMouseLeave={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onTouchStart={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                  onTouchStart={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(2px)'; }}
                   onTouchEnd={e => { clearFocusStyle(e); e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 >
-                  <div className="relative flex items-center justify-center w-8 h-8">
+                  {/* Fixed-size container so every icon occupies exactly the same space */}
+                  <div style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <IconComponent color={iconColor} />
-                    {item.badge > 0 && (
-                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
-                        {item.badge > 9 ? '9+' : item.badge}
-                      </div>
-                    )}
                   </div>
-                  <span className="text-[10px] font-semibold leading-none" style={{ color: iconColor }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, lineHeight: 1, color: iconColor, whiteSpace: 'nowrap' }}>
                     {item.name}
                   </span>
                 </Link>
@@ -332,13 +334,8 @@ export default function Layout({ children, currentPageName }) {
                   onFocus={clearFocusStyle}
                   onBlur={clearFocusStyle}
                 >
-                  <div className="relative">
+                  <div style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <IconComponent color={iconColor} />
-                    {item.badge > 0 && (
-                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
-                        {item.badge > 9 ? '9+' : item.badge}
-                      </div>
-                    )}
                   </div>
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-white/60 rounded-r-full shadow-lg" />
@@ -353,7 +350,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── Main Content ── */}
       <main
         className={hideNavigation ? '' : 'md:pb-0 md:pl-20'}
-        style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))' }}
+        style={hideNavigation ? {} : { paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
       >
         <ErrorBoundary>
           <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
