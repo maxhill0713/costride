@@ -373,17 +373,17 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           </div>
         </div>
       ))}
-      {risks.week1 > 0 && (
+      {computed.week1 > 0 && (
         <StatNudge
           color={T.red}
           icon={AlertTriangle}
-          stat={`${risks.week1} new member${risks.week1 > 1 ? 's' : ''} went quiet immediately.`}
+          stat={`${computed.week1} new member${computed.week1 > 1 ? 's' : ''} went quiet immediately.`}
           detail="The first 7 days are critical — members who don't return in week 1 are far less likely to become regulars."
           action="Follow up"
-          onAction={() => setTab('members')}
+          onAction={() => setTab && setTab('members')}
         />
       )}
-      {risks.week1 === 0 && total > 0 && (
+      {computed.week1 === 0 && total > 0 && (
         <StatNudge
           color={T.green}
           icon={CheckCircle}
