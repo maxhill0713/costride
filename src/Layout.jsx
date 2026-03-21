@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Home, Dumbbell, BarChart3, Trophy, User } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -93,14 +93,14 @@ export default function Layout({ children, currentPageName }) {
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
   const navItems = isDashboardUser ? [
-  { name: 'Dashboard', icon: Home, page: 'GymOwnerDashboard', color: 'text-orange-500' },
+  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' }] :
   [
   { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
   { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
   { name: 'Progress', icon: BarChart3, page: 'Progress', color: 'text-green-500' },
-  { name: 'Challenges', icon: Trophy, page: 'RedeemReward', color: 'text-amber-500' },
-  { name: 'Profile', icon: User, page: 'Profile', color: 'text-pink-500' }];
+  { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+  { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' }];
 
 
   // Get preserved link for tab
@@ -144,7 +144,7 @@ export default function Layout({ children, currentPageName }) {
                 onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
                 <div className="relative">
-                  <item.icon className={`w-[24px] h-[24px] ${isActive ? item.color : 'text-slate-400'}`} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
@@ -185,7 +185,7 @@ export default function Layout({ children, currentPageName }) {
                 `}>
 
                 <div className="relative">
-                  <item.icon className="w-[24px] h-[24px]" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: isActive ? 'white' : 'inherit' }} />
+                  <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {item.badge > 9 ? '9+' : item.badge}
