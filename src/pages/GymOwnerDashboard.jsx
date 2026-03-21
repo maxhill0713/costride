@@ -467,7 +467,7 @@ export default function GymOwnerDashboard() {
           classes={classes}
           checkIns={checkIns}
           ci30={ci30}
-          avatarMap={avatarMap}
+          avatarMap={avatarMapFull}
           currentUser={currentUser}
           leaderboardView={leaderboardView}
           setLeaderboardView={setLeaderboardView}
