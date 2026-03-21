@@ -6,12 +6,12 @@ import {
   Star, Upload, Plus, X, GraduationCap, Briefcase, Award, Users,
   Edit2, Check, Loader2, Eye, Camera, Save, ChevronRight,
   Clock, MapPin, Languages, Zap, Trophy, Shield, Tag,
-  MessageSquare, BadgeCheck, Fingerprint, ClipboardCheck,
+  MessageSquare, BadgeCheck, ScanFace, ClipboardCheck,
   ArrowUpRight, Sparkles, AlertCircle, Package, Calendar,
   Image, Trash2, ToggleLeft, ToggleRight, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import CoachProfileModal from '@/components/gym/CoachProfileModal';
+import CoachProfileModal from '@/components/CoachProfileModal';
 
 /* ─── Design tokens (match CoachProfileModal exactly) ───────── */
 const BG       = '#060810';
@@ -156,39 +156,13 @@ function SectionCard({ title, icon: Icon, iconColor = BLUE_LT, children }) {
   );
 }
 
-function SaveBar({ dirty, saving, onSave, onDiscard }) {
-  return (
-    <AnimatePresence>
-      {dirty && (
-        <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-          style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9000, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 16, background: 'rgba(12,17,40,0.98)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(24px)', boxShadow: '0 8px 40px rgba(0,0,0,0.7)', whiteSpace: 'nowrap' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fbbf24' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: SUB }}>Unsaved changes</span>
-          <button onClick={onDiscard} className="tcp-btn" style={{ fontSize: 12, fontWeight: 700, color: MUTE, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '7px 14px' }}>Discard</button>
-          <button onClick={onSave} className="tcp-btn" style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg,${BLUE},#1d4ed8)`, border: 'none', borderRadius: 10, padding: '7px 18px', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 16px rgba(37,99,235,0.45)' }}>
-            {saving ? <Loader2 style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 13, height: 13 }} />}
-            Save Changes
-          </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
 
 /* ─── Live Preview (mirrors CoachProfileModal hero card) ────── */
 function LivePreview({ draft, onOpenModal }) {
   const avgRating = draft.rating;
   return (
     <div style={{ position: 'sticky', top: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 10.5, fontWeight: 800, color: LABEL, textTransform: 'uppercase', letterSpacing: '.13em' }}>Live Preview</span>
-        {onOpenModal && (
-          <button onClick={onOpenModal} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: BLUE_LT, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 99, padding: '5px 12px' }}>
-            <Eye style={{ width: 11, height: 11 }} /> Full Profile
-          </button>
-        )}
-      </div>
+      <div style={{ fontSize: 10.5, fontWeight: 800, color: LABEL, textTransform: 'uppercase', letterSpacing: '.13em' }}>Profile Preview</div>
 
       {/* Mirror of CoachProfileModal hero */}
       <div style={{ borderRadius: 20, background: 'linear-gradient(160deg,#0c1128 0%,#060810 100%)', border: '1px solid rgba(255,255,255,0.09)', overflow: 'hidden', position: 'relative' }}>
@@ -332,7 +306,6 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   const [draft, setDraft] = useState(null);
   const [dirty, setDirty] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [activeSection, setActiveSection] = useState('identity');
   const sectionRefs = useRef({});
 
   // ── Query: try multiple field names the Coach entity might use ──
@@ -431,15 +404,6 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
 
   const scrollTo = id => sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const NAV_ITEMS = [
-    { id: 'identity',      label: 'Identity',       icon: Camera },
-    { id: 'bio',           label: 'Bio & Philosophy',icon: Edit2 },
-    { id: 'credentials',   label: 'Credentials',    icon: Award },
-    { id: 'trust',         label: 'Trust Signals',  icon: BadgeCheck },
-    { id: 'schedule',      label: 'Availability',   icon: Calendar },
-    { id: 'packages',      label: 'Packages',       icon: Package },
-    { id: 'settings',      label: 'Settings',       icon: Shield },
-  ];
 
   if (isLoading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240, fontFamily: 'Figtree,system-ui,sans-serif' }}>
@@ -463,27 +427,23 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
               Create your public profile at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span>. Members will see your bio, classes, certifications, and booking options.
             </div>
             <button
-              onClick={() => {
-                const newProfile = {
-                  gym_id: selectedGym?.id || null,
-                  user_email: currentUser.email,
-                  user_id: currentUser.id,
-                  name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
-                  title: "Personal Coach",
-                  specialties: [],
-                  certifications: [],
-                  languages: ["English"],
-                  packages: [
-                    { sessions: 1, price: 60, label: "Single", popular: false, discount: null },
-                    { sessions: 5, price: 270, label: "5 Pack", popular: true, discount: "Save 10%" },
-                    { sessions: 10, price: 510, label: "10 Pack", popular: false, discount: "Save 15%" },
-                  ],
-                  verification: { id: false, certifications: false, background: false },
-                  free_consultation: false,
-                };
-                setDraft(newProfile);
-                createMutation.mutate(newProfile);
-              }}
+              onClick={() => createMutation.mutate({
+                gym_id: selectedGym.id,
+                user_email: currentUser.email,
+                user_id: currentUser.id,
+                name: currentUser.full_name || currentUser.email?.split("@")[0] || "Coach",
+                title: "Personal Coach",
+                specialties: [],
+                certifications: [],
+                languages: ["English"],
+                packages: [
+                  { sessions: 1, price: 60, label: "Single", popular: false, discount: null },
+                  { sessions: 5, price: 270, label: "5 Pack", popular: true, discount: "Save 10%" },
+                  { sessions: 10, price: 510, label: "10 Pack", popular: false, discount: "Save 15%" },
+                ],
+                verification: { id: false, certifications: false, background: false },
+                free_consultation: false,
+              })}
               className="tcp-btn"
               disabled={creating}
               style={{ width: "100%", padding: 15, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", color: "#fff", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 24px rgba(37,99,235,0.4)", cursor: creating ? "default" : "pointer", opacity: creating ? 0.7 : 1 }}>
@@ -521,27 +481,48 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   }
 
   return (
-    <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 0, minHeight: '100vh' }}>
+    <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       <style>{CSS}</style>
 
-      {/* ── Page header ─────────────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', marginBottom: 4 }}>Coach Profile</div>
-        <div style={{ fontSize: 13, color: SUB }}>Manage how you appear to members at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span></div>
+      {/* ── Professional page header ───────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ width: 46, height: 46, borderRadius: 13, overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.6),rgba(37,99,235,0.3))', border: '1.5px solid rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: BLUE_LT }}>
+              {draft.avatar_url ? <img src={draft.avatar_url} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} /> : ini(draft.name)}
+            </div>
+            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '2px solid #060810' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>{draft.name || 'Your Profile'}</div>
+            <div style={{ fontSize: 12, color: SUB, marginTop: 2 }}>
+              {draft.title || 'Personal Coach'}{selectedGym?.name ? <> · <span style={{ color: BLUE_LT, fontWeight: 600 }}>{selectedGym.name}</span></> : ''}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {dirty && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24' }} /> Unsaved changes
+            </span>
+          )}
+          {dirty && (
+            <button onClick={handleDiscard} className="tcp-btn" style={{ fontSize: 12, fontWeight: 700, color: MUTE, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>
+              Discard
+            </button>
+          )}
+          <button onClick={() => setShowPreviewModal(true)} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: BLUE_LT, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, padding: '8px 14px' }}>
+            <Eye style={{ width: 13, height: 13 }} /> Preview
+          </button>
+          <button onClick={handleSave} disabled={!dirty || updateMutation.isPending} className="tcp-btn"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fff', background: dirty ? `linear-gradient(135deg,${BLUE},#1d4ed8)` : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '8px 18px', opacity: dirty ? 1 : 0.4, boxShadow: dirty ? '0 4px 16px rgba(37,99,235,0.4)' : 'none', transition: 'all .2s', cursor: dirty ? 'pointer' : 'default' }}>
+            {updateMutation.isPending ? <Loader2 style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 13, height: 13 }} />}
+            Save Changes
+          </button>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 300px', gap: 20, alignItems: 'start' }}>
-
-        {/* ── Sidebar nav ─────────────────────────────────── */}
-        <div style={{ position: 'sticky', top: 20, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => scrollTo(id)} className="tcp-btn"
-              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', borderRadius: 11, background: activeSection === id ? 'rgba(37,99,235,0.12)' : 'transparent', border: `1px solid ${activeSection === id ? 'rgba(37,99,235,0.3)' : 'transparent'}`, color: activeSection === id ? BLUE_LT : SUB, fontSize: 12.5, fontWeight: 700, textAlign: 'left', width: '100%' }}>
-              <Icon style={{ width: 14, height: 14, flexShrink: 0 }} />
-              {label}
-            </button>
-          ))}
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
 
         {/* ── Edit columns ────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -640,7 +621,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
                 <SLabel>Verification Status</SLabel>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
-                    { key: 'id', icon: Fingerprint, label: 'ID Verified' },
+                    { key: 'id', icon: ScanFace, label: 'ID Verified' },
                     { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' },
                     { key: 'background', icon: ClipboardCheck, label: 'Background Checked' },
                   ].map(({ key, icon: Ic, label }) => {
@@ -813,8 +794,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
         <LivePreview draft={draft} onOpenModal={() => setShowPreviewModal(true)} />
       </div>
 
-      {/* ── Floating save bar ───────────────────────────── */}
-      <SaveBar dirty={dirty} saving={updateMutation.isPending} onSave={handleSave} onDiscard={handleDiscard} />
+
 
       {/* ── Full profile preview modal ───────────────────── */}
       <CoachProfileModal
