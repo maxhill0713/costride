@@ -146,62 +146,60 @@ function SectionLabel({ children, accent = T.purple }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function TabCoachOverview({
   myClasses, checkIns, allMemberships, avatarMap, openModal, now, selectedGym, posts, events, challenges = [],
+  // Pre-computed from backend
+  weekSpark: weekSparkProp = [], engagementSegmentsCoach = {},
+  ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0,
 }) {
   const [atRiskTab,   setAtRiskTab]   = useState('absent');
   const [hoverMember, setHoverMember] = useState(null);
 
-  // ── Date buckets ─────────────────────────────────────────────────────────────
-  const ci7  = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 7),  end: now })), [checkIns, now]);
-  const ci7p = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 14), end: subDays(now, 7) })), [checkIns, now]);
-  const ci30 = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 30), end: now })), [checkIns, now]);
-
+  // ── Today's check-ins (still needs to be computed locally from recentCheckIns) ─
   const todayCI        = useMemo(() => checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()), [checkIns, now]);
   const todayMemberIds = useMemo(() => [...new Set(todayCI.map(c => c.user_id))], [todayCI]);
 
-  // ── Per-member aggregates ────────────────────────────────────────────────────
+  // ── Use pre-enriched membersWithActivity data ────────────────────────────────
+  // allMemberships is already enriched with: lastCheckIn, ci30Count, visitsTotal, daysSince, streak
   const memberLastCI = useMemo(() => {
     const m = {};
-    checkIns.forEach(c => { if (!m[c.user_id] || new Date(c.check_in_date) > new Date(m[c.user_id])) m[c.user_id] = c.check_in_date; });
+    allMemberships.forEach(mem => { if (mem.lastCheckIn) m[mem.user_id] = mem.lastCheckIn; });
     return m;
-  }, [checkIns]);
+  }, [allMemberships]);
 
   const allVisits = useMemo(() => {
     const m = {};
-    checkIns.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
+    allMemberships.forEach(mem => { m[mem.user_id] = mem.visitsTotal || 0; });
     return m;
-  }, [checkIns]);
+  }, [allMemberships]);
 
+  // Streaks from pre-enriched data
   const memberStreak = useMemo(() => {
-    const acc = {};
-    allMemberships.forEach(m => {
-      let streak = 0;
-      const days = new Set(checkIns.filter(c => c.user_id === m.user_id).map(c => startOfDay(new Date(c.check_in_date)).getTime()));
-      for (let i = 0; i <= 60; i++) { if (days.has(startOfDay(subDays(now, i)).getTime())) streak++; else break; }
-      acc[m.user_id] = streak;
-    });
-    return acc;
-  }, [allMemberships, checkIns, now]);
+    const m = {};
+    allMemberships.forEach(mem => { m[mem.user_id] = mem.streak || 0; });
+    return m;
+  }, [allMemberships]);
 
-  // ── Trends ───────────────────────────────────────────────────────────────────
-  const activeW   = useMemo(() => new Set(ci7.map(c => c.user_id)).size,  [ci7]);
-  const activePW  = useMemo(() => new Set(ci7p.map(c => c.user_id)).size, [ci7p]);
-  const weekTrend = activePW > 0 ? Math.round(((activeW - activePW) / activePW) * 100) : 0;
-  const weekSpark = useMemo(() => Array.from({ length: 7 }, (_, i) =>
-    checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6 - i)).getTime()).length
-  ), [checkIns, now]);
+  // ── Trends (use backend pre-computed values) ─────────────────────────────────
+  const activeW   = useMemo(() => new Set(checkIns.filter(c => {
+    const d = new Date(c.check_in_date);
+    return d >= new Date(now - 7 * 86400000);
+  }).map(c => c.user_id)).size, [checkIns, now]);
+  const weekTrend = weeklyTrendCoach;
+  const weekSpark = weekSparkProp.length > 0 ? weekSparkProp
+    : Array.from({ length: 7 }, (_, i) =>
+        checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(subDays(now, 6 - i)).getTime()).length
+      );
 
-  // ── 30-day tiers ─────────────────────────────────────────────────────────────
-  const memberVisits30 = useMemo(() => { const m = {}; ci30.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; }); return m; }, [ci30]);
+  // ── 30-day tiers (use backend pre-computed) ───────────────────────────────────
   const totalM      = allMemberships.length;
-  const superActive = allMemberships.filter(m => (memberVisits30[m.user_id] || 0) >= 12).length;
-  const active      = allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 4 && v < 12; }).length;
-  const casual      = allMemberships.filter(m => { const v = memberVisits30[m.user_id] || 0; return v >= 1 && v < 4; }).length;
-  const inactive    = Math.max(0, totalM - superActive - active - casual);
-  const engRate     = totalM > 0 ? Math.round(((superActive + active) / totalM) * 100) : 0;
+  const superActive = engagementSegmentsCoach.superActive ?? 0;
+  const active      = engagementSegmentsCoach.active      ?? 0;
+  const casual      = engagementSegmentsCoach.casual      ?? 0;
+  const inactive    = engagementSegmentsCoach.inactive    ?? 0;
+  const engRate     = engagementSegmentsCoach.engRate     ?? 0;
 
-  // ── Attention segments ────────────────────────────────────────────────────────
-  const atRiskMembers   = useMemo(() => allMemberships.filter(m => { const l = memberLastCI[m.user_id]; return l && Math.floor((now - new Date(l)) / 86400000) >= 14; }), [allMemberships, memberLastCI, now]);
-  const neverVisited    = useMemo(() => allMemberships.filter(m => !memberLastCI[m.user_id]), [allMemberships, memberLastCI]);
+  // ── Attention segments (use pre-enriched daysSince) ───────────────────────────
+  const atRiskMembers   = useMemo(() => allMemberships.filter(m => m.daysSince !== null && m.daysSince >= 14), [allMemberships]);
+  const neverVisited    = useMemo(() => allMemberships.filter(m => !m.lastCheckIn), [allMemberships]);
   const expiringMembers = useMemo(() => allMemberships.filter(m => { if (!m.end_date) return false; const d = Math.floor((new Date(m.end_date) - now) / 86400000); return d >= 0 && d <= 14; }), [allMemberships, now]);
   const attentionCount  = atRiskMembers.length + neverVisited.length + expiringMembers.length;
   const atRiskAll       = atRiskTab === 'absent' ? atRiskMembers : atRiskTab === 'expiring' ? expiringMembers : neverVisited;
@@ -209,26 +207,29 @@ export default function TabCoachOverview({
   // ── Challenges ────────────────────────────────────────────────────────────────
   const activeChallenges = useMemo(() => challenges.filter(c => c.status === 'active'), [challenges]);
 
-  // ── Milestones ────────────────────────────────────────────────────────────────
+  // ── Milestones (use pre-enriched visitsTotal) ─────────────────────────────────
   const allMilestones = useMemo(() => allMemberships.map(m => {
-    const total = allVisits[m.user_id] || 0;
+    const total = m.visitsTotal || 0;
     const next  = [10, 25, 50, 100, 200, 500].find(n => n > total);
     return { ...m, total, next, toNext: next ? next - total : 0 };
-  }).filter(m => m.next && m.toNext <= 3).sort((a, b) => a.toNext - b.toNext).slice(0, 6), [allMemberships, allVisits]);
+  }).filter(m => m.next && m.toNext <= 3).sort((a, b) => a.toNext - b.toNext).slice(0, 6), [allMemberships]);
 
-  // ── Top streaks ───────────────────────────────────────────────────────────────
-  const topStreaks = useMemo(() => Object.entries(memberStreak)
-    .filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]).slice(0, 5)
-    .map(([uid, streak]) => { const m = allMemberships.find(m => m.user_id === uid); return { user_id: uid, name: m?.user_name || 'Member', streak }; }),
-    [memberStreak, allMemberships]
+  // ── Top streaks (use pre-enriched streak) ─────────────────────────────────────
+  const topStreaks = useMemo(() => allMemberships
+    .filter(m => (m.streak || 0) > 0)
+    .sort((a, b) => (b.streak || 0) - (a.streak || 0))
+    .slice(0, 5)
+    .map(m => ({ user_id: m.user_id, name: m.user_name || 'Member', streak: m.streak || 0 })),
+    [allMemberships]
   );
 
   // ── Top performers ────────────────────────────────────────────────────────────
   const weekStars = useMemo(() => {
     const acc = {};
-    ci7.forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
+    checkIns.filter(c => new Date(c.check_in_date) >= new Date(now - 7 * 86400000))
+      .forEach(c => { acc[c.user_id] = { name: c.user_name || 'Member', count: (acc[c.user_id]?.count || 0) + 1 }; });
     return Object.entries(acc).sort((a, b) => b[1].count - a[1].count).slice(0, 5).map(([uid, d]) => ({ user_id: uid, ...d }));
-  }, [ci7]);
+  }, [checkIns, now]);
 
   // ── Classes with live data ────────────────────────────────────────────────────
   const classStats = useMemo(() => myClasses.map(cls => {
