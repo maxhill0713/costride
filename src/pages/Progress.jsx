@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, ChevronRight, Flame, Award, BarChart3, Users, TrendingUp } from 'lucide-react';
+import { Plus, Target, CheckCircle, ChevronRight, Flame, Award, BarChart3, Users, TrendingUp, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -461,7 +461,7 @@ export default function Progress() {
                   value="rank"
                   className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-base justify-center"
                 >
-                  <Award className="w-5 h-5 mr-2" />Trainer
+                  <ClipboardList className="w-5 h-5 mr-2" />Trainer
                 </TabsTrigger>
               </TabsList>
             </div>
