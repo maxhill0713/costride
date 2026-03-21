@@ -1,7 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { subDays, format, startOfDay, isWithinInterval } from 'date-fns';
 import {
   Activity, TrendingUp, Users, AlertCircle, Flame,
   Clock, Calendar, BarChart2, Star, Award, Zap,
