@@ -415,20 +415,8 @@ function DropOffAnalysis({ dropOffBuckets = [] }) {
 }
 
 // ── Churn Signal Tracker ──────────────────────────────────────────────────────
-function ChurnSignalWidget({ allMemberships, checkIns, now }) {
-  const signals = useMemo(() => allMemberships.map(m => {
-    const mci = checkIns.filter(c => c.user_id === m.user_id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-    const daysSince = mci.length > 0 ? differenceInDays(now, new Date(mci[0].check_in_date)) : 999;
-    const last30 = mci.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 30).length;
-    const prev30 = mci.filter(c => { const d = differenceInDays(now, new Date(c.check_in_date)); return d > 30 && d <= 60; }).length;
-    const freqDrop = prev30 >= 4 && last30 < prev30 * 0.5;
-    let score = 0;
-    if (daysSince >= 7)  score += 20;
-    if (daysSince >= 14) score += 30;
-    if (daysSince >= 21) score += 30;
-    if (freqDrop)        score += 20;
-    return { ...m, name: m.user_name || m.name || 'Member', daysSince, freqDrop, score, last30, prev30 };
-  }).filter(m => m.score >= 40).sort((a, b) => b.score - a.score).slice(0, 5), [allMemberships, checkIns, now]);
+function ChurnSignalWidget({ churnSignals = [] }) {
+  const signals = churnSignals;
 
   const riskLabel = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
   const riskColor = s => s >= 50 ? T.red : T.cyan;
