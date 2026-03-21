@@ -429,15 +429,16 @@ function AboutTab({ coach }) {
 
 /* ══ SCHEDULE TAB ════════════════════════════════════════════════════════════ */
 function ScheduleTab({ coach, day, setDay, timeFilter, setTimeFilter, bookedClasses, toggleBook }) {
+  const classes = coach.classes || [];
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
 
       {/* Header */}
       <div>
         <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'.13em', marginBottom:4 }}>Classes</div>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.02em', lineHeight:1.1 }}>Today's Sessions</div>
+        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.02em', lineHeight:1.1 }}>Sessions</div>
         <div style={{ fontSize:13, color:'rgba(255,255,255,0.35)', marginTop:4, fontWeight:500 }}>
-          Saturday, March 21 · <span style={{ color:'#3B82F6', fontWeight:700 }}>{timeFilter}</span>
+          <span style={{ color:'#3B82F6', fontWeight:700 }}>{timeFilter}</span>
         </div>
       </div>
 
