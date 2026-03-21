@@ -247,9 +247,14 @@ export default function GymOwnerDashboard() {
   const isCoach    = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole   = isCoach ? 'coach' : 'gym_owner';
+  // Set the default tab once on mount only — never reset it when role re-evaluates
+  const tabInitialised = React.useRef(false);
   useEffect(() => {
-    setTab(isCoach ? 'schedule' : 'overview');
-  }, [isCoach]);
+    if (!tabInitialised.current && currentUser) {
+      setTab(isCoach ? 'schedule' : 'overview');
+      tabInitialised.current = true;
+    }
+  }, [currentUser, isCoach]);
   const roleLabel  = isCoach ? 'Coach' : 'Gym Owner';
   const NAV        = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
     ...item,
