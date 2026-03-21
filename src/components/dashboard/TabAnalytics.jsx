@@ -268,35 +268,12 @@ function HeatmapChart({ gymId }) {
 }
 
 // ── Retention Funnel — visual stepper with arrows + conversion ────────────────
-function RetentionFunnelWidget({ allMemberships, checkIns, now }) {
-  const funnel = useMemo(() => {
-    const total = allMemberships.length;
-    const w1Return = allMemberships.filter(m => {
-      const d = differenceInDays(now, new Date(m.created_at || m.join_date || now));
-      if (d < 7) return false;
-      return checkIns.filter(c => c.user_id === m.user_id).length >= 2;
-    }).length;
-    const month1Active = allMemberships.filter(m => {
-      const d = differenceInDays(now, new Date(m.created_at || m.join_date || now));
-      if (d < 30) return false;
-      return checkIns.filter(c => {
-        const cd = new Date(c.check_in_date), jd = new Date(m.created_at || m.join_date || now);
-        return c.user_id === m.user_id && cd >= jd && differenceInDays(cd, jd) <= 30;
-      }).length >= 4;
-    }).length;
-    const month3Retained = allMemberships.filter(m => {
-      const d = differenceInDays(now, new Date(m.created_at || m.join_date || now));
-      if (d < 90) return false;
-      const last = checkIns.filter(c => c.user_id === m.user_id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-      return last && differenceInDays(now, new Date(last.check_in_date)) <= 21;
-    }).length;
-    return [
-      { label: 'Joined',           val: total,          color: T.cyan,   icon: UserPlus,    desc: 'Total members' },
-      { label: 'Week-1 return',    val: w1Return,       color: T.green,  icon: RefreshCw,   desc: 'Came back in first week' },
-      { label: 'Month-1 active',   val: month1Active,   color: T.cyan, icon: Activity,    desc: '4+ visits in first month' },
-      { label: 'Month-3 retained', val: month3Retained, color: T.cyan,  icon: CheckCircle, desc: 'Still active at 3 months' },
-    ];
-  }, [allMemberships, checkIns, now]);
+function RetentionFunnelWidget({ retentionFunnel = [] }) {
+  const funnel = retentionFunnel.map((stage, i) => ({
+    ...stage,
+    color: i === 0 ? T.cyan : i === 1 ? T.green : T.cyan,
+    icon: [UserPlus, RefreshCw, Activity, CheckCircle][i] || CheckCircle,
+  }));
 
   const hasData = allMemberships.length > 0;
 
