@@ -500,7 +500,6 @@ return (
               }
             </div>
           </TabsContent>
-        }
         <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-4">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-2 mb-4">
