@@ -152,11 +152,6 @@ function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
   );
 }
 
-// ── Coach tabs live in separate files (see components/dashboard/TabCoach*.jsx) ─
-//   TabCoachOverview → components/dashboard/TabCoachOverview.jsx
-//   TabCoachSchedule → components/dashboard/TabCoachSchedule.jsx
-//   TabCoachMembers  → components/dashboard/TabCoachMembers.jsx
-
 // ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
 // ── GRADIENT OVERRIDE ─────────────────────────────────────────────────────────
 const GRADIENT_OVERRIDE = `
