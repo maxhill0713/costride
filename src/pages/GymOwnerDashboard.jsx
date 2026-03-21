@@ -345,6 +345,11 @@ export default function GymOwnerDashboard() {
     retentionFunnel = [], dropOffBuckets = [], churnSignals = [], week1ReturnTrend = [],
     // Overview pre-computed
     retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
+    // Coach pre-computed
+    ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0, monthlyTrendCoach = 0,
+    returningCount = 0, newMembersThis30 = 0,
+    weeklyChart = [], monthlyChart = [],
+    engagementSegmentsCoach = {}, weekSpark = [],
   } = stats;
 
   const ci30 = [];  // not needed on frontend anymore
