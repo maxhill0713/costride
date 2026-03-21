@@ -462,7 +462,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
               Create your public profile at <span style={{ color: BLUE_LT, fontWeight: 700 }}>{selectedGym?.name}</span>. Members will see your bio, classes, certifications, and booking options.
             </div>
             <button
-              onClick={() => createMutation.mutate({
+              onClick={() => { if (!selectedGym?.id) return; createMutation.mutate({
                 gym_id: selectedGym.id,
                 user_email: currentUser.email,
                 user_id: currentUser.id,
