@@ -146,10 +146,15 @@ function HeatmapChart({ gymId }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function TabCoachAnalytics({
-  checkIns, ci30, totalMembers, myClasses = [],
+  ci30Count = 0, totalMembers, myClasses = [],
   monthChangePct, retentionRate, activeThisMonth, atRisk, gymId,
+  // Pre-computed from backend
+  ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0, monthlyTrendCoach = 0,
+  returningCount = 0, newMembersThis30 = 0,
+  weeklyChart = [], monthlyChart = [],
+  engagementSegmentsCoach = {}, weekSpark = [],
+  peakHours = [], busiestDays = [],
 }) {
-  const now      = new Date();
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   useEffect(() => {
     const fn = () => setMobile(window.innerWidth < 768);
@@ -157,100 +162,28 @@ export default function TabCoachAnalytics({
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  // ── Previous-period comparison ──────────────────────────────────────────────
-  const ci30prev = useMemo(() =>
-    checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 60), end: subDays(now, 30) })),
-    [checkIns, now]
-  );
-  const ci7  = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 7),  end: now })), [checkIns, now]);
-  const ci7p = useMemo(() => checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, 14), end: subDays(now, 7) })), [checkIns, now]);
+  const weeklyTrend  = weeklyTrendCoach;
+  const monthlyTrend = monthlyTrendCoach;
+  const superActive  = engagementSegmentsCoach.superActive ?? 0;
+  const active       = engagementSegmentsCoach.active      ?? 0;
+  const casual       = engagementSegmentsCoach.casual      ?? 0;
+  const inactive     = engagementSegmentsCoach.inactive    ?? 0;
+  const engRate      = engagementSegmentsCoach.engRate     ?? 0;
+  const churnRate    = totalMembers > 0 ? Math.round((atRisk / totalMembers) * 100) : 0;
+  const dayMax       = Math.max(...busiestDays.map(d => d.count), 1);
 
-  const weeklyTrend   = ci7p.length > 0 ? Math.round(((ci7.length - ci7p.length) / ci7p.length) * 100) : 0;
-  const monthlyTrend  = ci30prev.length > 0 ? Math.round(((ci30.length - ci30prev.length) / ci30prev.length) * 100) : 0;
-
-  // ── Member engagement tiers ─────────────────────────────────────────────────
-  const memberVisits30 = useMemo(() => {
-    const m = {};
-    ci30.forEach(c => { m[c.user_id] = (m[c.user_id] || 0) + 1; });
-    return m;
-  }, [ci30]);
-  const superActive = Object.values(memberVisits30).filter(v => v >= 12).length;
-  const active      = Object.values(memberVisits30).filter(v => v >= 4 && v < 12).length;
-  const casual      = Object.values(memberVisits30).filter(v => v >= 1 && v < 4).length;
-  const inactive    = Math.max(0, totalMembers - superActive - active - casual);
-  const engRate     = totalMembers > 0 ? Math.round(((superActive + active) / totalMembers) * 100) : 0;
-
-  // ── Returning members ───────────────────────────────────────────────────────
-  const memberFirstCI = useMemo(() => {
-    const m = {};
-    [...checkIns].sort((a, b) => new Date(a.check_in_date) - new Date(b.check_in_date))
-      .forEach(c => { if (!m[c.user_id]) m[c.user_id] = c.check_in_date; });
-    return m;
-  }, [checkIns]);
-  const returningCount = useMemo(() =>
-    ci30.filter(c => {
-      const first = memberFirstCI[c.user_id];
-      return first && new Date(first) < subDays(now, 30);
-    }).reduce((set, c) => { set.add(c.user_id); return set; }, new Set()).size,
-    [ci30, memberFirstCI, now]
-  );
-  const newMembersThis30 = useMemo(() =>
-    Object.entries(memberFirstCI).filter(([, d]) => isWithinInterval(new Date(d), { start: subDays(now, 30), end: now })).length,
-    [memberFirstCI, now]
-  );
-  const churnRate = totalMembers > 0 ? Math.round((atRisk / totalMembers) * 100) : 0;
-
-  // ── Weekly attendance chart (8 weeks) ──────────────────────────────────────
-  const weeklyChart = useMemo(() => Array.from({ length: 8 }, (_, i) => {
-    const s = subDays(now, (7 - i) * 7);
-    const e = subDays(now, (6 - i) * 7);
-    return { label: format(s, 'MMM d'), value: checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: s, end: e })).length };
-  }), [checkIns, now]);
-
-  // ── Monthly check-ins (last 6 months) ──────────────────────────────────────
-  const monthlyChart = useMemo(() => Array.from({ length: 6 }, (_, i) => {
-    const monthStart = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    const monthEnd   = new Date(now.getFullYear(), now.getMonth() - (5 - i) + 1, 0);
-    return { label: format(monthStart, 'MMM'), value: checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: monthStart, end: monthEnd })).length };
-  }), [checkIns, now]);
-
-  // ── Class performance ───────────────────────────────────────────────────────
-  const classPerf = useMemo(() => myClasses.map(cls => {
+  // ── Class performance (still uses myClasses + ci30Count heuristic) ─────────
+  const classPerf = myClasses.map(cls => {
     const capacity = cls.max_capacity || cls.capacity || 20;
-    const attended = ci30.filter(c => {
-      if (!cls.schedule) return false;
-      const match = cls.schedule.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
-      if (!match) return false;
-      let h = parseInt(match[1]);
-      if (match[2].toLowerCase() === 'pm' && h !== 12) h += 12;
-      const ch = new Date(c.check_in_date).getHours();
-      return ch === h || ch === h + 1;
-    }).length;
+    // Use avg daily check-ins as proxy for class attendance (no raw checkIns available)
+    const attended = cls.estimated_attendance || Math.round(ci30Count / Math.max(myClasses.length * 30, 1));
     return { name: cls.name, schedule: cls.schedule, capacity, attended, fill: Math.min(100, Math.round((attended / capacity) * 100)) };
-  }).sort((a, b) => b.fill - a.fill), [myClasses, ci30]);
+  }).sort((a, b) => b.fill - a.fill);
 
-  const avgFill = classPerf.length > 0 ? Math.round(classPerf.reduce((s, c) => s + c.fill, 0) / classPerf.length) : 0;
-
-  // ── Coach stats ─────────────────────────────────────────────────────────────
-  const classesThisWeek = myClasses.length; // simplification — real would filter by day-of-week
+  const avgFill         = classPerf.length > 0 ? Math.round(classPerf.reduce((s, c) => s + c.fill, 0) / classPerf.length) : 0;
+  const classesThisWeek = myClasses.length;
   const avgAttendance   = classPerf.length > 0 ? Math.round(classPerf.reduce((s, c) => s + c.attended, 0) / classPerf.length) : 0;
   const engagementScore = Math.round((engRate + Math.min(100, avgFill) + Math.min(100, (returningCount / Math.max(totalMembers, 1)) * 100)) / 3);
-
-  // ── Peak hours ──────────────────────────────────────────────────────────────
-  const hourAcc = {};
-  checkIns.forEach(c => { const h = new Date(c.check_in_date).getHours(); hourAcc[h] = (hourAcc[h] || 0) + 1; });
-  const hourMax   = Math.max(...Object.values(hourAcc), 1);
-  const peakHours = Object.entries(hourAcc).sort(([, a], [, b]) => b - a).slice(0, 5).map(([hour, count]) => {
-    const h = parseInt(hour);
-    return { label: h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h-12}pm`, count, pct: (count / hourMax) * 100 };
-  });
-
-  // ── Busiest days ────────────────────────────────────────────────────────────
-  const dayAcc   = {};
-  checkIns.forEach(c => { const d = new Date(c.check_in_date).getDay(); dayAcc[d] = (dayAcc[d] || 0) + 1; });
-  const dayMax   = Math.max(...Object.values(dayAcc), 1);
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const busiestDays = dayNames.map((name, idx) => ({ name, count: dayAcc[idx] || 0 })).sort((a, b) => b.count - a.count);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
