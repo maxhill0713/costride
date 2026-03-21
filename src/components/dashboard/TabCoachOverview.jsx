@@ -518,9 +518,9 @@ export default function TabCoachOverview({
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 14 }}>30-Day Snapshot</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
               {[
-                { label: 'Total check-ins',    value: ci30.length,                                                 color: '#38bdf8' },
-                { label: 'Unique members',      value: new Set(ci30.map(c => c.user_id)).size,                      color: '#34d399' },
-                { label: 'Avg visits / member', value: totalM > 0 ? (ci30.length / totalM).toFixed(1) : '—',       color: '#a78bfa' },
+                { label: 'Total check-ins',    value: allMemberships.reduce((s,m)=>s+(m.ci30Count||0),0),      color: '#38bdf8' },
+                { label: 'Unique members',      value: allMemberships.filter(m=>(m.ci30Count||0)>0).length,        color: '#34d399' },
+                { label: 'Avg visits / member', value: totalM > 0 ? (allMemberships.reduce((s,m)=>s+(m.ci30Count||0),0) / totalM).toFixed(1) : '—', color: '#a78bfa' },
                 { label: 'Needs attention',     value: attentionCount,                                              color: attentionCount > 0 ? '#f87171' : '#34d399' },
               ].map((s, i, arr) => (
                 <div key={i} style={{ padding: '6px 14px', borderRight: i < arr.length-1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
