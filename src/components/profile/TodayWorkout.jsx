@@ -622,6 +622,74 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </motion.div>
                   ))}
 
+                  {/* Cardio Rows */}
+                  {todayWorkout.cardio && todayWorkout.cardio.length > 0 && (
+                    <div className="mt-3">
+                      {/* Cardio Headers */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05, duration: 0.2 }}
+                        className="grid gap-1 mb-1.5 items-end px-1"
+                        style={{ gridTemplateColumns: '1fr 46px 72px 72px auto' }}>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
+                        <div className="w-6" />
+                      </motion.div>
+
+                      {todayWorkout.cardio.map((c, index) => (
+                        <motion.div
+                          key={`cardio-${index}`}
+                          className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%] mb-2"
+                          style={{ display: editingCardioIndex === index ? 'block' : 'grid', gridTemplateColumns: '1fr 46px 72px 72px auto', gap: '4px' }}>
+                          {editingCardioIndex === index ? (
+                            <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="text-sm font-bold text-white mb-3">{c.exercise || 'Cardio'}</div>
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rounds</label>
+                                  <Input type="text" value={editCardioRounds} onChange={(e) => setEditCardioRounds(e.target.value)} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Time/Round</label>
+                                  <Input type="text" value={formatTime(editCardioTime)} onChange={(e) => setEditCardioTime(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="0:00" style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rest</label>
+                                  <Input type="text" value={formatTime(editCardioRest)} onChange={(e) => setEditCardioRest(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="0:00" disabled={parseInt(editCardioRounds) <= 1} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full disabled:opacity-40" />
+                                </div>
+                              </div>
+                              <div className="flex gap-1 mt-3">
+                                <Button onClick={() => handleSaveCardio(index)} size="sm" className="ease-in-out inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                  <Check className="w-3 h-3" />
+                                </Button>
+                                <Button onClick={() => setEditingCardioIndex(null)} size="sm" variant="ghost" className="ease-in-out inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '40px' }}>{c.rounds || '—'}</div>
+                              <div className="bg-emerald-500/10 text-emerald-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{c.time ? formatTime(c.time) : '—'}</div>
+                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}</div>
+                              <motion.button
+                                onClick={() => handleEditCardio(index, c)}
+                                whileTap={{ scale: 0.78, y: 1 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                                className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 mr-1">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </motion.button>
+                            </>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Log Workout Button */}
                   {!alreadyLoggedToday && (
                     <div className="mb-3 space-y-2">
