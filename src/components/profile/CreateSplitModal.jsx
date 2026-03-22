@@ -163,8 +163,8 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
           <DialogTitle className="text-xl font-bold flex items-center gap-2"><Star className="w-5 h-5 text-purple-400" />Set Active Split</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
-            <p className="text-purple-200 text-sm">Your active split is the workout plan shown on your Home page and used when you log training sessions.</p>
+          <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-2.5">
+            <p className="text-purple-200 text-xs">Your active split is the workout plan shown on your Home page and used when you log training sessions.</p>
           </div>
           <div className="space-y-2">
             {allSplits.map((entry, i) => {
