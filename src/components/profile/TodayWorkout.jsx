@@ -75,8 +75,8 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
     </>);
 }
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, onOpenTimer }) {
-  const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime } = useTimer();
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange }) {
+  const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
@@ -96,8 +96,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [frozenDuration, setFrozenDuration] = useState(0);
   const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
-  const [timerBarPulse, setTimerBarPulse] = useState(0); // increments to signal openBar
-
   const [overrideDayKey, setOverrideDayKey] = useState(null);
 
   const queryClient = useQueryClient();
@@ -719,25 +717,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
 
-                      {/* Single "Timer" button — opens the bar */}
+                      {/* Single "Timer" button — opens the bar via context */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setTimerBarPulse(n => n + 1);
-                          if (onOpenTimer) onOpenTimer();
+                          setOpenTimerBar(true);
                         }}
-                        style={{ height: '51px', width: '49%' }}
-                        className="relative flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                          <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
-                            {isTimerActive
-                              ? `${Math.floor((parseInt(restTimer) || 0) / 60)}:${((parseInt(restTimer) || 0) % 60).toString().padStart(2, '0')}`
-                              : 'Timer'}
-                          </span>
-                        </div>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                          {isTimerActive ? 'Active' : 'Rest / Cardio'}
+                        style={{ height: '51px', flex: 1 }}
+                        className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                        <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                        <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
+                          {isTimerActive
+                            ? `${Math.floor((parseInt(restTimer) || 0) / 60)}:${((parseInt(restTimer) || 0) % 60).toString().padStart(2, '0')}`
+                            : 'Timer'}
                         </span>
                       </button>
 
