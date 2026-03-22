@@ -731,10 +731,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         style={{ height: '51px', flex: 1 }}
                         className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                        <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
-                          {isTimerActive
-                            ? `${Math.floor((parseInt(restTimer) || 0) / 60)}:${((parseInt(restTimer) || 0) % 60).toString().padStart(2, '0')}`
-                            : 'Timer'}
+                        <span className="text-blue-300 font-black text-xl leading-none">
+                          Timer
                         </span>
                       </button>
 
