@@ -199,7 +199,6 @@ export default function UserProfile() {
           )}
         </div>}
 
-        {/* Badges */}
         {!isBlocked && profileUser.equipped_badges?.length > 0 && (
           <div className="flex items-center gap-1.5">
             {profileUser.equipped_badges.map((badgeId) => {
