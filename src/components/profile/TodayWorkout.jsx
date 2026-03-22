@@ -83,6 +83,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [editSets, setEditSets] = useState([]);
+  const [editingCardioIndex, setEditingCardioIndex] = useState(null);
+  const [editCardioRounds, setEditCardioRounds] = useState('');
+  const [editCardioTime, setEditCardioTime] = useState('');
+  const [editCardioRest, setEditCardioRest] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
