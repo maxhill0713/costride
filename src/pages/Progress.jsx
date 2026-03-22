@@ -322,7 +322,7 @@ function CommunityLiftCard({ currentUser }) {
       {/* Section header */}
       <div style={{ marginBottom: 12 }}>
         <h2 style={sectionTitle}>Community Lift Rankings</h2>
-        <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>{gymName}</p>
+        <p style={{ fontSize: 22, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>{gymName}</p>
       </div>
 
       {/* The card — identical to Community.jsx */}
