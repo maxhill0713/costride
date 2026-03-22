@@ -158,9 +158,9 @@ function SimpleArc({ smoothProgress, isPulsing, radius = 90 }) {
 export default function PersistentRestTimer({
   isActive, restTimer, initialRestTime,
   onTimerStateChange, onTimerValueChange,
-  todayWorkout,   // passed in so we can read cardio exercises
 }) {
-  const { openTimerBar, setOpenTimerBar } = useTimer();
+  const { openTimerBar, setOpenTimerBar, timerWorkout } = useTimer();
+  const todayWorkout = timerWorkout;
   const [expanded, setExpanded] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
   const [paused, setPaused] = useState(false);
