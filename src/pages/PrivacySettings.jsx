@@ -93,7 +93,7 @@ export default function PrivacySettings() {
       </Group>
 
       <p style={{ fontSize: 12, color: '#334155', fontWeight: 500, padding: '0 4px', lineHeight: 1.6 }}>
-        When your profile is private, only your gym members and accepted friends can see your check-ins and progress.
+        When your profile is private, only your friends can see your favourited posts and profile details, like your home gym etc.
       </p>
 
     </PageShell>
