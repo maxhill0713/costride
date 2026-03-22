@@ -313,9 +313,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
             {/* PICK page */}
             {step === 'pick' && (
-              <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
-                <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </button>
+              <>
+                <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                  <Star className="w-4 h-4 text-white" />
+                </button>
+                <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+                </button>
+              </>
             )}
 
             {/* PREVIEW page */}
