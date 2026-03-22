@@ -170,7 +170,7 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
             {allSplits.map((entry, i) => {
               const isPrimary = effectiveActive === entry.id;
               return (
-                <button key={entry.id} onClick={() => setSelected(entry.id)} className={`w-full text-left p-2.5 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`} style={{ animationDelay: `${140 + i * 55}ms` }}>
+                <button key={entry.id} onClick={() => setSelected(entry.id)} className={`w-full text-left p-2 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`} style={{ animationDelay: `${140 + i * 55}ms` }}>
                   <div className="flex items-center justify-between">
                     <div><h4 className="font-bold text-white text-sm">{entry.name}</h4><p className="text-xs text-slate-400 mt-0.5">{entry.description || `${(entry.training_days || []).length} days · custom`}</p></div>
                     {isPrimary && <Badge className="bg-purple-500 text-white flex-shrink-0"><Star className="w-3 h-3 mr-1" />Active</Badge>}
@@ -363,7 +363,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white">{def.name}</p>
                             <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">{def.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                            <div className="flex gap-1 mt-1.5 flex-wrap">{def.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
                           </div>
                           {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
                           <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
@@ -378,7 +378,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
                             <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => <span key={d} className="text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80 text-center inline-block">{DAY_NAMES[d - 1]}</span>)}</div>
+                            <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => <span key={d} className="text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80 text-center inline-block">{DAY_NAMES[d - 1]}</span>)}</div>
                           </div>
                           {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
                           <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
@@ -396,7 +396,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             <div className="p-4 space-y-3">
               <div className="p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
-                <div className="flex gap-1.5 mt-1.5 flex-wrap">{previewSplit.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                <div className="flex gap-1.5 mt-1.5 flex-wrap">{previewSplit.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
                 {previewSplit.blurb && <p className="text-[11px] text-slate-400 leading-relaxed mt-3">{previewSplit.blurb}</p>}
               </div>
               {previewSplit.days.map((day) => {
