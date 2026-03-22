@@ -64,33 +64,49 @@ function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) 
   const circumference = 2 * Math.PI * radius;
   const totalSecs = segments.reduce((s, seg) => s + seg.secs, 0);
   if (!totalSecs) return null;
+
+  // SVG transform: rotate(90deg) puts 0° at top, scale(-1,1) makes it go anticlockwise
+  const svgTransform = 'rotate(90deg) scale(-1, 1)';
+
   let cumulative = 0;
   return (
-    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 200 200">
-      <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: svgTransform }} viewBox="0 0 200 200">
+      {/* Track */}
+      <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+
       {segments.map((seg, i) => {
         const frac = seg.secs / totalSecs;
         const arcLen = circumference * frac;
-        const gap = circumference * 0.003;
+        const gap = circumference * 0.004;
         const drawLen = Math.max(0, arcLen - gap);
-        const color = seg.type === 'work' ? '#60a5fa' : '#34d399';
-        const dimColor = seg.type === 'work' ? 'rgba(96,165,250,0.25)' : 'rgba(52,211,153,0.25)';
-        const segDashOffset = circumference - cumulative;
+        const workColor  = '#60a5fa';
+        const restColor  = '#34d399';
+        const color    = seg.type === 'work' ? workColor  : restColor;
+        const dimColor = seg.type === 'work' ? 'rgba(96,165,250,0.2)' : 'rgba(52,211,153,0.2)';
+
+        // dashOffset positions each segment around the circle
+        const segDashOffset = -(cumulative);
         cumulative += arcLen;
-        const fillFrac = i < currentSegIdx ? 0 : i === currentSegIdx ? smoothProgress : 0;
-        const filledLen = drawLen * (1 - fillFrac); // dashoffset drains from full to 0
+
+        // Elapsed fraction within this segment (0 = none filled, 1 = fully filled)
+        const elapsedFrac = i < currentSegIdx ? 1 : i === currentSegIdx ? (1 - smoothProgress) : 0;
+        const filledLen = drawLen * elapsedFrac;
+
         return (
           <g key={i}>
-            <circle cx="100" cy="100" r={radius} fill="none" stroke={dimColor} strokeWidth="10"
-              strokeLinecap="butt"
+            {/* Dim background track for this segment */}
+            <circle cx="100" cy="100" r={radius} fill="none"
+              stroke={dimColor} strokeWidth="10" strokeLinecap="butt"
               strokeDasharray={`${drawLen} ${circumference - drawLen}`}
               strokeDashoffset={segDashOffset} />
-            {i === currentSegIdx && (
-              <circle cx="100" cy="100" r={radius} fill="none" stroke={color} strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${drawLen} ${circumference - drawLen}`}
-                strokeDashoffset={segDashOffset + filledLen}
-                style={{ filter: `drop-shadow(0 0 6px ${color})` }} />
+            {/* Filled portion — grows from 0 */}
+            {filledLen > 0 && (
+              <circle cx="100" cy="100" r={radius} fill="none"
+                stroke={color} strokeWidth="10"
+                strokeLinecap={filledLen >= drawLen - 0.5 ? 'round' : 'butt'}
+                strokeDasharray={`${filledLen} ${circumference - filledLen}`}
+                strokeDashoffset={segDashOffset}
+                style={{ filter: i === currentSegIdx ? `drop-shadow(0 0 5px ${color})` : 'none' }} />
             )}
           </g>
         );
@@ -99,16 +115,22 @@ function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) 
   );
 }
 
-/* ── Simple arc — drains clockwise from top ── */
+/* ── Simple arc — starts empty at top, fills anticlockwise as time passes ── */
 function SimpleArc({ smoothProgress, isPulsing, radius = 90 }) {
   const circumference = 2 * Math.PI * radius;
-  // Start full, drain as progress decreases
-  const dashLen = circumference * smoothProgress;
+  // smoothProgress goes 1→0 as time counts down
+  // filled = elapsed = 1 - smoothProgress
+  const filledLen = circumference * (1 - smoothProgress);
   return (
-    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 200 200">
+    <svg
+      // rotate(90deg) puts start point at top; scale(-1,1) makes it go anticlockwise
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(90deg) scale(-1, 1)' }}
+      viewBox="0 0 200 200">
+      {/* Track */}
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
+      {/* Filled arc — grows from 0 as time elapses */}
       <circle cx="100" cy="100" r={radius} fill="none" stroke="#60a5fa" strokeWidth="10" strokeLinecap="round"
-        strokeDasharray={`${dashLen} ${circumference - dashLen}`}
+        strokeDasharray={`${filledLen} ${circumference - filledLen}`}
         strokeDashoffset={0}
         style={{ animation: isPulsing ? `timer-stroke-pulse 2.2s ease-in-out infinite` : 'none' }} />
     </svg>
