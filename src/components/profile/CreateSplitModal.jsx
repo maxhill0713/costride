@@ -470,21 +470,22 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         </div>
                         <div className="flex gap-1.5 px-4 pb-3">{COLOR_OPTIONS.map((c) => <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />)}</div>
                         {exs.length > 0 && (
-                          <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px 36px' }}>
+                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
-                              <span />
                             </div>
                             {exs.map((ex, idx) =>
-                              <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px 36px' }}>
-                                <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="e.g. Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
-                                <SmallInput value={ex.reps ?? '10'} onChange={(v) => updateExercise(day, idx, 'reps', v)} placeholder="10" />
-                                <div className="relative"><SmallInput value={ex.weight ?? ''} onChange={(v) => updateExercise(day, idx, 'weight', v)} placeholder="—" /><span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span></div>
-                                <button onClick={() => removeExercise(day, idx)} className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
+                              <div key={idx} className="relative">
+                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
+                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="e.g. Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                  <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
+                                  <SmallInput value={ex.reps ?? '10'} onChange={(v) => updateExercise(day, idx, 'reps', v)} placeholder="10" />
+                                  <div className="relative"><SmallInput value={ex.weight ?? ''} onChange={(v) => updateExercise(day, idx, 'weight', v)} placeholder="—" /><span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span></div>
+                                </div>
+                                <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
                               </div>
                             )}
                           </div>
@@ -492,47 +493,48 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
                         {/* ── Cardio rows ── */}
                         {(wt.cardio || []).length > 0 && (
-                          <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px 36px' }}>
+                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rest</span>
-                              <span />
                             </div>
                             {(wt.cardio || []).map((c, idx) => {
                               const rounds = parseInt(c.rounds, 10) || 0;
                               const restDisabled = rounds <= 1;
                               return (
-                                <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px 36px' }}>
-                                  <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="e.g. Rowing" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                  <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
-                                  {/* Time per round */}
-                                  <div className="relative">
-                                    <input
-                                      type="text" inputMode="numeric"
-                                      value={formatTime(c.time)}
-                                      onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
-                                      placeholder="0:00"
-                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-6"
-                                    />
-                                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                <div key={idx} className="relative">
+                                  <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
+                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="e.g. Rowing" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                    <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
+                                    {/* Time per round */}
+                                    <div className="relative">
+                                      <input
+                                        type="text" inputMode="numeric"
+                                        value={formatTime(c.time)}
+                                        onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
+                                        placeholder="0:00"
+                                        style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                        className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-6"
+                                      />
+                                      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                    </div>
+                                    {/* Rest */}
+                                    <div className="relative">
+                                      <input
+                                        type="text" inputMode="numeric"
+                                        value={restDisabled ? '' : formatTime(c.rest)}
+                                        onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }}
+                                        placeholder="0:00"
+                                        disabled={restDisabled}
+                                        style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                        className={`w-full px-2 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-6 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
+                                      />
+                                      <span className={`absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
+                                    </div>
                                   </div>
-                                  {/* Rest */}
-                                  <div className="relative">
-                                    <input
-                                      type="text" inputMode="numeric"
-                                      value={restDisabled ? '' : formatTime(c.rest)}
-                                      onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }}
-                                      placeholder="0:00"
-                                      disabled={restDisabled}
-                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                      className={`w-full px-2 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-6 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
-                                    />
-                                    <span className={`absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
-                                  </div>
-                                  <button onClick={() => removeCardio(day, idx)} className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
+                                  <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
                                 </div>
                               );
                             })}
