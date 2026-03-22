@@ -171,8 +171,19 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Private profile wall */}
+        {isBlocked && (
+          <div className="flex flex-col items-center justify-center py-12 text-center border-t border-slate-800/60 mt-2">
+            <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-4">
+              <span className="text-2xl">🔒</span>
+            </div>
+            <p className="text-base font-black text-white mb-1">This account is private</p>
+            <p className="text-sm text-slate-500">Follow this user to see their full profile.</p>
+          </div>
+        )}
+
         {/* Status + meta */}
-        <div className="space-y-1">
+        {!isBlocked && <div className="space-y-1">
           <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
           {primaryMembership && (
             <div className="flex items-center gap-1.5">
