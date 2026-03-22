@@ -516,9 +516,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                         onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
                                         placeholder="0:00"
                                         style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                        className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-6"
+                                        className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5"
                                       />
-                                      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
                                     </div>
                                     {/* Rest */}
                                     <div className="relative">
@@ -529,9 +529,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                         placeholder="0:00"
                                         disabled={restDisabled}
                                         style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                        className={`w-full px-2 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-6 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
+                                        className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
                                       />
-                                      <span className={`absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
+                                      <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
                                     </div>
                                   </div>
                                   <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
