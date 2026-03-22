@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTimer } from '../TimerContext';
 
 /* ─── CSS animations ─────────────────────────────────────────────────────── */
 const PULSE_CSS = `
@@ -158,14 +159,19 @@ export default function PersistentRestTimer({
   isActive, restTimer, initialRestTime,
   onTimerStateChange, onTimerValueChange,
   todayWorkout,   // passed in so we can read cardio exercises
-  openBar,        // signal from TodayWorkout "Timer" button press
 }) {
+  const { openTimerBar, setOpenTimerBar } = useTimer();
   const [expanded, setExpanded] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
   const [paused, setPaused] = useState(false);
 
-  // Open bar when parent signals
-  useEffect(() => { if (openBar) setBarVisible(true); }, [openBar]);
+  // Open bar when context signals
+  useEffect(() => {
+    if (openTimerBar) {
+      setBarVisible(true);
+      setOpenTimerBar(false); // reset after consuming
+    }
+  }, [openTimerBar]);
 
   // Cardio mode state
   const [cardioMode, setCardioMode] = useState(false);
