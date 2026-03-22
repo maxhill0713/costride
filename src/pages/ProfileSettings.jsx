@@ -254,8 +254,8 @@ export default function ProfileSettings() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   useEffect(() => {
-    if (currentUser) setLocalFullName(currentUser.full_name || '');
-  }, [currentUser?.full_name]);
+    if (currentUser) setLocalFullName(currentUser.display_name || currentUser.full_name || '');
+  }, [currentUser?.display_name, currentUser?.full_name]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings) => { await base44.auth.updateMe(settings); return base44.auth.me(); },
@@ -291,7 +291,7 @@ export default function ProfileSettings() {
   const handleNameSave = async () => {
     setNameSaving(true);
     try {
-      await updateSettingsMutation.mutateAsync({ full_name: localFullName.trim() });
+      await updateSettingsMutation.mutateAsync({ display_name: localFullName.trim() });
       setNameEditing(false);
     } catch (e) { console.error('Name save failed:', e); }
     finally { setNameSaving(false); }

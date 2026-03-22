@@ -162,7 +162,7 @@ export default function Profile() {
 
   if (!currentUser) return null;
 
-  const displayName = currentUser?.username || currentUser?.full_name;
+  const displayName = currentUser?.display_name || currentUser?.username || currentUser?.full_name;
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
