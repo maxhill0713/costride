@@ -302,6 +302,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         workout_type: todayWorkout.name,
         day_of_week: activeDayKey,
         exercises: todayWorkout.exercises,
+        cardio: todayWorkout.cardio || [],
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
         duration_minutes: frozenDuration > 0 ? Math.round(frozenDuration / 60) : (workoutDuration > 0 ? Math.round(workoutDuration / 60) : undefined),
