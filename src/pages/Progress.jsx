@@ -722,7 +722,7 @@ function TrainerTab() {
       {activeSection === 'classes' && (
         <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
           <p style={{ fontSize: 14, fontWeight: 500, color: '#475569', lineHeight: 1.6, maxWidth: 260, margin: 0 }}>
-            Classes are coming soon — once your gym adds them, you'll be able to join sessions and chat with other members in real time.
+            Join classes at your gym to chat with other members and stay connected with your training community.
           </p>
         </div>
       )}
