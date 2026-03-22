@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft } from 'lucide-react';
 
 const PAGE_BG = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
 
-function PageShell({ title, children }) {
+export default function AppearanceSettings() {
   return (
     <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
@@ -13,22 +13,16 @@ function PageShell({ title, children }) {
           <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
             <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
           </Link>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>{title}</span>
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>Appearance</span>
         </div>
       </div>
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px' }}>{children}</div>
-    </div>
-  );
-}
 
-export default function AppearanceSettings() {
-  return (
-    <PageShell title="Appearance">
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, textAlign: 'center', padding: '0 8px' }}>
-        <p style={{ fontSize: 14, fontWeight: 500, color: '#475569', lineHeight: 1.7, maxWidth: 320, margin: 0 }}>
-          CoStride is still in development — right now there's only one look available, but we're working on greater customisation options and multiple language versions of the app. Stay tuned!
-        </p>
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>Coming Soon</p>
+          <p style={{ fontSize: 14, fontWeight: 500, color: '#475569', margin: 0, maxWidth: 280, lineHeight: 1.6 }}>Greater customisation options and multiple language versions of the app are on the way. Stay tuned!</p>
+        </div>
       </div>
-    </PageShell>
+    </div>
   );
 }
