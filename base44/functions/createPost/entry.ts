@@ -11,10 +11,6 @@ Deno.serve(async (req) => {
 
     const { content, image_url, video_url, allow_gym_repost } = await req.json();
 
-    if (!content?.trim()) {
-      return Response.json({ error: 'Content is required' }, { status: 400 });
-    }
-
     const post = await base44.entities.Post.create({
       member_id: user.id,
       member_name: user.full_name,
