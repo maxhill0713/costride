@@ -15,8 +15,17 @@ const LINE_COLORS = [
 
 const CUTOFF_MONTHS = 2;
 
-function kgDiff(current, baseline) {
-  if (baseline === null || baseline === undefined) return 0;
+// ─── Epley estimated 1 Rep Max formula ───────────────────────────────────────
+// e1RM = weight × (1 + reps / 30)
+// If reps = 1, this just returns weight (correct — 1RM is 1RM)
+function epley(weight, reps) {
+  if (!weight || weight <= 0) return 0;
+  const r = Math.max(1, reps || 1);
+  return +(weight * (1 + r / 30)).toFixed(1);
+}
+
+function e1rmDiff(current, baseline) {
+  if (baseline === null || baseline === undefined || baseline === 0) return 0;
   return +(current - baseline).toFixed(1);
 }
 
@@ -48,7 +57,7 @@ function CustomTooltip({ active, payload, label }) {
               textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 110 }}>{p.name}</span>
             <span style={{ fontSize: 11, fontWeight: 700,
               color: p.value > 0 ? '#34d399' : p.value < 0 ? '#f87171' : '#64748b' }}>
-              {p.value > 0 ? '+' : ''}{p.value}kg
+              {p.value > 0 ? '+' : ''}{p.value}kg e1RM
             </span>
           </div>
         ))}
@@ -167,8 +176,13 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         if (!matched) return;
         const w = parseFloat(ex.weight);
         if (!w || w <= 0) return;
+        // Parse reps — may live in ex.reps or ex.setsReps like "3x10"
+        const reps = parseFloat(ex.reps) ||
+          parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
+          1;
+        const e1rm = epley(w, reps);
         if (!map[matched]) map[matched] = [];
-        map[matched].push({ rawDate: logDate, weight: w });
+        map[matched].push({ rawDate: logDate, e1rm });
       });
     });
     Object.values(map).forEach(arr => arr.sort((a, b) => a.rawDate - b.rawDate));
@@ -183,10 +197,11 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
     const now = new Date();
     const cutoff = subMonths(now, CUTOFF_MONTHS);
 
+    // Build baselines from earliest e1RM per exercise (all time)
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
-      if (series?.length) baselines[name] = series[0].weight;
+      if (series?.length) baselines[name] = series[0].e1rm;
     });
 
     const totalDays = Math.round((now - cutoff) / 86400000);
@@ -205,7 +220,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
           row[name] = null;
         } else {
           const latest = candidates[candidates.length - 1];
-          row[name] = kgDiff(latest.weight, baselines[name]);
+          row[name] = e1rmDiff(latest.e1rm, baselines[name]);
         }
       });
       return row;
@@ -248,7 +263,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             Overload Tracker
           </h2>
           <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
-            Weight change vs. baseline · 2 months
+            Est. 1RM change vs. baseline · 2 months
           </p>
         </div>
         {workoutOptions.length > 0 && (
