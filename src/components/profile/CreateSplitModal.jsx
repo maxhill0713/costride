@@ -471,7 +471,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         <div className="flex gap-1.5 px-4 pb-3">{COLOR_OPTIONS.map((c) => <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />)}</div>
                         {exs.length > 0 && (
                           <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px 28px' }}>
+                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px 36px' }}>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
@@ -479,7 +479,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               <span />
                             </div>
                             {exs.map((ex, idx) =>
-                              <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px 28px' }}>
+                              <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px 36px' }}>
                                 <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="e.g. Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
                                 <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
                                 <SmallInput value={ex.reps ?? '10'} onChange={(v) => updateExercise(day, idx, 'reps', v)} placeholder="10" />
@@ -493,7 +493,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         {/* ── Cardio rows ── */}
                         {(wt.cardio || []).length > 0 && (
                           <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 62px 62px 28px' }}>
+                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px 36px' }}>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
@@ -504,7 +504,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               const rounds = parseInt(c.rounds, 10) || 0;
                               const restDisabled = rounds <= 1;
                               return (
-                                <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 62px 62px 28px' }}>
+                                <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px 36px' }}>
                                   <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="e.g. Rowing" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
                                   <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
                                   {/* Time per round */}
