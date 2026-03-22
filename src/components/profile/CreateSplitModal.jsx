@@ -288,6 +288,23 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const addExercise = (day) => setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), { exercise: '', sets: '3', reps: '10', weight: '' }] } }));
   const updateExercise = (day, idx, field, value) => setWorkouts((prev) => { const exs = [...(prev[day]?.exercises || [])]; exs[idx] = { ...exs[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
   const removeExercise = (day, idx) => setWorkouts((prev) => { const exs = [...(prev[day]?.exercises || [])]; exs.splice(idx, 1); return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
+  const addCardio = (day) => setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], cardio: [...(prev[day]?.cardio || []), { exercise: '', rounds: '1', time: '', rest: '' }] } }));
+  const updateCardio = (day, idx, field, value) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr[idx] = { ...arr[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
+  const removeCardio = (day, idx) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr.splice(idx, 1); return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
+
+  // ── Time input: raw digits → M:SS format ─────────────────────────────────
+  const formatTime = (raw) => {
+    const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
+    if (!digits) return '';
+    const padded = digits.padStart(3, '0');
+    const mins = padded.slice(0, padded.length - 2);
+    const secs = padded.slice(-2);
+    return `${parseInt(mins, 10)}:${secs}`;
+  };
+  const handleTimeChange = (day, idx, field, raw) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 4);
+    updateCardio(day, idx, field, digits);
+  };
 
   const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
@@ -472,8 +489,59 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             )}
                           </div>
                         )}
-                        <div className="px-4 pb-3.5 pt-2">
+
+                        {/* ── Cardio rows ── */}
+                        {(wt.cardio || []).length > 0 && (
+                          <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
+                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 62px 62px 28px' }}>
+                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
+                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
+                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rest</span>
+                              <span />
+                            </div>
+                            {(wt.cardio || []).map((c, idx) => {
+                              const rounds = parseInt(c.rounds, 10) || 0;
+                              const restDisabled = rounds <= 1;
+                              return (
+                                <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 62px 62px 28px' }}>
+                                  <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="e.g. Rowing" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                  <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
+                                  {/* Time per round */}
+                                  <div className="relative">
+                                    <input
+                                      type="text" inputMode="numeric"
+                                      value={formatTime(c.time)}
+                                      onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
+                                      placeholder="0:00"
+                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-6"
+                                    />
+                                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                  </div>
+                                  {/* Rest */}
+                                  <div className="relative">
+                                    <input
+                                      type="text" inputMode="numeric"
+                                      value={restDisabled ? '' : formatTime(c.rest)}
+                                      onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }}
+                                      placeholder="0:00"
+                                      disabled={restDisabled}
+                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                      className={`w-full px-2 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-6 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
+                                    />
+                                    <span className={`absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
+                                  </div>
+                                  <button onClick={() => removeCardio(day, idx)} className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <div className="px-4 pb-3.5 pt-2 flex flex-col gap-1.5">
                           <button onClick={() => addExercise(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add exercise</button>
+                          <button onClick={() => addCardio(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add cardio</button>
                         </div>
                       </div>
                     );
