@@ -469,9 +469,9 @@ export default function Profile() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, share_with_community: shareWithCommunity })}
-                disabled={(!postImage && !postVideo) || createPostMutation.isPending}
+                disabled={(!postImage && !postVideo && !postContent.trim()) || createPostMutation.isPending}
                 className={`w-full font-black text-base rounded-2xl border border-transparent flex items-center justify-center transition-all duration-100 ${
-                  (postImage || postVideo) && !createPostMutation.isPending
+                  (postImage || postVideo || postContent.trim()) && !createPostMutation.isPending
                     ? 'bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_4px_0_0_#1a3fa8,0_8px_20px_rgba(59,130,246,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95'
                     : 'bg-slate-800/60 text-slate-600 cursor-not-allowed'
                 }`}
