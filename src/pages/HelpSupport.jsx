@@ -162,7 +162,7 @@ export default function HelpSupport() {
     },
     {
       q: 'Is my data private?',
-      a: 'You control your privacy in Settings → Privacy. With a public profile, other CoStride users can view your stats. Switch to private and only your gym members and accepted friends can see your activity.',
+      a: 'You control your privacy in Settings → Privacy. With a public profile, other CoStride users can view your stats. Switch to private and only your friends can see your activity.',
     },
   ];
 
