@@ -19,7 +19,7 @@ const CARD = {
 };
 
 const btnNewGoal = "bg-slate-900/80 border border-slate-500/50 text-slate-400 font-bold rounded-full px-4 py-2 flex items-center gap-1.5 justify-center shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
-const sectionTitle = { fontSize: 16, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2 };
+const sectionTitle = { fontSize: 24, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2 };
 
 // ─── Community card config (copied verbatim from Community.jsx) ───────────────
 const LIFTS = [
