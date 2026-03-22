@@ -313,12 +313,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
             {/* PICK page */}
             {step === 'pick' && (
-              <>
-                <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
-                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
-                </button>
-                <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
-              </>
+              <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </button>
             )}
 
             {/* PREVIEW page */}
@@ -326,23 +323,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
             )}
 
-            {/* CONFIGURE page — Set Active top right, 3-dots below */}
+            {/* CONFIGURE page — Set Active top right only */}
             {step === 'configure' && editingSplitId && (
-              <div className="flex flex-col items-end gap-1">
-                <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
-                <div className="relative">
-                  <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
-                    <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
-                  </button>
-                  {dotsMenuOpen && (
-                    <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
-                        Delete Split
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
             )}
           </div>
         </div>
@@ -413,6 +396,24 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {/* CONFIGURE */}
           {step === 'configure' && (
             <div className="p-4 space-y-4">
+
+              {/* ── 3-dots menu — just below header, right-aligned ── */}
+              {editingSplitId && (
+                <div className="flex justify-end">
+                  <div className="relative">
+                    <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
+                      <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
+                    </button>
+                    {dotsMenuOpen && (
+                      <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                          Delete Split
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* ── Split Name row ── */}
               <div className="space-y-1.5">
