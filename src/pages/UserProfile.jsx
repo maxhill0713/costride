@@ -197,10 +197,10 @@ export default function UserProfile() {
               <span className="text-[11px] text-slate-400">Best streak: <span className="text-orange-300 font-semibold">{longestStreak} days</span></span>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Badges */}
-        {profileUser.equipped_badges?.length > 0 && (
+        {!isBlocked && profileUser.equipped_badges?.length > 0 && (
           <div className="flex items-center gap-1.5">
             {profileUser.equipped_badges.map((badgeId) => {
               const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
