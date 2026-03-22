@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
@@ -620,6 +620,52 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
   );
 }
 
+// ─── Trainer tab ─────────────────────────────────────────────────────────────
+function TrainerTab() {
+  const [activeSection, setActiveSection] = useState('classes');
+
+  const btnBase = "px-2 py-3 rounded-2xl font-bold text-sm transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu flex-1";
+  const btnInactive = "bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]";
+
+  return (
+    <div className="space-y-5">
+      {/* ── Tab buttons — same style as RedeemReward page ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setActiveSection('classes')}
+          className={`${btnBase} ${
+            activeSection === 'classes'
+              ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_5px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]'
+              : btnInactive
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          Classes
+        </button>
+        <button
+          onClick={() => setActiveSection('coaches')}
+          className={`${btnBase} ${
+            activeSection === 'coaches'
+              ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]'
+              : btnInactive
+          }`}
+        >
+          <User className="w-4 h-4" />
+          Coaches
+        </button>
+      </div>
+
+      {/* ── Content areas (empty for now) ── */}
+      {activeSection === 'classes' && (
+        <div />
+      )}
+      {activeSection === 'coaches' && (
+        <div />
+      )}
+    </div>
+  );
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 export default function Progress() {
   const { data: currentUser } = useQuery({
@@ -695,9 +741,11 @@ export default function Progress() {
           </div>
         </TabsContent>
 
-        {/* ── Trainer (empty) ── */}
+        {/* ── Trainer ── */}
         <TabsContent value="rank" className="mt-0 px-3 md:px-4 py-5">
-          <div className="max-w-4xl mx-auto" />
+          <div className="max-w-4xl mx-auto">
+            <TrainerTab />
+          </div>
         </TabsContent>
 
       </Tabs>
