@@ -480,7 +480,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             {exs.map((ex, idx) =>
                               <div key={idx} className="relative">
                                 <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="e.g. Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
                                   <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
                                   <SmallInput value={ex.reps ?? '10'} onChange={(v) => updateExercise(day, idx, 'reps', v)} placeholder="10" />
                                   <div className="relative"><SmallInput value={ex.weight ?? ''} onChange={(v) => updateExercise(day, idx, 'weight', v)} placeholder="—" /><span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span></div>
@@ -506,7 +506,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               return (
                                 <div key={idx} className="relative">
                                   <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="e.g. Rowing" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="Run" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
                                     <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
                                     {/* Time per round */}
                                     <div className="relative">
