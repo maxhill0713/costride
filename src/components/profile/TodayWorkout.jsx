@@ -69,15 +69,13 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
                   </div>
                 </div>
               </button>);
-
           })}
         </div>
       </div>
     </>);
-
 }
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, onOpenTimer }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
@@ -90,7 +88,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
-  const [showTimerOptions, setShowTimerOptions] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showLogConfirm, setShowLogConfirm] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
@@ -99,6 +96,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [frozenDuration, setFrozenDuration] = useState(0);
   const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
+  const [timerBarPulse, setTimerBarPulse] = useState(0); // increments to signal openBar
 
   const [overrideDayKey, setOverrideDayKey] = useState(null);
 
@@ -310,10 +308,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       const newStreak = (currentUser.current_streak || 0) + 1;
 
-      // ── Monthly challenge progress update ──────────────────────────────────
       const nowDate = new Date();
       const currentMonth = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}`;
-      const logDayOfWeek = nowDate.getDay(); // 0=Sunday, 6=Saturday
+      const logDayOfWeek = nowDate.getDay();
       const isWeekend = logDayOfWeek === 0 || logDayOfWeek === 6;
       const prevProgress = currentUser.monthly_challenge_progress || {};
       const isNewMonth = prevProgress.month !== currentMonth;
@@ -329,7 +326,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       await base44.auth.updateMe({ current_streak: newStreak, monthly_challenge_progress: newMonthlyProgress });
 
-      // Build monthly challenge progress data for celebration screen
       const MONTHLY_CHALLENGE_DEFS = [
       { id: 'streak_master', title: 'Streak Master', progressKey: 'streak_master', target: 7, emoji: '🏅', description: 'Maintain your gym streak for 7 consecutive days', reward: '🏅 Streak Master Badge' },
       { id: 'discipline_builder', title: 'Discipline Builder', progressKey: 'discipline_builder', target: 15, emoji: '💪', description: 'Log 15 workouts this month', reward: '💪 Discipline Builder Badge' },
@@ -350,7 +346,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     },
     onSuccess: (data) => {
       setShowSummary(false);
-      setIsExpanded(false); // collapse card so circles appear in correct position
+      setIsExpanded(false);
       queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, activeDayKey] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
@@ -379,14 +375,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
           +{(currentWeight - lastWeight).toFixed(1)}
         </Badge>);
-
     } else if (currentWeight < lastWeight) {
       return (
         <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px] font-semibold px-1.5 py-0">
           <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
           {(currentWeight - lastWeight).toFixed(1)}
         </Badge>);
-
     }
     return null;
   };
@@ -400,20 +394,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <ChevronDown className="w-5 h-5 rotate-180" />
     </motion.button>;
 
-
   if (!todayWorkout) {
     return (
       <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
         <Dumbbell className="w-8 h-8 text-slate-400 mx-auto mb-2" />
         <p className="text-slate-300 font-semibold text-xs">No workout split configured yet</p>
       </Card>);
-
   }
-
-  const timerDisplay = (() => {
-    const t = parseInt(restTimer) || 90;
-    return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`;
-  })();
 
   return (
     <>
@@ -467,10 +454,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <li>• <strong>Switch workout:</strong> Tap the workout name to swap to a different day's session</li>
                 <li>• <strong>Update weight/reps:</strong> Click the pencil icon next to any exercise, enter new values, then save</li>
                 <li>• <strong>Track progress:</strong> Green/red badges show weight increases/decreases vs. last workout</li>
-                <li>• <strong>Rest timer:</strong> Click timer, choose duration, hit "Go" - full screen countdown between sets</li>
+                <li>• <strong>Timer:</strong> Tap Timer to open the rest/cardio timer bar at the bottom of the screen</li>
                 <li>• <strong>Plate calculator:</strong> Use calculator icon to see which plates to load on the bar</li>
-                <li>• <strong>Workout duration:</strong> Auto-starts timer when you check in. Duration displays when you log the workout</li>
-                <li>• <strong>Log completion:</strong> Hit "Log Workout" when finished - see your duration summary and save progress</li>
+                <li>• <strong>Workout duration:</strong> Auto-starts when you check in. Duration displays when you log the workout</li>
+                <li>• <strong>Log completion:</strong> Hit "Log Workout" when finished to save your progress</li>
               </ul>
             </div>
           }
@@ -626,7 +613,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
               <div className="mt-3">
-                      {/* Cardio Headers */}
                       <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -719,7 +705,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </div>
               }
 
-                  {/* View Summary — expanded state */}
+                  {/* View Summary */}
                   {alreadyLoggedToday &&
               <Button
                 onClick={() => setSummaryLog(todayLog)}
@@ -729,61 +715,32 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </Button>
               }
 
-                  {/* ── Rest Timer & Tools ── */}
+                  {/* ── Timer & Tools ── */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
 
-                      {/* Timer display box with "Timer" label underneath */}
-                      <div className="relative" style={{ flex: '0 0 auto', width: '49%' }}>
-                        <button
-                      onClick={() => {if (!isTimerActive) setShowTimerOptions(!showTimerOptions);}}
-                      style={{ height: '51px' }}
-                      className="relative w-full flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden">
-                          <div className="flex items-center gap-2 mt-1">
-                            <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                            <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
-                              {timerDisplay}
-                            </span>
-                          </div>
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                            Timer
-                          </span>
-                        </button>
-
-                        {showTimerOptions && !isTimerActive &&
-                    <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                            <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
-                              <button
-                          onClick={() => {const v = parseInt(restTimer) || 90;setRestTimer(Math.max(10, v - 10));}}
-                          className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
-                                −
-                              </button>
-                              <button
-                          onClick={() => {const v = parseInt(restTimer) || 90;setRestTimer(v + 10);}}
-                          className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
-                                +
-                              </button>
-                            </div>
-                          </>
-                    }
-                      </div>
-
-                      {/* Go / Stop button */}
+                      {/* Single "Timer" button — opens the bar */}
                       <button
-                    onClick={() => {
-                      if (!isTimerActive) {
-                        setShowTimerOptions(false);
-                        const time = parseInt(restTimer) || 90;
-                        setRestTimer(time);
-                        setInitialRestTime(time);
-                      }
-                      setIsTimerActive(!isTimerActive);
-                    }}
-                    style={{ height: '51px', width: '64px', flexShrink: 0 }}
-                    className="text-sm font-bold rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                        {isTimerActive ? 'Stop' : 'Go'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTimerBarPulse(n => n + 1);
+                          if (onOpenTimer) onOpenTimer();
+                        }}
+                        style={{ height: '51px', width: '49%' }}
+                        className="relative flex flex-col items-center justify-center gap-0 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
+                            {isTimerActive
+                              ? `${Math.floor((parseInt(restTimer) || 0) / 60)}:${((parseInt(restTimer) || 0) % 60).toString().padStart(2, '0')}`
+                              : 'Timer'}
+                          </span>
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                          {isTimerActive ? 'Active' : 'Rest / Cardio'}
+                        </span>
                       </button>
+
                     </div>
 
                     <div className="flex items-center gap-2.5 mr-1">
@@ -794,9 +751,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <BookOpen className="w-3.5 h-3.5" />
                       </Button>
                       <CollapseChevron
-                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                    className="w-10 h-6" />
-                  
+                        onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                        className="w-10 h-6" />
                     </div>
                   </div>
                 </div> : (
@@ -810,7 +766,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="flex justify-center mb-4">
                     <CollapseChevron
                   onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}} />
-                
                   </div>
                 </div>)
             }
@@ -910,7 +865,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                   const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                  // Robust parsing: handles empty strings, numbers, and setsReps fallback
                   const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
                   const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map((s) => s.trim()) : [];
                   const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
@@ -939,7 +893,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                             </div>
                           </div>
                         </div>);
-
                 })}
                   </div>
                 </div>
@@ -973,5 +926,4 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         }} />
       
     </>);
-
 }
