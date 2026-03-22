@@ -217,7 +217,7 @@ export default function UserProfile() {
 
       {/* ── POSTS ── */}
       <div className="max-w-4xl mx-auto pb-32">
-        {favouritePosts.length === 0 ? (
+        {isBlocked ? null : favouritePosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-3">
               <Star className="w-6 h-6 text-slate-600" />
