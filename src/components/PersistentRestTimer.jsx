@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTimer } from '../TimerContext';
+import { useTimer } from './TimerContext';
 
 /* ─── CSS animations ─────────────────────────────────────────────────────── */
 const PULSE_CSS = `
