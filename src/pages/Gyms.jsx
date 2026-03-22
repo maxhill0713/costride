@@ -561,19 +561,48 @@ return (
             </div>
             {!searchQuery && recentlyViewedGyms.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Recently Viewed</p>
-                <div className="flex flex-col gap-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Recently Viewed</p>
+                <div className="grid md:grid-cols-2 gap-4">
                   {recentlyViewedGyms.map((gym) => (
-                    <Link key={gym.id} to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/40 hover:border-blue-500/40 transition-all">
-                      {gym.image_url
-                        ? <img src={gym.image_url} alt={gym.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                        : <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0"><Dumbbell className="w-5 h-5 text-white" /></div>
-                      }
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-white text-sm truncate">{gym.name}</p>
-                        <p className="text-xs text-slate-400 truncate">{gym.city}</p>
+                    <div key={gym.id} className="group relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                      <div
+                        className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                        }}
+                      >
+                        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                          {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                            <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                              <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
+                            </Button>
+                          </Link>
+                          {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) && (
+                            <div className="absolute top-3 left-3"><Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge></div>
+                          )}
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <div>
+                            <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-slate-400"><MapPin className="w-4 h-4 flex-shrink-0" /><span className="line-clamp-1">{gym.address || gym.city}</span></div>
+                          </div>
+                          <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
+                            {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
+                            {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
+                          </div>
+                          {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
+                        </div>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>
