@@ -170,9 +170,9 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
             {allSplits.map((entry, i) => {
               const isPrimary = effectiveActive === entry.id;
               return (
-                <button key={entry.id} onClick={() => setSelected(entry.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`} style={{ animationDelay: `${140 + i * 55}ms` }}>
+                <button key={entry.id} onClick={() => setSelected(entry.id)} className={`w-full text-left p-2.5 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`} style={{ animationDelay: `${140 + i * 55}ms` }}>
                   <div className="flex items-center justify-between">
-                    <div><h4 className="font-bold text-white">{entry.name}</h4><p className="text-xs text-slate-400 mt-0.5">{entry.description || `${(entry.training_days || []).length} days · custom`}</p></div>
+                    <div><h4 className="font-bold text-white text-sm">{entry.name}</h4><p className="text-xs text-slate-400 mt-0.5">{entry.description || `${(entry.training_days || []).length} days · custom`}</p></div>
                     {isPrimary && <Badge className="bg-purple-500 text-white flex-shrink-0"><Star className="w-3 h-3 mr-1" />Active</Badge>}
                   </div>
                 </button>
