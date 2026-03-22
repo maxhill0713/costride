@@ -12,21 +12,24 @@ export function TimerProvider({ children }) {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (isTimerActive && restTimer > 0) {
+    if (isTimerActive) {
+      const current = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 0;
+      if (current <= 0) return;
       intervalRef.current = setInterval(() => {
         setRestTimer(prev => {
-          if (prev <= 1) {
+          const p = typeof prev === 'number' ? prev : parseInt(prev) || 0;
+          if (p <= 1) {
             clearInterval(intervalRef.current);
             return 0;
           }
-          return prev - 1;
+          return p - 1;
         });
       }, 1000);
     } else {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isTimerActive, restTimer > 0]);
+  }, [isTimerActive]);
 
   return (
     <TimerContext.Provider value={{
