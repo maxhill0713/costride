@@ -69,7 +69,7 @@ export default function UserProfile() {
 
   const favouritePosts = posts.filter((p) => p.is_favourite && (p.image_url || p.video_url));
 
-  const displayName = profileUser?.username || profileUser?.full_name || 'User';
+  const displayName = profileUser?.display_name || profileUser?.username || profileUser?.full_name || 'User';
   const streak = profileUser?.current_streak || 0;
   const longestStreak = profileUser?.longest_streak || 0;
 
