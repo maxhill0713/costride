@@ -513,6 +513,87 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns }) {
   );
 }
 
+// ─── Completed Goals (collapsible) ───────────────────────────────────────────
+function CompletedGoals({ goals }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-2">
+      {/* Header row — always visible */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 w-full group mb-3"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+      >
+        <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', flex: 1, textAlign: 'left' }}>
+          Completed ({goals.length})
+        </span>
+        <ChevronDown
+          className="w-4 h-4 text-slate-500 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
+        />
+      </button>
+
+      {/* Cards — only when open */}
+      {open && (
+        <div className="space-y-2">
+          {goals.map((goal) => (
+            <div
+              key={goal.id}
+              style={{
+                background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                borderRadius: 16,
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              {/* Icon */}
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: 'rgba(34,197,94,0.12)',
+                border: '1px solid rgba(34,197,94,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CheckCircle className="w-4 h-4 text-green-400" />
+              </div>
+
+              {/* Text */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
+                  {goal.title}
+                </p>
+                {goal.target_value && (
+                  <p style={{ fontSize: 11, fontWeight: 500, color: '#475569', margin: '2px 0 0' }}>
+                    {goal.target_value}{goal.unit ? ` ${goal.unit}` : ''}
+                  </p>
+                )}
+              </div>
+
+              {/* Badge */}
+              <div style={{
+                padding: '3px 10px', borderRadius: 99,
+                background: 'rgba(34,197,94,0.1)',
+                border: '1px solid rgba(34,197,94,0.2)',
+                fontSize: 10, fontWeight: 700,
+                color: '#4ade80',
+                flexShrink: 0,
+                letterSpacing: '0.04em',
+              }}>
+                Done
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Goals tab ────────────────────────────────────────────────────────────────
 function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
   const queryClient = useQueryClient();
@@ -588,25 +669,7 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
       )}
 
       {completedGoals.length > 0 && (
-        <div className="mt-2">
-          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <CheckCircle className="w-3.5 h-3.5" />Completed ({completedGoals.length})
-          </h4>
-          <div className="space-y-2">
-            {completedGoals.slice(0, 3).map((goal) => (
-              <div key={goal.id} className="flex items-center gap-3 rounded-2xl px-4 py-3" style={CARD}>
-                <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 text-green-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{goal.title}</p>
-                  <p className="text-xs text-slate-500">{goal.target_value} {goal.unit}</p>
-                </div>
-                <span className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">Done</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CompletedGoals goals={completedGoals} />
       )}
 
       <AddGoalModal
