@@ -73,6 +73,12 @@ export default function UserProfile() {
   const streak = profileUser?.current_streak || 0;
   const longestStreak = profileUser?.longest_streak || 0;
 
+  // Privacy: check if viewer is a friend of the profile owner
+  const isOwnProfile = currentUser?.id === userId;
+  const isProfilePrivate = profileUser?.public_profile === false;
+  const isFriend = friendsList.some(f => f.friend_id === currentUser?.id || f.user_id === currentUser?.id);
+  const isBlocked = isProfilePrivate && !isOwnProfile && !isFriend;
+
   const badgeDefs = [
     { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
     { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
