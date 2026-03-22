@@ -12,7 +12,7 @@ import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-import { useTimer } from '../TimerContext';
+import { useTimer } from './TimerContext';
 
 // ── Workout Switcher Modal ───────────────────────────────────────────────────
 function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSelect }) {
