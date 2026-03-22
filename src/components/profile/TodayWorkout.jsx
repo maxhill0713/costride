@@ -136,18 +136,20 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       return {
         name: workout.name || 'Training Day',
         exercises: workout.exercises || [],
+        cardio: workout.cardio || [],
       };
     }
 
     const trainingDays = currentUser?.training_days || [];
     if (!trainingDays.includes(adjustedDay)) {
-      return { name: 'Rest Day', exercises: [] };
+      return { name: 'Rest Day', exercises: [], cardio: [] };
     }
     const workout = currentUser.custom_workout_types[adjustedDay];
     if (!workout) return null;
     return {
       name: workout.name || 'Training Day',
       exercises: workout.exercises || [],
+      cardio: workout.cardio || [],
     };
   };
 
