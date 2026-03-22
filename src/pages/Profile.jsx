@@ -423,7 +423,7 @@ export default function Profile() {
                           <span className="text-[10px] text-slate-500 font-semibold">Camera</span>
                         </label>
                       </div>
-                      <span className="text-[11px] text-slate-600 font-medium">Add a photo or video to post</span>
+                      <span className="text-[11px] text-slate-600 font-medium">Add a photo or video (optional)</span>
                     </div>
                   )}
                   {!uploading && postImage && (
