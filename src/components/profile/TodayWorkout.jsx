@@ -256,6 +256,39 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const handleCancel = () => setEditingIndex(null);
 
+  // ── Cardio edit helpers ───────────────────────────────────────────────────
+  const formatTime = (raw) => {
+    const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
+    if (!digits) return '';
+    const padded = digits.padStart(3, '0');
+    const mins = padded.slice(0, padded.length - 2);
+    const secs = padded.slice(-2);
+    return `${parseInt(mins, 10)}:${secs}`;
+  };
+
+  const handleEditCardio = (index, c) => {
+    setEditingCardioIndex(index);
+    setEditCardioRounds(c.rounds || '1');
+    setEditCardioTime(c.time || '');
+    setEditCardioRest(c.rest || '');
+  };
+
+  const handleSaveCardio = (index) => {
+    const updatedCardio = [...(todayWorkout.cardio || [])];
+    updatedCardio[index] = { ...updatedCardio[index], rounds: editCardioRounds, time: editCardioTime, rest: editCardioRest };
+    const updatedWorkoutTypes = {
+      ...currentUser.custom_workout_types,
+      [activeDayKey]: {
+        ...currentUser.custom_workout_types[activeDayKey],
+        cardio: updatedCardio,
+      },
+    };
+    base44.auth.updateMe({ custom_workout_types: updatedWorkoutTypes }).then(() => {
+      queryClient.invalidateQueries(['currentUser']);
+      setEditingCardioIndex(null);
+    });
+  };
+
   const logWorkoutMutation = useMutation({
     mutationFn: async () => {
       if (alreadyLoggedToday) throw new Error('You have already logged this workout today');
