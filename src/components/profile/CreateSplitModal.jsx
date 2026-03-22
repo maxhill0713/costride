@@ -326,19 +326,22 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
             )}
 
-            {/* CONFIGURE page — only 3-dots in header (Set Active moved to body) */}
+            {/* CONFIGURE page — Set Active top right, 3-dots below */}
             {step === 'configure' && editingSplitId && (
-              <div className="relative">
-                <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
-                  <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
-                </button>
-                {dotsMenuOpen && (
-                  <div className="absolute right-0 top-10 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
-                      Delete Split
-                    </button>
-                  </div>
-                )}
+              <div className="flex flex-col items-end gap-1">
+                <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
+                <div className="relative">
+                  <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
+                    <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
+                  </button>
+                  {dotsMenuOpen && (
+                    <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                        Delete Split
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -411,11 +414,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {step === 'configure' && (
             <div className="p-4 space-y-4">
 
-              {/* ── Split Name row: label left, Set Active button right ── */}
+              {/* ── Split Name row ── */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
-                  <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
                 </div>
                 <input type="text" value={splitName} onChange={(e) => setSplitName(e.target.value.slice(0, 30))} placeholder="My Training Split" maxLength={30} style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
               </div>
