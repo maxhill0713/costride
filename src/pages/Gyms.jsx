@@ -607,12 +607,14 @@ return (
                 </div>
               </div>
             )}
-            {searchQuery && filteredGyms.length === 0 ?
+            {searchQuery && filteredGyms.length === 0 && (
               <div className="text-center py-12">
                 <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                 <p className="text-slate-400">No gyms found</p>
                 <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
-              </div> : searchQuery ?
+              </div>
+            )}
+            {searchQuery && filteredGyms.length > 0 && (
               <div className="grid md:grid-cols-2 gap-4">
                 {filteredGyms.map((gym) =>
                   <div key={gym.id} className="group relative">
