@@ -76,7 +76,12 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
 }
 
 export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange }) {
-  const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar } = useTimer();
+  const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar, setTimerWorkout } = useTimer();
+
+  // Keep context in sync with today's workout so PersistentRestTimer can read cardio
+  React.useEffect(() => {
+    if (todayWorkout) setTimerWorkout(todayWorkout);
+  }, [JSON.stringify(todayWorkout)]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
