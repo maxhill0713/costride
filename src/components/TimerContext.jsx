@@ -6,7 +6,8 @@ export function TimerProvider({ children }) {
   const [restTimer, setRestTimer]           = useState(90);
   const [isTimerActive, setIsTimerActive]   = useState(false);
   const [initialRestTime, setInitialRestTime] = useState(90);
-  const [openTimerBar, setOpenTimerBar]     = useState(false); // signal to open the bar
+  const [openTimerBar, setOpenTimerBar]     = useState(false);
+  const [timerWorkout, setTimerWorkout]     = useState(null); // today's workout for cardio routines
 
   const intervalRef = useRef(null);
 
@@ -33,6 +34,7 @@ export function TimerProvider({ children }) {
       isTimerActive, setIsTimerActive,
       initialRestTime, setInitialRestTime,
       openTimerBar, setOpenTimerBar,
+      timerWorkout, setTimerWorkout,
     }}>
       {children}
     </TimerContext.Provider>
