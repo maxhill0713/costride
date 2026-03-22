@@ -263,7 +263,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             Overload Tracker
           </h2>
           <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
-            Est. 1RM change vs. baseline · 2 months
+            Est. 1RM change vs. baseline · 2 m
           </p>
         </div>
         {workoutOptions.length > 0 && (
