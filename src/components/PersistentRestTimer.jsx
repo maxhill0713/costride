@@ -268,6 +268,11 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   };
 
   const handleGo = () => {
+    // Ensure restTimer is a clean integer — fixes the default 90s skipping to 0
+    const currentVal = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90;
+    if (!cardioMode && currentVal !== restTimer) {
+      onTimerValueChange(currentVal);
+    }
     setPaused(false);
     onTimerStateChange(true);
   };
@@ -333,14 +338,14 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />
               }
               <span style={{ color: '#fff', fontWeight: 900, fontSize: 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
-                {fmt(t)}
+                {isActive || paused ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
               </span>
             </div>
 
             {/* Buttons */}
-            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 220 }}>
+            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
               {!isActive && !paused ? (
-                <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)" shadow="#1a3fa8" style={{ width: '100%', height: 56 }}>
+                <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
                   Go
                 </PressBtn>
               ) : (
@@ -405,15 +410,17 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
           style={{
             position: 'fixed', left: 0, right: 0,
             bottom: 'calc(79px + env(safe-area-inset-bottom))',
-            zIndex: 400, padding: '10px 14px', minHeight: 62,
-            background: staticBarBg, // always blue
+            zIndex: 400, padding: '0 14px',
+            height: 62, // fixed — never changes
+            display: 'flex', alignItems: 'center',
+            background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
             borderTop: `1px solid ${isPulsing ? 'rgba(239,68,68,0.5)' : 'rgba(37,99,235,0.5)'}`,
             boxShadow: '0 -4px 24px rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             cursor: isFinished ? 'default' : 'pointer',
           }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
 
             {/* Up chevron */}
             <button onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
@@ -429,7 +436,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             {/* Centre: countdown or adjuster */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={e => e.stopPropagation()}>
               {isActive ? (
-                <span style={{ fontWeight: 900, fontSize: 30, fontVariantNumeric: 'tabular-nums', color: staticAccent, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+                <span style={{ fontWeight: 900, fontSize: 26, fontVariantNumeric: 'tabular-nums', color: staticAccent, lineHeight: '36px', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
                   {fmt(t)}
                 </span>
               ) : (
