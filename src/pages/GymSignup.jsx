@@ -783,7 +783,7 @@ export default function GymSignup() {
             <button className="gs-btn-primary" style={{ flex:1 }} disabled={createGymMutation.isPending} onClick={submitGym}>
               {createGymMutation.isPending
                 ? <><Loader2 style={{ width:15, height:15, animation:'spin 1s linear infinite', position:'relative', zIndex:1 }} /><span style={{ position:'relative', zIndex:1 }}>Creating…</span></>
-                : <><span style={{ position:'relative', zIndex:1 }}>{emailVerified ? 'Create gym ✓' : 'Create gym'}</span><ArrowRight style={{ width:15, height:15, position:'relative', zIndex:1 }} /></>}
+                : <><span style={{ position:'relative', zIndex:1 }}>{emailVerified ? 'Launch my gym ✓' : 'Launch my gym'}</span><ArrowRight style={{ width:15, height:15, position:'relative', zIndex:1 }} /></>}
             </button>
           </div>
           <button onClick={submitGym} disabled={createGymMutation.isPending} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.22)', fontSize:12, marginTop:12, display:'block', width:'100%', textAlign:'center' }}>
