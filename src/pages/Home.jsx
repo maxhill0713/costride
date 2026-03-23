@@ -418,6 +418,8 @@ export default function Home() {
   const [showDaysCelebration, setShowDaysCelebration] = useState(false); // ← Stage 4
   const [showFreezeAnimation, setShowFreezeAnimation] = useState(false);
   const [freezeAnimationData, setFreezeAnimationData] = useState({ freezesLostCount: 0, finalFreezeCount: 0 });
+  const [showStreakLossAnimation, setShowStreakLossAnimation] = useState(false);
+  const [streakLossAnimationData, setStreakLossAnimationData] = useState({ previousStreak: 0 });
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [celebrationExercises, setCelebrationExercises] = useState([]);
