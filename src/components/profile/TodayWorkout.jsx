@@ -662,6 +662,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '40px' }}>{c.rounds || '—'}</div>
                               <div className="bg-emerald-500/10 text-emerald-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{c.time ? formatTime(c.time) : '—'}</div>
                               <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}</div>
+                              {!alreadyLoggedToday && (
                               <motion.button
                       onClick={() => handleEditCardio(index, c)}
                       whileTap={{ scale: 0.78, y: 1 }}
@@ -669,6 +670,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 mr-1">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </motion.button>
+                              )}
                             </>
                   }
                         </motion.div>
