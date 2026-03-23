@@ -19,6 +19,7 @@ import PostCard from '../components/feed/PostCard';
 import WorkoutDaysCelebration from '../components/home/WorkoutDaysCelebration';
 import StreakFreezeAnimation from '../components/home/StreakFreezeAnimation';
 import StreakLossAnimation from '../components/home/StreakLossAnimation';
+import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
