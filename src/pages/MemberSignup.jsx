@@ -136,15 +136,15 @@ export default function MemberSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-start py-8 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-start py-4 sm:py-8 px-3 sm:px-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-md w-full mx-auto relative z-10">
+      <div className="w-full mx-auto relative z-10 max-w-md px-0 sm:px-2">
 
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4 sm:mb-6">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
             alt="CoStride"
@@ -154,7 +154,7 @@ export default function MemberSignup() {
 
         {/* Progress bar */}
         {step >= 2 && step <= 4 && (
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div className="flex justify-between text-xs text-slate-500 mb-1.5">
               <span>Step {step - 1} of 3</span>
               <span>{Math.round(((step - 2) / 2) * 100)}%</span>
@@ -170,7 +170,7 @@ export default function MemberSignup() {
 
         {/* ── STEP 1: WELCOME ── */}
         {step === 1 && (
-          <div className="space-y-6">
+         <div className="space-y-4 sm:space-y-6">
             <div className="text-center space-y-3">
               <div className="inline-flex items-center gap-2 bg-blue-500/15 border border-blue-500/30 rounded-full px-3 py-1">
                 <Sparkles className="w-3.5 h-3.5 text-blue-400" />
@@ -236,7 +236,7 @@ export default function MemberSignup() {
 
         {/* ── STEP 2: JOIN GYM ── */}
         {step === 2 && (
-          <div className="space-y-5">
+         <div className="space-y-4 sm:space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Join Your Gym</h2>
               <p className="text-slate-400 text-sm mt-1">Enter your gym's code or search for your community</p>
@@ -369,7 +369,7 @@ export default function MemberSignup() {
 
         {/* ── STEP 3: HOW IT WORKS ── */}
         {step === 3 && (
-          <div className="space-y-5">
+         <div className="space-y-4 sm:space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Here's How It Works</h2>
               <p className="text-slate-400 text-sm mt-1">Everything you need to crush your goals</p>
@@ -437,7 +437,7 @@ export default function MemberSignup() {
 
         {/* ── STEP 4: PROFILE SETUP ── */}
         {step === 4 && (
-          <div className="space-y-5">
+         <div className="space-y-4 sm:space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Set Up Your Profile</h2>
               <p className="text-slate-400 text-sm mt-1">How will your gym community know you?</p>
@@ -543,7 +543,7 @@ export default function MemberSignup() {
 
         {/* ── STEP 5: FIRST ACTION ── */}
         {step === 5 && (
-          <div className="space-y-5">
+         <div className="space-y-4 sm:space-y-5">
             <div className="text-center">
               <div className="text-4xl mb-3">🎉</div>
               <h2 className="text-2xl font-black text-white tracking-tight">
