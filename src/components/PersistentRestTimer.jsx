@@ -6,7 +6,7 @@ import { useTimer } from './TimerContext';
 const PULSE_CSS = `
   @keyframes timer-bg-pulse {
     0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
-    50%       { background: linear-gradient(to bottom, #14532d, #166534, #052e16); }
+    50%       { background: linear-gradient(to bottom, #1e3a8a, #1d4ed8, #172554); }
   }
   @keyframes timer-bar-bg-pulse {
     0%, 100% { background: linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%); }
@@ -748,7 +748,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             display: 'flex', alignItems: 'center',
             background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
-            borderTop: `1px solid ${isPulsing ? 'rgba(239,68,68,0.5)' : 'rgba(37,99,235,0.5)'}`,
+            borderTop: '1px solid rgba(37,99,235,0.5)',
             boxShadow: '0 -4px 24px rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             cursor: isFinished ? 'default' : 'pointer',
