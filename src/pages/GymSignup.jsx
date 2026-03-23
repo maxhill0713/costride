@@ -472,7 +472,6 @@ export default function GymSignup() {
     return (
       <BG maxWidth={520}>
         <StepHeader step={2} title="What's your biggest challenge?" subtitle="We'll tailor your setup around what matters most" />
-
         <div className="gs-card gs-a2">
           <div style={{ display:'flex', flexDirection:'column', gap:9, marginBottom:22 }}>
             {CHALLENGES.map((c) => (
