@@ -207,6 +207,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         const nextIdx = currentSegIdx + 1;
         setCurrentSegIdx(nextIdx);
         onTimerValueChange(cardioSegments[nextIdx].secs);
+        // Keep timer running — restart it after value is set
+        onTimerStateChange(false);
+        setTimeout(() => onTimerStateChange(true), 50);
         return;
       }
       finishedAtRef.current = Date.now();
@@ -247,14 +250,108 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isPulsing  = isWarning || isFinished;
   const PULSE_DURATION = '2.2s ease-in-out infinite';
 
-  const staticBg     = 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
+  const isRestSegment = cardioMode && currentSeg?.type === 'rest';
+
+  // ── Colours: green during rest, blue otherwise ────────────────────────────
+  const staticBg     = isRestSegment
+    ? 'linear-gradient(to bottom, #14532d, #166534, #052e16)'
+    : 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
   const staticBarBg  = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
-  const staticAccent = '#60a5fa';
-  const staticText   = 'rgba(147,197,253,0.75)';
+  const staticAccent = isRestSegment ? '#4ade80' : '#60a5fa';
+  const staticText   = isRestSegment ? 'rgba(134,239,172,0.85)' : 'rgba(147,197,253,0.75)';
+
+  // ── Sound helpers (Web Audio API — no external deps) ─────────────────────
+  const playBell = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Bell: sine + harmonics with exponential decay
+      [1, 2, 3, 4].forEach((harmonic, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 880 * harmonic;
+        gain.gain.setValueAtTime(0.35 / (i + 1), ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 2.5);
+      });
+      // Add a brief metallic transient
+      const noise = ctx.createOscillator();
+      const noiseGain = ctx.createGain();
+      noise.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.type = 'square';
+      noise.frequency.value = 1200;
+      noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      noise.start(ctx.currentTime);
+      noise.stop(ctx.currentTime + 0.08);
+    } catch (e) { /* audio not available */ }
+  };
+
+  const playClap = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Rhythmic clapping: 4 claps spaced ~0.22s apart
+      for (let i = 0; i < 4; i++) {
+        const time = ctx.currentTime + i * 0.22;
+        const bufferSize = ctx.sampleRate * 0.05;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let j = 0; j < bufferSize; j++) {
+          data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufferSize * 0.3));
+        }
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1200;
+        filter.Q.value = 0.8;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.6, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        source.start(time);
+      }
+    } catch (e) { /* audio not available */ }
+  };
+
+  // ── Fire bell on Go ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isActive && !paused) playBell();
+  }, [isActive]);
+
+  // ── Fire claps at 10s warning, bell when segment ends ─────────────────────
+  const prevTRef = useRef(null);
+  useEffect(() => {
+    if (!isActive || !cardioMode) { prevTRef.current = t; return; }
+    const prev = prevTRef.current;
+    prevTRef.current = t;
+    // Claps: crossing from 11→10
+    if (prev !== null && prev > 10 && t === 10) playClap();
+    // Bell: crossing from 1→0 (segment end handled by advance effect)
+    if (prev !== null && prev === 1 && t === 0) playBell();
+  }, [t, isActive, cardioMode]);
 
   const cardioExercises = todayWorkout?.cardio || [];
   const currentSeg = cardioMode && cardioSegments[currentSegIdx];
-  const displayTitle = cardioMode ? (currentSeg?.type === 'rest' ? 'Rest' : cardioTitle) : 'Timer';
+  const displayTitle = cardioMode ? cardioTitle : 'Timer';
+
+  // Compute round label — count how many work segments have started up to currentSegIdx
+  const roundLabel = (() => {
+    if (!cardioMode || !cardioSegments.length) return null;
+    if (isFinished) return null;
+    if (currentSeg?.type === 'rest') return 'Rest';
+    let workCount = 0;
+    for (let i = 0; i <= currentSegIdx; i++) {
+      if (cardioSegments[i]?.type === 'work') workCount++;
+    }
+    return `Round ${workCount}`;
+  })();
 
   const handleSelectCardio = (c) => {
     const segs = buildSegments(c);
@@ -317,6 +414,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               justifyContent: 'flex-start', paddingTop: '8vh',
               background: staticBg,
+              transition: 'background 0.6s ease',
               animation: isPulsing ? `timer-bg-pulse ${PULSE_DURATION}` : 'none',
             }}>
 
@@ -327,9 +425,16 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             </button>
 
             {/* Title */}
-            <p style={{ fontSize: 22, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 24, color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+            <p style={{ fontSize: 22, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: roundLabel ? 6 : 24, color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
               {isFinished ? 'Done!' : displayTitle}
             </p>
+
+            {/* Round label */}
+            {roundLabel && (
+              <p style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 18, color: 'rgba(255,255,255,0.45)', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+                {roundLabel}
+              </p>
+            )}
 
             {/* Circle */}
             <div style={{ position: 'relative', width: 224, height: 224, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
