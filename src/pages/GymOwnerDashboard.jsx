@@ -681,8 +681,10 @@ export default function GymOwnerDashboard() {
           </button>
         </div>
       </header>
-      <main style={{ flex: 1, overflow: 'auto', padding: '14px 12px 8px', WebkitOverflowScrolling: 'touch' }}>
-        {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+      <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
+        <div style={{ maxWidth: '100%' }}>
+          {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+        </div>
       </main>
       <nav style={{ flexShrink: 0, background: '#080f1e', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map(item => {
