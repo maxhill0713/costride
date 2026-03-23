@@ -177,7 +177,7 @@ function StepHeader({ step, title, subtitle }) {
   const pct = Math.round(((step - 1) / TOTAL) * 100);
   return (
     <div style={{ textAlign: 'center', marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-      <img src={LOGO_URL} alt="CoStride" style={{ width: 48, height: 48, borderRadius: 13, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 6px 20px rgba(14,165,233,0.15)' }} />
+      <img src={POSE_1_URL} alt="CoStride" style={{ width: 48, height: 48, borderRadius: 13, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 6px 20px rgba(14,165,233,0.15)' }} />
       <div style={{ width: 200, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#0ea5e9,#6366f1)', borderRadius: 99, transition: 'width .6s ease' }} />
       </div>
@@ -473,7 +473,7 @@ export default function GymSignup() {
       <FullBG>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(32px, 6vw, 48px) clamp(16px, 4vw, 24px)', textAlign: 'center' }}>
           <div className="gs-a1" style={{ marginBottom: 48 }}>
-            <img src={LOGO_URL} alt="CoStride" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+            <img src={POSE_1_URL} alt="CoStride" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
           </div>
 
           <div style={{ maxWidth: 600, marginBottom: 64 }}>
