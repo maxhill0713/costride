@@ -6,23 +6,23 @@ import { useTimer } from './TimerContext';
 const PULSE_CSS = `
   @keyframes timer-bg-pulse {
     0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
-    50%       { background: linear-gradient(to bottom, #1d4ed8, #1e40af, #172554); }
+    50%       { background: linear-gradient(to bottom, #14532d, #166534, #052e16); }
   }
   @keyframes timer-bar-bg-pulse {
     0%, 100% { background: linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%); }
-    50%       { background: linear-gradient(90deg, #1d4ed8 0%, #172554 100%); }
+    50%       { background: linear-gradient(90deg, #14532d 0%, #052e16 100%); }
   }
   @keyframes timer-text-pulse {
     0%, 100% { color: rgba(252,165,165,0.9); }
-    50%       { color: rgba(147,197,253,0.75); }
+    50%       { color: rgba(134,239,172,0.85); }
   }
   @keyframes timer-stop-pulse {
     0%, 100% { background: linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9)); box-shadow: 0 3px 0 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,0.15); }
-    50%       { background: linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(37,99,235,0.9)); box-shadow: 0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15); }
+    50%       { background: linear-gradient(to bottom, rgba(74,222,128,0.9), rgba(22,163,74,0.9), rgba(20,83,45,0.9)); box-shadow: 0 3px 0 0 #14532d, inset 0 1px 0 rgba(255,255,255,0.15); }
   }
   @keyframes timer-stroke-pulse {
     0%, 100% { stroke: #fca5a5; }
-    50%       { stroke: #60a5fa; }
+    50%       { stroke: #4ade80; }
   }
 `;
 function injectPulseStyles() {
@@ -253,34 +253,34 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const staticBarBg = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
 
   // ── Sound helpers (Web Audio API — no external deps) ─────────────────────
-  const playBell = () => {
+  const playBell = (delay = 0) => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Bell: sine + harmonics with exponential decay
+      const t0 = ctx.currentTime + delay;
       [1, 2, 3, 4].forEach((harmonic, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.type = 'sine';
         osc.frequency.value = 880 * harmonic;
-        gain.gain.setValueAtTime(0.35 / (i + 1), ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.5);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 2.5);
+        gain.gain.setValueAtTime(0.35 / (i + 1), t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 2.5);
+        osc.start(t0); osc.stop(t0 + 2.5);
       });
-      // Add a brief metallic transient
       const noise = ctx.createOscillator();
       const noiseGain = ctx.createGain();
-      noise.connect(noiseGain);
-      noiseGain.connect(ctx.destination);
-      noise.type = 'square';
-      noise.frequency.value = 1200;
-      noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-      noise.start(ctx.currentTime);
-      noise.stop(ctx.currentTime + 0.08);
-    } catch (e) { /* audio not available */ }
+      noise.connect(noiseGain); noiseGain.connect(ctx.destination);
+      noise.type = 'square'; noise.frequency.value = 1200;
+      noiseGain.gain.setValueAtTime(0.15, t0);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
+      noise.start(t0); noise.stop(t0 + 0.08);
+    } catch (e) {}
+  };
+
+  const playTripleBell = () => {
+    playBell(0);
+    playBell(0.55);
+    playBell(1.1);
   };
 
   const playClap = () => {
@@ -312,9 +312,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     } catch (e) { /* audio not available */ }
   };
 
-  // ── Fire bell on Go ───────────────────────────────────────────────────────
+  // ── Triple bell on Go (cardio mode only), silent for basic rest timer ──────
   useEffect(() => {
-    if (isActive && !paused) playBell();
+    if (isActive && !paused && cardioMode) playTripleBell();
   }, [isActive]);
 
   // ── Fire claps at 10s warning, bell when segment ends ─────────────────────
