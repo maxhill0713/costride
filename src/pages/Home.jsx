@@ -415,6 +415,8 @@ export default function Home() {
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
   const [showDaysCelebration, setShowDaysCelebration] = useState(false); // ← Stage 4
+  const [showFreezeAnimation, setShowFreezeAnimation] = useState(false);
+  const [freezeAnimationData, setFreezeAnimationData] = useState({ freezesLostCount: 0, finalFreezeCount: 0 });
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [celebrationExercises, setCelebrationExercises] = useState([]);
