@@ -354,39 +354,32 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   if (!stage || !p1 || !p2 || !num || !lbl) return;
   const actx = audioCtxRef.current;
 
-  // ── Stage bounces in with a snappy Duolingo-style overshoot ──────────────
   if (actx) soundBounceIn(actx);
   trigAnim(stage, 'streakBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
 
-  // ── Number pops in below icon shortly after ───────────────────────────────
   const t1 = setTimeout(() => {
     if (actx) soundNumPop(actx);
     trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.6,0.64,1)');
   }, 500);
 
-  // ── Quick wind-up before pose swap ────────────────────────────────────────
   const t2 = setTimeout(() => {
     stage.style.opacity = '1';
     trigAnim(stage, 'streakWindup', 280, 'ease-in-out');
   }, 1300);
 
-  // ── Pose swap with hard rubber-band + immediate number update ────────────
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
     p1.style.display = 'none';
     p2.style.display = 'block';
     p2.style.opacity = '1';
     void p2.offsetWidth;
-    // Harder overshoot — Duolingo-style thunk
     p2.style.animation = 'streakIconPop 480ms cubic-bezier(0.34,1.8,0.64,1) forwards';
-    // Number updates immediately on the thunk
     if (actx) soundNumPop(actx);
     if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
     num.textContent = String(newStreak);
     trigAnim(num, 'streakNumPop', 380, 'cubic-bezier(0.34,1.8,0.64,1)');
   }, 1580);
 
-  // ── Transition out sound ──────────────────────────────────────────────────
   const t4 = setTimeout(() => {
     if (actx) soundTransition(actx);
   }, 2800);
@@ -415,7 +408,7 @@ export default function Home() {
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
-  const [showDaysCelebration, setShowDaysCelebration] = useState(false); // ← Stage 4
+  const [showDaysCelebration, setShowDaysCelebration] = useState(false);
   const [showFreezeAnimation, setShowFreezeAnimation] = useState(false);
   const [freezeAnimationData, setFreezeAnimationData] = useState({ freezesLostCount: 0, finalFreezeCount: 0 });
   const [showStreakLossAnimation, setShowStreakLossAnimation] = useState(false);
@@ -434,39 +427,51 @@ export default function Home() {
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
-  const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
-  const [isAtTop, setIsAtTop] = useState(true);
+  // ── Header scroll behaviour ──────────────────────────────────────────────
+  // Three states:
+  //   'top'     — at the very top, header sits inline (no background)
+  //   'hidden'  — scrolled down, header slides off-screen
+  //   'visible' — scrolled back up mid-page, header slides in with backdrop
+  const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
+  const ticking = useRef(false);
 
   useEffect(() => {
+    // Seed lastScrollY with the real current position on mount
+    lastScrollY.current = window.scrollY;
+
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      const atTop = currentY < 10;
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const prev = lastScrollY.current;
 
-      setIsAtTop(atTop);
+        if (currentY <= 10) {
+          // At the very top — show inline, no backdrop
+          setHeaderState('top');
+        } else if (currentY > prev) {
+          // Scrolling DOWN — hide
+          setHeaderState('hidden');
+        } else {
+          // Scrolling UP mid-page — show with backdrop
+          setHeaderState('visible');
+        }
 
-      if (atTop) {
-        setStickyHeaderVisible(true);
-      } else if (currentY > lastScrollY.current) {
-        // Scrolling down — hide
-        setStickyHeaderVisible(false);
-      } else {
-        // Scrolling up — show
-        setStickyHeaderVisible(true);
-      }
-
-      lastScrollY.current = currentY;
+        lastScrollY.current = currentY;
+        ticking.current = false;
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  // ────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     injectStreakStyles();
     injectCheckInStyles();
-    
-    // Check for missed workouts and consumed freezes on app load
+
     const checkMissedWorkouts = async () => {
       try {
         const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
@@ -481,8 +486,7 @@ export default function Home() {
         console.error('Error checking missed workouts:', error);
       }
     };
-    
-    // Check for streak loss on app load
+
     const checkStreakLoss = async () => {
       try {
         const result = await base44.functions.invoke('checkStreakLoss', {});
@@ -496,7 +500,7 @@ export default function Home() {
         console.error('Error checking streak loss:', error);
       }
     };
-    
+
     checkMissedWorkouts();
     checkStreakLoss();
   }, []);
@@ -661,15 +665,11 @@ export default function Home() {
   });
 
   useEffect(() => {
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    window.scrollY = 0;
-  }, []);
-  useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
+
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
@@ -915,26 +915,31 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
+        {/* ── Fixed header — hides on scroll-down, reappears on scroll-up ── */}
         <div
-          className="fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out"
+          className="fixed top-0 left-0 right-0 z-50"
           style={{
-            transform: stickyHeaderVisible ? 'translateY(0)' : 'translateY(-110%)',
-            background: isAtTop
+            // 'top': at top of page → translate to 0 so it sits inline naturally
+            // 'visible': scrolled up mid-page → translate to 0, show backdrop
+            // 'hidden': scrolled down → slide fully off screen
+            transform: headerState === 'hidden' ? 'translateY(-110%)' : 'translateY(0)',
+            background: headerState === 'top'
               ? 'linear-gradient(to bottom, rgba(30,41,59,0.4), transparent)'
-              : 'rgba(15, 23, 42, 0.85)',
-            backdropFilter: isAtTop ? 'none' : 'blur(16px)',
-            WebkitBackdropFilter: isAtTop ? 'none' : 'blur(16px)',
-            borderBottom: isAtTop ? 'none' : '1px solid rgba(255,255,255,0.07)',
+              : 'rgba(15, 23, 42, 0.88)',
+            backdropFilter: headerState === 'top' ? 'none' : 'blur(16px)',
+            WebkitBackdropFilter: headerState === 'top' ? 'none' : 'blur(16px)',
+            borderBottom: headerState === 'top' ? 'none' : '1px solid rgba(255,255,255,0.07)',
             paddingTop: 'env(safe-area-inset-top)',
-            transition: isAtTop ? 'none' : 'transform 300ms ease-out, background 200ms ease, border-color 200ms ease',
+            // Only animate the transform (not background) to avoid flash on first paint
+            transition: 'transform 300ms ease-out, background 200ms ease, backdrop-filter 200ms ease, border-color 200ms ease',
           }}>
           <div className="px-4 py-2.5">
             <HeaderContent compact={true} />
           </div>
         </div>
 
-        {/* Ghost spacer — same height as the fixed header so content starts below it */}
-        <div id="home-header-spacer" className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
+        {/* Ghost spacer — reserves the exact space the fixed header occupies */}
+        <div className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={true} />
         </div>
 
@@ -1486,12 +1491,10 @@ export default function Home() {
                       WebkitBackdropFilter: 'blur(20px)',
                       boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
                     }}>
-                    {/* Top shine */}
                     <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
                       style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
 
                     <div className="relative p-4 space-y-3">
-                      {/* Header */}
                       <div className="flex items-start gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
                           style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1507,7 +1510,6 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Progress bar */}
                       <div>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[11px] font-bold text-slate-400">{challenge.new_value} / {challenge.target_value}</span>
@@ -1527,7 +1529,6 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Reward row */}
                       <div className="flex items-center gap-3 rounded-xl px-3 py-2"
                         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <span style={{ fontSize: 20 }}>{challenge.emoji}</span>
@@ -1555,7 +1556,6 @@ export default function Home() {
             currentUser={currentUser}
             onContinue={() => {
               setShowShareWorkout(false);
-              // Short pause then show Stage 4
               setTimeout(() => setShowDaysCelebration(true), 200);
             }} />
         )}
@@ -1773,24 +1773,20 @@ export default function Home() {
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      // Parse setsReps string as universal fallback
                       const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
                       const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
-                      // Sets
                       const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
                       const sets = (rawSets !== undefined && rawSets !== null && String(rawSets) !== '')
                         ? String(rawSets)
                         : ex.logged_sets?.length ? String(ex.logged_sets.length)
                         : ex.sets_data?.length ? String(ex.sets_data.length)
                         : srParts[0] || '-';
-                      // Reps
                       const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
                       const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '')
                         ? String(rawReps)
                         : ex.logged_sets?.[0]?.reps ? String(ex.logged_sets[0].reps)
                         : ex.sets_data?.[0]?.reps ? String(ex.sets_data[0].reps)
                         : srParts[1] || '-';
-                      // Weight
                       const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight;
                       const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
                       return (
