@@ -624,8 +624,14 @@ export default function GymSignup() {
         <div style={{ position:'relative', zIndex:2, flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px 20px' }}>
           <div style={{ width:'100%', maxWidth:960, display:'grid', gridTemplateColumns:'1fr 1.2fr', gap:56, alignItems:'center' }} className="gs-two-col">
             <div>
-              <div className="gs-a1" style={{ marginBottom:16 }}>
-                <img src={LOGO_URL} alt="CoStride" style={{ width:48, height:48, borderRadius:13, objectFit:'cover', border:'1px solid rgba(255,255,255,0.15)' }} />
+              <div className="gs-a1" style={{ marginBottom:12 }}>
+                <img src={LOGO_URL} alt="CoStride" style={{ width:44, height:44, borderRadius:12, objectFit:'cover', border:'1px solid rgba(255,255,255,0.15)' }} />
+              </div>
+              <div className="gs-a1" style={{ marginBottom:12 }}>
+                <div style={{ width:160, height:3, background:'rgba(255,255,255,0.07)', borderRadius:99, overflow:'hidden' }}>
+                  <div style={{ width:'66%', height:'100%', background:'linear-gradient(90deg,#0ea5e9,#6366f1)', borderRadius:99 }} />
+                </div>
+                <div style={{ fontSize:11, fontWeight:700, color:'rgba(14,165,233,0.7)', letterSpacing:'.08em', textTransform:'uppercase', marginTop:6 }}>Step 4 of 6</div>
               </div>
               <div className="gs-a1 gs-pill" style={{ marginBottom:18, display:'inline-flex' }}>
                 <Flame style={{ width:11, height:11, color:'#0ea5e9' }} />
