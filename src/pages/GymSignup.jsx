@@ -19,6 +19,7 @@ const IMG_DASH2 = "https://media.base44.com/images/public/user_694b6372713bbccc3
 const IMG_DASH3 = "https://media.base44.com/images/public/user_694b6372713bbccc37eac3f3/0389290a1_laptop1.png";
 const IMG_APP   = "https://media.base44.com/images/public/user_694b6372713bbccc37eac3f3/9911f07a0_screens.png";
 const LOGO_URL  = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg";
+const POSE_1_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
 
 /* ─── Global CSS ─────────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
