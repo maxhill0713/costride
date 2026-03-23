@@ -24,6 +24,14 @@ const PULSE_CSS = `
     0%, 100% { stroke: #fca5a5; }
     50%       { stroke: #4ade80; }
   }
+  @keyframes completion-fade-in {
+    0%   { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes completion-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
 `;
 function injectPulseStyles() {
   if (document.getElementById('timer-pulse-css')) return;
@@ -59,19 +67,25 @@ function buildSegments(cardio) {
   return segments;
 }
 
+// Calculate total duration of a cardio routine in seconds
+function calcCardioDuration(cardio) {
+  const rounds = parseInt(cardio.rounds, 10) || 1;
+  const workSecs = parseTimeDigits(cardio.time);
+  const restSecs = rounds > 1 ? parseTimeDigits(cardio.rest) : 0;
+  return rounds * workSecs + Math.max(0, rounds - 1) * restSecs;
+}
+
 /* ── Segmented arc ── */
 function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) {
   const circumference = 2 * Math.PI * radius;
   const totalSecs = segments.reduce((s, seg) => s + seg.secs, 0);
   if (!totalSecs) return null;
 
-  // SVG transform: rotate(90deg) puts 0° at top, scale(-1,1) makes it go anticlockwise
   const svgTransform = 'rotate(90deg) scale(-1, 1)';
 
   let cumulative = 0;
   return (
     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: svgTransform }} viewBox="0 0 200 200">
-      {/* Track */}
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
 
       {segments.map((seg, i) => {
@@ -84,22 +98,18 @@ function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) 
         const color    = seg.type === 'work' ? workColor  : restColor;
         const dimColor = seg.type === 'work' ? 'rgba(96,165,250,0.2)' : 'rgba(52,211,153,0.2)';
 
-        // dashOffset positions each segment around the circle
         const segDashOffset = -(cumulative);
         cumulative += arcLen;
 
-        // Elapsed fraction within this segment (0 = none filled, 1 = fully filled)
         const elapsedFrac = i < currentSegIdx ? 1 : i === currentSegIdx ? (1 - smoothProgress) : 0;
         const filledLen = drawLen * elapsedFrac;
 
         return (
           <g key={i}>
-            {/* Dim background track for this segment */}
             <circle cx="100" cy="100" r={radius} fill="none"
               stroke={dimColor} strokeWidth="10" strokeLinecap="butt"
               strokeDasharray={`${drawLen} ${circumference - drawLen}`}
               strokeDashoffset={segDashOffset} />
-            {/* Filled portion — grows from 0 */}
             {filledLen > 0 && (
               <circle cx="100" cy="100" r={radius} fill="none"
                 stroke={color} strokeWidth="10"
@@ -115,20 +125,15 @@ function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) 
   );
 }
 
-/* ── Simple arc — starts empty at top, fills anticlockwise as time passes ── */
+/* ── Simple arc ── */
 function SimpleArc({ smoothProgress, isPulsing, radius = 90 }) {
   const circumference = 2 * Math.PI * radius;
-  // smoothProgress goes 1→0 as time counts down
-  // filled = elapsed = 1 - smoothProgress
   const filledLen = circumference * (1 - smoothProgress);
   return (
     <svg
-      // rotate(90deg) puts start point at top; scale(-1,1) makes it go anticlockwise
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(90deg) scale(-1, 1)' }}
       viewBox="0 0 200 200">
-      {/* Track */}
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
-      {/* Filled arc — grows from 0 as time elapses */}
       <circle cx="100" cy="100" r={radius} fill="none" stroke="#60a5fa" strokeWidth="10" strokeLinecap="round"
         strokeDasharray={`${filledLen} ${circumference - filledLen}`}
         strokeDashoffset={0}
@@ -162,6 +167,193 @@ function PressBtn({ onClick, children, bg, shadow, style = {} }) {
   );
 }
 
+/* ── Completion Overlay ── */
+function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismiss }) {
+  const [countdown, setCountdown] = useState(5);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setVisible(false);
+          setTimeout(onDismiss, 400);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleContinue = () => {
+    setVisible(false);
+    setTimeout(onDismiss, 400);
+  };
+
+  const durationMins = Math.floor((cardioDurationSecs || 0) / 60);
+  const durationSecs = (cardioDurationSecs || 0) % 60;
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 500,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(160deg, #0f1a3d 0%, #1a3a8f 40%, #1d4ed8 70%, #1e40af 100%)',
+            paddingBottom: 'calc(120px + env(safe-area-inset-bottom))',
+            paddingTop: 'env(safe-area-inset-top)',
+          }}>
+
+          {/* Background glow orbs */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
+              width: 320, height: 320, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(96,165,250,0.18) 0%, transparent 70%)',
+            }} />
+            <div style={{
+              position: 'absolute', bottom: '20%', left: '20%',
+              width: 200, height: 200, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
+            }} />
+          </div>
+
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.15, duration: 0.5, ease: [0.34, 1.1, 0.64, 1] }}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 0, textAlign: 'center', padding: '0 32px', position: 'relative', zIndex: 1,
+            }}>
+
+            {/* Main message */}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+              style={{
+                fontSize: isCardio ? 26 : 24,
+                fontWeight: 900,
+                color: '#ffffff',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.25,
+                marginBottom: isCardio ? 16 : 0,
+                textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+              }}>
+              {isCardio
+                ? `Well done, ${cardioTitle} is finished!!`
+                : 'Rest time is up, lock in for your next set'
+              }
+            </motion.p>
+
+            {/* Duration line (cardio only) */}
+            {isCardio && (
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: 'rgba(147,197,253,0.9)',
+                  letterSpacing: '0.01em',
+                  lineHeight: 1.5,
+                  textShadow: '0 1px 6px rgba(0,0,0,0.3)',
+                }}>
+                {durationMins > 0 && durationSecs > 0
+                  ? `Your workout lasted ${durationMins} minute${durationMins !== 1 ? 's' : ''} and ${durationSecs} second${durationSecs !== 1 ? 's' : ''}.`
+                  : durationMins > 0
+                    ? `Your workout lasted ${durationMins} minute${durationMins !== 1 ? 's' : ''}.`
+                    : durationSecs > 0
+                      ? `Your workout lasted ${durationSecs} second${durationSecs !== 1 ? 's' : ''}.`
+                      : null
+                }
+              </motion.p>
+            )}
+          </motion.div>
+
+          {/* Continue button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.4 }}
+            style={{
+              position: 'absolute',
+              bottom: 'calc(44px + env(safe-area-inset-bottom))',
+              left: 24, right: 24,
+              zIndex: 1,
+            }}>
+            {/* Countdown ring above button */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.7)' }}>
+                  {countdown}
+                </span>
+              </div>
+            </div>
+
+            {/* 3D blue continue button matching app style */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: 16,
+                background: '#1a3fa8', transform: 'translateY(4px)',
+              }} />
+              <button
+                onClick={handleContinue}
+                style={{
+                  position: 'relative', zIndex: 1,
+                  width: '100%', padding: '17px 24px',
+                  borderRadius: 16, border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                  color: '#ffffff', fontWeight: 900, fontSize: 17,
+                  letterSpacing: '-0.01em',
+                  boxShadow: '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+                onPointerDown={e => {
+                  e.currentTarget.style.transform = 'translateY(4px)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                onPointerUp={e => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)';
+                }}
+                onPointerLeave={e => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)';
+                }}>
+                Continue
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function PersistentRestTimer({ isActive, restTimer, initialRestTime, onTimerStateChange, onTimerValueChange }) {
   const { openTimerBar, setOpenTimerBar, timerWorkout } = useTimer();
   const todayWorkout = timerWorkout;
@@ -175,6 +367,16 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const [cardioTitle, setCardioTitle] = useState('');
   const [smoothProgress, setSmoothProgress] = useState(1);
   const [showFinished, setShowFinished]     = useState(false);
+
+  // Completion overlay state
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [completionIsCardio, setCompletionIsCardio] = useState(false);
+  const [completionCardioTitle, setCompletionCardioTitle] = useState('');
+  const [completionCardioDuration, setCompletionCardioDuration] = useState(0);
+
+  // Track cardio start time for duration calculation
+  const cardioStartTimeRef = useRef(null);
+  const cardioDurationRef  = useRef(0);
 
   const rafRef        = useRef(null);
   const lastTickRef   = useRef(null);
@@ -207,13 +409,26 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         const nextIdx = currentSegIdx + 1;
         setCurrentSegIdx(nextIdx);
         onTimerValueChange(cardioSegments[nextIdx].secs);
-        // Keep timer running — restart it after value is set
         onTimerStateChange(false);
         setTimeout(() => onTimerStateChange(true), 50);
         return;
       }
+
       finishedAtRef.current = Date.now();
       setShowFinished(true);
+
+      // Calculate cardio total duration if in cardio mode
+      let cardioDuration = 0;
+      if (cardioMode && cardioStartTimeRef.current) {
+        cardioDuration = Math.round((Date.now() - cardioStartTimeRef.current) / 1000);
+      }
+
+      // Show completion overlay
+      setCompletionIsCardio(cardioMode);
+      setCompletionCardioTitle(cardioTitle);
+      setCompletionCardioDuration(cardioDuration);
+      setShowCompletion(true);
+
       const timeout = setTimeout(() => {
         setShowFinished(false);
         onTimerStateChange(false);
@@ -221,6 +436,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         setCardioMode(false);
         setCurrentSegIdx(0);
         finishedAtRef.current = null;
+        cardioStartTimeRef.current = null;
       }, 10000);
       return () => clearTimeout(timeout);
     }
@@ -252,7 +468,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   const staticBarBg = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
 
-  // ── Sound helpers (Web Audio API — no external deps) ─────────────────────
+  // ── Sound helpers ─────────────────────────────────────────────────────────
   const playBell = (delay = 0) => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -286,7 +502,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const playClap = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Rhythmic clapping: 4 claps spaced ~0.22s apart
       for (let i = 0; i < 4; i++) {
         const time = ctx.currentTime + i * 0.22;
         const bufferSize = ctx.sampleRate * 0.05;
@@ -309,23 +524,21 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         gain.connect(ctx.destination);
         source.start(time);
       }
-    } catch (e) { /* audio not available */ }
+    } catch (e) {}
   };
 
-  // ── Triple bell on Go (cardio mode only), silent for basic rest timer ──────
+  // Triple bell on Go (cardio mode only)
   useEffect(() => {
     if (isActive && !paused && cardioMode) playTripleBell();
   }, [isActive]);
 
-  // ── Fire claps at 10s warning, bell when segment ends ─────────────────────
+  // Claps at 10s warning, bell when segment ends
   const prevTRef = useRef(null);
   useEffect(() => {
     if (!isActive || !cardioMode) { prevTRef.current = t; return; }
     const prev = prevTRef.current;
     prevTRef.current = t;
-    // Claps: crossing from 11→10
     if (prev !== null && prev > 10 && t === 10) playClap();
-    // Bell: crossing from 1→0 (segment end handled by advance effect)
     if (prev !== null && prev === 1 && t === 0) playBell();
   }, [t, isActive, cardioMode]);
 
@@ -340,7 +553,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const staticAccent = isRestSegment ? '#4ade80' : '#60a5fa';
   const staticText   = isRestSegment ? 'rgba(134,239,172,0.85)' : 'rgba(147,197,253,0.75)';
 
-  // Compute round label — count how many work segments have started up to currentSegIdx
   const roundLabel = (() => {
     if (!cardioMode || !cardioSegments.length) return null;
     if (isFinished) return null;
@@ -361,13 +573,18 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     onTimerValueChange(segs[0]?.secs || 60);
     onTimerStateChange(false);
     setPaused(false);
+    // Record total expected duration for display
+    cardioDurationRef.current = calcCardioDuration(c);
   };
 
   const handleGo = () => {
-    // Ensure restTimer is a clean integer — fixes the default 90s skipping to 0
     const currentVal = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90;
     if (!cardioMode && currentVal !== restTimer) {
       onTimerValueChange(currentVal);
+    }
+    // Record cardio start time when Go is pressed in cardio mode
+    if (cardioMode && !cardioStartTimeRef.current) {
+      cardioStartTimeRef.current = Date.now();
     }
     setPaused(false);
     onTimerStateChange(true);
@@ -380,7 +597,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     setCardioMode(false);
     setCurrentSegIdx(0);
     setShowFinished(false);
+    setShowCompletion(false);
     finishedAtRef.current = null;
+    cardioStartTimeRef.current = null;
     setBarVisible(false);
     setExpanded(false);
   };
@@ -393,16 +612,40 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       setPaused(true);
       onTimerStateChange(false);
     }
-    // Do NOT close fullscreen on pause
   };
 
-  if (!barVisible && !isActive && !showFinished) return null;
+  const handleCompletionDismiss = () => {
+    setShowCompletion(false);
+    setShowFinished(false);
+    onTimerStateChange(false);
+    onTimerValueChange('');
+    setCardioMode(false);
+    setCurrentSegIdx(0);
+    finishedAtRef.current = null;
+    cardioStartTimeRef.current = null;
+    setBarVisible(false);
+    setExpanded(false);
+  };
+
+  if (!barVisible && !isActive && !showFinished && !showCompletion) return null;
 
   return (
     <>
-      {/* ── Fullscreen ── */}
+      {/* ── Completion Overlay ── */}
       <AnimatePresence>
-        {expanded && (
+        {showCompletion && (
+          <CompletionOverlay
+            isCardio={completionIsCardio}
+            cardioTitle={completionCardioTitle}
+            cardioDurationSecs={completionCardioDuration}
+            onDismiss={handleCompletionDismiss}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Fullscreen timer ── */}
+      <AnimatePresence>
+        {expanded && !showCompletion && (
           <motion.div
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
@@ -508,14 +751,14 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       </AnimatePresence>
 
       {/* ── Persistent bar ── */}
-      {!expanded && (
+      {!expanded && !showCompletion && (
         <div
           onClick={() => { if (!isFinished) setExpanded(true); }}
           style={{
             position: 'fixed', left: 0, right: 0,
             bottom: 'calc(79px + env(safe-area-inset-bottom))',
             zIndex: 400, padding: '0 14px',
-            height: 62, // fixed — never changes
+            height: 62,
             display: 'flex', alignItems: 'center',
             background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
@@ -545,7 +788,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 </span>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {/* − button with 3D press effect */}
+                  {/* − button */}
                   <div style={{ position: 'relative' }}>
                     <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
                     <button
@@ -562,7 +805,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     {fmt(parseInt(restTimer) || 90)}
                   </span>
 
-                  {/* + button with 3D press effect */}
+                  {/* + button */}
                   <div style={{ position: 'relative' }}>
                     <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
                     <button
