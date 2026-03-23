@@ -829,10 +829,20 @@ export default function GymSignup() {
             <div style={{ fontSize:32, fontWeight:900, color:'#e2eaff', letterSpacing:'.3em' }}>{createdGym?.join_code || '------'}</div>
           </div>
 
-          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 14px', background:'rgba(14,165,233,0.06)', border:'1px solid rgba(14,165,233,0.15)', borderRadius:12, marginBottom:24 }}>
-            <Users style={{ width:13, height:13, color:'#0ea5e9', flexShrink:0 }} />
-            <span style={{ fontSize:12, color:'rgba(14,165,233,0.75)' }}>Members who join via link are <strong style={{ color:'#0ea5e9' }}>3× more likely</strong> to stay active in the first month.</span>
-          </div>
+          {copied ? (
+            <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 16px', background:'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(14,165,233,0.08))', border:'1px solid rgba(16,185,129,0.3)', borderRadius:14, marginBottom:20 }}>
+              <div style={{ fontSize:24 }}>🔥</div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:800, color:'#e2eaff', marginBottom:2 }}>Your community is starting to grow!</div>
+                <div style={{ fontSize:12, color:'rgba(255,255,255,0.45)' }}>Share that link everywhere — every member counts.</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 14px', background:'rgba(14,165,233,0.06)', border:'1px solid rgba(14,165,233,0.15)', borderRadius:12, marginBottom:20 }}>
+              <Users style={{ width:13, height:13, color:'#0ea5e9', flexShrink:0 }} />
+              <span style={{ fontSize:12, color:'rgba(14,165,233,0.75)' }}>Members who join via link are <strong style={{ color:'#0ea5e9' }}>3× more likely</strong> to stay active in the first month.</span>
+            </div>
+          )}
 
           <button className="gs-btn-primary" style={{ marginBottom:10 }} onClick={() => setStep(8)}>
             <Flame style={{ width:16, height:16, position:'relative', zIndex:1 }} />
