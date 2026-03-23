@@ -1839,7 +1839,7 @@ export default function Home() {
                 ))}
               </div>
               {summaryLog.exercises?.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2 mb-4">
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
                   <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
@@ -1851,31 +1851,17 @@ export default function Home() {
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
-                      const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
-                      const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
-                      const sets = (rawSets !== undefined && rawSets !== null && String(rawSets) !== '')
-                        ? String(rawSets)
-                        : ex.logged_sets?.length ? String(ex.logged_sets.length)
-                        : ex.sets_data?.length ? String(ex.sets_data.length)
-                        : srParts[0] || '-';
-                      const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
-                      const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '')
-                        ? String(rawReps)
-                        : ex.logged_sets?.[0]?.reps ? String(ex.logged_sets[0].reps)
-                        : ex.sets_data?.[0]?.reps ? String(ex.sets_data[0].reps)
-                        : srParts[1] || '-';
-                      const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight;
-                      const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
+                      const loggedSets = ex.logged_sets || ex.sets_data || [];
+                      const hasLoggedData = loggedSets.length > 0;
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{sets}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{hasLoggedData ? loggedSets.length : '-'}</div>
                           <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{hasLoggedData && loggedSets[0]?.reps ? loggedSets[0].reps : '-'}</div>
                           <div className="ml-3 pr-3">
                             <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-                              {weight}<span className="text-[10px] font-bold">kg</span>
+                              {hasLoggedData && loggedSets[0]?.weight ? loggedSets[0].weight : ex.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                             </div>
                           </div>
                         </div>
@@ -1884,6 +1870,40 @@ export default function Home() {
                   </div>
                 </div>
               )}
+
+              {summaryLog.cardio?.length > 0 &&
+                <div className="space-y-2 mb-4">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Cardio</p>
+                  <div className="grid grid-cols-[1fr_46px_72px_72px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
+                    <div className="w-6" />
+                  </div>
+                  <div className="space-y-2 -mx-2">
+                    {summaryLog.cardio.map((c, idx) => {
+                      const formatTime = (raw) => {
+                        const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
+                        if (!digits) return '—';
+                        const padded = digits.padStart(3, '0');
+                        const mins = padded.slice(0, padded.length - 2);
+                        const secs = padded.slice(-2);
+                        return `${parseInt(mins, 10)}:${secs}`;
+                      };
+                      return (
+                        <div key={`cardio-${idx}`} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_46px_72px_72px_auto] gap-1 items-center">
+                          <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '40px' }}>{c.rounds || '—'}</div>
+                          <div className="bg-emerald-500/10 text-emerald-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{c.time ? formatTime(c.time) : '—'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}</div>
+                          <div className="w-6" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              }
               {summaryLog.notes && (
                 <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
                   <p className="text-xs font-bold text-slate-500 uppercase mb-2">Notes</p>
