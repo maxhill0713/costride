@@ -852,11 +852,11 @@ export default function GymSignup() {
 
           <button className="gs-btn-primary" style={{ marginBottom:10 }} onClick={() => setStep(8)}>
             <Flame style={{ width:16, height:16, position:'relative', zIndex:1 }} />
-            <span style={{ position:'relative', zIndex:1 }}>Go to my dashboard</span>
+            <span style={{ position:'relative', zIndex:1 }}>See your dashboard 🔥</span>
             <ArrowRight style={{ width:15, height:15, position:'relative', zIndex:1 }} />
           </button>
           <button onClick={() => navigate(createPageUrl('GymOwnerDashboard'))} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.25)', fontSize:12, display:'block', width:'100%', textAlign:'center' }}>
-            Skip for now →
+            Skip inviting for now →
           </button>
         </div>
       </BG>
