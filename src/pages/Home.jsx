@@ -435,19 +435,18 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-      const atTop = currentY <= 4;
+      const atTop = currentY < 10;
 
       setIsAtTop(atTop);
 
       if (atTop) {
         setStickyHeaderVisible(true);
+      } else if (currentY > lastScrollY.current) {
+        // Scrolling down — hide
+        setStickyHeaderVisible(false);
       } else {
-        const delta = lastScrollY.current - currentY;
-        if (delta > 2) {
-          setStickyHeaderVisible(true);
-        } else if (delta < -2) {
-          setStickyHeaderVisible(false);
-        }
+        // Scrolling up — show
+        setStickyHeaderVisible(true);
       }
 
       lastScrollY.current = currentY;
