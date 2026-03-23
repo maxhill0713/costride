@@ -23,7 +23,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
-const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/d3b5d0add_STREAKICON29.png';
+const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 
 const CHECK_IN_CSS = `
   @keyframes ci-ripple {
