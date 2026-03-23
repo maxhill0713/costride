@@ -459,7 +459,7 @@ export default function GymOwnerDashboard() {
           atRisk={atRisk} sparkData={sparkData7} monthGrowthData={monthGrowthData}
           cancelledEst={cancelledEst} peakLabel={peakLabel} peakEndLabel={peakEndLabel}
           peakEntry={peakEntry} satVsAvg={satVsAvg} monthCiPer={monthCiPer}
-          checkIns={checkIns} allMemberships={allMemberships} challenges={challenges}
+          checkIns={checkIns} allMemberships={effectiveMemberships} challenges={challenges}
           posts={posts} polls={polls} classes={classes} coaches={coaches}
           streaks={streaks} recentActivity={recentActivity} chartDays={chartDays}
           chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMapFull}
