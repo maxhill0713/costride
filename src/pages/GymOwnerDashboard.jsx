@@ -348,10 +348,6 @@ export default function GymOwnerDashboard() {
 
   const now = new Date();
 
-  // All computed stats from backend
-  const rawStats = stats;
-  const hasDemoData = !rawStats.totalMembers || rawStats.totalMembers === 0;
-
   // Demo data for screenshots — only used when gym has no real data yet
   const DEMO = hasDemoData ? {
     todayCI: 14, yesterdayCI: 11, todayVsYest: 27,
