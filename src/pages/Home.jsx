@@ -429,15 +429,14 @@ export default function Home() {
 
   // ── Header scroll behaviour ──────────────────────────────────────────────
   // Three states:
-  //   'top'     — at the very top, header sits inline (no background)
-  //   'hidden'  — scrolled down, header slides off-screen
-  //   'visible' — scrolled back up mid-page, header slides in with backdrop
+  //   'top'     — at the very top, header sits inline (no background/backdrop)
+  //   'hidden'  — scrolled down, header fades out gently in place
+  //   'visible' — scrolled back up mid-page, header fades in with backdrop
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
   useEffect(() => {
-    // Seed lastScrollY with the real current position on mount
     lastScrollY.current = window.scrollY;
 
     const handleScroll = () => {
@@ -448,13 +447,12 @@ export default function Home() {
         const prev = lastScrollY.current;
 
         if (currentY <= 10) {
-          // At the very top — show inline, no backdrop
           setHeaderState('top');
         } else if (currentY > prev) {
-          // Scrolling DOWN — hide
+          // Scrolling DOWN — fade out gently
           setHeaderState('hidden');
         } else {
-          // Scrolling UP mid-page — show with backdrop
+          // Scrolling UP — fade back in with backdrop
           setHeaderState('visible');
         }
 
@@ -915,14 +913,15 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── Fixed header — hides on scroll-down, reappears on scroll-up ── */}
+        {/* ── Fixed header — fades out on scroll-down, fades in on scroll-up ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{
-            // 'top': at top of page → translate to 0 so it sits inline naturally
-            // 'visible': scrolled up mid-page → translate to 0, show backdrop
-            // 'hidden': scrolled down → slide fully off screen
-            transform: headerState === 'hidden' ? 'translateY(-110%)' : 'translateY(0)',
+            // Fade out (with a tiny upward drift) when scrolling down.
+            // Fade back in when scrolling up. Snap back to fully visible at the top.
+            opacity: headerState === 'hidden' ? 0 : 1,
+            transform: headerState === 'hidden' ? 'translateY(-6px)' : 'translateY(0)',
+            pointerEvents: headerState === 'hidden' ? 'none' : 'auto',
             background: headerState === 'top'
               ? 'linear-gradient(to bottom, rgba(30,41,59,0.4), transparent)'
               : 'rgba(15, 23, 42, 0.88)',
@@ -930,8 +929,7 @@ export default function Home() {
             WebkitBackdropFilter: headerState === 'top' ? 'none' : 'blur(16px)',
             borderBottom: headerState === 'top' ? 'none' : '1px solid rgba(255,255,255,0.07)',
             paddingTop: 'env(safe-area-inset-top)',
-            // Only animate the transform (not background) to avoid flash on first paint
-            transition: 'transform 300ms ease-out, background 200ms ease, backdrop-filter 200ms ease, border-color 200ms ease',
+            transition: 'opacity 250ms ease, transform 250ms ease, background 200ms ease, backdrop-filter 200ms ease, border-color 200ms ease',
           }}>
           <div className="px-4 py-2.5">
             <HeaderContent compact={true} />
