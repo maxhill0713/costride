@@ -909,15 +909,22 @@ export default function GymSignup() {
 
           <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
             <button className="gs-btn-back" onClick={() => setStep(6)}>Back</button>
-            <button className="gs-btn-primary" style={{ flex: 1 }} disabled={createGymMutation.isPending} onClick={submitGym}>
+            <button className="gs-btn-primary" style={{ flex: 1 }} disabled={createGymMutation.isPending || (verifyMethod === 'email' && !bizEmail)} onClick={submitGym}>
               {createGymMutation.isPending
                 ? <><Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite', position: 'relative', zIndex: 1 }} /><span style={{ position: 'relative', zIndex: 1 }}>Creating your gym</span></>
-                : <><span style={{ position: 'relative', zIndex: 1 }}>{emailVerified ? 'Launch my gym' : 'Launch my gym'}</span><ArrowRight style={{ width: 14, height: 14, position: 'relative', zIndex: 1 }} /></>}
+                : <><span style={{ position: 'relative', zIndex: 1 }}>Launch my gym</span><ArrowRight style={{ width: 14, height: 14, position: 'relative', zIndex: 1 }} /></>}
             </button>
           </div>
-          <button onClick={submitGym} disabled={createGymMutation.isPending} className="gs-link-btn" style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 10 }}>
-            Skip verification — we will review within 24 hours
-          </button>
+          {verifyMethod === 'email' && !bizEmail && (
+            <div style={{ marginTop: 10, textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>
+              Enter your business email above to continue
+            </div>
+          )}
+          {(verifyMethod === 'instagram' || bizEmail) && (
+            <button onClick={submitGym} disabled={createGymMutation.isPending} className="gs-link-btn" style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 10 }}>
+              Skip verification — we will review within 24 hours
+            </button>
+          )}
         </div>
       </BG>
     );
