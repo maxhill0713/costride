@@ -679,7 +679,7 @@ export default function Home() {
 
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); setShowAddFriendModal(false); setFriendSearchQuery(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }); setFriendSearchQuery(''); },
   });
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
