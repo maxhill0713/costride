@@ -582,10 +582,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <>
                           <div className="">
                             <div className="text-sm font-bold text-white leading-tight ml-1">{exercise.exercise || '-'}</div>
-                            {lastWorkout?.exercises?.[index] &&
-                    <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
-                    }
-                          </div>
+                            </div>
                           <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                             {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                           </div>
