@@ -787,7 +787,7 @@ export default function GymSignup() {
             </button>
           </div>
           <button onClick={submitGym} disabled={createGymMutation.isPending} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.22)', fontSize:12, marginTop:12, display:'block', width:'100%', textAlign:'center' }}>
-            Skip verification — gym goes live within 24hrs →
+            Skip verification — we'll review within 24hrs →
           </button>
         </div>
       </BG>
