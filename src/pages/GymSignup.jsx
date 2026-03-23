@@ -679,7 +679,7 @@ export default function GymSignup() {
   if (step === 6) {
     return (
       <BG maxWidth={520}>
-        <StepHeader step={5} title="Verify ownership" subtitle={`Prove you own ${formData.name || 'your gym'}`} />
+        <StepHeader step={4} title="Verify ownership" subtitle={`Prove you own ${formData.name || 'your gym'}`} />
         <div className="gs-card gs-a2">
           <div style={{ display:'flex', gap:6, padding:5, background:'rgba(0,0,0,0.25)', borderRadius:14, border:'1px solid rgba(255,255,255,0.05)', marginBottom:22 }}>
             {[{ id:'email', icon:Mail, label:'Business Email' }, { id:'instagram', icon:Instagram, label:'Instagram' }].map(({ id, icon: Icon, label }) => (
