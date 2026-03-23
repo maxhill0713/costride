@@ -17,6 +17,7 @@ import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
 import PostCard from '../components/feed/PostCard';
 import WorkoutDaysCelebration from '../components/home/WorkoutDaysCelebration';
+import StreakFreezeAnimation from '../components/home/StreakFreezeAnimation';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
