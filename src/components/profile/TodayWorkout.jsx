@@ -594,6 +594,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
                               {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                             </div>
+                            {!alreadyLoggedToday && (
                             <motion.button
                       onClick={() => handleEdit(index, exercise)}
                       whileTap={{ scale: 0.78, y: 1 }}
@@ -601,6 +602,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                               <Edit2 className="w-3.5 h-3.5" />
                             </motion.button>
+                            )}
                           </div>
                         </>
                 }
