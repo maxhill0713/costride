@@ -206,7 +206,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <TimerProvider>
       <LayoutInner
-        currentPageName={currentPageName}
+        currentPageName={effectivePageName}
         currentUser={currentUser}
         notifications={notifications}
         gymMemberships={gymMemberships}
