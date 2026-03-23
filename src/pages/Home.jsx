@@ -466,6 +466,62 @@ export default function Home() {
   }, []);
   // ────────────────────────────────────────────────────────────────────────
 
+  // ── Fix white overscroll background ─────────────────────────────────────
+  useEffect(() => {
+    const prev = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#020817'; // slate-950
+    document.documentElement.style.backgroundColor = '#020817';
+    return () => {
+      document.body.style.backgroundColor = prev;
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, []);
+  // ────────────────────────────────────────────────────────────────────────
+
+  // ── Pull-to-refresh state ─────────────────────────────────────────────
+  const [pullY, setPullY] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = useRef(null);
+  const PULL_THRESHOLD = 72;
+
+  useEffect(() => {
+    const onTouchStart = (e) => {
+      if (window.scrollY <= 0) touchStartY.current = e.touches[0].clientY;
+      else touchStartY.current = null;
+    };
+    const onTouchMove = (e) => {
+      if (touchStartY.current === null || isRefreshing) return;
+      const dy = e.touches[0].clientY - touchStartY.current;
+      if (dy > 0 && window.scrollY <= 0) {
+        setPullY(Math.min(dy * 0.45, PULL_THRESHOLD + 20));
+      }
+    };
+    const onTouchEnd = async () => {
+      if (pullY >= PULL_THRESHOLD && !isRefreshing) {
+        setIsRefreshing(true);
+        setPullY(PULL_THRESHOLD);
+        await queryClient.invalidateQueries();
+        setTimeout(() => {
+          setIsRefreshing(false);
+          setPullY(0);
+        }, 600);
+      } else {
+        setPullY(0);
+      }
+      touchStartY.current = null;
+    };
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [pullY, isRefreshing, queryClient]);
+  // ────────────────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     injectStreakStyles();
     injectCheckInStyles();
@@ -941,6 +997,35 @@ export default function Home() {
           <HeaderContent compact={true} />
         </div>
 
+        {/* ── Pull-to-refresh indicator ── */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 49,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            paddingBottom: 10,
+            height: Math.max(0, pullY > 0 || isRefreshing ? (isRefreshing ? PULL_THRESHOLD : pullY) : 0),
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            transition: isRefreshing ? 'height 200ms ease' : pullY === 0 ? 'height 300ms ease' : 'none',
+          }}>
+          <div style={{
+            width: 30, height: 30,
+            borderRadius: '50%',
+            border: '2.5px solid rgba(148,163,184,0.2)',
+            borderTop: `2.5px solid ${isRefreshing ? '#60a5fa' : pullY >= PULL_THRESHOLD ? '#60a5fa' : 'rgba(148,163,184,0.5)'}`,
+            opacity: isRefreshing ? 1 : Math.min(1, pullY / PULL_THRESHOLD),
+            transform: `rotate(${isRefreshing ? 0 : (pullY / PULL_THRESHOLD) * 270}deg)`,
+            animation: isRefreshing ? 'spin 0.7s linear infinite' : 'none',
+            transition: isRefreshing ? 'none' : 'opacity 100ms ease, border-top-color 150ms ease',
+          }} />
+        </div>
+
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
             <>
@@ -1347,11 +1432,6 @@ export default function Home() {
           {/* ── Social Feed ── */}
           {friends.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 pt-1">
-                <FriendsIcon className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-sm font-black text-white tracking-tight">Social Feed</h2>
-              </div>
-
               {filteredActivityCards.length > 0 && (
                 <div className="space-y-3">
                   {filteredActivityCards.map(card => (
