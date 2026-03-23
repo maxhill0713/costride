@@ -342,8 +342,10 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
 }
 
 // Specific, named, actionable alerts panel
-function AlertsPanel({ memberRows, atRisk, setMemberFilter, setMemberSort, openModal }) {
-  const criticalMembers   = memberRows.filter(m => m.risk === 'High').slice(0, 3);
+function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilter, setMemberSort, openModal }) {
+  const criticalMembers   = memberRows.filter(m => m.risk === 'High').length > 0
+    ? memberRows.filter(m => m.risk === 'High').slice(0, 3)
+    : (atRiskMembersList || []).slice(0, 3).map(m => ({ name: m.user_name || m.name, daysSince: m.days_since || m.daysSince || 14, risk: 'High' }));
   const earlyDroppers     = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.daysSince >= 7).slice(0, 2);
   const frequencyDroppers = memberRows.filter(m => m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5 && m.visits30 < 4).slice(0, 2);
   const noAlerts = criticalMembers.length === 0 && earlyDroppers.length === 0 && frequencyDroppers.length === 0;
