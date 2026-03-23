@@ -833,48 +833,51 @@ export default function GymOwnerDashboard() {
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {isGymOwner && selectedGym?.join_code && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-end' : 'flex-start' }}>
+            {!isMobile && isGymOwner && selectedGym?.join_code && (
               <button onClick={() => setShowPoster(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 8, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', color: '#34d399', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
                 <QrCode style={{ width: 11, height: 11 }}/><span style={{ fontFamily: 'DM Mono,monospace', letterSpacing: '0.12em' }}>{selectedGym.join_code}</span><span style={{ fontSize: 9, opacity: 0.55 }}>· Flyer</span>
               </button>
             )}
-            {atRisk > 0 && (
+            {!isMobile && atRisk > 0 && (
               <button onClick={() => setTab('members')} style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <AlertTriangle style={{ width: 11, height: 11 }}/>{atRisk} at risk
               </button>
             )}
-            <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}28`, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background=`${accentColor}20`}
-              onMouseLeave={e => e.currentTarget.style.background=`${accentColor}12`}>
-              <QrCode style={{ width: 13, height: 13 }}/> Scan QR
+            <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0 : 6, padding: isMobile ? '7px 9px' : '7px 13px', borderRadius: 9, background: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}28`, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
+              onMouseEnter={e => !isMobile && (e.currentTarget.style.background=`${accentColor}20`)}
+              onMouseLeave={e => !isMobile && (e.currentTarget.style.background=`${accentColor}12`)}>
+              <QrCode style={{ width: 13, height: 13 }}/> {!isMobile && 'Scan QR'}
             </button>
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', color: '#f0f4f8', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.09)'}
-              onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
-              <Plus style={{ width: 13, height: 13 }}/> New Post
+            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0 : 6, padding: isMobile ? '7px 9px' : '7px 13px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', color: '#f0f4f8', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.12s' }}
+              onMouseEnter={e => !isMobile && (e.currentTarget.style.background='rgba(255,255,255,0.09)')}
+              onMouseLeave={e => !isMobile && (e.currentTarget.style.background='rgba(255,255,255,0.05)')}>
+              <Plus style={{ width: 13, height: 13 }}/> {!isMobile && 'New Post'}
             </button>
-            {/* Role toggle */}
-            <button onClick={toggleRole} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, background: isCoach ? 'rgba(167,139,250,0.1)' : 'rgba(56,189,248,0.08)', border: `1px solid ${isCoach ? 'rgba(167,139,250,0.25)' : 'rgba(56,189,248,0.2)'}`, color: isCoach ? '#a78bfa' : '#38bdf8', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
-              {isCoach ? '🎓 Coach' : '🏢 Owner'} <span style={{ opacity: 0.5, fontSize: 9 }}>preview</span>
-            </button>
+            {!isMobile && (
+              <>
+                <button onClick={toggleRole} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, background: isCoach ? 'rgba(167,139,250,0.1)' : 'rgba(56,189,248,0.08)', border: `1px solid ${isCoach ? 'rgba(167,139,250,0.25)' : 'rgba(56,189,248,0.2)'}`, color: isCoach ? '#a78bfa' : '#38bdf8', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
+                  {isCoach ? '🎓 Coach' : '🏢 Owner'} <span style={{ opacity: 0.5, fontSize: 9 }}>preview</span>
+                </button>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 9px 4px 5px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'background 0.12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: isCoach ? 'linear-gradient(135deg,#a78bfa,#7c3aed)' : 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: '#fff' }}>
+                    {(currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#c2d4e8' }}>{(currentUser?.full_name || currentUser?.email || 'User').split(' ')[0]}</span>
+                  <ChevronDown style={{ width: 10, height: 10, color: '#3a5070' }}/>
+                </button>
+              </>
+            )}
             <Link to={createPageUrl('NotificationsHub')}>
               <button style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#5a7a96', cursor: 'pointer', position: 'relative', transition: 'all 0.12s' }}
-                onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#f0f4f8'; }}
-                onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='#5a7a96'; }}>
+                onMouseEnter={e => { !isMobile && (e.currentTarget.style.background='rgba(255,255,255,0.08)'); !isMobile && (e.currentTarget.style.color='#f0f4f8'); }}
+                onMouseLeave={e => { !isMobile && (e.currentTarget.style.background='rgba(255,255,255,0.04)'); !isMobile && (e.currentTarget.style.color='#5a7a96'); }}>
                 <Bell style={{ width: 13, height: 13 }}/>
                 {atRisk > 0 && <div style={{ position: 'absolute', top: 8, right: 8, width: 5, height: 5, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #080f1e' }}/>}
               </button>
             </Link>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 9px 4px 5px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'}
-              onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}>
-              <div style={{ width: 26, height: 26, borderRadius: '50%', background: isCoach ? 'linear-gradient(135deg,#a78bfa,#7c3aed)' : 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: '#fff' }}>
-                {(currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase()}
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#c2d4e8' }}>{(currentUser?.full_name || currentUser?.email || 'User').split(' ')[0]}</span>
-              <ChevronDown style={{ width: 10, height: 10, color: '#3a5070' }}/>
-            </button>
           </div>
         </header>
 
