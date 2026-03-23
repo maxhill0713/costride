@@ -347,7 +347,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       // Award +2 streak freezes if Weekend Warrior challenge just completed
       const weekendWarriorJustCompleted = challengesData.some(
-        c => c.id === 'weekend_warrior' && c.new_value >= c.target_value && c.previous_value < c.target_value
+        (c) => c.id === 'weekend_warrior' && c.new_value >= c.target_value && c.previous_value < c.target_value
       );
       if (weekendWarriorJustCompleted) {
         const currentFreezes = user.streak_freezes ?? 3;
@@ -603,15 +603,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
                               {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                             </div>
-                            {!alreadyLoggedToday && (
-                            <motion.button
+                            {!alreadyLoggedToday &&
+                    <motion.button
                       onClick={() => handleEdit(index, exercise)}
                       whileTap={{ scale: 0.78, y: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                       className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                               <Edit2 className="w-3.5 h-3.5" />
                             </motion.button>
-                            )}
+                    }
                           </div>
                         </>
                 }
@@ -628,9 +628,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   className="grid gap-1 mb-1.5 items-end px-1"
                   style={{ gridTemplateColumns: '1fr 46px 72px 72px auto' }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-7">Rounds</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-9">Time/Round</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-14">Rest</div>
                         <div className="w-6" />
                       </motion.div>
 
@@ -671,15 +671,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '40px' }}>{c.rounds || '—'}</div>
                               <div className="bg-emerald-500/10 text-emerald-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{c.time ? formatTime(c.time) : '—'}</div>
                               <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">{parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}</div>
-                              {!alreadyLoggedToday && (
-                              <motion.button
+                              {!alreadyLoggedToday &&
+                    <motion.button
                       onClick={() => handleEditCardio(index, c)}
                       whileTap={{ scale: 0.78, y: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                       className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 mr-1">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </motion.button>
-                              )}
+                    }
                             </>
                   }
                         </motion.div>
@@ -731,12 +731,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                       {/* Single "Timer" button — opens the bar via context */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenTimerBar(true);
-                        }}
-                        style={{ height: '51px', flex: 1 }}
-                        className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenTimerBar(true);
+                    }}
+                    style={{ height: '51px', flex: 1 }}
+                    className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
                         <span className="text-blue-300 font-black text-xl leading-none">
                           Timer
@@ -753,8 +753,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <BookOpen className="w-3.5 h-3.5" />
                       </Button>
                       <CollapseChevron
-                        onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                        className="w-10 h-6" />
+                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                    className="w-10 h-6" />
                     </div>
                   </div>
                 </div> : (
