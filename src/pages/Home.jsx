@@ -1404,6 +1404,14 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Streak Freeze Animation */}
+      <StreakFreezeAnimation
+        isOpen={showFreezeAnimation}
+        freezesLostCount={freezeAnimationData.freezesLostCount}
+        finalFreezeCount={freezeAnimationData.finalFreezeCount}
+        onComplete={() => setShowFreezeAnimation(false)}
+      />
+
       {/* STAGE 1 — Streak animation */}
       <AnimatePresence>
         {showStreakCelebration && (
