@@ -158,7 +158,7 @@ function BG({ children, maxWidth = 520, fullHeight = true }) {
       <div style={{ position: 'absolute', top: '-10%', left: '-8%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.1) 0%,transparent 62%)', animation: 'gs-orb-a 24s ease-in-out infinite', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', top: '5%', right: '-8%', width: 580, height: 580, borderRadius: '50%', background: 'radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 62%)', animation: 'gs-orb-b 30s ease-in-out infinite', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(14,165,233,0.45) 30%,rgba(99,102,241,0.35) 70%,transparent)', pointerEvents: 'none' }} />
-      <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+      <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 3vw, 32px) clamp(12px, 4vw, 16px)' }}>
         <div style={{ width: '100%', maxWidth }} className="gs-wide-pad">
           {children}
         </div>
@@ -404,7 +404,7 @@ export default function GymSignup() {
   if (step === 1) {
     return (
       <FullBG>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px 32px', textAlign: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(24px, 6vw, 48px) clamp(16px, 4vw, 24px) clamp(16px, 4vw, 32px)', textAlign: 'center' }}>
           {/* Logo */}
           <div className="gs-a1" style={{ marginBottom: 24 }}>
             <img src={LOGO_URL} alt="CoStride" style={{ width: 52, height: 52, borderRadius: 14, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 24px rgba(14,165,233,0.2)' }} />
@@ -467,7 +467,7 @@ export default function GymSignup() {
   if (step === 2) {
     return (
       <FullBG>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(32px, 6vw, 48px) clamp(16px, 4vw, 24px)', textAlign: 'center' }}>
           <div className="gs-a1" style={{ marginBottom: 48 }}>
             <img src={LOGO_URL} alt="CoStride" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
           </div>
@@ -660,7 +660,7 @@ export default function GymSignup() {
     ];
     return (
       <FullBG>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(20px, 5vw, 40px) clamp(12px, 4vw, 24px)' }}>
           <div style={{ width: '100%', maxWidth: 960, display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 60, alignItems: 'center' }} className="gs-two-col">
             {/* Left: copy */}
             <div>
