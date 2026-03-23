@@ -878,8 +878,8 @@ export default function GymOwnerDashboard() {
           </div>
         </header>
 
-        <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto' }}>
+        <main style={{ flex: 1, overflow: 'hidden', padding: isMobile ? '12px 12px 28px' : '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: isMobile ? '4px' : '0' }}>
             {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
           </div>
         </main>
