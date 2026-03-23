@@ -235,7 +235,6 @@ export default function GymOwnerDashboard() {
   const navigate    = useNavigate();
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
-  useEffect(() => { if (currentUser && !currentUser.onboarding_completed) navigate(createPageUrl('Onboarding')); }, [currentUser, navigate]);
 
   const [roleOverride, setRoleOverride] = useState(() => localStorage.getItem('dashRoleOverride') || null);
   const toggleRole = () => {
