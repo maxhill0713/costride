@@ -653,30 +653,30 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             </button>
 
             {/* Title */}
-            <p style={{ fontSize: 22, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: roundLabel ? 6 : 24, color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+            <p style={{ fontSize: cardioMode ? 30 : 22, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: roundLabel ? 8 : 28, color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
               {isFinished ? 'Done!' : displayTitle}
             </p>
 
             {/* Round label */}
             {roundLabel && (
-              <p style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 18, color: 'rgba(255,255,255,0.45)', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+              <p style={{ fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 24, color: 'rgba(255,255,255,0.55)', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
                 {roundLabel}
               </p>
             )}
 
             {/* Circle */}
-            <div style={{ position: 'relative', width: 224, height: 224, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: cardioMode ? 270 : 224, height: cardioMode ? 270 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {cardioMode && cardioSegments.length > 1
-                ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} />
+                ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={108} />
                 : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />
               }
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 76 : 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
                 {isActive || paused ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
               </span>
             </div>
 
             {/* Buttons */}
-            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
+            <div style={{ marginTop: cardioMode ? 52 : 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
               {!isActive && !paused ? (
                 <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
                   Go
@@ -697,37 +697,30 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               )}
             </div>
 
-            {/* Cardio routines */}
-            {cardioExercises.length > 0 && (
+            {/* Cardio routines — only shown before a routine is selected */}
+            {cardioExercises.length > 0 && !cardioMode && (
               <div style={{ position: 'absolute', bottom: 44, left: 24, maxWidth: '44%' }}>
                 <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(147,197,253,0.6)', marginBottom: 10 }}>
                   Workout Routines
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {cardioExercises.map((c, i) => {
-                    const isSelected = cardioMode && cardioTitle === (c.exercise || 'Cardio');
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => handleSelectCardio(c)}
-                        style={{
-                          padding: '10px 16px', borderRadius: 14,
-                          border: isSelected ? '1px solid rgba(96,165,250,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                          cursor: 'pointer', fontSize: 13, fontWeight: 700, textAlign: 'left',
-                          background: isSelected
-                            ? 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(29,78,216,0.2))'
-                            : 'linear-gradient(135deg, rgba(30,35,60,0.8), rgba(8,10,20,0.9))',
-                          color: isSelected ? '#93c5fd' : 'rgba(226,232,240,0.85)',
-                          boxShadow: isSelected
-                            ? '0 3px 0 0 rgba(29,78,216,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
-                            : '0 3px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                          backdropFilter: 'blur(12px)',
-                          transition: 'all 0.15s ease',
-                        }}>
-                        {c.exercise || 'Cardio'}
-                      </button>
-                    );
-                  })}
+                  {cardioExercises.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSelectCardio(c)}
+                      style={{
+                        padding: '10px 16px', borderRadius: 14,
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        cursor: 'pointer', fontSize: 13, fontWeight: 700, textAlign: 'left',
+                        background: 'linear-gradient(135deg, rgba(30,35,60,0.8), rgba(8,10,20,0.9))',
+                        color: 'rgba(226,232,240,0.85)',
+                        boxShadow: '0 3px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+                        backdropFilter: 'blur(12px)',
+                        transition: 'all 0.15s ease',
+                      }}>
+                      {c.exercise || 'Cardio'}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
