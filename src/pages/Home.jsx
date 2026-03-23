@@ -482,7 +482,23 @@ export default function Home() {
       }
     };
     
+    // Check for streak loss on app load
+    const checkStreakLoss = async () => {
+      try {
+        const result = await base44.functions.invoke('checkStreakLoss', {});
+        if (result.data?.shouldShowAnimation) {
+          setStreakLossAnimationData({
+            previousStreak: result.data.previousStreak,
+          });
+          setShowStreakLossAnimation(true);
+        }
+      } catch (error) {
+        console.error('Error checking streak loss:', error);
+      }
+    };
+    
     checkMissedWorkouts();
+    checkStreakLoss();
   }, []);
 
   useEffect(() => {
