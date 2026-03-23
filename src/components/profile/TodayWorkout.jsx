@@ -345,7 +345,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       }).
       filter(Boolean);
 
-      return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData };
+      // Award +2 streak freezes if Weekend Warrior challenge just completed
+      const weekendWarriorJustCompleted = challengesData.some(
+        c => c.id === 'weekend_warrior' && c.new_value >= c.target_value && c.previous_value < c.target_value
+      );
+      if (weekendWarriorJustCompleted) {
+        const currentFreezes = user.streak_freezes ?? 3;
+        await base44.auth.updateMe({ streak_freezes: currentFreezes + 2 });
+      }
+
+      return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData, weekendWarriorJustCompleted };
     },
     onSuccess: (data) => {
       setShowSummary(false);
