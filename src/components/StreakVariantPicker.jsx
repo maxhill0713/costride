@@ -17,13 +17,13 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
       <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative z-[9999]">
         {/* Streak Freezes - top right */}
-        <div className="absolute top-4 right-5 flex items-center gap-1.5">
-          <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="freeze" className="w-6 h-6 object-contain" />
-          <span className="text-white font-bold text-sm">{streakFreezes}</span>
+        <div className="absolute top-4 right-5 flex items-center gap-2">
+          <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="freeze" className="w-[72px] h-[72px] object-contain" />
+          <span className="text-white font-bold text-[2.625rem] leading-none">{streakFreezes}</span>
         </div>
 
         {/* 4-column grid — only 1 real icon, 3 empty placeholders */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 mt-16">
           {/* Default Icon */}
           <button
             onClick={() => onSelect('default')}
