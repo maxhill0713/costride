@@ -452,7 +452,7 @@ export default function Home() {
         if (delta > 0) {
           // Scrolling up — show
           setStickyHeaderVisible(true);
-        } else if (delta < -6) {
+        } else if (delta < -2) {
           // Scrolling down past threshold — hide
           setStickyHeaderVisible(false);
         }
