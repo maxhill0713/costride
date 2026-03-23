@@ -654,7 +654,7 @@ export default function GymSignup() {
               <div className="gs-a5" style={{ display:'flex', gap:10 }}>
                 <button className="gs-btn-back" onClick={() => setStep(4)}>← Back</button>
                 <button className="gs-btn-primary" style={{ flex:1 }} onClick={() => setStep(6)}>
-                  <span style={{ position:'relative', zIndex:1 }}>Start building this</span>
+                  <span style={{ position:'relative', zIndex:1 }}>Almost there — let's do this</span>
                   <ArrowRight style={{ width:15, height:15, position:'relative', zIndex:1 }} />
                 </button>
               </div>
