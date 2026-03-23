@@ -1717,7 +1717,7 @@ export default function Home() {
                   </div>
                 );
               })}
-              {friends.length === 0 && friendRequests.length === 0
+              {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0
                 ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 : friendsWithActivity.filter(friend => { const u = friendUsersList.find(u => u.id === friend.friend_id); return (u?.full_name||friend.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(friend => {
                     const u = friendUsersList.find(u => u.id === friend.friend_id);
