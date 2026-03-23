@@ -1853,15 +1853,18 @@ export default function Home() {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
                       const loggedSets = ex.logged_sets || ex.sets_data || [];
                       const hasLoggedData = loggedSets.length > 0;
+                      const sets = hasLoggedData ? loggedSets.length : (ex.sets ?? ex.num_sets ?? ex.setsReps?.split('x')?.[0] ?? '-');
+                      const reps = hasLoggedData ? (loggedSets[0]?.reps ?? loggedSets[0]?.rep ?? '-') : (ex.reps ?? ex.num_reps ?? ex.setsReps?.split('x')?.[1] ?? '-');
+                      const weight = hasLoggedData && loggedSets[0]?.weight ? loggedSets[0].weight : ex.weight || '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{hasLoggedData ? loggedSets.length : '-'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{sets}</div>
                           <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{hasLoggedData && loggedSets[0]?.reps ? loggedSets[0].reps : '-'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
                           <div className="ml-3 pr-3">
                             <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-                              {hasLoggedData && loggedSets[0]?.weight ? loggedSets[0].weight : ex.weight || '-'}<span className="text-[10px] font-bold">kg</span>
+                              {weight}<span className="text-[10px] font-bold">kg</span>
                             </div>
                           </div>
                         </div>
