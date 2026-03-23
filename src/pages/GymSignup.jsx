@@ -7,7 +7,7 @@ import {
   Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle,
   ArrowRight, Building2, Users, Trophy, Zap, ChevronRight,
   Bell, Mail, Instagram, Shield, Plus, X, Clock,
-  Check, Copy, Share2, TrendingDown, Target, BarChart3, UserX,
+  Check, Copy, Share2, TrendingDown, Target, BarChart3, UserX, Flame,
   MessageSquareOff, Activity, TrendingUp, AlertTriangle, Eye,
   ChevronDown, MoreHorizontal, Lock, Star
 } from 'lucide-react';
