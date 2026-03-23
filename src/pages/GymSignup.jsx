@@ -796,7 +796,7 @@ export default function GymSignup() {
     const isPending  = createdGym?.status === 'pending';
     return (
       <BG maxWidth={520}>
-        <StepHeader step={6} title="Invite your first members" subtitle="No members = no community. This step unlocks everything." />
+        <StepHeader step={5} title="Start your community" subtitle="No members = no community. This is the most important step." />
         <div className="gs-card gs-a2">
           {isPending ? (
             <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'13px 15px', background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:13, marginBottom:20 }}>
