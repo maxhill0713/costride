@@ -112,9 +112,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
           <div className="flex items-center gap-3 rounded-xl px-3 py-2"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
             {challenge.reward?.toLowerCase().includes('streak freeze') ? (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-cyan-400 shadow-lg shadow-cyan-500/60 flex items-center justify-center flex-shrink-0">
-                <Snowflake className="w-6 h-6 text-white" strokeWidth={1.5} />
-              </div>
+              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="Streak Freeze" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : (
               <UniqueBadge reward={challenge.reward} size="sm" />
             )}

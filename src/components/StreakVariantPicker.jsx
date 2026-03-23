@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Snowflake } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 
