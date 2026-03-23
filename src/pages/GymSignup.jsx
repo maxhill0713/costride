@@ -7,7 +7,7 @@ import {
   Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle,
   ArrowRight, Building2, Users, Trophy, Zap, ChevronRight,
   Bell, Mail, Instagram, Shield, Plus, X, Clock,
-  Check, Copy, Share2, TrendingDown, Target, BarChart3, UserX, Flame,
+  Check, Copy, Share2, TrendingDown, Target, BarChart3, UserX,
   MessageSquareOff, Activity, TrendingUp, AlertTriangle, Eye,
   ChevronDown, MoreHorizontal, Lock, Star
 } from 'lucide-react';
@@ -699,152 +699,18 @@ export default function GymSignup() {
               </div>
             </div>
 
-            {/* Right: full phone home-screen preview */}
-            <div className="gs-a3 gs-hide-sm" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ position: 'absolute', top: '5%', left: '0%', right: '0%', bottom: '5%', background: 'radial-gradient(ellipse at 50% 40%,rgba(14,165,233,0.14) 0%,rgba(99,102,241,0.07) 50%,transparent 72%)', filter: 'blur(44px)', pointerEvents: 'none' }} />
-
-              {/* Phone shell */}
-              <div style={{ position: 'relative', zIndex: 1, animation: 'gs-float 7s ease-in-out infinite', width: 248 }}>
-                <div style={{ background: 'linear-gradient(180deg,#080d18 0%,#0a1020 100%)', borderRadius: 38, border: '2px solid rgba(255,255,255,0.12)', boxShadow: '0 40px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-
-                  {/* Status bar */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 6px', background: 'rgba(8,13,24,0.9)' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>9:41</span>
-                    <div style={{ width: 54, height: 13, background: '#080d18', borderRadius: 99, border: '1.5px solid rgba(255,255,255,0.1)' }} />
-                    <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                      <div style={{ width: 10, height: 7, background: 'rgba(255,255,255,0.45)', borderRadius: 2 }} />
-                      <div style={{ width: 3, height: 3, background: 'rgba(255,255,255,0.45)', borderRadius: '50%' }} />
-                    </div>
-                  </div>
-
-                  {/* Scrollable content area */}
-                  <div style={{ background: 'linear-gradient(180deg,#060b14 0%,#080e1a 100%)', padding: '0 0 4px' }}>
-
-                    {/* App header: streak icon + title + friends */}
-                    <div style={{ padding: '5px 14px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <img src={LOGO_URL} alt="" style={{ width: 20, height: 20, borderRadius: 5, objectFit: 'cover', opacity: 0.7 }} />
-                        <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)' }}>🔥 12</span>
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 900, background: 'linear-gradient(90deg,#60a5fa,#93c5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.03em' }}>CoStride</span>
-                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Users style={{ width: 9, height: 9, color: 'rgba(255,255,255,0.35)' }} />
-                      </div>
-                    </div>
-
-                    {/* Check-in button */}
-                    <div style={{ margin: '0 10px 8px', padding: '11px', borderRadius: 14, background: 'linear-gradient(to bottom,#60a5fa,#3b82f6 40%,#2563eb)', boxShadow: '0 4px 0 0 #1a3fa8,0 6px 16px rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 12, fontWeight: 900, color: '#fff' }}>Check In</span>
-                    </div>
-
-                    {/* Today's workout card */}
-                    <div style={{ margin: '0 10px 8px', padding: '10px 12px', borderRadius: 13, background: 'linear-gradient(135deg,rgba(20,24,48,0.94),rgba(8,10,22,0.98))', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>Today's Workout</div>
-                      <div style={{ fontSize: 11, fontWeight: 900, background: 'linear-gradient(90deg,#fb923c,#fdba74)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 6 }}>Push Day A</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {[['Bench Press','4×8','80kg'],['Overhead Press','3×10','50kg'],['Tricep Dips','3×12','BW']].map(([name,sets,weight]) => (
-                          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', background: 'rgba(255,255,255,0.04)', borderRadius: 7 }}>
-                            <span style={{ flex: 1, fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{name}</span>
-                            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)' }}>{sets}</span>
-                            <div style={{ background: 'linear-gradient(to right,rgba(37,99,235,0.9),rgba(29,78,216,0.9))', borderRadius: 6, padding: '2px 5px' }}>
-                              <span style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>{weight}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ marginTop: 7, padding: '7px', borderRadius: 9, background: 'linear-gradient(to bottom,#3b82f6,#2563eb)', boxShadow: '0 3px 0 0 #1a3fa8', textAlign: 'center' }}>
-                        <span style={{ fontSize: 9, fontWeight: 900, color: '#fff' }}>Log Workout</span>
-                      </div>
-                    </div>
-
-                    {/* Community card with gym photo */}
-                    <div style={{ margin: '0 10px 8px', borderRadius: 13, overflow: 'hidden', position: 'relative', height: 80, border: '1px solid rgba(255,255,255,0.07)' }}>
-                      {selectedPlace?.photo_url ? (
-                        <img src={selectedPlace.photo_url} alt={gymName} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1e3a5f 0%,#0f2040 50%,#0a1628 100%)' }}>
-                          <div style={{ position: 'absolute', top: '5%', left: '5%', width: '55%', height: '90%', background: 'radial-gradient(ellipse,rgba(14,165,233,0.3) 0%,transparent 70%)', borderRadius: '50%' }} />
-                        </div>
-                      )}
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(2,4,10,0.95) 0%,rgba(2,4,10,0.25) 55%,transparent 100%)' }} />
-                      <div style={{ position: 'absolute', inset: 0, padding: '8px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.95)' }}>Your Community</div>
-                          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', marginTop: 1 }}>{gymName}</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>12 members training today</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            {[0,1,2].map(i => (
-                              <div key={i} style={{ width: 14, height: 14, borderRadius: '50%', background: `hsl(${200+i*30},60%,55%)`, border: '1.5px solid rgba(2,4,10,0.85)', marginLeft: i > 0 ? -4 : 0 }} />
-                            ))}
-                            <ChevronRight style={{ width: 8, height: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Weekly streak circles */}
-                    <div style={{ margin: '0 10px 8px', display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'flex-end', height: 40 }}>
-                      {[{d:'M',done:true},{d:'T',done:true},{d:'W',done:true},{d:'T',done:true},{d:'F',done:false,today:true},{d:'S',done:false},{d:'S',done:false}].map(({d,done,today},i) => (
-                        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                          <div style={{ width: today ? 28 : 22, height: today ? 28 : 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, flexShrink: 0,
-                            background: done ? 'linear-gradient(to bottom,#60a5fa,#3b82f6 40%,#2563eb)' : today ? 'rgba(37,99,235,0.15)' : 'rgba(255,255,255,0.04)',
-                            border: done ? '1px solid rgba(147,197,253,0.35)' : today ? '2px solid rgba(148,163,184,0.4)' : '1px solid rgba(71,85,105,0.4)',
-                            color: done ? '#fff' : 'rgba(255,255,255,0.25)',
-                          }}>
-                            {done ? '✓' : ''}
-                          </div>
-                          <span style={{ fontSize: 6, color: today ? 'rgba(148,163,184,0.6)' : 'rgba(255,255,255,0.2)', fontWeight: 600 }}>{d}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Quote card */}
-                    <div style={{ margin: '0 10px 8px', padding: '8px 10px', borderRadius: 11, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.55)', lineHeight: 1.4, fontStyle: 'italic' }}>"The pain you feel today will be the strength you feel tomorrow."</div>
-                      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>— Arnold Schwarzenegger</div>
-                    </div>
-
-                    {/* Social feed teaser */}
-                    <div style={{ margin: '0 10px 6px' }}>
-                      <div style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 5 }}>Social Feed</div>
-                      {[
-                        { name: 'Alex M.', text: 'New PR on deadlift — 180kg! 🔥', color: '#f97316' },
-                        { name: 'Sarah K.', text: 'Logged Push Day — 4,200kg volume', color: '#0ea5e9' },
-                      ].map((p,i) => (
-                        <div key={i} style={{ display: 'flex', gap: 6, padding: '6px 8px', marginBottom: 4, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 9 }}>
-                          <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${p.color}30`, border: `1px solid ${p.color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 800, color: p.color, flexShrink: 0 }}>{p.name[0]}</div>
-                          <div>
-                            <div style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{p.name}</div>
-                            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{p.text}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Bottom nav */}
-                  <div style={{ background: 'rgba(15,23,42,0.98)', borderTop: '1px solid rgba(59,130,246,0.15)', padding: '7px 0 10px', display: 'flex', justifyContent: 'space-around' }}>
-                    {[
-                      { Icon: Building2, label: 'Home',      active: true  },
-                      { Icon: Dumbbell,  label: 'Gyms',      active: false },
-                      { Icon: BarChart3, label: 'Progress',  active: false },
-                      { Icon: Trophy,    label: 'Challenges',active: false },
-                      { Icon: Users,     label: 'Profile',   active: false },
-                    ].map(({ Icon, label, active }) => (
-                      <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <Icon style={{ width: 13, height: 13, color: active ? '#60a5fa' : 'rgba(255,255,255,0.22)' }} />
-                        <span style={{ fontSize: 6, fontWeight: active ? 700 : 500, color: active ? '#60a5fa' : 'rgba(255,255,255,0.22)' }}>{label}</span>
-                      </div>
-                    ))}
-                  </div>
+            {/* Right: dashboard preview */}
+            <div className="gs-a3 gs-hide-sm" style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%', background: 'radial-gradient(ellipse at 50% 40%,rgba(14,165,233,0.15) 0%,rgba(99,102,241,0.08) 45%,transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+              <div style={{ position: 'relative', zIndex: 1, animation: 'gs-float 7s ease-in-out infinite' }}>
+                <img src={IMG_DASH2} alt="Dashboard preview" style={{ width: '100%', display: 'block', borderRadius: 10, filter: 'drop-shadow(0 24px 60px rgba(14,165,233,0.15))' }} />
+                <div style={{ position: 'absolute', top: '7%', left: '-12%', background: 'rgba(4,8,15,0.95)', border: '1px solid rgba(14,165,233,0.25)', borderRadius: 13, padding: '10px 14px', boxShadow: '0 12px 36px rgba(0,0,0,0.5)', backdropFilter: 'blur(14px)' }}>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600 }}>Active gym</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#e2eaff' }}>{gymName}</div>
                 </div>
-
-                {/* Floating badge */}
-                <div style={{ position: 'absolute', top: '12%', right: '-22%', background: 'rgba(4,8,15,0.95)', border: '1px solid rgba(16,185,129,0.28)', borderRadius: 12, padding: '8px 12px', boxShadow: '0 12px 36px rgba(0,0,0,0.55)', backdropFilter: 'blur(14px)', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600 }}>This week</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#10b981' }}>12 active 🔥</div>
+                <div style={{ position: 'absolute', bottom: '10%', right: '-10%', background: 'rgba(4,8,15,0.95)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 13, padding: '10px 14px', boxShadow: '0 12px 36px rgba(0,0,0,0.5)', backdropFilter: 'blur(14px)' }}>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600 }}>This week</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#10b981' }}>12 members active</div>
                 </div>
               </div>
             </div>
