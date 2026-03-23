@@ -895,7 +895,7 @@ export default function Home() {
             WebkitBackdropFilter: isAtTop ? 'none' : 'blur(16px)',
             borderBottom: isAtTop ? 'none' : '1px solid rgba(255,255,255,0.07)',
             paddingTop: 'env(safe-area-inset-top)',
-            transition: 'transform 300ms ease-out, background 200ms ease, border-color 200ms ease',
+            transition: isAtTop ? 'none' : 'transform 300ms ease-out, background 200ms ease, border-color 200ms ease',
           }}>
           <div className="px-4 py-2.5">
             <HeaderContent compact={true} />
