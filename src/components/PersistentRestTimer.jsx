@@ -250,15 +250,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isPulsing  = isWarning || isFinished;
   const PULSE_DURATION = '2.2s ease-in-out infinite';
 
-  const isRestSegment = cardioMode && currentSeg?.type === 'rest';
-
-  // ── Colours: green during rest, blue otherwise ────────────────────────────
-  const staticBg     = isRestSegment
-    ? 'linear-gradient(to bottom, #14532d, #166534, #052e16)'
-    : 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
-  const staticBarBg  = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
-  const staticAccent = isRestSegment ? '#4ade80' : '#60a5fa';
-  const staticText   = isRestSegment ? 'rgba(134,239,172,0.85)' : 'rgba(147,197,253,0.75)';
+  const staticBarBg = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
 
   // ── Sound helpers (Web Audio API — no external deps) ─────────────────────
   const playBell = () => {
@@ -340,6 +332,13 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const cardioExercises = todayWorkout?.cardio || [];
   const currentSeg = cardioMode && cardioSegments[currentSegIdx];
   const displayTitle = cardioMode ? cardioTitle : 'Timer';
+
+  const isRestSegment = cardioMode && currentSeg?.type === 'rest';
+  const staticBg     = isRestSegment
+    ? 'linear-gradient(to bottom, #14532d, #166534, #052e16)'
+    : 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
+  const staticAccent = isRestSegment ? '#4ade80' : '#60a5fa';
+  const staticText   = isRestSegment ? 'rgba(134,239,172,0.85)' : 'rgba(147,197,253,0.75)';
 
   // Compute round label — count how many work segments have started up to currentSegIdx
   const roundLabel = (() => {
