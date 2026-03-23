@@ -440,6 +440,7 @@ export default function GymSignup() {
     return (
       <BG maxWidth={520}>
         <StepHeader step={1} title="The silent gym killer" subtitle="Most gyms don't lose members instantly…" />
+
         <div className="gs-card gs-a2" style={{ marginBottom:16 }}>
           <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24 }}>
             {pains.map(({ icon: Icon, color, text }, i) => (
