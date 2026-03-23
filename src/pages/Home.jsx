@@ -462,6 +462,24 @@ export default function Home() {
   useEffect(() => {
     injectStreakStyles();
     injectCheckInStyles();
+    
+    // Check for missed workouts and consumed freezes on app load
+    const checkMissedWorkouts = async () => {
+      try {
+        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
+        if (result.data?.shouldShowAnimation) {
+          setFreezeAnimationData({
+            freezesLostCount: result.data.freezesLostCount,
+            finalFreezeCount: result.data.currentFreezes,
+          });
+          setShowFreezeAnimation(true);
+        }
+      } catch (error) {
+        console.error('Error checking missed workouts:', error);
+      }
+    };
+    
+    checkMissedWorkouts();
   }, []);
 
   useEffect(() => {
