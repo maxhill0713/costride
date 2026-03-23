@@ -19,7 +19,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
         {/* Streak Freezes - top right */}
         <div className="absolute top-2 right-4 flex items-center gap-1.5">
           <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="freeze" className="w-[50px] h-[50px] object-contain" />
-          <span className="text-white font-bold text-[1.85rem] leading-none">{streakFreezes}</span>
+          <span className="text-white font-bold text-[1.665rem] leading-none -ml-0.5">{streakFreezes}</span>
         </div>
 
         {/* 4-column grid — only 1 real icon, 3 empty placeholders */}
