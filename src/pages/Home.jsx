@@ -435,25 +435,17 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-      const spacer = document.getElementById('home-header-spacer');
-      const spacerH = spacer ? spacer.offsetHeight : 52;
       const atTop = currentY <= 4;
 
       setIsAtTop(atTop);
 
       if (atTop) {
-        // Always show at top
-        setStickyHeaderVisible(true);
-      } else if (currentY <= spacerH) {
-        // In the ghost spacer zone — keep visible
         setStickyHeaderVisible(true);
       } else {
         const delta = lastScrollY.current - currentY;
-        if (delta > 0) {
-          // Scrolling up — show
+        if (delta > 2) {
           setStickyHeaderVisible(true);
         } else if (delta < -2) {
-          // Scrolling down past threshold — hide
           setStickyHeaderVisible(false);
         }
       }
