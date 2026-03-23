@@ -1015,10 +1015,7 @@ export default function Home() {
                         transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.24 }}
                         className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {(checkInUsers.length > 0 ? checkInUsers : [
-                            { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
-                            { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null },
-                          ]).slice(0, 2).map((user, idx) => (
+                          {checkInUsers.slice(0, 2).map((user, idx) => (
                             <motion.div
                               key={user.id}
                               initial={{ opacity: 0, scale: 0.5 }}
