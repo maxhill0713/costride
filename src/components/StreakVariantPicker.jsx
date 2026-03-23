@@ -17,9 +17,12 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
       <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative z-[9999]">
         {/* Streak Freezes - top right */}
-        <div className="absolute top-4 right-5 flex items-center gap-1.5">
-          <Snowflake className="w-4 h-4 text-cyan-400" />
-          <span className="text-white font-bold text-sm">{streakFreezes}</span>
+        <div className="absolute top-4 right-5 flex flex-col items-end gap-0.5">
+          <div className="flex items-center gap-1.5 bg-cyan-500/15 border border-cyan-500/30 rounded-lg px-2 py-1">
+            <Snowflake className="w-4 h-4 text-cyan-400" />
+            <span className="text-white font-bold text-sm">{streakFreezes}</span>
+          </div>
+          <span className="text-[9px] text-slate-400 font-medium">streak freeze{streakFreezes !== 1 ? 's' : ''}</span>
         </div>
 
         {/* 4-column grid — only 1 real icon, 3 empty placeholders */}
