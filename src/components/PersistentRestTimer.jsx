@@ -85,7 +85,7 @@ function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) 
 
   let cumulative = 0;
   return (
-    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: svgTransform }} viewBox="0 0 200 200">
+    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: svgTransform, overflow: 'visible' }} viewBox="0 0 200 200">
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
 
       {segments.map((seg, i) => {
@@ -131,7 +131,7 @@ function SimpleArc({ smoothProgress, isPulsing, radius = 90 }) {
   const filledLen = circumference * (1 - smoothProgress);
   return (
     <svg
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(90deg) scale(-1, 1)' }}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(90deg) scale(-1, 1)', overflow: 'visible' }}
       viewBox="0 0 200 200">
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" />
       <circle cx="100" cy="100" r={radius} fill="none" stroke="#60a5fa" strokeWidth="10" strokeLinecap="round"
@@ -665,12 +665,12 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             )}
 
             {/* Circle */}
-            <div style={{ position: 'relative', width: cardioMode ? 270 : 224, height: cardioMode ? 270 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: cardioMode ? 248 : 224, height: cardioMode ? 248 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
               {cardioMode && cardioSegments.length > 1
-                ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={108} />
+                ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
                 : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />
               }
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 76 : 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 68 : 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
                 {isActive || paused ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
               </span>
             </div>
