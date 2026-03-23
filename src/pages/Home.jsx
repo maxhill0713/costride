@@ -1431,6 +1431,13 @@ export default function Home() {
         onComplete={() => setShowFreezeAnimation(false)}
       />
 
+      {/* Streak Loss Animation */}
+      <StreakLossAnimation
+        isOpen={showStreakLossAnimation}
+        previousStreak={streakLossAnimationData.previousStreak}
+        onComplete={() => setShowStreakLossAnimation(false)}
+      />
+
       {/* STAGE 1 — Streak animation */}
       <AnimatePresence>
         {showStreakCelebration && (
