@@ -10,19 +10,19 @@ const PULSE_CSS = `
   }
   @keyframes timer-bar-bg-pulse {
     0%, 100% { background: linear-gradient(90deg, #7f1d1d 0%, #450a0a 100%); }
-    50%       { background: linear-gradient(90deg, #14532d 0%, #052e16 100%); }
+    50%       { background: linear-gradient(90deg, #1d4ed8 0%, #172554 100%); }
   }
   @keyframes timer-text-pulse {
     0%, 100% { color: rgba(252,165,165,0.9); }
-    50%       { color: rgba(134,239,172,0.85); }
+    50%       { color: rgba(147,197,253,0.9); }
   }
   @keyframes timer-stop-pulse {
     0%, 100% { background: linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9)); box-shadow: 0 3px 0 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,0.15); }
-    50%       { background: linear-gradient(to bottom, rgba(74,222,128,0.9), rgba(22,163,74,0.9), rgba(20,83,45,0.9)); box-shadow: 0 3px 0 0 #14532d, inset 0 1px 0 rgba(255,255,255,0.15); }
+    50%       { background: linear-gradient(to bottom, rgba(96,165,250,0.9), rgba(37,99,235,0.9), rgba(29,78,216,0.9)); box-shadow: 0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15); }
   }
   @keyframes timer-stroke-pulse {
     0%, 100% { stroke: #fca5a5; }
-    50%       { stroke: #4ade80; }
+    50%       { stroke: #93c5fd; }
   }
   @keyframes completion-fade-in {
     0%   { opacity: 0; transform: translateY(16px); }
@@ -299,20 +299,6 @@ function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismis
               left: 24, right: 24,
               zIndex: 1,
             }}>
-            {/* Countdown ring above button */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1.5px solid rgba(255,255,255,0.25)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.7)' }}>
-                  {countdown}
-                </span>
-              </div>
-            </div>
-
             {/* 3D blue continue button matching app style */}
             <div style={{ position: 'relative' }}>
               <div style={{
