@@ -43,7 +43,7 @@ const GLOBAL_CSS = `
 
 .gs-btn-primary {
   display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  width:100%;height:52px;border-radius:12px;
+  width:100%;height:clamp(48px, 6vh, 52px);border-radius:12px;
   background:linear-gradient(135deg,#0ea5e9,#0369a1);
   border:none;cursor:pointer;font-size:14px;font-weight:700;color:#fff;
   letter-spacing:-0.01em;position:relative;overflow:hidden;
@@ -78,7 +78,7 @@ const GLOBAL_CSS = `
   border:1px solid rgba(255,255,255,0.07);
   border-radius:20px;
   box-shadow:0 20px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.04);
-  padding:28px;
+  padding:clamp(16px, 4vw, 28px);
 }
 
 .gs-input {
@@ -142,7 +142,10 @@ const GLOBAL_CSS = `
   .gs-two-col   { grid-template-columns:1fr !important; }
   .gs-three-col { grid-template-columns:1fr 1fr !important; }
   .gs-hide-sm   { display:none !important; }
-  .gs-wide-pad  { padding:20px 16px !important; }
+  .gs-wide-pad  { padding:12px !important; }
+  .gs-option    { padding:12px !important; }
+  .gs-type-btn  { padding:10px 6px !important; font-size:11px !important; }
+  .gs-card      { border-radius:16px !important; }
 }
 @media(min-width:769px) {
   .gs-show-sm   { display:none !important; }
