@@ -178,35 +178,11 @@ export default function Layout({ children, currentPageName }) {
 
   const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || currentPageName === 'GymOwnerDashboard';
   const isDashboardUser = currentUser?.account_type === 'gym_owner' || currentUser?.account_type === 'coach';
-  
-  // Map sub-pages to their nav item for highlighting
-  const navPageMap = {
-    'GymCommunity': 'Home',
-    'UserProfile': 'Profile',
-    'Settings': 'Profile',
-    'ProfileSettings': 'Profile',
-    'PrivacySettings': 'Profile',
-    'AppearanceSettings': 'Profile',
-    'NotificationSettings': 'Profile',
-    'SubscriptionSettings': 'Profile',
-    'HelpSupport': 'Profile',
-    'Friends': 'Profile',
-    'Messages': 'Profile',
-    'Notifications': 'Home',
-    'NotificationsHub': 'Home',
-    'PostArchive': 'Home',
-    'Leaderboard': 'Progress',
-    'Premium': 'Profile',
-    'Community': 'Home',
-    'Plus': 'Profile',
-  };
-  
-  const effectivePageName = navPageMap[currentPageName] || currentPageName;
 
   return (
     <TimerProvider>
       <LayoutInner
-        currentPageName={effectivePageName}
+        currentPageName={currentPageName}
         currentUser={currentUser}
         notifications={notifications}
         gymMemberships={gymMemberships}
