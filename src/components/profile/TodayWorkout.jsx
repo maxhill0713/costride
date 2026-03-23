@@ -528,12 +528,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors" />
                               <div className="text-l font-bold text-white -ml-2">{exercise.exercise}</div>
                             </div>
-                            {lastWorkout?.exercises?.[index] &&
-                    <div className="text-xs text-slate-400 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
-                    }
-                          </div>
+                            </div>
 
-                          {isDefaultSplit() ?
+                            {isDefaultSplit() ?
                   <div className="space-y-2.5">
                               <div className="flex gap-2">
                                 <div className="flex-1">
