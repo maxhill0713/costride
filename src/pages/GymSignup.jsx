@@ -513,6 +513,7 @@ export default function GymSignup() {
     return (
       <BG maxWidth={580}>
         <StepHeader step={3} title="Find your gym" subtitle="We'll look up your location and check for an existing community" />
+
         <div className="gs-card gs-a2">
           <label className="gs-label">Gym name</label>
           <div style={{ position:'relative', marginBottom:selectedPlace ? 10 : 20 }}>
