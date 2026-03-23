@@ -302,6 +302,10 @@ export default function GymOwnerDashboard() {
   const checkIns        = stats.recentCheckIns || [];
   const allMemberships  = stats.membersWithActivity || [];
 
+  // All computed stats from backend — must come before any hasDemoData usage
+  const rawStats = stats;
+  const hasDemoData = !rawStats.totalMembers || rawStats.totalMembers === 0;
+
   // For demo mode: inject mock memberships so the Members tab populates
   const demoMemberships = hasDemoData ? [
     { user_id: '1', user_name: 'Alex Johnson',   join_date: '2025-12-01', ci30Count: 12, prevCi30Count: 14, visitsTotal: 48, daysSince: 1,  streak: 14, lastCheckIn: new Date(Date.now() - 1 * 86400000).toISOString(), membership_type: 'Monthly' },
