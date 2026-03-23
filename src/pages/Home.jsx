@@ -1758,7 +1758,7 @@ export default function Home() {
                           </div>
                           <div><div className="font-semibold text-white text-sm">{user.display_name || user.username || user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
                         </div>
-                        <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                        <Button size="sm" onClick={() => addFriendMutation.mutate(user)} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
                           <UserPlus className="w-4 h-4" />
                         </Button>
                       </div>
