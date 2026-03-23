@@ -632,7 +632,15 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
   });
 
-  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id)];
+  const { data: sentFriendRequests = [] } = useQuery({
+    queryKey: ['sentFriendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'pending' }),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
     queryFn: async () => {
