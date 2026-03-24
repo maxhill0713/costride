@@ -10,6 +10,22 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 //
 // This function centralises all reward claiming with server-side enforcement.
 
+// AUDIT LOGGING UTILITY
+async function logAuditEvent(base44, event) {
+  const auditLog = {
+    action: event.action,
+    user_id: event.user_id,
+    user_email: event.user_email,
+    resource_type: event.resource_type,
+    resource_id: event.resource_id,
+    target_id: event.target_id || null,
+    status: event.status,
+    reason: event.reason || null,
+    timestamp: new Date().toISOString()
+  };
+  console.log(JSON.stringify({ event: 'AUDIT', ...auditLog }));
+}
+
 function generateSecureCode(len = 8) {
   const chars  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const bytes  = crypto.getRandomValues(new Uint8Array(len));
@@ -38,6 +54,15 @@ Deno.serve(async (req) => {
 
     const existing = await base44.asServiceRole.entities.ClaimedBonus.filter(query);
     if (existing.length > 0) {
+      await logAuditEvent(base44, {
+        action: 'reward_claim_attempt',
+        user_id: user.id,
+        user_email: user.email,
+        resource_type: 'reward',
+        resource_id: rewardId || challengeId,
+        status: 'failure',
+        reason: 'duplicate_claim'
+      });
       return Response.json({ error: 'Already claimed' }, { status: 400 });
     }
 
@@ -131,6 +156,16 @@ Deno.serve(async (req) => {
       earned_text:     earnedText,
       redemption_code: redemptionCode,
       redeemed:        false,
+    });
+
+    // Log successful reward claim
+    await logAuditEvent(base44, {
+      action: 'reward_claimed',
+      user_id: user.id,
+      user_email: user.email,
+      resource_type: 'reward',
+      resource_id: rewardId || challengeId,
+      status: 'success'
     });
 
     return Response.json({ bonus });
