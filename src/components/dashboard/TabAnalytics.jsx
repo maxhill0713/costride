@@ -575,7 +575,7 @@ function ClassPerformanceWidget({ classes, checkIns, ci30, now }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {classData.map((cls, i) => (
           <div key={cls.id || i}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: statusColor(cls.fillRate), flexShrink: 0 }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{cls.name}</span>
@@ -585,17 +585,11 @@ function ClassPerformanceWidget({ classes, checkIns, ci30, now }) {
                   </span>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
+                <span style={{ fontSize: 11, color: C.t3 }}>~{cls.avgAtt} avg · cap {cls.cap}</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: statusColor(cls.fillRate) }}>{cls.fillRate}%</span>
                 <span style={{ fontSize: 10, color: C.t3 }}>fill</span>
               </div>
-            </div>
-            <div style={{ height: 3, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${cls.fillRate}%`, borderRadius: 99, background: statusColor(cls.fillRate), transition: 'width .8s ease' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-              <span style={{ fontSize: 9, color: C.t3 }}>~{cls.avgAtt} avg / session</span>
-              <span style={{ fontSize: 9, color: C.t3 }}>cap {cls.cap}</span>
             </div>
           </div>
         ))}
