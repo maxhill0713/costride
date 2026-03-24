@@ -838,15 +838,14 @@ function RankedBarList({ title, icon: Icon, items, emptyLabel }) {
     <Card style={{ padding: 20 }}>
       <CardHead title={title} right={<Icon style={{ width: 13, height: 13, color: C.t3 }} />} />
       {items.every(d => !d.count) ? <Empty icon={Icon} label={emptyLabel || 'No data yet'} /> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {items.map((h, i) => (
-            <div key={h.label || h.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, color: C.t4, width: 16, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.t1, width: 36, flexShrink: 0 }}>{h.label || h.name}</span>
-              <div style={{ flex: 1, height: 4, borderRadius: 99, overflow: 'hidden', background: C.divider }}>
-                <div style={{ height: '100%', width: `${(h.count / max) * 100}%`, borderRadius: 99, background: C.blue, transition: 'width .7s ease' }} />
+            <div key={h.label || h.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < items.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 9, fontWeight: 800, color: C.t4, width: 16, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{h.label || h.name}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.t2, width: 22, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.t2 }}>{h.count}</span>
             </div>
           ))}
         </div>
