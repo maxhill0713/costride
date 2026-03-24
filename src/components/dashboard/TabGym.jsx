@@ -663,6 +663,7 @@ export default function TabGym({
 
         {/* Right sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <InviteStaffPanel gym={selectedGym} />
           <PhotosCard selectedGym={selectedGym} openModal={openModal} />
           <AdminCard selectedGym={selectedGym} openModal={openModal} />
           <SCard accent={T.cyan}>
