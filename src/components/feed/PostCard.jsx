@@ -186,6 +186,34 @@ function ExerciseRow({ ex, idx }) {
   );
 }
 
+// ── Smart date formatter ──────────────────────────────────────────────────────
+function formatPostDate(dateStr) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now - date;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  if (diffHours < 24) {
+    const h = Math.floor(diffHours);
+    return h <= 0 ? 'Just now' : h === 1 ? '1 hour ago' : `${h} hours ago`;
+  }
+  if (diffDays < 4) {
+    const d = Math.floor(diffDays);
+    return d === 1 ? '1 day ago' : `${d} days ago`;
+  }
+  // Ordinal suffix e.g. "24th March 2026"
+  const day = date.getDate();
+  const suffix = day === 1 || day === 21 || day === 31 ? 'st'
+               : day === 2 || day === 22 ? 'nd'
+               : day === 3 || day === 23 ? 'rd'
+               : 'th';
+  const month = date.toLocaleDateString('en-GB', { month: 'long' });
+  const year = date.getFullYear();
+  return `${day}${suffix} ${month} ${year}`;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -477,7 +505,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                  <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+                  <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
                 </div>
               </Link>
               {renderMenu(
@@ -618,7 +646,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+                <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
               </div>
             </Link>
             {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
