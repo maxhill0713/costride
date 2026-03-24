@@ -765,7 +765,7 @@ export default function GymOwnerDashboard() {
             </button>
             <div>
               <div style={{ fontSize: 16, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {{ members: isCoach ? 'Clients' : 'Members', content:'Content', analytics:'Analytics', gym:'Settings', schedule:'Schedule' }[tab] || selectedGym?.name || 'Dashboard'}
+                {{ members: isCoach ? 'Clients' : 'Members', content:'Content', analytics:'Analytics', gym:'Settings', schedule:'Schedule', rewards:'Rewards', engagement:'Automations' }[tab] || selectedGym?.name || 'Dashboard'}
               </div>
               <div style={{ fontSize: 11, color: '#1e3a54', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
                 {tab === 'members'
