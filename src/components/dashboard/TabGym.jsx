@@ -9,6 +9,7 @@ import {
   Bell, Lock, CreditCard, Plus, Edit2, Zap,
   ArrowUpRight, BarChart2, Clock, Shield, Gift, Trash2, ToggleLeft, ToggleRight,
 } from 'lucide-react';
+import InviteStaffPanel from './InviteStaffPanel';
 
 const T = {
   blue:    '#06b6d4', green:  '#10b981', red:    '#ef4444',
