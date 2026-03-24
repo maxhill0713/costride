@@ -444,8 +444,11 @@ export default function GymOwnerDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const [roleOverride, setRoleOverride] = useState(() => localStorage.getItem('dashRoleOverride') || null);
+  // Role override is a dev-only debug tool — never active in production
+  const isDev = import.meta.env.DEV;
+  const [roleOverride, setRoleOverride] = useState(() => isDev ? (localStorage.getItem('dashRoleOverride') || null) : null);
   const toggleRole = () => {
+    if (!isDev) return;
     const next = roleOverride === 'coach' ? 'gym_owner' : roleOverride === 'gym_owner' ? null : 'coach';
     if (next) localStorage.setItem('dashRoleOverride', next);
     else      localStorage.removeItem('dashRoleOverride');
