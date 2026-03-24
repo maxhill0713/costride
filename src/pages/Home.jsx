@@ -492,6 +492,7 @@ export default function Home() {
 
   const triggerRefresh = async () => {
     setIsRefreshing(true);
+    setVisiblePostCount(POSTS_PER_PAGE);
     await queryClient.invalidateQueries();
     setTimeout(() => {
       setIsRefreshing(false);
