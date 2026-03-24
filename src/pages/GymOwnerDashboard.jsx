@@ -8,7 +8,7 @@ import {
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
   Plus, Dumbbell, Clock, Crown, Trash2, X, Download, Send, Bell,
   Sun, Zap, TrendingUp, Activity, Calendar, CheckCircle,
-  MessageCircle, Star, UserCheck, Flame, ChevronRight, Pencil
+  MessageCircle, Star, UserCheck, Flame, ChevronRight, Pencil, Gift
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
