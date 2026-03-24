@@ -345,17 +345,12 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           <span style={{ fontSize: 12, fontWeight: 500, color: T.text2 }}>No drop-off risks detected</span>
         </div>
       ) : rows.map((r, i) => (
-        <div key={i} style={{ marginBottom: i < rows.length - 1 ? 12 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-            <div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: r.val > 0 ? T.text1 : T.text3 }}>{r.label}</span>
-              <span style={{ fontSize: 10, color: T.text3, marginLeft: 7 }}>{r.sub}</span>
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 800, color: r.val > 0 ? r.color : T.text3 }}>{r.val}</span>
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: i < rows.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: r.val > 0 ? T.text1 : T.text3 }}>{r.label}</span>
+            <span style={{ fontSize: 10, color: T.text3, marginLeft: 7 }}>{r.sub}</span>
           </div>
-          <div style={{ height: 3, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: total > 0 ? `${(r.val / total) * 100}%` : '0%', background: r.color, borderRadius: 99, opacity: r.val > 0 ? 1 : 0.2, transition: 'width 0.7s ease' }} />
-          </div>
+          <span style={{ fontSize: 13, fontWeight: 800, color: r.val > 0 ? r.color : T.text3 }}>{r.val}</span>
         </div>
       ))}
       {computed.week1 > 0 && (
