@@ -831,6 +831,31 @@ export default function Home() {
     new Date(post.created_date) >= threeDaysAgo
   );
 
+  const POSTS_PER_PAGE = 4;
+  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
+  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
+  const feedBottomRef = useRef(null);
+
+  useEffect(() => {
+    if (!feedBottomRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
+          setIsLoadingMorePosts(true);
+          setTimeout(() => {
+            setVisiblePostCount(prev => Math.min(prev + POSTS_PER_PAGE, socialFeedPosts.length));
+            setIsLoadingMorePosts(false);
+          }, 600);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(feedBottomRef.current);
+    return () => observer.disconnect();
+  }, [visiblePostCount, socialFeedPosts.length]);
+
+  const visibleSocialFeedPosts = socialFeedPosts.slice(0, visiblePostCount);
+
   const activityFeed = (() => {
     const activities = [];
     const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
@@ -1493,11 +1518,22 @@ export default function Home() {
                 </div>
               )}
 
-              {socialFeedPosts.length > 0 && (
+              {visibleSocialFeedPosts.length > 0 && (
                 <div className="space-y-3">
-                  {socialFeedPosts.map(post => (
+                  {visibleSocialFeedPosts.map(post => (
                     <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
                   ))}
+                  <div ref={feedBottomRef} className="flex justify-center py-3">
+                    {isLoadingMorePosts && (
+                      <div style={{
+                        width: 30, height: 30,
+                        borderRadius: '50%',
+                        border: '2.5px solid rgba(148,163,184,0.2)',
+                        borderTop: '2.5px solid #60a5fa',
+                        animation: 'spin 0.7s linear infinite',
+                      }} />
+                    )}
+                  </div>
                 </div>
               )}
             </div>
