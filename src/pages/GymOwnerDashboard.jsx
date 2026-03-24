@@ -1022,13 +1022,15 @@ export default function GymOwnerDashboard() {
               <Plus style={{ width: 12, height: 12 }} /> New Post
             </button>
 
-            {/* Role preview toggle — quiet */}
-            <button onClick={toggleRole}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t3, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = D.borderHi}
-              onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
-              {isCoach ? 'Coach' : 'Owner'} <span style={{ opacity: 0.4, fontSize: 9 }}>preview</span>
-            </button>
+            {/* Role preview toggle — DEV only */}
+            {isDev && (
+              <button onClick={toggleRole}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t3, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.12s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = D.borderHi}
+                onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
+                {isCoach ? 'Coach' : 'Owner'} <span style={{ opacity: 0.4, fontSize: 9 }}>preview</span>
+              </button>
+            )}
 
             {/* User avatar — neutral */}
             <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 9px 4px 5px', borderRadius: 9, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, cursor: 'pointer', transition: 'border-color 0.12s', fontFamily: 'inherit' }}
