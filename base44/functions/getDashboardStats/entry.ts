@@ -89,17 +89,25 @@ Deno.serve(async (req) => {
       streakMap[userId] = streak;
     });
 
-    // ── Enriched memberships ──────────────────────────────────────────────────
+    // ── Enriched memberships (allowlisted fields only — no sensitive data) ──────
     const membersWithActivity = allMemberships.map(m => ({
-      ...m,
-      lastCheckIn:    memberLastCheckIn[m.user_id] || null,
-      ci30Count:      acc30[m.user_id]    || 0,
-      prevCi30Count:  prevAcc[m.user_id]  || 0,
-      visitsTotal:    totalAcc[m.user_id] || 0,
-      daysSince:      memberLastCheckIn[m.user_id]
-                        ? Math.floor((now - new Date(memberLastCheckIn[m.user_id])) / DAY)
-                        : null,
-      streak:         streakMap[m.user_id] || 0,
+      id:              m.id,
+      user_id:         m.user_id,
+      user_name:       m.user_name,
+      user_email:      m.user_email,
+      join_date:       m.join_date || m.created_date,
+      membership_type: m.membership_type,
+      status:          m.status,
+      plan:            m.plan,
+      // computed:
+      lastCheckIn:     memberLastCheckIn[m.user_id] || null,
+      ci30Count:       acc30[m.user_id]    || 0,
+      prevCi30Count:   prevAcc[m.user_id]  || 0,
+      visitsTotal:     totalAcc[m.user_id] || 0,
+      daysSince:       memberLastCheckIn[m.user_id]
+                         ? Math.floor((now - new Date(memberLastCheckIn[m.user_id])) / DAY)
+                         : null,
+      streak:          streakMap[m.user_id] || 0,
     }));
 
     // At-risk
