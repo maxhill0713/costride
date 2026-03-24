@@ -448,14 +448,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
           Members <ChevronRight style={{ width: 12, height: 12 }} />
         </button>
       </div>
-      <div style={{ display: 'flex', height: 5, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 16 }}>
-        {rows.filter(r => r.val > 0).length > 0
-          ? rows.filter(r => r.val > 0).map((r, i, arr) => (
-              <div key={i} style={{ flex: r.val, background: r.color, opacity: 0.85, borderRadius: i === 0 ? '99px 0 0 99px' : i === arr.length - 1 ? '0 99px 99px 0' : 0 }} />
-            ))
-          : <div style={{ flex: 1, background: T.divider, borderRadius: 99 }} />
-        }
-      </div>
+
       {rows.map((r, i) => {
         const pct = totalMembers > 0 ? Math.round((r.val / totalMembers) * 100) : 0;
         return (
