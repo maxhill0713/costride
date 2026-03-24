@@ -12,6 +12,96 @@ import CreateSplitModal from '../components/profile/CreateSplitModal';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Caption sanitisation
+// Strips control characters and zero-width/invisible characters that can be
+// used for obfuscation or injection tricks. Character limit enforced here too.
+// ─────────────────────────────────────────────────────────────────────────────
+const sanitiseCaption = (v) =>
+  v
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // control characters
+    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '')   // zero-width / soft hyphen
+    .slice(0, 200);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// File validation — MIME whitelist + magic byte checks
+//
+// file.type is trivially spoofable, so we also read the first 12 bytes of the
+// actual file and compare against known file signatures. This stops someone
+// renaming a .exe to .jpg and uploading it.
+//
+// NOTE: This is a client-side friction layer. Real virus scanning must happen
+// server-side. This catches casual/accidental bad actors and provides a good
+// UX error message before a wasted upload attempt.
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+]);
+
+// Each entry maps a MIME type to either a static byte prefix or a custom check
+// function that receives the first 12 bytes as a Uint8Array.
+const MAGIC_BYTE_RULES = [
+  { mime: 'image/jpeg',      bytes: [0xFF, 0xD8, 0xFF] },
+  { mime: 'image/png',       bytes: [0x89, 0x50, 0x4E, 0x47] },
+  { mime: 'image/gif',       bytes: [0x47, 0x49, 0x46] },
+  {
+    mime: 'image/webp',
+    // RIFF????WEBP — bytes 8-11 are "WEBP"
+    check: (arr) => arr[8] === 0x57 && arr[9] === 0x45 && arr[10] === 0x42 && arr[11] === 0x50,
+  },
+  {
+    mime: 'video/mp4',
+    // ftyp box at offset 4
+    check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70,
+  },
+  {
+    mime: 'video/quicktime',
+    check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70,
+  },
+  { mime: 'video/webm', bytes: [0x1A, 0x45, 0xDF, 0xA3] },
+];
+
+const matchesMagicBytes = (arr, rule) => {
+  if (rule.check) return rule.check(arr);
+  return rule.bytes.every((b, i) => arr[i] === b);
+};
+
+const validateFile = (file) =>
+  new Promise((resolve, reject) => {
+    // 1. MIME type must be in whitelist
+    if (!ALLOWED_MIME_TYPES.has(file.type)) {
+      return reject(new Error('File type not allowed. Please upload an image or video.'));
+    }
+
+    // 2. Size limit — 50 MB for video, 10 MB for images
+    const isVideo = file.type.startsWith('video/');
+    const maxBytes = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      return reject(new Error(`File too large. Max size is ${isVideo ? '50 MB' : '10 MB'}.`));
+    }
+
+    // 3. Magic bytes — read first 12 bytes only (fast, no full file read)
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const arr = new Uint8Array(e.target.result);
+      const rule = MAGIC_BYTE_RULES.find((r) => r.mime === file.type);
+      if (!rule || !matchesMagicBytes(arr, rule)) {
+        return reject(new Error('File content does not match its declared type.'));
+      }
+      resolve(true);
+    };
+    reader.onerror = () => reject(new Error('Could not read file. Please try again.'));
+    reader.readAsArrayBuffer(file.slice(0, 12));
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function Profile() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [showProfilePicture, setShowProfilePicture] = useState(false);
@@ -115,7 +205,17 @@ export default function Profile() {
     setShareWithCommunity(false);
   };
 
+  // ── File upload with client-side validation ────────────────────────────────
   const handleFileUpload = async (file, type) => {
+    // Validate before touching the network
+    try {
+      await validateFile(file);
+    } catch (err) {
+      // toast is imported below — use it here if available, otherwise alert
+      alert(err.message || 'Invalid file');
+      return;
+    }
+
     try {
       setUploading(true);
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -123,6 +223,7 @@ export default function Profile() {
       else setPostVideo(file_url);
     } catch (error) {
       console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -376,15 +477,18 @@ export default function Profile() {
 
               <div className="px-4 pt-5 pb-5 space-y-3">
 
-                {/* Caption — above media */}
+                {/* Caption
+                    font-size is 16px to prevent iOS Safari auto-zooming on focus.
+                    Any font-size below 16px triggers the zoom behaviour. */}
                 <div className="relative">
                   <Textarea
                     value={postContent}
-                    onChange={(e) => setPostContent(e.target.value.slice(0, 200))}
+                    onChange={(e) => setPostContent(sanitiseCaption(e.target.value))}
                     placeholder="Add a caption… (optional)"
                     rows={2}
                     maxLength={200}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                    style={{ fontSize: '16px' }}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
                   />
                   <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${postContent.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
                     {postContent.length}/200
@@ -402,21 +506,22 @@ export default function Profile() {
                     <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
                       <div className="flex gap-3">
                         <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                           <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
                             <ImageIcon className="w-5 h-5 text-slate-400" />
                           </div>
                           <span className="text-[10px] text-slate-500 font-semibold">Photo</span>
                         </label>
                         <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
+                          <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
                           <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
                             <Video className="w-5 h-5 text-slate-400" />
                           </div>
                           <span className="text-[10px] text-slate-500 font-semibold">Video</span>
                         </label>
                         <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                          {/* Camera capture — images only, explicit MIME whitelist */}
+                          <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                           <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
                             <Camera className="w-5 h-5 text-slate-400" />
                           </div>
