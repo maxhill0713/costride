@@ -1,101 +1,29 @@
 /**
- * TabOverview — Redesigned Color System & Visual Hierarchy
+ * TabOverview — Restyled to match TabEngagement card system
  *
- * ══════════════════════════════════════════════════════════════════
- * DESIGN SYSTEM — same tokens as TabAnalytics.jsx
- * ══════════════════════════════════════════════════════════════════
+ * WHAT CHANGED (tokens + card shell only — hierarchy rules preserved):
  *
- * CORE RULE: "Color = Meaning. Silence = Safety."
+ * TOKENS
+ *   bg         #090e1a  → #080e18
+ *   surface    #0d1525  → #0c1422
+ *   surfaceEl  #111c2e  → #101929
+ *   border     rgba(255,255,255,0.065) → rgba(255,255,255,0.07)
+ *   borderEl   rgba(255,255,255,0.11)  → rgba(255,255,255,0.12)
+ *   t1         #dde3ed  → #f1f5f9  (crisper white)
+ *   t2         #7a8ea8  → #94a3b8
+ *   t3         #3f5068  → #475569
+ *   t4         #243040  → #2d3f55
+ *   accent     #5179ff  → #3b82f6
+ *   danger     #e0524a  → #ef4444
+ *   success    #38b27a  → #10b981
+ *   warn       #d4893a  → #f59e0b
  *
- * ── WHAT CHANGED ON THIS PAGE ────────────────────────────────────
+ * CARD SHELL (every surface container)
+ *   borderRadius  12 → 14
+ *   boxShadow  added: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)
  *
- * KPI CARDS
- *   Before: Gradient shimmer line, corner glow, colored icon box,
- *           trend icon inheriting card accent color.
- *           → 4–5 competing colored elements per tiny card.
- *   After:  No shimmer, no glow. Icon glyph is always t3 (muted).
- *           Value is t1 (white). Only the trend badge gets semantic
- *           color. Max 1 colored element per card.
- *
- * ACTION ITEMS / SIGNALS
- *   Before: Each signal had a colored background (`color`07),
- *           a colored icon container, a colored action badge — AND
- *           the title text in T.text1. Three competing colored
- *           surfaces in one small row.
- *   After:  Surface is always neutral (surfaceEl). A 3px left border
- *           is the ONLY color. Icon is the border color. Action badge
- *           is small and uses the border color.
- *           → Eye immediately ranks items by border color intensity.
- *
- * QUICK ACTIONS GRID
- *   Before: Hover state turned button background to `color`10 and
- *           border to `color`30 — 6 different hover colors.
- *   After:  All buttons hover to the same surfaceEl with borderEl.
- *           Icon glyphs retain their semantic color (they're small
- *           enough not to compete). Labels are always t2.
- *
- * ENGAGEMENT SPLIT
- *   Before: Each tier had its own color dot — green, blue, amber, red.
- *           All 4 competed simultaneously.
- *   After:  Strict 3-tier rule:
- *           Super Active → success (positive threshold)
- *           Active + Occasional → t3 (neutral — not alarming)
- *           At Risk → danger (only this one requires action)
- *
- * MEMBER GROWTH CARD
- *   Before: "+N new members" in green, cancelled count in red or grey,
- *           retention badge in green, gradient bar chart fill.
- *   After:  Net is always t1. Only negative net gets danger.
- *           Retention badge uses success only if ≥70% (threshold).
- *           Bar chart uses flat accent color, no gradient.
- *
- * WEEK-1 RETURN
- *   Before: "Came back" box in green-tinted bg, "Didn't return" in
- *           red-tinted bg. Both colored simultaneously.
- *   After:  Both boxes are surfaceEl (neutral). Only the numbers
- *           inside get semantic color if at a threshold.
- *
- * RETENTION BREAKDOWN (DROP-OFF RISK)
- *   Before: Each row value was colored (red/amber/t3) regardless of
- *           whether the count was 0.
- *   After:  Zero counts are always t4 (ghost). Non-zero counts:
- *           only "New went quiet" (week1) gets danger — it's the
- *           most urgent. Others get t2 unless action is needed.
- *
- * STAT NUDGE
- *   Before: Always had a colored background and border.
- *   After:  Always surfaceEl background and neutral border.
- *           Only the icon and stat text carry semantic color.
- *           No colored card surfaces.
- *
- * CHECK-IN CHART
- *   Before: Today's bar used a blue→blue gradient. Tooltip border
- *           turned blue for today. Reference line in blue.
- *   After:  Today's bar is flat accent. Past bars are accent at 30%
- *           opacity. Reference line is t4 (barely visible — it's
- *           supporting data, not primary).
- *
- * ── ELEMENTS THAT MUST NEVER BE COLORED ON THIS PAGE ────────────
- *   - Card backgrounds (always surface/surfaceEl)
- *   - All border lines (border/borderEl — neutral only)
- *   - Icon containers on buttons and cards
- *   - Row label text
- *   - Tick labels on charts
- *   - The Quick Actions grid button backgrounds
- *
- * ── TAILWIND-EQUIVALENT TOKENS ───────────────────────────────────
- *   bg-base:        #090e1a
- *   bg-surface:     #0d1525
- *   bg-surface-el:  #111c2e
- *   border:         rgba(255,255,255,0.065)
- *   border-el:      rgba(255,255,255,0.11)
- *   text-primary:   #dde3ed
- *   text-secondary: #7a8ea8
- *   text-muted:     #3f5068
- *   accent:         #5179ff
- *   danger:         #e0524a
- *   success:        #38b27a
- * ══════════════════════════════════════════════════════════════════
+ * All visual-hierarchy rules (Color = Meaning, left-border signals,
+ * threshold-only color, neutral icon containers, flat fills) are unchanged.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -114,45 +42,48 @@ import {
 import { RingChart, Avatar } from './DashboardPrimitives';
 
 /* ══════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — matches TabAnalytics.jsx exactly
+   DESIGN TOKENS — matches TabEngagement exactly
 ══════════════════════════════════════════════════════════════════ */
 const C = {
-  bg:         '#090e1a',
-  surface:    '#0d1525',
-  surfaceEl:  '#111c2e',
+  bg:        '#080e18',
+  surface:   '#0c1422',
+  surfaceEl: '#101929',
 
-  border:     'rgba(255,255,255,0.065)',
-  borderEl:   'rgba(255,255,255,0.11)',
-  divider:    'rgba(255,255,255,0.038)',
+  border:   'rgba(255,255,255,0.07)',
+  borderEl: 'rgba(255,255,255,0.12)',
+  divider:  'rgba(255,255,255,0.04)',
 
-  t1:  '#dde3ed',   // Primary — values, headings
-  t2:  '#7a8ea8',   // Secondary — labels
-  t3:  '#3f5068',   // Muted — supporting copy, timestamps
-  t4:  '#243040',   // Ghost — zero states, rank numbers
+  t1: '#f1f5f9',
+  t2: '#94a3b8',
+  t3: '#475569',
+  t4: '#2d3f55',
 
-  accent:    '#5179ff',
-  accentSub: 'rgba(81,121,255,0.08)',
-  accentBrd: 'rgba(81,121,255,0.18)',
+  accent:    '#3b82f6',
+  accentSub: 'rgba(59,130,246,0.12)',
+  accentBrd: 'rgba(59,130,246,0.24)',
 
-  danger:    '#e0524a',
-  dangerSub: 'rgba(224,82,74,0.07)',
-  dangerBrd: 'rgba(224,82,74,0.18)',
+  danger:    '#ef4444',
+  dangerSub: 'rgba(239,68,68,0.10)',
+  dangerBrd: 'rgba(239,68,68,0.22)',
 
-  success:    '#38b27a',
-  successSub: 'rgba(56,178,122,0.07)',
-  successBrd: 'rgba(56,178,122,0.16)',
+  success:    '#10b981',
+  successSub: 'rgba(16,185,129,0.10)',
+  successBrd: 'rgba(16,185,129,0.22)',
 
-  warn:    '#d4893a',
-  warnSub: 'rgba(212,137,58,0.07)',
-  warnBrd: 'rgba(212,137,58,0.18)',
+  warn:    '#f59e0b',
+  warnSub: 'rgba(245,158,11,0.10)',
+  warnBrd: 'rgba(245,158,11,0.22)',
 };
 
+/* ── Shared card shadow — matches TabEngagement Card primitive ─── */
+const CARD_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)';
+const CARD_RADIUS = 14;
+
 /* ── Axis tick — always muted ──────────────────────────────────── */
-const tick = { fill: C.t3, fontSize: 10, fontFamily: 'Geist, system-ui, sans-serif' };
+const tick = { fill: C.t3, fontSize: 10, fontFamily: 'inherit' };
 
 /* ══════════════════════════════════════════════════════════════════
    CHART TOOLTIP
-   Dark, minimal. No colored borders.
 ══════════════════════════════════════════════════════════════════ */
 function Tip({ active, payload, label, unit = '' }) {
   if (!active || !payload?.length) return null;
@@ -171,7 +102,7 @@ function Tip({ active, payload, label, unit = '' }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MINI SPARKLINE — accent color only
+   MINI SPARKLINE
 ══════════════════════════════════════════════════════════════════ */
 function MiniSpark({ data = [], width = 64, height = 26 }) {
   if (!data || data.length < 2) return <div style={{ width, height }} />;
@@ -199,11 +130,8 @@ function MiniSpark({ data = [], width = 64, height = 26 }) {
 
 /* ══════════════════════════════════════════════════════════════════
    KPI CARD
-   BEFORE: shimmer line + corner glow + colored icon box + colored
-           value + trend badge = 5 competing colored elements.
-   AFTER:  No shimmer. No glow. Icon is always t3.
-           Value is always t1 (pass valueColor only at a threshold).
-           Only the trend badge gets semantic color (1 element total).
+   Color rule: value is always t1. Only trend badge gets semantic
+   color. valueColor passed only when threshold is crossed.
 ══════════════════════════════════════════════════════════════════ */
 function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkData, ring, ringColor, icon: Icon, valueColor, cta, onCta }) {
   const trendColor = subTrend === 'up' ? C.success : subTrend === 'down' ? C.danger : C.t3;
@@ -212,30 +140,25 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
 
   return (
     <div style={{
-      borderRadius:  12,
+      borderRadius:  CARD_RADIUS,
       padding:       '16px 18px',
       background:    C.surface,
       border:        `1px solid ${C.border}`,
-      boxShadow:     '0 1px 3px rgba(0,0,0,0.35)',
+      boxShadow:     CARD_SHADOW,
       display:       'flex',
       flexDirection: 'column',
-      // NO shimmer line. NO corner glow. NO colored border.
     }}>
-      {/* Label + icon — icon is always t3, no colored container */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: C.t3, letterSpacing: '.04em' }}>{label}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</span>
         {Icon && <Icon style={{ width: 13, height: 13, color: C.t3 }} />}
       </div>
 
-      {/* Value + ring/spark */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            {/* Value: t1 by default. valueColor only when threshold is crossed. */}
             <span style={{ fontSize: 34, fontWeight: 700, color: valueColor || C.t1, lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</span>
             {valueSuffix && <span style={{ fontSize: 13, fontWeight: 400, color: C.t3 }}>{valueSuffix}</span>}
           </div>
-          {/* Trend sub — semantic color only on badge, not on icon */}
           {sub && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
               <TrendIcon style={{ width: 10, height: 10, color: trendColor, flexShrink: 0 }} />
@@ -254,29 +177,25 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
         }
       </div>
 
-      {/* CTA button — only for at-risk card */}
       {cta && onCta && (
-        <button
-          onClick={onCta}
-          style={{
-            marginTop:      8,
-            width:          '100%',
-            padding:        '6px 10px',
-            borderRadius:   7,
-            // Neutral button — no colored background
-            background:     C.surfaceEl,
-            border:         `1px solid ${C.borderEl}`,
-            color:          C.t1,
-            fontSize:       11,
-            fontWeight:     600,
-            cursor:         'pointer',
-            display:        'flex',
-            alignItems:     'center',
-            justifyContent: 'center',
-            gap:            5,
-            fontFamily:     'inherit',
-            transition:     'border-color .12s',
-          }}
+        <button onClick={onCta} style={{
+          marginTop:      8,
+          width:          '100%',
+          padding:        '6px 10px',
+          borderRadius:   8,
+          background:     C.surfaceEl,
+          border:         `1px solid ${C.borderEl}`,
+          color:          C.t1,
+          fontSize:       11,
+          fontWeight:     600,
+          cursor:         'pointer',
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:            5,
+          fontFamily:     'inherit',
+          transition:     'border-color .12s',
+        }}
           onMouseEnter={e => e.currentTarget.style.borderColor = C.danger + '60'}
           onMouseLeave={e => e.currentTarget.style.borderColor = C.borderEl}
         >
@@ -288,7 +207,7 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   STAT ROW — label always t2, value gets color only at threshold
+   STAT ROW
 ══════════════════════════════════════════════════════════════════ */
 function StatRow({ label, value, valueColor, last, badge }) {
   return (
@@ -303,13 +222,13 @@ function StatRow({ label, value, valueColor, last, badge }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         {badge && (
           <span style={{
-            fontSize:    9,
-            fontWeight:  600,
-            color:       badge.color,
-            background:  `${badge.color}10`,
-            border:      `1px solid ${badge.color}22`,
+            fontSize:     9,
+            fontWeight:   600,
+            color:        badge.color,
+            background:   `${badge.color}10`,
+            border:       `1px solid ${badge.color}22`,
             borderRadius: 5,
-            padding:     '1px 6px',
+            padding:      '1px 6px',
           }}>
             {badge.label}
           </span>
@@ -321,29 +240,20 @@ function StatRow({ label, value, valueColor, last, badge }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ACTION ROW
-   BEFORE: Colored icon container on every row.
-   AFTER:  Icon container is surfaceEl (neutral).
-           Icon glyph carries the semantic color — small enough
-           not to compete but still scannable.
+   ACTION ROW — icon container neutral, glyph carries semantic color
 ══════════════════════════════════════════════════════════════════ */
 function ActionRow({ icon: Icon, label, action, color, onClick, last }) {
   const [hov, setHov] = useState(false);
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
+    <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        display:     'flex',
-        alignItems:  'center',
-        gap:         10,
-        padding:     '9px 0',
+        display:      'flex',
+        alignItems:   'center',
+        gap:          10,
+        padding:      '9px 0',
         borderBottom: last ? 'none' : `1px solid ${C.divider}`,
-        cursor:      'pointer',
-      }}
-    >
-      {/* Icon container: always neutral */}
+        cursor:       'pointer',
+      }}>
       <div style={{
         width:          28,
         height:         28,
@@ -368,13 +278,7 @@ function ActionRow({ icon: Icon, label, action, color, onClick, last }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIGNAL — action item row
-   BEFORE: `${color}07` background, colored icon container, colored
-           action badge, colored title = 4 competing surfaces.
-   AFTER:  Surface is always surfaceEl (neutral).
-           A 3px left border is the ONLY color signal.
-           Icon glyph is the border color (small — doesn't compete).
-           Action badge: small accent-colored text, no bg.
+   SIGNAL — 3px left border is the ONLY color. Surface always neutral.
 ══════════════════════════════════════════════════════════════════ */
 function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
   const [hov, setHov] = useState(false);
@@ -382,38 +286,36 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
     <div
       style={{
         padding:      '10px 12px',
-        borderRadius: 8,
+        borderRadius: 9,
         background:   hov && onAction ? C.surfaceEl : C.surface,
         border:       `1px solid ${C.border}`,
-        // 3px left border is the ONLY color on this component
         borderLeft:   `3px solid ${color}`,
         marginBottom: last ? 0 : 6,
         cursor:       onAction ? 'pointer' : 'default',
         transition:   'background .12s',
+        boxShadow:    CARD_SHADOW,
       }}
       onClick={onAction}
       onMouseEnter={() => onAction && setHov(true)}
       onMouseLeave={() => onAction && setHov(false)}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-        {/* Icon: no container, just the glyph in border color */}
         <Icon style={{ width: 12, height: 12, color, flexShrink: 0, marginTop: 2 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.3, marginBottom: 2 }}>{title}</div>
           <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</div>
         </div>
-        {/* Action: text-only badge, no background */}
         {action && (
           <span style={{
-            fontSize:    10,
-            fontWeight:  600,
+            fontSize:   10,
+            fontWeight: 600,
             color,
-            flexShrink:  0,
-            whiteSpace:  'nowrap',
-            marginTop:   1,
-            display:     'flex',
-            alignItems:  'center',
-            gap:         2,
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            marginTop:  1,
+            display:    'flex',
+            alignItems: 'center',
+            gap:        2,
           }}>
             {action} <ChevronRight style={{ width: 9, height: 9 }} />
           </span>
@@ -424,26 +326,20 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   STAT NUDGE — inline contextual note inside cards
-   BEFORE: Colored background + colored border = two surfaces.
-   AFTER:  Always surfaceEl + neutral border.
-           Icon and stat text carry semantic color.
-           No colored card surface.
+   STAT NUDGE — surfaceEl bg, 2px left border is only color
 ══════════════════════════════════════════════════════════════════ */
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
     <div style={{
-      marginTop:   12,
-      display:     'flex',
-      alignItems:  'flex-start',
-      gap:         9,
-      padding:     '9px 11px',
+      marginTop:    12,
+      display:      'flex',
+      alignItems:   'flex-start',
+      gap:          9,
+      padding:      '9px 11px',
       borderRadius: 8,
-      // Neutral surface — no colored bg
-      background:  C.surfaceEl,
-      border:      `1px solid ${C.border}`,
-      // 2px left border is the only color
-      borderLeft:  `2px solid ${color}`,
+      background:   C.surfaceEl,
+      border:       `1px solid ${C.border}`,
+      borderLeft:   `2px solid ${color}`,
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -451,24 +347,21 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</span>
       </div>
       {action && onAction && (
-        <button
-          onClick={onAction}
-          style={{
-            flexShrink:  0,
-            fontSize:    10,
-            fontWeight:  600,
-            color,
-            background:  'transparent',
-            border:      'none',
-            cursor:      'pointer',
-            fontFamily:  'inherit',
-            whiteSpace:  'nowrap',
-            display:     'flex',
-            alignItems:  'center',
-            gap:         2,
-            padding:     0,
-          }}
-        >
+        <button onClick={onAction} style={{
+          flexShrink: 0,
+          fontSize:   10,
+          fontWeight: 600,
+          color,
+          background: 'transparent',
+          border:     'none',
+          cursor:     'pointer',
+          fontFamily: 'inherit',
+          whiteSpace: 'nowrap',
+          display:    'flex',
+          alignItems: 'center',
+          gap:        2,
+          padding:    0,
+        }}>
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
       )}
@@ -478,11 +371,6 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
 
 /* ══════════════════════════════════════════════════════════════════
    ACTION ITEMS (signals panel)
-   BEFORE: Each signal had full colored backgrounds. The pending badge
-           inherited signal[0]'s color. Header had a shimmer line.
-   AFTER:  Signals use left-border-only color. Pending count badge
-           is a simple neutral tag — the signal borders already
-           communicate urgency without a badge repeating it.
 ══════════════════════════════════════════════════════════════════ */
 function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now, openModal, setTab, newNoReturnCount = 0 }) {
   const signals = useMemo(() => {
@@ -533,24 +421,22 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
   return (
     <div style={{
       padding:      20,
-      borderRadius: 12,
+      borderRadius: CARD_RADIUS,
       background:   C.surface,
       border:       `1px solid ${C.border}`,
-      boxShadow:    '0 1px 3px rgba(0,0,0,0.35)',
-      // NO shimmer line
+      boxShadow:    CARD_SHADOW,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Action Items</div>
-        {/* Badge: neutral, not colored — the signal borders communicate urgency */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, letterSpacing: '.04em', textTransform: 'uppercase' }}>Action Items</div>
         {signals.length > 0 && (
           <span style={{
-            fontSize:    10,
-            fontWeight:  600,
-            color:       urgentCount > 0 ? C.danger : C.t3,
-            background:  urgentCount > 0 ? C.dangerSub : 'transparent',
-            border:      `1px solid ${urgentCount > 0 ? C.dangerBrd : C.border}`,
+            fontSize:     10,
+            fontWeight:   700,
+            color:        urgentCount > 0 ? C.danger : C.t3,
+            background:   urgentCount > 0 ? C.dangerSub : 'transparent',
+            border:       `1px solid ${urgentCount > 0 ? C.dangerBrd : C.border}`,
             borderRadius: 6,
-            padding:     '1px 7px',
+            padding:      '1px 7px',
           }}>
             {signals.length} pending
           </span>
@@ -561,7 +447,7 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
       {signals.length === 0 ? (
         <div style={{
           padding:      '11px 13px',
-          borderRadius: 8,
+          borderRadius: 9,
           background:   C.surfaceEl,
           border:       `1px solid ${C.border}`,
           borderLeft:   `3px solid ${C.success}`,
@@ -598,12 +484,8 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   RETENTION BREAKDOWN (DROP-OFF RISK)
-   BEFORE: Every non-zero row had a unique color (red/amber/t3).
-   AFTER:  Only week1 (most urgent) gets danger.
-           week2to4 and month2to3 get warn only if > 0.
-           "Beyond" is always t3 (it's stale risk, not urgent).
-           Zero values are always t4 (ghost).
+   RETENTION BREAKDOWN
+   week1 only gets danger. Zero values are ghost.
 ══════════════════════════════════════════════════════════════════ */
 function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
   const computed = {
@@ -612,7 +494,6 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
     month2to3: risks.month2to3 || 0,
     beyond:    risks.beyond    || 0,
   };
-
   const rows = [
     { label: 'New — went quiet', sub: 'Joined < 2 wks, no return', val: computed.week1,     urgentColor: C.danger },
     { label: 'Early drop-off',   sub: 'Weeks 2–4 inactivity',      val: computed.week2to4,  urgentColor: C.warn   },
@@ -622,31 +503,19 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
   const total = rows.reduce((s, r) => s + r.val, 0);
 
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 2 }}>Drop-off Risk</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Drop-off Risk</div>
           <div style={{ fontSize: 11, color: C.t3 }}>Where members go quiet</div>
         </div>
-        <button
-          onClick={() => setTab && setTab('members')}
-          style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
-        >
+        <button onClick={() => setTab && setTab('members')} style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
           View all <ChevronRight style={{ width: 11, height: 11 }} />
         </button>
       </div>
 
       {total === 0 ? (
-        <div style={{
-          display:      'flex',
-          alignItems:   'center',
-          gap:          8,
-          padding:      '10px 12px',
-          borderRadius: 8,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.success}`,
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.success}` }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: C.t2 }}>No drop-off risks detected</span>
         </div>
@@ -662,34 +531,20 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
             <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3 }}>{r.label}</span>
             <span style={{ fontSize: 10, color: C.t3, marginLeft: 7 }}>{r.sub}</span>
           </div>
-          {/* Value: semantic color only if > 0. Zero values are ghost. */}
-          <span style={{
-            fontSize:  13,
-            fontWeight: 700,
-            color:      r.val > 0 ? r.urgentColor : C.t4,
-          }}>
-            {r.val}
-          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: r.val > 0 ? r.urgentColor : C.t4 }}>{r.val}</span>
         </div>
       ))}
 
       {computed.week1 > 0 && (
-        <StatNudge
-          color={C.danger}
-          icon={AlertTriangle}
+        <StatNudge color={C.danger} icon={AlertTriangle}
           stat={`${computed.week1} new member${computed.week1 > 1 ? 's' : ''} went quiet immediately.`}
           detail="The first 7 days are critical — members who don't return in week 1 are far less likely to become regulars."
-          action="Follow up"
-          onAction={() => setTab && setTab('members')}
-        />
+          action="Follow up" onAction={() => setTab && setTab('members')} />
       )}
       {computed.week1 === 0 && total > 0 && (
-        <StatNudge
-          color={C.success}
-          icon={CheckCircle}
+        <StatNudge color={C.success} icon={CheckCircle}
           stat="No immediate drop-offs."
-          detail="Keep it up — the month 2–3 window is the next common drop-off point to watch."
-        />
+          detail="Keep it up — the month 2–3 window is the next common drop-off point to watch." />
       )}
     </div>
   );
@@ -697,28 +552,21 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
 
 /* ══════════════════════════════════════════════════════════════════
    WEEK-1 RETURN RATE
-   BEFORE: "Came back" grid cell green-tinted bg. "Didn't return"
-           red-tinted bg. Both colored simultaneously.
-   AFTER:  Both cells are surfaceEl (neutral bg).
-           Numbers inside get semantic color at their threshold.
-           The overall % heading gets semantic color (it's 1 number,
-           it earns the color — it's the key signal on this card).
+   Both cells neutral. Numbers inside get semantic color at threshold.
 ══════════════════════════════════════════════════════════════════ */
 function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
   const { returned = 0, didnt = 0, names = [] } = week1ReturnRate;
-  const total = returned + didnt;
-  const pct   = total > 0 ? Math.round((returned / total) * 100) : 0;
-  // Only the headline % earns semantic color — it's the primary signal
+  const total    = returned + didnt;
+  const pct      = total > 0 ? Math.round((returned / total) * 100) : 0;
   const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
 
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 2 }}>Week-1 Return Rate</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Week-1 Return Rate</div>
           <div style={{ fontSize: 11, color: C.t3 }}>New members, joined 1–3 weeks ago</div>
         </div>
-        {/* Headline metric: 1 colored number, earns its color */}
         <div style={{ fontSize: 28, fontWeight: 700, color: pctColor, letterSpacing: '-0.04em', lineHeight: 1 }}>
           {total === 0 ? '—' : `${pct}%`}
         </div>
@@ -728,49 +576,24 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
         <p style={{ fontSize: 12, color: C.t3, margin: 0 }}>No members in the 1–3 week window yet.</p>
       ) : (
         <>
-          {/* Cells: neutral surface — values inside get color */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-            <div style={{
-              padding:      '10px 12px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              textAlign:    'center',
-            }}>
-              {/* Number: success if > 0 — a good thing happened */}
-              <div style={{ fontSize: 20, fontWeight: 700, color: returned > 0 ? C.success : C.t4, letterSpacing: '-0.03em' }}>{returned}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>Came back</div>
-            </div>
-            <div style={{
-              padding:      '10px 12px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              textAlign:    'center',
-            }}>
-              {/* Number: danger only if > 0 — something needs attention */}
-              <div style={{ fontSize: 20, fontWeight: 700, color: didnt > 0 ? C.danger : C.t4, letterSpacing: '-0.03em' }}>{didnt}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>Didn't return</div>
-            </div>
+            {[
+              { count: returned, label: 'Came back',    color: returned > 0 ? C.success : C.t4 },
+              { count: didnt,    label: "Didn't return", color: didnt > 0    ? C.danger  : C.t4 },
+            ].map((cell, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: cell.color, letterSpacing: '-0.03em' }}>{cell.count}</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{cell.label}</div>
+              </div>
+            ))}
           </div>
 
           {didnt > 0 && names.length > 0 && (
-            <div style={{
-              marginBottom: 0,
-              padding:      '9px 11px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              // Left border: only color on this element
-              borderLeft:   `3px solid ${C.danger}`,
-            }}>
+            <div style={{ marginBottom: 0, padding: '9px 11px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.danger}` }}>
               <div style={{ fontSize: 11, color: C.t2, marginBottom: 5, lineHeight: 1.5 }}>
                 {names.join(', ')}{didnt > 3 ? ` +${didnt - 3} more` : ''} — no return visit yet
               </div>
-              <button
-                onClick={() => openModal('message')}
-                style={{ fontSize: 11, fontWeight: 600, color: C.danger, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
-              >
+              <button onClick={() => openModal('message')} style={{ fontSize: 11, fontWeight: 600, color: C.danger, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
                 Send follow-up <ChevronRight style={{ width: 10, height: 10 }} />
               </button>
             </div>
@@ -795,11 +618,7 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
 
 /* ══════════════════════════════════════════════════════════════════
    ENGAGEMENT BREAKDOWN
-   BEFORE: 4 different colored dots simultaneously (green/blue/amber/red).
-   AFTER:  Strict 3-tier:
-           Super Active → success (earned it)
-           Active + Occasional → t3 (neutral — they're fine)
-           At Risk → danger (requires action)
+   Strict 3-tier: success / t3 / danger. No other colors.
 ══════════════════════════════════════════════════════════════════ */
 function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   const rows = [
@@ -810,13 +629,10 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   ];
 
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Engagement Split</div>
-        <button
-          onClick={() => setTab('members')}
-          style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
-        >
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Split</div>
+        <button onClick={() => setTab('members')} style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
           Members <ChevronRight style={{ width: 11, height: 11 }} />
         </button>
       </div>
@@ -831,48 +647,25 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
             padding:      '8px 0',
             borderBottom: i < rows.length - 1 ? `1px solid ${C.divider}` : 'none',
           }}>
-            {/* Dot: semantic only for success/danger tiers */}
-            <div style={{
-              width:        5,
-              height:       5,
-              borderRadius: '50%',
-              background:   r.val > 0 ? r.dotColor : C.t4,
-              flexShrink:   0,
-            }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: r.val > 0 ? r.dotColor : C.t4, flexShrink: 0 }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3, flex: 1 }}>{r.label}</span>
             <span style={{ fontSize: 11, color: C.t3, marginRight: 8 }}>{r.sub}</span>
-            {/* Value: semantic color at tier extremes, t2 for middle tiers */}
-            <span style={{
-              fontSize:  13,
-              fontWeight: 700,
-              color:      r.val > 0 ? r.dotColor : C.t4,
-              minWidth:  20,
-              textAlign: 'right',
-            }}>
-              {r.val}
-            </span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: r.val > 0 ? r.dotColor : C.t4, minWidth: 20, textAlign: 'right' }}>{r.val}</span>
             <span style={{ fontSize: 10, color: C.t3, minWidth: 26, textAlign: 'right' }}>{pct}%</span>
           </div>
         );
       })}
 
       {atRisk > 0 && (
-        <StatNudge
-          color={C.danger}
-          icon={AlertTriangle}
+        <StatNudge color={C.danger} icon={AlertTriangle}
           stat={`${atRisk} member${atRisk > 1 ? 's' : ''} at risk.`}
           detail="Early outreach is most effective — the longer a lapsed member waits, the harder it is to re-engage."
-          action="View members"
-          onAction={() => setTab('members')}
-        />
+          action="View members" onAction={() => setTab('members')} />
       )}
       {atRisk === 0 && totalMembers >= 5 && (
-        <StatNudge
-          color={C.success}
-          icon={CheckCircle}
+        <StatNudge color={C.success} icon={CheckCircle}
           stat="All members active."
-          detail="Active gyms maintain this by running a challenge every 6–8 weeks."
-        />
+          detail="Active gyms maintain this by running a challenge every 6–8 weeks." />
       )}
     </div>
   );
@@ -880,12 +673,11 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
 
 /* ══════════════════════════════════════════════════════════════════
    RECENT ACTIVITY FEED
-   Unchanged structure, updated to C tokens.
 ══════════════════════════════════════════════════════════════════ */
 function ActivityFeed({ recentActivity, now, avatarMap }) {
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 16 }}>Recent Activity</div>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 16 }}>Recent Activity</div>
       {!recentActivity || recentActivity.length === 0 ? (
         <div style={{ padding: '20px 0', textAlign: 'center' }}>
           <Activity style={{ width: 18, height: 18, color: C.t3, margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
@@ -920,11 +712,8 @@ function ActivityFeed({ recentActivity, now, avatarMap }) {
 
 /* ══════════════════════════════════════════════════════════════════
    MEMBER GROWTH CARD
-   BEFORE: "+N" in green, gradient bar fill, both badges colored.
-   AFTER:  "+N" in t1. Net negative gets danger. Net positive t1.
-           Bar chart: flat accent. No gradient.
-           Retention badge: success only if ≥70% (threshold).
-           Cancelled badge: danger only if cancelled > 0.
+   Net: t1. Negative net: danger. Bar: flat accent, no gradient.
+   Retention badge: success only at ≥70% threshold.
 ══════════════════════════════════════════════════════════════════ */
 function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowthData }) {
   const hasEnoughData = (monthGrowthData || []).filter(d => d.value > 0).length >= 2;
@@ -933,12 +722,11 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
   const retColor      = retentionRate >= 70 ? C.success : retentionRate < 50 ? C.danger : C.t2;
 
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 4 }}>Member Growth</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 4 }}>Member Growth</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            {/* Value: t1 — the chart communicates growth, not the color */}
             <span style={{ fontSize: 26, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em' }}>
               {newSignUps > 0 ? `+${newSignUps}` : newSignUps}
             </span>
@@ -946,7 +734,6 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {/* Retention badge: success only at threshold */}
           <div style={{
             padding:      '3px 9px',
             borderRadius: 6,
@@ -958,17 +745,8 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           }}>
             {retentionRate}% retained
           </div>
-          {/* Cancelled: danger only if > 0 */}
           {cancelledEst > 0 && (
-            <div style={{
-              padding:      '3px 9px',
-              borderRadius: 6,
-              background:   C.dangerSub,
-              border:       `1px solid ${C.dangerBrd}`,
-              fontSize:     11,
-              fontWeight:   600,
-              color:        C.danger,
-            }}>
+            <div style={{ padding: '3px 9px', borderRadius: 6, background: C.dangerSub, border: `1px solid ${C.dangerBrd}`, fontSize: 11, fontWeight: 600, color: C.danger }}>
               {cancelledEst} left
             </div>
           )}
@@ -978,7 +756,6 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
       {hasEnoughData ? (
         <ResponsiveContainer width="100%" height={110}>
           <BarChart data={monthGrowthData} barSize={18} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
-            {/* No gradient — flat accent fill */}
             <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
             <XAxis dataKey="label" tick={tick} axisLine={false} tickLine={false} />
             <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
@@ -987,13 +764,12 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div style={{ height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: C.surfaceEl, gap: 5 }}>
+        <div style={{ height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 9, background: C.surfaceEl, gap: 5 }}>
           <div style={{ fontSize: 12, color: C.t3 }}>Chart populates as data grows</div>
           <div style={{ fontSize: 11, color: C.t3, opacity: 0.7 }}>Check back next month for trends</div>
         </div>
       )}
 
-      {/* Net summary row — minimal, no excessive color */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.divider}` }}>
         {[
           { label: 'New',       value: newSignUps,   color: C.t1 },
@@ -1008,26 +784,17 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
       </div>
 
       {retentionRate < 70 ? (
-        <StatNudge
-          color={C.danger}
-          icon={TrendingDown}
+        <StatNudge color={C.danger} icon={TrendingDown}
           stat={`${retentionRate}% retention — below the 70% healthy threshold.`}
-          detail="70% is the healthy baseline. The highest-impact habit: personally welcoming every new member in their first week."
-        />
+          detail="70% is the healthy baseline. The highest-impact habit: personally welcoming every new member in their first week." />
       ) : cancelledEst > newSignUps ? (
-        <StatNudge
-          color={C.danger}
-          icon={AlertTriangle}
+        <StatNudge color={C.danger} icon={AlertTriangle}
           stat="More cancellations than sign-ups this month."
-          detail="Run a referral incentive or re-engagement challenge to reverse the trend."
-        />
+          detail="Run a referral incentive or re-engagement challenge to reverse the trend." />
       ) : newSignUps > 0 ? (
-        <StatNudge
-          color={C.success}
-          icon={TrendingUp}
+        <StatNudge color={C.success} icon={TrendingUp}
           stat={`+${newSignUps} new member${newSignUps > 1 ? 's' : ''} this month.`}
-          detail="Early habit formation matters — new members who visit frequently in their first weeks are far more likely to stick."
-        />
+          detail="Early habit formation matters — new members who visit frequently in their first weeks are far more likely to stick." />
       ) : null}
     </div>
   );
@@ -1035,14 +802,8 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
 
 /* ══════════════════════════════════════════════════════════════════
    CHECK-IN ACTIVITY CHART
-   BEFORE: Today bar gradient (blue→blue). Tooltip border turned blue
-           for today. Reference line in blue. Range toggle buttons
-           had blue bg + blue border when active.
-   AFTER:  Today bar: flat accent (no gradient — the full opacity
-           vs 30% already distinguishes today vs past).
-           Tooltip: never colored border — always borderEl.
-           Reference line: t4 (supporting data, barely visible).
-           Range toggles: active = surfaceEl + borderEl (neutral tab).
+   Today bar: flat accent at 0.85. Past: 0.3. Reference line: t4.
+   Range toggles: neutral active tab.
 ══════════════════════════════════════════════════════════════════ */
 function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWeek }) {
   const todayLabel = format(now, chartRange <= 7 ? 'EEE' : 'MMM d');
@@ -1055,14 +816,13 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
 
   const todayVal = (chartDays || []).find(d => d.day === todayLabel)?.value ?? 0;
   const chartMax = Math.max(...(chartDays || []).map(d => d.value), 1);
-
-  const RANGES = [{ val: 7, label: '7D' }, { val: 30, label: '30D' }];
+  const RANGES   = [{ val: 7, label: '7D' }, { val: 30, label: '30D' }];
 
   return (
-    <div style={{ padding: '20px 20px 16px', borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+    <div style={{ padding: '20px 20px 16px', borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Check-in Activity</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Check-in Activity</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
             <div style={{ fontSize: 11, color: C.t3 }}>
               Daily avg <span style={{ fontWeight: 600, color: C.t2 }}>{weeklyAvg}</span>
@@ -1081,25 +841,21 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
           </div>
         </div>
 
-        {/* Range toggle: neutral tab style */}
-        <div style={{ display: 'flex', gap: 2 }}>
+        {/* Range toggle — neutral tab style matching TabEngagement button pattern */}
+        <div style={{ display: 'flex', gap: 4 }}>
           {RANGES.map(r => (
-            <button
-              key={r.val}
-              onClick={() => setChartRange(r.val)}
-              style={{
-                fontSize:    11,
-                fontWeight:  chartRange === r.val ? 600 : 400,
-                padding:     '4px 10px',
-                borderRadius: 6,
-                cursor:      'pointer',
-                background:  chartRange === r.val ? C.surfaceEl : 'transparent',
-                color:       chartRange === r.val ? C.t1 : C.t3,
-                border:      `1px solid ${chartRange === r.val ? C.borderEl : 'transparent'}`,
-                fontFamily:  'inherit',
-                transition:  'all .12s',
-              }}
-            >
+            <button key={r.val} onClick={() => setChartRange(r.val)} style={{
+              fontSize:     11,
+              fontWeight:   chartRange === r.val ? 700 : 400,
+              padding:      '4px 12px',
+              borderRadius: 7,
+              cursor:       'pointer',
+              background:   chartRange === r.val ? C.accentSub : 'rgba(255,255,255,0.03)',
+              color:        chartRange === r.val ? C.accent : C.t3,
+              border:       `1px solid ${chartRange === r.val ? C.accentBrd : C.border}`,
+              fontFamily:   'inherit',
+              transition:   'all .14s',
+            }}>
               {r.label}
             </button>
           ))}
@@ -1107,11 +863,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
       </div>
 
       <ResponsiveContainer width="100%" height={184}>
-        <BarChart
-          data={chartDays || []}
-          margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
-          barSize={chartRange <= 7 ? 20 : 8}
-        >
+        <BarChart data={chartDays || []} margin={{ top: 4, right: 4, left: -8, bottom: 0 }} barSize={chartRange <= 7 ? 20 : 8}>
           <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
           <XAxis dataKey="day" tick={tick} axisLine={false} tickLine={false} interval={chartRange <= 7 ? 0 : 4} />
           <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} domain={[0, Math.max(chartMax + 1, 5)]} />
@@ -1123,15 +875,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
               const avg     = parseFloat(weeklyAvg);
               const vsAvg   = avg > 0 ? Math.round(((val - avg) / avg) * 100) : 0;
               return (
-                <div style={{
-                  background:   '#060c18',
-                  // Tooltip border never changes color — always neutral
-                  border:       `1px solid ${C.borderEl}`,
-                  borderRadius: 9,
-                  padding:      '8px 12px',
-                  boxShadow:    '0 8px 24px rgba(0,0,0,0.5)',
-                  minWidth:     120,
-                }}>
+                <div style={{ background: '#060c18', border: `1px solid ${C.borderEl}`, borderRadius: 9, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 120 }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: isToday ? C.accent : C.t3, letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 4 }}>
                     {isToday ? 'Today' : label}
                   </div>
@@ -1159,32 +903,31 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
           />
           <Bar dataKey="value" radius={[3, 3, 0, 0]}>
             {(chartDays || []).map((entry, i) => (
-              /* Today: full accent. Past: 30% opacity. Opacity alone is enough. */
               <Cell key={i} fill={C.accent} fillOpacity={entry.day === todayLabel ? 0.85 : 0.3} />
             ))}
           </Bar>
-          {/* Reference line: t4 (supporting data, whisper-level) */}
           {parseFloat(weeklyAvg) > 0 && (
             <ReferenceLine
               y={parseFloat(weeklyAvg)}
               stroke={C.t4}
               strokeDasharray="4 4"
-              label={{ value: `avg ${weeklyAvg}`, position: 'insideTopRight', fill: C.t3, fontSize: 9, fontFamily: 'Geist, system-ui' }}
+              label={{ value: `avg ${weeklyAvg}`, position: 'insideTopRight', fill: C.t3, fontSize: 9, fontFamily: 'inherit' }}
             />
           )}
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Legend — minimal, informational only */}
+      {/* Legend */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 2, background: C.accent, opacity: 0.85 }} />
-          <span style={{ fontSize: 10, color: C.t3 }}>Today</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 2, background: C.accent, opacity: 0.3 }} />
-          <span style={{ fontSize: 10, color: C.t3 }}>Past days</span>
-        </div>
+        {[
+          { op: 0.85, label: 'Today' },
+          { op: 0.30, label: 'Past days' },
+        ].map((l, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: C.accent, opacity: l.op }} />
+            <span style={{ fontSize: 10, color: C.t3 }}>{l.label}</span>
+          </div>
+        ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <div style={{ width: 14, height: 1, borderTop: `2px dashed ${C.t4}` }} />
           <span style={{ fontSize: 10, color: C.t3 }}>Daily avg</span>
@@ -1196,11 +939,8 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
 
 /* ══════════════════════════════════════════════════════════════════
    QUICK ACTIONS GRID
-   BEFORE: Hover state turned button to `color`10 bg and `color`30
-           border — 6 different hover colors firing independently.
-   AFTER:  All hover states go to the same surfaceEl + borderEl.
-           Icon glyphs keep their semantic color (small, scannable).
-           Labels are always t2 on hover too — clean grid.
+   All hover states: same surfaceEl + borderEl (no per-button color).
+   Icon glyphs retain semantic color (small enough not to compete).
 ══════════════════════════════════════════════════════════════════ */
 function QuickActionsGrid({ openModal }) {
   const actions = [
@@ -1213,8 +953,8 @@ function QuickActionsGrid({ openModal }) {
   ];
 
   return (
-    <div style={{ padding: 20, borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 14 }}>Quick Actions</div>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>Quick Actions</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         {actions.map(({ icon: Icon, label, color, fn }, i) => (
           <QuickActionButton key={i} icon={Icon} label={label} color={color} onClick={fn} />
@@ -1227,27 +967,20 @@ function QuickActionsGrid({ openModal }) {
 function QuickActionButton({ icon: Icon, label, color, onClick }) {
   const [hov, setHov] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display:     'flex',
-        alignItems:  'center',
-        gap:         8,
-        padding:     '8px 10px',
-        borderRadius: 8,
-        // All buttons: same neutral hover state — no per-button color
-        background:  hov ? C.surfaceEl : 'transparent',
-        border:      `1px solid ${hov ? C.borderEl : C.border}`,
-        cursor:      'pointer',
-        transition:  'all .12s',
-        fontFamily:  'inherit',
-      }}
-    >
-      {/* Icon glyph: semantic color. Container: no color. */}
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{
+      display:      'flex',
+      alignItems:   'center',
+      gap:          8,
+      padding:      '8px 10px',
+      borderRadius: 8,
+      background:   hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
+      border:       `1px solid ${hov ? C.borderEl : C.border}`,
+      cursor:       'pointer',
+      transition:   'all .14s',
+      fontFamily:   'inherit',
+    }}>
       <Icon style={{ width: 13, height: 13, color, flexShrink: 0 }} />
-      <span style={{ fontSize: 11, fontWeight: 500, color: hov ? C.t1 : C.t2, transition: 'color .12s' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .14s' }}>{label}</span>
     </button>
   );
 }
@@ -1289,8 +1022,8 @@ export default function TabOverview({
     return (chartDays.reduce((a, b) => a + b.value, 0) / chartDays.length).toFixed(1);
   }, [chartDays]);
 
-  const ciTrend    = yesterdayCI > 0 && todayVsYest > 0 ? 'up' : yesterdayCI > 0 && todayVsYest < 0 ? 'down' : null;
-  const showRing   = retentionRate > 5 && retentionRate < 98;
+  const ciTrend  = yesterdayCI > 0 && todayVsYest > 0 ? 'up' : yesterdayCI > 0 && todayVsYest < 0 ? 'down' : null;
+  const showRing = retentionRate > 5 && retentionRate < 98;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 292px', gap: 20, alignItems: 'start' }}>
@@ -1300,13 +1033,6 @@ export default function TabOverview({
 
         {/* KPI Row */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-          {/*
-            KPI color rules applied:
-            - Today's Check-ins: t1 value, trend only colors badge
-            - Active Members: ring gets semantic color (retention threshold)
-            - In Gym Now: t1 value always
-            - At-Risk: value gets danger if > 0 (threshold crossed)
-          */}
           <KpiCard
             label="Today's Check-ins"
             value={todayCI}
@@ -1348,7 +1074,6 @@ export default function TabOverview({
             subContext={atRisk > 0 ? '14+ days without a visit' : undefined}
             sparkData={sparkData}
             icon={Zap}
-            /* Value gets danger only when threshold is crossed */
             valueColor={atRisk > 0 ? C.danger : undefined}
             cta={atRisk > 0 ? 'View & message' : undefined}
             onCta={atRisk > 0 ? () => setTab('members') : undefined}
