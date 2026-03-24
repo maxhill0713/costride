@@ -392,7 +392,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col" style={{ minHeight: '100dvh' }}>
       <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
         {/* ── HEADER ── */}
