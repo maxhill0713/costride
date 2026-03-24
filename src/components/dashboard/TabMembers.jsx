@@ -1363,39 +1363,9 @@ export default function TabMembers({
         )}
       </div>
 
-      {/* ── Growth + Leaderboards ─────────────────────────────────── */}
+      {/* ── Leaderboards ──────────────────────────────────────────── */}
       {!isMobile && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Card style={{ padding: '18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Growth</div>
-                <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Overall gym performance</div>
-              </div>
-              <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Strong' : gymHealthScore >= 50 ? 'Steady' : 'Needs attention'} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-              {[
-                { label: 'Retention',     value: `${retentionRate}%`, color: retentionRate >= 70 ? C.green : retentionRate >= 50 ? C.amber : C.red },
-                { label: 'Active / week', value: activeThisWeek,      color: C.blue  },
-                { label: 'New members',   value: newSignUps,           color: newSignUps > 0 ? C.green : C.t1 },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  padding: '12px', borderRadius: 10,
-                  background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.border}`,
-                  textAlign: 'center',
-                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.03)`,
-                }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: '-0.03em', marginBottom: 5 }}>{s.value}</div>
-                  <div style={{ fontSize: 10, color: C.t3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <div style={{ minWidth: 0 }}>
-            <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
-          </div>
-        </div>
+        <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
       )}
     </div>
   );
