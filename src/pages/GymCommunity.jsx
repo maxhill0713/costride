@@ -1686,9 +1686,6 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-                {/* ── Community Leaderboard ── */}
-                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
-
               </motion.div>
             </TabsContent>
             {/* ── CHALLENGES ── */}
@@ -1731,6 +1728,10 @@ export default function GymCommunity() {
                   achievements={gymAchievements}
                   posts={gymPosts}
                 />
+                {/* ── Community Leaderboard ── */}
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
+                {/* ── Suggested Friends ── */}
+                <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
               </motion.div>
             </TabsContent>
 
