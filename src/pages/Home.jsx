@@ -822,11 +822,13 @@ export default function Home() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const socialFeedPosts = allPosts.filter(post =>
     (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
     (post.content || post.image_url || post.video_url || post.workout_name) &&
     !post.gym_join &&
-    !post.is_hidden
+    !post.is_hidden &&
+    new Date(post.created_date) >= threeDaysAgo
   );
 
   const activityFeed = (() => {
