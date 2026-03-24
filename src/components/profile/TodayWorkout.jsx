@@ -558,46 +558,46 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">SETS</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="3"
-                                    maxLength={2}
-                                    value={editSets}
-                                    onChange={(e) => setEditSets(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="3"
+                          maxLength={2}
+                          value={editSets}
+                          onChange={(e) => setEditSets(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">REPS</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="10"
-                                    maxLength={3}
-                                    value={editReps}
-                                    onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="10"
+                          maxLength={3}
+                          value={editReps}
+                          onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">WEIGHT</label>
                                   <Input
-                                    type="text"
-                                    inputMode="decimal"
-                                    placeholder="kg"
-                                    maxLength={6}
-                                    value={editWeight}
-                                    onChange={(e) => {
-                                      const v = e.target.value.replace(/[^\d.]/g, '');
-                                      const parts = v.split('.');
-                                      const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
-                                      setEditWeight(sanitised.slice(0, 6));
-                                    }}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="kg"
+                          maxLength={6}
+                          value={editWeight}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/[^\d.]/g, '');
+                            const parts = v.split('.');
+                            const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
+                            setEditWeight(sanitised.slice(0, 6));
+                          }}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                               </div>
                             </div> :
@@ -607,46 +607,46 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="3"
-                                    maxLength={2}
-                                    value={editSets}
-                                    onChange={(e) => setEditSets(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="3"
+                          maxLength={2}
+                          value={editSets}
+                          onChange={(e) => setEditSets(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="10"
-                                    maxLength={3}
-                                    value={editReps}
-                                    onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="10"
+                          maxLength={3}
+                          value={editReps}
+                          onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
                                   <Input
-                                    type="text"
-                                    inputMode="decimal"
-                                    placeholder="kg"
-                                    maxLength={6}
-                                    value={editWeight}
-                                    onChange={(e) => {
-                                      const v = e.target.value.replace(/[^\d.]/g, '');
-                                      const parts = v.split('.');
-                                      const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
-                                      setEditWeight(sanitised.slice(0, 6));
-                                    }}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="kg"
+                          maxLength={6}
+                          value={editWeight}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/[^\d.]/g, '');
+                            const parts = v.split('.');
+                            const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
+                            setEditWeight(sanitised.slice(0, 6));
+                          }}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                               </div>
                             </div>
@@ -705,9 +705,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   className="grid gap-1 mb-1.5 items-end px-1"
                   style={{ gridTemplateColumns: '1fr 46px 72px 72px auto' }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-7">Rounds</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-9">Time/Round</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-14">Rest</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
                         <div className="w-6" />
                       </motion.div>
 
@@ -723,39 +723,39 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rounds</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={2}
-                                    value={editCardioRounds}
-                                    onChange={(e) => setEditCardioRounds(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={2}
+                          value={editCardioRounds}
+                          onChange={(e) => setEditCardioRounds(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Time/Round</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={formatTime(editCardioTime)}
-                                    onChange={(e) => setEditCardioTime(sanitiseTimeInput(e.target.value))}
-                                    placeholder="0:00"
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          value={formatTime(editCardioTime)}
+                          onChange={(e) => setEditCardioTime(sanitiseTimeInput(e.target.value))}
+                          placeholder="0:00"
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                        
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rest</label>
                                   <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={formatTime(editCardioRest)}
-                                    onChange={(e) => setEditCardioRest(sanitiseTimeInput(e.target.value))}
-                                    placeholder="0:00"
-                                    disabled={parseInt(editCardioRounds) <= 1}
-                                    style={{ fontSize: '16px' }}
-                                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full disabled:opacity-40"
-                                  />
+                          type="text"
+                          inputMode="numeric"
+                          value={formatTime(editCardioRest)}
+                          onChange={(e) => setEditCardioRest(sanitiseTimeInput(e.target.value))}
+                          placeholder="0:00"
+                          disabled={parseInt(editCardioRounds) <= 1}
+                          style={{ fontSize: '16px' }}
+                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full disabled:opacity-40" />
+                        
                                 </div>
                               </div>
                               <div className="flex gap-1 mt-3">
