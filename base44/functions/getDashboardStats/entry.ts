@@ -6,13 +6,30 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { gymId, atRiskDays = 14, chartRange = 7 } = await req.json();
+    const { gymId, atRiskDays: rawAtRiskDays = 14, chartRange: rawChartRange = 7 } = await req.json();
     if (!gymId) return Response.json({ error: 'gymId required' }, { status: 400 });
 
-    const [checkIns, allMemberships, allUsers] = await Promise.all([
+    // ── Validate + clamp inputs ────────────────────────────────────────────────
+    const atRiskDays = Math.min(Math.max(parseInt(rawAtRiskDays) || 14, 1), 90);
+    const chartRange = [7, 30, 90].includes(parseInt(rawChartRange)) ? parseInt(rawChartRange) : 7;
+
+    // ── Ownership / access check ───────────────────────────────────────────────
+    const gyms = await base44.asServiceRole.entities.Gym.filter({ id: gymId });
+    if (!gyms.length) return Response.json({ error: 'Not found' }, { status: 404 });
+    const gym = gyms[0];
+
+    const isOwner = gym.owner_email === user.email || gym.admin_id === user.id;
+    const coachRecords = isOwner ? [] : await base44.asServiceRole.entities.Coach.filter({ gym_id: gymId, user_email: user.email });
+    const isCoach = coachRecords.length > 0;
+
+    if (!isOwner && !isCoach) {
+      console.warn(`SECURITY: User ${user.email} attempted unauthorized access to gym ${gymId}`);
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const [checkIns, allMemberships] = await Promise.all([
       base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 2000),
       base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }),
-      base44.asServiceRole.entities.User.list('-created_date', 300),
     ]);
 
     const now = new Date();
