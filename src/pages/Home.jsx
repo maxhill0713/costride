@@ -576,6 +576,24 @@ export default function Home() {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
+  useEffect(() => {
+    if (!feedBottomRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
+          setIsLoadingMorePosts(true);
+          setTimeout(() => {
+            setVisiblePostCount(prev => Math.min(prev + POSTS_PER_PAGE, socialFeedPosts.length));
+            setIsLoadingMorePosts(false);
+          }, 600);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(feedBottomRef.current);
+    return () => observer.disconnect();
+  }, [visiblePostCount, socialFeedPosts.length]);
+
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -663,6 +681,11 @@ export default function Home() {
     enabled: (showFriendsModal || showAddFriendModal) && knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
+
+  const POSTS_PER_PAGE = 4;
+  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
+  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
+  const feedBottomRef = useRef(null);
 
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allRecentCheckIns = [] } = useQuery({
@@ -839,31 +862,6 @@ export default function Home() {
     !post.is_hidden &&
     new Date(post.created_date) >= threeDaysAgo
   );
-
-  const POSTS_PER_PAGE = 4;
-  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
-  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
-  const feedBottomRef = useRef(null);
-
-  useEffect(() => {
-    if (!feedBottomRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
-          setIsLoadingMorePosts(true);
-          setTimeout(() => {
-            setVisiblePostCount(prev => Math.min(prev + POSTS_PER_PAGE, socialFeedPosts.length));
-            setIsLoadingMorePosts(false);
-          }, 600);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(feedBottomRef.current);
-    return () => observer.disconnect();
-  }, [visiblePostCount, socialFeedPosts.length]);
-
-  const visibleSocialFeedPosts = socialFeedPosts.slice(0, visiblePostCount);
 
   const activityFeed = (() => {
     const activities = [];
@@ -1529,7 +1527,7 @@ export default function Home() {
 
               {visibleSocialFeedPosts.length > 0 && (
                 <div className="space-y-3">
-                  {visibleSocialFeedPosts.map(post => (
+                  {socialFeedPosts.slice(0, visiblePostCount).map(post => (
                     <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
                   ))}
                   <div ref={feedBottomRef} className="flex justify-center py-3">
