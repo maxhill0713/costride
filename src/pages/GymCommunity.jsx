@@ -279,9 +279,12 @@ function injectActivityCSS() {
 
 // ── Feed item types ───────────────────────────────────────────────────────────
 const FEED_TYPES = {
-  checkin: { icon: MapPin,   iconColor: '#60a5fa', iconBg: 'rgba(37,99,235,0.14)',  iconBorder: 'rgba(37,99,235,0.22)',  verb: 'checked in',         label: '📍 Check-in' },
-  lift_pr: { icon: Trophy,   iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.14)',  iconBorder: 'rgba(234,179,8,0.25)',  verb: 'hit a new PR 🔥',    label: '🏆 New PR' },
-  lift:    { icon: Dumbbell, iconColor: '#a78bfa', iconBg: 'rgba(168,85,247,0.12)', iconBorder: 'rgba(168,85,247,0.22)', verb: 'logged a lift',      label: '💪 Lift' },
+  checkin:   { icon: MapPin,    iconColor: '#60a5fa', iconBg: 'rgba(37,99,235,0.14)',   iconBorder: 'rgba(37,99,235,0.22)',  verb: 'checked in' },
+  lift_pr:   { icon: Trophy,    iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.14)',   iconBorder: 'rgba(234,179,8,0.25)',  verb: 'hit a new PR 🔥' },
+  lift:      { icon: Dumbbell,  iconColor: '#a78bfa', iconBg: 'rgba(168,85,247,0.12)',  iconBorder: 'rgba(168,85,247,0.22)', verb: 'logged a workout' },
+  challenge: { icon: Trophy,    iconColor: '#f97316', iconBg: 'rgba(249,115,22,0.14)',  iconBorder: 'rgba(249,115,22,0.25)', verb: 'joined a challenge 🏆' },
+  milestone: { icon: Award,     iconColor: '#fbbf24', iconBg: 'rgba(251,191,36,0.14)', iconBorder: 'rgba(251,191,36,0.25)', verb: 'hit a milestone 🎉' },
+  post:      { icon: MessageCircle, iconColor: '#34d399', iconBg: 'rgba(16,185,129,0.12)', iconBorder: 'rgba(16,185,129,0.22)', verb: 'has posted' },
 };
 
 function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
