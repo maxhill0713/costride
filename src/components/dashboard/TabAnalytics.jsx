@@ -1015,15 +1015,11 @@ export default function TabAnalytics({
                         <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{cls.name}</span>
                         {cls.schedule && <span style={{ fontSize: 10, color: C.t3, marginLeft: 8 }}>{cls.schedule}</span>}
                       </div>
-                      <div style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color }}>{cls.attended}</span>
-                        <span style={{ fontSize: 9, color: C.t3, marginLeft: 4 }}>/ {cls.capacity} cap</span>
+                        <span style={{ fontSize: 9, color: C.t3 }}>/ {cls.capacity} cap</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color }}>{cls.fill}%</span>
                       </div>
-                    </div>
-                    <div style={{ height: 4, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${cls.fill}%`, background: color, borderRadius: 99, transition: 'width .8s ease' }} />
-                    </div>
-                    <div style={{ fontSize: 9, color: C.t3, marginTop: 3, textAlign: 'right' }}>{cls.fill}% fill rate</div>
                   </div>
                 );
               })}
