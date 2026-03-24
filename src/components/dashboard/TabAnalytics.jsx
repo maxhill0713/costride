@@ -796,13 +796,7 @@ function MilestoneProgressWidget({ checkIns }) {
                 {m.toNext === 1 ? '1 visit to milestone' : `${m.toNext} visits to ${m.next}`}
               </div>
             </div>
-            {/* Mini ring */}
-            <svg width={28} height={28} viewBox="0 0 28 28" style={{ flexShrink: 0 }}>
-              <circle cx={14} cy={14} r={11} fill="none" stroke={C.divider} strokeWidth={2.5} />
-              <circle cx={14} cy={14} r={11} fill="none" stroke={C.blue} strokeWidth={2.5}
-                strokeDasharray={`${(m.total / m.next) * 69.1} 69.1`}
-                strokeLinecap="round" transform="rotate(-90 14 14)" />
-            </svg>
+            <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{Math.round((m.total / m.next) * 100)}%</span>
           </div>
         ))}
       </div>
