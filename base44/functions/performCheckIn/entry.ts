@@ -87,6 +87,6 @@ Deno.serve(async (req) => {
     return Response.json({ checkIn });
   } catch (error) {
     console.error('Error performing check-in:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });

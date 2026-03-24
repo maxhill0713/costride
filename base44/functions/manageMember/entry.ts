@@ -55,6 +55,6 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     console.error('Error managing member:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });
