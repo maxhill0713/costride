@@ -115,12 +115,6 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
         }
       </div>
 
-      {footerBar != null && (
-        <div style={{ height: 2, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: cta ? 10 : 0 }}>
-          <div style={{ height: '100%', width: `${Math.min(100, Math.max(0, footerBar))}%`, background: c, borderRadius: 99, transition: 'width 0.7s ease' }} />
-        </div>
-      )}
-
       {/* Inline CTA — for at-risk card and others */}
       {cta && onCta && (
         <button onClick={onCta}
