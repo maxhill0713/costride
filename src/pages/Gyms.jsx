@@ -34,7 +34,6 @@ const PRIMARY_GYM_DIALOG_STYLES = `
     100% { transform: translateY(0);    opacity: 1; }
   }
 
-  /* Target the primary gym dialog specifically via a data attribute we'll add */
   [data-primary-gym-dialog][data-state="open"] {
     animation: pgDialogIn 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
   }
@@ -59,6 +58,16 @@ function usePrimaryGymDialogStyles() {
     }
   }, []);
 }
+
+// ─── Gym search sanitiser ─────────────────────────────────────────────────────
+// Allows letters, digits, spaces and common name punctuation (apostrophes,
+// hyphens, commas, dots, brackets) so names like "CrossFit Bristol - St. Paul's"
+// work fine. Strips HTML/script-injection chars and caps at 60 characters.
+const sanitiseGymSearch = (v) =>
+  v
+    .replace(/[<>{};`\\]/g, '')  // strip injection-risk chars
+    .slice(0, 60);               // sensible cap for a gym name
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Gyms() {
 const navigate = useNavigate();
@@ -140,27 +149,19 @@ return results.filter(Boolean);
 const updateGymImageMutation = useMutation({
     mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
     onMutate: async ({ gymId, image_url }) => {
-      // Cancel any outgoing queries to prevent race conditions
       await queryClient.cancelQueries({ queryKey: ['gyms'] });
-      
-      // Snapshot previous data
       const previous = queryClient.getQueryData(['gyms']);
-      
-      // Optimistically update the cache with the new image
       queryClient.setQueryData(['gyms'], (old = []) =>
         old.map((gym) => gym.id === gymId ? { ...gym, image_url } : gym)
       );
-      
       return { previous };
     },
     onError: (err, variables, context) => {
-      // Revert to previous data on error
       if (context?.previous) {
         queryClient.setQueryData(['gyms'], context.previous);
       }
     },
     onSuccess: () => {
-      // Re-validate to sync with server
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['memberGyms'] });
       setEditingGym(null);
@@ -233,16 +234,18 @@ const toggleSave = (gymId) => {
     );
   };
 const searchPlaces = async (query) => {
-if (!query.trim() || query.length < 2) {
+    // Trim and validate before sending to the API
+    const safe = query.trim();
+    if (!safe || safe.length < 2) {
       setPlacesResults([]);
-return;
+      return;
     }
     setSearchingPlaces(true);
-try {
-const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
-const results = response.data.results || [];
-const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
-const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
+    try {
+      const response = await base44.functions.invoke('searchGymsPlaces', { input: safe });
+      const results = response.data.results || [];
+      const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
+      const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
       setPlacesResults(newPlaces);
     } catch (error) {
       console.error('Places search failed:', error);
@@ -411,7 +414,6 @@ return (
                   {userGyms.map((gym) =>
                     <div key={gym.id} className="group relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                      {/* ── Card box: Progress page TallCard style ── */}
                       <div
                         className="relative rounded-2xl overflow-hidden transition-all duration-300"
                         style={{
@@ -422,7 +424,6 @@ return (
                           boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
                         }}
                       >
-                        {/* Top shine line */}
                         <div
                           className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                           style={{
@@ -506,7 +507,17 @@ return (
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex w-full px-3 py-1 text-base shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200" />
+                  <Input
+                    placeholder="Search gyms or add new..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(sanitiseGymSearch(e.target.value))}
+                    maxLength={60}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    style={{ fontSize: '16px' }}
+                    className="flex w-full px-3 py-1 text-base shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200"
+                  />
                   {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
                 </div>
                 <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
@@ -619,7 +630,6 @@ return (
                 {filteredGyms.map((gym) =>
                   <div key={gym.id} className="group relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                    {/* ── Card box: Progress page TallCard style ── */}
                     <div
                       className="relative rounded-2xl overflow-hidden transition-all duration-300"
                       style={{
@@ -630,7 +640,6 @@ return (
                         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
                       }}
                     >
-                      {/* Top shine line */}
                       <div
                         className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                         style={{
