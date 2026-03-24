@@ -873,6 +873,7 @@ export default function TabAnalytics({
   const weekTrend   = weekTrendProp.length  > 0 ? weekTrendProp   : [];
   const peakHours   = peakHoursProp.length  > 0 ? peakHoursProp   : [];
   const busiestDays = busiestDaysProp.length > 0 ? busiestDaysProp : [];
+  const dayMax      = Math.max(...busiestDays.map(d => d.count || 0), 1);
   const dailyAvg    = dailyAvgProp  || Math.round(ci30.length / 30);
   const returnRate  = returnRateProp || 0;
   const avgPerMem   = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
