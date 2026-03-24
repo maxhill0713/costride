@@ -454,7 +454,6 @@ function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challeng
   const items = React.useMemo(() => {
     const all = [];
 
-    // Check-ins (deduplicated per user per day)
     const seenCI = new Set();
     checkIns.forEach(c => {
       const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
@@ -463,12 +462,10 @@ function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challeng
       all.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c });
     });
 
-    // Workout logs
     workoutLogs.forEach(w => {
       all.push({ type: 'lift', id: `wl-${w.id}`, userId: w.user_id, userName: w.user_name, date: w.created_date || w.completed_date, data: w });
     });
 
-    // Joined challenges — pair participant with challenge for name
     const challengeMap = {};
     challenges.forEach(c => { challengeMap[c.id] = c; });
     challengeParticipants.forEach(p => {
@@ -476,12 +473,10 @@ function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challeng
       all.push({ type: 'challenge', id: `cp-${p.id}`, userId: p.user_id, userName: p.user_name, date: p.joined_date || p.created_date, data: ch || { title: p.challenge_title || 'a challenge' } });
     });
 
-    // Milestones (achievements)
     achievements.forEach(a => {
       all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: a.user_name, date: a.created_date, data: a });
     });
 
-    // Posts — collapsed by default, show only non-hidden
     posts.filter(p => !p.is_hidden).forEach(p => {
       all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: p.member_name, date: p.created_date, data: p });
     });
@@ -545,7 +540,6 @@ const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const TIME_SLOTS = ['Morning','Afternoon','Evening'];
 
 function getMockTime(gymClass, index) {
-  // schedule can be an array of {day, time} objects or a plain string
   let s = '';
   if (Array.isArray(gymClass.schedule)) {
     s = gymClass.schedule[0]?.time || '';
@@ -565,8 +559,6 @@ function getTimeSlot(t) {
   return 'Evening';
 }
 
-// ── 3D button helper — your app's exact button DNA ────────────────────────────
-// active bg / border-color / shadow-color / text-color
 function btn3D(active, activeProps, inactiveProps) {
   return {
     style: active ? activeProps : inactiveProps,
@@ -586,7 +578,6 @@ function btn3D(active, activeProps, inactiveProps) {
   };
 }
 
-// ── Date + time-of-day picker ─────────────────────────────────────────────────
 function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot }) {
   const today = new Date();
   const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
@@ -601,7 +592,6 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {/* Day pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
         {days.map(d => {
           const active = activeDay === d.idx;
@@ -645,7 +635,6 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
         })}
       </div>
 
-      {/* Time-of-day pills */}
       <div style={{ display: 'flex', gap: 8 }}>
         {TIME_SLOTS.map(slot => {
           const active = activeSlot === slot;
@@ -681,7 +670,6 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
   );
 }
 
-// ── Portrait class card ───────────────────────────────────────────────────────
 function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick, timeStr, index }) {
   useEffect(() => { injectClassCSS(); }, []);
   const [pressed, setPressed] = useState(false);
@@ -726,12 +714,9 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
 
-      {/* Top shimmer line — matches home cards */}
       <div style={{ height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)', flexShrink: 0 }} />
-      {/* Colour accent bar */}
       <div style={{ height: 3, background: `linear-gradient(90deg,${cfg.color}cc,${cfg.color}44)`, flexShrink: 0 }} />
 
-      {/* ── Hero image ── */}
       <div style={{ position: 'relative', height: 185, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name}
           style={{ width:'100%', height:'100%', objectFit:'cover',
@@ -739,20 +724,16 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
             transition: 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)',
             filter: full ? 'brightness(0.65) saturate(0.5)' : 'none' }} />
 
-        {/* Gradient */}
         <div style={{ position:'absolute', inset:0,
           background:'linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.12) 35%,rgba(8,10,22,0.97) 100%)' }} />
-        {/* Colour haze */}
         <div style={{ position:'absolute', inset:0,
           background:`radial-gradient(ellipse at 75% 15%,rgba(${cfg.color.slice(1).match(/../g).map(h=>parseInt(h,16)).join(',')},0.18) 0%,transparent 60%)` }} />
-        {/* Shimmer */}
         <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
           <div style={{ position:'absolute',top:0,bottom:0,width:'50%',
             background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)',
             animation:'cl-shimmer 5s ease-in-out infinite' }} />
         </div>
 
-        {/* Type pill — top left */}
         <div style={{ position:'absolute',top:10,left:10,display:'flex',alignItems:'center',gap:4,
           fontSize:9,fontWeight:900,letterSpacing:'0.12em',textTransform:'uppercase',
           color:cfg.color,background:'rgba(0,0,0,0.65)',border:`1px solid ${cfg.border}`,
@@ -760,10 +741,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           <span style={{fontSize:11}}>{cfg.emoji}</span>{cfg.label}
         </div>
 
-        {/* Premium badge */}
-        {isPrem && (
-          <div style={{ position:'absolute',top:10,left:10,marginTop:0,display:'none' }} />
-        )}
         {isPrem && (
           <div style={{ position:'absolute',top:38,left:10,
             fontSize:8,fontWeight:900,letterSpacing:'0.1em',textTransform:'uppercase',
@@ -773,7 +750,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </div>
         )}
 
-        {/* Status — top right */}
         <div style={{ position:'absolute',top:10,right:isOwner?42:10,display:'flex',flexDirection:'column',gap:4,alignItems:'flex-end' }}>
           {booked && <span style={{ fontSize:9,fontWeight:900,color:'#34d399',background:'rgba(0,0,0,0.68)',border:'1px solid rgba(52,211,153,0.45)',borderRadius:20,padding:'3px 8px' }}>✓ Booked</span>}
           {full&&!booked && <span style={{ fontSize:9,fontWeight:900,color:'#f87171',background:'rgba(0,0,0,0.68)',border:'1px solid rgba(248,113,113,0.45)',borderRadius:20,padding:'3px 8px' }}>Full</span>}
@@ -787,7 +763,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </button>
         )}
 
-        {/* Instructor avatar — bottom right */}
         {(gymClass.instructor||gymClass.coach_name) && (
           <div style={{ position:'absolute',bottom:10,right:12,
             width:34,height:34,borderRadius:'50%',
@@ -796,11 +771,10 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
             display:'flex',alignItems:'center',justifyContent:'center',
             fontSize:10,fontWeight:900,color:cfg.color,
             boxShadow:`0 0 10px ${cfg.color}33,0 2px 8px rgba(0,0,0,0.5)` }}>
-            {ini(gymClass.instructor||gymClass.coach_name)}
+            {(gymClass.instructor||gymClass.coach_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
           </div>
         )}
 
-        {/* Class name — bottom left */}
         <div style={{ position:'absolute',bottom:0,left:0,right:50,padding:'0 12px 11px' }}>
           <div style={{ fontSize:16,fontWeight:900,color:'#fff',letterSpacing:'-0.025em',lineHeight:1.18,textShadow:'0 2px 10px rgba(0,0,0,0.9)' }}>
             {gymClass.name||gymClass.title}
@@ -808,10 +782,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
         </div>
       </div>
 
-      {/* ── Info ── */}
       <div style={{ padding:'10px 12px 0',display:'flex',flexDirection:'column',gap:7,flex:1 }}>
-
-        {/* Time · duration · difficulty · spots */}
         <div style={{ display:'flex',flexWrap:'wrap',gap:'2px 8px',alignItems:'center' }}>
           <span style={{ fontSize:12,fontWeight:800,color:'#60a5fa' }}>{timeStr}</span>
           {gymClass.duration_minutes && <span style={{ fontSize:11,color:'rgba(255,255,255,0.38)',fontWeight:600 }}>({gymClass.duration_minutes} min)</span>}
@@ -819,7 +790,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           {left!==null && <><span style={{ fontSize:10,color:'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize:11,fontWeight:800,color:full?'#f87171':hot?'#fbbf24':'rgba(255,255,255,0.45)' }}>{full?'Full':`${left} Spot${left===1?'':'s'} Left`}</span></>}
         </div>
 
-        {/* Capacity bar */}
         {pct!==null && (
           <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.07)',overflow:'hidden' }}>
             <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,
@@ -828,7 +798,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </div>
         )}
 
-        {/* Schedule days */}
         {getScheduleDays(gymClass).length > 0 && (
           <div style={{ display:'flex',gap:3 }}>
             {DAY_LABELS.map(d => {
@@ -840,7 +809,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
         )}
       </div>
 
-      {/* ── Book button — 3D style ── */}
       {!isOwner && (
         <div style={{ padding:'10px 12px 12px' }}>
           <button
@@ -893,9 +861,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ClassesTabContent
-// ─────────────────────────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   const today      = new Date();
   const todayIdx   = today.getDay() === 0 ? 6 : today.getDay() - 1;
@@ -912,7 +877,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
   });
 
-  // Attach time strings
   const withTime = React.useMemo(() =>
     classes.map((c, i) => ({ ...c, _time: getMockTime(c, i), _slot: getTimeSlot(getMockTime(c, i)) })),
     [classes]
@@ -959,7 +923,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}}
       style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
-      {/* ── Header ── */}
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
         <div>
           <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.28)',
@@ -990,13 +953,11 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         )}
       </div>
 
-      {/* ── Date + time picker ── */}
       <ClassDateHeader
         activeDay={activeDay} setActiveDay={setActiveDay}
         activeSlot={activeSlot} setActiveSlot={setActiveSlot}
       />
 
-      {/* ── Type chips ── */}
       {typeOptions.length > 2 && (
         <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none' }}>
           {typeOptions.map(f => {
@@ -1024,14 +985,12 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         </div>
       )}
 
-      {/* ── Count hint ── */}
       {filtered.length > 0 && (
         <div style={{ fontSize:11,color:'rgba(255,255,255,0.2)',fontWeight:600,marginTop:-4 }}>
           {filtered.length} session{filtered.length!==1?'s':''} · tap to book
         </div>
       )}
 
-      {/* ── 2-col card grid ── */}
       {filtered.length > 0 ? (
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
           {filtered.map((gymClass, i) => (
@@ -1072,7 +1031,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         </div>
       )}
 
-      {/* ── Detail modal ── */}
       <ClassDetailModal
         gymClass={selectedClass}
         open={!!selectedClass}
@@ -1304,7 +1262,6 @@ function SlidePanel({ open, children }) {
   );
 }
 
-// ── Suggested Friends Card ────────────────────────────────────────────────────
 function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
   const [sentIds, setSentIds] = React.useState(new Set());
   const queryClient = useQueryClient();
@@ -1469,13 +1426,10 @@ export default function GymCommunity() {
   const { data: gymWorkoutLogs = [] } = useQuery({
     queryKey: ['gymWorkoutLogs', gymId, checkIns.map(c => c.user_id).join(',')],
     queryFn: async () => {
-      // Get unique user IDs who have checked into this gym
       const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
       if (userIds.length === 0) return [];
-      // Fetch recent workout logs for all these users
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const logs = await base44.entities.WorkoutLog.filter({ completed_date: { $gte: sevenDaysAgo } }, '-created_date', 200);
-      // Filter to only gym members and attach user names from check-ins
       const userNameMap = {};
       checkIns.forEach(c => { if (c.user_id && c.user_name) userNameMap[c.user_id] = c.user_name; });
       return logs
@@ -1492,7 +1446,6 @@ export default function GymCommunity() {
     queryFn: async () => {
       const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
       if (userIds.length === 0) return [];
-      // Fetch all recent posts and filter to only gym members
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const posts = await base44.entities.Post.filter({ created_date: { $gte: sevenDaysAgo }, is_hidden: false }, '-created_date', 100);
       return posts.filter(p => userIds.includes(p.member_id));
@@ -1509,7 +1462,6 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
-  // Fetch real User profile pics for check-in participants
   const checkInUserIds = React.useMemo(() => [...new Set(checkIns.map(c => c.user_id))].slice(0, 50), [checkIns]);
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUserProfiles', checkInUserIds.join(',')],
@@ -1526,7 +1478,6 @@ export default function GymCommunity() {
   const memberAvatarMap = React.useMemo(() => {
     const map = {};
     members.forEach(m => { if (!m.user_id) return; const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null; if (avatar) map[m.user_id] = avatar; });
-    // Overlay real User profile pics (most authoritative source)
     checkInUsers.forEach(u => { if (u?.id && u?.avatar_url) map[u.id] = u.avatar_url; });
     if (currentUser?.id) { const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null; if (myAvatar) map[currentUser.id] = myAvatar; }
     return map;
@@ -1575,7 +1526,8 @@ export default function GymCommunity() {
     </div>
   );
 
-  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-1.5 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
+  // ── Tab trigger class — tighter padding & smaller text/icons so all 4 fit on screen ──
+  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11px] transform-gpu";
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
@@ -1631,10 +1583,11 @@ export default function GymCommunity() {
             </div>
             <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', overflowX:'auto', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
               <TabsList className="flex justify-start bg-transparent px-3 py-2 h-auto gap-1.5" style={{ width:'max-content', minWidth:'100%' }}>
-                <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
-                <TabsTrigger value="activity"   className={tabTriggerClass}><Activity  className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
-                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy    className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
-                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell  className="w-3.5 h-3.5" /><span>Classes</span></TabsTrigger>
+                {/* Icons reduced to w-3 h-3 and padding/gap tightened via tabTriggerClass */}
+                <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3 h-3" /><span>Home</span></TabsTrigger>
+                <TabsTrigger value="activity"   className={tabTriggerClass}><Activity   className="w-3 h-3" /><span>Activity</span></TabsTrigger>
+                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy     className="w-3 h-3" /><span>Challenges</span></TabsTrigger>
+                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell   className="w-3 h-3" /><span>Classes</span></TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -1644,7 +1597,6 @@ export default function GymCommunity() {
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
-                {/* Join prompts — keep */}
                 {isGhostGym && !isMember && !showOwnerControls && (
                   <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
@@ -1721,10 +1673,8 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-                {/* ── Busy Times ── */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
 
-                {/* ── Active poll ── */}
                 {polls.length > 0 && (
                   <div className="space-y-3">
                     {polls.map(poll => (
@@ -1733,10 +1683,8 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-                {/* ── Featured Coaches — horizontal scroll ── */}
                 {coaches.length > 0 && (
                   <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
-                    {/* Header */}
                     <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1748,25 +1696,19 @@ export default function GymCommunity() {
                         <button onClick={() => setShowManageCoaches(true)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 7, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: '#60a5fa', cursor: 'pointer' }}>Edit</button>
                       )}
                     </div>
-                    {/* Horizontal scroll */}
                     <div style={{ display: 'flex', gap: 10, padding: '12px 14px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
                       {coaches.map(coach => {
                         const ci = (n='') => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
                         return (
                           <div key={coach.id} onClick={() => setSelectedCoach(coach)} style={{ flexShrink: 0, width: 110, borderRadius: 16, background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 10px 14px', gap: 6, position: 'relative', cursor: 'pointer' }}>
-                            {/* Shimmer line */}
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)' }} />
-                            {/* Avatar */}
                             <div style={{ width: 52, height: 52, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,#3b82f6,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: '#fff', flexShrink: 0, border: '3px solid #fbbf24', boxShadow: '0 0 12px rgba(59,130,246,0.3), 0 0 0 2px rgba(251,191,36,0.6)' }}>
                               {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ci(coach.name)}
                             </div>
-                            {/* Name */}
                             <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{coach.name}</div>
-                            {/* Specialty */}
                             {coach.specialties?.length > 0 && (
                               <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.55)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{coach.specialties.slice(0,2).join(' · ')}</div>
                             )}
-                            {/* Rating */}
                             {coach.rating && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                 <Star style={{ width: 10, height: 10, fill: '#fbbf24', color: '#fbbf24' }} />
@@ -1782,6 +1724,7 @@ export default function GymCommunity() {
 
               </motion.div>
             </TabsContent>
+
             {/* ── CHALLENGES ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
@@ -1810,9 +1753,7 @@ export default function GymCommunity() {
             {/* ── ACTIVITY ── */}
             <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
-                {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
-                {/* Activity Feed */}
                 <GymActivityFeed
                   checkIns={checkIns}
                   memberAvatarMap={memberAvatarMap}
@@ -1822,9 +1763,7 @@ export default function GymCommunity() {
                   achievements={gymAchievements}
                   posts={gymPosts}
                 />
-                {/* ── Community Leaderboard ── */}
                 <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
-                {/* ── Suggested Friends ── */}
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
               </motion.div>
             </TabsContent>
