@@ -660,10 +660,7 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
-  const friendIdList = [...new Set([
-    ...friends.map((f) => f.friend_id),
-    ...friends.filter(f => f.user_id !== currentUser?.id).map(f => f.user_id),
-  ])];
+  const friendIdList = friends.map((f) => f.friend_id);
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
