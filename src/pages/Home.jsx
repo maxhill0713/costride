@@ -419,13 +419,6 @@ export default function Home() {
     try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
     catch { return new Set(); }
   });
-  const [seenPostIds, setSeenPostIds] = useState(() => {
-    try { const s = localStorage.getItem('seenPostIds'); return new Set(s ? JSON.parse(s) : []); }
-    catch { return new Set(); }
-  });
-  const [visiblePostCount, setVisiblePostCount] = useState(4);
-  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
-  const feedBottomRef = useRef(null);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -573,42 +566,6 @@ export default function Home() {
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
-
-  // ── Reset pagination when posts refresh ──
-  useEffect(() => {
-    setVisiblePostCount(4);
-  }, [allPosts.length]);
-
-  // ── Infinite scroll: load 4 more posts when bottom sentinel is visible ──
-  useEffect(() => {
-    if (!feedBottomRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
-          setLoadingMorePosts(true);
-          setTimeout(() => {
-            setVisiblePostCount(prev => prev + 4);
-            setLoadingMorePosts(false);
-          }, 600);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(feedBottomRef.current);
-    return () => observer.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedBottomRef.current, visiblePostCount, socialFeedPosts.length]);
-
-  // ── Mark visible posts as seen ──
-  useEffect(() => {
-    if (visibleSocialPosts.length === 0) return;
-    const newIds = visibleSocialPosts.map(p => p.id).filter(id => !seenPostIds.has(id));
-    if (newIds.length === 0) return;
-    const updated = new Set([...seenPostIds, ...newIds]);
-    setSeenPostIds(updated);
-    localStorage.setItem('seenPostIds', JSON.stringify(Array.from(updated)));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleSocialPosts.length]);
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -866,20 +823,13 @@ export default function Home() {
   });
 
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const socialFeedPosts = (() => {
-    const filtered = allPosts.filter(post =>
-      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
-      (post.content || post.image_url || post.video_url || post.workout_name) &&
-      !post.gym_join &&
-      !post.is_hidden &&
-      new Date(post.created_date) >= threeDaysAgo
-    );
-    // Unseen posts first, then seen posts (both groups sorted newest first)
-    const unseen = filtered.filter(p => !seenPostIds.has(p.id));
-    const seen = filtered.filter(p => seenPostIds.has(p.id));
-    return [...unseen, ...seen];
-  })();
-  const visibleSocialPosts = socialFeedPosts.slice(0, visiblePostCount);
+  const socialFeedPosts = allPosts.filter(post =>
+    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+    (post.content || post.image_url || post.video_url || post.workout_name) &&
+    !post.gym_join &&
+    !post.is_hidden &&
+    new Date(post.created_date) >= threeDaysAgo
+  );
 
   const activityFeed = (() => {
     const activities = [];
@@ -1543,23 +1493,11 @@ export default function Home() {
                 </div>
               )}
 
-              {visibleSocialPosts.length > 0 && (
+              {socialFeedPosts.length > 0 && (
                 <div className="space-y-3">
-                  {visibleSocialPosts.map(post => (
+                  {socialFeedPosts.map(post => (
                     <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
                   ))}
-                  {/* Infinite scroll sentinel */}
-                  <div ref={feedBottomRef} className="h-1" />
-                  {loadingMorePosts && (
-                    <div className="flex justify-center py-4">
-                      <div style={{
-                        width: 30, height: 30, borderRadius: '50%',
-                        border: '2.5px solid rgba(148,163,184,0.2)',
-                        borderTop: '2.5px solid #60a5fa',
-                        animation: 'spin 0.7s linear infinite',
-                      }} />
-                    </div>
-                  )}
                 </div>
               )}
             </div>
