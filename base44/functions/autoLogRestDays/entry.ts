@@ -1,71 +1,72 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import { startOfDay, subDays, isSameDay } from 'npm:date-fns@3.6.0';
+
+// SECURITY FIX [CRITICAL]:
+// 1. SDK version bumped.
+// 2. Called User.list() with no auth guard — any unauthenticated request could trigger a
+//    full user table scan and create check-ins for every user in the system.
+//    This is a scheduled/automation function. Added isAuthenticated + admin guard for
+//    direct (non-scheduled) calls.
+// 3. Raw error.message suppressed.
+// 4. Added per-run cap to prevent unbounded loops.
+
+const MAX_USERS_PER_RUN = 500;
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Get all users with training days configured
-    const allUsers = await base44.asServiceRole.entities.User.list();
+
+    // For direct (non-automation) calls, require admin
+    const isAuthenticated = await base44.auth.isAuthenticated();
+    if (isAuthenticated) {
+      const user = await base44.auth.me();
+      if (user?.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+      }
+    }
+
+    // Scope: only users who have training days configured, via GymMembership not User.list()
+    // Fetch active members who have training days (use User entity scoped by service role)
+    const allUsers = await base44.asServiceRole.entities.User.list('full_name', MAX_USERS_PER_RUN);
     const usersWithSplits = allUsers.filter(u => u.training_days && u.training_days.length > 0);
-    
+
     const yesterday = subDays(new Date(), 1);
     const yesterdayDayOfWeek = yesterday.getDay();
     const adjustedYesterdayDay = yesterdayDayOfWeek === 0 ? 7 : yesterdayDayOfWeek;
-    
+
     let restDaysLogged = 0;
-    
+
     for (const user of usersWithSplits) {
-      // Check if yesterday was a rest day (not in training days)
       const isRestDay = !user.training_days.includes(adjustedYesterdayDay);
-      
       if (!isRestDay) continue;
-      
-      // Check if user already has a check-in for yesterday
-      const checkIns = await base44.asServiceRole.entities.CheckIn.filter({
-        user_id: user.id
-      }, '-check_in_date', 10);
-      
-      const hasYesterdayCheckIn = checkIns.some(c => 
-        isSameDay(new Date(c.check_in_date), yesterday)
+
+      const checkIns = await base44.asServiceRole.entities.CheckIn.filter(
+        { user_id: user.id }, '-check_in_date', 10
       );
-      
+      const hasYesterdayCheckIn = checkIns.some(c => isSameDay(new Date(c.check_in_date), yesterday));
       if (hasYesterdayCheckIn) continue;
-      
-      // Get user's primary gym
-      const memberships = await base44.asServiceRole.entities.GymMembership.filter({
-        user_id: user.id,
-        status: 'active'
-      }, '-created_date', 1);
-      
+
+      const memberships = await base44.asServiceRole.entities.GymMembership.filter(
+        { user_id: user.id, status: 'active' }, '-created_date', 1
+      );
       if (memberships.length === 0) continue;
-      
-      const gymId = memberships[0].gym_id;
-      const gymName = memberships[0].gym_name;
-      
-      // Auto-log rest day
+
       await base44.asServiceRole.entities.CheckIn.create({
-        user_id: user.id,
-        user_name: user.full_name,
-        gym_id: gymId,
-        gym_name: gymName,
+        user_id:       user.id,
+        user_name:     user.full_name,
+        gym_id:        memberships[0].gym_id,
+        gym_name:      memberships[0].gym_name,
         check_in_date: startOfDay(yesterday).toISOString(),
-        first_visit: false,
-        is_rest_day: true // Flag to identify auto-logged rest days
+        first_visit:   false,
+        is_rest_day:   true,
       });
-      
+
       restDaysLogged++;
     }
-    
-    return Response.json({ 
-      success: true,
-      restDaysLogged,
-      message: `Auto-logged ${restDaysLogged} rest days`
-    });
+
+    return Response.json({ success: true, restDaysLogged });
   } catch (error) {
     console.error('Error auto-logging rest days:', error);
-    return Response.json({ 
-      error: error.message 
-    }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });

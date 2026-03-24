@@ -1,4 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+
+// SECURITY FIX [LOW]:
+// 1. SDK version bumped.
+// 2. Raw error.message suppressed.
+// (Admin guard already correct)
 
 Deno.serve(async (req) => {
   try {
@@ -13,13 +18,12 @@ Deno.serve(async (req) => {
     let updated = 0;
 
     for (const u of allUsers) {
-      if (!u.username) continue;
+      if (!u.username)              continue;
       if (!u.username.includes(' ')) continue;
 
       const cleanedUsername = u.username.replace(/\s+/g, '').toLowerCase();
       if (cleanedUsername === u.username) continue;
 
-      // Check if cleaned username is already taken
       const existing = await base44.asServiceRole.entities.User.filter({ username: cleanedUsername });
       if (existing.length > 0 && existing[0].id !== u.id) {
         console.log(`Skipping ${u.username} -> ${cleanedUsername}: already taken`);
@@ -34,6 +38,6 @@ Deno.serve(async (req) => {
     return Response.json({ updated, message: `Cleaned ${updated} usernames` });
   } catch (error) {
     console.error('Error cleaning usernames:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });
