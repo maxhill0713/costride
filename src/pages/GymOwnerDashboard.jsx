@@ -356,7 +356,7 @@ export default function GymOwnerDashboard() {
     returningCount = 0, newMembersThis30 = 0,
     weeklyChart = [], monthlyChart = [],
     engagementSegmentsCoach = {}, weekSpark = [],
-  } = mergedStats;
+  } = stats;
 
   const ci30 = [];  // not needed on frontend anymore
   const avatarMapFull = useMemo(() => avatarMap, [stats]);
