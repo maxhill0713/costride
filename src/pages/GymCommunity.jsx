@@ -443,8 +443,8 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
 // ── Stats summary row ─────────────────────────────────────────────────────────
 function ActivityStats() { return null; }
 
-// ── Main Activity Feed — check-ins only, fully scrollable ────────────────────
-function GymActivityFeed({ checkIns, memberAvatarMap }) {
+// ── Main Activity Feed — check-ins + workouts + challenges + milestones + posts ──
+function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challengeParticipants = [], challenges = [], achievements = [], posts = [] }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
 
   const toggleLike = (id) => setLikedIds(prev => {
@@ -452,24 +452,50 @@ function GymActivityFeed({ checkIns, memberAvatarMap }) {
   });
 
   const items = React.useMemo(() => {
-    const seen = new Set();
-    return checkIns
-      .filter(c => {
-        const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      .map(c => ({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c }))
+    const all = [];
+
+    // Check-ins (deduplicated per user per day)
+    const seenCI = new Set();
+    checkIns.forEach(c => {
+      const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
+      if (seenCI.has(key)) return;
+      seenCI.add(key);
+      all.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c });
+    });
+
+    // Workout logs
+    workoutLogs.forEach(w => {
+      all.push({ type: 'lift', id: `wl-${w.id}`, userId: w.user_id, userName: w.user_name, date: w.created_date || w.completed_date, data: w });
+    });
+
+    // Joined challenges — pair participant with challenge for name
+    const challengeMap = {};
+    challenges.forEach(c => { challengeMap[c.id] = c; });
+    challengeParticipants.forEach(p => {
+      const ch = challengeMap[p.challenge_id];
+      all.push({ type: 'challenge', id: `cp-${p.id}`, userId: p.user_id, userName: p.user_name, date: p.joined_date || p.created_date, data: ch || { title: p.challenge_title || 'a challenge' } });
+    });
+
+    // Milestones (achievements)
+    achievements.forEach(a => {
+      all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: a.user_name, date: a.created_date, data: a });
+    });
+
+    // Posts — collapsed by default, show only non-hidden
+    posts.filter(p => !p.is_hidden).forEach(p => {
+      all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: p.member_name, date: p.created_date, data: p });
+    });
+
+    return all
+      .filter(item => item.date)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 50);
-  }, [checkIns]);
+      .slice(0, 60);
+  }, [checkIns, workoutLogs, challengeParticipants, challenges, achievements, posts]);
 
   if (items.length === 0) return null;
 
   return (
     <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
-      {/* Header */}
       <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -477,10 +503,9 @@ function GymActivityFeed({ checkIns, memberAvatarMap }) {
           </div>
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Gym Activity Feed</span>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} check-ins</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} activities</span>
       </div>
-      {/* Scrollable feed */}
-      <div style={{ maxHeight: 320, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      <div style={{ maxHeight: 400, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {items.map((item, i) => (
           <FeedCard key={item.id} item={item} memberAvatarMap={memberAvatarMap} liked={likedIds.has(item.id)} onLike={toggleLike} index={i} />
         ))}
