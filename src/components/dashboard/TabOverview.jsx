@@ -863,24 +863,12 @@ export default function TabOverview({
           retentionRate={retentionRate}
           monthGrowthData={monthGrowthData}
         />
-
-        {/* Drop-off Risk + Week-1 Return */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
-          <RetentionBreakdown retentionBreakdown={retentionBreakdown} setTab={setTab} />
-          <WeekOneReturn week1ReturnRate={week1ReturnRate} openModal={openModal} />
-        </div>
-
-        {/* Engagement + Activity */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
-          <EngagementBreakdown monthCiPer={monthCiPer} totalMembers={totalMembers} atRisk={atRisk} setTab={setTab} />
-          <ActivityFeed recentActivity={recentActivity} now={now} avatarMap={avatarMap} />
-        </div>
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Smart signals — the upgraded action panel */}
+        {/* Action Items */}
         <TodayActions
           atRisk={atRisk}
           checkIns={checkIns}
@@ -902,9 +890,9 @@ export default function TabOverview({
               { icon: UserPlus,          label: 'Add Member',    color: T.green,  fn: () => openModal('members')   },
               { icon: QrCode,            label: 'Scan Check-in', color: T.blue,   fn: () => openModal('qrScanner') },
               { icon: Trophy,            label: 'New Challenge', color: T.amber,  fn: () => openModal('challenge') },
-              { icon: MessageSquarePlus, label: 'Send Message',  color: T.purple, fn: () => openModal('post')      },
-              { icon: Pencil,            label: 'Post Update',   color: T.blue,   fn: () => openModal('post')      },
               { icon: Calendar,          label: 'New Event',     color: T.green,  fn: () => openModal('event')     },
+              { icon: MessageSquarePlus, label: 'Post Update',   color: T.blue,   fn: () => openModal('post')      },
+              { icon: Pencil,            label: 'New Poll',      color: T.purple, fn: () => openModal('poll')      },
             ].map(({ icon: Icon, label, color, fn }, i) => {
               const [hov, setHov] = useState(false);
               return (
@@ -919,37 +907,6 @@ export default function TabOverview({
             })}
           </div>
         </div>
-
-        {/* Monthly Snapshot */}
-        <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${T.blue}20,transparent)`, pointerEvents: 'none' }} />
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 2 }}>Monthly Snapshot</div>
-          <div style={{ fontSize: 11, color: T.text3, marginBottom: 14 }}>{format(now, 'MMMM yyyy')}</div>
-          <StatRow label="Total members"    value={totalMembers} />
-          <StatRow label="Active this week" value={activeThisWeek}   valueColor={T.blue} />
-          <StatRow label="New sign-ups"     value={newSignUps}        valueColor={newSignUps > 0 ? T.green : T.text1}
-            badge={newSignUps > 0 ? { label: `+${newSignUps}`, color: T.green } : undefined} />
-          <StatRow label="Cancelled est."   value={cancelledEst}      valueColor={cancelledEst > 0 ? T.red : T.text3} />
-          <StatRow label="At risk"          value={atRisk}            valueColor={atRisk > 0 ? T.red : T.green} />
-          <StatRow label="Retention rate"   value={`${retentionRate}%`} valueColor={retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red}
-            badge={retentionRate >= 70 ? { label: '✓ Healthy', color: T.green } : retentionRate < 50 ? { label: '⚠ Low', color: T.red } : undefined} />
-          <StatRow label="Month change"     value={monthChangePct > 0 ? `+${monthChangePct}%` : `${monthChangePct}%`}
-            valueColor={monthChangePct >= 0 ? T.green : T.red} last />
-        </div>
-
-        {/* Pinned priorities */}
-        {priorities && priorities.length > 0 && (
-          <div style={{ padding: 20, borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Pinned Priorities</div>
-              <MoreHorizontal style={{ width: 15, height: 15, color: T.text3, cursor: 'pointer' }} />
-            </div>
-            <div style={{ fontSize: 11, color: T.text3, marginBottom: 14 }}>Owner-defined tasks</div>
-            {priorities.map((p, i) => (
-              <ActionRow key={i} icon={p.icon} label={p.label} action={p.action} color={p.color} onClick={p.fn} last={i === priorities.length - 1} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
