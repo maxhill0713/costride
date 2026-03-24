@@ -1,4 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+
+// SECURITY FIX [CRITICAL]: Was doing User.list(1000) — returning 1000 user records including
+// emails to any authenticated user. Now filters by username server-side and strips email.
 
 Deno.serve(async (req) => {
   try {
@@ -11,33 +14,35 @@ Deno.serve(async (req) => {
 
     const { query, limit = 10 } = await req.json();
 
-    if (!query || query.length < 2) {
+    if (!query || typeof query !== 'string' || query.trim().length < 2) {
       return Response.json({ users: [] });
     }
 
-    const q = query.toLowerCase();
+    // Clamp limit to prevent large data dumps
+    const safeLimit = Math.min(Math.max(parseInt(limit) || 10, 1), 20);
+    const safeQuery = query.trim().toLowerCase().slice(0, 50); // truncate to prevent abuse
 
-    // Search for users by username using filter instead of listing all
-    // This is more efficient and doesn't limit to first 100 users
-    const allUsers = await base44.asServiceRole.entities.User.list('full_name', 1000);
+    // Use server-side filter instead of listing 1000 users
+    const results = await base44.asServiceRole.entities.User.filter(
+      { username: { $regex: safeQuery } },
+      'full_name',
+      safeLimit + 1 // fetch one extra to detect truncation
+    );
 
-    const results = allUsers
-      .filter(u =>
-        u.id !== user.id &&
-        u.username?.toLowerCase().includes(q)
-      )
-      .slice(0, limit)
+    const users = results
+      .filter(u => u.id !== user.id)
+      .slice(0, safeLimit)
       .map(u => ({
-        id: u.id,
-        full_name: u.full_name,
-        username: u.username || null,
-        email: u.email,
-        avatar_url: u.avatar_url || null
+        id:           u.id,
+        full_name:    u.full_name,
+        username:     u.username || null,
+        avatar_url:   u.avatar_url || null,
+        // SECURITY: email is NEVER returned — it is PII and not needed for user search
       }));
 
-    return Response.json({ users: results });
+    return Response.json({ users });
   } catch (error) {
     console.error('Error searching users:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });

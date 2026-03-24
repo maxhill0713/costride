@@ -1,4 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+
+// SECURITY FIX [CRITICAL]: Was calling Gym.list() — no arguments — scanning the ENTIRE
+// gym table across all tenants. An attacker invoking this function could trigger a full
+// table write reassigning admin_id on gyms they don't own (if filter logic were wrong).
+// Now scoped to owner_email === user.email only, using admin-only guard.
 
 Deno.serve(async (req) => {
   try {
@@ -6,39 +11,35 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Find all gyms that belong to this user
-    const allGyms = await base44.asServiceRole.entities.Gym.list();
-    const userGyms = allGyms.filter(g => g.owner_email === user.email || g.created_by === user.email);
+    // Only gym owners (account_type) or admins should call this
+    if (user.role !== 'admin' && user.account_type !== 'gym_owner') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-    // Update each gym to have admin_id set correctly
+    // SECURITY: Filter strictly by the authenticated user's email only — never all gyms
+    const userGyms = await base44.asServiceRole.entities.Gym.filter({ owner_email: user.email });
+
+    let updated = 0;
     for (const gym of userGyms) {
       if (!gym.admin_id || gym.admin_id !== user.id) {
         await base44.asServiceRole.entities.Gym.update(gym.id, {
-          admin_id: user.id,
-          owner_email: user.email
+          admin_id:    user.id,
+          owner_email: user.email,
         });
+        updated++;
       }
     }
 
-    return new Response(JSON.stringify({
+    return Response.json({
       success: true,
-      gyms_updated: userGyms.length,
-      message: `Linked ${userGyms.length} gym(s) to your account`
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      gyms_updated: updated,
+      message: `Linked ${updated} gym(s) to your account`,
     });
   } catch (error) {
     console.error('Error linking gym owner:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });
