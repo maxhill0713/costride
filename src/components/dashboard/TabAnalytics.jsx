@@ -747,7 +747,7 @@ function CoachImpactWidget({ coaches, checkIns, ci30, allMemberships, now }) {
           const color = coach.retentionImpact >= 70 ? C.green : coach.retentionImpact >= 50 ? C.blue : C.red;
           return (
             <div key={coach.id || i}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 18, height: 18, borderRadius: 5, background: i === 0 ? C.greenDim : 'rgba(255,255,255,0.04)', border: `1px solid ${i === 0 ? 'rgba(16,185,129,0.22)' : C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: i === 0 ? C.green : C.t3 }}>{i + 1}</div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{coach.name}</span>
@@ -756,9 +756,6 @@ function CoachImpactWidget({ coaches, checkIns, ci30, allMemberships, now }) {
                   <span style={{ fontSize: 10, color: C.t3 }}>{coach.uniqueMembers} members</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color, letterSpacing: '-0.02em' }}>{coach.retentionImpact}%</span>
                 </div>
-              </div>
-              <div style={{ height: 2.5, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${coach.retentionImpact}%`, borderRadius: 99, background: color, transition: 'width .8s ease' }} />
               </div>
             </div>
           );
