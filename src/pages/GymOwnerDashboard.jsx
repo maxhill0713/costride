@@ -603,6 +603,7 @@ export default function GymOwnerDashboard() {
     profile: isCoach
       ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />
       : null,
+    engagement: <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate}/>,
   };
 
