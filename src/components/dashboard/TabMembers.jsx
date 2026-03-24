@@ -909,6 +909,7 @@ export default function TabMembers({
 
         {!isMobile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <InviteStaffPanel gym={selectedGym} />
             <AlertsPanel memberRows={memberRows} atRisk={atRisk} atRiskMembersList={atRiskMembersList} setMemberFilter={handleFilter} setMemberSort={setMemberSort} openModal={openModal} />
             <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
             <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
