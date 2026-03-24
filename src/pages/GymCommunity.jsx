@@ -1545,11 +1545,12 @@ export default function GymCommunity() {
   const showOwnerControls = isGymOwner && !viewAsMember;
   const isMember = !!gymMembership || isGymOwner;
 
-  const checkInLeaderboard = leaderboards.checkInLeaderboard || [];
-  const streakLeaderboard = leaderboards.streakLeaderboard || [];
-  const progressLeaderboardWeek = leaderboards.progressLeaderboardWeek || [];
-  const progressLeaderboardMonth = leaderboards.progressLeaderboardMonth || [];
-  const progressLeaderboardAllTime = leaderboards.progressLeaderboardAllTime || [];
+  const enrichWithAvatars = (list) => list.map(m => ({ ...m, userAvatar: memberAvatarMap[m.userId] || null }));
+  const checkInLeaderboard = enrichWithAvatars(leaderboards.checkInLeaderboard || []);
+  const streakLeaderboard = enrichWithAvatars(leaderboards.streakLeaderboard || []);
+  const progressLeaderboardWeek = enrichWithAvatars(leaderboards.progressLeaderboardWeek || []);
+  const progressLeaderboardMonth = enrichWithAvatars(leaderboards.progressLeaderboardMonth || []);
+  const progressLeaderboardAllTime = enrichWithAvatars(leaderboards.progressLeaderboardAllTime || []);
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
