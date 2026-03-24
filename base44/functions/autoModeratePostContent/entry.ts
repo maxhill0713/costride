@@ -1,4 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+
+// SECURITY FIX [LOW]:
+// 1. SDK version bumped.
+// 2. Raw error.message suppressed.
 
 const SPAM_PATTERNS = [
   /(?:click\s+here|buy\s+now|limited\s+time|act\s+now|urgent|hurry)/gi,
@@ -13,15 +17,13 @@ const INAPPROPRIATE_PATTERNS = [
 ];
 
 function isBlatantSpam(content = '') {
-  const lower = content.toLowerCase();
   const urlCount = (content.match(/https?:\/\/|www\./gi) || []).length;
   if (urlCount > 1) return true;
-  
-  return SPAM_PATTERNS.some(pattern => pattern.test(content));
+  return SPAM_PATTERNS.some(pattern => { pattern.lastIndex = 0; return pattern.test(content); });
 }
 
 function isInappropriate(content = '') {
-  return INAPPROPRIATE_PATTERNS.some(pattern => pattern.test(content));
+  return INAPPROPRIATE_PATTERNS.some(pattern => { pattern.lastIndex = 0; return pattern.test(content); });
 }
 
 Deno.serve(async (req) => {
@@ -31,7 +33,7 @@ Deno.serve(async (req) => {
 
     const { event, data } = payload;
 
-    if (event.type !== 'create') {
+    if (event?.type !== 'create') {
       return Response.json({ skipped: 'not a create event' });
     }
 
@@ -41,22 +43,19 @@ Deno.serve(async (req) => {
     }
 
     const content = post.content || '';
-    
-    if (isBlatantSpam(content) || isInappropriate(content)) {
-      await base44.asServiceRole.entities.Post.update(post.id, {
-        is_hidden: true,
-      });
 
+    if (isBlatantSpam(content) || isInappropriate(content)) {
+      await base44.asServiceRole.entities.Post.update(post.id, { is_hidden: true });
       return Response.json({
-        action: 'hidden',
+        action:  'hidden',
         post_id: post.id,
-        reason: isBlatantSpam(content) ? 'spam' : 'inappropriate',
+        reason:  isBlatantSpam(content) ? 'spam' : 'inappropriate',
       });
     }
 
     return Response.json({ action: 'approved', post_id: post.id });
   } catch (error) {
     console.error('Auto-moderation error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });
