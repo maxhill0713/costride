@@ -706,13 +706,10 @@ function StaffPerformanceWidget({ coaches, checkIns, ci30, classes, allMembershi
                 </div>
               </div>
 
-              {/* Engagement score bar */}
-              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Engagement score */}
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, whiteSpace: 'nowrap' }}>Engagement score</span>
-                <div style={{ flex: 1, height: 3, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${coach.engagementScore}%`, background: `linear-gradient(90deg,${scoreColor}88,${scoreColor})`, borderRadius: 99, transition: 'width .8s ease' }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, minWidth: 28, textAlign: 'right' }}>{coach.engagementScore}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor }}>{coach.engagementScore}<span style={{ fontSize: 9, color: C.t3, fontWeight: 500 }}>/100</span></span>
               </div>
             </div>
           );
