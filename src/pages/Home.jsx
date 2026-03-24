@@ -670,6 +670,11 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
   });
 
+  const POSTS_PER_PAGE = 4;
+  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
+  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
+  const feedBottomRef = useRef(null);
+
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -681,11 +686,6 @@ export default function Home() {
     enabled: (showFriendsModal || showAddFriendModal) && knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
-
-  const POSTS_PER_PAGE = 4;
-  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
-  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
-  const feedBottomRef = useRef(null);
 
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allRecentCheckIns = [] } = useQuery({
