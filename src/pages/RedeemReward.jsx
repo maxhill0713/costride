@@ -136,15 +136,13 @@ export default function RedeemReward() {
 
   const claimMutation = useMutation({
     mutationFn: async (rewardData) => {
-      return await base44.entities.ClaimedBonus.create({
-        user_id: currentUser.id,
-        reward_id: rewardData.isChallenge ? null : rewardData.id,
-        challenge_id: rewardData.isChallenge ? rewardData.id : null,
-        offer_details: rewardData.title,
-        earned_text: rewardData.earnedText || rewardData.title,
-        redemption_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
-        redeemed: false
+      // SECURITY: claim is now server-side — eligibility, quantity limits,
+      // duplicate prevention, and cryptographic code generation all enforced on backend.
+      const response = await base44.functions.invoke('claimReward', {
+        rewardId:    rewardData.isChallenge ? undefined : rewardData.id,
+        challengeId: rewardData.isChallenge ? rewardData.id : undefined,
       });
+      return response.data;
     },
     onMutate: async (rewardData) => {
       await queryClient.cancelQueries({ queryKey: ['claimedBonuses', currentUser?.id] });
