@@ -17,9 +17,10 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
 
+    // Cap data fetched to avoid large scans; achievements are checked incrementally
     const [lifts, checkIns, achievements] = await Promise.all([
-      base44.entities.Lift.filter({ member_id: userId }),
-      base44.entities.CheckIn.filter({ user_id: userId }),
+      base44.entities.Lift.filter({ member_id: userId }, '-created_date', 500),
+      base44.entities.CheckIn.filter({ user_id: userId }, '-check_in_date', 500),
       base44.entities.Achievement.filter({ user_id: userId }),
     ]);
 
