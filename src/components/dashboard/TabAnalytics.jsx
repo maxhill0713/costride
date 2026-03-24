@@ -298,7 +298,7 @@ function RetentionFunnelWidget({ retentionFunnel = [] }) {
                     <Icon style={{ width: 13, height: 13, color: C.blue }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{stage.label}</span>
                         <span style={{ fontSize: 10, color: C.t3, marginLeft: 7 }}>{stage.desc}</span>
@@ -307,9 +307,6 @@ function RetentionFunnelWidget({ retentionFunnel = [] }) {
                         <span style={{ fontSize: 17, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em' }}>{stage.val}</span>
                         <span style={{ fontSize: 10, fontWeight: 600, color: C.t3 }}>{pct}%</span>
                       </div>
-                    </div>
-                    <div style={{ height: 4, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: C.blue, transition: 'width .8s ease' }} />
                     </div>
                   </div>
                 </div>
