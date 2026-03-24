@@ -433,7 +433,7 @@ export default function GymOwnerDashboard() {
       : <TabMembersComponent
           allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30}
           memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym}
-          atRisk={atRisk} atRiskMembersList={hasDemoData ? DEMO.atRiskMembersData : atRiskMembersList}
+          atRisk={atRisk} atRiskMembersList={atRiskMembersList}
           retentionRate={retentionRate} totalMembers={totalMembers}
           activeThisWeek={activeThisWeek} newSignUps={newSignUps}
           weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull}
