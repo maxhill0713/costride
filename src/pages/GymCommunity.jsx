@@ -1389,7 +1389,25 @@ export default function GymCommunity() {
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
-  const { data: gymWorkoutLogs = [] } = useQuery({ queryKey: ['gymWorkoutLogs', gymId], queryFn: () => base44.entities.WorkoutLog.filter({ gym_id: gymId }, '-created_date', 100), enabled: !!gymId && activeTab === 'activity', staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: gymWorkoutLogs = [] } = useQuery({
+    queryKey: ['gymWorkoutLogs', gymId, checkIns.map(c => c.user_id).join(',')],
+    queryFn: async () => {
+      // Get unique user IDs who have checked into this gym
+      const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
+      if (userIds.length === 0) return [];
+      // Fetch recent workout logs for all these users
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const logs = await base44.entities.WorkoutLog.filter({ completed_date: { $gte: sevenDaysAgo } }, '-created_date', 200);
+      // Filter to only gym members and attach user names from check-ins
+      const userNameMap = {};
+      checkIns.forEach(c => { if (c.user_id && c.user_name) userNameMap[c.user_id] = c.user_name; });
+      return logs
+        .filter(l => userIds.includes(l.user_id))
+        .map(l => ({ ...l, user_name: l.user_name || userNameMap[l.user_id] || 'Member' }));
+    },
+    enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
+    staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
+  });
   const { data: gymChallengeParticipants = [] } = useQuery({ queryKey: ['gymChallengeParticipants', gymId], queryFn: async () => { const ids = challenges.map(c => c.id); if (!ids.length) return []; return base44.entities.ChallengeParticipant.filter({ challenge_id: ids[0] }, '-created_date', 100); }, enabled: !!gymId && activeTab === 'activity' && challenges.length > 0, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const { data: gymAchievements = [] } = useQuery({ queryKey: ['gymAchievements', gymId], queryFn: () => base44.entities.Achievement.filter({ gym_id: gymId }, '-created_date', 100), enabled: !!gymId && activeTab === 'activity', staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: gymPosts = [] } = useQuery({ queryKey: ['gymPosts', gymId], queryFn: () => base44.entities.Post.filter({ gym_id: gymId, is_hidden: false }, '-created_date', 60), enabled: !!gymId && activeTab === 'activity', staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
