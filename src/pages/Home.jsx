@@ -661,13 +661,16 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
   const friendIdList = friends.map((f) => f.friend_id);
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ is_system_generated: false, created_date: { $gte: threeDaysAgo } }, '-created_date', 60),
+    queryFn: () => {
+      const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+      return base44.entities.Post.filter({ is_system_generated: false, created_date: { $gte: cutoff } }, '-created_date', 60);
+    },
     enabled: !!currentUser,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
     placeholderData: (prev) => prev,
   });
   const { data: friendRequests = [] } = useQuery({
