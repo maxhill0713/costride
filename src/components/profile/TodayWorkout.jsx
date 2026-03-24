@@ -435,9 +435,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   // Cardio: Time/Round and Rest reduced to 50px (≈30% smaller than original 72px)
   // Pencil column dropped once logged
+  // 10px spacer column sits between Rounds and Time/Round for visual breathing room
   const cardioGridCols = alreadyLoggedToday
-    ? '1fr 46px 50px 50px'
-    : '1fr 46px 50px 50px auto';
+    ? '1fr 46px 10px 50px 50px'
+    : '1fr 46px 10px 50px 50px auto';
 
   return (
     <>
@@ -691,7 +692,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                             {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                           </div>
-                          <div className="flex items-center gap- ml-1">
+                          <div className="flex items-center gap- ml-1 mr-2">
                             <div className="flex items-center gap-2">
                               <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
                                 {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
@@ -725,6 +726,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   style={{ gridTemplateColumns: cardioGridCols }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
+                        <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
                         {!alreadyLoggedToday && <div className="w-6" />}
@@ -796,13 +798,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 {c.rounds || '—'}
                               </div>
 
+                              {/* Spacer between Rounds and Time/Round */}
+                              <div />
+
                               {/* Time/Round — blue gradient to match the weight box style */}
                               <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-1 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20">
                                 {c.time ? formatTime(c.time) : '—'}
                               </div>
 
                               {/* Rest */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center">
+                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1">
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
 
@@ -871,7 +876,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       e.stopPropagation();
                       setOpenTimerBar(true);
                     }}
-                    style={{ height: '51px', flex: 1 }}
+                    style={{ height: '51px', flex: 0.8 }}
                     className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
                         <span className="text-blue-300 font-black text-xl leading-none">
