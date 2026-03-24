@@ -636,10 +636,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         </div>
 
         {hasMedia && (
-          <div className="relative w-full overflow-hidden">
+          <div className="relative w-full overflow-hidden" style={{ height: 'min(92.3vw, 410px)' }}>
             {post.video_url
-              ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
-              : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
+              ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
+              : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" style={{ objectPosition: 'center center' }} />}
           </div>
         )}
 
