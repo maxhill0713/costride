@@ -106,9 +106,9 @@ Deno.serve(async (req) => {
 
     console.log(`Notifications sent: ${sent}, failed: ${errors.length}, gym: ${gym_id}, by: ${user.email}`);
 
-    return Response.json({ success: true, sent, failed: errors.length });
+    return Response.json({ success: true, sent, failed: errors.length, capped: batchIds.length < member_ids.length });
   } catch (error) {
     console.error('sendPushNotification error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 });
