@@ -7,7 +7,7 @@ import {
   Settings, Camera, AlertTriangle, Copy, Check,
   Sparkles, CheckCircle, Info, Activity, TrendingUp,
   Bell, Lock, CreditCard, Plus, Edit2, Zap,
-  ArrowUpRight, BarChart2, Clock, Shield,
+  ArrowUpRight, BarChart2, Clock, Shield, Gift, Trash2, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 
 const T = {
