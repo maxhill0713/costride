@@ -542,6 +542,7 @@ export default function GymOwnerDashboard() {
     profile: isCoach
       ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />
       : null,
+    rewards: <TabRewards selectedGym={selectedGym} rewards={rewards} onCreateReward={d=>createRewardM.mutate(d)} onDeleteReward={id=>deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />,
     engagement: <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate}/>,
   };
