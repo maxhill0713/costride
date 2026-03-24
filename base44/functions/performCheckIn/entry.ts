@@ -23,9 +23,12 @@ Deno.serve(async (req) => {
 
     const gym = gymData[0];
 
-    // If user location provided, verify they're within 500m of gym
-    if (userLat !== null && userLon !== null && gym.latitude && gym.longitude) {
-      const R = 6371000; // Earth's radius in meters
+    // If gym has coordinates, location is required and must be within 500m
+    if (gym.latitude && gym.longitude) {
+      if (userLat == null || userLon == null) {
+        return Response.json({ error: 'Location required to check in to this gym' }, { status: 400 });
+      }
+      const R = 6371000;
       const dLat = (gym.latitude - userLat) * Math.PI / 180;
       const dLon = (gym.longitude - userLon) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -34,7 +37,7 @@ Deno.serve(async (req) => {
       const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
       if (distance > 500) {
-        return Response.json({ 
+        return Response.json({
           error: `You're ${Math.round(distance)}m away. Must be within 500m of the gym to check in.`,
           distance,
           required: 500
