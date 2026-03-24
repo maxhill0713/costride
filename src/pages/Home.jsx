@@ -490,6 +490,14 @@ export default function Home() {
   const touchStartY = useRef(null);
   const PULL_THRESHOLD = 72;
 
+  const triggerRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 600);
+  };
+
   useEffect(() => {
     const onTouchStart = (e) => {
       if (window.scrollY <= 0) touchStartY.current = e.touches[0].clientY;
@@ -504,27 +512,27 @@ export default function Home() {
     };
     const onTouchEnd = async () => {
       if (pullY >= PULL_THRESHOLD && !isRefreshing) {
-        setIsRefreshing(true);
+        triggerRefresh();
         setPullY(PULL_THRESHOLD);
-        await queryClient.invalidateQueries();
-        setTimeout(() => {
-          setIsRefreshing(false);
-          setPullY(0);
-        }, 600);
       } else {
         setPullY(0);
       }
       touchStartY.current = null;
     };
+    const onHomeButtonClick = () => {
+      triggerRefresh();
+    };
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('homeButtonClicked', onHomeButtonClick);
     return () => {
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('homeButtonClicked', onHomeButtonClick);
     };
-  }, [pullY, isRefreshing, queryClient]);
+  }, [isRefreshing, queryClient]);
 
   useEffect(() => {
     injectStreakStyles();

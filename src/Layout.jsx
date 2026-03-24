@@ -44,7 +44,10 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   const handleTabClick = (item, e) => {
     if (currentPageName === item.page) {
       e.preventDefault();
-      if (item.page === 'Home') window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (item.page === 'Home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.dispatchEvent(new Event('homeButtonClicked'));
+      }
     }
   };
 
