@@ -104,6 +104,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Audit log the bulk send action
+    console.log(JSON.stringify({ event: 'AUDIT', action: 'bulk_notification_sent', user_id: user.id, user_email: user.email, resource_type: 'gym', resource_id: gym_id, status: 'success', details: { sent, failed: errors.length, total: effectiveMemberIds.length }, timestamp: new Date().toISOString() }));
     console.log(`Notifications sent: ${sent}, failed: ${errors.length}, gym: ${gym_id}, by: ${user.email}`);
 
     return Response.json({ success: true, sent, failed: errors.length, capped: batchIds.length < member_ids.length });

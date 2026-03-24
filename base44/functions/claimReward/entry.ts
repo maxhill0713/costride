@@ -47,6 +47,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'rewardId or challengeId required' }, { status: 400 });
     }
 
+    // FRAUD DETECTION: max 5 reward claims per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const recentClaims = await base44.asServiceRole.entities.ClaimedBonus.filter({
+      user_id: user.id,
+      created_date: { $gte: oneHourAgo }
+    });
+    if (recentClaims.length >= 5) {
+      await logAuditEvent(base44, {
+        action: 'reward_claim_fraud_detected',
+        user_id: user.id,
+        user_email: user.email,
+        resource_type: 'reward',
+        resource_id: rewardId || challengeId,
+        status: 'failure',
+        reason: `rapid_claiming: ${recentClaims.length} claims in 1 hour`
+      });
+      return Response.json({ error: 'Too many reward claims. Please wait before claiming again.' }, { status: 429 });
+    }
+
     // ── DUPLICATE CLAIM CHECK ─────────────────────────────────────────────────
     const query = rewardId
       ? { user_id: user.id, reward_id: rewardId }
