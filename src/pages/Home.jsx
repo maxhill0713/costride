@@ -933,13 +933,6 @@ export default function Home() {
     localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
   };
 
-  // ── Mark posts as seen when they become visible ───────────────────────────
-  const markPostSeen = useCallback((postId) => {
-    if (seenPostIds.has(postId)) return;
-    seenPostIds.add(postId);
-    try { localStorage.setItem(SEEN_POSTS_KEY, JSON.stringify([...seenPostIds])); } catch {}
-  }, [seenPostIds]);
-
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
