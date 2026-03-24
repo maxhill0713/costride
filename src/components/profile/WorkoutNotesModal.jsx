@@ -3,6 +3,15 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
+const NOTES_MAX_LENGTH = 500;
+
+// Strips any HTML / script tags before the value is stored, so a user
+// cannot inject markup or executable content via the notes field.
+const sanitiseNotes = (value) =>
+  value
+    .replace(/<[^>]*>/g, '')        // strip any HTML tags
+    .slice(0, NOTES_MAX_LENGTH);    // hard cap at 500 chars
+
 export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -26,7 +35,8 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
     try {
       const user = await base44.auth.me();
       const workout_notes = user?.workout_notes || {};
-      workout_notes[workoutName] = notes;
+      // Sanitise once more at save time, not just on keystroke
+      workout_notes[workoutName] = sanitiseNotes(notes);
       await base44.auth.updateMe({ workout_notes });
       onClose();
     } catch (error) {
@@ -87,7 +97,7 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
             }} />
 
             <div style={{ padding: '20px' }}>
-              {/* Header — no X button */}
+              {/* Header */}
               <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px 0' }}>
                 Workout Notes
               </h2>
@@ -97,8 +107,9 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
 
               <textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => setNotes(sanitiseNotes(e.target.value))}
                 placeholder="Form tips, goals, things to remember…"
+                maxLength={NOTES_MAX_LENGTH}
                 rows={6}
                 style={{
                   width: '100%', background: 'transparent',
@@ -111,8 +122,16 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
               />
 
+              {/* Character counter */}
+              <p style={{
+                fontSize: '10px', fontWeight: 600, color: notes.length >= NOTES_MAX_LENGTH ? '#f87171' : '#475569',
+                textAlign: 'right', margin: '4px 0 0 0',
+              }}>
+                {notes.length} / {NOTES_MAX_LENGTH}
+              </p>
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                {/* Save — blue press-down button */}
+                {/* Save button */}
                 <motion.button
                   onClick={handleSave}
                   disabled={isSaving}
@@ -129,7 +148,7 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
                   {isSaving ? 'Saving…' : 'Save Notes'}
                 </motion.button>
 
-                {/* Cancel — slate press-down button */}
+                {/* Cancel button */}
                 <motion.button
                   onClick={onClose}
                   whileTap={{ scale: 0.95, y: 3 }}
