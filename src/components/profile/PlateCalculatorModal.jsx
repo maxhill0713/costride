@@ -8,6 +8,19 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
 
   const plates = [20, 15, 10, 5, 2.5, 1.25];
 
+  // ── Input sanitisers ──────────────────────────────────────────────────────
+  // Allows digits and a single decimal point only. Strips everything else
+  // (including 'e', '+', '-' which type="number" normally allows).
+  // Max 6 chars covers weights up to 999.99 kg.
+  const sanitiseWeight = (value, maxChars = 6) => {
+    const v = value.replace(/[^\d.]/g, '');          // digits and dot only
+    const parts = v.split('.');
+    const sanitised = parts.length > 2               // only one decimal point
+      ? parts[0] + '.' + parts.slice(1).join('')
+      : v;
+    return sanitised.slice(0, maxChars);
+  };
+
   const calculatePlates = () => {
     const target = parseFloat(targetWeight) || 0;
     const bar = parseFloat(barWeight) || 20;
@@ -108,7 +121,7 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
             }} />
 
             <div style={{ padding: '20px', position: 'relative' }}>
-              {/* Header — no X button */}
+              {/* Header */}
               <div style={{ marginBottom: '16px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px 0' }}>
                   Plate Calculator
@@ -125,9 +138,11 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
                     Target (kg)
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    maxLength={6}
                     value={targetWeight}
-                    onChange={(e) => setTargetWeight(e.target.value)}
+                    onChange={(e) => setTargetWeight(sanitiseWeight(e.target.value))}
                     placeholder="e.g. 100"
                     style={inputStyle}
                     onFocus={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.25)'}
@@ -139,9 +154,11 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
                     Bar (kg)
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    maxLength={5}
                     value={barWeight}
-                    onChange={(e) => setBarWeight(e.target.value)}
+                    onChange={(e) => setBarWeight(sanitiseWeight(e.target.value, 5))}
                     placeholder="20"
                     style={inputStyle}
                     onFocus={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.25)'}
@@ -226,7 +243,7 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
                 </motion.div>
               )}
 
-              {/* Close — slate press-down button */}
+              {/* Close button */}
               <motion.button
                 onClick={onClose}
                 whileTap={{ scale: 0.95, y: 3 }}
