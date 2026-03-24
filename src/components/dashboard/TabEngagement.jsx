@@ -356,10 +356,11 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
   const testSend = async (rule) => {
     if (!selectedGym?.id) return;
     const previewMsg = (rule.message || '').replace('{name}', 'you');
+    const me = await base44.auth.me();
     await base44.functions.invoke('sendPushNotification', {
       gym_id: selectedGym.id,
       gym_name: gymName,
-      target: 'all',
+      member_ids: [me.id],
       message: `[TEST] ${previewMsg}`,
     });
   };
