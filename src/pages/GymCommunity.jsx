@@ -289,14 +289,21 @@ const FEED_TYPES = {
 
 function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
   useEffect(() => { injectActivityCSS(); }, []);
-  const col  = colorForUser(item.userId);
+  const [postExpanded, setPostExpanded] = React.useState(false);
+  const col    = colorForUser(item.userId);
   const avatar = memberAvatarMap[item.userId];
-  const ini  = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const type = item.type === 'checkin' ? FEED_TYPES.checkin
-             : item.data?.is_personal_record || item.data?.is_pr ? FEED_TYPES.lift_pr
+  const ini    = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  const type = item.type === 'checkin'   ? FEED_TYPES.checkin
+             : item.type === 'challenge' ? FEED_TYPES.challenge
+             : item.type === 'milestone' ? FEED_TYPES.milestone
+             : item.type === 'post'      ? FEED_TYPES.post
+             : (item.data?.is_personal_record || item.data?.is_pr) ? FEED_TYPES.lift_pr
              : FEED_TYPES.lift;
-  const isPR = item.type !== 'checkin' && (item.data?.is_personal_record || item.data?.is_pr);
+
+  const isPR = (item.type === 'lift') && (item.data?.is_personal_record || item.data?.is_pr);
   const fakeLikes = ((item.userId || '').charCodeAt(0) % 14) + 2;
+  const TypeIcon = type.icon;
 
   const timeAgo = (d) => {
     const s = (Date.now() - new Date(d)) / 1000;
@@ -307,89 +314,128 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
   };
 
   return (
-    <div style={{ display: 'flex', gap: 12, padding: '13px 14px',
-      borderBottom: '1px solid rgba(255,255,255,0.045)',
-      animation: `af-in 0.3s ease ${index * 0.04}s both` }}>
-
-      {/* Avatar */}
-      <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
-          background: col.bg, border: `2px solid ${isPR ? 'rgba(234,179,8,0.5)' : 'rgba(255,255,255,0.08)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: 800, color: col.color,
-          boxShadow: isPR ? '0 0 12px rgba(234,179,8,0.35)' : '0 2px 8px rgba(0,0,0,0.35)' }}>
-          {avatar
-            ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : ini(item.userName)}
-        </div>
-        {/* Type dot */}
-        <div style={{ position: 'absolute', bottom: -2, right: -2,
-          width: 16, height: 16, borderRadius: '50%',
-          background: type.iconBg, border: `1.5px solid rgba(6,8,18,0.9)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
-          <type.icon style={{ width: 8, height: 8, color: type.iconColor }} />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Name + action */}
-        <div style={{ fontSize: 13.5, color: 'rgba(226,232,240,0.9)', lineHeight: 1.4, marginBottom: 3 }}>
-          <span style={{ fontWeight: 800, color: '#fff' }}>{item.userName}</span>
-          {' '}
-          <span style={{ color: isPR ? '#fbbf24' : 'rgba(226,232,240,0.7)',
-            animation: isPR ? 'af-pr-glow 2s ease-in-out infinite' : 'none' }}>
-            {type.verb}
-          </span>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.045)', animation: `af-in 0.3s ease ${index * 0.04}s both` }}>
+      <div style={{ display: 'flex', gap: 12, padding: '13px 14px' }}>
+        {/* Avatar */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+            background: col.bg, border: `2px solid ${isPR ? 'rgba(234,179,8,0.5)' : 'rgba(255,255,255,0.08)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13, fontWeight: 800, color: col.color,
+            boxShadow: isPR ? '0 0 12px rgba(234,179,8,0.35)' : '0 2px 8px rgba(0,0,0,0.35)' }}>
+            {avatar
+              ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : ini(item.userName)}
+          </div>
+          <div style={{ position: 'absolute', bottom: -2, right: -2,
+            width: 16, height: 16, borderRadius: '50%',
+            background: type.iconBg, border: `1.5px solid rgba(6,8,18,0.9)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+            <TypeIcon style={{ width: 8, height: 8, color: type.iconColor }} />
+          </div>
         </div>
 
-        {/* Sub info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {item.type === 'checkin' ? (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
-              {item.data?.notes || 'At the gym'}
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, color: 'rgba(226,232,240,0.9)', lineHeight: 1.4, marginBottom: 3 }}>
+            <span style={{ fontWeight: 800, color: '#fff' }}>{item.userName}</span>
+            {' '}
+            <span style={{ color: isPR ? '#fbbf24' : item.type === 'challenge' ? '#fb923c' : item.type === 'milestone' ? '#fbbf24' : item.type === 'post' ? '#34d399' : 'rgba(226,232,240,0.7)',
+              animation: isPR ? 'af-pr-glow 2s ease-in-out infinite' : 'none' }}>
+              {type.verb}
             </span>
-          ) : (
-            <>
-              <span style={{ fontSize: 11, fontWeight: 700,
-                color: isPR ? 'rgba(251,191,36,0.9)' : 'rgba(167,139,250,0.9)',
-                background: isPR ? 'rgba(234,179,8,0.1)' : 'rgba(168,85,247,0.1)',
-                border: `1px solid ${isPR ? 'rgba(234,179,8,0.2)' : 'rgba(168,85,247,0.2)'}`,
-                borderRadius: 99, padding: '2px 8px' }}>
-                {item.data?.exercise || 'Exercise'}
-              </span>
-              {(item.data?.weight_lbs || item.data?.weight) && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>
-                  {item.data.weight_lbs || item.data.weight} lbs
+          </div>
+
+          {/* Sub info */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            {item.type === 'checkin' && (
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>At the gym</span>
+            )}
+            {(item.type === 'lift' || item.type === 'lift_pr') && (
+              <>
+                <span style={{ fontSize: 11, fontWeight: 700,
+                  color: isPR ? 'rgba(251,191,36,0.9)' : 'rgba(167,139,250,0.9)',
+                  background: isPR ? 'rgba(234,179,8,0.1)' : 'rgba(168,85,247,0.1)',
+                  border: `1px solid ${isPR ? 'rgba(234,179,8,0.2)' : 'rgba(168,85,247,0.2)'}`,
+                  borderRadius: 99, padding: '2px 8px' }}>
+                  {item.data?.workout_type || item.data?.exercise || 'Workout'}
                 </span>
-              )}
-              {item.data?.reps && (
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>× {item.data.reps} reps</span>
-              )}
-            </>
-          )}
+                {item.data?.duration_minutes && (
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                    {item.data.duration_minutes} min
+                  </span>
+                )}
+                {item.data?.weight_lbs && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>
+                    {item.data.weight_lbs} lbs
+                  </span>
+                )}
+              </>
+            )}
+            {item.type === 'challenge' && item.data?.title && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(249,115,22,0.9)',
+                background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)',
+                borderRadius: 99, padding: '2px 8px' }}>
+                {item.data.title}
+              </span>
+            )}
+            {item.type === 'milestone' && item.data?.title && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(251,191,36,0.9)',
+                background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)',
+                borderRadius: 99, padding: '2px 8px' }}>
+                {item.data.title}
+              </span>
+            )}
+            {item.type === 'post' && !postExpanded && (
+              <button onClick={() => setPostExpanded(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(52,211,153,0.75)',
+                  background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(52,211,153,0.2)',
+                  borderRadius: 99, padding: '2px 9px', cursor: 'pointer' }}>
+                Show post <ChevronDown style={{ width: 10, height: 10 }} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right side: time + like */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+          justifyContent: 'space-between', flexShrink: 0, minWidth: 40 }}>
+          <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
+            {timeAgo(item.date)}
+          </span>
+          <button onClick={() => onLike(item.id)}
+            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 6px',
+              borderRadius: 8, border: 'none', cursor: 'pointer',
+              background: liked ? 'rgba(244,114,182,0.12)' : 'transparent',
+              color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)',
+              fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
+            <Heart style={{ width: 12, height: 12, fill: liked ? '#f472b6' : 'none',
+              transition: 'fill 0.15s',
+              animation: liked ? 'af-like 0.3s ease' : 'none' }} />
+            {fakeLikes + (liked ? 1 : 0)}
+          </button>
         </div>
       </div>
 
-      {/* Right side: time + like */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-        justifyContent: 'space-between', flexShrink: 0, minWidth: 40 }}>
-        <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
-          {timeAgo(item.date)}
-        </span>
-        <button onClick={() => onLike(item.id)}
-          style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 6px',
-            borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: liked ? 'rgba(244,114,182,0.12)' : 'transparent',
-            color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)',
-            fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
-          <Heart style={{ width: 12, height: 12, fill: liked ? '#f472b6' : 'none',
-            transition: 'fill 0.15s',
-            animation: liked ? 'af-like 0.3s ease' : 'none' }} />
-          {fakeLikes + (liked ? 1 : 0)}
-        </button>
-      </div>
+      {/* Expanded post content */}
+      {item.type === 'post' && postExpanded && (
+        <div style={{ margin: '0 14px 12px', padding: '10px 12px',
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(52,211,153,0.15)',
+          borderRadius: 10 }}>
+          <p style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.8)', lineHeight: 1.55, margin: '0 0 8px' }}>
+            {item.data?.content}
+          </p>
+          {item.data?.image_url && (
+            <img src={item.data.image_url} alt="post" style={{ width: '100%', borderRadius: 8, marginBottom: 6, maxHeight: 200, objectFit: 'cover' }} />
+          )}
+          <button onClick={() => setPostExpanded(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(148,163,184,0.5)',
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <ChevronUp style={{ width: 10, height: 10 }} /> Collapse
+          </button>
+        </div>
+      )}
     </div>
   );
 }
