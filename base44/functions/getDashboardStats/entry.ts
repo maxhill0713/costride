@@ -399,7 +399,6 @@ Deno.serve(async (req) => {
       monthChangePct, monthCiPer,
       newSignUps, newSignUpsPrev, cancelledEst,
       atRisk: atRiskMembersData.length,
-      atRiskMembersData,
       membersWithActivity,
       memberLastCheckIn,
       sparkData7, monthGrowthData,
