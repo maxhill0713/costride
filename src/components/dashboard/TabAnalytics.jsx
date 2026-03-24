@@ -1220,32 +1220,6 @@ export default function TabAnalytics({
       {/* ── RIGHT SIDEBAR ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {/* 30-day snapshot */}
-        <Card style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>30-Day Snapshot</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{format(now, 'MMM d')} rolling window</div>
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 700, color: C.blue, background: C.blueDim, border: `1px solid ${C.blueBrd}`, borderRadius: 7, padding: '3px 9px' }}>Live</span>
-          </div>
-          {snapshotItems.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < snapshotItems.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: `${s.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon style={{ width: 10, height: 10, color: s.color }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: C.t2 }}>{s.label}</div>
-                  <div style={{ fontSize: 9, color: C.t3, marginTop: 1 }}>{s.sub}</div>
-                </div>
-                <span style={{ fontSize: 14, fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</span>
-              </div>
-            );
-          })}
-        </Card>
-
         <Week1ReturnTrendWidget week1ReturnTrend={week1ReturnTrendProp} />
         <ChurnSignalWidget churnSignals={churnSignalsProp} />
         <MilestoneProgressWidget checkIns={checkIns} />
