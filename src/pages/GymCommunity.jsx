@@ -1410,7 +1410,19 @@ export default function GymCommunity() {
   });
   const { data: gymChallengeParticipants = [] } = useQuery({ queryKey: ['gymChallengeParticipants', gymId], queryFn: async () => { const ids = challenges.map(c => c.id); if (!ids.length) return []; return base44.entities.ChallengeParticipant.filter({ challenge_id: ids[0] }, '-created_date', 100); }, enabled: !!gymId && activeTab === 'activity' && challenges.length > 0, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const { data: gymAchievements = [] } = useQuery({ queryKey: ['gymAchievements', gymId], queryFn: () => base44.entities.Achievement.filter({ gym_id: gymId }, '-created_date', 100), enabled: !!gymId && activeTab === 'activity', staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: gymPosts = [] } = useQuery({ queryKey: ['gymPosts', gymId], queryFn: () => base44.entities.Post.filter({ gym_id: gymId, is_hidden: false }, '-created_date', 60), enabled: !!gymId && activeTab === 'activity', staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: gymPosts = [] } = useQuery({
+    queryKey: ['gymPosts', gymId, checkIns.map(c => c.user_id).join(',')],
+    queryFn: async () => {
+      const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
+      if (userIds.length === 0) return [];
+      // Fetch all recent posts and filter to only gym members
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const posts = await base44.entities.Post.filter({ created_date: { $gte: sevenDaysAgo }, is_hidden: false }, '-created_date', 100);
+      return posts.filter(p => userIds.includes(p.member_id));
+    },
+    enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
+    staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
+  });
 
   const { data: leaderboards = {} } = useQuery({
     queryKey: ['leaderboards', gymId],
