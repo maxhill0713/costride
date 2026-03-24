@@ -128,6 +128,16 @@ Deno.serve(async (req) => {
       first_visit:   isFirstVisit,
     });
 
+    // Audit log successful check-in
+    await logAuditEvent(base44, {
+      action: isFirstVisit ? 'first_checkin' : 'checkin',
+      user_id: user.id,
+      user_email: user.email,
+      resource_type: 'gym',
+      resource_id: gymId,
+      status: 'success'
+    });
+
     try {
       await base44.functions.invoke('updateChallengeProgress', {
         event: { type: 'create', entity_name: 'CheckIn', data: { user_id: user.id } },
