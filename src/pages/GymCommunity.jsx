@@ -1304,6 +1304,83 @@ function SlidePanel({ open, children }) {
   );
 }
 
+// ── Suggested Friends Card ────────────────────────────────────────────────────
+function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
+  const [sentIds, setSentIds] = React.useState(new Set());
+  const queryClient = useQueryClient();
+
+  const { data: myFriends = [] } = useQuery({
+    queryKey: ['friends', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: (userId) => base44.functions.invoke('manageFriendship', { friendId: userId, action: 'add' }),
+    onSuccess: (_, userId) => {
+      setSentIds(prev => new Set(prev).add(userId));
+      queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
+    },
+  });
+
+  const suggestions = React.useMemo(() => {
+    if (!currentUser) return [];
+    const knownIds = new Set([currentUser.id, ...myFriends.map(f => f.friend_id), ...myFriends.map(f => f.user_id)]);
+    const seen = new Set();
+    return checkIns
+      .filter(c => c.user_id && c.user_name && !knownIds.has(c.user_id) && !seen.has(c.user_id) && seen.add(c.user_id))
+      .slice(0, 5);
+  }, [checkIns, currentUser, myFriends]);
+
+  if (suggestions.length === 0) return null;
+
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
+      <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Users style={{ width: 13, height: 13, color: '#a78bfa' }} />
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>People You May Know</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {suggestions.map((c, i) => {
+          const col = colorForUser(c.user_id);
+          const avatar = memberAvatarMap[c.user_id];
+          const sent = sentIds.has(c.user_id);
+          return (
+            <div key={c.user_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderBottom: i < suggestions.length - 1 ? '1px solid rgba(255,255,255,0.045)' : 'none' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: col.bg, border: '2px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: col.color, flexShrink: 0 }}>
+                {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(c.user_name)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.user_name}</p>
+                <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.55)', margin: '2px 0 0', fontWeight: 500 }}>Also trains at this gym</p>
+              </div>
+              <button
+                onClick={() => !sent && addFriendMutation.mutate(c.user_id)}
+                disabled={sent || addFriendMutation.isPending}
+                style={{
+                  flexShrink: 0, padding: '6px 14px', borderRadius: 99, fontSize: 11.5, fontWeight: 800,
+                  cursor: sent ? 'default' : 'pointer', border: 'none',
+                  background: sent ? 'rgba(52,211,153,0.15)' : 'linear-gradient(to bottom, #6d6af8, #5b58e8, #4947d0)',
+                  color: sent ? '#34d399' : '#fff',
+                  borderBottom: sent ? '2px solid rgba(52,211,153,0.3)' : '2px solid #2f2db0',
+                  boxShadow: sent ? 'none' : '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  transition: 'all 0.15s',
+                }}>
+                {sent ? '✓ Sent' : '+ Add'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function RippleButton({ onClick, children, className, style }) {
   const [ripples, setRipples] = React.useState([]);
   const handleClick = (e) => {
