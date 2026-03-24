@@ -15,6 +15,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'gym_id, message, and member_ids are required' }, { status: 400 });
     }
 
+    // Validate message
+    if (typeof message !== 'string' || message.trim().length === 0) {
+      return Response.json({ error: 'Message must be a non-empty string' }, { status: 400 });
+    }
+    if (message.length > 500) {
+      return Response.json({ error: 'Message must be 500 characters or less' }, { status: 400 });
+    }
+    const safeMessage = message.replace(/<[^>]*>/g, '').trim();
+
+    // Cap batch size
+    const MAX_BATCH = 500;
+    if (!Array.isArray(member_ids) || member_ids.length === 0) {
+      return Response.json({ error: 'No members to notify' }, { status: 400 });
+    }
+    if (member_ids.length > MAX_BATCH) {
+      return Response.json({ error: `Cannot notify more than ${MAX_BATCH} members per request` }, { status: 400 });
+    }
+
     // ── Ownership check: verify the caller owns this gym ──────────────────
     const gyms = await base44.asServiceRole.entities.Gym.filter({ id: gym_id });
     if (!gyms || gyms.length === 0) {
