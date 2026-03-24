@@ -380,16 +380,15 @@ Deno.serve(async (req) => {
       action: 'checked in', time: c.check_in_date, color: '#10b981',
     }));
 
-    // Avatar map
+    // Avatar map — built from membership data only, no User.list() needed
     const avatarMap = {};
-    allUsers.forEach(u => {
-      const av = u.avatar_url || u.profile_picture || u.photo_url || null;
-      if (av) avatarMap[u.id] = av;
+    allMemberships.forEach(m => {
+      if (m.user_id && m.avatar_url) avatarMap[m.user_id] = m.avatar_url;
     });
 
-    // Lightweight recent check-ins for UI (last 300)
-    const recentCheckIns = checkIns.slice(0, 300).map(c => ({
-      id: c.id, user_id: c.user_id, user_name: c.user_name, check_in_date: c.check_in_date,
+    // Lightweight recent check-ins for UI (last 50, no internal id)
+    const recentCheckIns = checkIns.slice(0, 50).map(c => ({
+      user_id: c.user_id, user_name: c.user_name, check_in_date: c.check_in_date,
     }));
 
     return Response.json({
