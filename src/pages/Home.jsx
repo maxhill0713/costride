@@ -1442,7 +1442,7 @@ export default function Home() {
 
           {/* ── Social Feed ── */}
           {friends.length > 0 && (
-            <div className="space-y-3 mt-8">
+            <div className="space-y-3 mt-12">
               {filteredActivityCards.length > 0 && (
                 <div className="space-y-3">
                   {filteredActivityCards.map(card => (
