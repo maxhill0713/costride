@@ -5,7 +5,7 @@ import {
   Users, AlertTriangle, CheckCircle, TrendingUp, TrendingDown,
   UserPlus, QrCode, Trophy, Send, Bell, X, Check,
   Zap, Activity, Shield, History, Flag,
-  MoreHorizontal,
+  MoreHorizontal, Mail, GraduationCap, Copy,
 } from 'lucide-react';
 import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
