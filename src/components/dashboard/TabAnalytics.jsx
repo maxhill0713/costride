@@ -1016,12 +1016,13 @@ export default function TabAnalytics({
                         {cls.schedule && <span style={{ fontSize: 10, color: C.t3, marginLeft: 8 }}>{cls.schedule}</span>}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color }}>{cls.attended}</span>
-                        <span style={{ fontSize: 9, color: C.t3 }}>/ {cls.capacity} cap</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color }}>{cls.fill}%</span>
+                       <span style={{ fontSize: 13, fontWeight: 800, color }}>{cls.attended}</span>
+                       <span style={{ fontSize: 9, color: C.t3 }}>/ {cls.capacity} cap</span>
+                       <span style={{ fontSize: 11, fontWeight: 700, color }}>{cls.fill}%</span>
                       </div>
-                  </div>
-                );
+                      </div>
+                      </div>
+                      );
               })}
             </div>
           </Card>
