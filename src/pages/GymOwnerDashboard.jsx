@@ -748,8 +748,7 @@ export default function GymOwnerDashboard() {
             return (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`nav-item ${active ? 'active' : ''}`}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, padding: collapsed ? '11px 0' : '9px 14px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', cursor: 'pointer', marginBottom: 1, fontSize: 13, background: 'transparent',
-                  ...(active ? { background: `${accentColor}12 !important`, color: `${accentColor} !important`, borderLeftColor: `${accentColor} !important` } : {}) }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, padding: collapsed ? '11px 0' : '9px 14px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', cursor: 'pointer', marginBottom: 1, fontSize: 13, background: 'transparent' }}>
                 <item.icon style={{ width: 15, height: 15, flexShrink: 0 }}/>
                 {!collapsed && <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>}
                 {!collapsed && active && <div style={{ width: 5, height: 5, borderRadius: '50%', background: accentColor, boxShadow: `0 0 8px ${accentColor}`, flexShrink: 0 }}/>}
