@@ -1527,7 +1527,7 @@ export default function GymCommunity() {
   );
 
   // ── Tab trigger class — tighter padding & smaller text/icons so all 4 fit on screen ──
-  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11px] transform-gpu";
+  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2.5 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
@@ -1584,10 +1584,10 @@ export default function GymCommunity() {
             <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', overflowX:'auto', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
               <TabsList className="flex justify-start bg-transparent px-3 py-2 h-auto gap-1.5" style={{ width:'max-content', minWidth:'100%' }}>
                 {/* Icons reduced to w-3 h-3 and padding/gap tightened via tabTriggerClass */}
-                <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3 h-3" /><span>Home</span></TabsTrigger>
-                <TabsTrigger value="activity"   className={tabTriggerClass}><Activity   className="w-3 h-3" /><span>Activity</span></TabsTrigger>
-                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy     className="w-3 h-3" /><span>Challenges</span></TabsTrigger>
-                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell   className="w-3 h-3" /><span>Classes</span></TabsTrigger>
+                <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
+                <TabsTrigger value="activity"   className={tabTriggerClass}><Activity   className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
+                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy     className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
+                <TabsTrigger value="classes"    className={tabTriggerClass}><Dumbbell   className="w-3.5 h-3.5" /><span>Classes</span></TabsTrigger>
               </TabsList>
             </div>
           </div>
