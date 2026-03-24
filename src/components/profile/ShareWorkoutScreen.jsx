@@ -170,13 +170,12 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, gymId, onContinue }) {
+export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, onContinue }) {
   const [comment, setComment] = useState('');
   const [postTitle, setPostTitle] = useState(workoutName || '');
   const [photoUrl, setPhotoUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -216,8 +215,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         video_url: null,
         likes: 0, comments: [], reactions: {},
         is_system_generated: false,
-        shared_with_community: shareWithCommunity && !!gymId,
-        gym_id: shareWithCommunity && gymId ? gymId : null,
+        allow_gym_repost: false,
         workout_name: postTitle.trim() || workoutName || null,
         workout_exercises: (exercises || []).map(ex => {
           const rawName = ex.name || ex.title || ex.exercise_name || ex.exercise || '';
@@ -351,32 +349,6 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="w-full max-w-sm flex flex-col gap-3 pt-3">
-        {gymId && (
-          <button
-            onClick={() => setShareWithCommunity(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border transition-all duration-150"
-            style={{
-              background: shareWithCommunity ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)',
-              border: shareWithCommunity ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.1)',
-            }}>
-            <div className="text-left">
-              <p className="text-sm font-bold text-white">Share with community</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Post will appear in {gymName || 'your gym'}'s feed</p>
-            </div>
-            <div className="flex-shrink-0 ml-3" style={{
-              width: 44, height: 26, borderRadius: 13,
-              background: shareWithCommunity ? '#3b82f6' : 'rgba(255,255,255,0.12)',
-              transition: 'background 0.2s',
-              position: 'relative',
-            }}>
-              <div style={{
-                position: 'absolute', top: 3, left: shareWithCommunity ? 21 : 3,
-                width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-              }} />
-            </div>
-          </button>
-        )}
         <Button
           onClick={handleShare}
           disabled={sharing}
