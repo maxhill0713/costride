@@ -47,9 +47,42 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: You do not own this gym' }, { status: 403 });
     }
 
+    // ── Rate limit: max 20 bulk sends per gym per hour, 100 per day ──────
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const oneDayAgo  = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const [recentHour, recentDay] = await Promise.all([
+      base44.asServiceRole.entities.Notification.filter(
+        { type: 'gym_message', created_by: user.email, created_date: { $gte: oneHourAgo } },
+        '-created_date', 1000
+      ),
+      base44.asServiceRole.entities.Notification.filter(
+        { type: 'gym_message', created_by: user.email, created_date: { $gte: oneDayAgo } },
+        '-created_date', 1000
+      ),
+    ]);
+
+    const HOURLY_LIMIT = 500;  // individual notifications per hour
+    const DAILY_LIMIT  = 2000; // individual notifications per day
+
+    if (recentHour.length >= HOURLY_LIMIT) {
+      console.warn(`Rate limit hit (hourly) for gym ${gym_id} by ${user.email}`);
+      return Response.json({ error: 'Rate limit exceeded: too many notifications sent in the past hour. Try again later.' }, { status: 429 });
+    }
+    if (recentDay.length >= DAILY_LIMIT) {
+      console.warn(`Rate limit hit (daily) for gym ${gym_id} by ${user.email}`);
+      return Response.json({ error: 'Rate limit exceeded: daily notification limit reached.' }, { status: 429 });
+    }
+
+    // Also cap this single batch so it doesn't exceed remaining allowance
+    const remainingToday = DAILY_LIMIT - recentDay.length;
+    const batchIds = member_ids.slice(0, remainingToday);
+
     // ── Create in-app notifications for each member ───────────────────────
     let sent = 0;
     const errors = [];
+    // Use the capped batch
+    const effectiveMemberIds = batchIds;
 
     for (const memberId of member_ids) {
       // Don't notify the owner themselves
