@@ -1704,11 +1704,6 @@ export default function TabAnalytics({
           </ResponsiveContainer>
         </Card>
 
-        {/* Heatmap */}
-        <Card style={{ padding: 20 }}>
-          <CardHead title="Member Traffic Heatmap" sub="Check-in density by day and time" />
-          <HeatmapChart gymId={gymId} />
-        </Card>
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
