@@ -62,6 +62,29 @@ const PERIODS      = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// INPUT SANITISERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Title — strips HTML/script injection chars, keeps normal punctuation.
+// maxLength is also enforced on the input element itself as a second layer.
+const sanitiseTitle = (v) =>
+  v
+    .replace(/[<>{};`\\]/g, '')  // strip injection-risk chars
+    .slice(0, 50);               // matches the maxLength attribute
+
+// Number fields — digits and a single decimal point only.
+// Blocks 'e', '+', '-' and scientific notation that type="number" allows.
+// maxChars prevents absurdly large values (e.g. 999.99 = 6 chars).
+const sanitiseNumber = (v, maxChars = 6) => {
+  const stripped = v.replace(/[^\d.]/g, '');          // digits and dot only
+  const parts = stripped.split('.');
+  const sanitised = parts.length > 2                  // only one decimal point
+    ? parts[0] + '.' + parts.slice(1).join('')
+    : stripped;
+  return sanitised.slice(0, maxChars);
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // TINY HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -75,10 +98,17 @@ const Label = ({ children }) => (
   </span>
 );
 
+// Secured NumberInput — type="text" + inputMode="decimal" prevents the browser
+// from allowing 'e', '+', '-' while still showing a numeric keyboard on mobile.
 const NumberInput = ({ value, onChange, placeholder }) => (
   <input
-    type="number" value={value} onChange={e => onChange(e.target.value)}
-    placeholder={placeholder} style={{ fontSize: 16 }}
+    type="text"
+    inputMode="decimal"
+    maxLength={6}
+    value={value}
+    onChange={e => onChange(sanitiseNumber(e.target.value))}
+    placeholder={placeholder}
+    style={{ fontSize: 16 }}
     className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
   />
 );
@@ -302,7 +332,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
           : `${target}-day streak`;
 
     onSave({
-      title:            title || autoTitle,
+      title:            sanitiseTitle(title) || autoTitle,
       goal_type:        typeId,
       target_value:     parseFloat(target) || 0,
       current_value:    parseFloat(current) || 0,
@@ -375,12 +405,21 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
               {/* Title */}
               <div className="space-y-2">
                 <Label>Title <span className="normal-case text-slate-600 font-medium">(optional — auto-generated if blank)</span></Label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={50} style={{ fontSize: 16 }}
+                <input
+                  type="text"
+                  value={title}
+                  onChange={e => setTitle(sanitiseTitle(e.target.value))}
+                  maxLength={50}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  style={{ fontSize: 16 }}
                   placeholder={
                     gt.id === 'numerical'   ? 'e.g. Bench Press 140 kg' :
                     gt.id === 'frequency'   ? 'e.g. Train 5× per week'  : 'e.g. 30-day streak'
                   }
-                  className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
+                  className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
+                />
               </div>
 
               {/* ── NUMERICAL ── */}
@@ -443,9 +482,13 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                   title="Add a deadline" sub="Set a target date to hit this goal by"
                   rgb={gt.rgb} hex={gt.hex} />
                 {hasDeadline && (
-                  <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={e => setDeadline(e.target.value)}
                     style={{ fontSize: 16, colorScheme: 'dark' }}
-                    className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white focus:outline-none focus:border-blue-500/60 transition-colors" />
+                    className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white focus:outline-none focus:border-blue-500/60 transition-colors"
+                  />
                 )}
               </div>
 
