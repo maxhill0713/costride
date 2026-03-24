@@ -72,7 +72,7 @@ export default function Friends() {
       );
       return results.filter(Boolean);
     },
-    enabled: (showAddModal || showFriendsModal) && knownUserIds.length > 0,
+    enabled: knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
@@ -246,7 +246,10 @@ export default function Friends() {
     staleTime: 30000
   });
 
-  const filteredSearchResults = searchResults.filter((user) => !friendIds.includes(user.id));
+  const outgoingPendingIds = pendingOutgoing.map(p => p.id);
+  const filteredSearchResults = searchResults.filter(
+    (user) => !friendIds.includes(user.id) && !outgoingPendingIds.includes(user.id)
+  );
 
   const getFriendActivity = (friendId) => {
     const friendCheckIns = allCheckIns.filter((c) => c.user_id === friendId);
@@ -630,54 +633,63 @@ export default function Friends() {
                 {/* Incoming friend requests */}
                 {friendRequests
                   .filter((req) => {
-                    const requesterUser = allUsers.find((u) => u.id === req.user_id);
-                    const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
+                    const displayName = req.user_name || req.friend_name || '';
                     return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
                   })
                   .map((request) => {
-                    const requesterUser = allUsers.find((u) => u.id === request.user_id);
-                    const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
+                    const displayName = request.user_name || request.friend_name || 'Unknown';
+                    const avatarUrl = request.user_avatar;
                     return (
                       <div
                         key={request.id}
-                        className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30"
+                        className="p-3 rounded-xl flex items-center justify-between gap-3 border"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(16,19,40,0.9) 100%)',
+                          border: '1px solid rgba(59,130,246,0.3)',
+                          borderBottom: '3px solid rgba(29,78,216,0.5)',
+                          boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+                        }}
                       >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {(() => {
-                              const ru = allUsers.find((u) => u.id === request.user_id);
-                              return ru?.avatar_url ? (
-                                <img src={ru.avatar_url} alt={currentName} className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-xs font-semibold text-white">
-                                  {currentName?.charAt(0)?.toUpperCase()}
-                                </span>
-                              );
-                            })()}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-blue-500/40">
+                            {avatarUrl ? (
+                              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-sm font-bold text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
-                              Request pending
-                            </Badge>
+                            <p className="font-bold text-white text-sm truncate leading-tight">{displayName}</p>
+                            <p className="text-[11px] text-blue-300 font-medium mt-0.5">Wants to be your friend</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <Button
-                            size="icon"
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
                             onClick={() => acceptFriendMutation.mutate(request.user_id)}
-                            className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"
+                            disabled={acceptFriendMutation.isPending}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white disabled:opacity-50 transition-all duration-100 transform-gpu active:translate-y-[3px] active:shadow-none"
+                            style={{
+                              background: 'linear-gradient(to bottom, #22c55e, #16a34a, #15803d)',
+                              border: '1px solid transparent',
+                              borderBottom: '3px solid #14532d',
+                              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(34,197,94,0.3)',
+                            }}
                           >
-                            <CheckCircle className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => rejectFriendMutation.mutate(request.user_id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"
+                            disabled={rejectFriendMutation.isPending}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white disabled:opacity-50 transition-all duration-100 transform-gpu active:translate-y-[3px] active:shadow-none"
+                            style={{
+                              background: 'linear-gradient(to bottom, #ef4444, #dc2626, #b91c1c)',
+                              border: '1px solid transparent',
+                              borderBottom: '3px solid #7f1d1d',
+                              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(239,68,68,0.3)',
+                            }}
                           >
-                            <X className="w-3 h-3" />
-                          </Button>
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     );
