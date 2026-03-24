@@ -432,9 +432,6 @@ function ChurnSignalWidget({ churnSignals = [] }) {
                   </div>
                   <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{m.daysSince < 999 ? `${m.daysSince}d absent` : 'No visits'}</span>
                 </div>
-                <div style={{ height: 2.5, borderRadius: 99, background: C.divider, overflow: 'hidden', marginBottom: 6 }}>
-                  <div style={{ height: '100%', width: `${m.score}%`, borderRadius: 99, background: `linear-gradient(90deg,${color}60,${color})`, transition: 'width .6s ease' }} />
-                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 9, color: C.t3 }}>Score <span style={{ fontWeight: 700, color }}>{m.score}</span>/100</span>
                   {m.freqDrop && m.prev30 > 0 && <span style={{ fontSize: 9, color: C.t2 }}>{m.last30} vs {m.prev30} visits last month</span>}
