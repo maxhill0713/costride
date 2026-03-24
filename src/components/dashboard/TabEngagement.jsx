@@ -397,6 +397,10 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
 /* ══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════════════ */
+// Per-rule test send cooldown: key = rule.id, value = last sent timestamp
+const testSendCooldowns = {};
+const TEST_SEND_COOLDOWN_MS = 10_000; // 10 seconds per rule
+
 export default function TabEngagement({ selectedGym, allMemberships, atRisk, totalMembers }) {
   const gymName = selectedGym?.name || 'Your Gym';
 
