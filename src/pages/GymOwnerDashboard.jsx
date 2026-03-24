@@ -333,52 +333,6 @@ export default function GymOwnerDashboard() {
 
   const now = new Date();
 
-  // Demo data for screenshots — only used when gym has no real data yet
-  const DEMO = hasDemoData ? {
-    todayCI: 14, yesterdayCI: 11, todayVsYest: 27,
-    activeThisWeek: 38, weeklyChangePct: 12,
-    activeThisMonth: 52, totalMembers: 67, retentionRate: 84,
-    monthChangePct: 8, monthCiPer: [2,5,8,12,15,8,4,1,3,6,9,14,16,10,7,3,2,4,8,11,13,9,5,2,1,3,7,10,12,8],
-    newSignUps: 7, cancelledEst: 2,
-    atRisk: 4, atRiskMembersData: [
-      { user_name: 'Sarah Mitchell', days_since: 22 },
-      { user_name: 'James Turner', days_since: 18 },
-      { user_name: 'Emma Rashford', days_since: 16 },
-      { user_name: 'Daniel Park', days_since: 15 },
-    ],
-    memberLastCheckIn: {},
-    sparkData7: [8,11,9,14,12,10,14],
-    monthGrowthData: [
-      { label: 'Oct', value: 58 }, { label: 'Nov', value: 62 }, { label: 'Dec', value: 61 }, { label: 'Jan', value: 67 },
-    ],
-    peakLabel: '5–7pm', peakEndLabel: '7pm', peakEntry: null,
-    satVsAvg: 18,
-    chartDays: [
-      { day: 'Mon', value: 11 }, { day: 'Tue', value: 9 }, { day: 'Wed', value: 13 },
-      { day: 'Thu', value: 10 }, { day: 'Fri', value: 12 }, { day: 'Sat', value: 17 }, { day: 'Sun', value: 14 },
-    ],
-    streaks: [], recentActivity: [
-      { name: 'Alex Johnson', action: 'checked in', user_id: '1', time: new Date(Date.now() - 12 * 60000) },
-      { name: 'Priya Sharma', action: 'logged a PR — 120kg deadlift', user_id: '2', time: new Date(Date.now() - 28 * 60000) },
-      { name: 'Tom Hewitt', action: 'checked in', user_id: '3', time: new Date(Date.now() - 45 * 60000) },
-      { name: 'Lucy Chen', action: 'joined the gym', user_id: '4', time: new Date(Date.now() - 72 * 60000) },
-      { name: 'Marcus Webb', action: 'completed a challenge', user_id: '5', time: new Date(Date.now() - 98 * 60000) },
-    ],
-    avatarMap: {},
-    weekTrend: [], peakHours: [], busiestDays: [],
-    returnRate: 78, dailyAvg: 11.4, engagementSegments: {},
-    retentionFunnel: [], dropOffBuckets: [], churnSignals: [], week1ReturnTrend: [],
-    retentionBreakdown: { week1: 1, week2to4: 2, month2to3: 1, beyond: 0 },
-    week1ReturnRate: { returned: 5, didnt: 1, names: ['James T.'] },
-    newNoReturnCount: 1,
-    ci7Count: 0, ci7pCount: 0, weeklyTrendCoach: 0, monthlyTrendCoach: 0,
-    returningCount: 0, newMembersThis30: 0,
-    weeklyChart: [], monthlyChart: [],
-    engagementSegmentsCoach: {}, weekSpark: [],
-  } : {};
-
-  const mergedStats = hasDemoData ? DEMO : rawStats;
-
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
     activeThisWeek = 0, weeklyChangePct = 0,
