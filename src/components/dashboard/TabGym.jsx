@@ -421,10 +421,115 @@ function PhotosCard({ selectedGym, openModal }) {
   );
 }
 
+const REWARD_TYPES = { discount: 'Discount', free_class: 'Free Class', merchandise: 'Merchandise', free_day_pass: 'Day Pass', personal_training: 'PT Session', custom: 'Custom' };
+const REWARD_REQS  = { check_ins_10: '10 Check-ins', check_ins_50: '50 Check-ins', streak_30: '30-day Streak', challenge_winner: 'Challenge Winner', referral: 'Referral', points: 'Points', none: 'Always Available' };
+
+function RewardsCatalogueCard({ rewards = [], onCreateReward, onDeleteReward, isLoading }) {
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ title: '', type: 'discount', requirement: 'check_ins_10', value: '', points_required: 0, icon: '🎁', active: true });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleAdd = () => {
+    if (!form.title.trim()) return;
+    onCreateReward(form);
+    setForm({ title: '', type: 'discount', requirement: 'check_ins_10', value: '', points_required: 0, icon: '🎁', active: true });
+    setShowForm(false);
+  };
+
+  const inputStyle = { width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`, color: T.text1, fontSize: 12, outline: 'none', fontFamily: 'inherit' };
+  const selStyle   = { ...inputStyle, appearance: 'none', cursor: 'pointer' };
+
+  return (
+    <SCard accent={T.cyan}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: `${T.cyan}14`, border: `1px solid ${T.cyan}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Gift style={{ width: 13, height: 13, color: T.cyan }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Rewards Catalogue</div>
+            <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>{rewards.length} reward{rewards.length !== 1 ? 's' : ''} available to members</div>
+          </div>
+        </div>
+        <button onClick={() => setShowForm(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: showForm ? T.text3 : T.cyan, background: showForm ? T.divider : `${T.cyan}10`, border: `1px solid ${showForm ? T.border : T.cyan + '28'}`, borderRadius: 7, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+          <Plus style={{ width: 10, height: 10 }} /> {showForm ? 'Cancel' : 'Add Reward'}
+        </button>
+      </div>
+
+      {/* Add form */}
+      {showForm && (
+        <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: `${T.cyan}06`, border: `1px solid ${T.cyan}18`, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Title *</div>
+              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Free Protein Shake" style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Value</div>
+              <input value={form.value} onChange={e => set('value', e.target.value)} placeholder="e.g. £10 off, 1 free class" style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Type</div>
+              <select value={form.type} onChange={e => set('type', e.target.value)} style={selStyle}>
+                {Object.entries(REWARD_TYPES).map(([k, v]) => <option key={k} value={k} style={{ background: '#0b1120' }}>{v}</option>)}
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Requirement</div>
+              <select value={form.requirement} onChange={e => set('requirement', e.target.value)} style={selStyle}>
+                {Object.entries(REWARD_REQS).map(([k, v]) => <option key={k} value={k} style={{ background: '#0b1120' }}>{v}</option>)}
+              </select>
+            </div>
+          </div>
+          <button onClick={handleAdd} disabled={!form.title.trim() || isLoading}
+            style={{ alignSelf: 'flex-end', padding: '7px 18px', borderRadius: 8, background: form.title.trim() ? T.cyan : 'rgba(255,255,255,0.06)', color: form.title.trim() ? '#fff' : T.text3, border: 'none', fontSize: 12, fontWeight: 700, cursor: form.title.trim() ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+            {isLoading ? 'Adding…' : 'Add Reward'}
+          </button>
+        </div>
+      )}
+
+      {/* Reward list */}
+      {rewards.length === 0 && !showForm ? (
+        <div style={{ padding: '20px', textAlign: 'center', border: `2px dashed ${T.border}`, borderRadius: 10 }}>
+          <Gift style={{ width: 20, height: 20, color: T.text3, margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
+          <div style={{ fontSize: 12, color: T.text3 }}>No rewards yet — add one to motivate members</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {rewards.map(r => (
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: r.active ? `${T.cyan}06` : T.divider, border: `1px solid ${r.active ? T.cyan + '18' : T.border}`, opacity: r.active ? 1 : 0.55 }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon || '🎁'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: T.cyan, background: `${T.cyan}12`, border: `1px solid ${T.cyan}22`, borderRadius: 4, padding: '1px 5px' }}>{REWARD_TYPES[r.type] || r.type}</span>
+                  <span style={{ fontSize: 9, color: T.text3 }}>{REWARD_REQS[r.requirement] || r.requirement}</span>
+                  {r.value && <span style={{ fontSize: 9, color: T.green, fontWeight: 600 }}>{r.value}</span>}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                <span style={{ fontSize: 10, color: T.text3 }}>{(r.claimed_by || []).length} claimed</span>
+                <button onClick={() => onDeleteReward(r.id)}
+                  style={{ width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer', color: T.red }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.07)'}>
+                  <Trash2 style={{ width: 10, height: 10 }} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </SCard>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TabGym({
   selectedGym, classes, coaches, openModal,
   checkIns = [], allMemberships = [], atRisk = 0, retentionRate = 0,
+  rewards = [], onCreateReward, onDeleteReward, isLoading,
   atRiskDays: atRiskDaysProp = 14, onAtRiskDaysChange,
 }) {
   const now = new Date();
