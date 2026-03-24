@@ -304,24 +304,7 @@ export default function GymOwnerDashboard() {
   const checkIns        = stats.recentCheckIns || [];
   const allMemberships  = stats.membersWithActivity || [];
 
-  // All computed stats from backend — must come before any hasDemoData usage
-  const rawStats = stats;
-  const hasDemoData = !rawStats.totalMembers || rawStats.totalMembers === 0;
-
-  // For demo mode: inject mock memberships so the Members tab populates
-  const demoMemberships = hasDemoData ? [
-    { user_id: '1', user_name: 'Alex Johnson',   join_date: '2025-12-01', ci30Count: 12, prevCi30Count: 14, visitsTotal: 48, daysSince: 1,  streak: 14, lastCheckIn: new Date(Date.now() - 1 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '2', user_name: 'Priya Sharma',   join_date: '2025-11-15', ci30Count: 8,  prevCi30Count: 9,  visitsTotal: 32, daysSince: 3,  streak: 5,  lastCheckIn: new Date(Date.now() - 3 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '3', user_name: 'Tom Hewitt',     join_date: '2025-10-20', ci30Count: 5,  prevCi30Count: 8,  visitsTotal: 21, daysSince: 5,  streak: 2,  lastCheckIn: new Date(Date.now() - 5 * 86400000).toISOString(), membership_type: 'Annual' },
-    { user_id: '4', user_name: 'Lucy Chen',      join_date: '2026-01-10', ci30Count: 2,  prevCi30Count: 0,  visitsTotal: 3,  daysSince: 6,  streak: 0,  lastCheckIn: new Date(Date.now() - 6 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '5', user_name: 'Marcus Webb',    join_date: '2025-09-05', ci30Count: 9,  prevCi30Count: 10, visitsTotal: 55, daysSince: 2,  streak: 8,  lastCheckIn: new Date(Date.now() - 2 * 86400000).toISOString(), membership_type: 'Annual' },
-    { user_id: '6', user_name: 'Sarah Mitchell', join_date: '2025-08-12', ci30Count: 0,  prevCi30Count: 7,  visitsTotal: 29, daysSince: 22, streak: 0,  lastCheckIn: new Date(Date.now() - 22 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '7', user_name: 'James Turner',   join_date: '2025-07-22', ci30Count: 0,  prevCi30Count: 5,  visitsTotal: 18, daysSince: 18, streak: 0,  lastCheckIn: new Date(Date.now() - 18 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '8', user_name: 'Emma Rashford',  join_date: '2025-09-30', ci30Count: 1,  prevCi30Count: 6,  visitsTotal: 22, daysSince: 16, streak: 0,  lastCheckIn: new Date(Date.now() - 16 * 86400000).toISOString(), membership_type: 'Annual' },
-    { user_id: '9', user_name: 'Daniel Park',    join_date: '2025-10-14', ci30Count: 0,  prevCi30Count: 4,  visitsTotal: 11, daysSince: 15, streak: 0,  lastCheckIn: new Date(Date.now() - 15 * 86400000).toISOString(), membership_type: 'Monthly' },
-    { user_id: '10', user_name: 'Kezia Obi',     join_date: '2026-01-05', ci30Count: 4,  prevCi30Count: 0,  visitsTotal: 5,  daysSince: 4,  streak: 3,  lastCheckIn: new Date(Date.now() - 4 * 86400000).toISOString(), membership_type: 'Monthly' },
-  ] : [];
-  const effectiveMemberships = hasDemoData ? demoMemberships : allMemberships;
+  const effectiveMemberships = allMemberships;
 
   const inv     = (...keys) => { keys.forEach(k => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] })); queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] }); };
   const invGyms = () => queryClient.invalidateQueries({ queryKey: ['gyms'] });
