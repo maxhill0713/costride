@@ -722,13 +722,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05, duration: 0.2 }}
-                  className="grid gap-2 mb-1.5 items-end px-1"
+                  className="grid gap-1 mb-1.5 items-end px-1"
                   style={{ gridTemplateColumns: cardioGridCols }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
                         <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: '4px' }}>Rest</div>
                         {!alreadyLoggedToday && <div className="w-6" />}
                       </motion.div>
 
@@ -736,7 +736,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <motion.div
                   key={`cardio-${index}`}
                   className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%] mb-2"
-                  style={{ display: editingCardioIndex === index ? 'block' : 'grid', gridTemplateColumns: cardioGridCols, gap: '8px' }}>
+                  style={{ display: editingCardioIndex === index ? 'block' : 'grid', gridTemplateColumns: cardioGridCols, gap: '4px' }}>
                           {editingCardioIndex === index ?
                   <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                               <div className="text-sm font-bold text-white mb-3">{c.exercise || 'Cardio'}</div>
@@ -807,7 +807,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
 
                               {/* Rest */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1">
+                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1" style={{ marginLeft: '4px' }}>
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
 
