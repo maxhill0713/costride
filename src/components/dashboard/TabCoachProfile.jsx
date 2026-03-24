@@ -412,7 +412,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   );
 
   // No coach record yet — show Create Profile onboarding
-  if (!isLoading && !coach && !draft) {
+  if (!isLoading && (!coach || !draft)) {
     const creating = createMutation.isPending;
     return (
       <div className="tcp-root" style={{ fontFamily: "Figtree,system-ui,sans-serif", minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
