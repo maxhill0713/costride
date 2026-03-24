@@ -58,14 +58,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Already checked in today' }, { status: 400 });
     }
 
-    // Create check-in (streak no longer incremented on check-in)
+    // Determine if this is the user's first ever visit to this gym
+    const previousVisits = await base44.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId });
+    const isFirstVisit = previousVisits.length === 0;
+
     const checkIn = await base44.entities.CheckIn.create({
       user_id: user.id,
       user_name: user.full_name,
       gym_id: gymId,
       gym_name: gym.name,
       check_in_date: new Date().toISOString(),
-      first_visit: false
+      first_visit: isFirstVisit,
     });
 
     // Update challenge progress immediately
