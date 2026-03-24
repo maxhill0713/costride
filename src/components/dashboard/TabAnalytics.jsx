@@ -1182,6 +1182,7 @@ export default function TabAnalytics({
         )}
 
         <ClassPerformanceWidget classes={classes} checkIns={checkIns} ci30={ci30} now={now} />
+        <StaffPerformanceWidget coaches={coaches} checkIns={checkIns} ci30={ci30} classes={classes} allMemberships={allMemberships} now={now} />
 
         {/* Member Growth */}
         <Card style={{ padding: 20 }}>
