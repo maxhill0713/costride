@@ -40,12 +40,12 @@ Deno.serve(async (req) => {
       });
       return Response.json({ success: true });
     } else if (action === 'remove') {
-      const membership = await base44.entities.GymMembership.filter({
+      const membership = await base44.asServiceRole.entities.GymMembership.filter({
         user_id: memberId,
         gym_id: gymId
       });
       if (membership.length > 0) {
-        await base44.entities.GymMembership.update(membership[0].id, {
+        await base44.asServiceRole.entities.GymMembership.update(membership[0].id, {
           status: 'cancelled'
         });
       }
