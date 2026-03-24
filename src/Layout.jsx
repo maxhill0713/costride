@@ -44,7 +44,11 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   const handleTabClick = (item, e) => {
     if (currentPageName === item.page) {
       e.preventDefault();
-      if (item.page === 'Home') window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (item.page === 'Home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // After scroll completes, fire a custom event Home.jsx listens to for refresh
+        setTimeout(() => window.dispatchEvent(new CustomEvent('home-tab-repress')), 400);
+      }
     }
   };
 

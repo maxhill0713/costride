@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PullToRefresh from '../components/PullToRefresh';
@@ -24,6 +24,9 @@ import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+
+const PAGE_SIZE = 4;
+const SEEN_POSTS_KEY = 'seenPostIds';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Username / search query sanitisation
@@ -415,6 +418,13 @@ export default function Home() {
   const [friendMenuOpen, setFriendMenuOpen] = useState(null);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
+  const [visiblePostCount, setVisiblePostCount] = useState(PAGE_SIZE);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+  const [seenPostIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(SEEN_POSTS_KEY) || '[]')); }
+    catch { return new Set(); }
+  });
+  const feedBottomRef = useRef(null);
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
     try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
     catch { return new Set(); }
@@ -567,6 +577,36 @@ export default function Home() {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
+  // ── Auto-refresh feed when home tab is re-pressed ────────────────────────
+  useEffect(() => {
+    const handler = () => {
+      setVisiblePostCount(PAGE_SIZE);
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
+    };
+    window.addEventListener('home-tab-repress', handler);
+    return () => window.removeEventListener('home-tab-repress', handler);
+  }, [queryClient]);
+
+  // ── Infinite scroll: load more posts when bottom sentinel is visible ──────
+  useEffect(() => {
+    const el = feedBottomRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
+          setLoadingMorePosts(true);
+          setTimeout(() => {
+            setVisiblePostCount(prev => Math.min(prev + PAGE_SIZE, socialFeedPosts.length));
+            setLoadingMorePosts(false);
+          }, 600);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visiblePostCount, socialFeedPosts.length]);
+
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -619,10 +659,11 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
   const friendIdList = friends.map((f) => f.friend_id);
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
-    enabled: !!currentUser && friends.length > 0,
+    queryFn: () => base44.entities.Post.filter({ is_system_generated: false, created_date: { $gte: threeDaysAgo } }, '-created_date', 60),
+    enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
@@ -822,12 +863,32 @@ export default function Home() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  const socialFeedPosts = allPosts.filter(post =>
-    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
-    (post.content || post.image_url || post.video_url || post.workout_name) &&
-    !post.gym_join &&
-    !post.is_hidden
-  );
+  // Build prioritised social feed:
+  // 1. Unseen friend/own posts first, newest first
+  // 2. Unseen community posts (shared_with_community=true), newest first
+  // 3. Already-seen posts (any), newest first
+  const socialFeedPosts = (() => {
+    const threeDaysAgoCutoff = Date.now() - 3 * 24 * 60 * 60 * 1000;
+    const eligible = allPosts.filter(post =>
+      (post.content || post.image_url || post.video_url || post.workout_name) &&
+      !post.gym_join &&
+      !post.is_hidden &&
+      new Date(post.created_date).getTime() >= threeDaysAgoCutoff &&
+      (
+        friendIdList.includes(post.member_id) ||
+        post.member_id === currentUser?.id ||
+        (post.shared_with_community && post.gym_id && gymMemberships.some(m => m.gym_id === post.gym_id))
+      )
+    );
+
+    const isFriendOrOwn = (post) => friendIdList.includes(post.member_id) || post.member_id === currentUser?.id;
+
+    const unseenFriend = eligible.filter(p => isFriendOrOwn(p) && !seenPostIds.has(p.id));
+    const unseenCommunity = eligible.filter(p => !isFriendOrOwn(p) && !seenPostIds.has(p.id));
+    const seen = eligible.filter(p => seenPostIds.has(p.id));
+
+    return [...unseenFriend, ...unseenCommunity, ...seen];
+  })();
 
   const activityFeed = (() => {
     const activities = [];
@@ -868,6 +929,13 @@ export default function Home() {
     setDismissedCardIds(updated);
     localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
   };
+
+  // ── Mark posts as seen when they become visible ───────────────────────────
+  const markPostSeen = useCallback((postId) => {
+    if (seenPostIds.has(postId)) return;
+    seenPostIds.add(postId);
+    try { localStorage.setItem(SEEN_POSTS_KEY, JSON.stringify([...seenPostIds])); } catch {}
+  }, [seenPostIds]);
 
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
@@ -979,7 +1047,7 @@ export default function Home() {
   );
 
   return (
-    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
+    <PullToRefresh onRefresh={async () => { setVisiblePostCount(PAGE_SIZE); await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
         {/* ── Fixed header ── */}
@@ -1493,9 +1561,18 @@ export default function Home() {
 
               {socialFeedPosts.length > 0 && (
                 <div className="space-y-3">
-                  {socialFeedPosts.map(post => (
-                    <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+                  {socialFeedPosts.slice(0, visiblePostCount).map(post => (
+                    <div key={post.id} ref={el => { if (el) { const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { markPostSeen(post.id); obs.disconnect(); } }, { threshold: 0.5 }); obs.observe(el); } }}>
+                      <PostCard post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+                    </div>
                   ))}
+                  {/* Infinite scroll sentinel */}
+                  <div ref={feedBottomRef} className="h-1" />
+                  {loadingMorePosts && (
+                    <div className="flex justify-center py-4">
+                      <div style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid rgba(148,163,184,0.2)', borderTop: '2.5px solid #60a5fa', animation: 'spin 0.7s linear infinite' }} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1643,6 +1720,8 @@ export default function Home() {
             exercises={celebrationExercises}
             previousExercises={celebrationPreviousExercises}
             currentUser={currentUser}
+            gymId={primaryGymIdForQuery || null}
+            gymName={memberGym?.name || null}
             onContinue={() => {
               setShowShareWorkout(false);
               setTimeout(() => setShowDaysCelebration(true), 200);
