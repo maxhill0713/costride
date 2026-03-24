@@ -7,6 +7,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Input sanitisation helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Split / day name: letters, digits, spaces, hyphens, slashes, commas, apostrophes
+const SPLIT_NAME_ALLOWED = /[^a-zA-Z0-9\s\-\/,'.]/g;
+const sanitiseSplitName   = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 40);
+const sanitiseDayName     = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 25);
+
+// Exercise name: letters and spaces only
+const sanitiseExerciseName = (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 35);
+
+// Numeric fields: digits only
+const sanitiseSets   = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 sets
+const sanitiseReps   = (v) => v.replace(/\D/g, '').slice(0, 3);   // max 999 reps
+const sanitiseRounds = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 rounds
+
+// Weight: digits + single decimal point, max 6 chars (e.g. 999.99)
+const sanitiseWeight = (v) => {
+  let s = v.replace(/[^0-9.]/g, '');
+  const parts = s.split('.');
+  if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
+  return s.slice(0, 6);
+};
+
+// Time digits: raw digits only (passed to formatTime), seconds clamped to ≤59
+const sanitiseTimeDigits = (raw) => {
+  const digits = raw.replace(/\D/g, '').slice(0, 4);
+  if (digits.length < 2) return digits;
+  // Last two digits are seconds — clamp to 59
+  const secs = parseInt(digits.slice(-2), 10);
+  if (secs > 59) {
+    const clamped = '59';
+    return digits.slice(0, digits.length - 2) + clamped;
+  }
+  return digits;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const DEFAULT_SPLITS = [
 {
   id: 'bro', name: 'Bro Split', description: '5 days · one muscle group per day',
@@ -82,13 +122,19 @@ function SetActiveButton({ onClick }) {
   );
 }
 
-function SmallInput({ value, onChange, placeholder }) {
+// Numeric-only small input — rejects non-digit (and optionally decimal) input at component level
+function SmallInput({ value, onChange, placeholder, sanitise = sanitiseSets }) {
   return (
     <input
-      type="text" inputMode="decimal" value={value}
-      onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      type="text"
+      inputMode="decimal"
+      value={value}
+      onChange={(e) => onChange(sanitise(e.target.value))}
+      placeholder={placeholder}
+      autoComplete="off"
       style={INPUT_BASE}
-      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+    />
   );
 }
 
@@ -118,10 +164,37 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange, sets, onSetsCh
           {workout.exercises.map((ex, idx) =>
             <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
               <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
-              <input type="text" inputMode="decimal" value={sets?.[idx] ?? ex.sets ?? ''} onChange={(e) => onSetsChange(idx, e.target.value)} placeholder={ex.sets || '—'} style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-              <input type="text" inputMode="decimal" value={reps?.[idx] ?? ex.reps ?? ''} onChange={(e) => onRepsChange(idx, e.target.value)} placeholder={ex.reps || '—'} style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+              <input
+                type="text" inputMode="numeric"
+                value={sets?.[idx] ?? ex.sets ?? ''}
+                onChange={(e) => onSetsChange(idx, sanitiseSets(e.target.value))}
+                placeholder={ex.sets || '—'}
+                maxLength={2}
+                autoComplete="off"
+                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+              />
+              <input
+                type="text" inputMode="numeric"
+                value={reps?.[idx] ?? ex.reps ?? ''}
+                onChange={(e) => onRepsChange(idx, sanitiseReps(e.target.value))}
+                placeholder={ex.reps || '—'}
+                maxLength={3}
+                autoComplete="off"
+                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+              />
               <div className="relative">
-                <input type="text" inputMode="decimal" value={weights?.[idx] ?? ''} onChange={(e) => onWeightChange(idx, e.target.value)} placeholder="—" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                <input
+                  type="text" inputMode="decimal"
+                  value={weights?.[idx] ?? ''}
+                  onChange={(e) => onWeightChange(idx, sanitiseWeight(e.target.value))}
+                  placeholder="—"
+                  maxLength={6}
+                  autoComplete="off"
+                  style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                  className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                />
                 <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
               </div>
             </div>
@@ -274,7 +347,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const openCustomConfigure = () => { setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null); setDotsMenuOpen(false); setStep('configure'); };
 
   const handleSave = () => {
-    const newSplit = { id: editingSplitId || Date.now().toString(), preset_id: 'custom', name: splitName || 'My Split', training_days: selectedDays, workouts, created_at: new Date().toISOString() };
+    // Strip any remaining whitespace-only names before saving
+    const safeName = splitName.trim() || 'My Split';
+    const newSplit = { id: editingSplitId || Date.now().toString(), preset_id: 'custom', name: safeName, training_days: selectedDays, workouts, created_at: new Date().toISOString() };
     const updated = [...savedSplits.filter((s) => s.id !== newSplit.id), newSplit];
     setSavedSplits(updated);
     saveMutation.mutate({ workout_split: 'custom', custom_split_name: newSplit.name, training_days: selectedDays, custom_workout_types: workouts, saved_splits: updated });
@@ -292,7 +367,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const updateCardio = (day, idx, field, value) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr[idx] = { ...arr[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
   const removeCardio = (day, idx) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr.splice(idx, 1); return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
 
-  // ── Time input: raw digits → M:SS format ─────────────────────────────────
+  // ── Time input: raw digits → M:SS format, seconds clamped to ≤59 ──────────
   const formatTime = (raw) => {
     const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
     if (!digits) return '';
@@ -302,8 +377,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     return `${parseInt(mins, 10)}:${secs}`;
   };
   const handleTimeChange = (day, idx, field, raw) => {
-    const digits = raw.replace(/\D/g, '').slice(0, 4);
-    updateCardio(day, idx, field, digits);
+    const sanitised = sanitiseTimeDigits(raw);
+    updateCardio(day, idx, field, sanitised);
   };
 
   const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
@@ -327,8 +402,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
           <div className="flex-shrink-0 flex items-center justify-end gap-1 ml-auto">
-
-            {/* PICK page */}
             {step === 'pick' && (
               <>
                 <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
@@ -339,16 +412,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 </button>
               </>
             )}
-
-            {/* PREVIEW page */}
-            {step === 'preview' && (
-              <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
-            )}
-
-            {/* CONFIGURE page — Set Active top right only */}
-            {step === 'configure' && editingSplitId && (
-              <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
-            )}
+            {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+            {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
           </div>
         </div>
 
@@ -410,7 +475,17 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               {previewSplit.days.map((day) => {
                 const wt = previewSplit.workouts[day];
                 if (!wt) return null;
-                return <ReadOnlyDayCard key={day} day={day} workout={wt} weights={previewWeights[day] || {}} onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} sets={previewSets[day] || {}} onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} reps={previewReps[day] || {}} onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} />;
+                return (
+                  <ReadOnlyDayCard
+                    key={day} day={day} workout={wt}
+                    weights={previewWeights[day] || {}}
+                    onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
+                    sets={previewSets[day] || {}}
+                    onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
+                    reps={previewReps[day] || {}}
+                    onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
+                  />
+                );
               })}
             </div>
           )}
@@ -419,7 +494,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {step === 'configure' && (
             <div className="p-4 space-y-4">
 
-              {/* ── Split Name row ── */}
+              {/* ── Split Name ── */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
@@ -438,9 +513,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     </div>
                   )}
                 </div>
-                <input type="text" value={splitName} onChange={(e) => setSplitName(e.target.value.slice(0, 30))} placeholder="My Training Split" maxLength={30} style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
+                <input
+                  type="text"
+                  value={splitName}
+                  onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))}
+                  placeholder="My Training Split"
+                  maxLength={40}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  style={{ fontSize: '16px' }}
+                  className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
+                />
               </div>
 
+              {/* ── Training Days ── */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Training Days</label>
                 <div className="grid grid-cols-7 gap-1.5">
@@ -456,6 +543,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 <p className="text-[10px] text-slate-600 font-medium">{selectedDays.length} training · {7 - selectedDays.length} rest</p>
               </div>
 
+              {/* ── Day Details ── */}
               {selectedDays.length > 0 && (
                 <div className="space-y-3">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Day Details</label>
@@ -464,11 +552,34 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     const exs = wt.exercises || [];
                     return (
                       <div key={day} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+
+                        {/* Day header */}
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
-                          <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}><span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span></div>
-                          <input type="text" value={wt.name || ''} onChange={(e) => updateWorkout(day, 'name', e.target.value.slice(0, 25))} placeholder={`Day ${day} workout…`} maxLength={25} style={{ fontSize: '16px' }} className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none" />
+                          <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
+                            <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={wt.name || ''}
+                            onChange={(e) => updateWorkout(day, 'name', sanitiseDayName(e.target.value))}
+                            placeholder={`Day ${day} workout…`}
+                            maxLength={25}
+                            autoComplete="off"
+                            autoCorrect="off"
+                            spellCheck="false"
+                            style={{ fontSize: '16px' }}
+                            className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none"
+                          />
                         </div>
-                        <div className="flex gap-1.5 px-4 pb-3">{COLOR_OPTIONS.map((c) => <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />)}</div>
+
+                        {/* Colour picker */}
+                        <div className="flex gap-1.5 px-4 pb-3">
+                          {COLOR_OPTIONS.map((c) => (
+                            <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />
+                          ))}
+                        </div>
+
+                        {/* Strength exercises */}
                         {exs.length > 0 && (
                           <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
                             <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
@@ -477,21 +588,68 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
                             </div>
-                            {exs.map((ex, idx) =>
+                            {exs.map((ex, idx) => (
                               <div key={idx} className="relative">
                                 <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)} placeholder="Bench press" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                  <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
-                                  <SmallInput value={ex.reps ?? '10'} onChange={(v) => updateExercise(day, idx, 'reps', v)} placeholder="10" />
-                                  <div className="relative"><SmallInput value={ex.weight ?? ''} onChange={(v) => updateExercise(day, idx, 'weight', v)} placeholder="—" /><span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span></div>
+                                  {/* Exercise name — letters + spaces only */}
+                                  <input
+                                    type="text"
+                                    value={ex.exercise || ''}
+                                    onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))}
+                                    placeholder="Bench press"
+                                    maxLength={35}
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    spellCheck="false"
+                                    style={{ fontSize: '16px' }}
+                                    className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
+                                  />
+                                  {/* Sets — digits only, max 2 */}
+                                  <input
+                                    type="text" inputMode="numeric"
+                                    value={ex.sets ?? '3'}
+                                    onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))}
+                                    placeholder="3"
+                                    maxLength={2}
+                                    autoComplete="off"
+                                    style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                    className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                                  />
+                                  {/* Reps — digits only, max 3 */}
+                                  <input
+                                    type="text" inputMode="numeric"
+                                    value={ex.reps ?? '10'}
+                                    onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))}
+                                    placeholder="10"
+                                    maxLength={3}
+                                    autoComplete="off"
+                                    style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                    className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                                  />
+                                  {/* Weight — digits + decimal, max 6 chars */}
+                                  <div className="relative">
+                                    <input
+                                      type="text" inputMode="decimal"
+                                      value={ex.weight ?? ''}
+                                      onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))}
+                                      placeholder="—"
+                                      maxLength={6}
+                                      autoComplete="off"
+                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                                    />
+                                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+                                  </div>
                                 </div>
-                                <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </div>
-                            )}
+                            ))}
                           </div>
                         )}
 
-                        {/* ── Cardio rows ── */}
+                        {/* Cardio rows */}
                         {(wt.cardio || []).length > 0 && (
                           <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
                             <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
@@ -506,21 +664,45 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               return (
                                 <div key={idx} className="relative">
                                   <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', e.target.value)} placeholder="Run" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                    <SmallInput value={c.rounds ?? '1'} onChange={(v) => updateCardio(day, idx, 'rounds', v)} placeholder="1" />
-                                    {/* Time per round */}
+                                    {/* Cardio exercise name — letters + spaces only */}
+                                    <input
+                                      type="text"
+                                      value={c.exercise || ''}
+                                      onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))}
+                                      placeholder="Run"
+                                      maxLength={35}
+                                      autoComplete="off"
+                                      autoCorrect="off"
+                                      spellCheck="false"
+                                      style={{ fontSize: '16px' }}
+                                      className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
+                                    />
+                                    {/* Rounds — digits only, max 2 */}
+                                    <input
+                                      type="text" inputMode="numeric"
+                                      value={c.rounds ?? '1'}
+                                      onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))}
+                                      placeholder="1"
+                                      maxLength={2}
+                                      autoComplete="off"
+                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                                    />
+                                    {/* Time per round — digits → M:SS, seconds ≤59 */}
                                     <div className="relative">
                                       <input
                                         type="text" inputMode="numeric"
                                         value={formatTime(c.time)}
                                         onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
                                         placeholder="0:00"
+                                        maxLength={5}
+                                        autoComplete="off"
                                         style={{ fontSize: '16px', WebkitAppearance: 'none' }}
                                         className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5"
                                       />
                                       <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
                                     </div>
-                                    {/* Rest */}
+                                    {/* Rest — same rules, disabled when rounds ≤1 */}
                                     <div className="relative">
                                       <input
                                         type="text" inputMode="numeric"
@@ -528,13 +710,17 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                         onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }}
                                         placeholder="0:00"
                                         disabled={restDisabled}
+                                        maxLength={5}
+                                        autoComplete="off"
                                         style={{ fontSize: '16px', WebkitAppearance: 'none' }}
                                         className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
                                       />
                                       <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
                                     </div>
                                   </div>
-                                  <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"><Trash2 className="w-3.5 h-3.5" /></button>
+                                  <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
                                 </div>
                               );
                             })}
@@ -596,7 +782,18 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
             <div className="flex gap-2 pt-1">
               <button onClick={() => setConfirmDeleteSplitId(null)} className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform">Cancel</button>
-              <button onClick={() => { const id = confirmDeleteSplitId; setConfirmDeleteSplitId(null); const updated = savedSplits.filter((s) => s.id !== id); setSavedSplits(updated); if (activeSplitId === id) setActiveSplitId(''); saveMutation.mutate({ saved_splits: updated }); }} className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all">Delete</button>
+              <button
+                onClick={() => {
+                  const id = confirmDeleteSplitId;
+                  setConfirmDeleteSplitId(null);
+                  const updated = savedSplits.filter((s) => s.id !== id);
+                  setSavedSplits(updated);
+                  if (activeSplitId === id) setActiveSplitId('');
+                  saveMutation.mutate({ saved_splits: updated });
+                }}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all">
+                Delete
+              </button>
             </div>
           </div>
         </div>
