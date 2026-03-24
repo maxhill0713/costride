@@ -544,7 +544,7 @@ export default function GymOwnerDashboard() {
   const createChallengeM = useMutation({ mutationFn: d  => base44.entities.Challenge.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, participants: [], status: 'upcoming' }), onSuccess: () => { inv('challenges'); closeModal(); } });
   const banMemberM       = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'ban' }), onSuccess: invGyms });
   const unbanMemberM     = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'unban' }), onSuccess: invGyms });
-  const deleteGymM       = useMutation({ mutationFn: () => base44.functions.invoke('manageMember', { memberId: currentUser.id, gymId: selectedGym.id, action: 'deleteGym' }), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); } });
+  const deleteGymM       = useMutation({ mutationFn: () => base44.entities.Gym.delete(selectedGym.id), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); } });
   const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); } });
   const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); } });
   const deletePostM      = useMutation({ mutationFn: id => base44.entities.Post.delete(id), onSuccess: () => inv('posts') });
