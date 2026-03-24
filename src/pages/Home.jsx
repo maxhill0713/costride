@@ -587,16 +587,18 @@ export default function Home() {
     return () => window.removeEventListener('home-tab-repress', handler);
   }, [queryClient]);
 
+  const socialFeedPostsCountRef = React.useRef(0);
+
   // ── Infinite scroll: load more posts when bottom sentinel is visible ──────
   useEffect(() => {
     const el = feedBottomRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
+        if (entries[0].isIntersecting && visiblePostCount < socialFeedPostsCountRef.current) {
           setLoadingMorePosts(true);
           setTimeout(() => {
-            setVisiblePostCount(prev => Math.min(prev + PAGE_SIZE, socialFeedPosts.length));
+            setVisiblePostCount(prev => Math.min(prev + PAGE_SIZE, socialFeedPostsCountRef.current));
             setLoadingMorePosts(false);
           }, 600);
         }
@@ -605,7 +607,7 @@ export default function Home() {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [visiblePostCount, socialFeedPosts.length]);
+  }, [visiblePostCount]);
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -889,6 +891,7 @@ export default function Home() {
 
     return [...unseenFriend, ...unseenCommunity, ...seen];
   })();
+  socialFeedPostsCountRef.current = socialFeedPosts.length;
 
   const activityFeed = (() => {
     const activities = [];
