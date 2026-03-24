@@ -728,7 +728,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
                         <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: '4px' }}>Rest</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: '12px' }}>Rest</div>
                         {!alreadyLoggedToday && <div className="w-6" />}
                       </motion.div>
 
@@ -807,7 +807,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
 
                               {/* Rest */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1" style={{ marginLeft: '4px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1" style={{ marginLeft: '12px' }}>
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
 
