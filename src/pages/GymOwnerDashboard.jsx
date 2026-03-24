@@ -52,6 +52,7 @@ const ALL_NAV = [
   { id: 'content',   label: 'Content',   icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3,       roles: ['gym_owner', 'coach'] },
   { id: 'profile',   label: 'Profile',   icon: Crown,           roles: ['coach'] },
+  { id: 'engagement', label: 'Automations', icon: Zap,            roles: ['gym_owner'] },
   { id: 'gym',       label: 'Settings',  icon: Settings,        roles: ['gym_owner'] },
 ];
 
