@@ -150,7 +150,6 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</span>
-        {Icon && <Icon style={{ width: 13, height: 13, color: C.t3 }} />}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
