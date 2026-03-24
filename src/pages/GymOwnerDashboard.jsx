@@ -43,6 +43,7 @@ import TabCoachContent   from '../components/dashboard/TabCoachContent';
 import TabCoachAnalytics from '../components/dashboard/TabCoachAnalytics';
 import TabCoachProfile   from '../components/dashboard/TabCoachProfile';
 import TabEngagement     from '../components/dashboard/TabEngagement';
+import TabRewards        from '../components/dashboard/TabRewards';
 
 // ── Nav filtered by role ──────────────────────────────────────────────────────
 const ALL_NAV = [
@@ -52,6 +53,7 @@ const ALL_NAV = [
   { id: 'content',   label: 'Content',   icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3,       roles: ['gym_owner', 'coach'] },
   { id: 'profile',   label: 'Profile',   icon: Crown,           roles: ['coach'] },
+  { id: 'rewards',    label: 'Rewards',     icon: Gift,            roles: ['gym_owner'] },
   { id: 'engagement', label: 'Automations', icon: Zap,            roles: ['gym_owner'] },
   { id: 'gym',       label: 'Settings',  icon: Settings,        roles: ['gym_owner'] },
 ];
