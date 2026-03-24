@@ -440,6 +440,12 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
 
   const testSend = async rule => {
     if (!selectedGym?.id) return;
+    // Client-side cooldown: prevent spamming test sends
+    const lastSent = testSendCooldowns[rule.id] || 0;
+    if (Date.now() - lastSent < TEST_SEND_COOLDOWN_MS) {
+      return; // silently ignore — button is already disabled during send
+    }
+    testSendCooldowns[rule.id] = Date.now();
     const msg = (rule.message||'').replace('{name}','you');
     const me  = await base44.auth.me();
     await base44.functions.invoke('sendPushNotification',{
