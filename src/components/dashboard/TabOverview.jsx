@@ -396,10 +396,7 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
         <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>No members in the 1–3 week window yet.</p>
       ) : (
         <>
-          <div style={{ height: 4, borderRadius: 99, background: T.divider, overflow: 'hidden', marginBottom: 14 }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 99, transition: 'width 0.7s ease' }} />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
             <div style={{ padding: '10px 12px', borderRadius: 8, background: `${T.green}0a`, border: `1px solid ${T.green}1a`, textAlign: 'center' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: T.green, letterSpacing: '-0.03em' }}>{returned}</div>
               <div style={{ fontSize: 10, color: T.text3, fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Came back</div>
