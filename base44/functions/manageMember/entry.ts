@@ -15,9 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify user is gym owner
+    // Verify user is gym owner (check both admin_id and owner_email)
     const gym = await base44.asServiceRole.entities.Gym.filter({ id: gymId });
-    if (gym.length === 0 || gym[0].admin_id !== user.id) {
+    if (!gym.length) return Response.json({ error: 'Gym not found' }, { status: 404 });
+    const isOwner = gym[0].admin_id === user.id || gym[0].owner_email === user.email;
+    if (!isOwner) {
+      console.warn(`SECURITY: User ${user.email} attempted manageMember on gym ${gymId}`);
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
