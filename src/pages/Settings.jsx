@@ -41,6 +41,13 @@ const GROUPS = [
   { label: 'Support', pages: ['HelpSupport'] },
 ];
 
+const MAX_SEARCH_LENGTH = 30;
+
+// Only allow letters and spaces — strip everything else silently
+function sanitiseSearchInput(raw) {
+  return raw.replace(/[^a-zA-Z\s]/g, '').slice(0, MAX_SEARCH_LENGTH);
+}
+
 function SettingRow({ setting, isLast }) {
   return (
     <Link
@@ -120,24 +127,17 @@ function LogoutDialog({ open, onClose, onConfirm }) {
   if (!open) return null;
   return (
     <>
-      <div
-        className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
         <h3 className="text-xl font-black text-white mb-2">Log Out?</h3>
         <p className="text-slate-300 text-sm mb-6">
           You'll be signed out of your account and will need to log back in to continue.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Log Out
           </button>
         </div>
@@ -146,15 +146,11 @@ function LogoutDialog({ open, onClose, onConfirm }) {
   );
 }
 
-// Matches the ConfirmDialog style from PostCard exactly
 function DeleteAccountDialog({ open, onClose, onConfirm, isPending, isGymOwner }) {
   if (!open) return null;
   return (
     <>
-      <div
-        className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
         <h3 className="text-xl font-black text-white mb-2">⚠️ Delete Account?</h3>
         <p className="text-slate-300 text-sm mb-6">
@@ -162,15 +158,10 @@ function DeleteAccountDialog({ open, onClose, onConfirm, isPending, isGymOwner }
           {isGymOwner ? ', and all gyms you own' : ''}. This action cannot be undone.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+          <button onClick={onConfirm} disabled={isPending} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
             {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Delete'}
           </button>
         </div>
@@ -215,6 +206,10 @@ export default function Settings() {
       console.error('Failed to delete account:', error);
       setDeletePending(false);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(sanitiseSearchInput(e.target.value));
   };
 
   const searchResults = useMemo(() => {
@@ -277,7 +272,12 @@ export default function Settings() {
               type="text"
               placeholder="Search settings…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
+              maxLength={MAX_SEARCH_LENGTH}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
               style={{ width: '100%', padding: '9px 16px 9px 40px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
               onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
