@@ -162,11 +162,7 @@ function KpiCard({ icon: Icon, label, value, unit, color, trend, footerBar, spar
         )}
         {subContext && <span style={{ fontSize: 10, color: C.t3 }}>{subContext}</span>}
       </div>
-      {footerBar != null && (
-        <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden', marginTop: 10 }}>
-          <div style={{ height: '100%', borderRadius: 99, width: `${Math.min(100, footerBar)}%`, background: color, transition: 'width .8s ease' }} />
-        </div>
-      )}
+
     </div>
   );
 }
