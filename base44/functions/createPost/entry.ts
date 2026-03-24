@@ -35,13 +35,26 @@ Deno.serve(async (req) => {
     if (!safeContent) {
       return Response.json({ error: 'Content is required' }, { status: 400 });
     }
+    if (safeContent.length < 3) {
+      return Response.json({ error: 'Post content too short (minimum 3 characters)' }, { status: 400 });
+    }
+
+    // Fraud detection: check rapid posting (max 10 posts per hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const recentPosts = await base44.entities.Post.filter({ member_id: user.id, created_date: { $gte: oneHourAgo } });
+    if (recentPosts.length >= 10) {
+      console.warn(`RATE_LIMIT: User ${user.id} posted ${recentPosts.length} times in the last hour`);
+      return Response.json({ error: 'Posting too frequently. Please wait before posting again.' }, { status: 429 });
+    }
 
     if (image_url && !isValidUrl(image_url)) {
-      return Response.json({ error: 'Invalid image URL' }, { status: 400 });
+      return Response.json({ error: 'Invalid image URL (must be HTTPS)' }, { status: 400 });
     }
     if (video_url && !isValidUrl(video_url)) {
-      return Response.json({ error: 'Invalid video URL' }, { status: 400 });
+      return Response.json({ error: 'Invalid video URL (must be HTTPS)' }, { status: 400 });
     }
+
+    console.log(JSON.stringify({ event: 'AUDIT', action: 'post_created', user_id: user.id, user_email: user.email, resource_type: 'post', status: 'success', timestamp: new Date().toISOString() }));
 
     const post = await base44.entities.Post.create({
       member_id:         user.id,
