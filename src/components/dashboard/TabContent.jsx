@@ -1233,7 +1233,6 @@ export default function TabContent({
                 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;      e.currentTarget.style.transform = ''; }}>
-                  <IconBadge icon={Icon} color={color} size={24} />
                   <div style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{label}</div>
                   <div style={{ fontSize: 9, color: C.t3, fontWeight: 500 }}>{sub}</div>
                 </div>
