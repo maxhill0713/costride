@@ -9,7 +9,11 @@
 
 /* Force dark background — overrides index.css @layer base :root reset */
 html {
-  background: hsl(222, 47%, 11%);
+  background: #02040a;
+}
+
+body {
+  background: #02040a !important;
 }
 
 @layer base {
@@ -28,7 +32,7 @@ html {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-top: env(safe-area-inset-top);
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: #02040a;
     color: #e2e8f0;
     transition: background-color 0.3s ease;
     overscroll-behavior: none;
