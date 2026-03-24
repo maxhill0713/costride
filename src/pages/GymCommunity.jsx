@@ -1692,7 +1692,15 @@ export default function GymCommunity() {
                 {/* Active Now */}
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 {/* Activity Feed */}
-                <GymActivityFeed checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
+                <GymActivityFeed
+                  checkIns={checkIns}
+                  memberAvatarMap={memberAvatarMap}
+                  workoutLogs={gymWorkoutLogs}
+                  challengeParticipants={gymChallengeParticipants}
+                  challenges={challenges}
+                  achievements={gymAchievements}
+                  posts={gymPosts}
+                />
               </motion.div>
             </TabsContent>
 
