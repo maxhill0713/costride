@@ -25,6 +25,21 @@ import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Username / search query sanitisation
+//
+// Usernames can only contain letters, numbers, underscores, hyphens and dots.
+// Everything else — including SQL/NoSQL injection characters like ' " ; $ { } —
+// is stripped before the value is stored in state or sent to the API.
+// Max 30 characters; trimmed on the way in.
+// ─────────────────────────────────────────────────────────────────────────────
+const sanitiseUsernameQuery = (v) =>
+  v
+    .replace(/[^a-zA-Z0-9_.\-]/g, '') // whitelist: letters, digits, _ . -
+    .slice(0, 30);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 
@@ -429,10 +444,6 @@ export default function Home() {
   const celebTimers = useRef([]);
 
   // ── Header scroll behaviour ──────────────────────────────────────────────
-  // Three states:
-  //   'top'     — at the very top, header sits inline (no background/backdrop)
-  //   'hidden'  — scrolled down, header fades out gently in place
-  //   'visible' — scrolled back up mid-page, header fades in with backdrop
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
@@ -450,10 +461,8 @@ export default function Home() {
         if (currentY <= 10) {
           setHeaderState('top');
         } else if (currentY > prev) {
-          // Scrolling DOWN — fade out gently
           setHeaderState('hidden');
         } else {
-          // Scrolling UP — fade back in with backdrop
           setHeaderState('visible');
         }
 
@@ -465,21 +474,17 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  // ────────────────────────────────────────────────────────────────────────
 
-  // ── Fix white overscroll background ─────────────────────────────────────
   useEffect(() => {
     const prev = document.body.style.backgroundColor;
-    document.body.style.backgroundColor = '#020817'; // slate-950
+    document.body.style.backgroundColor = '#020817';
     document.documentElement.style.backgroundColor = '#020817';
     return () => {
       document.body.style.backgroundColor = prev;
       document.documentElement.style.backgroundColor = '';
     };
   }, []);
-  // ────────────────────────────────────────────────────────────────────────
 
-  // ── Pull-to-refresh state ─────────────────────────────────────────────
   const [pullY, setPullY] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const touchStartY = useRef(null);
@@ -520,8 +525,6 @@ export default function Home() {
       window.removeEventListener('touchend', onTouchEnd);
     };
   }, [pullY, isRefreshing, queryClient]);
-  // ────────────────────────────────────────────────────────────────────────
-  // ────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     injectStreakStyles();
@@ -672,8 +675,9 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
-    enabled: friendSearchQuery.length >= 2,
+    // Trim the sanitised query before sending to the API
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
+    enabled: friendSearchQuery.trim().length >= 2,
     staleTime: 30000,
   });
 
@@ -978,12 +982,10 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── Fixed header — fades out on scroll-down, fades in on scroll-up ── */}
+        {/* ── Fixed header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{
-            // Fade out (with a tiny upward drift) when scrolling down.
-            // Fade back in when scrolling up. Snap back to fully visible at the top.
             opacity: headerState === 'hidden' ? 0 : 1,
             transform: headerState === 'hidden' ? 'translateY(-6px)' : 'translateY(0)',
             pointerEvents: headerState === 'hidden' ? 'none' : 'auto',
@@ -1001,7 +1003,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Ghost spacer — reserves the exact space the fixed header occupies */}
+        {/* Ghost spacer */}
         <div className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={true} />
         </div>
@@ -1675,8 +1677,18 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <Input placeholder="Search friends..." value={friendsListSearchQuery} onChange={e => setFriendsListSearchQuery(e.target.value)}
-                  className="pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
+                {/* Friends list search — username chars only, 16px font prevents iOS zoom */}
+                <Input
+                  placeholder="Search friends..."
+                  value={friendsListSearchQuery}
+                  onChange={e => setFriendsListSearchQuery(sanitiseUsernameQuery(e.target.value))}
+                  maxLength={30}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  style={{ fontSize: '16px' }}
+                  className="pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 text-white placeholder:text-slate-300 rounded-xl text-sm h-9"
+                />
               </div>
               <Button onClick={() => { setShowAddFriendModal(true); setShowFriendsModal(false); }}
                 className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px]">
@@ -1762,15 +1774,25 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                <Input placeholder="Search by username..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
-                  className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
+                {/* Add friend search — username chars only, 16px font prevents iOS zoom */}
+                <Input
+                  placeholder="Search by username..."
+                  value={friendSearchQuery}
+                  onChange={e => setFriendSearchQuery(sanitiseUsernameQuery(e.target.value))}
+                  maxLength={30}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  style={{ fontSize: '16px' }}
+                  className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9"
+                />
               </div>
               <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {friendSearchQuery.length >= 2 && (
+              {friendSearchQuery.trim().length >= 2 && (
                 filteredSearchResults.length === 0
                   ? <p className="text-center text-slate-400 text-sm py-8">No users found</p>
                   : filteredSearchResults.map(user => (
