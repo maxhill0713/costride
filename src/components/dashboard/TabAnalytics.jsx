@@ -614,7 +614,135 @@ function ClassPerformanceWidget({ classes, checkIns, ci30, now }) {
   );
 }
 
-/* ── Coach Impact ────────────────────────────────────────────────────────── */
+/* ── Staff Performance (full) ────────────────────────────────────────────── */
+function StaffPerformanceWidget({ coaches, checkIns, ci30, classes, allMemberships, now }) {
+  const data = useMemo(() => (coaches || []).map(coach => {
+    // Members this coach coached (via check-in metadata or class overlap)
+    const coachCI = ci30.filter(c => c.coach_id === coach.id || c.coach_name === coach.name);
+    const uniqueMembers = new Set(coachCI.map(c => c.user_id)).size;
+
+    // Retention: coached members who checked in in last 14 days
+    const coachedIds = new Set(coachCI.map(c => c.user_id));
+    const retained = [...coachedIds].filter(id => {
+      const last = checkIns.filter(c => c.user_id === id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
+      return last && differenceInDays(now, new Date(last.check_in_date)) <= 14;
+    }).length;
+    const retentionPct = coachedIds.size > 0 ? Math.round((retained / coachedIds.size) * 100) : 0;
+
+    // Classes this coach teaches
+    const myClasses = (classes || []).filter(c =>
+      c.instructor === coach.name || c.instructor === coach.user_email ||
+      c.coach_name === coach.name || c.coach_id === coach.id
+    );
+
+    // Avg check-ins per coached member
+    const avgVisits = uniqueMembers > 0 ? (coachCI.length / uniqueMembers).toFixed(1) : '—';
+
+    // Engagement score (0–100): weighted blend
+    const engagementScore = Math.min(100, Math.round(
+      (retentionPct * 0.5) +
+      (Math.min(uniqueMembers / 20, 1) * 100 * 0.3) +
+      (Math.min(myClasses.length / 5, 1) * 100 * 0.2)
+    ));
+
+    return { ...coach, uniqueMembers, retentionPct, myClasses, avgVisits, engagementScore };
+  }).sort((a, b) => b.engagementScore - a.engagementScore), [coaches, checkIns, ci30, classes, now]);
+
+  if (!data.length) return null;
+
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <Card style={{ padding: 20 }}>
+      <CardHead title="Staff Performance"
+        sub="Coach engagement scores, retention impact & class load"
+        right={
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Star style={{ width: 12, height: 12, color: C.blue }} />
+          </div>
+        }
+      />
+
+      {/* Column headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px 64px 64px 72px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${C.divider}`, marginBottom: 10 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em' }}>Coach</div>
+        {['Members', 'Classes', 'Avg Visits', 'Retention'].map(h => (
+          <div key={h} style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', textAlign: 'center' }}>{h}</div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {data.map((coach, i) => {
+          const retColor = coach.retentionPct >= 70 ? C.green : coach.retentionPct >= 50 ? C.blue : C.red;
+          const scoreColor = coach.engagementScore >= 70 ? C.green : coach.engagementScore >= 45 ? C.blue : C.red;
+          const tier = coach.engagementScore >= 70 ? 'Top' : coach.engagementScore >= 45 ? 'Mid' : 'Low';
+          return (
+            <div key={coach.id || i} style={{ padding: '12px 14px', borderRadius: 11, background: i === 0 ? `${C.green}07` : 'rgba(255,255,255,0.02)', border: `1px solid ${i === 0 ? 'rgba(16,185,129,0.14)' : C.border}`, position: 'relative', overflow: 'hidden' }}>
+              {/* Rank accent line */}
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '11px 0 0 11px', background: scoreColor, opacity: 0.7 }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px 64px 64px 72px', gap: 8, alignItems: 'center' }}>
+                {/* Name + avatar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: `linear-gradient(135deg,${scoreColor}40,${scoreColor}18)`, border: `1.5px solid ${scoreColor}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: scoreColor }}>
+                    {coach.avatar_url
+                      ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : ini(coach.name)
+                    }
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coach.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: scoreColor, background: `${scoreColor}12`, border: `1px solid ${scoreColor}28`, borderRadius: 4, padding: '1px 5px' }}>{tier} Performer</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Members */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em' }}>{coach.uniqueMembers}</div>
+                  <div style={{ fontSize: 9, color: C.t3 }}>coached</div>
+                </div>
+
+                {/* Classes */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: C.blue, letterSpacing: '-0.03em' }}>{coach.myClasses.length}</div>
+                  <div style={{ fontSize: 9, color: C.t3 }}>classes</div>
+                </div>
+
+                {/* Avg visits */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em' }}>{coach.avgVisits}</div>
+                  <div style={{ fontSize: 9, color: C.t3 }}>avg/mem</div>
+                </div>
+
+                {/* Retention */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: retColor, letterSpacing: '-0.03em' }}>{coach.retentionPct}%</div>
+                  <div style={{ fontSize: 9, color: C.t3 }}>retention</div>
+                </div>
+              </div>
+
+              {/* Engagement score bar */}
+              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, whiteSpace: 'nowrap' }}>Engagement score</span>
+                <div style={{ flex: 1, height: 3, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${coach.engagementScore}%`, background: `linear-gradient(90deg,${scoreColor}88,${scoreColor})`, borderRadius: 99, transition: 'width .8s ease' }} />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, minWidth: 28, textAlign: 'right' }}>{coach.engagementScore}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {data.length === 0 && (
+        <div style={{ padding: '24px 0', textAlign: 'center', color: C.t3, fontSize: 11 }}>No coaches added yet</div>
+      )}
+    </Card>
+  );
+}
+
+/* ── Coach Impact (sidebar compact) ─────────────────────────────────────── */
 function CoachImpactWidget({ coaches, checkIns, ci30, allMemberships, now }) {
   const data = useMemo(() => (coaches || []).map(coach => {
     const coachCI = ci30.filter(c => c.coach_id === coach.id || c.coach_name === coach.name);
@@ -632,7 +760,7 @@ function CoachImpactWidget({ coaches, checkIns, ci30, allMemberships, now }) {
 
   return (
     <Card style={{ padding: 20 }}>
-      <CardHead title="Coach Impact" sub="Retention rate of members coached (30 days)" />
+      <CardHead title="Coach Retention Impact" sub="Retention of members they coached (30d)" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {data.slice(0, 5).map((coach, i) => {
           const color = coach.retentionImpact >= 70 ? C.green : coach.retentionImpact >= 50 ? C.blue : C.red;
