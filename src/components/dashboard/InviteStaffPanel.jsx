@@ -20,7 +20,7 @@ export default function InviteStaffPanel({ gym }) {
     if (!email.trim() || sending) return;
     setSending(true); setError('');
     try {
-      await base44.users.inviteUser(email.trim(), 'user');
+      await base44.users.inviteUser(email.trim(), role);
       setSent(true); setEmail('');
       setTimeout(() => setSent(false), 3000);
     } catch (e) {
