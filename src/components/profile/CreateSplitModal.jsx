@@ -24,12 +24,16 @@ const sanitiseSets   = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 sets
 const sanitiseReps   = (v) => v.replace(/\D/g, '').slice(0, 3);   // max 999 reps
 const sanitiseRounds = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 rounds
 
-// Weight: digits + single decimal point, max 6 chars (e.g. 999.99)
 const sanitiseWeight = (v) => {
   let s = v.replace(/[^0-9.]/g, '');
   const parts = s.split('.');
   if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
-  return s.slice(0, 6);
+  // Clamp to 2 decimal places
+  if (s.includes('.')) {
+    const [whole, dec] = s.split('.');
+    s = whole + '.' + dec.slice(0, 2);
+  }
+  return s.slice(0, 7); // e.g. "999.25" = 6 chars, +1 buffer
 };
 
 // Time digits: raw digits only (passed to formatTime), seconds clamped to ≤59
