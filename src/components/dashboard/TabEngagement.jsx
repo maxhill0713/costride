@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Zap, Bell, UserPlus, Trophy, Flame, Users, CheckCircle,
   Plus, Trash2, ToggleLeft, ToggleRight, ChevronRight,
