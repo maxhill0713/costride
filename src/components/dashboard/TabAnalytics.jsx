@@ -1246,20 +1246,11 @@ export default function TabAnalytics({
           })}
         </Card>
 
-        <MonthComparison ci30={ci30} ciPrev30={ciPrev30} retentionRate={retentionRate} atRisk={atRisk} monthChangePct={monthChangePct} totalMembers={totalMembers} now={now} />
         <Week1ReturnTrendWidget week1ReturnTrend={week1ReturnTrendProp} />
         <ChurnSignalWidget churnSignals={churnSignalsProp} />
         <MilestoneProgressWidget checkIns={checkIns} />
-        <CoachImpactWidget coaches={coaches} checkIns={checkIns} ci30={ci30} allMemberships={allMemberships} now={now} />
         <RankedBarList title="Busiest Days" icon={Calendar} items={busiestDays.map(d => ({ ...d, label: d.name }))} emptyLabel="No data yet" />
         <RankedBarList title="Peak Hours"   icon={Clock}    items={peakHours.slice(0, 5)}                            emptyLabel="No check-in data yet" />
-
-        <SegmentBreakdown title="Engagement Breakdown" total={totalMembers} segments={[
-          { label: 'Super Active', sub: '15+ visits', val: superActive, color: C.green          },
-          { label: 'Active',       sub: '8–14',       val: active,      color: C.blue           },
-          { label: 'Casual',       sub: '1–7',        val: casual,      color: `${C.blue}88`   },
-          { label: 'Inactive',     sub: '0 visits',   val: inactive,    color: C.red            },
-        ]} />
       </div>
     </div>
   );
