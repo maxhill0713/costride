@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     // Use the capped batch
     const effectiveMemberIds = batchIds;
 
-    for (const memberId of member_ids) {
+    for (const memberId of effectiveMemberIds) {
       // Don't notify the owner themselves
       if (memberId === user.id) continue;
 
