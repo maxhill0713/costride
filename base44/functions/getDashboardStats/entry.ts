@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
       }).length,
     }));
 
-    // ── Churn signals (top 5 by score) ───────────────────────────────────────
+    // ── Churn signals (top 5 by score) — no user_id exposed ──────────────────
     const churnSignals = membersWithActivity.map(m => {
       const ds    = m.daysSince != null ? m.daysSince : 999;
       const last30 = m.ci30Count    || 0;
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
       if (ds >= 14) score += 30;
       if (ds >= 21) score += 30;
       if (freqDrop) score += 20;
-      return { user_id: m.user_id, name: m.user_name || 'Member', daysSince: ds, freqDrop, score, last30, prev30 };
+      return { name: m.user_name || 'Member', daysSince: ds, freqDrop, score, last30, prev30 };
     }).filter(m => m.score >= 40).sort((a,b) => b.score - a.score).slice(0, 5);
 
     // ── Week-1 return trend (8 bi-weekly cohorts) ─────────────────────────────
