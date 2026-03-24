@@ -31,10 +31,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'gymData with name and google_place_id required' }, { status: 400 });
     }
 
-    // SECURITY: Allowlist the fields we accept from the client
+    // Input validation — length limits and sanitization
+    if (typeof gymData.name !== 'string' || gymData.name.trim().length < 2 || gymData.name.length > 100) {
+      return Response.json({ error: 'Gym name must be 2–100 characters' }, { status: 400 });
+    }
+    if (typeof gymData.google_place_id !== 'string' || gymData.google_place_id.trim().length === 0) {
+      return Response.json({ error: 'Invalid google_place_id' }, { status: 400 });
+    }
+    if (gymData.city && (typeof gymData.city !== 'string' || gymData.city.length > 80)) {
+      return Response.json({ error: 'Invalid city name' }, { status: 400 });
+    }
+
+    // SECURITY: Allowlist the fields we accept from the client, sanitize strings
     const safeGymData = {};
     for (const field of ALLOWED_GYM_FIELDS) {
-      if (gymData[field] !== undefined) safeGymData[field] = gymData[field];
+      if (gymData[field] !== undefined) {
+        safeGymData[field] = typeof gymData[field] === 'string'
+          ? gymData[field].replace(/<[^>]*>/g, '').trim()
+          : gymData[field];
+      }
     }
 
     // Check if gym already exists (by Google Place ID)
@@ -61,7 +76,7 @@ Deno.serve(async (req) => {
         admin_id:      user.id,
       });
       isNew = true;
-      console.log(`Created new gym: ${gym.id} with status=${status}`);
+      console.log(JSON.stringify({ event: 'AUDIT', action: 'gym_created', user_id: user.id, user_email: user.email, resource_type: 'gym', resource_id: gym.id, status: 'success', details: { gym_status: status, gym_name: safeGymData.name }, timestamp: new Date().toISOString() }));
 
       // Generate join code
       const chars    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
