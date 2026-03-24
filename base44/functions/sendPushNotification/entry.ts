@@ -47,10 +47,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: You do not own this gym' }, { status: 403 });
     }
 
-    if (!Array.isArray(member_ids) || member_ids.length === 0) {
-      return Response.json({ error: 'No members to notify' }, { status: 400 });
-    }
-
     // ── Create in-app notifications for each member ───────────────────────
     let sent = 0;
     const errors = [];
@@ -64,7 +60,7 @@ Deno.serve(async (req) => {
           user_id: memberId,
           type: 'gym_message',
           title: `📣 Message from ${gym_name || gym.name}`,
-          message: message,
+          message: safeMessage,
           icon: '🏋️',
           read: false,
         });
