@@ -1607,6 +1607,12 @@ export default function TabAnalytics({
           </div>
         )}
 
+        {/* Member Traffic Heatmap — moved here, under KPI cards */}
+        <Card style={{ padding: 20 }}>
+          <CardHead title="Member Traffic Heatmap" sub="Check-in density by day and time" />
+          <HeatmapChart gymId={gymId} />
+        </Card>
+
         <SmartInsightsPanel
           checkIns={checkIns} ci30={ci30} allMemberships={allMemberships}
           atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct}
