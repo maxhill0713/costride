@@ -809,32 +809,19 @@ function SegmentBreakdown({ title, segments, total }) {
   return (
     <Card style={{ padding: 20 }}>
       <CardHead title={title} />
-      {total > 0 && (
-        <div style={{ height: 4, borderRadius: 99, overflow: 'hidden', display: 'flex', gap: 1, marginBottom: 16 }}>
-          {segments.filter(s => s.val > 0).map((s, i, arr) => (
-            <div key={i} style={{ flex: s.val, background: s.color, opacity: 0.85,
-              borderRadius: i === 0 ? '99px 0 0 99px' : i === arr.length - 1 ? '0 99px 99px 0' : 0 }} />
-          ))}
-        </div>
-      )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {segments.map((s, i) => {
           const pct = total > 0 ? Math.round((s.val / total) * 100) : 0;
           return (
-            <div key={i}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{s.label}</span>
-                  {s.sub && <span style={{ fontSize: 9, color: C.t3 }}>{s.sub}</span>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: s.color }}>{s.val}</span>
-                  <span style={{ fontSize: 9, color: C.t3, minWidth: 26, textAlign: 'right' }}>{pct}%</span>
-                </div>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < segments.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{s.label}</span>
+                {s.sub && <span style={{ fontSize: 9, color: C.t3 }}>{s.sub}</span>}
               </div>
-              <div style={{ height: 2.5, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: s.color, borderRadius: 99, transition: 'width .8s ease' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: s.color }}>{s.val}</span>
+                <span style={{ fontSize: 9, color: C.t3, minWidth: 26, textAlign: 'right' }}>{pct}%</span>
               </div>
             </div>
           );
