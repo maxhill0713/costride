@@ -673,7 +673,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
 /* ══════════════════════════════════════════════════════════════════
    RECENT ACTIVITY FEED
 ══════════════════════════════════════════════════════════════════ */
-function ActivityFeed({ recentActivity, now, avatarMap }) {
+function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
   return (
     <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 16 }}>Recent Activity</div>
@@ -684,6 +684,7 @@ function ActivityFeed({ recentActivity, now, avatarMap }) {
           <p style={{ fontSize: 11, color: C.t3, margin: 0, opacity: 0.7 }}>Typical peak is 5–7pm</p>
         </div>
       ) : recentActivity.slice(0, 6).map((a, i) => {
+        const displayName = nameMap[a.user_id] || a.name;
         const minsAgo = Math.floor((now - new Date(a.time)) / 60000);
         const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo / 60)}h ago` : `${Math.floor(minsAgo / 1440)}d ago`;
         return (
@@ -694,10 +695,10 @@ function ActivityFeed({ recentActivity, now, avatarMap }) {
             padding:      '8px 0',
             borderBottom: i < Math.min(recentActivity.length, 6) - 1 ? `1px solid ${C.divider}` : 'none',
           }}>
-            <Avatar name={a.name} size={26} src={avatarMap?.[a.user_id] || null} />
+            <Avatar name={displayName} size={26} src={avatarMap?.[a.user_id] || null} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, color: C.t1, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <span style={{ fontWeight: 600 }}>{a.name}</span>
+                <span style={{ fontWeight: 600 }}>{displayName}</span>
                 <span style={{ color: C.t2 }}> {a.action}</span>
               </div>
             </div>
@@ -992,7 +993,7 @@ export default function TabOverview({
   newSignUps, monthChangePct, ciPrev30, atRisk, sparkData, monthGrowthData,
   cancelledEst, monthCiPer,
   checkIns, allMemberships, challenges, posts, polls, classes, coaches,
-  recentActivity, chartDays, chartRange, setChartRange, avatarMap,
+  recentActivity, chartDays, chartRange, setChartRange, avatarMap, nameMap = {},
   priorities, selectedGym, now,
   openModal, setTab,
   retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
@@ -1105,6 +1106,7 @@ export default function TabOverview({
           recentActivity={recentActivity}
           now={now}
           avatarMap={avatarMap}
+          nameMap={nameMap}
         />
       </div>
 

@@ -563,6 +563,53 @@ export default function GymOwnerDashboard() {
 
   const now = new Date();
 
+  // ── Fetch real User records to get up-to-date avatars + display names ─────
+  const memberUserIds = useMemo(
+    () => [...new Set((allMemberships || []).map(m => m.user_id).filter(Boolean))].slice(0, 100),
+    [allMemberships]
+  );
+
+  const { data: memberUserRecords = [] } = useQuery({
+    queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
+    queryFn: async () => {
+      if (memberUserIds.length === 0) return [];
+      const results = await Promise.all(
+        memberUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: !!selectedGym && memberUserIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
+  // Avatar map: user_id → avatar_url (from live User records, fallback to membership)
+  const memberAvatarMapResolved = useMemo(() => {
+    const map = {};
+    (allMemberships || []).forEach(m => {
+      if (m.user_id && m.avatar_url) map[m.user_id] = m.avatar_url;
+    });
+    memberUserRecords.forEach(u => {
+      const av = u.avatar_url || u.profile_picture || u.photo_url || null;
+      if (u.id && av) map[u.id] = av;
+    });
+    if (currentUser?.id) {
+      const myAv = currentUser.avatar_url || currentUser.profile_picture || null;
+      if (myAv) map[currentUser.id] = myAv;
+    }
+    return map;
+  }, [allMemberships, memberUserRecords, currentUser]);
+
+  // Name map: user_id → display name (from live User records)
+  const memberNameMap = useMemo(() => {
+    const map = {};
+    memberUserRecords.forEach(u => {
+      if (u.id) map[u.id] = u.full_name || u.display_name || null;
+    });
+    if (currentUser?.id) map[currentUser.id] = currentUser.full_name || null;
+    return map;
+  }, [memberUserRecords, currentUser]);
+
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
     activeThisWeek = 0, weeklyChangePct = 0,
@@ -625,7 +672,8 @@ export default function GymOwnerDashboard() {
       checkIns={checkIns} allMemberships={effectiveMemberships} challenges={challenges}
       posts={posts} polls={polls} classes={classes} coaches={coaches}
       streaks={streaks} recentActivity={recentActivity} chartDays={chartDays}
-      chartRange={chartRange} setChartRange={setChartRange} avatarMap={avatarMapFull}
+      chartRange={chartRange} setChartRange={setChartRange}
+      avatarMap={memberAvatarMapResolved} nameMap={memberNameMap}
       priorities={priorities} selectedGym={selectedGym} now={now}
       openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta}
       retentionBreakdown={retentionBreakdown}
