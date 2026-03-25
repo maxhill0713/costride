@@ -731,6 +731,13 @@ export default function Home() {
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
     onSuccess: () => queryClient.invalidateQueries(['friends']),
   });
+  const cancelFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['friendUsers'] });
+    },
+  });
 
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
@@ -1761,15 +1768,28 @@ export default function Home() {
               {sentFriendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.friend_id); return (u?.full_name||req.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.friend_id);
                 const name = u?.display_name || u?.full_name || request.friend_name || 'User';
+                const sentMs = Date.now() - new Date(request.created_date).getTime();
+                const sentHours = Math.floor(sentMs / (1000 * 60 * 60));
+                const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
+                const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
                 return (
-                  <div key={`sent-${request.id}`} className="p-3 rounded-lg bg-slate-700/40 border border-slate-600/40 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg bg-slate-800/70 border border-slate-700/50 flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                       </div>
-                      <p className="font-semibold text-white text-xs truncate">{name}</p>
+                      <p className="font-semibold text-white text-xs truncate max-w-[80px]">{name}</p>
                     </div>
-                    <Badge className="bg-slate-600/40 text-slate-300 border-slate-500/40 text-[10px] flex-shrink-0">Request pending</Badge>
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-700/80 text-slate-400 border border-slate-600/50">Pending</span>
+                      <span className="text-[10px] text-slate-500 font-medium">{timeAgo}</span>
+                      <button
+                        onClick={() => cancelFriendMutation.mutate(request.friend_id)}
+                        disabled={cancelFriendMutation.isPending}
+                        className="text-[10px] font-bold text-slate-300 px-2 py-1 rounded-md bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_2px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 );
               })}
