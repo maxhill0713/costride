@@ -207,20 +207,8 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
   const isLoading = checkInMutation.isPending || isCheckingLocation;
   const isSuccess = success;
 
-  if (isCheckingLocation) {
-    return <div style={{ padding: '16px', textAlign: 'center', color: '#a0aec0', fontSize: 12 }}>📍 Checking location...</div>;
-  }
-
-  if (!isWithinRange) {
-    return (
-      <div style={{
-        padding: '12px', borderRadius: 12,
-        background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
-        fontSize: 12, color: '#fca5a5', fontWeight: 600, textAlign: 'center', lineHeight: '1.4'
-      }}>
-        📍 {locationError}
-      </div>
-    );
+  if (isCheckingLocation || !isWithinRange) {
+    return null;
   }
 
   return (
@@ -303,15 +291,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
           </div>
         </button>
       </div>
-      {locationError && (
-        <div style={{
-          marginTop: 8, padding: '10px 12px', borderRadius: 12,
-          background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
-          fontSize: 12, color: '#fca5a5', fontWeight: 600, lineHeight: '1.4'
-        }}>
-          📍 {locationError}
-        </div>
-      )}
+
     </>
   );
 }
