@@ -648,41 +648,43 @@ export default function Friends() {
                 {pendingOutgoing.map((pending) => (
                   <div key={`pending-${pending.id}`}
                     style={{
-                      background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(10,15,30,0.98) 100%)',
-                      border: '1px solid rgba(71,85,105,0.4)',
-                      borderBottom: '3px solid rgba(15,23,42,0.9)',
-                      boxShadow: '0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+                      background: 'linear-gradient(135deg, rgba(6,12,24,0.98) 0%, rgba(3,7,18,1) 100%)',
+                      border: '1px solid rgba(51,65,85,0.5)',
+                      borderBottom: '3px solid rgba(3,7,18,0.95)',
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
                     }}
-                    className="p-2 rounded-xl flex items-center gap-2 relative">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-slate-600/50">
-                        {pending.avatar_url
-                          ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
-                          : <span className="text-xs font-semibold text-white">{pending.full_name?.charAt(0)?.toUpperCase()}</span>
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-xs truncate">{pending.full_name}</p>
-                        {pending.username && <p className="text-[10px] text-slate-500">@{pending.username}</p>}
-                      </div>
+                    className="p-3 rounded-xl flex items-center gap-3 relative">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600/40 to-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-blue-500/30">
+                      {pending.avatar_url
+                        ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
+                        : <span className="text-xs font-bold text-blue-300">{pending.full_name?.charAt(0)?.toUpperCase()}</span>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0 ml-1">
+                      <p className="font-semibold text-white text-sm truncate">{pending.full_name}</p>
+                      {pending.username && <p className="text-[10px] text-slate-400">@{pending.username}</p>}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
                       <span
                         style={{
-                          background: 'rgba(15,23,42,0.8)',
-                          border: '1px solid rgba(51,65,85,0.6)',
+                          background: 'rgba(59,130,246,0.15)',
+                          border: '1px solid rgba(59,130,246,0.3)',
                         }}
-                        className="text-[10px] font-bold text-slate-400 px-2 py-1 rounded-md"
+                        className="text-[10px] font-bold text-blue-300 px-2.5 py-1.5 rounded-lg"
                       >Pending</span>
                       <div className="relative">
                         <button
-                          onClick={() => setOpenPendingMenuId(openPendingMenuId === pending.id ? null : pending.id)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 transition-all duration-150"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenPendingMenuId(openPendingMenuId === pending.id ? null : pending.id);
+                          }}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/40 transition-all duration-150"
                         >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
                         {openPendingMenuId === pending.id && (
                           <div
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                               background: 'linear-gradient(135deg, rgba(15,23,42,0.98) 0%, rgba(10,15,30,1) 100%)',
                               border: '1px solid rgba(71,85,105,0.5)',
