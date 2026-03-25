@@ -82,14 +82,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
         return;
       }
 
-      const gymsToCheck = gymMemberships.map(m => ({
-        id: m.gym_id,
-        name: m.gym_name,
-        latitude: m.gym_latitude,
-        longitude: m.gym_longitude,
-      })).filter(g => g.latitude && g.longitude);
-
-      if (gymsToCheck.length === 0) {
+      if (!gym?.latitude || !gym?.longitude) {
         setLocationError('No gym location data available');
         setIsCheckingLocation(false);
         return;
@@ -98,7 +91,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
       const { isWithinRange: inRange, nearestGymDistance } = checkDistanceToGyms(
         userLocation.latitude,
         userLocation.longitude,
-        gymsToCheck,
+        [{ id: gym.id, name: gym.name, latitude: gym.latitude, longitude: gym.longitude }],
         200
       );
 
@@ -112,7 +105,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
     };
 
     checkLocationOnMount();
-  }, []);
+  }, [gym]);
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
