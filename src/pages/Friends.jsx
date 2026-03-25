@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, Search, UserMinus, X, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, Search, UserMinus, X, ChevronDown, ChevronLeft, MoreHorizontal } from 'lucide-react';
 import StreakIcon from '../components/StreakIcon';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -135,6 +135,27 @@ export default function Friends() {
   });
 
   const [pendingOutgoing, setPendingOutgoing] = useState([]); // [{id, full_name, username, avatar_url}]
+  const [openPendingMenuId, setOpenPendingMenuId] = useState(null);
+
+  useEffect(() => {
+    if (!openPendingMenuId) return;
+    const handler = () => setOpenPendingMenuId(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [openPendingMenuId]);
+
+  const cancelFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', {
+      friendId,
+      action: 'remove'
+    }),
+    onSuccess: (_, friendId) => {
+      setPendingOutgoing(prev => prev.filter(p => p.id !== friendId));
+      setOpenPendingMenuId(null);
+      toast.success('Friend request cancelled');
+    },
+    onError: () => toast.error('Failed to cancel request')
+  });
 
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', {
@@ -626,9 +647,15 @@ export default function Friends() {
                 {/* Outgoing pending requests at top */}
                 {pendingOutgoing.map((pending) => (
                   <div key={`pending-${pending.id}`}
-                    className="p-2 rounded-lg bg-slate-800/50 border border-slate-600/30 flex items-center justify-between gap-2">
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(10,15,30,0.98) 100%)',
+                      border: '1px solid rgba(71,85,105,0.4)',
+                      borderBottom: '3px solid rgba(15,23,42,0.9)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+                    }}
+                    className="p-2 rounded-xl flex items-center gap-2 relative">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-slate-600/50">
                         {pending.avatar_url
                           ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
                           : <span className="text-xs font-semibold text-white">{pending.full_name?.charAt(0)?.toUpperCase()}</span>
@@ -636,10 +663,45 @@ export default function Friends() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-white text-xs truncate">{pending.full_name}</p>
-                        {pending.username && <p className="text-[10px] text-slate-400">@{pending.username}</p>}
+                        {pending.username && <p className="text-[10px] text-slate-500">@{pending.username}</p>}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-700/60 border border-slate-600/40 px-2 py-1 rounded-md flex-shrink-0">Pending</span>
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                      <span
+                        style={{
+                          background: 'rgba(15,23,42,0.8)',
+                          border: '1px solid rgba(51,65,85,0.6)',
+                        }}
+                        className="text-[10px] font-bold text-slate-400 px-2 py-1 rounded-md"
+                      >Pending</span>
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenPendingMenuId(openPendingMenuId === pending.id ? null : pending.id)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 transition-all duration-150"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                        {openPendingMenuId === pending.id && (
+                          <div
+                            style={{
+                              background: 'linear-gradient(135deg, rgba(15,23,42,0.98) 0%, rgba(10,15,30,1) 100%)',
+                              border: '1px solid rgba(71,85,105,0.5)',
+                              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                            }}
+                            className="absolute right-0 top-8 z-50 rounded-xl overflow-hidden min-w-[110px]"
+                          >
+                            <button
+                              onClick={() => cancelFriendMutation.mutate(pending.id)}
+                              disabled={cancelFriendMutation.isPending}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/15 transition-all duration-150 text-xs font-semibold disabled:opacity-50"
+                            >
+                              <UserMinus className="w-3 h-3" />
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {/* Incoming friend requests */}
