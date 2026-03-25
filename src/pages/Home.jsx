@@ -728,11 +728,9 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries(['friends']),
   });
   const cancelFriendMutation = useMutation({
-    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] });
-      queryClient.invalidateQueries({ queryKey: ['friendUsers'] });
-    },
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
+    onMutate: (friendId) => { queryClient.setQueryData(['sentFriendRequests', currentUser?.id], (old = []) => old.filter(r => r.friend_id !== friendId)); },
+    onSettled: () => { queryClient.invalidateQueries({ queryKey: ['sentFriendRequests', currentUser?.id] }); },
   });
 
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
