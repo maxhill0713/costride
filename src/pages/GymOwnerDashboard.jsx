@@ -529,8 +529,9 @@ export default function GymOwnerDashboard() {
     placeholderData: p => p,
   });
 
-  const checkIns       = stats.recentCheckIns || [];
-  const allMemberships = stats.membersWithActivity || [];
+  const checkIns          = stats.recentCheckIns || [];
+  const recentActivity    = stats.recentActivity || [];
+  const allMemberships    = stats.membersWithActivity || [];
   const effectiveMemberships = allMemberships;
 
   const inv = (...keys) => {
@@ -569,9 +570,10 @@ export default function GymOwnerDashboard() {
   const memberUserIds = useMemo(() => {
     const ids = new Set();
     (allMemberships || []).forEach(m => { if (m.user_id) ids.add(m.user_id); });
-    (stats.recentCheckIns || []).forEach(c => { if (c.user_id) ids.add(c.user_id); });
+    checkIns.forEach(c => { if (c.user_id) ids.add(c.user_id); });
+    recentActivity.forEach(a => { if (a.user_id) ids.add(a.user_id); });
     return [...ids].slice(0, 100);
-  }, [allMemberships, stats.recentCheckIns]);
+  }, [allMemberships, checkIns, recentActivity]);
 
   const { data: memberUserRecords = [] } = useQuery({
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
@@ -614,16 +616,16 @@ export default function GymOwnerDashboard() {
       if (m.user_id && m.user_name) map[m.user_id] = m.user_name;
     });
     // Seed from recent check-ins
-    (stats.recentCheckIns || []).forEach(c => {
-      if (c.user_id && c.user_name) map[c.user_id] = c.user_name;
-    });
+    checkIns.forEach(c => { if (c.user_id && c.user_name) map[c.user_id] = c.user_name; });
+    // Seed from recentActivity
+    recentActivity.forEach(a => { if (a.user_id && a.name) map[a.user_id] = a.name; });
     // Override with authoritative full_name from User entity records
     memberUserRecords.forEach(u => {
       if (u.id && u.full_name) map[u.id] = u.full_name;
     });
     if (currentUser?.id && currentUser.full_name) map[currentUser.id] = currentUser.full_name;
     return map;
-  }, [allMemberships, stats.recentCheckIns, memberUserRecords, currentUser]);
+  }, [allMemberships, checkIns, recentActivity, memberUserRecords, currentUser]);
 
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
@@ -635,7 +637,7 @@ export default function GymOwnerDashboard() {
     memberLastCheckIn = {},
     sparkData7 = [], monthGrowthData = [],
     peakLabel = null, peakEndLabel = null, peakEntry = null,
-    satVsAvg = 0, chartDays = [], streaks = [], recentActivity = [],
+    satVsAvg = 0, chartDays = [], streaks = [],
     avatarMap = {},
     weekTrend = [], peakHours = [], busiestDays = [],
     returnRate = 0, dailyAvg = 0, engagementSegments = {},
