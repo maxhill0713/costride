@@ -372,7 +372,6 @@ export default function Home() {
 
   useEffect(() => {
     injectStreakStyles();
-    injectCheckInStyles();
 
     const checkMissedWorkouts = async () => {
       try {
