@@ -444,7 +444,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
 function ActivityStats() { return null; }
 
 // ── Main Activity Feed — check-ins + workouts + challenges + milestones + posts ──
-function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challengeParticipants = [], challenges = [], achievements = [], posts = [] }) {
+function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workoutLogs = [], challengeParticipants = [], challenges = [], achievements = [], posts = [] }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
 
   const toggleLike = (id) => setLikedIds(prev => {
@@ -454,31 +454,33 @@ function GymActivityFeed({ checkIns, memberAvatarMap, workoutLogs = [], challeng
   const items = React.useMemo(() => {
     const all = [];
 
+    const resolveName = (userId, fallback) => memberNameMap[userId] || fallback || 'Member';
+
     const seenCI = new Set();
     checkIns.forEach(c => {
       const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
       if (seenCI.has(key)) return;
       seenCI.add(key);
-      all.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: c.user_name, date: c.check_in_date, data: c });
+      all.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: resolveName(c.user_id, c.user_name), date: c.check_in_date, data: c });
     });
 
     workoutLogs.forEach(w => {
-      all.push({ type: 'lift', id: `wl-${w.id}`, userId: w.user_id, userName: w.user_name, date: w.created_date || w.completed_date, data: w });
+      all.push({ type: 'lift', id: `wl-${w.id}`, userId: w.user_id, userName: resolveName(w.user_id, w.user_name), date: w.created_date || w.completed_date, data: w });
     });
 
     const challengeMap = {};
     challenges.forEach(c => { challengeMap[c.id] = c; });
     challengeParticipants.forEach(p => {
       const ch = challengeMap[p.challenge_id];
-      all.push({ type: 'challenge', id: `cp-${p.id}`, userId: p.user_id, userName: p.user_name, date: p.joined_date || p.created_date, data: ch || { title: p.challenge_title || 'a challenge' } });
+      all.push({ type: 'challenge', id: `cp-${p.id}`, userId: p.user_id, userName: resolveName(p.user_id, p.user_name), date: p.joined_date || p.created_date, data: ch || { title: p.challenge_title || 'a challenge' } });
     });
 
     achievements.forEach(a => {
-      all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: a.user_name, date: a.created_date, data: a });
+      all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: resolveName(a.user_id, a.user_name), date: a.created_date, data: a });
     });
 
     posts.filter(p => !p.is_hidden).forEach(p => {
-      all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: p.member_name, date: p.created_date, data: p });
+      all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: resolveName(p.member_id, p.member_name), date: p.created_date, data: p });
     });
 
     return all
@@ -1491,6 +1493,33 @@ export default function GymCommunity() {
     return map;
   }, [members, currentUser]);
 
+  // Build display name map from members — prefer display_name over full_name
+  const { data: memberUsers = [] } = useQuery({
+    queryKey: ['memberUsers', gymId, members.map(m => m.user_id).join(',')],
+    queryFn: async () => {
+      const userIds = [...new Set(members.map(m => m.user_id).filter(Boolean))].slice(0, 50);
+      if (userIds.length === 0) return [];
+      const results = await Promise.all(
+        userIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: !!gymId && members.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
+  const memberNameMap = React.useMemo(() => {
+    const map = {};
+    memberUsers.forEach(u => {
+      if (u.id) map[u.id] = u.display_name || u.full_name || null;
+    });
+    if (currentUser?.id) {
+      map[currentUser.id] = currentUser.display_name || currentUser.full_name || null;
+    }
+    return map;
+  }, [memberUsers, currentUser]);
+
   const createEventMutation = useMutation({ mutationFn: eventData => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async eventData => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => [{ ...eventData, id:`temp-${Date.now()}`, gym_id:gymId, gym_name:gym?.name, attendees:0 }, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
   const updateEquipmentMutation = useMutation({ mutationFn: equipment => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
@@ -1765,6 +1794,7 @@ export default function GymCommunity() {
                 <GymActivityFeed
                   checkIns={checkIns}
                   memberAvatarMap={memberAvatarMap}
+                  memberNameMap={memberNameMap}
                   workoutLogs={gymWorkoutLogs}
                   challengeParticipants={gymChallengeParticipants}
                   challenges={challenges}

@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
       .map(u => ({
         id:           u.id,
         full_name:    u.full_name,
+        display_name: u.display_name || null,
         username:     u.username || null,
         avatar_url:   u.avatar_url || null,
         // SECURITY: email is NEVER returned — it is PII and not needed for user search

@@ -312,6 +312,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     }
   });
 
+  // Resolve live display name for the post author
+  const { data: postAuthor } = useQuery({
+    queryKey: ['postAuthor', post.member_id],
+    queryFn: () => base44.entities.User.filter({ id: post.member_id }).then(r => r[0]),
+    enabled: !!post.member_id,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+  const resolvedMemberName = postAuthor?.display_name || postAuthor?.full_name || post.member_name;
+
   const isOwner = currentUser?.id === post.member_id;
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isGymJoinPost = post.gym_join === true;
@@ -420,10 +430,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2">
           <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-            {post.member_avatar ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> : <span className="text-xs font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase()}</span>}
+            {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" /> : <span className="text-xs font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase()}</span>}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-white text-xs truncate">{post.member_name}</p>
+            <p className="font-semibold text-white text-xs truncate">{resolvedMemberName}</p>
             <p className="text-[11px] text-blue-300 truncate">{post.content}</p>
           </div>
         </motion.div>
@@ -501,10 +511,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <div className="flex items-center justify-between mb-4">
               <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                  {post.member_avatar ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+                  {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+                  <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
                   <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
                 </div>
               </Link>
@@ -642,10 +652,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           <div className="flex items-center justify-between">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                {post.member_avatar ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+                {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
-                <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+                <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
                 <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
               </div>
             </Link>

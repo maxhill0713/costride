@@ -51,10 +51,10 @@ Deno.serve(async (req) => {
 
       const friendRequest = await db.entities.Friend.create({
         user_id:       user.id,
-        user_name:     user.full_name,
+        user_name:     user.display_name || user.full_name,
         user_avatar:   user.avatar_url || '',
         friend_id:     friendId,
-        friend_name:   targetFriend.full_name || '',
+        friend_name:   targetFriend.display_name || targetFriend.full_name || '',
         friend_avatar: targetFriend.avatar_url || '',
         status:        'pending',
       });
@@ -83,12 +83,14 @@ Deno.serve(async (req) => {
 
       await db.entities.Friend.update(friendRequest[0].id, { status: 'accepted' });
 
+      // Re-fetch the requester's latest profile to get their current display_name
+      const [requesterData] = await db.entities.User.filter({ id: friendId });
       const reciprocal = await db.entities.Friend.create({
         user_id:       user.id,
-        user_name:     user.full_name,
+        user_name:     user.display_name || user.full_name,
         user_avatar:   user.avatar_url || '',
         friend_id:     friendId,
-        friend_name:   friendRequest[0].user_name || '',
+        friend_name:   requesterData?.display_name || requesterData?.full_name || friendRequest[0].user_name || '',
         friend_avatar: friendRequest[0].user_avatar || '',
         status:        'accepted',
       });
