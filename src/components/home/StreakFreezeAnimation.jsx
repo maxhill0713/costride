@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const FREEZE_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/cc9f0e5b9_ICEP1_V21.png';
+const FREEZE_ICON_URL         = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/cc9f0e5b9_ICEP1_V21.png';
+const SLIGHTLY_CRACKED_URL    = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/e8b3b08f1_CRACKICEP1_V3.png';
 const CRACKED_FREEZE_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/afee0c524_CRACKICEP1_V4.png';
+
+// Icon size: 180 * 1.2 = 216
+const ICON_SIZE = 216;
 
 const FREEZE_KEYFRAMES = `
   @keyframes freezeBounceIn {
@@ -61,36 +65,47 @@ export default function StreakFreezeAnimation({
     }
     injectFreezeStyles();
 
-    // Stage 1: Bounce in icon
+    // Stage 1: Bounce in intact icon
     if (iconRef.current) {
+      iconRef.current.src = FREEZE_ICON_URL;
       trigAnim(iconRef.current, 'freezeBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
     }
 
-    // Stage 2: Decrease count (animated)
+    // Stage 2: After 1.5s (extra second on intact icon), count down then crack
     const t1 = setTimeout(() => {
       const startCount = finalFreezeCount + freezesLostCount;
       const steps = freezesLostCount;
-      const stepDuration = 400 / steps;
+      // Slower step duration: 700ms total for counting
+      const stepDuration = 700 / Math.max(steps, 1);
 
       for (let i = 1; i <= steps; i++) {
         setTimeout(() => {
           const newCount = startCount - i;
           setDisplayCount(newCount);
           if (numRef.current) {
-            trigAnim(numRef.current, 'freezeNumPop', 300, 'cubic-bezier(0.34,1.6,0.64,1)');
+            trigAnim(numRef.current, 'freezeNumPop', 400, 'cubic-bezier(0.34,1.6,0.64,1)');
           }
         }, i * stepDuration);
       }
 
-      // Crack icon after last number pop, then show button
+      // Step 1: slightly cracked — slower transition (800ms after counting)
+      setTimeout(() => {
+        if (iconRef.current) {
+          iconRef.current.src = SLIGHTLY_CRACKED_URL;
+          trigAnim(iconRef.current, 'freezeIconCrack', 600, 'ease-in-out');
+        }
+      }, steps * stepDuration + 200);
+
+      // Step 2: fully cracked — 900ms after slightly cracked
       setTimeout(() => {
         if (iconRef.current) {
           iconRef.current.src = CRACKED_FREEZE_ICON_URL;
-          trigAnim(iconRef.current, 'freezeIconCrack', 400, 'ease-in-out');
+          trigAnim(iconRef.current, 'freezeIconCrack', 600, 'ease-in-out');
         }
-        setTimeout(() => setAnimDone(true), 450);
-      }, steps * stepDuration + 100);
-    }, 600);
+        setTimeout(() => setAnimDone(true), 650);
+      }, steps * stepDuration + 200 + 900);
+
+    }, 1500); // extra second on intact icon
 
     return () => clearTimeout(t1);
   }, [isOpen, freezesLostCount, finalFreezeCount]);
@@ -103,17 +118,33 @@ export default function StreakFreezeAnimation({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.45 }}
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            background: 'rgba(0,0,0,0.80)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            overflow: 'hidden',
+            paddingTop: '18vh',
+            paddingBottom: 40,
+            paddingLeft: 32,
+            paddingRight: 32,
+          }}>
+
+          {/* Content block — positioned near top */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 16,
-            padding: '0 32px',
+            gap: 12,
+            flex: 1,
           }}>
 
-            {/* Message text */}
+            {/* Message text — above icon */}
             <AnimatePresence>
               {animDone && (
                 <motion.p
@@ -128,20 +159,19 @@ export default function StreakFreezeAnimation({
                     lineHeight: 1.4,
                     maxWidth: 300,
                     margin: 0,
-                    textShadow: '0 2px 8px rgba(93,217,255,0.25)',
                   }}>
                   Your streak is safe, but you have used a freeze. Lets get back to crushing it in the gym!
                 </motion.p>
               )}
             </AnimatePresence>
 
-            {/* Freeze icon */}
+            {/* Freeze icon — 20% larger */}
             <div style={{
               position: 'relative',
-              width: 180,
-              height: 180,
-              opacity: 1,
+              width: ICON_SIZE,
+              height: ICON_SIZE,
               willChange: 'transform, opacity',
+              marginTop: 8,
             }}>
               <img
                 ref={iconRef}
@@ -164,50 +194,53 @@ export default function StreakFreezeAnimation({
                 fontSize: 96,
                 fontWeight: 900,
                 color: '#5dd9ff',
-                textShadow: '0 4px 12px rgba(93,217,255,0.4)',
                 letterSpacing: '-0.04em',
                 lineHeight: 1,
                 opacity: 1,
               }}>
               {displayCount}
             </div>
-
-            {/* Continue button */}
-            <AnimatePresence>
-              {animDone && (
-                <motion.button
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.1 }}
-                  onMouseDown={() => setPressed(true)}
-                  onMouseUp={() => { setPressed(false); onComplete(); }}
-                  onMouseLeave={() => setPressed(false)}
-                  onTouchStart={() => setPressed(true)}
-                  onTouchEnd={() => { setPressed(false); onComplete(); }}
-                  style={{
-                    marginTop: 8,
-                    padding: '14px 48px',
-                    borderRadius: 16,
-                    fontSize: 16,
-                    fontWeight: 900,
-                    color: '#fff',
-                    fontFamily: 'inherit',
-                    cursor: 'pointer',
-                    border: 'none',
-                    letterSpacing: '-0.01em',
-                    background: 'linear-gradient(to bottom, #5dd9ff, #29bce8, #1aa8d4)',
-                    borderBottom: pressed ? '1px solid rgba(0,0,0,0.4)' : '4px solid #0e7a9e',
-                    boxShadow: pressed
-                      ? 'none'
-                      : '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 20px rgba(93,217,255,0.35)',
-                    transform: pressed ? 'translateY(3px)' : 'translateY(0)',
-                    transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
-                  }}>
-                  Continue
-                </motion.button>
-              )}
-            </AnimatePresence>
           </div>
+
+          {/* Continue button — anchored near bottom */}
+          <AnimatePresence>
+            {animDone && (
+              <motion.button
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.1 }}
+                onMouseDown={() => setPressed(true)}
+                onMouseUp={() => { setPressed(false); onComplete(); }}
+                onMouseLeave={() => setPressed(false)}
+                onTouchStart={() => setPressed(true)}
+                onTouchEnd={() => { setPressed(false); onComplete(); }}
+                style={{
+                  width: '100%',
+                  maxWidth: 360,
+                  padding: '16px 0',
+                  borderRadius: 16,
+                  fontSize: 17,
+                  fontWeight: 900,
+                  color: '#fff',
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  border: 'none',
+                  letterSpacing: '-0.01em',
+                  textAlign: 'center',
+                  background: pressed
+                    ? 'linear-gradient(to bottom, #3bbfe8, #1aa8d4)'
+                    : 'linear-gradient(to bottom, #5dd9ff, #29bce8, #1aa8d4)',
+                  borderBottom: pressed ? '2px solid #0e7a9e' : '4px solid #0e7a9e',
+                  boxShadow: pressed ? 'none' : '0 3px 0 #0e7a9e',
+                  transform: pressed ? 'translateY(3px)' : 'translateY(0)',
+                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                  flexShrink: 0,
+                  marginBottom: 'env(safe-area-inset-bottom)',
+                }}>
+                Continue
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
