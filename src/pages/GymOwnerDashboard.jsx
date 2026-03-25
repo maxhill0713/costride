@@ -564,10 +564,14 @@ export default function GymOwnerDashboard() {
   const now = new Date();
 
   // ── Fetch real User records to get up-to-date avatars + display names ─────
-  const memberUserIds = useMemo(
-    () => [...new Set((allMemberships || []).map(m => m.user_id).filter(Boolean))].slice(0, 100),
-    [allMemberships]
-  );
+  // Include both membership user IDs AND recent check-in user IDs so the
+  // activity feed always shows the real full_name, not a stored email/username.
+  const memberUserIds = useMemo(() => {
+    const ids = new Set();
+    (allMemberships || []).forEach(m => { if (m.user_id) ids.add(m.user_id); });
+    (stats.recentCheckIns || []).forEach(c => { if (c.user_id) ids.add(c.user_id); });
+    return [...ids].slice(0, 100);
+  }, [allMemberships, stats.recentCheckIns]);
 
   const { data: memberUserRecords = [] } = useQuery({
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
@@ -601,14 +605,25 @@ export default function GymOwnerDashboard() {
   }, [allMemberships, memberUserRecords, currentUser]);
 
   // Name map: user_id → display name (from live User records)
+  // Seed with membership user_name first, then override with the authoritative
+  // full_name from the User entity so the activity feed never shows raw emails.
   const memberNameMap = useMemo(() => {
     const map = {};
-    memberUserRecords.forEach(u => {
-      if (u.id) map[u.id] = u.full_name || u.display_name || null;
+    // Seed from memberships (may be stale/email-like, but better than nothing)
+    (allMemberships || []).forEach(m => {
+      if (m.user_id && m.user_name) map[m.user_id] = m.user_name;
     });
-    if (currentUser?.id) map[currentUser.id] = currentUser.full_name || null;
+    // Seed from recent check-ins
+    (stats.recentCheckIns || []).forEach(c => {
+      if (c.user_id && c.user_name) map[c.user_id] = c.user_name;
+    });
+    // Override with authoritative full_name from User entity records
+    memberUserRecords.forEach(u => {
+      if (u.id && u.full_name) map[u.id] = u.full_name;
+    });
+    if (currentUser?.id && currentUser.full_name) map[currentUser.id] = currentUser.full_name;
     return map;
-  }, [memberUserRecords, currentUser]);
+  }, [allMemberships, stats.recentCheckIns, memberUserRecords, currentUser]);
 
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
