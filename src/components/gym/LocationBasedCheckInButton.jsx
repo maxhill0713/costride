@@ -83,6 +83,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
       }
 
       if (!gym?.latitude || !gym?.longitude) {
+        console.warn('Gym missing coordinates:', { gym_id: gym?.id, latitude: gym?.latitude, longitude: gym?.longitude });
         setLocationError('No gym location data available');
         setIsCheckingLocation(false);
         return;
