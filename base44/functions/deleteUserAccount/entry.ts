@@ -1,4 +1,26 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+// Helper: fetch ALL records matching a filter (handles pagination)
+async function fetchAll(entity, filter) {
+  const results = [];
+  let skip = 0;
+  const limit = 200;
+  while (true) {
+    const batch = await entity.filter(filter, '-created_date', limit, skip);
+    results.push(...batch);
+    if (batch.length < limit) break;
+    skip += limit;
+  }
+  return results;
+}
+
+// Helper: delete records in batches to avoid overwhelming the API
+async function deleteAll(entity, records) {
+  const BATCH = 50;
+  for (let i = 0; i < records.length; i += BATCH) {
+    await Promise.all(records.slice(i, i + BATCH).map(r => entity.delete(r.id)));
+  }
+}
 
 Deno.serve(async (req) => {
   try {
@@ -11,43 +33,59 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
     const userEmail = user.email;
+    const db = base44.asServiceRole;
 
     console.log(`Deleting account for user: ${userEmail} (${userId})`);
 
-    // ── Fetch only the user's own data (no platform-wide .list() calls) ───────
-    const [userGyms, userCheckIns, userMemberships, userLifts, userGoals, userNotifs, userFriends, userFriendsReverse] = await Promise.all([
-      base44.asServiceRole.entities.Gym.filter({ admin_id: userId }),
-      base44.asServiceRole.entities.CheckIn.filter({ user_id: userId }),
-      base44.asServiceRole.entities.GymMembership.filter({ user_id: userId }),
-      base44.asServiceRole.entities.Lift.filter({ member_id: userId }),
-      base44.asServiceRole.entities.Goal.filter({ user_id: userId }),
-      base44.asServiceRole.entities.Notification.filter({ user_id: userId }),
-      base44.asServiceRole.entities.Friend.filter({ user_id: userId }),
-      base44.asServiceRole.entities.Friend.filter({ friend_id: userId }),
+    // Fetch all user data (paginated)
+    const [
+      checkIns, memberships, lifts, goals, notifs,
+      friendsBy, friendsTo, posts, workoutLogs
+    ] = await Promise.all([
+      fetchAll(db.entities.CheckIn,       { user_id: userId }),
+      fetchAll(db.entities.GymMembership, { user_id: userId }),
+      fetchAll(db.entities.Lift,          { member_id: userId }),
+      fetchAll(db.entities.Goal,          { user_id: userId }),
+      fetchAll(db.entities.Notification,  { user_id: userId }),
+      fetchAll(db.entities.Friend,        { user_id: userId }),
+      fetchAll(db.entities.Friend,        { friend_id: userId }),
+      fetchAll(db.entities.Post,          { member_id: userId }),
+      fetchAll(db.entities.WorkoutLog,    { user_id: userId }),
     ]);
 
-    // Also fetch gyms by owner_email (some owners may not have admin_id set)
-    const userGymsByEmail = await base44.asServiceRole.entities.Gym.filter({ owner_email: userEmail });
-    const allUserGyms = [...userGyms, ...userGymsByEmail.filter(g => !userGyms.find(x => x.id === g.id))];
-    const allUserFriends = [...userFriends, ...userFriendsReverse.filter(f => !userFriends.find(x => x.id === f.id))];
+    // Gyms owned by this user (both by id and email)
+    const [gymsByAdmin, gymsByEmail] = await Promise.all([
+      fetchAll(db.entities.Gym, { admin_id: userId }),
+      fetchAll(db.entities.Gym, { owner_email: userEmail }),
+    ]);
+    const gymIds = new Set(gymsByAdmin.map(g => g.id));
+    const allGyms = [...gymsByAdmin, ...gymsByEmail.filter(g => !gymIds.has(g.id))];
 
-    // Delete in parallel where safe
+    // Deduplicate friends
+    const friendIdsSeen = new Set(friendsBy.map(f => f.id));
+    const allFriends = [...friendsBy, ...friendsTo.filter(f => !friendIdsSeen.has(f.id))];
+
+    console.log(`Deleting: ${checkIns.length} check-ins, ${memberships.length} memberships, ${lifts.length} lifts, ${goals.length} goals, ${notifs.length} notifications, ${allFriends.length} friend records, ${posts.length} posts, ${workoutLogs.length} workout logs, ${allGyms.length} gyms`);
+
+    // Delete all data in parallel batches
     await Promise.all([
-      ...allUserGyms.map(g => base44.asServiceRole.entities.Gym.delete(g.id)),
-      ...userCheckIns.map(c => base44.asServiceRole.entities.CheckIn.delete(c.id)),
-      ...userMemberships.map(m => base44.asServiceRole.entities.GymMembership.delete(m.id)),
-      ...userLifts.map(l => base44.asServiceRole.entities.Lift.delete(l.id)),
-      ...userGoals.map(g => base44.asServiceRole.entities.Goal.delete(g.id)),
-      ...userNotifs.map(n => base44.asServiceRole.entities.Notification.delete(n.id)),
-      ...allUserFriends.map(f => base44.asServiceRole.entities.Friend.delete(f.id)),
+      deleteAll(db.entities.CheckIn,       checkIns),
+      deleteAll(db.entities.GymMembership, memberships),
+      deleteAll(db.entities.Lift,          lifts),
+      deleteAll(db.entities.Goal,          goals),
+      deleteAll(db.entities.Notification,  notifs),
+      deleteAll(db.entities.Friend,        allFriends),
+      deleteAll(db.entities.Post,          posts),
+      deleteAll(db.entities.WorkoutLog,    workoutLogs),
+      deleteAll(db.entities.Gym,           allGyms),
     ]);
 
-    // Finally, delete the User record itself — this revokes access
-    await base44.asServiceRole.entities.User.delete(userId);
+    // Finally delete the User record itself
+    await db.entities.User.delete(userId);
 
     console.log(`Account fully deleted for: ${userEmail}`);
-
     return Response.json({ success: true });
+
   } catch (error) {
     console.error('Error deleting account:', error);
     return Response.json({ error: 'An internal error occurred' }, { status: 500 });
