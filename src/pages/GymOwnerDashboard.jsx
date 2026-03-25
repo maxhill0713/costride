@@ -589,29 +589,26 @@ export default function GymOwnerDashboard() {
     gcTime: 15 * 60 * 1000,
   });
 
-  // Avatar map: user_id → avatar_url (from live User records, fallback to membership)
+  // Avatar map: user_id → avatar_url (live User records take priority)
   const memberAvatarMapResolved = useMemo(() => {
     const map = {};
     (allMemberships || []).forEach(m => {
       if (m.user_id && m.avatar_url) map[m.user_id] = m.avatar_url;
     });
     memberUserRecords.forEach(u => {
-      const av = u.avatar_url || u.profile_picture || u.photo_url || null;
-      if (u.id && av) map[u.id] = av;
+      if (u.id && u.avatar_url) map[u.id] = u.avatar_url;
     });
-    if (currentUser?.id) {
-      const myAv = currentUser.avatar_url || currentUser.profile_picture || null;
-      if (myAv) map[currentUser.id] = myAv;
+    if (currentUser?.id && currentUser.avatar_url) {
+      map[currentUser.id] = currentUser.avatar_url;
     }
     return map;
   }, [allMemberships, memberUserRecords, currentUser]);
 
   // Name map: user_id → display name (from live User records)
-  // Seed with membership user_name first, then override with the authoritative
-  // full_name from the User entity so the activity feed never shows raw emails.
+  // Priority: display_name → username → full_name (matches what Profile page shows at the top)
   const memberNameMap = useMemo(() => {
     const map = {};
-    // Seed from memberships (may be stale/email-like, but better than nothing)
+    // Seed from memberships as fallback
     (allMemberships || []).forEach(m => {
       if (m.user_id && m.user_name) map[m.user_id] = m.user_name;
     });
@@ -619,11 +616,18 @@ export default function GymOwnerDashboard() {
     checkIns.forEach(c => { if (c.user_id && c.user_name) map[c.user_id] = c.user_name; });
     // Seed from recentActivity
     recentActivity.forEach(a => { if (a.user_id && a.name) map[a.user_id] = a.name; });
-    // Override with authoritative full_name from User entity records
+    // Override with authoritative display name from User entity records
+    // (same priority as Profile page: display_name > username > full_name)
     memberUserRecords.forEach(u => {
-      if (u.id && u.full_name) map[u.id] = u.full_name;
+      if (u.id) {
+        const name = u.display_name || (u.username ? u.username : null) || u.full_name;
+        if (name) map[u.id] = name;
+      }
     });
-    if (currentUser?.id && currentUser.full_name) map[currentUser.id] = currentUser.full_name;
+    if (currentUser?.id) {
+      const name = currentUser.display_name || currentUser.username || currentUser.full_name;
+      if (name) map[currentUser.id] = name;
+    }
     return map;
   }, [allMemberships, checkIns, recentActivity, memberUserRecords, currentUser]);
 
