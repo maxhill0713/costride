@@ -259,6 +259,10 @@ body {
   50% { transform: scale(0.98); }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes tapRipple {
   from { opacity: 1; transform: scale(0.5); }
   to { opacity: 0; transform: scale(1); }
