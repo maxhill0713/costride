@@ -119,48 +119,48 @@ import {
 ══════════════════════════════════════════════════════════════════ */
 const C = {
   // ── Backgrounds ─────────────────────────────────────────────────
-  bg:         '#090e1a',          // Page body
-  surface:    '#0d1525',          // Cards, panels
-  surfaceEl:  '#111c2e',          // Hover, elevated, selected rows
+  bg:         '#080e18',          // Page body
+  surface:    '#0c1422',          // Cards, panels
+  surfaceEl:  '#101929',          // Hover, elevated, selected rows
 
   // ── Borders & dividers (neutral ONLY — never colored) ───────────
-  border:     'rgba(255,255,255,0.065)',
-  borderEl:   'rgba(255,255,255,0.11)',
-  divider:    'rgba(255,255,255,0.038)',
+  border:     'rgba(255,255,255,0.07)',
+  borderEl:   'rgba(255,255,255,0.12)',
+  divider:    'rgba(255,255,255,0.04)',
 
   // ── Text scale (4 levels, no more) ──────────────────────────────
-  t1:  '#dde3ed',   // Primary — metric values, headings
-  t2:  '#7a8ea8',   // Secondary — labels, descriptions
-  t3:  '#3f5068',   // Muted — timestamps, supporting copy
-  t4:  '#243040',   // Ghost — decorative, disabled, rank numbers
+  t1:  '#f1f5f9',   // Primary — metric values, headings
+  t2:  '#94a3b8',   // Secondary — labels, descriptions
+  t3:  '#475569',   // Muted — timestamps, supporting copy
+  t4:  '#2d3f55',   // Ghost — decorative, disabled, rank numbers
 
   // ── Brand accent (1 color — interactive + data only) ────────────
   // Used for: chart lines, active states, CTA, heatmap fills
   // NOT used for: decorative card accents, random labels
-  accent:    '#5179ff',
-  accentSub: 'rgba(81,121,255,0.08)',
-  accentBrd: 'rgba(81,121,255,0.18)',
+  accent:    '#3b82f6',
+  accentSub: 'rgba(59,130,246,0.08)',
+  accentBrd: 'rgba(59,130,246,0.18)',
 
   // ── Semantic: Danger (action required) ──────────────────────────
   // Used for: at-risk members, churn signals, drops >10%, week-1 low
-  danger:    '#e0524a',
-  dangerSub: 'rgba(224,82,74,0.07)',
-  dangerBrd: 'rgba(224,82,74,0.18)',
+  danger:    '#ef4444',
+  dangerSub: 'rgba(239,68,68,0.07)',
+  dangerBrd: 'rgba(239,68,68,0.18)',
 
   // ── Semantic: Success (threshold crossed) ───────────────────────
   // Used for: retention ≥70%, 0 at-risk, strong return rate
   // NOT used for: routine healthy metrics (use t1 instead)
-  success:    '#38b27a',
-  successSub: 'rgba(56,178,122,0.07)',
-  successBrd: 'rgba(56,178,122,0.16)',
+  success:    '#10b981',
+  successSub: 'rgba(16,185,129,0.07)',
+  successBrd: 'rgba(16,185,129,0.16)',
 
   // ── Semantic: Warn (caution — used sparingly) ────────────────────
-  warn:    '#d4893a',
-  warnSub: 'rgba(212,137,58,0.07)',
+  warn:    '#f59e0b',
+  warnSub: 'rgba(245,158,11,0.07)',
 };
 
 /* ── Axis tick style — always muted, never colored ─────────────── */
-const tick = { fill: C.t3, fontSize: 10, fontFamily: 'Geist, system-ui, sans-serif' };
+const tick = { fill: C.t3, fontSize: 10, fontFamily: 'system-ui, sans-serif' };
 
 /* ══════════════════════════════════════════════════════════════════
    PRIMITIVE COMPONENTS

@@ -179,15 +179,15 @@ const DASH_CSS = `
     background: ${D.bgSurface};
     border: 1px solid ${D.border};
     border-radius: 12px;
-    padding: 16px 18px;
+    padding: 20px 20px;
     position: relative; overflow: hidden;
     transition: border-color 0.15s;
   }
   .dash-root .stat-card:hover { border-color: ${D.borderHi}; }
   .dash-root .stat-num {
-    font-size: 28px; font-weight: 800;
+    font-size: 32px; font-weight: 800;
     letter-spacing: -0.04em; line-height: 1;
-    color: ${D.t1}; margin: 6px 0 4px;
+    color: ${D.t1}; margin: 8px 0 5px;
   }
   .dash-root .stat-label {
     font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -302,12 +302,6 @@ function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBa
   const barColor  = footerColor || D.blue;
   return (
     <div className="stat-card">
-      {/* Top edge strip — single blue line only, replaces noisy gradients */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 1.5,
-        background: `linear-gradient(90deg, transparent, ${D.blue}40 40%, ${D.blue}40 60%, transparent)`,
-        pointerEvents: 'none',
-      }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <span className="stat-label">{label}</span>

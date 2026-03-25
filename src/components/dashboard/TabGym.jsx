@@ -12,18 +12,16 @@ import {
 import InviteStaffPanel from './InviteStaffPanel';
 
 const T = {
-  blue:    '#06b6d4', green:  '#10b981', red:    '#ef4444',
-  amber:   '#06b6d4', purple: '#06b6d4', cyan:   '#06b6d4',
+  blue:    '#3b82f6', green:  '#10b981', red:    '#ef4444',
+  amber:   '#f59e0b', purple: '#3b82f6', cyan:   '#3b82f6',
   text1:   '#f0f4f8', text2:  '#94a3b8', text3:  '#475569',
   border:  'rgba(255,255,255,0.07)', borderM: 'rgba(255,255,255,0.11)',
   card:    '#0b1120', card2:  '#0d1630', divider: 'rgba(255,255,255,0.05)',
 };
 
-function SCard({ children, style = {}, accent, noPad }) {
-  const c = accent || T.cyan;
+function SCard({ children, style = {}, noPad }) {
   return (
     <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, position: 'relative', overflow: 'hidden', ...(noPad ? {} : { padding: 20 }), ...style }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${c}30,transparent)`, pointerEvents: 'none' }} />
       {children}
     </div>
   );
@@ -104,7 +102,7 @@ function GymHealthCard({ selectedGym, classes, coaches, checkIns, allMemberships
     return Math.min(100, s);
   }, [selectedGym, classes, coaches, totalMembers, retentionRate, atRisk, ci30]);
 
-  const scoreColor = score >= 75 ? T.green : score >= 50 ? T.cyan : T.red;
+  const scoreColor = score >= 75 ? T.green : score >= 50 ? T.blue : T.red;
   const done = checks.filter(c => c.done).length;
 
   return (
@@ -116,7 +114,7 @@ function GymHealthCard({ selectedGym, classes, coaches, checkIns, allMemberships
           <div style={{ fontSize: 11, color: T.text3, marginBottom: 14 }}>Setup completion & live performance</div>
           <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
             {checks.map((c, i) => (
-              <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: c.done ? c.color : T.divider, transition: 'background 0.4s' }} />
+              <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: c.done ? T.green : T.divider, transition: 'background 0.4s' }} />
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -129,15 +127,15 @@ function GymHealthCard({ selectedGym, classes, coaches, checkIns, allMemberships
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
         {checks.map((c, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: c.done ? `${c.color}08` : T.divider, border: `1px solid ${c.done ? c.color + '18' : T.border}` }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}` }}>
             {c.done
-              ? <CheckCircle style={{ width: 11, height: 11, color: c.color, flexShrink: 0 }} />
+              ? <CheckCircle style={{ width: 11, height: 11, color: T.green, flexShrink: 0 }} />
               : <div style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${T.border}`, flexShrink: 0 }} />
             }
             <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: c.done ? T.text2 : T.text1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.label}</span>
             {!c.done && c.action && (
               <button onClick={() => openModal(c.action)}
-                style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, color: c.color, background: `${c.color}12`, border: `1px solid ${c.color}25`, borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, color: T.blue, background: `${T.blue}12`, border: `1px solid ${T.blue}25`, borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {c.cta}
               </button>
             )}
@@ -153,24 +151,23 @@ function LiveStatsStrip({ allMemberships, checkIns, atRisk, retentionRate, now }
   const ci30 = (checkIns || []).filter(c => { const d = new Date(c.check_in_date), cut = new Date(now); cut.setDate(cut.getDate() - 30); return d >= cut; }).length;
   const weekSet = new Set((checkIns || []).filter(c => { const d = new Date(c.check_in_date), cut = new Date(now); cut.setDate(cut.getDate() - 7); return d >= cut; }).map(c => c.user_id));
   const stats = [
-    { label: 'Members',       value: totalMembers, color: T.cyan,   icon: Users,     sub: 'enrolled' },
-    { label: 'Active / week', value: weekSet.size,  color: T.green,  icon: Activity,  sub: 'last 7 days' },
-    { label: 'Check-ins',     value: ci30,          color: T.cyan,   icon: BarChart2, sub: 'this month' },
-    { label: 'Retention',     value: `${retentionRate}%`, color: retentionRate >= 70 ? T.green : T.cyan, icon: TrendingUp, sub: retentionRate >= 70 ? 'Healthy' : 'Below target' },
-    { label: 'At Risk',       value: atRisk,         color: atRisk > 0 ? T.red : T.green, icon: Zap, sub: atRisk > 0 ? '14+ days out' : 'All clear' },
+    { label: 'Members',       value: totalMembers,        color: T.text1,                                icon: Users,     sub: 'enrolled',                                   semantic: false },
+    { label: 'Active / week', value: weekSet.size,         color: T.text1,                                icon: Activity,  sub: 'last 7 days',                                semantic: false },
+    { label: 'Check-ins',     value: ci30,                 color: T.text1,                                icon: BarChart2, sub: 'this month',                                 semantic: false },
+    { label: 'Retention',     value: `${retentionRate}%`,  color: retentionRate >= 70 ? T.green : T.amber, icon: TrendingUp, sub: retentionRate >= 70 ? 'Healthy' : 'Below target', semantic: retentionRate < 70 },
+    { label: 'At Risk',       value: atRisk,               color: atRisk > 0 ? T.red : T.green,           icon: Zap,       sub: atRisk > 0 ? '14+ days out' : 'All clear',    semantic: atRisk > 0 },
   ];
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
       {stats.map((s, i) => (
-        <div key={i} style={{ padding: '14px 14px 12px', borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${s.color}28,transparent)`, pointerEvents: 'none' }} />
+        <div key={i} style={{ padding: '14px 14px 12px', borderRadius: 12, background: T.card, border: `1px solid ${T.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</span>
-            <div style={{ width: 22, height: 22, borderRadius: 6, background: `${s.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <s.icon style={{ width: 10, height: 10, color: s.color }} />
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: T.divider, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <s.icon style={{ width: 10, height: 10, color: T.text3 }} />
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: s.semantic ? s.color : T.text1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
           <div style={{ fontSize: 9, color: T.text3, fontWeight: 500 }}>{s.sub}</div>
         </div>
       ))}
@@ -187,26 +184,25 @@ function ManageGrid({ classes, coaches, selectedGym, openModal }) {
   ];
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
-      {items.map(({ icon: Icon, label, count, unit, color, fn, desc }, i) => (
+      {items.map(({ icon: Icon, label, count, unit, fn, desc }, i) => (
         <button key={i} onClick={fn}
-          style={{ padding: '16px 16px 14px', borderRadius: 11, cursor: 'pointer', background: T.card2, border: `1px solid ${T.border}`, textAlign: 'left', position: 'relative', overflow: 'hidden', fontFamily: 'inherit', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.background = `${color}08`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          style={{ padding: '16px 16px 14px', borderRadius: 11, cursor: 'pointer', background: T.card2, border: `1px solid ${T.border}`, textAlign: 'left', position: 'relative', fontFamily: 'inherit', transition: 'all 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = T.borderM; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.card2; e.currentTarget.style.transform = ''; }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}25,transparent)`, pointerEvents: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: `${color}14`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon style={{ width: 15, height: 15, color }} />
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon style={{ width: 15, height: 15, color: T.text3 }} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: T.divider, border: `1px solid ${T.border}` }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color }}>{count}</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: T.text1 }}>{count}</span>
               <span style={{ fontSize: 9, color: T.text3 }}>{unit}</span>
             </div>
           </div>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 4 }}>{label}</div>
           <div style={{ fontSize: 10, color: T.text3, lineHeight: 1.4, marginBottom: 10 }}>{desc}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color }}>Manage</span>
-            <ChevronRight style={{ width: 11, height: 11, color }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.blue }}>Manage</span>
+            <ChevronRight style={{ width: 11, height: 11, color: T.blue }} />
           </div>
         </button>
       ))}
@@ -225,8 +221,8 @@ function PricingSection({ selectedGym, openModal }) {
     <SCard accent={T.green}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: `${T.green}14`, border: `1px solid ${T.green}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CreditCard style={{ width: 13, height: 13, color: T.green }} />
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CreditCard style={{ width: 13, height: 13, color: T.text3 }} />
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Membership Pricing</div>
@@ -240,18 +236,17 @@ function PricingSection({ selectedGym, openModal }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
         {display.map((tier, i) => (
-          <div key={i} style={{ padding: '16px 14px', borderRadius: 10, background: tier.price ? `${tier.color}08` : T.divider, border: `1px solid ${tier.price ? tier.color + '20' : T.border}`, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${tier.color}22,transparent)`, pointerEvents: 'none' }} />
+          <div key={i} style={{ padding: '16px 14px', borderRadius: 10, background: tier.price ? 'rgba(255,255,255,0.03)' : T.divider, border: `1px solid ${T.border}` }}>
             <div style={{ fontSize: 9, fontWeight: 800, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{tier.name}</div>
             {tier.price ? (
               <>
-                <div style={{ fontSize: 22, fontWeight: 800, color: tier.color, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>£{tier.price}<span style={{ fontSize: 11, fontWeight: 500, color: T.text3 }}>/mo</span></div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: T.text1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>£{tier.price}<span style={{ fontSize: 11, fontWeight: 500, color: T.text3 }}>/mo</span></div>
                 <div style={{ fontSize: 10, color: T.text3 }}>{tier.description}</div>
               </>
             ) : (
               <>
                 <button onClick={() => openModal('pricing')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: tier.color, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', marginBottom: 4 }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: T.blue, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', marginBottom: 4 }}>
                   <Plus style={{ width: 11, height: 11 }} /> Set price
                 </button>
                 <div style={{ fontSize: 10, color: T.text3 }}>{tier.description}</div>
@@ -261,9 +256,9 @@ function PricingSection({ selectedGym, openModal }) {
         ))}
       </div>
       {tiers.length === 0 && (
-        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${T.cyan}08`, border: `1px solid ${T.cyan}18`, display: 'flex', alignItems: 'center', gap: 7 }}>
-          <AlertTriangle style={{ width: 11, height: 11, color: T.cyan, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: T.cyan, fontWeight: 600 }}>No pricing set — prospects can't see what you charge</span>
+        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${T.amber}08`, border: `1px solid ${T.amber}18`, display: 'flex', alignItems: 'center', gap: 7 }}>
+          <AlertTriangle style={{ width: 11, height: 11, color: T.amber, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, color: T.amber, fontWeight: 600 }}>No pricing set — prospects can't see what you charge</span>
         </div>
       )}
     </SCard>
@@ -287,8 +282,8 @@ function NudgeSettings({ settings, onUpdate }) {
   return (
     <SCard accent={T.cyan}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: `${T.cyan}14`, border: `1px solid ${T.cyan}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Bell style={{ width: 13, height: 13, color: T.cyan }} />
+        <div style={{ width: 30, height: 30, borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Bell style={{ width: 13, height: 13, color: T.text3 }} />
         </div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>Notifications & Smart Nudges</div>
@@ -312,8 +307,8 @@ function NudgeSettings({ settings, onUpdate }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 14, padding: '9px 12px', borderRadius: 8, background: `${T.cyan}06`, border: `1px solid ${T.cyan}14`, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
-        <Info style={{ width: 11, height: 11, color: T.cyan, flexShrink: 0, marginTop: 1 }} />
+      <div style={{ marginTop: 14, padding: '9px 12px', borderRadius: 8, background: T.divider, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+        <Info style={{ width: 11, height: 11, color: T.text3, flexShrink: 0, marginTop: 1 }} />
         <div style={{ fontSize: 10, color: T.text3, lineHeight: 1.5 }}>Disabling a nudge hides it from the dashboard — it does not affect the underlying data or automations.</div>
       </div>
     </SCard>
@@ -327,8 +322,8 @@ function AdminCard({ selectedGym, openModal }) {
       <div style={{ padding: '16px 18px' }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Admin</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: `1px solid ${T.divider}` }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: `${T.cyan}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Shield style={{ width: 10, height: 10, color: T.cyan }} />
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: T.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Shield style={{ width: 10, height: 10, color: T.text3 }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, color: T.text3, fontWeight: 600 }}>Owner email</div>
@@ -336,8 +331,8 @@ function AdminCard({ selectedGym, openModal }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: `1px solid ${T.divider}` }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: `${T.cyan}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Lock style={{ width: 10, height: 10, color: T.cyan }} />
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: T.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Lock style={{ width: 10, height: 10, color: T.text3 }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, color: T.text3, fontWeight: 600 }}>Gym ID</div>
@@ -346,8 +341,8 @@ function AdminCard({ selectedGym, openModal }) {
           <CopyButton value={selectedGym?.id} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0' }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: `${statusVerified ? T.green : T.cyan}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <ShieldCheck style={{ width: 10, height: 10, color: statusVerified ? T.green : T.cyan }} />
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: statusVerified ? `${T.green}14` : T.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ShieldCheck style={{ width: 10, height: 10, color: statusVerified ? T.green : T.text3 }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, color: T.text3, fontWeight: 600 }}>Verification</div>
