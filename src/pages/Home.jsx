@@ -329,9 +329,8 @@ export default function Home() {
     setIsRefreshing(true);
     setVisiblePostCount(POSTS_PER_PAGE);
     await queryClient.invalidateQueries();
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 600);
+    await new Promise(r => setTimeout(r, 600));
+    setIsRefreshing(false);
   };
 
   useEffect(() => {
@@ -348,8 +347,8 @@ export default function Home() {
     };
     const onTouchEnd = async () => {
       if (pullY >= PULL_THRESHOLD && !isRefreshing) {
-        triggerRefresh();
-        setPullY(PULL_THRESHOLD);
+        setPullY(PULL_THRESHOLD); // keep indicator visible while refreshing
+        triggerRefresh().then(() => setPullY(0));
       } else {
         setPullY(0);
       }
