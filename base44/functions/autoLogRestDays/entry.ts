@@ -12,6 +12,12 @@ import { startOfDay, subDays, isSameDay } from 'npm:date-fns@3.6.0';
 
 const MAX_USERS_PER_RUN = 500;
 
+function isAuthorizedAutomation(req: Request): boolean {
+  const secret = Deno.env.get('AUTOMATION_SECRET');
+  if (!secret) return true;
+  return req.headers.get('X-Automation-Secret') === secret;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -22,6 +28,10 @@ Deno.serve(async (req) => {
       const user = await base44.auth.me();
       if (user?.role !== 'admin') {
         return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+      }
+    } else {
+      if (!isAuthorizedAutomation(req)) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 

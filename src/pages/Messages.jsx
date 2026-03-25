@@ -43,10 +43,13 @@ export default function Messages() {
     refetchIntervalInBackground: false,
   });
 
-  // Only fetch a specific user when opening a direct message from a URL param
+  // Only fetch a specific user when opening a direct message from a URL param.
+  // SECURITY: Route through getUserById backend — returns only public fields
+  // (full_name, avatar_url, streak etc.). Direct User.filter() from the client
+  // would return the full user record including email (IDOR).
   const { data: directUser } = useQuery({
     queryKey: ['userById', directUserId],
-    queryFn: () => base44.entities.User.filter({ id: directUserId }).then(r => r[0]),
+    queryFn: () => base44.functions.invoke('getUserById', { userId: directUserId }).then(r => r.data?.user || null),
     enabled: !!directUserId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000

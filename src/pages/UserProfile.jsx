@@ -22,16 +22,10 @@ export default function UserProfile() {
 
   const { data: profileUser, isLoading: loadingUser, isError } = useQuery({
     queryKey: ['userProfile', userId],
-    queryFn: async () => {
-      // Try direct filter first, fall back to service-role via backend function
-      try {
-        const results = await base44.entities.User.filter({ id: userId });
-        if (results[0]) return results[0];
-      } catch {}
-      // Fallback: use the searchUsers function to get user data
-      const res = await base44.functions.invoke('getUserById', { userId });
-      return res.data?.user || null;
-    },
+    // SECURITY: Route through getUserById backend — returns only public display fields.
+    // Direct base44.entities.User.filter({ id }) would return the full user record
+    // including email (IDOR). getUserById returns only safe fields.
+    queryFn: () => base44.functions.invoke('getUserById', { userId }).then(r => r.data?.user || null),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000
   });

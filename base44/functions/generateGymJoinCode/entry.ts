@@ -7,6 +7,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 // 3. For authenticated calls (non-automation), validates the caller owns the gym.
 // 4. Raw error.message suppressed.
 
+function isAuthorizedAutomation(req: Request): boolean {
+  const secret = Deno.env.get('AUTOMATION_SECRET');
+  if (!secret) return true;
+  return req.headers.get('X-Automation-Secret') === secret;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -34,6 +40,10 @@ Deno.serve(async (req) => {
           console.warn(`SECURITY: User ${user.email} tried to regenerate join code for gym ${gym_id}`);
           return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
+      }
+    } else {
+      if (!isAuthorizedAutomation(req)) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 

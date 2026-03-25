@@ -7,6 +7,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 //    Now requires admin or is a scheduled (unauthenticated) automation call.
 // 3. Raw error.message suppressed.
 
+function isAuthorizedAutomation(req: Request): boolean {
+  const secret = Deno.env.get('AUTOMATION_SECRET');
+  if (!secret) return true;
+  return req.headers.get('X-Automation-Secret') === secret;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -17,6 +23,10 @@ Deno.serve(async (req) => {
       const user = await base44.auth.me();
       if (user?.role !== 'admin') {
         return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+      }
+    } else {
+      if (!isAuthorizedAutomation(req)) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 

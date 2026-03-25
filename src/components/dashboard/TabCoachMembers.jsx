@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { subDays, startOfDay, isWithinInterval, format } from 'date-fns';
 import {
   Users, Activity, AlertCircle, Flame, MessageCircle, ChevronRight,
@@ -427,16 +428,54 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
   const [expanded, setExpanded] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
 
-  // Persisted coach data
+  const gymId = allMemberships[0]?.gym_id || null;
+
+  // Persisted coach annotations — localStorage is the immediate cache;
+  // the backend (coachData function) is the source of truth.
+  // SECURITY: Storing sensitive member health/notes in localStorage exposes them
+  // to shared-device attacks and XSS. We write-through to the backend so data
+  // survives device switches and isn't readable by other device users.
   const [notes,  setNotes]  = useState(() => { try { return JSON.parse(localStorage.getItem('coachClientNotes')  || '{}'); } catch { return {}; } });
   const [tags,   setTags]   = useState(() => { try { return JSON.parse(localStorage.getItem('coachClientTags')   || '{}'); } catch { return {}; } });
   const [goals,  setGoals]  = useState(() => { try { return JSON.parse(localStorage.getItem('coachClientGoals')  || '{}'); } catch { return {}; } });
   const [health, setHealth] = useState(() => { try { return JSON.parse(localStorage.getItem('coachClientHealth') || '{}'); } catch { return {}; } });
 
-  const saveNote   = (uid, val) => { const u = { ...notes,  [uid]: val }; setNotes(u);  try { localStorage.setItem('coachClientNotes',  JSON.stringify(u)); } catch {} };
-  const saveTag    = (uid, val) => { const u = { ...tags,   [uid]: val }; setTags(u);   try { localStorage.setItem('coachClientTags',   JSON.stringify(u)); } catch {} };
-  const saveGoal   = (uid, val) => { const u = { ...goals,  [uid]: val }; setGoals(u);  try { localStorage.setItem('coachClientGoals',  JSON.stringify(u)); } catch {} };
-  const saveHealth = (uid, val) => { const u = { ...health, [uid]: val }; setHealth(u); try { localStorage.setItem('coachClientHealth', JSON.stringify(u)); } catch {} };
+  // On mount: load from backend, overriding stale localStorage
+  useEffect(() => {
+    if (!gymId) return;
+    base44.functions.invoke('coachData', { action: 'read', gymId })
+      .then(result => {
+        if (!result?.data) return;
+        const d = result.data;
+        if (d.client_notes  && Object.keys(d.client_notes).length)  { setNotes(d.client_notes);  localStorage.setItem('coachClientNotes',  JSON.stringify(d.client_notes));  }
+        if (d.client_tags   && Object.keys(d.client_tags).length)   { setTags(d.client_tags);    localStorage.setItem('coachClientTags',   JSON.stringify(d.client_tags));   }
+        if (d.client_goals  && Object.keys(d.client_goals).length)  { setGoals(d.client_goals);  localStorage.setItem('coachClientGoals',  JSON.stringify(d.client_goals));  }
+        if (d.client_health && Object.keys(d.client_health).length) { setHealth(d.client_health); localStorage.setItem('coachClientHealth', JSON.stringify(d.client_health)); }
+      })
+      .catch(() => {}); // fall back to localStorage silently
+  }, [gymId]);
+
+  // Write-through helpers: update state → localStorage (instant) → backend (async)
+  const saveNote   = (uid, val) => {
+    const u = { ...notes,  [uid]: val }; setNotes(u);
+    try { localStorage.setItem('coachClientNotes',  JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'client_notes',  data: u }).catch(() => {});
+  };
+  const saveTag    = (uid, val) => {
+    const u = { ...tags,   [uid]: val }; setTags(u);
+    try { localStorage.setItem('coachClientTags',   JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'client_tags',   data: u }).catch(() => {});
+  };
+  const saveGoal   = (uid, val) => {
+    const u = { ...goals,  [uid]: val }; setGoals(u);
+    try { localStorage.setItem('coachClientGoals',  JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'client_goals',  data: u }).catch(() => {});
+  };
+  const saveHealth = (uid, val) => {
+    const u = { ...health, [uid]: val }; setHealth(u);
+    try { localStorage.setItem('coachClientHealth', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'client_health', data: u }).catch(() => {});
+  };
 
   const memberLastCI = useMemo(() => {
     const map = {};

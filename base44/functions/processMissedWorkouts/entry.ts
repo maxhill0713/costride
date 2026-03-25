@@ -1,13 +1,20 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
-// SECURITY FIX [MEDIUM]:
-// 1. Called User.list() inside the handler with no per-run size cap.
-//    Now capped at MAX_USERS_PER_RUN.
-// 2. No try/catch around the outer loop body — added to prevent single-user errors
-//    from aborting the entire run.
-// (SDK already at 0.8.21, admin guard already in place)
+// SECURITY FIX [HIGH]:
+// 1. Called User.list() — full platform user table scan.
+//    FIXED: Replaced with GymMembership-scoped query. Only active gym members are processed.
+// 2. No per-run size cap — added MAX_USERS_PER_RUN.
+// 3. Automation bypass pattern retained (scheduled calls are unauthenticated by design);
+//    admin check enforced for any authenticated caller.
+// 4. try/catch around per-user loop body to prevent one bad user aborting the entire run.
 
-const MAX_USERS_PER_RUN = 2000;
+const MAX_USERS_PER_RUN = 500;
+
+function isAuthorizedAutomation(req: Request): boolean {
+  const secret = Deno.env.get('AUTOMATION_SECRET');
+  if (!secret) return true;
+  return req.headers.get('X-Automation-Secret') === secret;
+}
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -17,6 +24,10 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  } else {
+    if (!isAuthorizedAutomation(req)) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
 
@@ -28,7 +39,23 @@ Deno.serve(async (req) => {
 
   console.log(`Processing missed workouts for ${yesterdayStr} (day key ${yesterdayDayKey})`);
 
-  const allUsers = await base44.asServiceRole.entities.User.list('full_name', MAX_USERS_PER_RUN);
+  // SECURITY FIX: Replaced User.list() (full platform scan) with GymMembership-scoped
+  // query. Only active gym members are processed.
+  const activeMemberships = await base44.asServiceRole.entities.GymMembership.filter(
+    { status: 'active' }, '-created_date', MAX_USERS_PER_RUN
+  );
+  const uniqueUserIds = [...new Set(
+    activeMemberships.map((m: Record<string, string>) => m.user_id).filter(Boolean)
+  )];
+
+  if (!uniqueUserIds.length) {
+    return Response.json({ date: yesterdayStr, dayKey: yesterdayDayKey, processed: 0, freezeUsed: 0, streakReset: 0, skipped: 0 });
+  }
+
+  const allUsers = await base44.asServiceRole.entities.User.filter(
+    { id: { $in: uniqueUserIds } }, 'full_name', MAX_USERS_PER_RUN
+  );
+
   let processed = 0, freezeUsed = 0, streakReset = 0, skipped = 0;
 
   for (const user of allUsers) {
@@ -47,11 +74,11 @@ Deno.serve(async (req) => {
 
       if (streakFreezes > 0) {
         await base44.asServiceRole.entities.User.update(user.id, { streak_freezes: streakFreezes - 1 });
-        console.log(`[${user.email}] Freeze used. Remaining: ${streakFreezes - 1}. Streak stays at ${currentStreak}.`);
+        console.log(`[${user.id}] Freeze used. Remaining: ${streakFreezes - 1}. Streak stays at ${currentStreak}.`);
         freezeUsed++;
       } else {
         await base44.asServiceRole.entities.User.update(user.id, { current_streak: 0 });
-        console.log(`[${user.email}] No freezes. Streak reset from ${currentStreak} to 0.`);
+        console.log(`[${user.id}] No freezes. Streak reset from ${currentStreak} to 0.`);
         streakReset++;
       }
       processed++;

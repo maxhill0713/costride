@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { format, subDays, startOfDay } from 'date-fns';
 import {
   QrCode, Dumbbell, Calendar, Bell, Clock,
@@ -56,7 +57,12 @@ export default function TabCoachSchedule({
   const [rosterSearch,  setRosterSearch]  = useState('');
   const [confirmCancel, setConfirmCancel] = useState(null);   // cls to confirm-cancel
 
-  // ── Persisted ────────────────────────────────────────────────────────────
+  const gymId = allMemberships[0]?.gym_id || null;
+
+  // ── Persisted schedule data — write-through to backend ───────────────────
+  // SECURITY: Attendance records, session notes, and cancellations are coach
+  // operational data. localStorage exposes them to shared-device access and XSS.
+  // Backend is source of truth; localStorage is the immediate local cache.
   const [attendance, setAttendance] = useState(() => {
     try { return JSON.parse(localStorage.getItem('coachAttendanceSheets') || '{}'); } catch { return {}; }
   });
@@ -67,10 +73,24 @@ export default function TabCoachSchedule({
     try { return JSON.parse(localStorage.getItem('coachCancelledClasses') || '[]'); } catch { return []; }
   });
 
+  useEffect(() => {
+    if (!gymId) return;
+    base44.functions.invoke('coachData', { action: 'read', gymId })
+      .then(result => {
+        if (!result?.data) return;
+        const d = result.data;
+        if (d.attendance_sheets && Object.keys(d.attendance_sheets).length) { setAttendance(d.attendance_sheets); localStorage.setItem('coachAttendanceSheets', JSON.stringify(d.attendance_sheets)); }
+        if (d.session_notes    && Object.keys(d.session_notes).length)    { setNotes(d.session_notes);     localStorage.setItem('coachSessionNotes',    JSON.stringify(d.session_notes));    }
+        if (Array.isArray(d.cancelled_classes) && d.cancelled_classes.length) { setCancelledClasses(d.cancelled_classes); localStorage.setItem('coachCancelledClasses', JSON.stringify(d.cancelled_classes)); }
+      })
+      .catch(() => {});
+  }, [gymId]);
+
   const saveNote = (key, val) => {
     const u = { ...notes, [key]: val };
     setNotes(u);
     try { localStorage.setItem('coachSessionNotes', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'session_notes', data: u }).catch(() => {});
   };
 
   const toggleAttendance = (rosterKey, uid) => {
@@ -78,18 +98,21 @@ export default function TabCoachSchedule({
     const u = { ...attendance, [rosterKey]: sheet.includes(uid) ? sheet.filter(id => id !== uid) : [...sheet, uid] };
     setAttendance(u);
     try { localStorage.setItem('coachAttendanceSheets', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'attendance_sheets', data: u }).catch(() => {});
   };
 
   const markAllPresent = (rosterKey) => {
     const u = { ...attendance, [rosterKey]: allMemberships.map(m => m.user_id) };
     setAttendance(u);
     try { localStorage.setItem('coachAttendanceSheets', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'attendance_sheets', data: u }).catch(() => {});
   };
 
   const clearAttendance = (rosterKey) => {
     const u = { ...attendance, [rosterKey]: [] };
     setAttendance(u);
     try { localStorage.setItem('coachAttendanceSheets', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'attendance_sheets', data: u }).catch(() => {});
   };
 
   const cancelClass = (cls, dateStr) => {
@@ -97,6 +120,7 @@ export default function TabCoachSchedule({
     const u = [...cancelledClasses, key];
     setCancelledClasses(u);
     try { localStorage.setItem('coachCancelledClasses', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'cancelled_classes', data: u }).catch(() => {});
     setConfirmCancel(null);
     setExpandedClass(null);
   };
@@ -106,6 +130,7 @@ export default function TabCoachSchedule({
     const u = cancelledClasses.filter(k => k !== key);
     setCancelledClasses(u);
     try { localStorage.setItem('coachCancelledClasses', JSON.stringify(u)); } catch {}
+    if (gymId) base44.functions.invoke('coachData', { action: 'write', gymId, field: 'cancelled_classes', data: u }).catch(() => {});
   };
 
   // ── Date helpers ──────────────────────────────────────────────────────────
