@@ -11,23 +11,54 @@ export default function ModeratorDashboard() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState('hidden');
 
+  // SECURITY: All moderation actions now go through the moderatePost backend function
+  // which enforces server-side admin role check. Previously used asServiceRole directly
+  // from the browser with only a client-side role guard.
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: hiddenPosts = [], isLoading } = useQuery({
     queryKey: ['hiddenPosts'],
-    queryFn: () => base44.asServiceRole.entities.Post.filter({ is_hidden: true }),
+    queryFn: async () => {
+      const result = await base44.functions.invoke('moderatePost', { postId: 'list', action: 'list' });
+      return result.data?.posts || [];
+    },
+    enabled: currentUser?.role === 'admin',
   });
 
   const unhideMutation = useMutation({
-    mutationFn: (postId) => base44.asServiceRole.entities.Post.update(postId, { is_hidden: false }),
+    mutationFn: (postId) => base44.functions.invoke('moderatePost', { postId, action: 'unhide' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hiddenPosts'] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (postId) => base44.asServiceRole.entities.Post.delete(postId),
+    mutationFn: (postId) => base44.functions.invoke('moderatePost', { postId, action: 'delete' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hiddenPosts'] }),
   });
 
   const handleUnhide = (postId) => unhideMutation.mutate(postId);
   const handleDelete = (postId) => deleteMutation.mutate(postId);
+
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (currentUser.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-6">
+        <Card className="bg-slate-900/80 border border-red-500/30 p-8 text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
+          <p className="text-slate-300">This page is only accessible to administrators.</p>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

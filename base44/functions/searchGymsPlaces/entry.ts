@@ -68,11 +68,17 @@ Deno.serve(async (req) => {
     }
 
     const data   = await response.json();
+    // SECURITY: Do NOT embed the API key in photo URLs returned to the client — the key
+    // would be visible in browser network logs and exploitable for unauthorized API calls.
+    // Instead we return the photo resource name; the client should proxy requests through
+    // the backend (or use a domain-restricted key in Google Cloud Console).
+    // As an interim measure we return photoName only (no key embedded).
     const places = (data.places || []).map(place => {
       let photoUrl = null;
       if (place.photos?.length > 0) {
         const photoName = place.photos[0].name;
-        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
+        // Safe: resource path only, no key. Frontend may call /api/gymPhoto?name=... proxy.
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=800&maxWidthPx=800`;
       }
       const parts    = place.formattedAddress?.split(', ') || [];
       const city     = parts.length >= 2 ? parts[parts.length - 2] : '';

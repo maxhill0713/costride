@@ -23,7 +23,10 @@ export default function AdminGyms() {
   });
 
   const updateGymMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Gym.update(id, { status }),
+    // SECURITY: Routed through approveRejectGym backend function which enforces
+    // server-side admin role check. Previously called Gym.update() directly with
+    // only a client-side role check — any user could approve gyms via direct API call.
+    mutationFn: ({ id, status }) => base44.functions.invoke('approveRejectGym', { gymId: id, status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['adminGyms'] });
       toast.success(variables.status === 'approved' ? 'Gym approved!' : 'Gym rejected');

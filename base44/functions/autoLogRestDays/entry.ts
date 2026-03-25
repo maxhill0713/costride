@@ -25,10 +25,23 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Scope: only users who have training days configured, via GymMembership not User.list()
-    // Fetch active members who have training days (use User entity scoped by service role)
-    const allUsers = await base44.asServiceRole.entities.User.list('full_name', MAX_USERS_PER_RUN);
-    const usersWithSplits = allUsers.filter(u => u.training_days && u.training_days.length > 0);
+    // SECURITY FIX: Was calling User.list() which returns all users platform-wide.
+    // Now scoped via GymMembership to only fetch users who are active gym members,
+    // then fetches their user records individually to check training_days.
+    // This avoids a full user table scan and keeps queries scoped to gym members.
+    const activeMemberships = await base44.asServiceRole.entities.GymMembership.filter(
+      { status: 'active' }, '-created_date', MAX_USERS_PER_RUN
+    );
+    const uniqueUserIds = [...new Set(activeMemberships.map((m: Record<string, string>) => m.user_id).filter(Boolean))];
+    if (!uniqueUserIds.length) {
+      return Response.json({ success: true, restDaysLogged: 0 });
+    }
+
+    // Fetch user records in batch using $in to get training_days
+    const allUsers = await base44.asServiceRole.entities.User.filter(
+      { id: { $in: uniqueUserIds } }, 'full_name', MAX_USERS_PER_RUN
+    );
+    const usersWithSplits = allUsers.filter((u: Record<string, unknown>) => Array.isArray(u.training_days) && (u.training_days as unknown[]).length > 0);
 
     const yesterday = subDays(new Date(), 1);
     const yesterdayDayOfWeek = yesterday.getDay();

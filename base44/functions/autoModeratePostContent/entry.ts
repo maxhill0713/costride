@@ -37,23 +37,38 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: 'not a create event' });
     }
 
-    const post = data;
-    if (!post || !post.id) {
+    const postId = data?.id || event?.entity_id;
+    if (!postId || typeof postId !== 'string') {
       return Response.json({ error: 'invalid post' }, { status: 400 });
+    }
+
+    // SECURITY FIX: Previously used content from the request body — an attacker could
+    // supply any post_id + spam content to hide any post. Now we fetch the authoritative
+    // content from the database. The moderation runs on what's actually stored.
+    const posts = await base44.asServiceRole.entities.Post.filter({ id: postId });
+    if (!posts.length) {
+      return Response.json({ skipped: 'post not found' });
+    }
+    const post = posts[0];
+
+    // Don't re-moderate already-hidden posts
+    if (post.is_hidden) {
+      return Response.json({ skipped: 'already hidden', post_id: postId });
     }
 
     const content = post.content || '';
 
     if (isBlatantSpam(content) || isInappropriate(content)) {
-      await base44.asServiceRole.entities.Post.update(post.id, { is_hidden: true });
+      await base44.asServiceRole.entities.Post.update(postId, { is_hidden: true });
+      console.log(JSON.stringify({ event: 'AUDIT', action: 'post_auto_hidden', resource_type: 'post', resource_id: postId, reason: isBlatantSpam(content) ? 'spam' : 'inappropriate', timestamp: new Date().toISOString() }));
       return Response.json({
         action:  'hidden',
-        post_id: post.id,
+        post_id: postId,
         reason:  isBlatantSpam(content) ? 'spam' : 'inappropriate',
       });
     }
 
-    return Response.json({ action: 'approved', post_id: post.id });
+    return Response.json({ action: 'approved', post_id: postId });
   } catch (error) {
     console.error('Auto-moderation error:', error.message);
     return Response.json({ error: 'An internal error occurred' }, { status: 500 });

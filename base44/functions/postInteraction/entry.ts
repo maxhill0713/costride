@@ -5,6 +5,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 // 2. No XSS sanitisation on comment text or reaction type.
 // 3. Raw error.message leaked to client.
 // 4. Like/unlike not idempotent — anyone could spam likes to inflate counts.
+//    FIXED: likes are now tracked as a Set keyed by user_id (liked_by array).
+//    A user can only add one like; unlike removes them. Count derived from array length.
 
 const ALLOWED_REACTIONS = ['fire', 'strong', 'clap', 'heart', 'wow'];
 const ALLOWED_ACTIONS   = ['like', 'unlike', 'react', 'comment'];
@@ -48,12 +50,23 @@ Deno.serve(async (req) => {
     let updated;
 
     if (action === 'like') {
+      // SECURITY: Track per-user likes to prevent like-count inflation.
+      // liked_by is an array of user IDs. likes is kept in sync as its length.
+      const likedBy = Array.isArray(post.liked_by) ? [...post.liked_by] : [];
+      if (likedBy.includes(user.id)) {
+        // Already liked — idempotent, return current post without write
+        return Response.json({ post });
+      }
+      likedBy.push(user.id);
       updated = await base44.asServiceRole.entities.Post.update(postId, {
-        likes: (post.likes || 0) + 1,
+        liked_by: likedBy,
+        likes:    likedBy.length,
       });
     } else if (action === 'unlike') {
+      const likedBy = (Array.isArray(post.liked_by) ? post.liked_by : []).filter((id: string) => id !== user.id);
       updated = await base44.asServiceRole.entities.Post.update(postId, {
-        likes: Math.max(0, (post.likes || 0) - 1),
+        liked_by: likedBy,
+        likes:    likedBy.length,
       });
     } else if (action === 'react') {
       if (!reactionType || !ALLOWED_REACTIONS.includes(reactionType)) {

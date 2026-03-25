@@ -328,22 +328,34 @@ export default function GymSignup() {
 
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
-      const user = await base44.auth.me();
-      await base44.auth.updateMe({ account_type: 'gym_owner', onboarding_completed: true });
-      const lang     = detectLang(data.city);
-      const verified = emailVerified;
-      const status   = verified ? 'approved' : 'pending';
-      const chars    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let joinCode   = '';
-      for (let i = 0; i < 6; i++) joinCode += chars.charAt(Math.floor(Math.random() * chars.length));
-
-      let gym;
-      if (data.claimingGymId) {
-        gym = await base44.asServiceRole.entities.Gym.update(data.claimingGymId, { name: data.name, type: data.type, language: lang, owner_email: user.email, admin_id: user.id, amenities: data.amenities, equipment: data.equipment, specializes_in: data.specializes_in, description: data.description, claim_status: 'claimed', status, verified });
-      } else {
-        gym = await base44.entities.Gym.create({ name: data.name, google_place_id: data.google_place_id || '', latitude: data.latitude, longitude: data.longitude, address: data.address || '', city: data.city || '', postcode: data.postcode || '', type: data.type || 'general', language: lang, description: data.description || '', amenities: data.amenities || [], equipment: data.equipment || [], specializes_in: data.specializes_in || [], owner_email: user.email, join_code: joinCode, verified, admin_id: user.id, claim_status: 'claimed', status });
-      }
-      await base44.entities.GymMembership.create({ user_id: user.id, user_name: user.full_name, user_email: user.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' });
+      // SECURITY: All gym creation and claiming is now handled server-side via the
+      // addGym backend function. The backend controls:
+      //   - status (always 'pending' unless admin — never client-controlled)
+      //   - ownership fields (owner_email, admin_id set from authenticated user)
+      //   - field allowlisting (no injecting banned_members, admin_id, etc.)
+      //   - claim verification (caller must be unclaimed owner, not arbitrary user)
+      const lang = detectLang(data.city);
+      const result = await base44.functions.invoke('addGym', {
+        gymData: {
+          name:           data.name,
+          google_place_id: data.google_place_id || '',
+          latitude:       data.latitude,
+          longitude:      data.longitude,
+          address:        data.address        || '',
+          city:           data.city           || '',
+          postcode:       data.postcode       || '',
+          type:           data.type           || 'general',
+          language:       lang,
+          description:    data.description    || '',
+          amenities:      data.amenities      || [],
+          equipment:      data.equipment      || [],
+          specializes_in: data.specializes_in || [],
+        },
+        claimGymId: data.claimingGymId || null,
+      });
+      if (result.error) throw new Error(result.error);
+      const gym = result.data?.gym;
+      if (!gym) throw new Error('Gym creation failed');
       return gym;
     },
     onSuccess: (gym) => {
