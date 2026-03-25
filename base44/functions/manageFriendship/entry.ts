@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // SECURITY FIX [MEDIUM]:
 // 1. SDK version bumped.
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
-    console.error('Error managing friendship:', error.message);
-    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
+    console.error('Error managing friendship:', error.message, error?.data || '');
+    return Response.json({ error: error.message || 'An internal error occurred' }, { status: 500 });
   }
 });
