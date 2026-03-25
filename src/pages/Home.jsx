@@ -1773,12 +1773,7 @@ export default function Home() {
                 const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
                 const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
                 return (
-                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(15,18,35,0.95) 0%, rgba(8,10,20,0.98) 100%)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)',
-                    }}>
+                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
                     {/* Avatar + name */}
                     <div className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">

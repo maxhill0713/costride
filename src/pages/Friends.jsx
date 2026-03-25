@@ -647,13 +647,7 @@ export default function Friends() {
                 {/* Outgoing pending requests at top */}
                 {pendingOutgoing.map((pending) => (
                   <div key={`pending-${pending.id}`}
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(6,12,24,0.98) 0%, rgba(3,7,18,1) 100%)',
-                      border: '1px solid rgba(51,65,85,0.5)',
-                      borderBottom: '3px solid rgba(3,7,18,0.95)',
-                      boxShadow: '0 6px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
-                    }}
-                    className="p-3 rounded-xl flex items-center gap-3 relative">
+                    className="p-3 rounded-xl flex items-center gap-3 relative bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600/40 to-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-blue-500/30">
                       {pending.avatar_url
                         ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
