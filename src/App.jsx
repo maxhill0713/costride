@@ -1,11 +1,12 @@
 import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { base44 } from '@/api/base44Client';
 
 import Layout from './Layout';
 import Home from './pages/Home';
@@ -48,18 +49,42 @@ const LayoutWrapper = ({ children, currentPageName }) => (
   <Layout currentPageName={currentPageName}>{children}</Layout>
 );
 
+const LoadingScreen = () => (
+  <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 72 }}>
+    <div style={{ flex: 1 }} />
+    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg" alt="CoStride" style={{ width: 115, height: 115, borderRadius: 32, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
+    <div style={{ flex: 1 }} />
+    <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
+  </div>
+);
+
+const NotAuthorizedScreen = () => (
+  <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 }}>
+    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg" alt="CoStride" style={{ width: 80, height: 80, borderRadius: 22, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)', marginBottom: 8 }} />
+    <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 28, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
+    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, textAlign: 'center', maxWidth: 320, margin: 0 }}>
+      This platform is for gym owners only. Please use the CoStride mobile app to access your account.
+    </p>
+    <button
+      onClick={() => base44.auth.logout()}
+      style={{ marginTop: 8, padding: '10px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+      Sign Out
+    </button>
+  </div>
+);
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 72 }}>
-        <div style={{ flex: 1 }} />
-        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg" alt="CoStride" style={{ width: 115, height: 115, borderRadius: 32, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
-        <div style={{ flex: 1 }} />
-        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 32, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
-      </div>
-    );
+  const { data: currentUser, isLoading: isLoadingUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    enabled: !isLoadingAuth && !isLoadingPublicSettings && !authError,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoadingPublicSettings || isLoadingAuth || (isLoadingUser && !authError)) {
+    return <LoadingScreen />;
   }
 
   if (authError) {
@@ -69,6 +94,11 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  // Block non-gym-owners from accessing the web app
+  if (currentUser && currentUser.account_type !== 'gym_owner') {
+    return <NotAuthorizedScreen />;
   }
 
   return (
