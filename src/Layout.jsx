@@ -169,6 +169,7 @@ export default function Layout({ children, currentPageName }) {
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
   });
 
   const { data: gymMemberships = [] } = useQuery({

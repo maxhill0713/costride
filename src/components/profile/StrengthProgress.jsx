@@ -154,9 +154,10 @@ export default function StrengthProgress({ currentUser }) {
 
   const { data: communityLogs = [] } = useQuery({
     queryKey: ['communityLogs', primaryGymId],
-    queryFn: () => base44.entities.WorkoutLog.list('-created_date', 2000),
-    enabled: !!primaryGymId && gymMemberIds.length > 0,
+    queryFn: () => base44.entities.WorkoutLog.filter({ gym_id: primaryGymId }, '-completed_date', 500),
+    enabled: !!primaryGymId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: prev => prev,
   });
 
   useEffect(() => {

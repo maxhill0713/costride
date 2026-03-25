@@ -618,7 +618,8 @@ export default function Home() {
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchInterval: 10000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
     placeholderData: (prev) => prev,
   });
   const { data: friends = [] } = useQuery({
@@ -631,9 +632,16 @@ export default function Home() {
   });
   const friendIdList = friends.map((f) => f.friend_id);
   const { data: allPosts = [] } = useQuery({
-    queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
-    enabled: !!currentUser && friends.length > 0,
+    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
+    queryFn: () => {
+      const authorIds = [...friendIdList, currentUser.id];
+      return base44.entities.Post.filter(
+        { member_id: { $in: authorIds }, is_system_generated: false },
+        '-created_date',
+        30
+      );
+    },
+    enabled: !!currentUser && friendIdList.length > 0,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
@@ -671,13 +679,18 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allRecentCheckIns = [] } = useQuery({
-    queryKey: ['checkIns', 'recent90'],
-    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: ninetyDaysAgo } }, '-check_in_date', 1000),
-    enabled: !!currentUser,
+    queryKey: ['checkIns', 'friendFeed', friendIdList.join(',')],
+    queryFn: () => friendIdList.length === 0 ? [] : base44.entities.CheckIn.filter(
+      { user_id: { $in: friendIdList }, check_in_date: { $gte: thirtyDaysAgo } },
+      '-check_in_date',
+      200
+    ),
+    enabled: !!currentUser && friendIdList.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    placeholderData: prev => prev,
   });
 
   const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

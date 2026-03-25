@@ -48,7 +48,12 @@ const TabEngagement         = lazy(() => import('../components/dashboard/TabEnga
 const TabRewards            = lazy(() => import('../components/dashboard/TabRewards'));
 
 function TabLoader() {
-  return <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}><div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /></div>;
+  return (
+    <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+      <style>{`@keyframes _tab-spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: '_tab-spin 0.7s linear infinite' }} />
+    </div>
+  );
 }
 
 /*

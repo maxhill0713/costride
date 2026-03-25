@@ -110,13 +110,19 @@ export default function Friends() {
   const friendIds = friends.map((f) => f.friend_id);
 
   const { data: allPosts = [] } = useQuery({
-    queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
-    enabled: !!currentUser && friends.length > 0,
+    queryKey: ['friendPosts', currentUser?.id, friendIdsForFeed.join(',')],
+    queryFn: () => {
+      const authorIds = [...friendIdsForFeed, currentUser.id];
+      return base44.entities.Post.filter(
+        { member_id: { $in: authorIds }, is_system_generated: false },
+        '-created_date',
+        30
+      );
+    },
+    enabled: !!currentUser && friendIdsForFeed.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: true,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
 
   const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

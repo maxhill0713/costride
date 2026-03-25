@@ -366,22 +366,44 @@ export default function Community() {
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 })
   const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }), enabled: !!currentUser, staleTime: 5 * 60 * 1000 })
-  const { data: workoutLogs = [], isLoading } = useQuery({ queryKey: ['communityWorkoutLogs'], queryFn: () => base44.entities.WorkoutLog.list(), staleTime: 3 * 60 * 1000 })
-  const { data: users = [] } = useQuery({ queryKey: ['allUsers'], queryFn: () => base44.entities.User.list(), staleTime: 10 * 60 * 1000 })
+  const gymId = gymMemberships[0]?.gym_id
+
+  const { data: workoutLogs = [], isLoading } = useQuery({
+    queryKey: ['communityWorkoutLogs', gymId],
+    queryFn: () => base44.entities.WorkoutLog.filter({ gym_id: gymId }, '-completed_date', 500),
+    enabled: !!gymId,
+    staleTime: 3 * 60 * 1000,
+    placeholderData: p => p,
+  })
+  const { data: gymMembersForNames = [] } = useQuery({
+    queryKey: ['gymMembersForNames', gymId],
+    queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200),
+    enabled: !!gymId,
+    staleTime: 10 * 60 * 1000,
+    placeholderData: p => p,
+  })
 
   const userMap = useMemo(() => {
     const m = {}
-    users.forEach(u => { m[u.id] = u.full_name || u.email?.split('@')[0] || 'Athlete' })
+    gymMembersForNames.forEach(u => {
+      const uid = u.user_id || u.id
+      if (uid) m[uid] = u.user_name || u.full_name || u.email?.split('@')[0] || 'Athlete'
+    })
     if (currentUser) m[currentUser.id] = currentUser.full_name || currentUser.email?.split('@')[0] || 'You'
     return m
-  }, [users, currentUser])
+  }, [gymMembersForNames, currentUser])
 
   const userAvatarMap = useMemo(() => {
     const m = {}
-    users.forEach(u => { if (u.avatar_url || u.profile_picture || u.photo_url) m[u.id] = u.avatar_url || u.profile_picture || u.photo_url })
-    if (currentUser?.avatar_url || currentUser?.profile_picture || currentUser?.photo_url) m[currentUser.id] = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url
+    gymMembersForNames.forEach(u => {
+      const uid = u.user_id || u.id
+      const avatar = u.avatar_url || u.user_avatar || u.profile_picture || null
+      if (uid && avatar) m[uid] = avatar
+    })
+    const myAvatar = currentUser?.avatar_url || currentUser?.profile_picture || currentUser?.photo_url || null
+    if (currentUser?.id && myAvatar) m[currentUser.id] = myAvatar
     return m
-  }, [users, currentUser])
+  }, [gymMembersForNames, currentUser])
 
   const allSets      = useMemo(() => flattenWorkoutLogs(workoutLogs, userMap), [workoutLogs, userMap])
   const filteredSets = useMemo(() => filterByTime(allSets, timeFilter), [allSets, timeFilter])
