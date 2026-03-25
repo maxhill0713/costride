@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserLocation, checkDistanceToGyms } from '@/lib/geolocation';
@@ -66,10 +66,53 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
   const [success, setSuccess] = useState(false);
   const [ripples, setRipples] = useState([]);
   const [locationError, setLocationError] = useState(null);
-  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+  const [isCheckingLocation, setIsCheckingLocation] = useState(true);
+  const [isWithinRange, setIsWithinRange] = useState(false);
   const btnRef = useRef(null);
   const rippleId = useRef(0);
   const audioCtxRef = useRef(null);
+
+  // Check location on mount
+  React.useEffect(() => {
+    const checkLocationOnMount = async () => {
+      const userLocation = await getUserLocation();
+      if (!userLocation) {
+        setLocationError('Enable location access to check in at the gym');
+        setIsCheckingLocation(false);
+        return;
+      }
+
+      const gymsToCheck = gymMemberships.map(m => ({
+        id: m.gym_id,
+        name: m.gym_name,
+        latitude: m.gym_latitude,
+        longitude: m.gym_longitude,
+      })).filter(g => g.latitude && g.longitude);
+
+      if (gymsToCheck.length === 0) {
+        setLocationError('No gym location data available');
+        setIsCheckingLocation(false);
+        return;
+      }
+
+      const { isWithinRange: inRange, nearestGymDistance } = checkDistanceToGyms(
+        userLocation.latitude,
+        userLocation.longitude,
+        gymsToCheck,
+        200
+      );
+
+      if (inRange) {
+        setIsWithinRange(true);
+      } else {
+        const distanceKm = (nearestGymDistance / 1000).toFixed(1);
+        setLocationError(`You're ${distanceKm}km away. Must be within 200m to check in.`);
+      }
+      setIsCheckingLocation(false);
+    };
+
+    checkLocationOnMount();
+  }, []);
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
@@ -169,6 +212,22 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
 
   const isLoading = checkInMutation.isPending || isCheckingLocation;
   const isSuccess = success;
+
+  if (isCheckingLocation) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: '#a0aec0', fontSize: 12 }}>📍 Checking location...</div>;
+  }
+
+  if (!isWithinRange) {
+    return (
+      <div style={{
+        padding: '12px', borderRadius: 12,
+        background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+        fontSize: 12, color: '#fca5a5', fontWeight: 600, textAlign: 'center', lineHeight: '1.4'
+      }}>
+        📍 {locationError}
+      </div>
+    );
+  }
 
   return (
     <>
