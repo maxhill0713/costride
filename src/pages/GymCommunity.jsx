@@ -1429,30 +1429,44 @@ export default function GymCommunity() {
       const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
       if (userIds.length === 0) return [];
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const logs = await base44.entities.WorkoutLog.filter({ completed_date: { $gte: sevenDaysAgo } }, '-created_date', 200);
+      // Scope by user_id $in — avoids fetching workout logs from all gyms and client-filtering.
+      const logs = await base44.entities.WorkoutLog.filter(
+        { user_id: { $in: userIds }, completed_date: { $gte: sevenDaysAgo } },
+        '-created_date',
+        200
+      );
       const userNameMap = {};
       checkIns.forEach(c => { if (c.user_id && c.user_name) userNameMap[c.user_id] = c.user_name; });
-      return logs
-        .filter(l => userIds.includes(l.user_id))
-        .map(l => ({ ...l, user_name: l.user_name || userNameMap[l.user_id] || 'Member' }));
+      return logs.map(l => ({ ...l, user_name: l.user_name || userNameMap[l.user_id] || 'Member' }));
     },
     enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
   });
   const { data: gymChallengeParticipants = [] } = useQuery({ queryKey: ['gymChallengeParticipants', gymId], queryFn: async () => { const ids = challenges.map(c => c.id); if (!ids.length) return []; return base44.entities.ChallengeParticipant.filter({ challenge_id: ids[0] }, '-created_date', 100); }, enabled: !!gymId && activeTab === 'activity' && challenges.length > 0, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const { data: gymAchievements = [] } = useQuery({ queryKey: ['gymAchievements', gymId], queryFn: () => base44.entities.Achievement.filter({ gym_id: gymId }, '-created_date', 100), enabled: !!gymId && activeTab === 'activity', staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: gymPosts = [] } = useQuery({
+  const POSTS_PAGE_SIZE = 20;
+  const [postsPage, setPostsPage] = React.useState(1);
+
+  const { data: gymPostsRaw = [] } = useQuery({
     queryKey: ['gymPosts', gymId, checkIns.map(c => c.user_id).join(',')],
     queryFn: async () => {
       const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
       if (userIds.length === 0) return [];
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const posts = await base44.entities.Post.filter({ created_date: { $gte: sevenDaysAgo }, is_hidden: false }, '-created_date', 100);
-      return posts.filter(p => userIds.includes(p.member_id));
+      // Scope by member_id $in — avoids fetching posts from all gyms and client-filtering.
+      return base44.entities.Post.filter(
+        { member_id: { $in: userIds }, created_date: { $gte: sevenDaysAgo }, is_hidden: false },
+        '-created_date',
+        100
+      );
     },
     enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
   });
+
+  // Paginated slice — show first N posts with a Load More button.
+  const gymPosts = gymPostsRaw.slice(0, postsPage * POSTS_PAGE_SIZE);
+  const hasMorePosts = gymPostsRaw.length > postsPage * POSTS_PAGE_SIZE;
 
   const { data: leaderboards = {} } = useQuery({
     queryKey: ['leaderboards', gymId],
@@ -1757,6 +1771,17 @@ export default function GymCommunity() {
                   achievements={gymAchievements}
                   posts={gymPosts}
                 />
+                {hasMorePosts && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setPostsPage(p => p + 1)}
+                      style={{ borderRadius: 24, padding: '8px 28px', color: '#a0aec0', borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}
+                    >
+                      Load more posts
+                    </Button>
+                  </div>
+                )}
                 <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
               </motion.div>

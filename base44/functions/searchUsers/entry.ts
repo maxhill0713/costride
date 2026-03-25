@@ -22,12 +22,27 @@ Deno.serve(async (req) => {
     const safeLimit = Math.min(Math.max(parseInt(limit) || 10, 1), 20);
     const safeQuery = query.trim().toLowerCase().slice(0, 50); // truncate to prevent abuse
 
-    // Use server-side filter instead of listing 1000 users
-    const results = await base44.asServiceRole.entities.User.filter(
-      { username: { $regex: safeQuery } },
-      'full_name',
-      safeLimit + 1 // fetch one extra to detect truncation
-    );
+    // Search both username and full_name in parallel — deduplicates by id.
+    // A text/prefix index on username in the base44 console makes these O(log n).
+    const [byUsername, byName] = await Promise.all([
+      base44.asServiceRole.entities.User.filter(
+        { username: { $regex: safeQuery } },
+        'full_name',
+        safeLimit + 1
+      ),
+      base44.asServiceRole.entities.User.filter(
+        { full_name: { $regex: safeQuery } },
+        'full_name',
+        safeLimit + 1
+      ),
+    ]);
+
+    const seen = new Set<string>();
+    const results = [...byUsername, ...byName].filter(u => {
+      if (!u.id || seen.has(u.id)) return false;
+      seen.add(u.id);
+      return true;
+    });
 
     const users = results
       .filter(u => u.id !== user.id)

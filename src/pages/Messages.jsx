@@ -29,15 +29,17 @@ export default function Messages() {
     gcTime: 10 * 60 * 1000
   });
 
+  // Full conversation list — 60 s poll keeps sidebar fresh without hammering the DB.
+  // The open chat window gets 5 s incremental updates via getNewMessages below.
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', currentUser?.id],
     queryFn: () => base44.entities.Message.filter({
       $or: [{ sender_id: currentUser.id }, { receiver_id: currentUser.id }]
     }, '-created_date', 100),
     enabled: !!currentUser,
-    staleTime: 15 * 1000,
+    staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchInterval: isPageVisible ? 15000 : false,
+    refetchInterval: isPageVisible ? 60000 : false,
     refetchIntervalInBackground: false,
   });
 
@@ -135,6 +137,43 @@ export default function Messages() {
         (m.receiver_id === currentUser.id && m.sender_id === selectedChat.userId)
     );
   }, [messages, selectedChat, currentUser]);
+
+  // Track newest real (non-optimistic) message timestamp for incremental polling.
+  const lastMsgTimestampRef = useRef(null);
+  useEffect(() => {
+    const newest = chatMessages.find(m => !m.id?.startsWith?.('optimistic-'));
+    if (newest) lastMsgTimestampRef.current = newest.created_date;
+  }, [chatMessages]);
+
+  // Incremental 5 s poll — fetches only messages newer than the last seen timestamp.
+  // Merges results into the main messages cache without a full 100-message reload.
+  // When no new messages arrive this is a near-zero-cost indexed range-scan.
+  useQuery({
+    queryKey: ['chatPoll', currentUser?.id, selectedChat?.userId],
+    queryFn: async () => {
+      const since = lastMsgTimestampRef.current;
+      if (!since || !selectedChat) return [];
+      const result = await base44.functions.invoke('getNewMessages', {
+        partnerId: selectedChat.userId,
+        since,
+      });
+      const newMsgs = result.data?.messages || [];
+      if (newMsgs.length > 0) {
+        queryClient.setQueryData(['messages', currentUser?.id], (old = []) => {
+          const existingIds = new Set(old.map(m => m.id));
+          const fresh = newMsgs.filter(m => !existingIds.has(m.id));
+          return fresh.length ? [...fresh, ...old] : old;
+        });
+        lastMsgTimestampRef.current = newMsgs[0].created_date;
+      }
+      return newMsgs;
+    },
+    enabled: !!currentUser && !!selectedChat && isPageVisible,
+    refetchInterval: isPageVisible ? 5000 : false,
+    refetchIntervalInBackground: false,
+    staleTime: 0,
+    gcTime: 0,
+  });
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedChat || !currentUser) return;

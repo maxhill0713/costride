@@ -33,6 +33,23 @@ Deno.serve(async (req) => {
     }
     const gym = gyms[0];
 
+    // ── 24-hour response cache via GymStats ────────────────────────────────────
+    // Requires two fields on the GymStats entity in the base44 console:
+    //   foot_traffic_data       (Text / LongText)
+    //   foot_traffic_cached_at  (DateTime)
+    // If the fields don't exist the try-catch below degrades gracefully to a live fetch.
+    let cachedStatsRecord = null;
+    try {
+      const existingStats = await base44.asServiceRole.entities.GymStats.filter({ gym_id: gymId });
+      cachedStatsRecord = existingStats[0] || null;
+      if (cachedStatsRecord?.foot_traffic_data && cachedStatsRecord?.foot_traffic_cached_at) {
+        const ageMs = Date.now() - new Date(cachedStatsRecord.foot_traffic_cached_at).getTime();
+        if (ageMs < 24 * 60 * 60 * 1000) {
+          return Response.json(JSON.parse(cachedStatsRecord.foot_traffic_data));
+        }
+      }
+    } catch (_) { /* cache read failed — fall through to live fetch */ }
+
     // SECURITY: Verify the caller is a gym member or owner
     const isOwner = gym.owner_email === user.email || gym.admin_id === user.id;
     if (!isOwner && user.role !== 'admin') {
@@ -113,12 +130,27 @@ Deno.serve(async (req) => {
       };
     });
 
-    return Response.json({
+    const responsePayload = {
       venue_id:      data.venue_info?.venue_id,
       venue_name:    data.venue_info?.venue_name,
       venue_address: data.venue_info?.venue_address,
       weekData,
-    });
+    };
+
+    // Write to 24-hour cache (non-critical — fire-and-forget)
+    try {
+      const cacheFields = {
+        foot_traffic_data:      JSON.stringify(responsePayload),
+        foot_traffic_cached_at: new Date().toISOString(),
+      };
+      if (cachedStatsRecord) {
+        await base44.asServiceRole.entities.GymStats.update(cachedStatsRecord.id, cacheFields);
+      } else {
+        await base44.asServiceRole.entities.GymStats.create({ gym_id: gymId, ...cacheFields });
+      }
+    } catch (_) { /* cache write failed — non-critical */ }
+
+    return Response.json(responsePayload);
   } catch (error) {
     console.error('getBestTimeFootTraffic error:', error);
     return Response.json({ error: 'An internal error occurred' }, { status: 500 });

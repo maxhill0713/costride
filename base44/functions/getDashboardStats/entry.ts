@@ -13,6 +13,27 @@ Deno.serve(async (req) => {
     const atRiskDays = Math.min(Math.max(parseInt(rawAtRiskDays) || 14, 1), 90);
     const chartRange = [7, 30, 90].includes(parseInt(rawChartRange)) ? parseInt(rawChartRange) : 7;
 
+    // ── 5-minute response cache (default params only) ─────────────────────────
+    // Requires two fields on GymStats in the base44 console:
+    //   stats_cache             (Text / LongText)
+    //   stats_cache_computed_at (DateTime)
+    // Degrades gracefully if fields are absent. Only caches default params
+    // (atRiskDays=14, chartRange=7) — custom analytics always run fresh.
+    const isDefaultParams = atRiskDays === 14 && chartRange === 7;
+    let gymStatsRecord = null;
+    if (isDefaultParams) {
+      try {
+        const cached = await base44.asServiceRole.entities.GymStats.filter({ gym_id: gymId });
+        gymStatsRecord = cached[0] || null;
+        if (gymStatsRecord?.stats_cache && gymStatsRecord?.stats_cache_computed_at) {
+          const ageMs = Date.now() - new Date(gymStatsRecord.stats_cache_computed_at).getTime();
+          if (ageMs < 5 * 60 * 1000) { // 5-minute TTL
+            return Response.json(JSON.parse(gymStatsRecord.stats_cache));
+          }
+        }
+      } catch (_) { /* cache read failed — fall through to full computation */ }
+    }
+
     // ── Ownership / access check ───────────────────────────────────────────────
     const gyms = await base44.asServiceRole.entities.Gym.filter({ id: gymId });
     if (!gyms.length) return Response.json({ error: 'Not found' }, { status: 404 });
@@ -401,7 +422,7 @@ Deno.serve(async (req) => {
       user_id: c.user_id, user_name: c.user_name, check_in_date: c.check_in_date,
     }));
 
-    return Response.json({
+    const responseBody = {
       // Core KPIs
       todayCI, yesterdayCI, todayVsYest,
       activeThisWeek, activeLastWeek, weeklyChangePct,
@@ -427,7 +448,24 @@ Deno.serve(async (req) => {
       ci7Count, ci7pCount, weeklyTrendCoach, monthlyTrendCoach,
       returningCount, newMembersThis30, weeklyChart, monthlyChart,
       engagementSegmentsCoach, weekSpark,
-    });
+    };
+
+    // Write to 5-minute cache (non-critical, default params only)
+    if (isDefaultParams) {
+      try {
+        const cacheFields = {
+          stats_cache:             JSON.stringify(responseBody),
+          stats_cache_computed_at: new Date().toISOString(),
+        };
+        if (gymStatsRecord) {
+          await base44.asServiceRole.entities.GymStats.update(gymStatsRecord.id, cacheFields);
+        } else {
+          await base44.asServiceRole.entities.GymStats.create({ gym_id: gymId, ...cacheFields });
+        }
+      } catch (_) { /* cache write failed — non-critical */ }
+    }
+
+    return Response.json(responseBody);
   } catch (error) {
     console.error('getDashboardStats error:', error);
     return Response.json({ error: 'An internal error occurred' }, { status: 500 });
