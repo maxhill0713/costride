@@ -35,7 +35,7 @@ import { createPageUrl } from '../utils';
 // ─────────────────────────────────────────────────────────────────────────────
 const sanitiseUsernameQuery = (v) =>
   v
-    .replace(/[^a-zA-Z0-9_.\-]/g, '') // whitelist: letters, digits, _ . -
+    .replace(/[^a-zA-Z0-9_.\- ]/g, '') // whitelist: letters, digits, _ . - and spaces
     .slice(0, 30);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -675,8 +675,8 @@ export default function Home() {
       const results = await Promise.all(knownUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null)));
       return results.filter(Boolean);
     },
-    enabled: (showFriendsModal || showAddFriendModal) && knownUserIds.length > 0,
-    staleTime: 5 * 60 * 1000,
+    enabled: knownUserIds.length > 0,
+    staleTime: 2 * 60 * 1000,
   });
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -712,7 +712,12 @@ export default function Home() {
 
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }); setFriendSearchQuery(''); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
+      setFriendSearchQuery('');
+    },
   });
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
@@ -1860,7 +1865,7 @@ export default function Home() {
                           </div>
                           <div><div className="font-semibold text-white text-sm">{user.display_name || user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
                         </div>
-                        <Button size="sm" onClick={() => { addFriendMutation.mutate(user); setShowAddFriendModal(false); setShowFriendsModal(true); }} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
+                        <Button size="sm" onClick={() => { addFriendMutation.mutate(user, { onSuccess: () => { setShowAddFriendModal(false); setShowFriendsModal(true); } }); }} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
                           <UserPlus className="w-4 h-4" />
                         </Button>
                       </div>
