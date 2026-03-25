@@ -576,23 +576,7 @@ export default function Home() {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
-  useEffect(() => {
-    if (!feedBottomRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visiblePostCount < socialFeedPosts.length) {
-          setIsLoadingMorePosts(true);
-          setTimeout(() => {
-            setVisiblePostCount(prev => Math.min(prev + POSTS_PER_PAGE, socialFeedPosts.length));
-            setIsLoadingMorePosts(false);
-          }, 600);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(feedBottomRef.current);
-    return () => observer.disconnect();
-  }, [visiblePostCount, socialFeedPosts.length]);
+
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -768,6 +752,20 @@ export default function Home() {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
+
+  useEffect(() => {
+    if (!feedBottomRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(feedBottomRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!showStreakCelebration) return;
@@ -1525,7 +1523,7 @@ export default function Home() {
                 </div>
               )}
 
-              {visibleSocialFeedPosts.length > 0 && (
+              {socialFeedPosts.length > 0 && (
                 <div className="space-y-3">
                   {socialFeedPosts.slice(0, visiblePostCount).map(post => (
                     <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
