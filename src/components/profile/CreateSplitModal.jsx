@@ -215,7 +215,7 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mirror confirmation — styled identically to DeleteAccountDialog in Settings
+// Mirror confirmation dialog
 // ─────────────────────────────────────────────────────────────────────────────
 function MirrorConfirmDialog({ open, onClose, onConfirm }) {
   if (!open) return null;
@@ -235,8 +235,39 @@ function MirrorConfirmDialog({ open, onClose, onConfirm }) {
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-purple-500 via-purple-600 to-purple-700 shadow-[0_3px_0_0_#5b21b6,0_6px_16px_rgba(120,40,220,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 shadow-[0_3px_0_0_#0f172a,0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Mirror
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Delete Workout confirmation dialog
+// ─────────────────────────────────────────────────────────────────────────────
+function DeleteWorkoutDialog({ open, onClose, onConfirm, dayName }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Delete Workout?</h3>
+        <p className="text-slate-300 text-sm mb-1">
+          This will clear all exercises and cardio from <span className="text-white font-bold">{dayName}</span>.
+        </p>
+        <p className="text-slate-500 text-xs mb-6">The day will remain selected but the workout will be empty.</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(220,38,38,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Delete
           </button>
         </div>
       </div>
@@ -262,18 +293,32 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
 
   // ── Mirror state ──────────────────────────────────────────────────────────
-  // Each entry is [dayA, dayB] where dayA < dayB
   const [mirroredPairs, setMirroredPairs] = useState([]);
   const [pendingMirrorPair, setPendingMirrorPair] = useState(null);
   const [showMirrorConfirm, setShowMirrorConfirm] = useState(false);
+
+  // ── Delete workout state ──────────────────────────────────────────────────
+  const [deleteWorkoutDay, setDeleteWorkoutDay] = useState(null);
+  // Per-day dots menu open state (keyed by day number)
+  const [dayDotsMenuOpen, setDayDotsMenuOpen] = useState({});
 
   const queryClient = useQueryClient();
 
   // ── Mirror helpers ────────────────────────────────────────────────────────
 
-  // For a given day, find its unmirrored counterpart (same name, lower day wins button).
-  // Returns [day, other] if this day should show the Mirror button, else null.
-  const getUnmirroredPairForDay = (day) => {
+  // Returns the mirror partner of a day, or null
+  const getMirrorDay = (day) => {
+    for (const [a, b] of mirroredPairs) {
+      if (a === day) return b;
+      if (b === day) return a;
+    }
+    return null;
+  };
+
+  // For a given day, find its potential mirror partner (same name, not yet mirrored).
+  // Returns the pair [lower, higher] if this day should show the Mirror button, else null.
+  // Now shows on BOTH days of a potential pair.
+  const getMirrorablePartner = (day) => {
     const nameA = (workouts[day]?.name || '').trim().toLowerCase();
     if (!nameA) return null;
     for (const other of selectedDays) {
@@ -283,16 +328,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       const alreadyMirrored = mirroredPairs.some(
         ([x, y]) => (x === day && y === other) || (x === other && y === day)
       );
-      if (!alreadyMirrored && day < other) return [day, other];
-    }
-    return null;
-  };
-
-  // Returns the mirror partner of a day, or null
-  const getMirrorDay = (day) => {
-    for (const [a, b] of mirroredPairs) {
-      if (a === day) return b;
-      if (b === day) return a;
+      if (!alreadyMirrored) {
+        // Return the canonical pair (lower first) along with whether this day is part of it
+        return day < other ? [day, other] : [other, day];
+      }
     }
     return null;
   };
@@ -337,6 +376,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
     setDotsMenuOpen(false); setShowSetActiveModal(false);
     setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null); setDayDotsMenuOpen({});
   }, [isOpen]);
 
   const saveMutation = useMutation({
@@ -395,16 +435,18 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setWorkouts(split.workouts || {});
     setEditingSplitId(split.id);
     setDotsMenuOpen(false);
-    // Restore persisted mirror pairs so the badge shows correctly on reload
     setMirroredPairs(split.mirrored_pairs || []);
     setPendingMirrorPair(null);
     setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null);
+    setDayDotsMenuOpen({});
     setStep('configure');
   };
 
   const openCustomConfigure = () => {
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
     setDotsMenuOpen(false); setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null); setDayDotsMenuOpen({});
     setStep('configure');
   };
 
@@ -416,7 +458,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       name: safeName,
       training_days: selectedDays,
       workouts,
-      mirrored_pairs: mirroredPairs, // ← persisted so badge survives reopen
+      mirrored_pairs: mirroredPairs,
       created_at: new Date().toISOString()
     };
     const updated = [...savedSplits.filter((s) => s.id !== newSplit.id), newSplit];
@@ -433,6 +475,20 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b));
       setWorkouts((prev) => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } }));
     }
+  };
+
+  // ── Workout name change — unmirror if name diverges ───────────────────────
+  const handleWorkoutNameChange = (day, newName) => {
+    const sanitised = sanitiseDayName(newName);
+    // Check if this day is currently mirrored
+    const mirrorDay = getMirrorDay(day);
+    if (mirrorDay !== null) {
+      // Name is changing — break the mirror link (keep exercises as-is, no sync)
+      setMirroredPairs((prev) => prev.filter(([a, b]) => !(a === day && b === mirrorDay) && !(a === mirrorDay && b === day)));
+      toast('Mirror unlinked — names now differ', { icon: '🔓' });
+    }
+    // Only update this day's name (not mirrored partner)
+    setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], name: sanitised } }));
   };
 
   // ── Workout mutators — sync mirror partner ────────────────────────────────
@@ -505,6 +561,18 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     }
     return { ...prev, [day]: { ...prev[day], cardio: arr } };
   });
+
+  // ── Delete workout for a day (clears exercises/cardio, keeps day selected) ─
+  const handleDeleteWorkout = (day) => {
+    setWorkouts((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], name: prev[day]?.name || '', color: prev[day]?.color || 'blue', exercises: [], cardio: [] }
+    }));
+    // Also break any mirror involving this day
+    setMirroredPairs((prev) => prev.filter(([a, b]) => a !== day && b !== day));
+    setDeleteWorkoutDay(null);
+    toast.success('Workout cleared');
+  };
 
   const formatTime = (raw) => {
     const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
@@ -669,28 +737,30 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     const exs = wt.exercises || [];
                     const mirrorDay = getMirrorDay(day);
                     const isMirrored = mirrorDay !== null;
-                    // Show Mirror Workout button only on the lower-numbered day of an unmirrored pair
-                    const mirrorPair = getUnmirroredPairForDay(day);
+                    // Mirror button: show on BOTH days of a potential pair (same name, not yet mirrored)
+                    const mirrorPair = !isMirrored ? getMirrorablePartner(day) : null;
                     const showMirrorBtn = mirrorPair !== null;
+                    const isDayDotsOpen = !!dayDotsMenuOpen[day];
 
                     return (
                       <div key={day} className="rounded-2xl overflow-hidden" style={{
                         background: 'rgba(12,16,32,0.8)',
-                        border: isMirrored ? '1px solid rgba(20,184,166,0.28)' : '1px solid rgba(255,255,255,0.06)',
+                        // No special border for mirrored — same neutral border always
+                        border: '1px solid rgba(255,255,255,0.06)',
                       }}>
 
-                        {/* ── Card header: day pill · name input · mirror button/badge ── */}
+                        {/* ── Card header ── */}
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
                           {/* Day pill */}
                           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
                             <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
                           </div>
 
-                          {/* Workout name — flex-1 so it fills available space */}
+                          {/* Workout name */}
                           <input
                             type="text"
                             value={wt.name || ''}
-                            onChange={(e) => updateWorkout(day, 'name', sanitiseDayName(e.target.value))}
+                            onChange={(e) => handleWorkoutNameChange(day, e.target.value)}
                             placeholder={`Day ${day} workout…`}
                             maxLength={25}
                             autoComplete="off"
@@ -700,25 +770,59 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0"
                           />
 
-                          {/* Mirror Workout button — Set Active style, text only, lower-day card only */}
+                          {/* Mirror Workout button — grey premium, shows on BOTH matching-name days */}
                           {showMirrorBtn && (
                             <button
                               onClick={() => { setPendingMirrorPair(mirrorPair); setShowMirrorConfirm(true); }}
-                              className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu flex-shrink-0">
+                              className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none text-xs h-8 px-2.5 rounded-lg flex-shrink-0 transform-gpu active:translate-y-[3px] active:scale-95 active:shadow-none"
+                              style={{
+                                background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
+                                color: 'rgba(226,232,240,0.9)',
+                                border: '1px solid rgba(255,255,255,0.10)',
+                                boxShadow: '0 3px 0 0 #111827, inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.4)',
+                              }}>
                               Mirror Workout
                             </button>
                           )}
 
-                          {/* Mirrored Workout static badge — on both cards of a mirrored pair */}
+                          {/* Mirrored badge + 3-dots menu */}
                           {isMirrored && (
-                            <div
-                              className="inline-flex items-center justify-center whitespace-nowrap font-bold text-xs h-8 px-2.5 rounded-lg flex-shrink-0"
-                              style={{
-                                background: 'rgba(20,184,166,0.09)',
-                                border: '1px solid rgba(20,184,166,0.28)',
-                                color: 'rgba(94,234,212,0.8)',
-                              }}>
-                              Mirrored Workout
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {/* Static badge */}
+                              <div
+                                className="inline-flex items-center justify-center whitespace-nowrap font-bold text-xs h-8 px-2.5 rounded-lg uppercase tracking-widest"
+                                style={{
+                                  background: 'rgba(255,255,255,0.04)',
+                                  border: '1px solid rgba(255,255,255,0.10)',
+                                  color: 'rgba(148,163,184,0.65)',
+                                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)',
+                                  fontSize: '9px',
+                                  letterSpacing: '0.08em',
+                                }}>
+                                Mirrored
+                              </div>
+                              {/* 3-dots button */}
+                              <div className="relative">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] })); }}
+                                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 transition-colors active:scale-90">
+                                  <MoreVertical className="w-4 h-4" />
+                                </button>
+                                {isDayDotsOpen && (
+                                  <>
+                                    {/* Backdrop to close */}
+                                    <div className="fixed inset-0 z-[15]" onClick={() => setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }))} />
+                                    <div className="absolute right-0 top-8 z-[16] rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)', minWidth: '140px' }}>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false })); setDeleteWorkoutDay(day); }}
+                                        className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-red-400 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        Delete Workout
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -846,6 +950,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         open={showMirrorConfirm}
         onClose={() => { setShowMirrorConfirm(false); setPendingMirrorPair(null); }}
         onConfirm={handleConfirmMirror}
+      />
+
+      {/* ── Delete Workout confirmation ── */}
+      <DeleteWorkoutDialog
+        open={deleteWorkoutDay !== null}
+        onClose={() => setDeleteWorkoutDay(null)}
+        onConfirm={() => handleDeleteWorkout(deleteWorkoutDay)}
+        dayName={deleteWorkoutDay ? (workouts[deleteWorkoutDay]?.name || DAY_NAMES[deleteWorkoutDay - 1]) : ''}
       />
 
       {/* ── Delete Split confirmation ── */}
