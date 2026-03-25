@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster"
-import { base44 } from '@/api/base44Client';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
@@ -50,7 +49,7 @@ const LayoutWrapper = ({ children, currentPageName }) => (
 );
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -70,23 +69,6 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
-  }
-
-  // On web (non-mobile), restrict access to gym owners only
-  const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  if (!isMobileDevice && user && user.account_type !== 'gym_owner' && user.role !== 'admin') {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 32, textAlign: 'center' }}>
-        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg" alt="CoStride" style={{ width: 80, height: 80, borderRadius: 20, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)' }} />
-        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 28, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
-        <p style={{ color: '#94a3b8', fontSize: 16, maxWidth: 360, lineHeight: 1.6, margin: 0 }}>
-          The web version is for gym owners only. Download the CoStride app on your phone to access your member account.
-        </p>
-        <button onClick={() => base44.auth.logout()} style={{ marginTop: 8, padding: '12px 28px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          Sign out
-        </button>
-      </div>
-    );
   }
 
   return (
