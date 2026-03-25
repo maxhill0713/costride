@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2, GitFork } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -11,40 +11,31 @@ import { Button } from '@/components/ui/button';
 // Input sanitisation helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Split / day name: letters, digits, spaces, hyphens, slashes, commas, apostrophes
 const SPLIT_NAME_ALLOWED = /[^a-zA-Z0-9\s\-\/,'.]/g;
 const sanitiseSplitName   = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 40);
 const sanitiseDayName     = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 25);
-
-// Exercise name: letters and spaces only
 const sanitiseExerciseName = (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 35);
-
-// Numeric fields: digits only
-const sanitiseSets   = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 sets
-const sanitiseReps   = (v) => v.replace(/\D/g, '').slice(0, 3);   // max 999 reps
-const sanitiseRounds = (v) => v.replace(/\D/g, '').slice(0, 2);   // max 99 rounds
+const sanitiseSets   = (v) => v.replace(/\D/g, '').slice(0, 2);
+const sanitiseReps   = (v) => v.replace(/\D/g, '').slice(0, 3);
+const sanitiseRounds = (v) => v.replace(/\D/g, '').slice(0, 2);
 
 const sanitiseWeight = (v) => {
   let s = v.replace(/[^0-9.]/g, '');
   const parts = s.split('.');
   if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
-  // Clamp to 2 decimal places
   if (s.includes('.')) {
     const [whole, dec] = s.split('.');
     s = whole + '.' + dec.slice(0, 2);
   }
-  return s.slice(0, 7); // e.g. "999.25" = 6 chars, +1 buffer
+  return s.slice(0, 7);
 };
 
-// Time digits: raw digits only (passed to formatTime), seconds clamped to ≤59
 const sanitiseTimeDigits = (raw) => {
   const digits = raw.replace(/\D/g, '').slice(0, 4);
   if (digits.length < 2) return digits;
-  // Last two digits are seconds — clamp to 59
   const secs = parseInt(digits.slice(-2), 10);
   if (secs > 59) {
-    const clamped = '59';
-    return digits.slice(0, digits.length - 2) + clamped;
+    return digits.slice(0, digits.length - 2) + '59';
   }
   return digits;
 };
@@ -126,7 +117,6 @@ function SetActiveButton({ onClick }) {
   );
 }
 
-// Numeric-only small input — rejects non-digit (and optionally decimal) input at component level
 function SmallInput({ value, onChange, placeholder, sanitise = sanitiseSets }) {
   return (
     <input
@@ -284,8 +274,72 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState('');
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
+
+  // ── Mirror Workout state ──────────────────────────────────────────────────
+  const [mirroredPairs, setMirroredPairs] = useState([]); // [[dayA, dayB], ...]
+  const [showMirrorConfirm, setShowMirrorConfirm] = useState(false);
+
   const queryClient = useQueryClient();
 
+  // ── Derive mirror helpers ─────────────────────────────────────────────────
+
+  // Find pairs of selectedDays whose workout names match (case-insensitive, trimmed)
+  // and are NOT yet in mirroredPairs
+  const getUnmirroredDuplicatePairs = () => {
+    const pairs = [];
+    for (let i = 0; i < selectedDays.length; i++) {
+      for (let j = i + 1; j < selectedDays.length; j++) {
+        const a = selectedDays[i];
+        const b = selectedDays[j];
+        const nameA = (workouts[a]?.name || '').trim().toLowerCase();
+        const nameB = (workouts[b]?.name || '').trim().toLowerCase();
+        if (nameA && nameA === nameB) {
+          const alreadyMirrored = mirroredPairs.some(
+            ([x, y]) => (x === a && y === b) || (x === b && y === a)
+          );
+          if (!alreadyMirrored) pairs.push([a, b]);
+        }
+      }
+    }
+    return pairs;
+  };
+
+  const unmirroredDuplicatePairs = getUnmirroredDuplicatePairs();
+  const showMirrorButton  = step === 'configure' && unmirroredDuplicatePairs.length > 0;
+  const showMirroredBadge = step === 'configure' && mirroredPairs.length > 0 && unmirroredDuplicatePairs.length === 0;
+
+  // Returns the mirrored counterpart of a day, or null
+  const getMirrorDay = (day) => {
+    for (const [a, b] of mirroredPairs) {
+      if (a === day) return b;
+      if (b === day) return a;
+    }
+    return null;
+  };
+
+  // ── Confirm mirror action ─────────────────────────────────────────────────
+  const handleConfirmMirror = () => {
+    const pairs = getUnmirroredDuplicatePairs();
+    setWorkouts((prev) => {
+      let updated = { ...prev };
+      pairs.forEach(([a, b]) => {
+        const exCountA = (prev[a]?.exercises || []).length;
+        const exCountB = (prev[b]?.exercises || []).length;
+        const [src, dst] = exCountA >= exCountB ? [a, b] : [b, a];
+        updated[dst] = {
+          ...updated[dst],
+          exercises: JSON.parse(JSON.stringify(updated[src]?.exercises || [])),
+          cardio:    JSON.parse(JSON.stringify(updated[src]?.cardio    || [])),
+        };
+      });
+      return updated;
+    });
+    setMirroredPairs((prev) => [...prev, ...pairs]);
+    setShowMirrorConfirm(false);
+    toast.success('Workouts mirrored!');
+  };
+
+  // ── Effects ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const saved = currentUser?.saved_splits || [];
@@ -299,6 +353,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setStep('pick'); setPreviewSplit(null); setPreviewWeights({}); setWeightsDirty(false);
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
     setDotsMenuOpen(false); setShowSetActiveModal(false);
+    // Reset mirror state
+    setMirroredPairs([]); setShowMirrorConfirm(false);
   }, [isOpen]);
 
   const saveMutation = useMutation({
@@ -314,7 +370,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   const handleBack = () => {
     if (step === 'preview') { setStep('pick'); setPreviewSplit(null); }
-    else if (step === 'configure') { setDotsMenuOpen(false); setEditingSplitId(null); setStep('pick'); }
+    else if (step === 'configure') { setDotsMenuOpen(false); setEditingSplitId(null); setMirroredPairs([]); setStep('pick'); }
     else { onClose(); }
   };
 
@@ -347,11 +403,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setWeightsDirty(false); setStep('preview');
   };
 
-  const openEditCustom = (split) => { setSplitName(split.name || ''); setSelectedDays(split.training_days || []); setWorkouts(split.workouts || {}); setEditingSplitId(split.id); setDotsMenuOpen(false); setStep('configure'); };
-  const openCustomConfigure = () => { setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null); setDotsMenuOpen(false); setStep('configure'); };
+  const openEditCustom = (split) => {
+    setSplitName(split.name || ''); setSelectedDays(split.training_days || []); setWorkouts(split.workouts || {});
+    setEditingSplitId(split.id); setDotsMenuOpen(false); setMirroredPairs([]); setStep('configure');
+  };
+  const openCustomConfigure = () => {
+    setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
+    setDotsMenuOpen(false); setMirroredPairs([]); setStep('configure');
+  };
 
   const handleSave = () => {
-    // Strip any remaining whitespace-only names before saving
     const safeName = splitName.trim() || 'My Split';
     const newSplit = { id: editingSplitId || Date.now().toString(), preset_id: 'custom', name: safeName, training_days: selectedDays, workouts, created_at: new Date().toISOString() };
     const updated = [...savedSplits.filter((s) => s.id !== newSplit.id), newSplit];
@@ -360,18 +421,100 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   };
 
   const toggleDay = (dayNum) => {
-    if (selectedDays.includes(dayNum)) { setSelectedDays((prev) => prev.filter((d) => d !== dayNum)); setWorkouts((prev) => { const n = { ...prev }; delete n[dayNum]; return n; }); }
-    else { setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b)); setWorkouts((prev) => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } })); }
+    if (selectedDays.includes(dayNum)) {
+      setSelectedDays((prev) => prev.filter((d) => d !== dayNum));
+      setWorkouts((prev) => { const n = { ...prev }; delete n[dayNum]; return n; });
+      // Remove any mirrored pairs that included this day
+      setMirroredPairs((prev) => prev.filter(([a, b]) => a !== dayNum && b !== dayNum));
+    } else {
+      setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b));
+      setWorkouts((prev) => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } }));
+    }
   };
-  const updateWorkout = (day, field, value) => setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
-  const addExercise = (day) => setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), { exercise: '', sets: '3', reps: '10', weight: '' }] } }));
-  const updateExercise = (day, idx, field, value) => setWorkouts((prev) => { const exs = [...(prev[day]?.exercises || [])]; exs[idx] = { ...exs[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
-  const removeExercise = (day, idx) => setWorkouts((prev) => { const exs = [...(prev[day]?.exercises || [])]; exs.splice(idx, 1); return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
-  const addCardio = (day) => setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], cardio: [...(prev[day]?.cardio || []), { exercise: '', rounds: '1', time: '', rest: '' }] } }));
-  const updateCardio = (day, idx, field, value) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr[idx] = { ...arr[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
-  const removeCardio = (day, idx) => setWorkouts((prev) => { const arr = [...(prev[day]?.cardio || [])]; arr.splice(idx, 1); return { ...prev, [day]: { ...prev[day], cardio: arr } }; });
 
-  // ── Time input: raw digits → M:SS format, seconds clamped to ≤59 ──────────
+  // ── Workout mutators — all sync to mirror if paired ───────────────────────
+
+  const updateWorkout = (day, field, value) => setWorkouts((prev) => {
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      return { ...prev, [day]: { ...prev[day], [field]: value }, [mirror]: { ...prev[mirror], [field]: value } };
+    }
+    return { ...prev, [day]: { ...prev[day], [field]: value } };
+  });
+
+  const addExercise = (day) => {
+    const newEx = { exercise: '', sets: '3', reps: '10', weight: '' };
+    setWorkouts((prev) => {
+      const mirror = getMirrorDay(day);
+      const updated = { ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), newEx] } };
+      if (mirror !== null) {
+        updated[mirror] = { ...prev[mirror], exercises: [...(prev[mirror]?.exercises || []), { ...newEx }] };
+      }
+      return updated;
+    });
+  };
+
+  const updateExercise = (day, idx, field, value) => setWorkouts((prev) => {
+    const exs = [...(prev[day]?.exercises || [])];
+    exs[idx] = { ...exs[idx], [field]: value };
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mExs = [...(prev[mirror]?.exercises || [])];
+      if (mExs[idx] !== undefined) mExs[idx] = { ...mExs[idx], [field]: value };
+      return { ...prev, [day]: { ...prev[day], exercises: exs }, [mirror]: { ...prev[mirror], exercises: mExs } };
+    }
+    return { ...prev, [day]: { ...prev[day], exercises: exs } };
+  });
+
+  const removeExercise = (day, idx) => setWorkouts((prev) => {
+    const exs = [...(prev[day]?.exercises || [])];
+    exs.splice(idx, 1);
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mExs = [...(prev[mirror]?.exercises || [])];
+      mExs.splice(idx, 1);
+      return { ...prev, [day]: { ...prev[day], exercises: exs }, [mirror]: { ...prev[mirror], exercises: mExs } };
+    }
+    return { ...prev, [day]: { ...prev[day], exercises: exs } };
+  });
+
+  const addCardio = (day) => {
+    const newCardio = { exercise: '', rounds: '1', time: '', rest: '' };
+    setWorkouts((prev) => {
+      const mirror = getMirrorDay(day);
+      const updated = { ...prev, [day]: { ...prev[day], cardio: [...(prev[day]?.cardio || []), newCardio] } };
+      if (mirror !== null) {
+        updated[mirror] = { ...prev[mirror], cardio: [...(prev[mirror]?.cardio || []), { ...newCardio }] };
+      }
+      return updated;
+    });
+  };
+
+  const updateCardio = (day, idx, field, value) => setWorkouts((prev) => {
+    const arr = [...(prev[day]?.cardio || [])];
+    arr[idx] = { ...arr[idx], [field]: value };
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mArr = [...(prev[mirror]?.cardio || [])];
+      if (mArr[idx] !== undefined) mArr[idx] = { ...mArr[idx], [field]: value };
+      return { ...prev, [day]: { ...prev[day], cardio: arr }, [mirror]: { ...prev[mirror], cardio: mArr } };
+    }
+    return { ...prev, [day]: { ...prev[day], cardio: arr } };
+  });
+
+  const removeCardio = (day, idx) => setWorkouts((prev) => {
+    const arr = [...(prev[day]?.cardio || [])];
+    arr.splice(idx, 1);
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mArr = [...(prev[mirror]?.cardio || [])];
+      mArr.splice(idx, 1);
+      return { ...prev, [day]: { ...prev[day], cardio: arr }, [mirror]: { ...prev[mirror], cardio: mArr } };
+    }
+    return { ...prev, [day]: { ...prev[day], cardio: arr } };
+  });
+
+  // ── Time input helpers ────────────────────────────────────────────────────
   const formatTime = (raw) => {
     const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
     if (!digits) return '';
@@ -405,7 +548,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
-          <div className="flex-shrink-0 flex items-center justify-end gap-1 ml-auto">
+          <div className="flex-shrink-0 flex items-center justify-end gap-1.5 ml-auto">
             {step === 'pick' && (
               <>
                 <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
@@ -417,7 +560,33 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               </>
             )}
             {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-            {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+            {step === 'configure' && (
+              <>
+                {/* Mirror Workout button — shown when unmirrored duplicate-name pairs exist */}
+                {showMirrorButton && (
+                  <button
+                    onClick={() => setShowMirrorConfirm(true)}
+                    className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold text-white whitespace-nowrap transition-all duration-150 transform-gpu bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 shadow-[0_2px_0_0_#0f766e,0_4px_8px_rgba(20,184,166,0.25),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90"
+                  >
+                    <GitFork className="w-3 h-3" />
+                    Mirror Workout
+                  </button>
+                )}
+                {/* Mirrored Workout badge — shown once all duplicate pairs are mirrored */}
+                {showMirroredBadge && (
+                  <div className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap"
+                    style={{
+                      background: 'rgba(20,184,166,0.12)',
+                      border: '1px solid rgba(20,184,166,0.35)',
+                      color: 'rgba(94,234,212,0.9)'
+                    }}>
+                    <GitFork className="w-3 h-3" />
+                    Mirrored Workout
+                  </div>
+                )}
+                {editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+              </>
+            )}
           </div>
         </div>
 
@@ -554,8 +723,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   {selectedDays.map((day) => {
                     const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
                     const exs = wt.exercises || [];
+                    const mirrorDay = getMirrorDay(day);
+                    const isMirrored = mirrorDay !== null;
+
                     return (
-                      <div key={day} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={day} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: isMirrored ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)' }}>
 
                         {/* Day header */}
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
@@ -574,6 +746,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             style={{ fontSize: '16px' }}
                             className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none"
                           />
+                          {/* Per-card mirrored indicator */}
+                          {isMirrored && (
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-lg flex-shrink-0"
+                              style={{ background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)' }}>
+                              <GitFork className="w-3 h-3" style={{ color: 'rgba(94,234,212,0.8)' }} />
+                              <span className="text-[9px] font-bold" style={{ color: 'rgba(94,234,212,0.8)' }}>
+                                {DAY_NAMES[mirrorDay - 1]}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Colour picker */}
@@ -595,7 +777,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             {exs.map((ex, idx) => (
                               <div key={idx} className="relative">
                                 <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                  {/* Exercise name — letters + spaces only */}
                                   <input
                                     type="text"
                                     value={ex.exercise || ''}
@@ -608,7 +789,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                     style={{ fontSize: '16px' }}
                                     className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
                                   />
-                                  {/* Sets — digits only, max 2 */}
                                   <input
                                     type="text" inputMode="numeric"
                                     value={ex.sets ?? '3'}
@@ -619,7 +799,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                     style={{ fontSize: '16px', WebkitAppearance: 'none' }}
                                     className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
                                   />
-                                  {/* Reps — digits only, max 3 */}
                                   <input
                                     type="text" inputMode="numeric"
                                     value={ex.reps ?? '10'}
@@ -630,7 +809,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                     style={{ fontSize: '16px', WebkitAppearance: 'none' }}
                                     className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
                                   />
-                                  {/* Weight — digits + decimal, max 6 chars */}
                                   <div className="relative">
                                     <input
                                       type="text" inputMode="decimal"
@@ -668,7 +846,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               return (
                                 <div key={idx} className="relative">
                                   <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                                    {/* Cardio exercise name — letters + spaces only */}
                                     <input
                                       type="text"
                                       value={c.exercise || ''}
@@ -681,7 +858,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                       style={{ fontSize: '16px' }}
                                       className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
                                     />
-                                    {/* Rounds — digits only, max 2 */}
                                     <input
                                       type="text" inputMode="numeric"
                                       value={c.rounds ?? '1'}
@@ -692,7 +868,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                       style={{ fontSize: '16px', WebkitAppearance: 'none' }}
                                       className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
                                     />
-                                    {/* Time per round — digits → M:SS, seconds ≤59 */}
                                     <div className="relative">
                                       <input
                                         type="text" inputMode="numeric"
@@ -706,7 +881,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                       />
                                       <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
                                     </div>
-                                    {/* Rest — same rules, disabled when rounds ≤1 */}
                                     <div className="relative">
                                       <input
                                         type="text" inputMode="numeric"
@@ -778,6 +952,53 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       </div>
 
       <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
+
+      {/* ── MIRROR WORKOUT CONFIRMATION MODAL ── */}
+      {showMirrorConfirm && (
+        <div
+          className="absolute inset-0 z-60 flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setShowMirrorConfirm(false)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
+            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div className="flex justify-center">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                style={{ background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)' }}>
+                <GitFork className="w-6 h-6" style={{ color: 'rgba(94,234,212,0.9)' }} />
+              </div>
+            </div>
+            <p className="text-[15px] font-black text-white text-center leading-snug">
+              Are you sure you want to mirror these workouts?
+            </p>
+            <p className="text-[12px] text-slate-500 text-center leading-relaxed">
+              The workout with more exercises will be copied to the other. Any future changes to one will sync to both.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setShowMirrorConfirm(false)}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
+              >
+                No
+              </button>
+              <button
+                onClick={handleConfirmMirror}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
+                style={{
+                  background: 'linear-gradient(to bottom, #2dd4bf, #0d9488)',
+                  boxShadow: '0 3px 0 0 #0f766e'
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDeleteSplitId && (
         <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
