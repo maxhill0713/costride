@@ -27,15 +27,10 @@ import { createPageUrl } from '../utils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Username / search query sanitisation
-//
-// Usernames can only contain letters, numbers, underscores, hyphens and dots.
-// Everything else — including SQL/NoSQL injection characters like ' " ; $ { } —
-// is stripped before the value is stored in state or sent to the API.
-// Max 30 characters; trimmed on the way in.
 // ─────────────────────────────────────────────────────────────────────────────
 const sanitiseUsernameQuery = (v) =>
   v
-    .replace(/[^a-zA-Z0-9_.\- ]/g, '') // whitelist: letters, digits, _ . - and spaces
+    .replace(/[^a-zA-Z0-9_.\- ]/g, '')
     .slice(0, 30);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -413,6 +408,8 @@ export default function Home() {
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [confirmRemoveFriend, setConfirmRemoveFriend] = useState(null);
   const [friendMenuOpen, setFriendMenuOpen] = useState(null);
+  // ── Pending request 3-dots menu ──────────────────────────────────────────
+  const [pendingMenuOpen, setPendingMenuOpen] = useState(null);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
@@ -704,7 +701,6 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    // Trim the sanitised query before sending to the API
     queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
     enabled: friendSearchQuery.trim().length >= 2,
     staleTime: 30000,
@@ -1746,7 +1742,6 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                {/* Friends list search — username chars only, 16px font prevents iOS zoom */}
                 <Input
                   placeholder="Search friends..."
                   value={friendsListSearchQuery}
@@ -1765,7 +1760,12 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {sentFriendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.friend_id); return (u?.full_name||req.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
+
+              {/* ── Sent / pending requests ── */}
+              {sentFriendRequests.filter(req => {
+                const u = friendUsersList.find(u => u.id === req.friend_id);
+                return (u?.full_name || req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+              }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.friend_id);
                 const name = u?.display_name || u?.full_name || request.friend_name || 'User';
                 const sentMs = Date.now() - new Date(request.created_date).getTime();
@@ -1773,31 +1773,81 @@ export default function Home() {
                 const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
                 const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
                 return (
-                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg bg-slate-800/70 border border-slate-700/50 flex items-center gap-2">
+                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(15,18,35,0.95) 0%, rgba(8,10,20,0.98) 100%)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)',
+                    }}>
+                    {/* Avatar + name */}
                     <div className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                        {u?.avatar_url
+                          ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" />
+                          : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                       </div>
-                      <p className="font-semibold text-white text-xs truncate max-w-[80px]">{name}</p>
+                      <p className="font-semibold text-white text-xs truncate max-w-[90px]">{name}</p>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-700/80 text-slate-400 border border-slate-600/50">Pending</span>
+
+                    {/* Pending badge + time + 3-dots (pushed to the right) */}
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                      {/* Premium "Pending" badge */}
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg whitespace-nowrap"
+                        style={{
+                          background: 'linear-gradient(to bottom, #1a1f35, #0f1220)',
+                          border: '1px solid rgba(99,102,241,0.3)',
+                          color: 'rgba(165,180,252,0.85)',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                          letterSpacing: '0.04em',
+                        }}>
+                        Pending
+                      </span>
                       <span className="text-[10px] text-slate-500 font-medium">{timeAgo}</span>
-                      <button
-                        onClick={() => cancelFriendMutation.mutate(request.friend_id)}
-                        disabled={cancelFriendMutation.isPending}
-                        className="text-[10px] font-bold text-slate-300 px-2 py-1 rounded-md bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_2px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
-                        Cancel
-                      </button>
+
+                      {/* 3-dots menu — same pattern as accepted friend rows */}
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingMenuOpen(pendingMenuOpen === request.friend_id ? null : request.friend_id);
+                          }}
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                        {pendingMenuOpen === request.friend_id && (
+                          <>
+                            {/* Backdrop to close menu */}
+                            <div className="fixed inset-0 z-[10001]" onClick={() => setPendingMenuOpen(null)} />
+                            {/* Dropdown — styled identically to the "Remove" friend dropdown */}
+                            <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPendingMenuOpen(null);
+                                  cancelFriendMutation.mutate(request.friend_id);
+                                }}
+                                disabled={cancelFriendMutation.isPending}
+                                className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors disabled:opacity-50">
+                                Cancel
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
-              {friendRequests.filter(req => { const u = friendUsersList.find(u => u.id === req.user_id); return (u?.full_name||req.user_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(request => {
+
+              {/* ── Incoming friend requests ── */}
+              {friendRequests.filter(req => {
+                const u = friendUsersList.find(u => u.id === req.user_id);
+                return (u?.full_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+              }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.user_id);
                 const name = u?.display_name || u?.full_name || request.user_name || request.friend_name;
-                      return (
-                        <div key={request.id} className="p-3 rounded-lg bg-blue-700/40 border border-blue-500/30 flex items-center justify-between gap-3">
+                return (
+                  <div key={request.id} className="p-3 rounded-lg bg-blue-700/40 border border-blue-500/30 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
@@ -1811,9 +1861,14 @@ export default function Home() {
                   </div>
                 );
               })}
+
+              {/* ── Accepted friends list ── */}
               {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0
                 ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
-                : friendsWithActivity.filter(friend => { const u = friendUsersList.find(u => u.id === friend.friend_id); return (u?.full_name||friend.friend_name||'').toLowerCase().includes(friendsListSearchQuery.toLowerCase()); }).map(friend => {
+                : friendsWithActivity.filter(friend => {
+                    const u = friendUsersList.find(u => u.id === friend.friend_id);
+                    return (u?.full_name || friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                  }).map(friend => {
                     const u = friendUsersList.find(u => u.id === friend.friend_id);
                     const name = u?.display_name || u?.full_name || friend.friend_name;
                     return (
@@ -1856,7 +1911,6 @@ export default function Home() {
             <div className="px-3 py-1 flex items-center gap-1">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                {/* Add friend search — username chars only, 16px font prevents iOS zoom */}
                 <Input
                   placeholder="Search by username..."
                   value={friendSearchQuery}
