@@ -47,11 +47,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Date-scope all metrics: all-time leaderboards are inaccurate at scale (2000-record limit
+    // covers days, not all time, for active gyms). 30-day rolling windows are accurate and useful.
+    const ts = Date.now();
+    const thirtyDaysAgo = new Date(ts - 30 * 86400000).toISOString();
+    const ninetyDaysAgo = new Date(ts - 90 * 86400000).toISOString();
+
     let leaderboardData = [];
 
     if (metric === 'checkIns') {
       const checkIns = await base44.asServiceRole.entities.CheckIn.filter(
-        { gym_id }, '-check_in_date', 2000
+        { gym_id, check_in_date: { $gte: thirtyDaysAgo } }, '-check_in_date', 2000
       );
       const counts = {};
       checkIns.forEach(c => { counts[c.user_id] = (counts[c.user_id] || 0) + 1; });
@@ -61,7 +67,9 @@ Deno.serve(async (req) => {
         .slice(0, limit);
 
     } else if (metric === 'totalWeight') {
-      const lifts = await base44.asServiceRole.entities.Lift.filter({ gym_id }, '-lift_date', 2000);
+      const lifts = await base44.asServiceRole.entities.Lift.filter(
+        { gym_id, lift_date: { $gte: thirtyDaysAgo } }, '-lift_date', 2000
+      );
       const weights = {};
       lifts.forEach(l => { weights[l.member_id] = (weights[l.member_id] || 0) + (l.weight_lbs * (l.reps || 1)); });
       leaderboardData = Object.entries(weights)
@@ -70,7 +78,9 @@ Deno.serve(async (req) => {
         .slice(0, limit);
 
     } else if (metric === 'personalRecords') {
-      const lifts = await base44.asServiceRole.entities.Lift.filter({ gym_id, is_pr: true }, '-lift_date', 2000);
+      const lifts = await base44.asServiceRole.entities.Lift.filter(
+        { gym_id, is_pr: true, lift_date: { $gte: ninetyDaysAgo } }, '-lift_date', 2000
+      );
       const prs = {};
       lifts.forEach(l => { prs[l.member_id] = (prs[l.member_id] || 0) + 1; });
       leaderboardData = Object.entries(prs)

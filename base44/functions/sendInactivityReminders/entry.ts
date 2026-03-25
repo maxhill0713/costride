@@ -33,7 +33,6 @@ Deno.serve(async (req) => {
     const cooldownCutoff = new Date(Date.now() - COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     // Fetch active gym memberships to scope who we notify (not a platform-wide User.list())
-    // Process in pages to avoid memory issues
     const allMemberships = await base44.asServiceRole.entities.GymMembership.filter(
       { status: 'active' }, '-created_date', 2000
     );
@@ -51,29 +50,52 @@ Deno.serve(async (req) => {
 
     const inactivityCutoff = new Date(Date.now() - INACTIVITY_THRESHOLD_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
+    // ── Bulk fetch: replace N×2 sequential queries with 2 batch queries ──────
+    // 1. Get most recent check-in per user in one request (fetch within inactivity window — anyone
+    //    who checked in recently will be in this result and can be excluded).
+    const recentCheckIns = await base44.asServiceRole.entities.CheckIn.filter(
+      { user_id: { $in: userIds }, check_in_date: { $gte: inactivityCutoff } },
+      '-check_in_date',
+      2000
+    );
+    const activeUserIds = new Set(recentCheckIns.map(c => c.user_id));
+
+    // Users who haven't checked in within the inactivity threshold
+    const inactiveUserIds = userIds.filter(id => !activeUserIds.has(id));
+    if (!inactiveUserIds.length) {
+      console.log('sendInactivityReminders: no inactive users found');
+      return Response.json({ success: true, reminders_sent: 0 });
+    }
+
+    // 2. Bulk fetch last check-in for each inactive user (to compute daysSince)
+    const lastCheckIns = await base44.asServiceRole.entities.CheckIn.filter(
+      { user_id: { $in: inactiveUserIds } },
+      '-check_in_date',
+      inactiveUserIds.length * 1 // one per user (sorted desc so first per user is last visit)
+    );
+    const lastCheckInByUser = {};
+    lastCheckIns.forEach(c => {
+      if (!lastCheckInByUser[c.user_id]) lastCheckInByUser[c.user_id] = c.check_in_date;
+    });
+
+    // 3. Bulk fetch cooldown: users who already got a reminder recently
+    const recentReminders = await base44.asServiceRole.entities.Notification.filter(
+      { user_id: { $in: inactiveUserIds }, type: 'inactivity_reminder', created_date: { $gte: cooldownCutoff } },
+      '-created_date',
+      inactiveUserIds.length
+    );
+    const alreadyReminded = new Set(recentReminders.map(n => n.user_id));
+
+    // Build notification list
     const notifications = [];
-
-    for (const userId of userIds) {
+    for (const userId of inactiveUserIds) {
       if (notifications.length >= MAX_REMINDERS_PER_RUN) break;
+      if (alreadyReminded.has(userId)) continue;
 
-      // Get last check-in
-      const checkIns = await base44.asServiceRole.entities.CheckIn.filter(
-        { user_id: userId }, '-check_in_date', 1
-      );
-      if (!checkIns.length) continue;
+      const lastVisit = lastCheckInByUser[userId];
+      if (!lastVisit) continue; // never checked in — skip (no streak to protect)
 
-      const lastCheckIn = new Date(checkIns[0].check_in_date);
-      const daysSince = Math.floor((Date.now() - lastCheckIn.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysSince < INACTIVITY_THRESHOLD_DAYS) continue;
-
-      // Check per-member cooldown: don't send if we already sent one recently
-      const recentReminder = await base44.asServiceRole.entities.Notification.filter(
-        { user_id: userId, type: 'inactivity_reminder', created_date: { $gte: cooldownCutoff } },
-        '-created_date', 1
-      );
-      if (recentReminder.length > 0) continue;
-
+      const daysSince = Math.floor((Date.now() - new Date(lastVisit).getTime()) / (1000 * 60 * 60 * 24));
       const gymName = userMap[userId]?.gym_name || 'your gym';
       notifications.push({
         user_id: userId,

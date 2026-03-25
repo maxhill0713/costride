@@ -27,13 +27,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [checkIns, allMemberships] = await Promise.all([
-      base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 2000),
-      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }),
-    ]);
-
     const now = new Date();
     const DAY = 86400000;
+    // Scope check-ins to 6 months — covers all analytics windows (max: 180-day month growth chart).
+    // Streak accuracy caps at 180 days (acceptable for display). Raises from 2k to 5k to handle
+    // active gyms (500 members × 3 visits/week × 4 weeks = 6k/month; 5k covers ~3 weeks of data
+    // for very large gyms and months of data for average-sized ones).
+    const sixMonthsAgo = new Date(now.getTime() - 180 * DAY);
+
+    const [checkIns, allMemberships] = await Promise.all([
+      base44.asServiceRole.entities.CheckIn.filter(
+        { gym_id: gymId, check_in_date: { $gte: sixMonthsAgo.toISOString() } },
+        '-check_in_date',
+        5000
+      ),
+      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }, 'user_name', 5000),
+    ]);
+
     const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
     const t7  = new Date(now - 7  * DAY);
     const t14 = new Date(now - 14 * DAY);

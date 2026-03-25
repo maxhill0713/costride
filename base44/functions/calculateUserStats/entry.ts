@@ -16,10 +16,10 @@ Deno.serve(async (req) => {
     const userId = user.id;
 
     const [lifts, checkIns, challenges, workoutLogs] = await Promise.all([
-      base44.entities.Lift.filter({ member_id: userId }),
-      base44.entities.CheckIn.filter({ user_id: userId }, '-check_in_date'),
+      base44.entities.Lift.filter({ member_id: userId }, '-created_date', 2000),
+      base44.entities.CheckIn.filter({ user_id: userId }, '-check_in_date', 500),
       base44.entities.Challenge.filter({ participants: { $in: [userId] } }),
-      base44.entities.WorkoutLog.filter({ user_id: userId }),
+      base44.entities.WorkoutLog.filter({ user_id: userId }, '-created_date', 500),
     ]);
 
     const totalLifts         = lifts.length;

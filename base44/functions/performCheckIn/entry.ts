@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Already checked in today' }, { status: 400 });
     }
 
-    const previousVisits = await base44.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId });
+    // Limit 1 — only need to know whether any prior visit exists, not fetch all of them.
+    const previousVisits = await base44.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId }, '-check_in_date', 1);
     const isFirstVisit   = previousVisits.length === 0;
 
     const checkIn = await base44.entities.CheckIn.create({

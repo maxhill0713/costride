@@ -34,11 +34,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    const oneYearAgo = new Date(Date.now() - 365 * 86400000).toISOString();
     const [members, checkIns, challenges, lifts] = await Promise.all([
-      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }),
-      base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }),
+      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }, 'user_name', 5000),
+      base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId, check_in_date: { $gte: oneYearAgo } }, '-check_in_date', 5000),
       base44.asServiceRole.entities.Challenge.filter({ gym_id: gymId }),
-      base44.asServiceRole.entities.Lift.filter({ gym_id: gymId }),
+      base44.asServiceRole.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 5000),
     ]);
 
     const monthAgo = new Date(); monthAgo.setMonth(monthAgo.getMonth() - 1);
