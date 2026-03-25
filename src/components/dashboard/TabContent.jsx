@@ -43,9 +43,6 @@ const C = {
   warnSub: 'rgba(245,158,11,0.10)',
   warnBrd: 'rgba(245,158,11,0.22)',
 
-  purple:    '#8b5cf6',
-  purpleSub: 'rgba(139,92,246,0.12)',
-  purpleBrd: 'rgba(139,92,246,0.28)',
 };
 
 /* ── Shared card shadow + radius — exact match to TabOverview ───── */
@@ -382,7 +379,7 @@ function EventCard({ event, now, onDelete }) {
   const evDate = new Date(event.event_date);
   const diff   = Math.floor((evDate - now) / 86400000);
   return (
-    <Card accentColor={C.success}>
+    <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
           <IconBadge icon={Calendar} color={C.success} />
@@ -408,7 +405,7 @@ function ChallengeCard({ challenge, now, onDelete }) {
   const progressColor = pct >= 75 ? C.warn : C.accent;
 
   return (
-    <Card accentColor={C.accent}>
+    <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
           <IconBadge icon={Trophy} color={C.warn} />
@@ -540,7 +537,7 @@ function PollCard({ poll, onDelete, allMemberships }) {
   const color   = partPct >= 50 ? C.success : C.accent;
 
   return (
-    <Card accentColor={C.accent}>
+    <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
           <IconBadge icon={BarChart2} color={C.accent} />
