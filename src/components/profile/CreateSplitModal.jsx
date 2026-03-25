@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2, GitFork } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -34,9 +34,7 @@ const sanitiseTimeDigits = (raw) => {
   const digits = raw.replace(/\D/g, '').slice(0, 4);
   if (digits.length < 2) return digits;
   const secs = parseInt(digits.slice(-2), 10);
-  if (secs > 59) {
-    return digits.slice(0, digits.length - 2) + '59';
-  }
+  if (secs > 59) return digits.slice(0, digits.length - 2) + '59';
   return digits;
 };
 
@@ -117,21 +115,6 @@ function SetActiveButton({ onClick }) {
   );
 }
 
-function SmallInput({ value, onChange, placeholder, sanitise = sanitiseSets }) {
-  return (
-    <input
-      type="text"
-      inputMode="decimal"
-      value={value}
-      onChange={(e) => onChange(sanitise(e.target.value))}
-      placeholder={placeholder}
-      autoComplete="off"
-      style={INPUT_BASE}
-      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-    />
-  );
-}
-
 function ReadOnlyDayCard({ day, workout, weights, onWeightChange, sets, onSetsChange, reps, onRepsChange }) {
   const grad = colorGradient(workout.color);
   return (
@@ -158,37 +141,10 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange, sets, onSetsCh
           {workout.exercises.map((ex, idx) =>
             <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
               <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
-              <input
-                type="text" inputMode="numeric"
-                value={sets?.[idx] ?? ex.sets ?? ''}
-                onChange={(e) => onSetsChange(idx, sanitiseSets(e.target.value))}
-                placeholder={ex.sets || '—'}
-                maxLength={2}
-                autoComplete="off"
-                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-              />
-              <input
-                type="text" inputMode="numeric"
-                value={reps?.[idx] ?? ex.reps ?? ''}
-                onChange={(e) => onRepsChange(idx, sanitiseReps(e.target.value))}
-                placeholder={ex.reps || '—'}
-                maxLength={3}
-                autoComplete="off"
-                style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-              />
+              <input type="text" inputMode="numeric" value={sets?.[idx] ?? ex.sets ?? ''} onChange={(e) => onSetsChange(idx, sanitiseSets(e.target.value))} placeholder={ex.sets || '—'} maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+              <input type="text" inputMode="numeric" value={reps?.[idx] ?? ex.reps ?? ''} onChange={(e) => onRepsChange(idx, sanitiseReps(e.target.value))} placeholder={ex.reps || '—'} maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
               <div className="relative">
-                <input
-                  type="text" inputMode="decimal"
-                  value={weights?.[idx] ?? ''}
-                  onChange={(e) => onWeightChange(idx, sanitiseWeight(e.target.value))}
-                  placeholder="—"
-                  maxLength={6}
-                  autoComplete="off"
-                  style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                  className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-                />
+                <input type="text" inputMode="decimal" value={weights?.[idx] ?? ''} onChange={(e) => onWeightChange(idx, sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
                 <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
               </div>
             </div>
@@ -258,6 +214,36 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Mirror confirmation — styled identically to DeleteAccountDialog in Settings
+// ─────────────────────────────────────────────────────────────────────────────
+function MirrorConfirmDialog({ open, onClose, onConfirm }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Mirror Workout?</h3>
+        <p className="text-slate-300 text-sm mb-6">
+          The workout with more exercises will be copied to the other day. Any future changes you make to one will automatically sync to both.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-purple-500 via-purple-600 to-purple-700 shadow-[0_3px_0_0_#5b21b6,0_6px_16px_rgba(120,40,220,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Mirror
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [step, setStep] = useState('pick');
   const [previewSplit, setPreviewSplit] = useState(null);
@@ -275,40 +261,34 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [activeSplitId, setActiveSplitId] = useState('');
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
 
-  // ── Mirror Workout state ──────────────────────────────────────────────────
-  const [mirroredPairs, setMirroredPairs] = useState([]); // [[dayA, dayB], ...]
+  // ── Mirror state ──────────────────────────────────────────────────────────
+  // Each entry is [dayA, dayB] where dayA < dayB
+  const [mirroredPairs, setMirroredPairs] = useState([]);
+  const [pendingMirrorPair, setPendingMirrorPair] = useState(null);
   const [showMirrorConfirm, setShowMirrorConfirm] = useState(false);
 
   const queryClient = useQueryClient();
 
-  // ── Derive mirror helpers ─────────────────────────────────────────────────
+  // ── Mirror helpers ────────────────────────────────────────────────────────
 
-  // Find pairs of selectedDays whose workout names match (case-insensitive, trimmed)
-  // and are NOT yet in mirroredPairs
-  const getUnmirroredDuplicatePairs = () => {
-    const pairs = [];
-    for (let i = 0; i < selectedDays.length; i++) {
-      for (let j = i + 1; j < selectedDays.length; j++) {
-        const a = selectedDays[i];
-        const b = selectedDays[j];
-        const nameA = (workouts[a]?.name || '').trim().toLowerCase();
-        const nameB = (workouts[b]?.name || '').trim().toLowerCase();
-        if (nameA && nameA === nameB) {
-          const alreadyMirrored = mirroredPairs.some(
-            ([x, y]) => (x === a && y === b) || (x === b && y === a)
-          );
-          if (!alreadyMirrored) pairs.push([a, b]);
-        }
-      }
+  // For a given day, find its unmirrored counterpart (same name, lower day wins button).
+  // Returns [day, other] if this day should show the Mirror button, else null.
+  const getUnmirroredPairForDay = (day) => {
+    const nameA = (workouts[day]?.name || '').trim().toLowerCase();
+    if (!nameA) return null;
+    for (const other of selectedDays) {
+      if (other === day) continue;
+      const nameB = (workouts[other]?.name || '').trim().toLowerCase();
+      if (nameB !== nameA) continue;
+      const alreadyMirrored = mirroredPairs.some(
+        ([x, y]) => (x === day && y === other) || (x === other && y === day)
+      );
+      if (!alreadyMirrored && day < other) return [day, other];
     }
-    return pairs;
+    return null;
   };
 
-  const unmirroredDuplicatePairs = getUnmirroredDuplicatePairs();
-  const showMirrorButton  = step === 'configure' && unmirroredDuplicatePairs.length > 0;
-  const showMirroredBadge = step === 'configure' && mirroredPairs.length > 0 && unmirroredDuplicatePairs.length === 0;
-
-  // Returns the mirrored counterpart of a day, or null
+  // Returns the mirror partner of a day, or null
   const getMirrorDay = (day) => {
     for (const [a, b] of mirroredPairs) {
       if (a === day) return b;
@@ -317,35 +297,38 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     return null;
   };
 
-  // ── Confirm mirror action ─────────────────────────────────────────────────
+  // ── Confirm mirror ────────────────────────────────────────────────────────
   const handleConfirmMirror = () => {
-    const pairs = getUnmirroredDuplicatePairs();
+    if (!pendingMirrorPair) return;
+    const [a, b] = pendingMirrorPair;
     setWorkouts((prev) => {
-      let updated = { ...prev };
-      pairs.forEach(([a, b]) => {
-        const exCountA = (prev[a]?.exercises || []).length;
-        const exCountB = (prev[b]?.exercises || []).length;
-        const [src, dst] = exCountA >= exCountB ? [a, b] : [b, a];
-        updated[dst] = {
-          ...updated[dst],
-          exercises: JSON.parse(JSON.stringify(updated[src]?.exercises || [])),
-          cardio:    JSON.parse(JSON.stringify(updated[src]?.cardio    || [])),
-        };
-      });
-      return updated;
+      const exCountA = (prev[a]?.exercises || []).length;
+      const exCountB = (prev[b]?.exercises || []).length;
+      const [src, dst] = exCountA >= exCountB ? [a, b] : [b, a];
+      return {
+        ...prev,
+        [dst]: {
+          ...prev[dst],
+          exercises: JSON.parse(JSON.stringify(prev[src]?.exercises || [])),
+          cardio:    JSON.parse(JSON.stringify(prev[src]?.cardio    || [])),
+        },
+      };
     });
-    setMirroredPairs((prev) => [...prev, ...pairs]);
+    setMirroredPairs((prev) => [...prev, pendingMirrorPair]);
+    setPendingMirrorPair(null);
     setShowMirrorConfirm(false);
     toast.success('Workouts mirrored!');
   };
 
-  // ── Effects ───────────────────────────────────────────────────────────────
+  // ── Modal open / reset ────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const saved = currentUser?.saved_splits || [];
     setSavedSplits(saved);
     const storedActiveId = currentUser?.active_split_id || '';
-    if (storedActiveId) { setActiveSplitId(storedActiveId); } else {
+    if (storedActiveId) {
+      setActiveSplitId(storedActiveId);
+    } else {
       const activeName = currentUser?.custom_split_name || '';
       const activeByName = saved.find((s) => s.name === activeName);
       setActiveSplitId(activeByName?.id || currentUser?.workout_split || '');
@@ -353,13 +336,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setStep('pick'); setPreviewSplit(null); setPreviewWeights({}); setWeightsDirty(false);
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
     setDotsMenuOpen(false); setShowSetActiveModal(false);
-    // Reset mirror state
-    setMirroredPairs([]); setShowMirrorConfirm(false);
+    setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
   }, [isOpen]);
 
   const saveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' }); toast.success('Split saved!'); setSplitName(''); setSelectedDays([]); setWorkouts({}); setStep('pick'); }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
+      toast.success('Split saved!');
+      setSplitName(''); setSelectedDays([]); setWorkouts({}); setMirroredPairs([]); setStep('pick');
+    }
   });
 
   const setActiveMutation = useMutation({
@@ -404,17 +390,35 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   };
 
   const openEditCustom = (split) => {
-    setSplitName(split.name || ''); setSelectedDays(split.training_days || []); setWorkouts(split.workouts || {});
-    setEditingSplitId(split.id); setDotsMenuOpen(false); setMirroredPairs([]); setStep('configure');
+    setSplitName(split.name || '');
+    setSelectedDays(split.training_days || []);
+    setWorkouts(split.workouts || {});
+    setEditingSplitId(split.id);
+    setDotsMenuOpen(false);
+    // Restore persisted mirror pairs so the badge shows correctly on reload
+    setMirroredPairs(split.mirrored_pairs || []);
+    setPendingMirrorPair(null);
+    setShowMirrorConfirm(false);
+    setStep('configure');
   };
+
   const openCustomConfigure = () => {
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
-    setDotsMenuOpen(false); setMirroredPairs([]); setStep('configure');
+    setDotsMenuOpen(false); setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
+    setStep('configure');
   };
 
   const handleSave = () => {
     const safeName = splitName.trim() || 'My Split';
-    const newSplit = { id: editingSplitId || Date.now().toString(), preset_id: 'custom', name: safeName, training_days: selectedDays, workouts, created_at: new Date().toISOString() };
+    const newSplit = {
+      id: editingSplitId || Date.now().toString(),
+      preset_id: 'custom',
+      name: safeName,
+      training_days: selectedDays,
+      workouts,
+      mirrored_pairs: mirroredPairs, // ← persisted so badge survives reopen
+      created_at: new Date().toISOString()
+    };
     const updated = [...savedSplits.filter((s) => s.id !== newSplit.id), newSplit];
     setSavedSplits(updated);
     saveMutation.mutate({ workout_split: 'custom', custom_split_name: newSplit.name, training_days: selectedDays, custom_workout_types: workouts, saved_splits: updated });
@@ -424,7 +428,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     if (selectedDays.includes(dayNum)) {
       setSelectedDays((prev) => prev.filter((d) => d !== dayNum));
       setWorkouts((prev) => { const n = { ...prev }; delete n[dayNum]; return n; });
-      // Remove any mirrored pairs that included this day
       setMirroredPairs((prev) => prev.filter(([a, b]) => a !== dayNum && b !== dayNum));
     } else {
       setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b));
@@ -432,13 +435,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     }
   };
 
-  // ── Workout mutators — all sync to mirror if paired ───────────────────────
+  // ── Workout mutators — sync mirror partner ────────────────────────────────
 
   const updateWorkout = (day, field, value) => setWorkouts((prev) => {
     const mirror = getMirrorDay(day);
-    if (mirror !== null) {
-      return { ...prev, [day]: { ...prev[day], [field]: value }, [mirror]: { ...prev[mirror], [field]: value } };
-    }
+    if (mirror !== null) return { ...prev, [day]: { ...prev[day], [field]: value }, [mirror]: { ...prev[mirror], [field]: value } };
     return { ...prev, [day]: { ...prev[day], [field]: value } };
   });
 
@@ -447,9 +448,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setWorkouts((prev) => {
       const mirror = getMirrorDay(day);
       const updated = { ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), newEx] } };
-      if (mirror !== null) {
-        updated[mirror] = { ...prev[mirror], exercises: [...(prev[mirror]?.exercises || []), { ...newEx }] };
-      }
+      if (mirror !== null) updated[mirror] = { ...prev[mirror], exercises: [...(prev[mirror]?.exercises || []), { ...newEx }] };
       return updated;
     });
   };
@@ -467,12 +466,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   });
 
   const removeExercise = (day, idx) => setWorkouts((prev) => {
-    const exs = [...(prev[day]?.exercises || [])];
-    exs.splice(idx, 1);
+    const exs = [...(prev[day]?.exercises || [])]; exs.splice(idx, 1);
     const mirror = getMirrorDay(day);
     if (mirror !== null) {
-      const mExs = [...(prev[mirror]?.exercises || [])];
-      mExs.splice(idx, 1);
+      const mExs = [...(prev[mirror]?.exercises || [])]; mExs.splice(idx, 1);
       return { ...prev, [day]: { ...prev[day], exercises: exs }, [mirror]: { ...prev[mirror], exercises: mExs } };
     }
     return { ...prev, [day]: { ...prev[day], exercises: exs } };
@@ -483,16 +480,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setWorkouts((prev) => {
       const mirror = getMirrorDay(day);
       const updated = { ...prev, [day]: { ...prev[day], cardio: [...(prev[day]?.cardio || []), newCardio] } };
-      if (mirror !== null) {
-        updated[mirror] = { ...prev[mirror], cardio: [...(prev[mirror]?.cardio || []), { ...newCardio }] };
-      }
+      if (mirror !== null) updated[mirror] = { ...prev[mirror], cardio: [...(prev[mirror]?.cardio || []), { ...newCardio }] };
       return updated;
     });
   };
 
   const updateCardio = (day, idx, field, value) => setWorkouts((prev) => {
-    const arr = [...(prev[day]?.cardio || [])];
-    arr[idx] = { ...arr[idx], [field]: value };
+    const arr = [...(prev[day]?.cardio || [])]; arr[idx] = { ...arr[idx], [field]: value };
     const mirror = getMirrorDay(day);
     if (mirror !== null) {
       const mArr = [...(prev[mirror]?.cardio || [])];
@@ -503,18 +497,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   });
 
   const removeCardio = (day, idx) => setWorkouts((prev) => {
-    const arr = [...(prev[day]?.cardio || [])];
-    arr.splice(idx, 1);
+    const arr = [...(prev[day]?.cardio || [])]; arr.splice(idx, 1);
     const mirror = getMirrorDay(day);
     if (mirror !== null) {
-      const mArr = [...(prev[mirror]?.cardio || [])];
-      mArr.splice(idx, 1);
+      const mArr = [...(prev[mirror]?.cardio || [])]; mArr.splice(idx, 1);
       return { ...prev, [day]: { ...prev[day], cardio: arr }, [mirror]: { ...prev[mirror], cardio: mArr } };
     }
     return { ...prev, [day]: { ...prev[day], cardio: arr } };
   });
 
-  // ── Time input helpers ────────────────────────────────────────────────────
   const formatTime = (raw) => {
     const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
     if (!digits) return '';
@@ -523,10 +514,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     const secs = padded.slice(-2);
     return `${parseInt(mins, 10)}:${secs}`;
   };
-  const handleTimeChange = (day, idx, field, raw) => {
-    const sanitised = sanitiseTimeDigits(raw);
-    updateCardio(day, idx, field, sanitised);
-  };
+  const handleTimeChange = (day, idx, field, raw) => updateCardio(day, idx, field, sanitiseTimeDigits(raw));
 
   const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
@@ -560,33 +548,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               </>
             )}
             {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-            {step === 'configure' && (
-              <>
-                {/* Mirror Workout button — shown when unmirrored duplicate-name pairs exist */}
-                {showMirrorButton && (
-                  <button
-                    onClick={() => setShowMirrorConfirm(true)}
-                    className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold text-white whitespace-nowrap transition-all duration-150 transform-gpu bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 shadow-[0_2px_0_0_#0f766e,0_4px_8px_rgba(20,184,166,0.25),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90"
-                  >
-                    <GitFork className="w-3 h-3" />
-                    Mirror Workout
-                  </button>
-                )}
-                {/* Mirrored Workout badge — shown once all duplicate pairs are mirrored */}
-                {showMirroredBadge && (
-                  <div className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap"
-                    style={{
-                      background: 'rgba(20,184,166,0.12)',
-                      border: '1px solid rgba(20,184,166,0.35)',
-                      color: 'rgba(94,234,212,0.9)'
-                    }}>
-                    <GitFork className="w-3 h-3" />
-                    Mirrored Workout
-                  </div>
-                )}
-                {editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-              </>
-            )}
+            {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
           </div>
         </div>
 
@@ -649,15 +611,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 const wt = previewSplit.workouts[day];
                 if (!wt) return null;
                 return (
-                  <ReadOnlyDayCard
-                    key={day} day={day} workout={wt}
-                    weights={previewWeights[day] || {}}
-                    onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
-                    sets={previewSets[day] || {}}
-                    onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
-                    reps={previewReps[day] || {}}
-                    onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }}
-                  />
+                  <ReadOnlyDayCard key={day} day={day} workout={wt} weights={previewWeights[day] || {}} onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} sets={previewSets[day] || {}} onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} reps={previewReps[day] || {}} onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} />
                 );
               })}
             </div>
@@ -686,18 +640,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     </div>
                   )}
                 </div>
-                <input
-                  type="text"
-                  value={splitName}
-                  onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))}
-                  placeholder="My Training Split"
-                  maxLength={40}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  style={{ fontSize: '16px' }}
-                  className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
-                />
+                <input type="text" value={splitName} onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))} placeholder="My Training Split" maxLength={40} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
               </div>
 
               {/* ── Training Days ── */}
@@ -720,20 +663,30 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               {selectedDays.length > 0 && (
                 <div className="space-y-3">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Day Details</label>
+
                   {selectedDays.map((day) => {
                     const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
                     const exs = wt.exercises || [];
                     const mirrorDay = getMirrorDay(day);
                     const isMirrored = mirrorDay !== null;
+                    // Show Mirror Workout button only on the lower-numbered day of an unmirrored pair
+                    const mirrorPair = getUnmirroredPairForDay(day);
+                    const showMirrorBtn = mirrorPair !== null;
 
                     return (
-                      <div key={day} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: isMirrored ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={day} className="rounded-2xl overflow-hidden" style={{
+                        background: 'rgba(12,16,32,0.8)',
+                        border: isMirrored ? '1px solid rgba(20,184,166,0.28)' : '1px solid rgba(255,255,255,0.06)',
+                      }}>
 
-                        {/* Day header */}
+                        {/* ── Card header: day pill · name input · mirror button/badge ── */}
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+                          {/* Day pill */}
                           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
                             <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
                           </div>
+
+                          {/* Workout name — flex-1 so it fills available space */}
                           <input
                             type="text"
                             value={wt.name || ''}
@@ -744,16 +697,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             autoCorrect="off"
                             spellCheck="false"
                             style={{ fontSize: '16px' }}
-                            className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none"
+                            className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0"
                           />
-                          {/* Per-card mirrored indicator */}
+
+                          {/* Mirror Workout button — Set Active style, text only, lower-day card only */}
+                          {showMirrorBtn && (
+                            <button
+                              onClick={() => { setPendingMirrorPair(mirrorPair); setShowMirrorConfirm(true); }}
+                              className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu flex-shrink-0">
+                              Mirror Workout
+                            </button>
+                          )}
+
+                          {/* Mirrored Workout static badge — on both cards of a mirrored pair */}
                           {isMirrored && (
-                            <div className="flex items-center gap-1 px-2 py-1 rounded-lg flex-shrink-0"
-                              style={{ background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)' }}>
-                              <GitFork className="w-3 h-3" style={{ color: 'rgba(94,234,212,0.8)' }} />
-                              <span className="text-[9px] font-bold" style={{ color: 'rgba(94,234,212,0.8)' }}>
-                                {DAY_NAMES[mirrorDay - 1]}
-                              </span>
+                            <div
+                              className="inline-flex items-center justify-center whitespace-nowrap font-bold text-xs h-8 px-2.5 rounded-lg flex-shrink-0"
+                              style={{
+                                background: 'rgba(20,184,166,0.09)',
+                                border: '1px solid rgba(20,184,166,0.28)',
+                                color: 'rgba(94,234,212,0.8)',
+                              }}>
+                              Mirrored Workout
                             </div>
                           )}
                         </div>
@@ -777,49 +742,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             {exs.map((ex, idx) => (
                               <div key={idx} className="relative">
                                 <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                  <input
-                                    type="text"
-                                    value={ex.exercise || ''}
-                                    onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))}
-                                    placeholder="Bench press"
-                                    maxLength={35}
-                                    autoComplete="off"
-                                    autoCorrect="off"
-                                    spellCheck="false"
-                                    style={{ fontSize: '16px' }}
-                                    className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
-                                  />
-                                  <input
-                                    type="text" inputMode="numeric"
-                                    value={ex.sets ?? '3'}
-                                    onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))}
-                                    placeholder="3"
-                                    maxLength={2}
-                                    autoComplete="off"
-                                    style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                    className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-                                  />
-                                  <input
-                                    type="text" inputMode="numeric"
-                                    value={ex.reps ?? '10'}
-                                    onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))}
-                                    placeholder="10"
-                                    maxLength={3}
-                                    autoComplete="off"
-                                    style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                    className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-                                  />
+                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Bench press" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                  <input type="text" inputMode="numeric" value={ex.sets ?? '3'} onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))} placeholder="3" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                  <input type="text" inputMode="numeric" value={ex.reps ?? '10'} onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))} placeholder="10" maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
                                   <div className="relative">
-                                    <input
-                                      type="text" inputMode="decimal"
-                                      value={ex.weight ?? ''}
-                                      onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))}
-                                      placeholder="—"
-                                      maxLength={6}
-                                      autoComplete="off"
-                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-                                    />
+                                    <input type="text" inputMode="decimal" value={ex.weight ?? ''} onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
                                     <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
                                   </div>
                                 </div>
@@ -846,53 +773,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               return (
                                 <div key={idx} className="relative">
                                   <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                                    <input
-                                      type="text"
-                                      value={c.exercise || ''}
-                                      onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))}
-                                      placeholder="Run"
-                                      maxLength={35}
-                                      autoComplete="off"
-                                      autoCorrect="off"
-                                      spellCheck="false"
-                                      style={{ fontSize: '16px' }}
-                                      className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
-                                    />
-                                    <input
-                                      type="text" inputMode="numeric"
-                                      value={c.rounds ?? '1'}
-                                      onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))}
-                                      placeholder="1"
-                                      maxLength={2}
-                                      autoComplete="off"
-                                      style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                      className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
-                                    />
+                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Run" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                    <input type="text" inputMode="numeric" value={c.rounds ?? '1'} onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))} placeholder="1" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
                                     <div className="relative">
-                                      <input
-                                        type="text" inputMode="numeric"
-                                        value={formatTime(c.time)}
-                                        onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)}
-                                        placeholder="0:00"
-                                        maxLength={5}
-                                        autoComplete="off"
-                                        style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                        className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5"
-                                      />
+                                      <input type="text" inputMode="numeric" value={formatTime(c.time)} onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)} placeholder="0:00" maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5" />
                                       <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
                                     </div>
                                     <div className="relative">
-                                      <input
-                                        type="text" inputMode="numeric"
-                                        value={restDisabled ? '' : formatTime(c.rest)}
-                                        onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }}
-                                        placeholder="0:00"
-                                        disabled={restDisabled}
-                                        maxLength={5}
-                                        autoComplete="off"
-                                        style={{ fontSize: '16px', WebkitAppearance: 'none' }}
-                                        className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`}
-                                      />
+                                      <input type="text" inputMode="numeric" value={restDisabled ? '' : formatTime(c.rest)} onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }} placeholder="0:00" disabled={restDisabled} maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`} />
                                       <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
                                     </div>
                                   </div>
@@ -953,53 +841,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
       <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
 
-      {/* ── MIRROR WORKOUT CONFIRMATION MODAL ── */}
-      {showMirrorConfirm && (
-        <div
-          className="absolute inset-0 z-60 flex items-center justify-center px-6"
-          style={{ background: 'rgba(0,0,0,0.7)' }}
-          onClick={() => setShowMirrorConfirm(false)}
-        >
-          <div
-            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
-            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Icon */}
-            <div className="flex justify-center">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                style={{ background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)' }}>
-                <GitFork className="w-6 h-6" style={{ color: 'rgba(94,234,212,0.9)' }} />
-              </div>
-            </div>
-            <p className="text-[15px] font-black text-white text-center leading-snug">
-              Are you sure you want to mirror these workouts?
-            </p>
-            <p className="text-[12px] text-slate-500 text-center leading-relaxed">
-              The workout with more exercises will be copied to the other. Any future changes to one will sync to both.
-            </p>
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={() => setShowMirrorConfirm(false)}
-                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
-              >
-                No
-              </button>
-              <button
-                onClick={handleConfirmMirror}
-                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
-                style={{
-                  background: 'linear-gradient(to bottom, #2dd4bf, #0d9488)',
-                  boxShadow: '0 3px 0 0 #0f766e'
-                }}
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Mirror Workout confirmation ── */}
+      <MirrorConfirmDialog
+        open={showMirrorConfirm}
+        onClose={() => { setShowMirrorConfirm(false); setPendingMirrorPair(null); }}
+        onConfirm={handleConfirmMirror}
+      />
 
+      {/* ── Delete Split confirmation ── */}
       {confirmDeleteSplitId && (
         <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
           <div className="w-full max-w-xs rounded-2xl p-6 space-y-4" style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }} onClick={(e) => e.stopPropagation()}>
