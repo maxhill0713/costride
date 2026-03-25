@@ -1462,26 +1462,20 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
-  const checkInUserIds = React.useMemo(() => [...new Set(checkIns.map(c => c.user_id))].slice(0, 50), [checkIns]);
-  const { data: checkInUsers = [] } = useQuery({
-    queryKey: ['checkInUserProfiles', checkInUserIds.join(',')],
-    queryFn: async () => {
-      if (checkInUserIds.length === 0) return [];
-      const results = await Promise.all(checkInUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null)));
-      return results.filter(Boolean);
-    },
-    enabled: checkInUserIds.length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
-  });
-
+  // Build avatar map directly from the already-fetched members array — no extra queries needed
   const memberAvatarMap = React.useMemo(() => {
     const map = {};
-    members.forEach(m => { if (!m.user_id) return; const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null; if (avatar) map[m.user_id] = avatar; });
-    checkInUsers.forEach(u => { if (u?.id && u?.avatar_url) map[u.id] = u.avatar_url; });
-    if (currentUser?.id) { const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null; if (myAvatar) map[currentUser.id] = myAvatar; }
+    members.forEach(m => {
+      if (!m.user_id) return;
+      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
+      if (avatar) map[m.user_id] = avatar;
+    });
+    if (currentUser?.id) {
+      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
+      if (myAvatar) map[currentUser.id] = myAvatar;
+    }
     return map;
-  }, [members, checkInUsers, currentUser]);
+  }, [members, currentUser]);
 
   const createEventMutation = useMutation({ mutationFn: eventData => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async eventData => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => [{ ...eventData, id:`temp-${Date.now()}`, gym_id:gymId, gym_name:gym?.name, attendees:0 }, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });

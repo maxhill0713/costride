@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -11,9 +12,11 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
+  const isPageVisible = usePageVisibility();
 
   // Check for userId in URL to open direct message
   const urlParams = new URLSearchParams(window.location.search);
@@ -30,11 +33,12 @@ export default function Messages() {
     queryKey: ['messages', currentUser?.id],
     queryFn: () => base44.entities.Message.filter({
       $or: [{ sender_id: currentUser.id }, { receiver_id: currentUser.id }]
-    }, '-created_date', 200),
+    }, '-created_date', 100),
     enabled: !!currentUser,
-    staleTime: 30 * 1000,
+    staleTime: 15 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchInterval: 15000
+    refetchInterval: isPageVisible ? 15000 : false,
+    refetchIntervalInBackground: false,
   });
 
   // Only fetch a specific user when opening a direct message from a URL param
@@ -46,13 +50,19 @@ export default function Messages() {
     gcTime: 30 * 60 * 1000
   });
 
-  // For user search, fetch lazily only when searching
+  // Debounce search input to avoid firing on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Server-side user search — returns max 20 results, no full table scan
   const { data: allUsers = [] } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list(),
-    enabled: searchQuery.length >= 2,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    queryKey: ['userSearch', debouncedSearch],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedSearch, limit: 20 }).then(r => r.data?.users || []),
+    enabled: debouncedSearch.length >= 2,
+    staleTime: 30 * 1000,
+    gcTime: 2 * 60 * 1000,
   });
 
   // Auto-open chat if directUserId is present
@@ -77,41 +87,54 @@ export default function Messages() {
 
   const sendMessageMutation = useMutation({
     mutationFn: (messageData) => base44.entities.Message.create(messageData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    onMutate: async (newMsg) => {
+      await queryClient.cancelQueries({ queryKey: ['messages', currentUser?.id] });
+      const previous = queryClient.getQueryData(['messages', currentUser?.id]);
+      queryClient.setQueryData(['messages', currentUser?.id], (old = []) => [
+        { ...newMsg, id: `optimistic-${Date.now()}`, created_date: new Date().toISOString(), read: false },
+        ...old,
+      ]);
       setMessageText('');
-    }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['messages', currentUser?.id], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', currentUser?.id] });
+    },
   });
 
-  // Get unique conversations
-  const conversations = messages.reduce((acc, msg) => {
-    if (!currentUser) return acc;
-    
-    const otherUserId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
-    const otherUserName = msg.sender_id === currentUser.id ? msg.receiver_name : msg.sender_name;
-    
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = {
-        userId: otherUserId,
-        userName: otherUserName,
-        lastMessage: msg.content,
-        lastMessageTime: msg.created_date,
-        unread: msg.receiver_id === currentUser.id && !msg.read
-      };
+  // Memoized conversation list — only recomputes when messages or currentUser change
+  const conversationList = useMemo(() => {
+    if (!currentUser) return [];
+    const conversations = {};
+    for (const msg of messages) {
+      const otherUserId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
+      if (!otherUserId || msg.id?.startsWith?.('optimistic-')) continue;
+      if (!conversations[otherUserId]) {
+        conversations[otherUserId] = {
+          userId: otherUserId,
+          userName: msg.sender_id === currentUser.id ? msg.receiver_name : msg.sender_name,
+          lastMessage: msg.content,
+          lastMessageTime: msg.created_date,
+          unread: msg.receiver_id === currentUser.id && !msg.read,
+        };
+      }
     }
-    return acc;
-  }, {});
+    return Object.values(conversations);
+  }, [messages, currentUser]);
 
-  const conversationList = Object.values(conversations);
-
-  // Get messages for selected chat
-  const chatMessages = selectedChat
-    ? messages.filter(
-        m =>
-          (m.sender_id === currentUser?.id && m.receiver_id === selectedChat.userId) ||
-          (m.receiver_id === currentUser?.id && m.sender_id === selectedChat.userId)
-      )
-    : [];
+  const chatMessages = useMemo(() => {
+    if (!selectedChat || !currentUser) return [];
+    return messages.filter(
+      m =>
+        (m.sender_id === currentUser.id && m.receiver_id === selectedChat.userId) ||
+        (m.receiver_id === currentUser.id && m.sender_id === selectedChat.userId)
+    );
+  }, [messages, selectedChat, currentUser]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedChat || !currentUser) return;
@@ -125,9 +148,10 @@ export default function Messages() {
     });
   };
 
-  const filteredUsers = allUsers.filter(u =>
-    u.id !== currentUser?.id &&
-    u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  // allUsers is already server-filtered; just exclude current user
+  const filteredUsers = useMemo(
+    () => allUsers.filter(u => u.id !== currentUser?.id),
+    [allUsers, currentUser?.id]
   );
 
   const unreadCount = conversationList.filter(conv => conv.unread).length;

@@ -32,18 +32,24 @@ import EditGymLogoModal      from '../components/gym/EditGymLogoModal';
 import EditPricingModal      from '../components/gym/EditPricingModal';
 import QRCode                from 'react-qr-code';
 
-import TabOverview           from '../components/dashboard/TabOverview';
-import TabMembersComponent   from '../components/dashboard/TabMembers';
-import TabContentComponent   from '../components/dashboard/TabContent';
-import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
-import TabGym                from '../components/dashboard/TabGym';
-import TabCoachSchedule      from '../components/dashboard/TabCoachSchedule';
-import TabCoachMembers       from '../components/dashboard/TabCoachMembers';
-import TabCoachContent       from '../components/dashboard/TabCoachContent';
-import TabCoachAnalytics     from '../components/dashboard/TabCoachAnalytics';
-import TabCoachProfile       from '../components/dashboard/TabCoachProfile';
-import TabEngagement         from '../components/dashboard/TabEngagement';
-import TabRewards            from '../components/dashboard/TabRewards';
+import { lazy, Suspense } from 'react';
+
+const TabOverview           = lazy(() => import('../components/dashboard/TabOverview'));
+const TabMembersComponent   = lazy(() => import('../components/dashboard/TabMembers'));
+const TabContentComponent   = lazy(() => import('../components/dashboard/TabContent'));
+const TabAnalyticsComponent = lazy(() => import('../components/dashboard/TabAnalytics'));
+const TabGym                = lazy(() => import('../components/dashboard/TabGym'));
+const TabCoachSchedule      = lazy(() => import('../components/dashboard/TabCoachSchedule'));
+const TabCoachMembers       = lazy(() => import('../components/dashboard/TabCoachMembers'));
+const TabCoachContent       = lazy(() => import('../components/dashboard/TabCoachContent'));
+const TabCoachAnalytics     = lazy(() => import('../components/dashboard/TabCoachAnalytics'));
+const TabCoachProfile       = lazy(() => import('../components/dashboard/TabCoachProfile'));
+const TabEngagement         = lazy(() => import('../components/dashboard/TabEngagement'));
+const TabRewards            = lazy(() => import('../components/dashboard/TabRewards'));
+
+function TabLoader() {
+  return <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}><div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /></div>;
+}
 
 /*
  * ═══════════════════════════════════════════════════════════════════════════
@@ -488,7 +494,9 @@ export default function GymOwnerDashboard() {
     },
     enabled: !!currentUser?.email,
     retry: 3,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
   });
 
   const myGyms       = isCoach ? gyms : gyms.filter(g => g.owner_email === currentUser?.email);
@@ -496,10 +504,6 @@ export default function GymOwnerDashboard() {
   const pendingGyms  = isCoach ? [] : myGyms.filter(g => g.status === 'pending');
 
   useEffect(() => { if (approvedGyms.length > 0 && !selectedGym) setSelectedGym(approvedGyms[0]); }, [approvedGyms, selectedGym]);
-  useEffect(() => {
-    const iv = setInterval(() => queryClient.invalidateQueries({ queryKey: ['ownerGyms'] }), 10000);
-    return () => clearInterval(iv);
-  }, [queryClient]);
 
   const qo = { staleTime: 3 * 60 * 1000, placeholderData: p => p };
   const on  = !!selectedGym;
@@ -792,7 +796,9 @@ export default function GymOwnerDashboard() {
 
       <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
         <div style={{ maxWidth: '100%' }}>
-          {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+          <Suspense fallback={<TabLoader />}>
+            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+          </Suspense>
         </div>
       </main>
 
@@ -1061,7 +1067,9 @@ export default function GymOwnerDashboard() {
         {/* Main content area */}
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
-            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+            <Suspense fallback={<TabLoader />}>
+              {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+            </Suspense>
           </div>
         </main>
       </div>

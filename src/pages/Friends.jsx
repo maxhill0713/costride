@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -77,12 +77,18 @@ export default function Friends() {
     gcTime: 15 * 60 * 1000
   });
 
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const sevenDaysAgoCheckIn = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const friendIdsForFeed = friends.map(f => f.friend_id).filter(Boolean);
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['checkIns', 'recent90'],
-    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: ninetyDaysAgo } }, '-check_in_date', 1000),
+    queryKey: ['checkIns', 'friendFeed', friendIdsForFeed.join(',')],
+    queryFn: () => friendIdsForFeed.length === 0 ? [] : base44.entities.CheckIn.filter(
+      { user_id: { $in: friendIdsForFeed }, check_in_date: { $gte: sevenDaysAgoCheckIn } },
+      '-check_in_date',
+      100
+    ),
+    enabled: !!currentUser && friendIdsForFeed.length > 0,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: currentUserCheckIns = [] } = useQuery({
@@ -343,7 +349,7 @@ export default function Friends() {
     return activities.sort((a, b) => b.timestamp - a.timestamp);
   };
 
-  const activityFeed = createActivityFeed();
+  const activityFeed = useMemo(() => createActivityFeed(), [allCheckIns, allLifts, notifications, friends, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateActivityCards = () => {
     const cards = [];

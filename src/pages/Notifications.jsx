@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,8 @@ import { createPageUrl } from '../utils';
 
 export default function Notifications() {
   const queryClient = useQueryClient();
+  const nudgeCreatedRef = useRef(false);
+  const milestonesCheckedRef = useRef(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -53,39 +55,40 @@ export default function Notifications() {
     }
   });
 
-  // Check for inactivity and create nudges
+  // Check for inactivity and create nudges — gated to fire once per session
   useEffect(() => {
-    if (!currentUser || !currentUser.last_check_in) return;
+    if (!currentUser || !currentUser.last_check_in || nudgeCreatedRef.current) return;
 
     const checkInactivity = async () => {
       const daysSinceCheckIn = differenceInDays(new Date(), parseISO(currentUser.last_check_in));
-      
+
       if (daysSinceCheckIn >= 7) {
-        // Check if we already sent this notification
-        const existingNudge = notifications.find(n => 
+        const existingNudge = notifications.find(n =>
           n.type === 'inactivity' && !n.read && differenceInDays(new Date(), parseISO(n.created_date)) < 1
         );
 
         if (!existingNudge) {
+          nudgeCreatedRef.current = true;
           await base44.entities.Notification.create({
             user_id: currentUser.id,
             type: 'inactivity',
-            title: 'We miss you! 😢',
+            title: 'We miss you!',
             message: `You haven't checked in for ${daysSinceCheckIn} days. Time to get back to the gym!`,
-            icon: '😢',
+            icon: 'sad',
             action_url: createPageUrl('Gyms')
-          });
+          }).catch(() => { nudgeCreatedRef.current = false; });
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
         }
       }
     };
 
     checkInactivity();
-  }, [currentUser, notifications, queryClient]);
+  }, [currentUser?.id, notifications.length, queryClient]);
 
-  // Check milestones
+  // Check milestones — gated to fire once per session
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || milestonesCheckedRef.current) return;
+    milestonesCheckedRef.current = true;
 
     const checkMilestones = async () => {
       const milestones = [];
@@ -150,7 +153,7 @@ export default function Notifications() {
     };
 
     checkMilestones();
-  }, [currentUser, queryClient]);
+  }, [currentUser?.id, queryClient]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

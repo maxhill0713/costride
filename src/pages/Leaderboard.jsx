@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy } from 'lucide-react';
@@ -45,7 +45,7 @@ export default function Leaderboard() {
       .slice(0, 10);
   };
 
-  const leaderboard = getLeaderboard();
+  const leaderboard = useMemo(() => getLeaderboard(), [lifts, selectedExercise]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

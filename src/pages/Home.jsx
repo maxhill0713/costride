@@ -908,6 +908,7 @@ export default function Home() {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
+    if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || userStreak + 1;
