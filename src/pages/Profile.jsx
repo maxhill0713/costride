@@ -157,10 +157,7 @@ export default function Profile() {
     queryKey: ['memberGyms', currentUser?.id],
     queryFn: async () => {
       if (memberGymIds.length === 0) return [];
-      const results = await Promise.all(
-        memberGymIds.map((id) => base44.entities.Gym.filter({ id }).then((r) => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
+      return base44.entities.Gym.filter({ id: { $in: memberGymIds } });
     },
     enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,

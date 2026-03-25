@@ -767,7 +767,7 @@ export default function Progress() {
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
-    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
+    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }, '-created_date', 500),
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
 

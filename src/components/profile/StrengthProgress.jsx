@@ -145,7 +145,7 @@ export default function StrengthProgress({ currentUser }) {
   const { data: gymMemberIds = [] } = useQuery({
     queryKey: ['gymMemberIds', primaryGymId],
     queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.filter({ gym_id: primaryGymId, status: 'active' });
+      const memberships = await base44.entities.GymMembership.filter({ gym_id: primaryGymId, status: 'active' }, 'user_id', 200);
       return memberships.map(m => m.user_id).filter(id => id !== currentUser.id);
     },
     enabled: !!primaryGymId,

@@ -492,8 +492,8 @@ export default function GymOwnerDashboard() {
         const coachRecords = await base44.entities.Coach.filter({ user_email: currentUser.email });
         if (!coachRecords.length) return [];
         const gymIds = [...new Set(coachRecords.map(c => c.gym_id))];
-        const results = await Promise.allSettled(gymIds.map(id => base44.entities.Gym.filter({ id })));
-        return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+        // Single batch query instead of N individual Gym.filter calls
+        return base44.entities.Gym.filter({ id: { $in: gymIds } });
       }
       return base44.entities.Gym.filter({ owner_email: currentUser.email });
     },
@@ -513,12 +513,12 @@ export default function GymOwnerDashboard() {
   const qo = { staleTime: 3 * 60 * 1000, placeholderData: p => p };
   const on  = !!selectedGym;
 
-  const { data: rewards    = [] } = useQuery({ queryKey: ['rewards',    selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
+  const { data: rewards    = [] } = useQuery({ queryKey: ['rewards',    selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }, 'title', 50), enabled: on, ...qo });
   const { data: classes    = [] } = useQuery({ queryKey: ['classes',    selectedGym?.id], queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
   const { data: coaches    = [] } = useQuery({ queryKey: ['coaches',    selectedGym?.id], queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
-  const { data: events     = [] } = useQuery({ queryKey: ['events',     selectedGym?.id], queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date'), enabled: on, ...qo });
+  const { data: events     = [] } = useQuery({ queryKey: ['events',     selectedGym?.id], queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date', 50), enabled: on, ...qo });
   const { data: posts      = [] } = useQuery({ queryKey: ['posts',      selectedGym?.id], queryFn: () => base44.entities.Post.filter({ gym_id: selectedGym.id }, '-created_date', 20), enabled: on, ...qo });
-  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date'), enabled: on, ...qo });
+  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
   const { data: polls      = [] } = useQuery({ queryKey: ['polls',      selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
 
   const { data: stats = {} } = useQuery({
