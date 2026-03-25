@@ -422,7 +422,7 @@ export default function Friends() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col">
       {/* Header - Sticky */}
       <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-6xl mx-auto relative flex items-center justify-center">

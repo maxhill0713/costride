@@ -89,7 +89,7 @@ export default function AddGym() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] p-4">
       <div className="max-w-2xl mx-auto pt-6">
         {/* Header */}
         <div className="mb-6">

@@ -85,7 +85,7 @@ export default function InviteOwner() {
 
   if (gymLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -93,7 +93,7 @@ export default function InviteOwner() {
 
   if (!gym) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <p className="text-slate-300 mb-4">Gym not found</p>
           <Link to={createPageUrl('Gyms')}>

@@ -159,42 +159,32 @@ export default function Notifications() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       {/* Header */}
-      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
-                <Bell className="w-6 h-6 text-blue-400" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
-                  Notifications
-                </h1>
-                {unreadCount > 0 && (
-                  <p className="text-slate-400 text-sm mt-1">{unreadCount} unread</p>
-                )}
-              </div>
-            </div>
-            {unreadCount > 0 && (
-              <Button
-                onClick={() => markAllReadMutation.mutate()}
-                disabled={markAllReadMutation.isPending}
-                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 rounded-xl"
-              >
-                Mark All Read
-              </Button>
-            )}
-          </div>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
+        <h1 className="text-[17px] font-black text-white tracking-tight flex items-center gap-2">
+          <Bell className="w-[18px] h-[18px] text-blue-400" />
+          Notifications
+          {unreadCount > 0 && (
+            <span className="text-[11px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5">{unreadCount}</span>
+          )}
+        </h1>
+        {unreadCount > 0 && (
+          <Button
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={markAllReadMutation.isPending}
+            className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 rounded-xl text-xs h-8 px-3"
+          >
+            Mark All Read
+          </Button>
+        )}
       </div>
 
       {/* Notifications List */}
