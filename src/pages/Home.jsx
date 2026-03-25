@@ -1153,7 +1153,7 @@ export default function Home() {
                     <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Create Workout Split</h3>
                     <button
                       onClick={() => setShowSplitModal(true)}
-                      className="w-full p-2 rounded-lg bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 text-white font-semibold text-xs flex items-center justify-center border border-transparent shadow-[0_3px_0_0_#92400e,0_8px_20px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                      className="w-full p-2 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-semibold text-xs flex items-center justify-center border border-transparent shadow-[0_3px_0_0_#1e40af,0_8px_20px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                       Start Building
                     </button>
                   </div>

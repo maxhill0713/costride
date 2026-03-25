@@ -57,82 +57,39 @@ body {
     scrollbar-width: none;
   }
 
-  /* Soft off-white backgrounds from original design */
+  /* Dark surface overrides — prevent literal white in dark app */
   .bg-white {
-    background-color: #E6EAEE !important;
+    background-color: #0d1728 !important;
   }
 
   .bg-gray-50 {
-    background-color: #E6EAEE !important;
+    background-color: #0d1728 !important;
   }
 
   .bg-slate-50 {
-    background-color: #E6EAEE !important;
+    background-color: #0d1728 !important;
   }
 
-  /* Soft white text */
-  .text-white {
-    color: #F5F7FA !important;
+  .bg-slate-100 {
+    background-color: #111e33 !important;
   }
 
-  /* Border colors */
-  .border-white {
-    border-color: #D1D9E0 !important;
-  }
-
-  .ring-white {
-    --tw-ring-color: #D1D9E0 !important;
+  .bg-gray-100 {
+    background-color: #111e33 !important;
   }
 
   /* Background opacity variants */
   [class*="bg-white/"] {
-    background-color: rgba(230, 234, 238, var(--tw-bg-opacity, 1)) !important;
+    background-color: rgba(13, 23, 40, var(--tw-bg-opacity, 1)) !important;
   }
 
   [class*="bg-slate-50/"] {
-    background-color: rgba(230, 234, 238, var(--tw-bg-opacity, 1)) !important;
-  }
-
-  .bg-slate-100 {
-    background-color: #D8DDE3 !important;
-  }
-
-  .bg-gray-100 {
-    background-color: #D8DDE3 !important;
+    background-color: rgba(13, 23, 40, var(--tw-bg-opacity, 1)) !important;
   }
 
   /* Hover states */
   .hover\:bg-white:hover {
-    background-color: #E6EAEE !important;
-  }
-
-  .hover\:text-white:hover {
-    color: #F5F7FA !important;
-  }
-
-  /* Placeholder colors */
-  .placeholder-white::placeholder {
-    color: #D1D9E0 !important;
-  }
-
-  /* Fill colors */
-  .fill-white {
-    fill: #F5F7FA !important;
-  }
-
-  /* Stroke colors */
-  .stroke-white {
-    stroke: #F5F7FA !important;
-  }
-
-  /* Divide colors */
-  .divide-white > * + * {
-    border-color: #D1D9E0 !important;
-  }
-
-  /* Shadow colors */
-  .shadow-white {
-    --tw-shadow-color: #D1D9E0 !important;
+    background-color: #111e33 !important;
   }
 
   /* Shimmer animation for gamification */

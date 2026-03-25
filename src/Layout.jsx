@@ -21,14 +21,14 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
   const navItems = isDashboardUser ? [
-    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
+    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard' },
+    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
   ] : [
-    { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
-    { name: 'Progress', icon: BarChart3, page: 'Progress', color: 'text-green-500' },
-    { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
-    { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
+    { name: 'Home', icon: Home, page: 'Home' },
+    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
+    { name: 'Progress', icon: BarChart3, page: 'Progress' },
+    { name: 'Challenges', icon: Gift, page: 'RedeemReward' },
+    { name: 'Profile', icon: Crown, page: 'Profile' },
   ];
 
   useEffect(() => {
@@ -77,14 +77,14 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
                   onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
                   onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
                   <div className="relative">
-                    <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                    <item.icon className={`w-6 h-6 ${isActive ? 'text-blue-400' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                     {item.badge > 0 &&
                       <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                         {item.badge > 9 ? '9+' : item.badge}
                       </div>
                     }
                   </div>
-                  <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-blue-400' : ''}`}>{item.name}</span>
                 </Link>
               );
             })}
@@ -95,8 +95,8 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
       {/* Side Navigation for Desktop */}
       {!hideNavigation &&
         <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
-          <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
-            <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
+          <Link to={createPageUrl('Gyms')} className="mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-500 transition-colors duration-200">
               <span className="text-2xl font-black text-white">G</span>
             </div>
           </Link>
@@ -108,10 +108,10 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
                   key={item.page}
                   to={getTabLink(item)}
                   onClick={(e) => handleTabClick(item, e)}
-                  className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${
+                  className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-200 ${
                     isActive
-                      ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-600 ${item.color.replace('text-', 'to-')}-700 text-white shadow-md scale-110`
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'
+                      ? 'bg-blue-500/15 text-blue-400 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/70'
                   }`}>
                   <div className="relative">
                     <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
@@ -121,7 +121,7 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
                       </div>
                     }
                   </div>
-                  {isActive && <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />}
+                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-400 rounded-r-full" />}
                 </Link>
               );
             })}
