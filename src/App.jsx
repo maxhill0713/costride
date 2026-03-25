@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster"
-import { base44 } from '@/api/base44Client';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
@@ -50,7 +49,7 @@ const LayoutWrapper = ({ children, currentPageName }) => (
 );
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -70,24 +69,6 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
-  }
-
-  // Only gym owners can access the web app
-  if (user && user.account_type !== 'gym_owner' && user.role !== 'admin') {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32, textAlign: 'center' }}>
-        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg" alt="CoStride" style={{ width: 72, height: 72, borderRadius: 20, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.15)', marginBottom: 8 }} />
-        <h1 style={{ color: '#ffffff', fontWeight: 900, fontSize: 26, letterSpacing: '-0.03em', margin: 0 }}>CoStride</h1>
-        <p style={{ color: '#94a3b8', fontSize: 15, margin: 0, maxWidth: 320, lineHeight: 1.6 }}>
-          The web app is for <strong style={{ color: '#f1f5f9' }}>gym owners</strong> only. Please use the mobile app to access your account.
-        </p>
-        <button
-          onClick={() => base44.auth.logout()}
-          style={{ marginTop: 8, padding: '10px 24px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#94a3b8', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-          Sign out
-        </button>
-      </div>
-    );
   }
 
   return (
