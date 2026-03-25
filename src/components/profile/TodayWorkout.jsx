@@ -75,7 +75,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
     </>);
 }
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar, setTimerWorkout } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
@@ -829,7 +829,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               }
 
                   {/* Log Workout Button */}
-                  {!alreadyLoggedToday &&
+                  {!alreadyLoggedToday && checkedInToday &&
               <div className="mb-3 space-y-2">
                       {workoutStartTime &&
                 <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">

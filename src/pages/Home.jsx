@@ -1135,12 +1135,7 @@ export default function Home() {
           {memberGym && (
             <div className="space-y-3">
               {currentUser?.custom_workout_types ? (
-                <TodayWorkout
-                  currentUser={currentUser}
-                  workoutStartTime={workoutStartTime}
-                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
-                  onWorkoutLogged={handleWorkoutLogged}
-                  onOverrideDayChange={setWorkoutOverrideDay} />
+                <TodayWorkout currentUser={currentUser} workoutStartTime={workoutStartTime} onWorkoutStart={() => setWorkoutStartTime(Date.now())} onWorkoutLogged={handleWorkoutLogged} onOverrideDayChange={setWorkoutOverrideDay} checkedInToday={userCheckIns.some((c) => isToday(new Date(c.check_in_date)))} />
               ) : (
                 <Card className="rounded-xl p-3 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                   <div className="relative space-y-2">
