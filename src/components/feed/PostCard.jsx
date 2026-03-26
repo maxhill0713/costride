@@ -348,12 +348,16 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           return { ...p, reactions: updatedReactions };
         });
       };
-      // Snapshot and optimistically update all matching caches
-      const snapshots = [];
-      queryClient.getQueryCache().findAll({ type: 'active' }).forEach(({ queryKey, state }) => {
+      // Cancel in-flight refetches so they don't overwrite optimistic update
+      await queryClient.cancelQueries({ queryKey: ['friendPosts'] });
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
+      await queryClient.cancelQueries({ queryKey: ['userPosts'] });
+      // Snapshot current data for rollback
+      const snapshots = queryClient.getQueryCache().getAll().map(({ queryKey, state }) => ({ queryKey, data: state.data }));
+      // Apply optimistic update to all array caches
+      queryClient.getQueryCache().getAll().forEach(({ queryKey, state }) => {
         if (Array.isArray(state.data)) {
-          snapshots.push({ queryKey, data: state.data });
-          queryClient.setQueryData(queryKey, applyUpdate);
+          queryClient.setQueryData(queryKey, applyUpdate(state.data));
         }
       });
       return { snapshots };
