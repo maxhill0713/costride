@@ -725,7 +725,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   className="grid gap-1 mb-1.5 items-end px-1"
                   style={{ gridTemplateColumns: cardioGridCols }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-14">Rounds</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-16">Rounds</div>
                         <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-14">Time/Round</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Rest</div>
@@ -923,19 +923,24 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
-                    </div>
-                  );
+                    </div>);
+
                 }
 
                 return (
                   <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-4">
                     <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
                     <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
-                  </div>
-                );
+                  </div>);
+
               })()}
               <div className="flex justify-center mb-4">
                 <CollapseChevron
