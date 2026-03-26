@@ -39,7 +39,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+
 
 // ── Card style — matches TodayWorkout home page cards exactly ─────────────────
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
@@ -266,7 +266,7 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
 // ── Activity feed CSS ─────────────────────────────────────────────────────────
 const ACTIVITY_CSS = `
 @keyframes an-ping   { 0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.8);opacity:0} }
-@keyframes af-in     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes af-in     { from{opacity:1} to{opacity:1} }
 @keyframes af-like   { 0%{transform:scale(1)} 40%{transform:scale(1.35)} 70%{transform:scale(0.9)} 100%{transform:scale(1)} }
 @keyframes af-pr-glow{ 0%,100%{text-shadow:0 0 8px rgba(234,179,8,0.6)} 50%{text-shadow:0 0 18px rgba(234,179,8,1)} }
 `;
@@ -314,7 +314,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
   };
 
   return (
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.045)', animation: `af-in 0.3s ease ${index * 0.04}s both` }}>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.045)' }}>
       <div style={{ display: 'flex', gap: 12, padding: '13px 14px' }}>
         {/* Avatar */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -711,7 +711,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           : '0 3px 0 rgba(0,0,0,0.45), 0 8px 28px rgba(0,0,0,0.5)',
         transform: pressed ? 'scale(0.965) translateY(3px)' : 'scale(1)',
         transition: 'transform 0.1s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.1s ease',
-        animation: `cl-in 0.32s ease ${index * 0.055}s both`,
+        animation: 'none',
         display: 'flex', flexDirection: 'column',
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
@@ -907,7 +907,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   activeDate.setDate(monday.getDate() + activeDay);
 
   if (classes.length === 0) return (
-    <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}}>
+    <div>
       <div style={{ borderRadius:22, padding:'56px 24px', textAlign:'center',
         background:CARD_BG, border:`1px dashed ${CARD_BORDER}`, backdropFilter:'blur(20px)' }}>
         <div style={{ fontSize:36,marginBottom:14 }}>🏋️</div>
@@ -918,12 +918,11 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
             color:'#818cf8',fontSize:13,fontWeight:800,cursor:'pointer' }}>+ Add Classes</button>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 
   return (
-    <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}}
-      style={{ display:'flex', flexDirection:'column', gap:18 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
         <div>
@@ -1041,7 +1040,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         onBook={handleBook}
         isOwner={showOwnerControls}
       />
-    </motion.div>
+    </div>
   );
 }
 
@@ -1185,7 +1184,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   const cardW = isFirst ? 116 : 94;
                   const avatarSz = isFirst ? 50 : 38;
                   return (
-                    <div key={mIdx} style={{ width:cardW,borderRadius:18,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.cardBorder}`,backdropFilter:'blur(40px)',WebkitBackdropFilter:'blur(40px)',boxShadow:`0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,marginBottom:M.heightExtra,transformOrigin:'bottom center' }}>
+                    <div key={mIdx} style={{ width:cardW,borderRadius:18,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.cardBorder}`,backdropFilter:'blur(40px)',WebkitBackdropFilter:'blur(40px)',boxShadow:`0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,animation:'none',marginBottom:M.heightExtra,transformOrigin:'bottom center' }}>
                       <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent 0%,${M.color} 40%,${M.glowStrong} 50%,${M.color} 60%,transparent 100%)`,zIndex:3 }}/>
                       <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% 0%,${M.insetGlow} 0%,transparent 55%)` }}/>
                       <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
@@ -1225,7 +1224,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   const pct = Math.max(4, Math.round((getVal(m)/maxVal)*100));
                   const R = NAV_ROW[i] || NAV_ROW[NAV_ROW.length-1];
                   return (
-                    <div key={m.userId||i} style={{ borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,position:'relative',overflow:'hidden',background: CARD_BG,border: CARD_BORDER,borderTop:'1px solid rgba(255,255,255,0.09)',boxShadow:'0 2px 12px rgba(0,0,0,0.35)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)' }}>
+                    <div key={m.userId||i} style={{ borderRadius:14,padding:'10px 12px',display:'flex',alignItems:'center',gap:10,animation:'none',position:'relative',overflow:'hidden',background: CARD_BG,border: CARD_BORDER,borderTop:'1px solid rgba(255,255,255,0.09)',boxShadow:'0 2px 12px rgba(0,0,0,0.35)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)' }}>
                       <div style={{ position:'absolute',left:0,top:'18%',bottom:'18%',width:2,borderRadius:99,background:`rgba(${current.accentRgb},${R.rankOpacity*0.35})`,pointerEvents:'none' }}/>
                       <div style={{ width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity*0.7})`,letterSpacing:'-0.02em' }}>{globalRank}</div>
                       <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:'rgba(255,255,255,0.06)',border:`1px solid rgba(255,255,255,${R.rankOpacity*0.12})` }}>
@@ -1630,7 +1629,7 @@ export default function GymCommunity() {
 
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+              <div className="space-y-3">
                 {isGhostGym && !isMember && !showOwnerControls && (
                   <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border:'1px solid rgba(139,92,246,0.35)' }}>
                     <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
@@ -1756,12 +1755,12 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-              </motion.div>
+              </div>
             </TabsContent>
 
             {/* ── CHALLENGES ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+              <div className="space-y-3">
                 {showOwnerControls && (
                   <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background:'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border:'1px solid rgba(59,130,246,0.3)' }}>
                     <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
@@ -1771,7 +1770,7 @@ export default function GymCommunity() {
                   ? gymChallenges.map(challenge => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? id => { if(window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} gymImageUrl={gym?.image_url} />))
                   : (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>)
                 }
-              </motion.div>
+              </div>
             </TabsContent>
 
             {/* ── CLASSES ── */}
@@ -1786,7 +1785,7 @@ export default function GymCommunity() {
 
             {/* ── ACTIVITY ── */}
             <TabsContent value="activity" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+              <div className="space-y-3">
                 <ActiveNowStrip checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
                 <GymActivityFeed
                   checkIns={checkIns}
@@ -1811,7 +1810,7 @@ export default function GymCommunity() {
                 )}
                 <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
-              </motion.div>
+              </div>
             </TabsContent>
 
           </div>

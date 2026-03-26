@@ -727,12 +727,12 @@ return (
           className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white"
         >
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2 pg-item-in" style={{ animationDelay: '60ms' }}>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Star className="w-5 h-5 text-purple-400" />Set Primary Gym
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3 pg-item-in" style={{ animationDelay: '100ms' }}>
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
               <p className="text-purple-200 text-sm">Your primary gym is the default community shown on the Home page and accessed via the Community navigation button.</p>
             </div>
             <div className="space-y-2">
@@ -742,8 +742,7 @@ return (
                   <button
                     key={gym.id}
                     onClick={() => setSelectedPrimaryGym(gym.id)}
-                    className={`pg-item-in w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}
-                    style={{ animationDelay: `${140 + i * 55}ms` }}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -759,8 +758,7 @@ return (
               })}
             </div>
             <div
-              className="flex gap-3 pg-item-in"
-              style={{ animationDelay: `${140 + userGyms.length * 55}ms` }}
+              className="flex gap-3"
             >
               <Button onClick={() => { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700">Cancel</Button>
               <Button onClick={() => { if (selectedPrimaryGym) { updatePrimaryGymMutation.mutate(selectedPrimaryGym); } else { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); } }} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
