@@ -913,11 +913,13 @@ export default function GymOwnerDashboard() {
         <div style={{ padding: collapsed ? '16px 0' : '16px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
             {/* Gym logo / profile pic */}
-            <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {selectedGym?.logo_url || selectedGym?.image_url
-                ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
-              }
+            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, padding: 2, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1.5px rgba(37,99,235,0.5)' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: D.bgSurface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {selectedGym?.logo_url || selectedGym?.image_url
+                  ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
+                }
+              </div>
             </div>
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
