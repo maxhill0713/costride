@@ -654,11 +654,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
                             <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => {
-                              const dayColor = split.workouts?.[d]?.color;
-                              const grad = dayColor ? colorGradient(dayColor) : 'from-slate-600 to-slate-700';
-                              return <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${grad} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>;
-                            })}</div>
+                            <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => <span key={d} className="text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80 text-center inline-block">{DAY_NAMES[d - 1]}</span>)}</div>
                           </div>
                           {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
                           <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
@@ -734,6 +730,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               {/* ── Day Details ── */}
               {selectedDays.length > 0 && (
                 <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Day Details</label>
+
                   {selectedDays.map((day) => {
                     const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
                     const exs = wt.exercises || [];
@@ -792,15 +790,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <div className="flex items-center gap-1 flex-shrink-0">
                               {/* Static badge */}
                               <div
-                                className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
+                                className="inline-flex items-center justify-center whitespace-nowrap font-bold text-xs h-8 px-2.5 rounded-lg uppercase tracking-widest"
                                 style={{
                                   background: 'rgba(255,255,255,0.04)',
                                   border: '1px solid rgba(255,255,255,0.10)',
                                   color: 'rgba(148,163,184,0.65)',
                                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)',
                                   fontSize: '9px',
-                                  letterSpacing: '0.07em',
-                                  padding: '0 6px',
+                                  letterSpacing: '0.08em',
                                 }}>
                                 Mirrored
                               </div>
