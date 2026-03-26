@@ -69,10 +69,9 @@ export default function StreakLossAnimation({
       trigAnim(iconRef.current, 'streakLossBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
     }
 
-    // Stage 2: After 1.5s (extra second on intact icon), count down then crack
+    // Stage 2: After 1.5s, count down then crack
     const t1 = setTimeout(() => {
       const steps = previousStreak;
-      // Slower: 700ms total for counting
       const stepDuration = 700 / Math.max(steps, 1);
 
       for (let i = 1; i <= steps; i++) {
@@ -102,7 +101,7 @@ export default function StreakLossAnimation({
         setTimeout(() => setAnimDone(true), 650);
       }, steps * stepDuration + 200 + 900);
 
-    }, 1500); // extra second on intact icon
+    }, 1500);
 
     return () => clearTimeout(t1);
   }, [isOpen, previousStreak]);
@@ -126,49 +125,51 @@ export default function StreakLossAnimation({
             flexDirection: 'column',
             alignItems: 'center',
             overflow: 'hidden',
-            paddingTop: '18vh',
             paddingBottom: 40,
             paddingLeft: 32,
             paddingRight: 32,
           }}>
 
-          {/* Content block — positioned near top */}
+          {/* Message text — absolutely positioned near top, doesn't affect icon layout */}
+          <AnimatePresence>
+            {animDone && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                style={{
+                  position: 'absolute',
+                  top: '8vh',
+                  left: 32,
+                  right: 32,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: '#ff6b35',
+                  textAlign: 'center',
+                  lineHeight: 1.4,
+                  maxWidth: 300,
+                  margin: '0 auto',
+                }}>
+                You have lost your streak, lock back in and lets start building!
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          {/* Icon + number — centred on screen, never moves */}
           <div style={{
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 12,
-            flex: 1,
           }}>
-
-            {/* Message text — above icon, no glow */}
-            <AnimatePresence>
-              {animDone && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: '#ff6b35',
-                    textAlign: 'center',
-                    lineHeight: 1.4,
-                    maxWidth: 300,
-                    margin: 0,
-                  }}>
-                  You have lost your streak, lock back in and lets start building!
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {/* Streak icon — 20% larger */}
+            {/* Streak icon */}
             <div style={{
               position: 'relative',
               width: ICON_SIZE,
               height: ICON_SIZE,
               willChange: 'transform, opacity',
-              marginTop: 8,
             }}>
               <img
                 ref={iconRef}
@@ -199,7 +200,7 @@ export default function StreakLossAnimation({
             </div>
           </div>
 
-          {/* Continue button — anchored near bottom, no glow */}
+          {/* Continue button — anchored near bottom */}
           <AnimatePresence>
             {animDone && (
               <motion.button
