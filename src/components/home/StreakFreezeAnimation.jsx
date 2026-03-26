@@ -30,6 +30,106 @@ const FREEZE_KEYFRAMES = `
   }
 `;
 
+// ---------- Sound helpers (Web Audio API, no external files) ----------
+
+function getAudioContext() {
+  if (!window._freezeAudioCtx) {
+    window._freezeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return window._freezeAudioCtx;
+}
+
+// Short icy crack — thin noise burst with a quick pitch drop
+function playIceCrack() {
+  try {
+    const ctx = getAudioContext();
+    const t = ctx.currentTime;
+
+    // White noise source
+    const bufLen = ctx.sampleRate * 0.18;
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1);
+
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    // Band-pass to make it feel icy/glassy rather than boomy
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 3800;
+    bp.Q.value = 1.2;
+
+    // High-pass to keep it thin
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1800;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.55, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+    src.connect(bp).connect(hp).connect(gain).connect(ctx.destination);
+    src.start(t);
+    src.stop(t + 0.18);
+  } catch (e) { /* audio blocked — silent fallback */ }
+}
+
+// Full shatter — two layered noise bursts with a low thud
+function playIceShatter() {
+  try {
+    const ctx = getAudioContext();
+    const t = ctx.currentTime;
+
+    // Helper: noise burst
+    function noiseBurst(startTime, duration, freq, q, vol, decay) {
+      const bufLen = Math.ceil(ctx.sampleRate * duration);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1);
+
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq;
+      bp.Q.value = q;
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(vol, startTime);
+      g.gain.exponentialRampToValueAtTime(0.001, startTime + decay);
+
+      src.connect(bp).connect(g).connect(ctx.destination);
+      src.start(startTime);
+      src.stop(startTime + duration);
+    }
+
+    // Low thud on impact
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+    const thudGain = ctx.createGain();
+    thudGain.gain.setValueAtTime(0.5, t);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    osc.connect(thudGain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.14);
+
+    // High glassy burst — main shatter
+    noiseBurst(t,        0.28, 5500, 0.9, 0.7,  0.25);
+    // Mid crackle — slightly delayed
+    noiseBurst(t + 0.03, 0.22, 2800, 1.4, 0.45, 0.20);
+    // Tail tinkle — small fragments settling
+    noiseBurst(t + 0.10, 0.30, 7000, 0.7, 0.25, 0.28);
+    noiseBurst(t + 0.16, 0.20, 6200, 1.0, 0.15, 0.18);
+
+  } catch (e) { /* audio blocked — silent fallback */ }
+}
+
+// ---------- End sound helpers ----------
+
 function injectFreezeStyles() {
   if (document.getElementById('freeze-keyframes')) return;
   const style = document.createElement('style');
@@ -51,8 +151,7 @@ export default function StreakFreezeAnimation({
   finalFreezeCount,
   onComplete,
 }) {
-  const startCount = finalFreezeCount + 1;
-  const [displayCount, setDisplayCount] = useState(startCount);
+  const [displayCount, setDisplayCount] = useState(finalFreezeCount + freezesLostCount);
   const [animDone, setAnimDone] = useState(false);
   const [pressed, setPressed] = useState(false);
   const iconRef = useRef(null);
@@ -61,7 +160,7 @@ export default function StreakFreezeAnimation({
   useEffect(() => {
     if (!isOpen) {
       setAnimDone(false);
-      setDisplayCount(finalFreezeCount + 1);
+      setDisplayCount(finalFreezeCount + freezesLostCount);
       return;
     }
     injectFreezeStyles();
@@ -72,15 +171,15 @@ export default function StreakFreezeAnimation({
       trigAnim(iconRef.current, 'freezeBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
     }
 
-    // Stage 2: After 1.5s, count down then crack
+    // Stage 2: After 1.5s (extra second on intact icon), count down then crack
     const t1 = setTimeout(() => {
-      const startCount = finalFreezeCount + 1;
+      const startCount = finalFreezeCount + freezesLostCount;
       const steps = freezesLostCount;
       const stepDuration = 700 / Math.max(steps, 1);
 
       for (let i = 1; i <= steps; i++) {
         setTimeout(() => {
-          const newCount = (finalFreezeCount + 1) - i;
+          const newCount = startCount - i;
           setDisplayCount(newCount);
           if (numRef.current) {
             trigAnim(numRef.current, 'freezeNumPop', 400, 'cubic-bezier(0.34,1.6,0.64,1)');
@@ -88,20 +187,22 @@ export default function StreakFreezeAnimation({
         }, i * stepDuration);
       }
 
-      // Step 1: slightly cracked
+      // Step 1: slightly cracked + crack sound
       setTimeout(() => {
         if (iconRef.current) {
           iconRef.current.src = SLIGHTLY_CRACKED_URL;
           trigAnim(iconRef.current, 'freezeIconCrack', 600, 'ease-in-out');
         }
+        playIceCrack();
       }, steps * stepDuration + 200);
 
-      // Step 2: fully cracked
+      // Step 2: fully cracked + shatter sound
       setTimeout(() => {
         if (iconRef.current) {
           iconRef.current.src = CRACKED_FREEZE_ICON_URL;
           trigAnim(iconRef.current, 'freezeIconCrack', 600, 'ease-in-out');
         }
+        playIceShatter();
         setTimeout(() => setAnimDone(true), 650);
       }, steps * stepDuration + 200 + 900);
 
