@@ -914,34 +914,7 @@ export default function Home() {
           <HeaderContent compact={true} />
         </div>
 
-        {/* ── Pull-to-refresh indicator ── */}
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 49,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
-            paddingBottom: 10,
-            height: Math.max(0, pullY > 0 || isRefreshing ? (isRefreshing ? PULL_THRESHOLD : pullY) : 0),
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            transition: isRefreshing ? 'height 200ms ease' : pullY === 0 ? 'height 300ms ease' : 'none',
-          }}>
-          <div style={{
-            width: 30, height: 30,
-            borderRadius: '50%',
-            border: '2.5px solid rgba(148,163,184,0.2)',
-            borderTop: `2.5px solid ${isRefreshing ? '#60a5fa' : pullY >= PULL_THRESHOLD ? '#60a5fa' : 'rgba(148,163,184,0.5)'}`,
-            opacity: isRefreshing ? 1 : Math.min(1, pullY / PULL_THRESHOLD),
-            transform: `rotate(${isRefreshing ? 0 : (pullY / PULL_THRESHOLD) * 270}deg)`,
-            animation: isRefreshing ? 'spin 0.7s linear infinite' : 'none',
-            transition: isRefreshing ? 'none' : 'opacity 100ms ease, border-top-color 150ms ease',
-          }} />
-        </div>
+
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
