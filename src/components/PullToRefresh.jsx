@@ -31,8 +31,10 @@ export default function PullToRefresh({ onRefresh, children }) {
       setPullDistance(pullThreshold);
       await onRefresh();
       setIsRefreshing(false);
+      setPullDistance(0);
+    } else {
+      setPullDistance(0);
     }
-    setPullDistance(0);
   };
 
   return (
@@ -45,7 +47,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       <motion.div
         className="absolute top-0 left-0 right-0 flex items-center justify-center"
         style={{ height: pullDistance }}
-        animate={{ opacity: pullDistance > 20 ? 1 : 0 }}
+        animate={{ opacity: pullDistance > 20 || isRefreshing ? 1 : 0 }}
       >
         <div className="flex items-center gap-2 text-slate-400">
           {isRefreshing ? (
