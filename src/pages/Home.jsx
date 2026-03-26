@@ -22,7 +22,6 @@ import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Username / search query sanitisation
 // ─────────────────────────────────────────────────────────────────────────────
@@ -30,14 +29,10 @@ const sanitiseUsernameQuery = (v) =>
   v
     .replace(/[^a-zA-Z0-9_.\- ]/g, '')
     .slice(0, 30);
-
 // ─────────────────────────────────────────────────────────────────────────────
-
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
-
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -95,7 +90,6 @@ function soundTransition(ctx) {
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
   osc.start(now); osc.stop(now + 0.35);
 }
-
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
     0%   { transform: scale(0.4) translateY(40px); opacity: 0; }
@@ -163,7 +157,6 @@ function injectStreakStyles() {
   style.textContent = STREAK_KEYFRAMES;
   document.head.appendChild(style);
 }
-
 function trigAnim(el, name, dur, easing) {
   if (!el) return;
   el.style.animation = 'none';
@@ -200,20 +193,16 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const lbl = document.getElementById('streak-anim-lbl');
   if (!stage || !p1 || !p2 || !num || !lbl) return;
   const actx = audioCtxRef.current;
-
   if (actx) soundBounceIn(actx);
   trigAnim(stage, 'streakBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
-
   const t1 = setTimeout(() => {
     if (actx) soundNumPop(actx);
     trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.6,0.64,1)');
   }, 500);
-
   const t2 = setTimeout(() => {
     stage.style.opacity = '1';
     trigAnim(stage, 'streakWindup', 280, 'ease-in-out');
   }, 1300);
-
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
     p1.style.display = 'none';
@@ -226,14 +215,11 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     num.textContent = String(newStreak);
     trigAnim(num, 'streakNumPop', 380, 'cubic-bezier(0.34,1.8,0.64,1)');
   }, 1580);
-
   const t4 = setTimeout(() => {
     if (actx) soundTransition(actx);
   }, 2800);
-
   celebTimers.current = [t1, t2, t3, t4];
 }
-
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -276,22 +262,18 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
-
   // ── Header scroll behaviour ──────────────────────────────────────────────
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
-
   useEffect(() => {
     lastScrollY.current = window.scrollY;
-
     const handleScroll = () => {
       if (ticking.current) return;
       ticking.current = true;
       requestAnimationFrame(() => {
         const currentY = window.scrollY;
         const prev = lastScrollY.current;
-
         if (currentY <= 10) {
           setHeaderState('top');
         } else if (currentY > prev) {
@@ -299,16 +281,13 @@ export default function Home() {
         } else {
           setHeaderState('visible');
         }
-
         lastScrollY.current = currentY;
         ticking.current = false;
       });
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   useEffect(() => {
     const prev = document.body.style.backgroundColor;
     document.body.style.backgroundColor = '#020817';
@@ -318,7 +297,6 @@ export default function Home() {
       document.documentElement.style.backgroundColor = '';
     };
   }, []);
-
   const triggerRefresh = async () => {
     setVisiblePostCount(POSTS_PER_PAGE);
     await Promise.all([
@@ -332,7 +310,6 @@ export default function Home() {
     await new Promise(r => setTimeout(r, 600));
     setIsRefreshing(false);
   };
-
   useEffect(() => {
     const onTouchStart = (e) => {
       if (window.scrollY <= 0) touchStartY.current = e.touches[0].clientY;
@@ -363,10 +340,8 @@ export default function Home() {
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
     return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
   }, [queryClient]);
-
   useEffect(() => {
     injectStreakStyles();
-
     const checkMissedWorkouts = async () => {
       try {
         const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
@@ -381,7 +356,6 @@ export default function Home() {
         console.error('Error checking missed workouts:', error);
       }
     };
-
     const checkStreakLoss = async () => {
       try {
         const result = await base44.functions.invoke('checkStreakLoss', {});
@@ -395,22 +369,16 @@ export default function Home() {
         console.error('Error checking streak loss:', error);
       }
     };
-
     checkMissedWorkouts();
     checkStreakLoss();
   }, []);
-
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
-
   useEffect(() => {
     const t = setTimeout(() => setDebouncedFriendSearch(sanitiseUsernameQuery(friendSearchQuery)), 300);
     return () => clearTimeout(t);
   }, [friendSearchQuery]);
-
-
-
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -486,7 +454,6 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
-
   const { data: sentFriendRequests = [] } = useQuery({
     queryKey: ['sentFriendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'pending' }, '-created_date', 50),
@@ -494,12 +461,10 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
-
   const POSTS_PER_PAGE = 4;
   const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
   const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
   const feedBottomRef = useRef(null);
-
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -507,7 +472,6 @@ export default function Home() {
     enabled: knownUserIds.length > 0,
     staleTime: 2 * 60 * 1000,
   });
-
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allRecentCheckIns = [] } = useQuery({
     queryKey: ['checkIns', 'friendFeed', friendIdList.join(',')],
@@ -521,7 +485,6 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: prev => prev,
   });
-
   const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: recentLifts = [] } = useQuery({
     queryKey: ['recentLifts', 'friends'],
@@ -530,14 +493,12 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
-
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', debouncedFriendSearch],
     queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedFriendSearch.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
     enabled: debouncedFriendSearch.trim().length >= 2,
     staleTime: 30000,
   });
-
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
     onSuccess: () => {
@@ -564,7 +525,6 @@ export default function Home() {
     onMutate: (friendId) => { queryClient.setQueryData(['sentFriendRequests', currentUser?.id], (old = []) => old.filter(r => r.friend_id !== friendId)); },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ['sentFriendRequests', currentUser?.id] }); },
   });
-
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
   const { data: checkInUsers = [] } = useQuery({
@@ -587,13 +547,11 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
-
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
-
   useEffect(() => {
     if (!feedBottomRef.current) return;
     const observer = new IntersectionObserver(
@@ -607,7 +565,6 @@ export default function Home() {
     observer.observe(feedBottomRef.current);
     return () => observer.disconnect();
   }, []);
-
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
@@ -618,7 +575,6 @@ export default function Home() {
       celebTimers.current.forEach(clearTimeout);
     };
   }, [showStreakCelebration]);
-
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -661,7 +617,6 @@ export default function Home() {
       </div>
     );
   }
-
   const memberGym = memberGymData || null;
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
@@ -675,7 +630,6 @@ export default function Home() {
   );
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
-
   const effectiveToday = (() => {
     const now = new Date();
     if (now.getHours() < 3) {
@@ -687,10 +641,8 @@ export default function Home() {
   })();
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
-
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
-
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());
@@ -705,7 +657,6 @@ export default function Home() {
     }
     return streak;
   };
-
   const friendsWithActivity = friends.map(friend => {
     const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id);
     const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null;
@@ -724,7 +675,6 @@ export default function Home() {
     if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
-
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const socialFeedPosts = allPosts.filter(post =>
     (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
@@ -733,7 +683,6 @@ export default function Home() {
     !post.is_hidden &&
     new Date(post.created_date) >= threeDaysAgo
   );
-
   const activityFeed = (() => {
     const activities = [];
     const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
@@ -752,7 +701,6 @@ export default function Home() {
     });
     return activities.sort((a,b) => b.timestamp - a.timestamp);
   })();
-
   const activityCards = (() => {
     const cards = [];
     const lastCI = allCheckIns.filter(c => c.user_id === currentUser?.id)[0];
@@ -761,19 +709,15 @@ export default function Home() {
     friendsWithActivity.forEach(friend => {
       if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id:`inactive-${friend.friend_id}`, type:'friend-inactive', title:`${friend.friend_name} Needs a Nudge`, message:`${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji:'👋' });
     });
-
     return cards;
   })();
-
   const filteredActivityCards = activityCards.filter(c => !dismissedCardIds.has(c.id));
   const filteredSearchResults = searchResults.filter(u => !friendIdList.includes(u.id));
-
   const dismissCard = (id) => {
     const updated = new Set(dismissedCardIds).add(id);
     setDismissedCardIds(updated);
     localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
   };
-
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -802,7 +746,6 @@ export default function Home() {
       }
     }, 3500);
   };
-
   const handleStreakVariantSelect = (variant) => {
     if (currentUser) {
       setShowStreakVariants(false);
@@ -810,7 +753,6 @@ export default function Home() {
       base44.auth.updateMe({ streak_variant: variant });
     }
   };
-
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const todayCount = todayCheckInsForQuery.length;
@@ -823,7 +765,6 @@ export default function Home() {
     ];
     return todayCount > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
   };
-
   const viewSummaryBtnStyle = {
     marginTop: 4, width: '100%',
     padding: '7px 0',
@@ -851,7 +792,6 @@ export default function Home() {
     touchAction: 'manipulation',
   };
   const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
-
   const HeaderContent = ({ compact = false }) => (
     <div className={`max-w-4xl mx-auto flex items-center justify-center relative px-4 ${compact ? 'py-0' : ''}`}>
       <button
@@ -883,11 +823,9 @@ export default function Home() {
       </button>
     </div>
   );
-
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-
         {/* ── Fixed header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50"
@@ -908,14 +846,10 @@ export default function Home() {
             <HeaderContent compact={true} />
           </div>
         </div>
-
         {/* Ghost spacer */}
         <div className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={true} />
         </div>
-
-
-
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
             <>
@@ -959,7 +893,6 @@ export default function Home() {
               </div>
             </>
           )}
-
           {memberGym && (
             <div className="space-y-3">
               {currentUser?.custom_workout_types ? (
@@ -978,11 +911,13 @@ export default function Home() {
               )}
             </div>
           )}
-
+          {/* ── Community card — static, no entrance animations ── */}
           {memberGym?.id && (
-            <motion.div whileTap={{ scale: 0.97, y: 2 }}>
+            <div
+              className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100"
+              style={{ WebkitTapHighlightColor: 'transparent' }}>
               <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-                <Card className="rounded-xl text-card-foreground transition-all duration-200 cursor-pointer relative h-40 overflow-hidden group" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <Card className="rounded-xl text-card-foreground cursor-pointer relative h-40 overflow-hidden group" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                   {memberGym?.image_url ? (
                     <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
                   ) : (
@@ -991,42 +926,21 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
                   <div className="relative p-6 h-full flex flex-col justify-between">
                     <div>
-                      <motion.p
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.08 }}
-                        className="text-white font-semibold text-base tracking-tight">
+                      <p className="text-white font-semibold text-base tracking-tight">
                         Your Community
-                      </motion.p>
-                      <motion.p
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.14 }}
-                        className="text-slate-300 text-sm mt-1 font-medium">
+                      </p>
+                      <p className="text-slate-300 text-sm mt-1 font-medium">
                         {memberGym.name}
-                      </motion.p>
+                      </p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <motion.span
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.2 }}
-                        className="text-xs text-slate-300 font-medium">
+                      <span className="text-xs text-slate-300 font-medium">
                         {getCommunityText()}
-                      </motion.span>
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.7 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.24 }}
-                        className="flex items-center gap-2">
+                      </span>
+                      <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {checkInUsers.slice(0, 2).map((user, idx) => (
-                            <motion.div
-                              key={user.id}
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ type: 'spring', stiffness: 340, damping: 18, delay: 0.28 + idx * 0.07 }}
-                              className="relative">
+                          {checkInUsers.slice(0, 2).map((user) => (
+                            <div key={user.id} className="relative">
                               {user.avatar_url ? (
                                 <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
                               ) : (
@@ -1034,18 +948,17 @@ export default function Home() {
                                   {user.full_name?.[0] || 'U'}
                                 </div>
                               )}
-                            </motion.div>
+                            </div>
                           ))}
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-300" />
-                      </motion.div>
+                      </div>
                     </div>
                   </div>
                 </Card>
               </Link>
-            </motion.div>
+            </div>
           )}
-
           {/* ── Weekly workout circles ── */}
           {memberGym?.id && (() => {
             const trainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
@@ -1093,7 +1006,6 @@ export default function Home() {
                   const workoutLog = logsByDay[day];
                   const showViewWorkout = !done && !isRestDay && !isMissed && (day > todayDay || isTodayCircle);
                   const hasBubbleBtn = done && !isRestDay && workoutLog || showViewWorkout;
-
                   const getBg = () => {
                     if (isRestDay) {
                       if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
@@ -1234,7 +1146,6 @@ export default function Home() {
               </div>
             );
           })()}
-
           {/* ── Fixed bubble ── */}
           {activeCircleDay !== null && bubblePos && (() => {
             const ARROW_H = 7;
@@ -1243,7 +1154,6 @@ export default function Home() {
             const BUBBLE_W = 274;
             const BUBBLE_H = bubblePos.hasBubbleBtn ? 118 : 78;
             const SVG_H = BUBBLE_H + ARROW_H;
-
             const screenW = window.innerWidth;
             const rawLeft = bubblePos.buttonCenterX - BUBBLE_W / 2;
             const clampedLeft = Math.max(8, Math.min(rawLeft, screenW - BUBBLE_W - 8));
@@ -1251,7 +1161,6 @@ export default function Home() {
             const arrowL = arrowTip - ARROW_W / 2;
             const arrowR = arrowTip + ARROW_W / 2;
             const bubbleTop = bubblePos.buttonBottom + 4;
-
             const path = [
               `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
               `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
@@ -1260,7 +1169,6 @@ export default function Home() {
               `L ${RADIUS} ${SVG_H}`, `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
               `L 0 ${ARROW_H + RADIUS}`, `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`, `Z`,
             ].join(' ');
-
             return (
               <motion.div
                 key={bubblePos.day}
@@ -1312,9 +1220,7 @@ export default function Home() {
               </motion.div>
             );
           })()}
-
           {memberGym?.id && <QuoteCarousel />}
-
           {/* ── Social Feed ── */}
           <ActivityFeedSection
             friends={friends}
@@ -1328,7 +1234,6 @@ export default function Home() {
             queryClient={queryClient}
             dismissCard={dismissCard}
           />
-
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
               <div className="flex items-center justify-between gap-4">
@@ -1344,7 +1249,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
       {/* Streak Freeze Animation */}
       <StreakFreezeAnimation
         isOpen={showFreezeAnimation}
@@ -1352,14 +1256,12 @@ export default function Home() {
         finalFreezeCount={freezeAnimationData.finalFreezeCount}
         onComplete={() => setShowFreezeAnimation(false)}
       />
-
       {/* Streak Loss Animation */}
       <StreakLossAnimation
         isOpen={showStreakLossAnimation}
         previousStreak={streakLossAnimationData.previousStreak}
         onComplete={() => setShowStreakLossAnimation(false)}
       />
-
       <StreakCelebration
         showStreakCelebration={showStreakCelebration}
         celebrationStreakNum={celebrationStreakNum}
@@ -1377,11 +1279,9 @@ export default function Home() {
         setShowDaysCelebration={setShowDaysCelebration}
         setJustLoggedDay={setJustLoggedDay}
       />
-
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} />
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} gymCount={gymMemberships.length} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
-
       <FriendsSection
         showFriendsModal={showFriendsModal}
         setShowFriendsModal={setShowFriendsModal}
@@ -1409,10 +1309,8 @@ export default function Home() {
         cancelFriendMutation={cancelFriendMutation}
         addFriendMutation={addFriendMutation}
       />
-
       {/* ── Workout Summary Modal ── */}
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
-
       {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
