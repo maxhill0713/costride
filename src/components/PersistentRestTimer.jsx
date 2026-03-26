@@ -192,7 +192,7 @@ function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismis
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (isCardio) return; // cardio: no auto-dismiss
+    if (isCardio) return;
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onDismiss, 400);
@@ -341,7 +341,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     return window._timerAudioCtx;
   };
 
-  // Short punchy ding — decays in ~0.5s so triple sounds like ding-ding-ding
+  // Drawn-out diing — longer attack, slower decay ~1.2s for a resonant bell tone
   const playBell = (delay = 0) => {
     try {
       const ctx = getAudioCtx();
@@ -354,19 +354,19 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         osc.type = 'sine';
         osc.frequency.value = 880 * harmonic;
         gain.gain.setValueAtTime(0.0, t0);
-        gain.gain.linearRampToValueAtTime(0.11 / (i + 1), t0 + 0.008); // quieter
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);        // fast decay
+        gain.gain.linearRampToValueAtTime(0.13 / (i + 1), t0 + 0.025); // slightly slower attack
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.4);        // long resonant decay
         osc.start(t0);
-        osc.stop(t0 + 0.55);
+        osc.stop(t0 + 1.5);
       });
     } catch (e) {}
   };
 
-  // Triple ding — tight spacing for ding-ding-ding not diiong-diiong-diiong
+  // Triple diing — wider spacing so each bell has room to ring out before the next
   const playTripleBell = () => {
     playBell(0);
-    playBell(0.25);
-    playBell(0.50);
+    playBell(0.55);
+    playBell(1.1);
   };
 
   const playRoundStartBell = () => { playBell(0); };
@@ -494,12 +494,12 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isFinished    = t === 0 && isActive;
   const isRestSegment = cardioMode && cardioSegments[currentSegIdx]?.type === 'rest';
 
-  const isPulsing     = isWarning && !cardioMode;           // rest timer: red↔blue
-  const isRestWarning = isWarning && isRestSegment;         // cardio rest: red↔green
+  // FIX: rest timer (non-cardio) should pulse red↔blue when warning
+  const isPulsing     = isWarning && !cardioMode;
+  const isRestWarning = isWarning && isRestSegment;
 
   const PULSE_DURATION = '2.2s ease-in-out infinite';
 
-  // Bar gradient — left side slightly less vivid
   const staticBarBg = 'linear-gradient(90deg, #1a3470 0%, #172554 100%)';
 
   const cardioExercises = todayWorkout?.cardio || [];
@@ -509,7 +509,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   // Fullscreen background
   const staticBg = (() => {
-    if (isRestWarning || isPulsing) return undefined; // handled by animation
+    if (isRestWarning || isPulsing) return undefined;
     if (isRestSegment) return 'linear-gradient(to bottom, #14532d, #166534, #052e16)';
     return 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
   })();
@@ -543,6 +543,18 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     cardioDurationRef.current = calcCardioDuration(c);
   };
 
+  // Cancel cardio selection — go back to normal rest timer
+  const handleCancelCardio = () => {
+    setCardioMode(false);
+    setCardioSegments([]);
+    setCurrentSegIdx(0);
+    setCardioTitle('');
+    onTimerStateChange(false);
+    onTimerValueChange('');
+    setPaused(false);
+    cardioStartTimeRef.current = null;
+  };
+
   const handleGo = () => {
     const currentVal = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90;
     if (!cardioMode && currentVal !== restTimer) onTimerValueChange(currentVal);
@@ -551,7 +563,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     onTimerStateChange(true);
   };
 
-  // X button: close fullscreen AND hide bar completely
   const handleCloseAll = () => {
     onTimerStateChange(false);
     onTimerValueChange('');
@@ -655,7 +666,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               position: 'fixed', inset: 0, zIndex: 50,
               display: 'flex',
               flexDirection: isLandscape ? 'row' : 'column',
-              alignItems: 'center',
+              alignItems: isLandscape ? 'stretch' : 'center',
               justifyContent: isLandscape ? 'center' : 'flex-start',
               paddingTop: isLandscape ? 0 : '8vh',
               background: staticBg,
@@ -664,7 +675,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               overflow: 'hidden',
             }}>
 
-            {/* ── Top-left X: close fullscreen AND bar ── */}
+            {/* ── Top-left X: close fullscreen AND bar — no box ── */}
             <button
               onClick={handleCloseAll}
               style={{
@@ -672,10 +683,10 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 width: 40, height: 40,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'rgba(255,255,255,0.75)',
-                background: 'rgba(255,255,255,0.12)',
+                background: 'none',
                 border: 'none', borderRadius: 10, cursor: 'pointer',
               }}>
-              <X style={{ width: 20, height: 20 }} />
+              <X style={{ width: 22, height: 22 }} />
             </button>
 
             {/* ── Top-right chevron: collapse to bar only ── */}
@@ -701,20 +712,34 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     {roundLabel}
                   </p>
                 )}
-                <div style={{ position: 'relative', width: cardioMode ? 248 : 224, height: cardioMode ? 248 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+                {/* Circle — same size for both rest and cardio mode */}
+                <div style={{ position: 'relative', width: 248, height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
                   {cardioMode && cardioSegments.length > 1
                     ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
-                    : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />}
-                  <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 68 : 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
+                    : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} radius={96} />}
+                  <span style={{ color: '#fff', fontWeight: 900, fontSize: 68, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
                     {timerActive ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
                   </span>
                 </div>
-                {/* Buttons — portrait, with bottom margin so Go isn't flush to screen edge */}
+
+                {/* Buttons — portrait */}
                 <div style={{ marginTop: 32, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
                   {!timerActive ? (
-                    <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
-                      Go
-                    </PressBtn>
+                    <>
+                      <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
+                        Go
+                      </PressBtn>
+                      {/* Cancel button — only shown when cardio routine has been selected */}
+                      {cardioMode && (
+                        <PressBtn
+                          onClick={handleCancelCardio}
+                          bg="linear-gradient(to bottom, #6b7280, #4b5563, #374151)"
+                          shadow="#1f2937"
+                          style={{ width: '100%', height: 56 }}>
+                          Cancel
+                        </PressBtn>
+                      )}
+                    </>
                   ) : (
                     <>
                       <PressBtn onClick={handlePause}
@@ -729,7 +754,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     </>
                   )}
                 </div>
-                {/* Cardio routines — portrait */}
+                {/* Cardio routines — portrait bottom-left */}
                 {!cardioMode && (
                   <div style={{ position: 'absolute', bottom: 44, left: 24, maxWidth: '44%' }}>
                     <CardioRouteList />
@@ -740,9 +765,10 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
             {/* ══ LANDSCAPE ══════════════════════════════════════════════════ */}
             {isLandscape && (
-              <>
-                {/* Left: title + circle */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 10, paddingTop: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative' }}>
+
+                {/* Title + round label — above the circle, shifted slightly up */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 8, marginTop: -16 }}>
                   <p style={{ fontSize: cardioMode ? 22 : 18, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, color: staticText, animation: textAnimation }}>
                     {isFinished ? 'Done!' : displayTitle}
                   </p>
@@ -751,24 +777,45 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                       {roundLabel}
                     </p>
                   )}
-                  <div style={{ position: 'relative', width: cardioMode ? 196 : 180, height: cardioMode ? 196 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
-                    {cardioMode && cardioSegments.length > 1
-                      ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={78} />
-                      : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} radius={78} />}
-                    <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 52 : 46, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
-                      {timerActive ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
-                    </span>
-                  </div>
                 </div>
 
-                {/* Right: buttons (and cardio routines if not yet started) */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, width: 148, paddingRight: 28, paddingBottom: 8 }}>
+                {/* Circle — centred, same large size as portrait */}
+                <div style={{ position: 'relative', width: 248, height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+                  {cardioMode && cardioSegments.length > 1
+                    ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
+                    : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} radius={96} />}
+                  <span style={{ color: '#fff', fontWeight: 900, fontSize: 68, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
+                    {timerActive ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
+                  </span>
+                </div>
+
+                {/* Buttons — bottom-right corner, stacked, not touching edges */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 20,
+                  right: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: 10,
+                  width: 148,
+                }}>
                   {!timerActive ? (
                     <>
                       <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 50 }}>
                         Go
                       </PressBtn>
-                      <CardioRouteList compact />
+                      {cardioMode ? (
+                        <PressBtn
+                          onClick={handleCancelCardio}
+                          bg="linear-gradient(to bottom, #6b7280, #4b5563, #374151)"
+                          shadow="#1f2937"
+                          style={{ width: '100%', height: 50 }}>
+                          Cancel
+                        </PressBtn>
+                      ) : (
+                        <CardioRouteList compact />
+                      )}
                     </>
                   ) : (
                     <>
@@ -784,7 +831,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     </>
                   )}
                 </div>
-              </>
+              </div>
             )}
           </motion.div>
         )}
