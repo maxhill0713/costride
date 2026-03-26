@@ -51,7 +51,8 @@ export default function StreakFreezeAnimation({
   finalFreezeCount,
   onComplete,
 }) {
-  const [displayCount, setDisplayCount] = useState(finalFreezeCount + freezesLostCount);
+  const startCount = finalFreezeCount + 1;
+  const [displayCount, setDisplayCount] = useState(startCount);
   const [animDone, setAnimDone] = useState(false);
   const [pressed, setPressed] = useState(false);
   const iconRef = useRef(null);
@@ -60,7 +61,7 @@ export default function StreakFreezeAnimation({
   useEffect(() => {
     if (!isOpen) {
       setAnimDone(false);
-      setDisplayCount(finalFreezeCount + freezesLostCount);
+      setDisplayCount(finalFreezeCount + 1);
       return;
     }
     injectFreezeStyles();
@@ -71,15 +72,15 @@ export default function StreakFreezeAnimation({
       trigAnim(iconRef.current, 'freezeBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
     }
 
-    // Stage 2: After 1.5s (extra second on intact icon), count down then crack
+    // Stage 2: After 1.5s, count down then crack
     const t1 = setTimeout(() => {
-      const startCount = finalFreezeCount + freezesLostCount;
+      const startCount = finalFreezeCount + 1;
       const steps = freezesLostCount;
       const stepDuration = 700 / Math.max(steps, 1);
 
       for (let i = 1; i <= steps; i++) {
         setTimeout(() => {
-          const newCount = startCount - i;
+          const newCount = (finalFreezeCount + 1) - i;
           setDisplayCount(newCount);
           if (numRef.current) {
             trigAnim(numRef.current, 'freezeNumPop', 400, 'cubic-bezier(0.34,1.6,0.64,1)');
