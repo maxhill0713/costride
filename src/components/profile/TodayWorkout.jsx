@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft, Pencil } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
@@ -898,17 +899,49 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   </div>
                 </div> : (
 
-            /* REST DAY */
+            /* REST DAY or EMPTY SPLIT */
             <div className="px-2">
+              {(() => {
+                // Check if this is a planned training day with no exercises configured
+                const trainingDays = currentUser?.training_days || [];
+                const isTrainingDay = overrideDayKey !== null || trainingDays.includes(adjustedDay);
+                const hasNoExercises = (!todayWorkout.exercises || todayWorkout.exercises.length === 0) && (!todayWorkout.cardio || todayWorkout.cardio.length === 0);
+                const isEmptySplit = isTrainingDay && hasNoExercises && todayWorkout.name !== 'Rest Day';
+
+                if (isEmptySplit) {
+                  return (
+                    <div className="p-5 bg-gradient-to-br from-blue-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-blue-500/20 text-center mb-4">
+                      <Dumbbell className="w-7 h-7 text-blue-400/60 mx-auto mb-3" />
+                      <p className="text-slate-200 text-sm font-bold mb-1">No exercises set for today</p>
+                      <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">You don't have a workout routine set for today. Edit your custom split and add some exercises.</p>
+                      <Link
+                        to="/Progress"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white
+                          bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700
+                          border border-transparent
+                          shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
+                          active:shadow-none active:translate-y-[3px] active:scale-95
+                          transition-all duration-100 transform-gpu">
+                        <Pencil className="w-4 h-4" />
+                        Edit Split
+                      </Link>
+                    </div>
+                  );
+                }
+
+                return (
                   <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-4">
                     <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
                     <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
                   </div>
-                  <div className="flex justify-center mb-4">
-                    <CollapseChevron
+                );
+              })()}
+              <div className="flex justify-center mb-4">
+                <CollapseChevron
                   onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}} />
-                  </div>
-                </div>)
+              </div>
+            </div>)
             }
             </motion.div>
           }
