@@ -159,8 +159,27 @@ export default function Notifications() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
-        <p className="text-slate-400">Loading...</p>
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-3 flex items-center gap-2">
+          <div className="w-[18px] h-[18px] rounded bg-slate-700/60 animate-pulse" />
+          <div className="w-28 h-4 rounded bg-slate-700/60 animate-pulse" />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              style={{ background: '#1e293b', border: '1.5px solid #334155', borderBottom: '4px solid #0f172a', borderRadius: '16px' }}
+              className="px-4 py-4 flex items-center gap-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-slate-700/60 animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 rounded bg-slate-700/60 animate-pulse w-3/4" />
+                <div className="h-3 rounded bg-slate-700/60 animate-pulse w-1/2" />
+                <div className="h-2.5 rounded bg-slate-700/60 animate-pulse w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

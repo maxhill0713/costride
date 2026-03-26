@@ -1270,7 +1270,7 @@ function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
 
   const { data: myFriends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id }),
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'accepted' }, '-created_date', 200),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
   });
@@ -1413,18 +1413,18 @@ export default function GymCommunity() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5*60*1000, gcTime: 10*60*1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
-  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
+  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }, 'name', 20), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
   const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
-  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
-  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }, 'name', 100), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
+  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }, 'name', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }, '-created_date', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date', 30), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10*60*1000, gcTime: 30*60*1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }, '-created_date', 100), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
+  const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }, '-created_date', 50), enabled: !!currentUser, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const { data: gymWorkoutLogs = [] } = useQuery({
     queryKey: ['gymWorkoutLogs', gymId, checkIns.map(c => c.user_id).join(',')],
     queryFn: async () => {
@@ -1499,10 +1499,7 @@ export default function GymCommunity() {
     queryFn: async () => {
       const userIds = [...new Set(members.map(m => m.user_id).filter(Boolean))].slice(0, 50);
       if (userIds.length === 0) return [];
-      const results = await Promise.all(
-        userIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
+      return base44.entities.User.filter({ id: { $in: userIds } });
     },
     enabled: !!gymId && members.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -1567,7 +1564,7 @@ export default function GymCommunity() {
   const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2.5 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11.5px] transform-gpu";
 
   return (
-    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
+    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.some(k => k === gymId) }); }}>
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
           <div className="relative overflow-hidden">

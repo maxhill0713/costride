@@ -119,39 +119,7 @@ import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
-/* ══════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — matches TabAnalytics + TabOverview exactly
-══════════════════════════════════════════════════════════════════ */
-const C = {
-  bg:         '#090e1a',
-  surface:    '#0d1525',
-  surfaceEl:  '#111c2e',
-
-  border:     'rgba(255,255,255,0.065)',
-  borderEl:   'rgba(255,255,255,0.11)',
-  divider:    'rgba(255,255,255,0.038)',
-
-  t1:  '#dde3ed',
-  t2:  '#7a8ea8',
-  t3:  '#3f5068',
-  t4:  '#243040',
-
-  accent:    '#5179ff',
-  accentSub: 'rgba(81,121,255,0.08)',
-  accentBrd: 'rgba(81,121,255,0.18)',
-
-  danger:    '#e0524a',
-  dangerSub: 'rgba(224,82,74,0.07)',
-  dangerBrd: 'rgba(224,82,74,0.18)',
-
-  success:    '#38b27a',
-  successSub: 'rgba(56,178,122,0.07)',
-  successBrd: 'rgba(56,178,122,0.16)',
-
-  warn:    '#d4893a',
-  warnSub: 'rgba(212,137,58,0.07)',
-  warnBrd: 'rgba(212,137,58,0.18)',
-};
+import { C } from '@/lib/dashboard-tokens';
 
 /* ── Shared card ─────────────────────────────────────────────────── */
 function Card({ children, style = {} }) {
@@ -584,7 +552,7 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
       });
       setSent(true);
       setTimeout(() => { setSent(false); onClose(); }, 2000);
-    } catch (e) { console.error(e); } finally { setSending(false); }
+    } catch { } finally { setSending(false); }
   };
 
   return (
@@ -684,7 +652,7 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
       }
       setSent(true);
       setTimeout(() => { setSent(false); onSuccess(); onClose(); }, 2200);
-    } catch (e) { console.error(e); } finally { setSending(false); }
+    } catch { } finally { setSending(false); }
   };
 
   return (

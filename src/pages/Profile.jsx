@@ -218,8 +218,7 @@ export default function Profile() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       if (type === 'image') setPostImage(file_url);
       else setPostVideo(file_url);
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
       alert('Upload failed. Please try again.');
     } finally {
       setUploading(false);
@@ -258,7 +257,45 @@ export default function Profile() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts'] }); }
   });
 
-  if (!currentUser) return null;
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+        {/* Top bar */}
+        <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
+          <div className="w-28 h-4 rounded bg-slate-700/60 animate-pulse" />
+          <div className="w-6 h-6 rounded bg-slate-700/60 animate-pulse" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
+          {/* Avatar + stats row */}
+          <div className="flex items-center gap-5">
+            <div className="w-[99px] h-[99px] rounded-full bg-slate-700/60 animate-pulse flex-shrink-0" />
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="w-24 h-3 rounded bg-slate-700/60 animate-pulse" />
+              <div className="flex justify-around items-center mt-1">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1.5">
+                    <div className="w-8 h-5 rounded bg-slate-700/60 animate-pulse" />
+                    <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Status / location lines */}
+          <div className="space-y-2">
+            <div className="w-32 h-5 rounded-full bg-slate-700/60 animate-pulse" />
+            <div className="w-24 h-3 rounded bg-slate-700/60 animate-pulse" />
+          </div>
+          {/* Post grid */}
+          <div className="pt-2 grid grid-cols-3 gap-1">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="aspect-square rounded-sm bg-slate-700/60 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const displayName = currentUser?.display_name || currentUser?.username || currentUser?.full_name;
   const primaryGymId = currentUser?.primary_gym_id;

@@ -67,10 +67,7 @@ export default function Friends() {
     queryKey: ['friendUsers', knownUserIds.join(',')],
     queryFn: async () => {
       if (knownUserIds.length === 0) return [];
-      const results = await Promise.all(
-        knownUserIds.map((id) => base44.entities.User.filter({ id }).then((r) => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
+      return base44.entities.User.filter({ id: { $in: knownUserIds } });
     },
     enabled: knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -173,8 +170,7 @@ export default function Friends() {
       setShowFriendsModal(true);
       setSearchQuery('');
     },
-    onError: (error) => {
-      console.error('Failed to add friend:', error);
+    onError: () => {
       toast.error('Failed to send friend request');
     }
   });

@@ -384,8 +384,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         );
       }
     },
-    onError: (error) => {
-      console.error('Error logging workout:', error?.response?.data || error?.message || error);
+    onError: () => {
       setShowSummary(false);
     }
   });

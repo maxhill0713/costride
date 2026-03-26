@@ -19,7 +19,7 @@ export default function PostArchive() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['archivePosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 200),
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 50),
     enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
   });

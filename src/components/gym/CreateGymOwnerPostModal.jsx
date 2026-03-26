@@ -245,8 +245,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
  onSuccess?.();
  reset();
  onClose();
- } catch (e) {
- console.error(e);
+ } catch {
  } finally {
  setSubmitting(false);
  }

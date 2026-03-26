@@ -108,8 +108,6 @@ function ReportModal({ open, onClose, postId }) {
   const handleClose = () => { setSelected(null); setExpanded(null); onClose(); };
 
   const handleSubmit = () => {
-    const category = REPORT_CATEGORIES.find(c => c.id === selected);
-    console.log('Report submitted:', { postId, category: category?.label });
     handleClose();
     toast.success('Report submitted. Thank you.');
   };
@@ -214,7 +212,7 @@ function formatPostDate(dateStr) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
+function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -274,7 +272,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     queryKey: ['reactedUsers', reactedUserIds.join(',')],
     queryFn: async () => {
       if (reactedUserIds.length === 0) return [];
-      return Promise.all(reactedUserIds.map((id) => base44.entities.User.filter({ id }).then((r) => r[0]))).then((r) => r.filter(Boolean));
+      return base44.entities.User.filter({ id: { $in: reactedUserIds } });
     },
     enabled: showReactionsModal && reactedUserIds.length > 0,
     staleTime: 10 * 60 * 1000,
@@ -737,3 +735,5 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     </>
   );
 }
+
+export default React.memo(PostCard);

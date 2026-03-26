@@ -25,9 +25,7 @@ export default function ProfileSettingsContent() {
       } else {
         await updateSettingsMutation.mutateAsync({ hero_image_url: file_url });
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
+    } catch { } finally {
       if (type === 'avatar') setUploadingAvatar(false);
       else setUploadingBanner(false);
     }

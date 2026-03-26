@@ -21,7 +21,6 @@ export default function EditGymLogoModal({ open, onClose, currentLogoUrl, onSave
       toast.success('Logo uploaded successfully');
     } catch (error) {
       toast.error('Failed to upload logo');
-      console.error(error);
     } finally {
       setUploading(false);
     }

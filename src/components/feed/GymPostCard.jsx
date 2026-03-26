@@ -61,7 +61,7 @@ function ShareMenu({ gym, post, onClose }) {
 }
 
 // ── Main component ───────────────────────────────────────────────────────────
-export default function GymPostCard({ post, gym, onDelete = null, isOwner = false }) {
+function GymPostCard({ post, gym, onDelete = null, isOwner = false }) {
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -434,3 +434,5 @@ function EditModal({ open, onClose, editContent, setEditContent, editImageUrl, s
     </Dialog>
   );
 }
+
+export default React.memo(GymPostCard);

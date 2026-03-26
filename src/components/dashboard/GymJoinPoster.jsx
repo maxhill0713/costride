@@ -20,7 +20,7 @@ export default function GymJoinPoster({ gym, open, onClose }) {
       a.download = `${gym.name}-flyer.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
-    } catch (e) { console.error(e); }
+    } catch { }
   };
 
   const handleShare = async () => {

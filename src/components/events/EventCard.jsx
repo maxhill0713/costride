@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Users, Clock, MapPin, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function EventCard({ event, onRSVP, onDelete = null, isOwner = false }) {
+function EventCard({ event, onRSVP, onDelete = null, isOwner = false }) {
   return (
     <Card className="overflow-hidden bg-white border-2 border-gray-100 hover:border-blue-200 transition-colors">
       {event.image_url && (
@@ -60,3 +60,5 @@ export default function EventCard({ event, onRSVP, onDelete = null, isOwner = fa
     </Card>
   );
 }
+
+export default React.memo(EventCard);

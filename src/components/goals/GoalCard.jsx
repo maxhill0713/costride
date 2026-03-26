@@ -196,7 +196,7 @@ function DotMenu({ goal, onRequestDelete, onRequestToggleReminder }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder }) {
+function GoalCard({ goal, onUpdate, onDelete, onToggleReminder }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editVal,   setEditVal]   = useState('');
   const [showDeleteConfirm,   setShowDeleteConfirm]   = useState(false);
@@ -504,3 +504,5 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
     </>
   );
 }
+
+export default React.memo(GoalCard);

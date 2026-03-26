@@ -94,24 +94,14 @@ export default function NotificationsHub() {
   // At-risk members (no check-in in 7+ days)
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymIds.join(',')],
-    queryFn: async () => {
-      const results = await Promise.all(
-        gymIds.map(gymId => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 500))
-      );
-      return results.flat();
-    },
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: { $in: gymIds } }, '-check_in_date', 500),
     enabled: gymIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', gymIds.join(',')],
-    queryFn: async () => {
-      const results = await Promise.all(
-        gymIds.map(gymId => base44.entities.GymMember.filter({ gym_id: gymId }))
-      );
-      return results.flat();
-    },
+    queryFn: () => base44.entities.GymMember.filter({ gym_id: { $in: gymIds } }),
     enabled: gymIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
@@ -207,8 +197,7 @@ export default function NotificationsHub() {
     if (actionId === 'dismiss') {
       handleDismiss(notificationId);
     } else if (actionId === 'message') {
-      // Could navigate to messages page or open a compose modal
-      console.log('Send message to:', notif.title);
+      // TODO: navigate to messages page or open compose modal
     } else if (actionId === 'celebrate') {
       handleDismiss(notificationId);
     }

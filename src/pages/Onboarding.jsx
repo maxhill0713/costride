@@ -457,7 +457,7 @@ export default function Onboarding() {
         const existingIds = dbGyms.map(g => g.google_place_id).filter(Boolean);
         setGymSearchResults(dbGyms.slice(0, 5));
         setGymPlacesResults(places.filter(p => !existingIds.includes(p.place_id)).slice(0, 3));
-      } catch (e) { console.error(e); } finally { setIsGymSearching(false); }
+      } catch { } finally { setIsGymSearching(false); }
     }, 500);
     return () => clearTimeout(timer);
   }, [gymSearch, gymJoinMode]);
@@ -554,7 +554,7 @@ export default function Onboarding() {
     if (displayName.trim()) payload.full_name = displayName.trim();
     if (username.trim()) payload.username = username.trim();
     if (selectedSplit) { payload.workout_split = selectedSplit.id; payload.custom_split_name = selectedSplit.name; payload.training_days = selectedSplit.days; payload.custom_workout_types = selectedSplit.workouts; }
-    if (avatarFile) { try { const u = await base44.storage.uploadFile(avatarFile); payload.avatar_url = u.url; } catch (e) { console.error(e); } }
+    if (avatarFile) { try { const u = await base44.storage.uploadFile(avatarFile); payload.avatar_url = u.url; } catch { } }
     await updateMeMutation.mutateAsync(payload);
     navigate(createPageUrl('Home'));
   }

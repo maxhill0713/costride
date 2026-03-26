@@ -366,7 +366,6 @@ export default function GymSignup() {
       setStep(8);
     },
     onError: (err) => {
-      console.error(err);
       toast.error(err?.message || 'Failed to register gym. Please try again.');
     }
   });

@@ -779,7 +779,30 @@ export default function Progress() {
 
   const [showAddGoal, setShowAddGoal] = useState(false);
 
-  if (!currentUser) return null;
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+        {/* Tab bar skeleton */}
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 pt-6 pb-4">
+          <div className="max-w-4xl mx-auto flex justify-between gap-2">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex-1 h-8 rounded bg-slate-700/60 animate-pulse" />
+            ))}
+          </div>
+        </div>
+        {/* Content skeleton */}
+        <div className="max-w-4xl mx-auto px-3 py-5 space-y-4">
+          <div className="h-32 rounded-2xl bg-slate-800/60 animate-pulse" />
+          <div className="grid grid-cols-2 gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 rounded-2xl bg-slate-800/60 animate-pulse" />
+            ))}
+          </div>
+          <div className="h-48 rounded-2xl bg-slate-800/60 animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">

@@ -4,9 +4,7 @@ import { base44 } from '@/api/base44Client';
 import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dumbbell, TrendingUp, Calendar, ChevronRight, UserPlus, Users, Search, MoreVertical, X, CheckCircle, Loader2 } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
@@ -14,14 +12,14 @@ import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
-import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
-import PostCard from '../components/feed/PostCard';
-import WorkoutDaysCelebration from '../components/home/WorkoutDaysCelebration';
 import StreakFreezeAnimation from '../components/home/StreakFreezeAnimation';
 import StreakLossAnimation from '../components/home/StreakLossAnimation';
 import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
+import StreakCelebration from '../components/home/StreakCelebration';
+import FriendsSection from '../components/home/FriendsSection';
+import ActivityFeedSection from '../components/home/ActivityFeedSection';
 import { useState } from 'react';
-import { isToday, differenceInDays, startOfWeek, startOfDay, formatDistanceToNow } from 'date-fns';
+import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -249,6 +247,7 @@ export default function Home() {
   // ── Pending request 3-dots menu ──────────────────────────────────────────
   const [pendingMenuOpen, setPendingMenuOpen] = useState(null);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
+  const [debouncedFriendSearch, setDebouncedFriendSearch] = useState('');
   const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
     try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
@@ -320,15 +319,16 @@ export default function Home() {
     };
   }, []);
 
-  const [pullY, setPullY] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const touchStartY = useRef(null);
-  const PULL_THRESHOLD = 72;
-
   const triggerRefresh = async () => {
-    setIsRefreshing(true);
     setVisiblePostCount(POSTS_PER_PAGE);
-    await queryClient.invalidateQueries();
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+      queryClient.invalidateQueries({ queryKey: ['checkIns'] }),
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] }),
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+      queryClient.invalidateQueries({ queryKey: ['friends'] }),
+      queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs'] }),
+    ]);
     await new Promise(r => setTimeout(r, 600));
     setIsRefreshing(false);
   };
@@ -361,13 +361,8 @@ export default function Home() {
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd);
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
-    return () => {
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('homeButtonClicked', onHomeButtonClick);
-    };
-  }, [isRefreshing, queryClient]);
+    return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
+  }, [queryClient]);
 
   useEffect(() => {
     injectStreakStyles();
@@ -408,6 +403,11 @@ export default function Home() {
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedFriendSearch(sanitiseUsernameQuery(friendSearchQuery)), 300);
+    return () => clearTimeout(t);
+  }, [friendSearchQuery]);
 
 
 
@@ -457,7 +457,7 @@ export default function Home() {
   });
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }, '-created_date', 200),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -481,7 +481,7 @@ export default function Home() {
   });
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }),
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -489,7 +489,7 @@ export default function Home() {
 
   const { data: sentFriendRequests = [] } = useQuery({
     queryKey: ['sentFriendRequests', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'pending' }),
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'pending' }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -503,11 +503,7 @@ export default function Home() {
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
-    queryFn: async () => {
-      if (knownUserIds.length === 0) return [];
-      const results = await Promise.all(knownUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null)));
-      return results.filter(Boolean);
-    },
+    queryFn: () => base44.entities.User.filter({ id: { $in: knownUserIds } }),
     enabled: knownUserIds.length > 0,
     staleTime: 2 * 60 * 1000,
   });
@@ -536,9 +532,9 @@ export default function Home() {
   });
 
   const { data: searchResults = [] } = useQuery({
-    queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
-    enabled: friendSearchQuery.trim().length >= 2,
+    queryKey: ['searchUsers', debouncedFriendSearch],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedFriendSearch.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
+    enabled: debouncedFriendSearch.trim().length >= 2,
     staleTime: 30000,
   });
 
@@ -573,28 +569,18 @@ export default function Home() {
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
-    queryFn: async () => {
-      if (checkInUserIdsForQuery.length === 0) return [];
-      try {
-        const users = await Promise.all(
-          checkInUserIdsForQuery.map((id) => base44.entities.User.filter({ id }).then((results) => results[0]))
-        );
-        return users.filter(Boolean);
-      } catch (error) {
-        console.error('Error fetching check-in users:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.User.filter({ id: { $in: checkInUserIdsForQuery } }),
     enabled: checkInUserIdsForQuery.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id],
-    queryFn: async () => {
-      const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-      const logs = await base44.entities.WorkoutLog.filter({ user_id: currentUser.id });
-      return logs.filter((l) => new Date(l.completed_date) >= monday);
+    queryFn: () => {
+      const monday = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
+      return base44.entities.WorkoutLog.filter(
+        { user_id: currentUser.id, completed_date: { $gte: monday } }
+      );
     },
     enabled: !!currentUser?.id,
     staleTime: 1 * 60 * 1000,
@@ -635,10 +621,42 @@ export default function Home() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-300">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        {/* Header skeleton */}
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-slate-700/60 animate-pulse" />
+            <div className="w-8 h-5 rounded bg-slate-700/60 animate-pulse" />
+          </div>
+          <div className="w-32 h-5 rounded bg-slate-700/60 animate-pulse" />
+          <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
+          {/* Check-in card skeleton */}
+          <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
+          {/* Friends row skeleton */}
+          <div className="flex gap-3 overflow-hidden">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
+                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Feed card skeletons */}
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
+                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
+                </div>
+              </div>
+              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
+              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -867,7 +885,7 @@ export default function Home() {
   );
 
   return (
-    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
+    <PullToRefresh onRefresh={triggerRefresh}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
         {/* ── Fixed header ── */}
@@ -1325,76 +1343,18 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {/* ── Social Feed ── */}
-          {friends.length > 0 && (
-            <div className="space-y-3 mt-12">
-              {filteredActivityCards.length > 0 && (
-                <div className="space-y-3">
-                  {filteredActivityCards.map(card => (
-                    <div key={card.id} style={{ background:'#1e293b', border:'1.5px solid #334155', borderBottom:'4px solid #0f172a', borderRadius:16 }} className="relative overflow-hidden">
-                      <button onClick={() => dismissCard(card.id)} className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all text-[10px] font-bold z-10">✕</button>
-                      <div className="px-4 py-4 flex items-center gap-4">
-                        <span className="text-3xl select-none flex-shrink-0">{card.emoji}</span>
-                        <div className="flex-1 min-w-0 pr-4">
-                          <p className="font-extrabold text-white text-[14px] leading-tight">{card.title}</p>
-                          <p className="text-[12px] text-slate-400 mt-1 font-medium">{card.message}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activityFeed.length > 0 && (
-                <div className="space-y-3">
-                  {activityFeed.map(activity =>
-                    activity.type === 'notification' ? (
-                      <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
-                        <div className="p-3"><p className="text-xs text-white leading-tight">{activity.message}</p></div>
-                      </Card>
-                    ) : (
-                      <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
-                        <div className="p-3">
-                          <div className="flex items-center gap-3">
-                            <Link to={createPageUrl('UserProfile') + `?id=${activity.friendId}`} className="flex-shrink-0">
-                              {activity.friendAvatar
-                                ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover" />
-                                : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center"><span className="text-white font-bold text-sm">{activity.friendName?.charAt(0)?.toUpperCase()||'U'}</span></div>}
-                            </Link>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-white leading-tight"><span className="font-semibold">{activity.friendName}</span> <span className="text-slate-300">{activity.message}</span>{activity.emoji && <span className="ml-1">{activity.emoji}</span>}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] text-slate-500">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
-                                {activity.type === 'pr' && <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">🏆 PR</Badge>}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    )
-                  )}
-                </div>
-              )}
-
-              {socialFeedPosts.length > 0 && (
-                <div className="space-y-3">
-                  {socialFeedPosts.slice(0, visiblePostCount).map(post => (
-                    <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-                  ))}
-                  <div ref={feedBottomRef} className="flex justify-center py-3">
-                    {isLoadingMorePosts && (
-                      <div style={{
-                        width: 30, height: 30,
-                        borderRadius: '50%',
-                        border: '2.5px solid rgba(148,163,184,0.2)',
-                        borderTop: '2.5px solid #60a5fa',
-                        animation: 'spin 0.7s linear infinite',
-                      }} />
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          <ActivityFeedSection
+            friends={friends}
+            filteredActivityCards={filteredActivityCards}
+            activityFeed={activityFeed}
+            socialFeedPosts={socialFeedPosts}
+            visiblePostCount={visiblePostCount}
+            feedBottomRef={feedBottomRef}
+            isLoadingMorePosts={isLoadingMorePosts}
+            currentUser={currentUser}
+            queryClient={queryClient}
+            dismissCard={dismissCard}
+          />
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
@@ -1427,377 +1387,55 @@ export default function Home() {
         onComplete={() => setShowStreakLossAnimation(false)}
       />
 
-      {/* STAGE 1 — Streak animation */}
-      <AnimatePresence>
-        {showStreakCelebration && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.45 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-              <div id="streak-anim-stage" style={{ position: 'relative', width: 180, height: 180, opacity: 0, willChange: 'transform, opacity' }}>
-                <img id="streak-anim-p1" src={POSE_1_URL} alt="streak pose 1" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
-                <img id="streak-anim-p2" src={POSE_2_URL} alt="streak pose 2" onError={(e) => { console.error('p2 image failed:', e.target.src); }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
-              </div>
-              <div id="streak-anim-num" style={{ fontSize: 96, fontWeight: 900, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.04em', lineHeight: 1, opacity: 0, transform: 'scale(0.5)' }}>
-                {celebrationStreakNum - 1}
-              </div>
-              <div id="streak-anim-lbl" style={{ display: 'none' }} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* STAGE 2 — Challenges */}
-      <AnimatePresence>
-        {showChallengesCelebration && celebrationChallenges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-4">
-
-            <div className="w-full max-w-sm space-y-3">
-              {celebrationChallenges.map((challenge, idx) => {
-                const prevPct = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
-                const newPct = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
-                const isComplete = newPct >= 100;
-                return (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.15 + idx * 0.1, duration: 0.3 }}
-                    className="rounded-2xl overflow-hidden relative"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
-                    }}>
-                    <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-                      style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
-
-                    <div className="relative p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
-                          style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <img
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
-                            alt="Challenge"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[15px] font-black text-white leading-tight truncate">{challenge.title}</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{challenge.description}</p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] font-bold text-slate-400">{challenge.new_value} / {challenge.target_value}</span>
-                          <span className="text-[11px] font-bold" style={{ color: isComplete ? '#34d399' : '#64748b' }}>
-                            {isComplete ? '✓ Complete' : `${newPct}%`}
-                          </span>
-                        </div>
-                        <div className="h-4 rounded-full overflow-hidden"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <motion.div
-                            initial={{ width: `${prevPct}%` }}
-                            animate={{ width: `${newPct}%` }}
-                            transition={{ delay: 0.4 + idx * 0.1, duration: 1.2, ease: 'easeOut' }}
-                            className="h-full rounded-full"
-                            style={{ background: isComplete ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 rounded-xl px-3 py-2"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                        <span style={{ fontSize: 20 }}>{challenge.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
-                          <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* STAGE 3 — Share Workout */}
-      <AnimatePresence>
-        {showShareWorkout && (
-          <ShareWorkoutScreen
-            workoutName={celebrationWorkoutName}
-            exercises={celebrationExercises}
-            previousExercises={celebrationPreviousExercises}
-            currentUser={currentUser}
-            onContinue={() => {
-              setShowShareWorkout(false);
-              setTimeout(() => setShowDaysCelebration(true), 200);
-            }} />
-        )}
-      </AnimatePresence>
-
-      {/* STAGE 4 — Day circles celebration */}
-      <AnimatePresence>
-        {showDaysCelebration && (
-          <WorkoutDaysCelebration
-            currentUser={currentUser}
-            weeklyWorkoutLogs={weeklyWorkoutLogs}
-            todayDow={todayDowAdjusted}
-            onDismiss={() => {
-              setShowDaysCelebration(false);
-              setTimeout(() => setJustLoggedDay(null), 400);
-            }}
-          />
-        )}
-      </AnimatePresence>
+      <StreakCelebration
+        showStreakCelebration={showStreakCelebration}
+        celebrationStreakNum={celebrationStreakNum}
+        showChallengesCelebration={showChallengesCelebration}
+        celebrationChallenges={celebrationChallenges}
+        showShareWorkout={showShareWorkout}
+        celebrationWorkoutName={celebrationWorkoutName}
+        celebrationExercises={celebrationExercises}
+        celebrationPreviousExercises={celebrationPreviousExercises}
+        currentUser={currentUser}
+        showDaysCelebration={showDaysCelebration}
+        weeklyWorkoutLogs={weeklyWorkoutLogs}
+        todayDowAdjusted={todayDowAdjusted}
+        setShowShareWorkout={setShowShareWorkout}
+        setShowDaysCelebration={setShowDaysCelebration}
+        setJustLoggedDay={setJustLoggedDay}
+      />
 
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} />
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} gymCount={gymMemberships.length} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
 
-      {/* ── Friends Modal ── */}
-      {showFriendsModal && (
-        <>
-          <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowFriendsModal(false)} />
-          <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-            <div className="px-3 py-1 flex items-center gap-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <Input
-                  placeholder="Search friends..."
-                  value={friendsListSearchQuery}
-                  onChange={e => setFriendsListSearchQuery(sanitiseUsernameQuery(e.target.value))}
-                  maxLength={30}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  style={{ fontSize: '16px' }}
-                  className="pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 text-white placeholder:text-slate-300 rounded-xl text-sm h-9"
-                />
-              </div>
-              <Button onClick={() => { setShowAddFriendModal(true); setShowFriendsModal(false); }}
-                className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px]">
-                <UserPlus className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-
-              {/* ── Sent / pending requests ── */}
-              {sentFriendRequests.filter(req => {
-                const u = friendUsersList.find(u => u.id === req.friend_id);
-                return (u?.full_name || req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
-              }).map(request => {
-                const u = friendUsersList.find(u => u.id === request.friend_id);
-                const name = u?.display_name || u?.full_name || request.friend_name || 'User';
-                const sentMs = Date.now() - new Date(request.created_date).getTime();
-                const sentHours = Math.floor(sentMs / (1000 * 60 * 60));
-                const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
-                const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
-                return (
-                  <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
-                    {/* Avatar + name */}
-                    <div className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url
-                          ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" />
-                          : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
-                      </div>
-                      <p className="font-semibold text-white text-xs truncate max-w-[90px]">{name}</p>
-                    </div>
-
-                    {/* Pending badge + time + 3-dots (pushed to the right) */}
-                    <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
-                      {/* Premium "Pending" badge */}
-                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg whitespace-nowrap"
-                        style={{
-                          background: 'linear-gradient(to bottom, #1a1f35, #0f1220)',
-                          border: '1px solid rgba(99,102,241,0.3)',
-                          color: 'rgba(165,180,252,0.85)',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-                          letterSpacing: '0.04em',
-                        }}>
-                        Pending
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-medium">{timeAgo}</span>
-
-                      {/* 3-dots menu — same pattern as accepted friend rows */}
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingMenuOpen(pendingMenuOpen === request.friend_id ? null : request.friend_id);
-                          }}
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        {pendingMenuOpen === request.friend_id && (
-                          <>
-                            {/* Backdrop to close menu */}
-                            <div className="fixed inset-0 z-[10001]" onClick={() => setPendingMenuOpen(null)} />
-                            {/* Dropdown — styled identically to the "Remove" friend dropdown */}
-                            <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPendingMenuOpen(null);
-                                  cancelFriendMutation.mutate(request.friend_id);
-                                }}
-                                disabled={cancelFriendMutation.isPending}
-                                className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors disabled:opacity-50">
-                                Cancel
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* ── Incoming friend requests ── */}
-              {friendRequests.filter(req => {
-                const u = friendUsersList.find(u => u.id === req.user_id);
-                return (u?.full_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
-              }).map(request => {
-                const u = friendUsersList.find(u => u.id === request.user_id);
-                const name = u?.display_name || u?.full_name || request.user_name || request.friend_name;
-                return (
-                  <div key={request.id} className="p-3 rounded-lg bg-slate-700/40 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
-                      </div>
-                      <p className="font-semibold text-white text-xs truncate">{name}</p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button size="icon" onClick={() => acceptFriendMutation.mutate(request.user_id)} className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"><CheckCircle className="w-3 h-3" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => rejectFriendMutation.mutate(request.user_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"><X className="w-3 h-3" /></Button>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* ── Accepted friends list ── */}
-              {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0
-                ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
-                : friendsWithActivity.filter(friend => {
-                    const u = friendUsersList.find(u => u.id === friend.friend_id);
-                    return (u?.full_name || friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
-                  }).map(friend => {
-                    const u = friendUsersList.find(u => u.id === friend.friend_id);
-                    const name = u?.display_name || u?.full_name || friend.friend_name;
-                    return (
-                      <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
-                        <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setShowFriendsModal(false)}>
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
-                          </div>
-                          <p className="font-semibold text-white text-xs truncate">{name}</p>
-                        </Link>
-                        <div className="relative flex-shrink-0">
-                          <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(friendMenuOpen === friend.id ? null : friend.id); }} className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                          {friendMenuOpen === friend.id && (
-                            <>
-                              <div className="fixed inset-0 z-[10001]" onClick={() => setFriendMenuOpen(null)} />
-                              <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
-                                <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); const u2 = friendUsersList.find(u => u.id === friend.friend_id); setConfirmRemoveFriend({ id: friend.friend_id, name: u2?.full_name || friend.friend_name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
-                                  Remove
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-              }
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Add Friend Modal ── */}
-      {showAddFriendModal && (
-        <>
-          <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm" onClick={() => { setShowAddFriendModal(false); setFriendSearchQuery(''); }} />
-          <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
-            <div className="px-3 py-1 flex items-center gap-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
-                <Input
-                  placeholder="Search by username..."
-                  value={friendSearchQuery}
-                  onChange={e => setFriendSearchQuery(sanitiseUsernameQuery(e.target.value))}
-                  maxLength={30}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  style={{ fontSize: '16px' }}
-                  className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9"
-                />
-              </div>
-              <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {friendSearchQuery.trim().length >= 2 && (
-                filteredSearchResults.length === 0
-                  ? <p className="text-center text-slate-400 text-sm py-8">No users found</p>
-                  : filteredSearchResults.map(user => (
-                      <div key={user.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
-                            {user.avatar_url ? <img src={user.avatar_url} alt={user.display_name || user.full_name} className="w-full h-full object-cover rounded-full" /> : <span className="text-sm font-semibold text-white">{(user.display_name || user.full_name)?.charAt(0)?.toUpperCase()}</span>}
-                          </div>
-                          <div><div className="font-semibold text-white text-sm">{user.display_name || user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
-                        </div>
-                        <Button size="sm" onClick={() => { addFriendMutation.mutate(user, { onSuccess: () => { setShowAddFriendModal(false); setShowFriendsModal(true); } }); }} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
-                          <UserPlus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))
-              )}
-            </div>
-          </Card>
-        </>
-      )}
-
-      {/* ── Confirm Remove Friend ── */}
-      {confirmRemoveFriend && (
-        <>
-          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setConfirmRemoveFriend(null)} />
-          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
-            <h3 className="text-xl font-black text-white mb-2">Remove {confirmRemoveFriend.name}?</h3>
-            <p className="text-slate-300 text-sm mb-6">Are you sure you want to remove them as a friend? You'll no longer see each other's activity.</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmRemoveFriend(null)}
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                Cancel
-              </button>
-              <button
-                onClick={() => { removeFriendMutation.mutate(confirmRemoveFriend.id); setConfirmRemoveFriend(null); }}
-                disabled={removeFriendMutation.isPending}
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
-                {removeFriendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Remove'}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      <FriendsSection
+        showFriendsModal={showFriendsModal}
+        setShowFriendsModal={setShowFriendsModal}
+        showAddFriendModal={showAddFriendModal}
+        setShowAddFriendModal={setShowAddFriendModal}
+        confirmRemoveFriend={confirmRemoveFriend}
+        setConfirmRemoveFriend={setConfirmRemoveFriend}
+        friendMenuOpen={friendMenuOpen}
+        setFriendMenuOpen={setFriendMenuOpen}
+        pendingMenuOpen={pendingMenuOpen}
+        setPendingMenuOpen={setPendingMenuOpen}
+        friendSearchQuery={friendSearchQuery}
+        setFriendSearchQuery={setFriendSearchQuery}
+        friendsListSearchQuery={friendsListSearchQuery}
+        setFriendsListSearchQuery={setFriendsListSearchQuery}
+        sentFriendRequests={sentFriendRequests}
+        friendUsersList={friendUsersList}
+        friendRequests={friendRequests}
+        friends={friends}
+        friendsWithActivity={friendsWithActivity}
+        filteredSearchResults={filteredSearchResults}
+        acceptFriendMutation={acceptFriendMutation}
+        rejectFriendMutation={rejectFriendMutation}
+        removeFriendMutation={removeFriendMutation}
+        cancelFriendMutation={cancelFriendMutation}
+        addFriendMutation={addFriendMutation}
+      />
 
       {/* ── Workout Summary Modal ── */}
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />

@@ -25,9 +25,7 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
       const user = await base44.auth.me();
       const workout_notes = user?.workout_notes || {};
       setNotes(workout_notes[workoutName] || '');
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
+    } catch { }
   };
 
   const handleSave = async () => {
@@ -39,9 +37,7 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
       workout_notes[workoutName] = sanitiseNotes(notes);
       await base44.auth.updateMe({ workout_notes });
       onClose();
-    } catch (error) {
-      console.error('Error saving notes:', error);
-    } finally {
+    } catch { } finally {
       setIsSaving(false);
     }
   };

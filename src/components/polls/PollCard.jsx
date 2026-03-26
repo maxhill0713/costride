@@ -72,7 +72,7 @@ function PollOption({ option, voted, showResults, isClosed, isLoading, onVote, t
   );
 }
 
-export default function PollCard({ poll, onVote, userVoted, isLoading }) {
+function PollCard({ poll, onVote, userVoted, isLoading }) {
   const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
   const isClosed = poll.status === "closed";
   const showResults = !!userVoted || isClosed;
@@ -134,3 +134,5 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
     </div>
   );
 }
+
+export default React.memo(PollCard);

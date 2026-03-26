@@ -50,9 +50,7 @@ export default function PushNotificationPanel({
         member_ids: memberIds,
       });
       setSent({ count: memberIds.length });
-    } catch (error) {
-      console.error('Failed to send notification:', error);
-    } finally {
+    } catch { } finally {
       setSending(false);
       setTimeout(() => setSent(null), 5000);
     }

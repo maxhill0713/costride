@@ -4,12 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 const rankIcons = {
-  1: { icon: Trophy, color: 'text-yellow-600', bg: 'bg-yellow-100' },
-  2: { icon: Medal, color: 'text-gray-600', bg: 'bg-gray-100' },
-  3: { icon: Award, color: 'text-orange-600', bg: 'bg-orange-100' },
+  1: { icon: Trophy, color: 'text-yellow-400', bg: 'bg-yellow-400/15' },
+  2: { icon: Medal, color: 'text-slate-300', bg: 'bg-slate-400/15' },
+  3: { icon: Award, color: 'text-orange-400', bg: 'bg-orange-400/15' },
 };
 
-export default function LeaderboardCard({ rank, member, lift }) {
+function LeaderboardCard({ rank, member, lift }) {
   const RankIcon = rankIcons[rank]?.icon || null;
   const isTopThree = rank <= 3;
   const name = member?.name || lift?.member_name || 'Anonymous';
@@ -25,17 +25,17 @@ export default function LeaderboardCard({ rank, member, lift }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: rank * 0.05 }}
       className={`
-        relative flex items-center gap-4 p-4 rounded-3xl transition-all duration-300 shadow-sm
-        ${isTopThree 
-          ? 'bg-white border-2 border-yellow-300 shadow-md' 
-          : 'bg-white border-2 border-gray-100 hover:border-gray-200 hover:shadow-md'}
+        relative flex items-center gap-4 p-4 rounded-3xl transition-all duration-300
+        ${isTopThree
+          ? 'bg-slate-800/80 border border-yellow-400/30 shadow-lg shadow-yellow-400/5'
+          : 'bg-slate-800/60 border border-slate-700/50 hover:border-slate-600/70'}
       `}
     >
       {/* Rank */}
       <div className={`
         w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm
-        ${isTopThree ? rankIcons[rank]?.bg : 'bg-gray-50'}
-        ${isTopThree ? rankIcons[rank]?.color : 'text-gray-500'}
+        ${isTopThree ? rankIcons[rank]?.bg : 'bg-slate-700/50'}
+        ${isTopThree ? rankIcons[rank]?.color : 'text-slate-400'}
       `}>
         {RankIcon ? <RankIcon className="w-6 h-6" /> : rank}
       </div>
@@ -61,7 +61,7 @@ export default function LeaderboardCard({ rank, member, lift }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className="font-bold text-gray-900 truncate">{name}</h3>
+          <h3 className="font-bold text-white truncate">{name}</h3>
           {videoUrl && (
             <Badge className="bg-red-500 text-white flex items-center gap-1 text-xs">
               <Video className="w-3 h-3" />
@@ -69,19 +69,19 @@ export default function LeaderboardCard({ rank, member, lift }) {
             </Badge>
           )}
         </div>
-        <p className="text-sm text-gray-500 capitalize">{exercise?.replace(/_/g, ' ')}</p>
+        <p className="text-sm text-slate-400 capitalize">{exercise?.replace(/_/g, ' ')}</p>
       </div>
 
       {/* Weight */}
       <div className="text-right">
         <div className="text-2xl font-black bg-gradient-to-br from-green-500 to-blue-600 bg-clip-text text-transparent">{weight}</div>
-        <div className="text-xs text-gray-400 uppercase tracking-wider">lbs</div>
+        <div className="text-xs text-slate-500 uppercase tracking-wider">lbs</div>
         {videoUrl && (
           <a 
             href={videoUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium mt-1"
+            className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium mt-1"
           >
             <PlayCircle className="w-3 h-3" />
             Watch
@@ -91,3 +91,5 @@ export default function LeaderboardCard({ rank, member, lift }) {
     </motion.div>
   );
 }
+
+export default React.memo(LeaderboardCard);

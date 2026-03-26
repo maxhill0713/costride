@@ -199,7 +199,7 @@ export default function Messages() {
   const unreadCount = conversationList.filter(conv => conv.unread).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       {/* Minimized Floating Chat */}
       {isMinimized && selectedChat && (
         <div className="fixed bottom-4 right-4 z-50">
@@ -214,15 +214,15 @@ export default function Messages() {
               </div>
             )}
           </button>
-          <div className="absolute bottom-full right-0 mb-2 bg-white rounded-2xl shadow-xl p-3 w-72 max-h-96 overflow-hidden">
-            <div className="flex items-center justify-between mb-2 pb-2 border-b">
+          <div className="absolute bottom-full right-0 mb-2 bg-slate-800/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl p-3 w-72 max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">{selectedChat.userName.charAt(0)}</span>
                 </div>
-                <span className="font-semibold text-sm">{selectedChat.userName}</span>
+                <span className="font-semibold text-sm text-white">{selectedChat.userName}</span>
               </div>
-              <button onClick={() => setIsMinimized(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsMinimized(false)} className="text-slate-400 hover:text-slate-200">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
@@ -231,7 +231,7 @@ export default function Messages() {
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {chatMessages.slice(-3).map(msg => (
                 <div key={msg.id} className={`text-xs ${msg.sender_id === currentUser?.id ? 'text-right' : 'text-left'}`}>
-                  <div className={`inline-block px-2 py-1 rounded-lg ${msg.sender_id === currentUser?.id ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                  <div className={`inline-block px-2 py-1.5 rounded-lg ${msg.sender_id === currentUser?.id ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-200'}`}>
                     {msg.content}
                   </div>
                 </div>
@@ -244,10 +244,10 @@ export default function Messages() {
       <div className={`max-w-7xl mx-auto p-4 transition-all ${isMinimized ? 'hidden' : ''}`}>
         <div className="grid md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-8rem)]">
           {/* Conversations List */}
-          <Card className="bg-white/80 backdrop-blur-lg border-2 border-gray-200/50 shadow-xl overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-500">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <MessageCircle className="w-6 h-6" />
+          <Card className="bg-slate-900/80 backdrop-blur-lg border border-slate-700/50 shadow-xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-slate-700/50 bg-slate-800/60">
+              <h2 className="text-[17px] font-black text-white flex items-center gap-2 tracking-tight">
+                <MessageCircle className="w-[18px] h-[18px] text-blue-400" />
                 Messages
               </h2>
             </div>
@@ -255,12 +255,12 @@ export default function Messages() {
             {/* Search Users */}
             <div className="p-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <Input
                   placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 rounded-2xl bg-gray-50 border-0 focus:ring-2 focus:ring-blue-400"
+                  className="pl-10 rounded-2xl bg-slate-800/80 border border-slate-600/50 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -275,27 +275,27 @@ export default function Messages() {
                         setSelectedChat({ userId: user.id, userName: user.full_name });
                         setSearchQuery('');
                       }}
-                      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-all"
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-700/50 transition-all"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md overflow-hidden flex-shrink-0">
                         {user.avatar_url ? (
-                          <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-full" />
+                          <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-white font-bold text-lg">{user.full_name?.charAt(0)}</span>
                         )}
                       </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-gray-900">{user.full_name}</p>
-                        {user.location && <p className="text-sm text-gray-500">{user.location}</p>}
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="font-semibold text-white truncate">{user.full_name}</p>
+                        {user.location && <p className="text-sm text-slate-400 truncate">{user.location}</p>}
                       </div>
                     </button>
                   ))}
                 </div>
               ) : conversationList.length === 0 ? (
                 <div className="text-center py-12">
-                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-500">No messages yet</p>
-                  <p className="text-sm text-gray-400 mt-1">Search users to start chatting</p>
+                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                  <p className="text-slate-400 font-medium">No messages yet</p>
+                  <p className="text-sm text-slate-500 mt-1">Search users to start chatting</p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -304,24 +304,24 @@ export default function Messages() {
                       key={conv.userId}
                       onClick={() => setSelectedChat(conv)}
                       className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${
-                        selectedChat?.userId === conv.userId 
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500' 
-                          : 'hover:bg-gray-50'
+                        selectedChat?.userId === conv.userId
+                          ? 'bg-blue-500/15 border-l-4 border-blue-400'
+                          : 'hover:bg-slate-700/50'
                       }`}
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center relative shadow-md">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center relative shadow-md flex-shrink-0">
                         <span className="text-white font-bold text-lg">{conv.userName.charAt(0)}</span>
                         {conv.unread && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
                             <span className="text-xs text-white font-bold">!</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 text-left min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{conv.userName}</p>
-                        <p className="text-sm text-gray-500 truncate">{conv.lastMessage}</p>
+                        <p className="font-semibold text-white truncate">{conv.userName}</p>
+                        <p className="text-sm text-slate-400 truncate">{conv.lastMessage}</p>
                       </div>
-                      <span className="text-xs text-gray-400 self-start mt-1">
+                      <span className="text-xs text-slate-500 self-start mt-1 flex-shrink-0">
                         {format(new Date(conv.lastMessageTime), 'h:mm a')}
                       </span>
                     </button>
@@ -332,53 +332,53 @@ export default function Messages() {
           </Card>
 
           {/* Chat Window */}
-          <Card className="bg-white/80 backdrop-blur-lg border-2 border-gray-200/50 shadow-xl flex flex-col overflow-hidden">
+          <Card className="bg-slate-900/80 backdrop-blur-lg border border-slate-700/50 shadow-xl flex flex-col overflow-hidden">
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="flex items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50">
+                <div className="flex items-center gap-3 p-4 border-b border-slate-700/50 bg-slate-800/60">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setSelectedChat(null)}
-                    className="md:hidden rounded-full hover:bg-gray-100"
+                    className="md:hidden rounded-full hover:bg-slate-700 text-slate-400"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md flex-shrink-0">
                     <span className="text-white font-bold text-lg">{selectedChat.userName.charAt(0)}</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-900 text-lg">{selectedChat.userName}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white text-[15px] truncate">{selectedChat.userName}</p>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <p className="text-xs text-gray-500">Active now</p>
+                      <p className="text-xs text-slate-400">Active now</p>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full hover:bg-gray-100"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-slate-700 text-slate-400"
                     onClick={() => setIsMinimized(true)}
                   >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100">
-                    <MoreVertical className="w-5 h-5 text-gray-600" />
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-700 text-slate-400">
+                    <MoreVertical className="w-5 h-5" />
                   </Button>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50/30 to-white">
+                <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-slate-950/30">
                   {chatMessages.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
                       <div className="text-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mx-auto mb-3">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/20">
                           <MessageCircle className="w-8 h-8 text-white" />
                         </div>
-                        <p className="text-gray-500">Start a conversation with {selectedChat.userName}</p>
+                        <p className="text-slate-400">Start a conversation with {selectedChat.userName}</p>
                       </div>
                     </div>
                   ) : (
@@ -389,14 +389,14 @@ export default function Messages() {
                           className={`flex ${msg.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                         >
                           <div
-                            className={`max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                            className={`max-w-md px-4 py-3 rounded-2xl ${
                               msg.sender_id === currentUser?.id
-                                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-sm'
-                                : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-sm shadow-lg shadow-blue-500/20'
+                                : 'bg-slate-700/80 text-white border border-slate-600/40 rounded-bl-sm'
                             }`}
                           >
                             <p className="text-sm leading-relaxed">{msg.content}</p>
-                            <p className={`text-xs mt-1 ${msg.sender_id === currentUser?.id ? 'text-blue-100' : 'text-gray-400'}`}>
+                            <p className={`text-xs mt-1 ${msg.sender_id === currentUser?.id ? 'text-blue-200' : 'text-slate-400'}`}>
                               {format(new Date(msg.created_date), 'h:mm a')}
                             </p>
                           </div>
@@ -408,12 +408,12 @@ export default function Messages() {
                 </div>
 
                 {/* Input */}
-                <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="p-4 border-t border-slate-700/50 bg-slate-800/60">
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 text-gray-500">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-700 text-slate-400 flex-shrink-0">
                       <Image className="w-5 h-5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 text-gray-500">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-700 text-slate-400 flex-shrink-0">
                       <Smile className="w-5 h-5" />
                     </Button>
                     <Input
@@ -421,26 +421,26 @@ export default function Messages() {
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                      className="rounded-full bg-gray-100 border-0 focus:ring-2 focus:ring-blue-400 px-4"
+                      className="rounded-full bg-slate-800 border border-slate-600/50 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 px-4"
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={!messageText.trim()}
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-full w-12 h-12 p-0 shadow-md disabled:opacity-50"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-full w-11 h-11 p-0 shadow-md shadow-blue-500/20 disabled:opacity-50 flex-shrink-0"
                     >
-                      <Send className="w-5 h-5" />
+                      <Send className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <MessageCircle className="w-12 h-12 text-white" />
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-10 h-10 text-blue-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Your Messages</h3>
-                  <p className="text-gray-500">Select a conversation to start chatting</p>
+                  <h3 className="text-lg font-bold text-white mb-1">Your Messages</h3>
+                  <p className="text-slate-400 text-sm">Select a conversation to start chatting</p>
                 </div>
               </div>
             )}
