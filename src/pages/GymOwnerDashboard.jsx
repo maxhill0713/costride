@@ -912,9 +912,12 @@ export default function GymOwnerDashboard() {
         {/* Brand / gym name */}
         <div style={{ padding: collapsed ? '16px 0' : '16px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
-            {/* Logo mark — neutral dark, blue icon only */}
-            <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
+            {/* Gym logo / profile pic */}
+            <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {selectedGym?.logo_url || selectedGym?.image_url
+                ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
+              }
             </div>
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
