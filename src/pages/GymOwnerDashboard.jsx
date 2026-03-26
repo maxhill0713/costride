@@ -913,7 +913,7 @@ export default function GymOwnerDashboard() {
         <div style={{ padding: collapsed ? '16px 0' : '16px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
             {/* Gym logo / profile pic */}
-            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, padding: 1.5, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1px #2563eb, 0 0 12px 3px rgba(37,99,235,0.7)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, padding: 1, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1px #2563eb, 0 0 9px 2px rgba(37,99,235,0.55)' }}>
               <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: D.bgSurface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {selectedGym?.logo_url || selectedGym?.image_url
                   ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
