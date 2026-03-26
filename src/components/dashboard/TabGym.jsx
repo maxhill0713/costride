@@ -557,8 +557,8 @@ export default function TabGym({
               <div onClick={() => openModal('logo')}
                 style={{ width: 56, height: 56, borderRadius: '50%', padding: 1, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1px #2563eb, 0 0 11px 3px rgba(37,99,235,0.65)', flexShrink: 0, cursor: 'pointer' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#0c1422', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {selectedGym?.logo_url
-                  ? <img src={selectedGym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {selectedGym?.logo_url || selectedGym?.image_url
+                  ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <Dumbbell style={{ width: 22, height: 22, color: '#3b82f6' }} />}
                 </div>
               </div>
