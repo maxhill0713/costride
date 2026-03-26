@@ -75,7 +75,6 @@ export default function StreakFreezeAnimation({
     const t1 = setTimeout(() => {
       const startCount = finalFreezeCount + freezesLostCount;
       const steps = freezesLostCount;
-      // Slower step duration: 700ms total for counting
       const stepDuration = 700 / Math.max(steps, 1);
 
       for (let i = 1; i <= steps; i++) {
@@ -88,7 +87,7 @@ export default function StreakFreezeAnimation({
         }, i * stepDuration);
       }
 
-      // Step 1: slightly cracked — slower transition (800ms after counting)
+      // Step 1: slightly cracked
       setTimeout(() => {
         if (iconRef.current) {
           iconRef.current.src = SLIGHTLY_CRACKED_URL;
@@ -96,7 +95,7 @@ export default function StreakFreezeAnimation({
         }
       }, steps * stepDuration + 200);
 
-      // Step 2: fully cracked — 900ms after slightly cracked
+      // Step 2: fully cracked
       setTimeout(() => {
         if (iconRef.current) {
           iconRef.current.src = CRACKED_FREEZE_ICON_URL;
@@ -105,7 +104,7 @@ export default function StreakFreezeAnimation({
         setTimeout(() => setAnimDone(true), 650);
       }, steps * stepDuration + 200 + 900);
 
-    }, 1500); // extra second on intact icon
+    }, 1500);
 
     return () => clearTimeout(t1);
   }, [isOpen, freezesLostCount, finalFreezeCount]);
@@ -129,49 +128,51 @@ export default function StreakFreezeAnimation({
             flexDirection: 'column',
             alignItems: 'center',
             overflow: 'hidden',
-            paddingTop: '18vh',
             paddingBottom: 40,
             paddingLeft: 32,
             paddingRight: 32,
           }}>
 
-          {/* Content block — positioned near top */}
+          {/* Message text — absolutely positioned near the top, independent of icon layout */}
+          <AnimatePresence>
+            {animDone && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                style={{
+                  position: 'absolute',
+                  top: '8vh',
+                  left: 32,
+                  right: 32,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: '#5dd9ff',
+                  textAlign: 'center',
+                  lineHeight: 1.4,
+                  maxWidth: 300,
+                  margin: '0 auto',
+                }}>
+                Your streak is safe, but you have used a freeze. Lets get back to crushing it in the gym!
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          {/* Icon + number — centred on screen, never moves */}
           <div style={{
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 12,
-            flex: 1,
           }}>
-
-            {/* Message text — above icon */}
-            <AnimatePresence>
-              {animDone && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: '#5dd9ff',
-                    textAlign: 'center',
-                    lineHeight: 1.4,
-                    maxWidth: 300,
-                    margin: 0,
-                  }}>
-                  Your streak is safe, but you have used a freeze. Lets get back to crushing it in the gym!
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {/* Freeze icon — 20% larger */}
+            {/* Freeze icon */}
             <div style={{
               position: 'relative',
               width: ICON_SIZE,
               height: ICON_SIZE,
               willChange: 'transform, opacity',
-              marginTop: 8,
             }}>
               <img
                 ref={iconRef}
