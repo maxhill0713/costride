@@ -311,32 +311,9 @@ export default function Home() {
     setIsRefreshing(false);
   };
   useEffect(() => {
-    const onTouchStart = (e) => {
-      if (window.scrollY <= 0) touchStartY.current = e.touches[0].clientY;
-      else touchStartY.current = null;
-    };
-    const onTouchMove = (e) => {
-      if (touchStartY.current === null || isRefreshing) return;
-      const dy = e.touches[0].clientY - touchStartY.current;
-      if (dy > 0 && window.scrollY <= 0) {
-        setPullY(Math.min(dy * 0.45, PULL_THRESHOLD + 20));
-      }
-    };
-    const onTouchEnd = async () => {
-      if (pullY >= PULL_THRESHOLD && !isRefreshing) {
-        setPullY(PULL_THRESHOLD); // keep indicator visible while refreshing
-        triggerRefresh().then(() => setPullY(0));
-      } else {
-        setPullY(0);
-      }
-      touchStartY.current = null;
-    };
     const onHomeButtonClick = () => {
       triggerRefresh();
     };
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd);
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
     return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
   }, [queryClient]);
