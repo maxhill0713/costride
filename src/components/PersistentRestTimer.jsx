@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from './TimerContext';
 
@@ -32,11 +32,17 @@ const PULSE_CSS = `
     0%   { background-position: -200% center; }
     100% { background-position: 200% center; }
   }
-  @keyframes rest-warning-bg-pulse {
+  /* Rest-segment warning pulses red <-> green (not blue) */
+  @keyframes rest-seg-bg-pulse {
     0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
-    50%       { background: linear-gradient(to bottom, #1e3a8a, #1d4ed8, #172554); }
+    50%       { background: linear-gradient(to bottom, #14532d, #166534, #052e16); }
+  }
+  @keyframes rest-seg-text-pulse {
+    0%, 100% { color: rgba(252,165,165,0.9); }
+    50%       { color: rgba(134,239,172,0.85); }
   }
 `;
+
 function injectPulseStyles() {
   if (document.getElementById('timer-pulse-css')) return;
   const s = document.createElement('style');
@@ -45,7 +51,8 @@ function injectPulseStyles() {
   document.head.appendChild(s);
 }
 
-const fmt = (secs) => `${Math.floor(Math.max(0,secs) / 60)}:${(Math.max(0,secs) % 60).toString().padStart(2, '0')}`;
+const fmt = (secs) =>
+  `${Math.floor(Math.max(0, secs) / 60)}:${(Math.max(0, secs) % 60).toString().padStart(2, '0')}`;
 
 function parseTimeDigits(raw) {
   if (!raw) return 0;
@@ -78,26 +85,40 @@ function calcCardioDuration(cardio) {
   return rounds * workSecs + Math.max(0, rounds - 1) * restSecs;
 }
 
+/* ── Landscape detection hook ── */
+function useIsLandscape() {
+  const [landscape, setLandscape] = useState(
+    typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : false
+  );
+  useEffect(() => {
+    const handler = () => setLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', handler);
+    window.addEventListener('orientationchange', handler);
+    return () => {
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('orientationchange', handler);
+    };
+  }, []);
+  return landscape;
+}
+
 /* ── Segmented arc ── */
 function SegmentedArc({ segments, currentSegIdx, smoothProgress, radius = 90 }) {
   const circumference = 2 * Math.PI * radius;
   const totalSecs = segments.reduce((s, seg) => s + seg.secs, 0);
   if (!totalSecs) return null;
-
-  const svgTransform = 'rotate(90deg) scale(-1, 1)';
-
   let cumulative = 0;
   return (
-    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: svgTransform, overflow: 'visible' }} viewBox="0 0 200 200">
+    <svg
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: 'rotate(90deg) scale(-1, 1)', overflow: 'visible' }}
+      viewBox="0 0 200 200">
       <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
       {segments.map((seg, i) => {
         const frac = seg.secs / totalSecs;
         const arcLen = circumference * frac;
         const gap = circumference * 0.004;
         const drawLen = Math.max(0, arcLen - gap);
-        const workColor  = '#60a5fa';
-        const restColor  = '#34d399';
-        const color    = seg.type === 'work' ? workColor  : restColor;
+        const color    = seg.type === 'work' ? '#60a5fa' : '#34d399';
         const dimColor = seg.type === 'work' ? 'rgba(96,165,250,0.2)' : 'rgba(52,211,153,0.2)';
         const segDashOffset = -(cumulative);
         cumulative += arcLen;
@@ -146,7 +167,7 @@ function PressBtn({ onClick, children, bg, shadow, style = {} }) {
   const [pressed, setPressed] = useState(false);
   return (
     <div style={{ position: 'relative', ...style }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', background: shadow, transform: 'translateY(3px)', borderRadius: 12 }} />
+      <div style={{ position: 'absolute', inset: 0, background: shadow, transform: 'translateY(3px)', borderRadius: 12 }} />
       <button
         onPointerDown={() => setPressed(true)}
         onPointerUp={() => { setPressed(false); onClick?.(); }}
@@ -168,24 +189,15 @@ function PressBtn({ onClick, children, bg, shadow, style = {} }) {
 
 /* ── Completion Overlay ── */
 function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismiss }) {
-  // For cardio: never auto-dismiss. For rest timer: auto-dismiss after 5s.
-  const [countdown, setCountdown] = useState(5);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (isCardio) return; // no timeout for cardio
-    const interval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setVisible(false);
-          setTimeout(onDismiss, 400);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
+    if (isCardio) return; // cardio: no auto-dismiss
+    const timer = setTimeout(() => {
+      setVisible(false);
+      setTimeout(onDismiss, 400);
+    }, 10000);
+    return () => clearTimeout(timer);
   }, [isCardio]);
 
   const handleContinue = () => {
@@ -205,128 +217,67 @@ function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismis
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35 }}
           style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 500,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: 'fixed', inset: 0, zIndex: 500,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             background: 'linear-gradient(160deg, #0f1a3d 0%, #1a3a8f 40%, #1d4ed8 70%, #1e40af 100%)',
             paddingBottom: 'calc(120px + env(safe-area-inset-bottom))',
             paddingTop: 'env(safe-area-inset-top)',
           }}>
-
-          {/* Background glow orbs */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <div style={{
-              position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
-              width: 320, height: 320, borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(96,165,250,0.18) 0%, transparent 70%)',
-            }} />
-            <div style={{
-              position: 'absolute', bottom: '20%', left: '20%',
-              width: 200, height: 200, borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-            }} />
+            <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(96,165,250,0.18) 0%, transparent 70%)' }} />
+            <div style={{ position: 'absolute', bottom: '20%', left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)' }} />
           </div>
-
-          {/* Content */}
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.15, duration: 0.5, ease: [0.34, 1.1, 0.64, 1] }}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              gap: 0, textAlign: 'center', padding: '0 32px', position: 'relative', zIndex: 1,
-            }}>
-
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, textAlign: 'center', padding: '0 32px', position: 'relative', zIndex: 1 }}>
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.4 }}
-              style={{
-                fontSize: isCardio ? 26 : 24,
-                fontWeight: 900,
-                color: '#ffffff',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.25,
-                marginBottom: isCardio ? 16 : 0,
-                textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-              }}>
+              style={{ fontSize: isCardio ? 26 : 24, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.25, marginBottom: isCardio ? 16 : 0, textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
               {isCardio
                 ? `Well done, your ${cardioTitle} is finished!!`
-                : 'Rest time is up, lock in for your next set'
-              }
+                : 'Rest time is up, lock in for your next set'}
             </motion.p>
-
-            {/* Duration line (cardio only) */}
             {isCardio && (
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.4 }}
-                style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: 'rgba(147,197,253,0.9)',
-                  letterSpacing: '0.01em',
-                  lineHeight: 1.5,
-                  textShadow: '0 1px 6px rgba(0,0,0,0.3)',
-                }}>
+                style={{ fontSize: 16, fontWeight: 600, color: 'rgba(147,197,253,0.9)', letterSpacing: '0.01em', lineHeight: 1.5, textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}>
                 {durationMins > 0 && durationSecs > 0
                   ? `Your workout lasted ${durationMins} minute${durationMins !== 1 ? 's' : ''} and ${durationSecs} second${durationSecs !== 1 ? 's' : ''}.`
                   : durationMins > 0
                     ? `Your workout lasted ${durationMins} minute${durationMins !== 1 ? 's' : ''}.`
                     : durationSecs > 0
                       ? `Your workout lasted ${durationSecs} second${durationSecs !== 1 ? 's' : ''}.`
-                      : null
-                }
+                      : null}
               </motion.p>
             )}
           </motion.div>
-
-          {/* Continue button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55, duration: 0.4 }}
-            style={{
-              position: 'absolute',
-              bottom: 'calc(44px + env(safe-area-inset-bottom))',
-              left: 24, right: 24,
-              zIndex: 1,
-            }}>
+            style={{ position: 'absolute', bottom: 'calc(44px + env(safe-area-inset-bottom))', left: 24, right: 24, zIndex: 1 }}>
             <div style={{ position: 'relative' }}>
-              <div style={{
-                position: 'absolute', inset: 0, borderRadius: 16,
-                background: '#1a3fa8', transform: 'translateY(4px)',
-              }} />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: 16, background: '#1a3fa8', transform: 'translateY(4px)' }} />
               <button
                 onClick={handleContinue}
                 style={{
-                  position: 'relative', zIndex: 1,
-                  width: '100%', padding: '17px 24px',
+                  position: 'relative', zIndex: 1, width: '100%', padding: '17px 24px',
                   borderRadius: 16, border: 'none', cursor: 'pointer',
                   background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                  color: '#ffffff', fontWeight: 900, fontSize: 17,
-                  letterSpacing: '-0.01em',
+                  color: '#ffffff', fontWeight: 900, fontSize: 17, letterSpacing: '-0.01em',
                   boxShadow: '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
                   transition: 'transform 0.08s ease, box-shadow 0.08s ease',
                   WebkitTapHighlightColor: 'transparent',
                 }}
-                onPointerDown={e => {
-                  e.currentTarget.style.transform = 'translateY(4px)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onPointerUp={e => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)';
-                }}
-                onPointerLeave={e => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)';
-                }}>
+                onPointerDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
+                onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'; }}>
                 Continue
               </button>
             </div>
@@ -337,31 +288,32 @@ function CompletionOverlay({ isCardio, cardioTitle, cardioDurationSecs, onDismis
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
 export default function PersistentRestTimer({ isActive, restTimer, initialRestTime, onTimerStateChange, onTimerValueChange }) {
   const { openTimerBar, setOpenTimerBar, timerWorkout } = useTimer();
   const todayWorkout = timerWorkout;
+  const isLandscape  = useIsLandscape();
 
-  const [expanded, setExpanded]       = useState(false);
-  const [barVisible, setBarVisible]   = useState(false);
-  const [paused, setPaused]           = useState(false);
-  const [cardioMode, setCardioMode]   = useState(false);
+  const [expanded, setExpanded]             = useState(false);
+  const [barVisible, setBarVisible]         = useState(false);
+  const [paused, setPaused]                 = useState(false);
+  const [cardioMode, setCardioMode]         = useState(false);
   const [cardioSegments, setCardioSegments] = useState([]);
   const [currentSegIdx, setCurrentSegIdx]   = useState(0);
-  const [cardioTitle, setCardioTitle] = useState('');
+  const [cardioTitle, setCardioTitle]       = useState('');
   const [smoothProgress, setSmoothProgress] = useState(1);
   const [showFinished, setShowFinished]     = useState(false);
 
-  const [showCompletion, setShowCompletion] = useState(false);
-  const [completionIsCardio, setCompletionIsCardio] = useState(false);
+  const [showCompletion, setShowCompletion]               = useState(false);
+  const [completionIsCardio, setCompletionIsCardio]       = useState(false);
   const [completionCardioTitle, setCompletionCardioTitle] = useState('');
   const [completionCardioDuration, setCompletionCardioDuration] = useState(0);
 
   const cardioStartTimeRef = useRef(null);
   const cardioDurationRef  = useRef(0);
-
-  const rafRef        = useRef(null);
-  const lastTickRef   = useRef(null);
-  const finishedAtRef = useRef(null);
+  const rafRef             = useRef(null);
+  const lastTickRef        = useRef(null);
+  const finishedAtRef      = useRef(null);
 
   useEffect(() => { injectPulseStyles(); }, []);
 
@@ -382,8 +334,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const total = initialRestTime || 90;
 
   // ── Sound helpers ──────────────────────────────────────────────────────────
-
-  // Shared AudioContext to avoid creating too many
   const getAudioCtx = () => {
     if (!window._timerAudioCtx) {
       window._timerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -391,52 +341,44 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     return window._timerAudioCtx;
   };
 
-  // Softer bell — lower volume, gentle attack, more mellow harmonics
+  // Short punchy ding — decays in ~0.5s so triple sounds like ding-ding-ding
   const playBell = (delay = 0) => {
     try {
       const ctx = getAudioCtx();
       const t0 = ctx.currentTime + delay;
-
-      // Fundamental + 3 harmonics, quieter and softer than before
-      [1, 2, 3, 4].forEach((harmonic, i) => {
-        const osc = ctx.createOscillator();
+      [1, 2, 3].forEach((harmonic, i) => {
+        const osc  = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.type = 'sine';
-        osc.frequency.value = 700 * harmonic; // lower base freq — less harsh
-        // Gentler volume: was 0.35, now 0.18; short attack ramp to avoid click
+        osc.frequency.value = 880 * harmonic;
         gain.gain.setValueAtTime(0.0, t0);
-        gain.gain.linearRampToValueAtTime(0.18 / (i + 1), t0 + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 2.2);
+        gain.gain.linearRampToValueAtTime(0.11 / (i + 1), t0 + 0.008); // quieter
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);        // fast decay
         osc.start(t0);
-        osc.stop(t0 + 2.2);
+        osc.stop(t0 + 0.55);
       });
-
-      // Remove the harsh square-wave transient entirely — was causing the harsh attack
     } catch (e) {}
   };
 
-  // Triple bell for round start (cardio mode)
+  // Triple ding — tight spacing for ding-ding-ding not diiong-diiong-diiong
   const playTripleBell = () => {
     playBell(0);
-    playBell(0.55);
-    playBell(1.1);
+    playBell(0.25);
+    playBell(0.50);
   };
 
-  // Single bell for round start (non-triple use)
-  const playRoundStartBell = () => {
-    playBell(0);
-  };
+  const playRoundStartBell = () => { playBell(0); };
 
   const playClap = () => {
     try {
       const ctx = getAudioCtx();
       for (let i = 0; i < 4; i++) {
-        const time = ctx.currentTime + i * 0.22;
+        const time       = ctx.currentTime + i * 0.22;
         const bufferSize = ctx.sampleRate * 0.05;
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
+        const buffer     = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data       = buffer.getChannelData(0);
         for (let j = 0; j < bufferSize; j++) {
           data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufferSize * 0.3));
         }
@@ -462,32 +404,23 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     if (isActive && !paused && cardioMode) playTripleBell();
   }, [isActive]);
 
-  // Bell at start of each new segment (after first), clap at 10s warning
+  // Bell at start of each new segment, clap at 10s warning
   const prevSegIdxRef = useRef(null);
-  const prevTRef = useRef(null);
+  const prevTRef      = useRef(null);
 
   useEffect(() => {
     if (!isActive || !cardioMode) {
-      prevTRef.current = t;
+      prevTRef.current      = t;
       prevSegIdxRef.current = currentSegIdx;
       return;
     }
-
     const prevSeg = prevSegIdxRef.current;
-    const prev = prevTRef.current;
-
-    prevTRef.current = t;
+    const prev    = prevTRef.current;
+    prevTRef.current      = t;
     prevSegIdxRef.current = currentSegIdx;
 
-    // Bell at the start of every new segment (segment index changed)
-    if (prevSeg !== null && prevSeg !== currentSegIdx) {
-      playRoundStartBell();
-    }
-
-    // Clap at 10s warning
+    if (prevSeg !== null && prevSeg !== currentSegIdx) playRoundStartBell();
     if (prev !== null && prev > 10 && t === 10) playClap();
-
-    // Bell when segment ends (triggers handoff)
     if (prev !== null && prev === 1 && t === 0) playBell();
   }, [t, isActive, cardioMode, currentSegIdx]);
 
@@ -517,7 +450,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       setShowCompletion(true);
 
       if (!cardioMode) {
-        // Rest timer: auto-dismiss after 10s
         const timeout = setTimeout(() => {
           setShowFinished(false);
           onTimerStateChange(false);
@@ -529,7 +461,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         }, 10000);
         return () => clearTimeout(timeout);
       } else {
-        // Cardio: no auto-dismiss — user must press Continue
         setShowFinished(false);
         onTimerStateChange(false);
         onTimerValueChange('');
@@ -559,31 +490,32 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [t, isActive, paused, cardioMode, currentSegIdx, cardioSegments, total]);
 
-  const isWarning  = t > 0 && t <= 10 && isActive;
-  const isFinished = t === 0 && isActive;
-
-  // For rest segments in cardio mode, only pulse during rest segment warning
+  const isWarning     = t > 0 && t <= 10 && isActive;
+  const isFinished    = t === 0 && isActive;
   const isRestSegment = cardioMode && cardioSegments[currentSegIdx]?.type === 'rest';
-  const isWorkSegment = cardioMode && cardioSegments[currentSegIdx]?.type === 'work';
 
-  // isPulsing: for non-cardio always pulse on warning; for cardio only pulse on rest segment warning
-  // Work segments don't pulse (they're blue, not green), rest segments pulse on their own last 10s
-  const isPulsing = isWarning && !cardioMode; // rest timer only
-  const isRestWarning = isWarning && isRestSegment; // rest segment last 10s in cardio
+  const isPulsing     = isWarning && !cardioMode;           // rest timer: red↔blue
+  const isRestWarning = isWarning && isRestSegment;         // cardio rest: red↔green
 
   const PULSE_DURATION = '2.2s ease-in-out infinite';
 
-  const staticBarBg = 'linear-gradient(90deg, #1d4ed8 0%, #172554 100%)';
+  // Bar gradient — left side slightly less vivid
+  const staticBarBg = 'linear-gradient(90deg, #1a3470 0%, #172554 100%)';
 
   const cardioExercises = todayWorkout?.cardio || [];
-  const currentSeg = cardioMode && cardioSegments[currentSegIdx];
-  const displayTitle = cardioMode ? cardioTitle : 'Timer';
+  const currentSeg      = cardioMode && cardioSegments[currentSegIdx];
+  const displayTitle    = cardioMode ? cardioTitle : 'Timer';
+  const timerActive     = isActive || paused;
 
+  // Fullscreen background
   const staticBg = (() => {
-    if (isRestWarning) return undefined; // animation handles it
+    if (isRestWarning || isPulsing) return undefined; // handled by animation
     if (isRestSegment) return 'linear-gradient(to bottom, #14532d, #166534, #052e16)';
     return 'linear-gradient(to bottom, #1d4ed8, #1e40af, #172554)';
   })();
+
+  const bgAnimation   = isRestWarning ? `rest-seg-bg-pulse ${PULSE_DURATION}` : isPulsing ? `timer-bg-pulse ${PULSE_DURATION}` : 'none';
+  const textAnimation = isRestWarning ? `rest-seg-text-pulse ${PULSE_DURATION}` : isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none';
 
   const staticAccent = isRestSegment ? '#4ade80' : '#60a5fa';
   const staticText   = isRestSegment ? 'rgba(134,239,172,0.85)' : 'rgba(147,197,253,0.75)';
@@ -613,14 +545,25 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   const handleGo = () => {
     const currentVal = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90;
-    if (!cardioMode && currentVal !== restTimer) {
-      onTimerValueChange(currentVal);
-    }
-    if (cardioMode && !cardioStartTimeRef.current) {
-      cardioStartTimeRef.current = Date.now();
-    }
+    if (!cardioMode && currentVal !== restTimer) onTimerValueChange(currentVal);
+    if (cardioMode && !cardioStartTimeRef.current) cardioStartTimeRef.current = Date.now();
     setPaused(false);
     onTimerStateChange(true);
+  };
+
+  // X button: close fullscreen AND hide bar completely
+  const handleCloseAll = () => {
+    onTimerStateChange(false);
+    onTimerValueChange('');
+    setPaused(false);
+    setCardioMode(false);
+    setCurrentSegIdx(0);
+    setShowFinished(false);
+    setShowCompletion(false);
+    finishedAtRef.current = null;
+    cardioStartTimeRef.current = null;
+    setBarVisible(false);
+    setExpanded(false);
   };
 
   const handleStop = () => {
@@ -638,13 +581,8 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   };
 
   const handlePause = () => {
-    if (paused) {
-      setPaused(false);
-      onTimerStateChange(true);
-    } else {
-      setPaused(true);
-      onTimerStateChange(false);
-    }
+    if (paused) { setPaused(false); onTimerStateChange(true); }
+    else        { setPaused(true);  onTimerStateChange(false); }
   };
 
   const handleCompletionDismiss = () => {
@@ -662,7 +600,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   if (!barVisible && !isActive && !showFinished && !showCompletion) return null;
 
-  // Shared inline button style for −/+ buttons in bar
   const barAdjBtnStyle = {
     position: 'relative', zIndex: 1,
     width: 36, height: 36, borderRadius: 10,
@@ -673,6 +610,24 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
     transition: 'transform 0.08s, box-shadow 0.08s',
   };
+
+  // Cardio routines list (reused in both portrait + landscape)
+  const CardioRouteList = ({ compact = false }) =>
+    cardioExercises.length > 0 && !cardioMode ? (
+      <div>
+        <p style={{ fontSize: compact ? 11 : 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(147,197,253,0.6)', marginBottom: compact ? 6 : 10, textAlign: compact ? 'center' : 'left' }}>
+          {compact ? 'Routines' : 'Workout Routines'}
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 5 : 7 }}>
+          {cardioExercises.map((c, i) => (
+            <button key={i} onClick={() => handleSelectCardio(c)}
+              style={{ padding: compact ? '7px 11px' : '10px 16px', borderRadius: compact ? 10 : 14, border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: compact ? 12 : 13, fontWeight: 700, textAlign: 'left', background: 'linear-gradient(135deg, rgba(30,35,60,0.8), rgba(8,10,20,0.9))', color: 'rgba(226,232,240,0.85)', boxShadow: '0 3px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', transition: 'all 0.15s ease' }}>
+              {c.exercise || 'Cardio'}
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null;
 
   return (
     <>
@@ -698,111 +653,144 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             style={{
               position: 'fixed', inset: 0, zIndex: 50,
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'flex-start', paddingTop: '8vh',
+              display: 'flex',
+              flexDirection: isLandscape ? 'row' : 'column',
+              alignItems: 'center',
+              justifyContent: isLandscape ? 'center' : 'flex-start',
+              paddingTop: isLandscape ? 0 : '8vh',
               background: staticBg,
-              transition: isRestWarning ? 'none' : 'background 0.6s ease',
-              // Pulse for rest timer warning OR rest segment warning
-              animation: (isPulsing || isRestWarning) ? `timer-bg-pulse ${PULSE_DURATION}` : 'none',
+              transition: (isRestWarning || isPulsing) ? 'none' : 'background 0.6s ease',
+              animation: bgAnimation,
+              overflow: 'hidden',
             }}>
 
-            {/* Collapse */}
+            {/* ── Top-left X: close fullscreen AND bar ── */}
+            <button
+              onClick={handleCloseAll}
+              style={{
+                position: 'absolute', top: 16, left: 16, zIndex: 10,
+                width: 40, height: 40,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(255,255,255,0.75)',
+                background: 'rgba(255,255,255,0.12)',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+              }}>
+              <X style={{ width: 20, height: 20 }} />
+            </button>
+
+            {/* ── Top-right chevron: collapse to bar only ── */}
             <button onClick={() => setExpanded(false)}
-              style={{ position: 'absolute', top: 48, right: 24, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}>
+              style={{
+                position: 'absolute', top: 16, right: 16, zIndex: 10,
+                width: 40, height: 40,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(255,255,255,0.75)', background: 'none',
+                border: 'none', cursor: 'pointer',
+              }}>
               <ChevronDown style={{ width: 24, height: 24 }} />
             </button>
 
-            {/* Title */}
-            <p style={{
-              fontSize: cardioMode ? 30 : 22, fontWeight: 800, textTransform: 'uppercase',
-              letterSpacing: '0.1em', marginBottom: roundLabel ? 8 : 28,
-              color: staticText,
-              animation: (isPulsing || isRestWarning) ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-            }}>
-              {isFinished ? 'Done!' : displayTitle}
-            </p>
-
-            {/* Round label */}
-            {roundLabel && (
-              <p style={{
-                fontSize: 20, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.12em', marginBottom: 24,
-                color: 'rgba(255,255,255,0.55)',
-                animation: (isPulsing || isRestWarning) ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-              }}>
-                {roundLabel}
-              </p>
+            {/* ══ PORTRAIT ═══════════════════════════════════════════════════ */}
+            {!isLandscape && (
+              <>
+                <p style={{ fontSize: cardioMode ? 30 : 22, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: roundLabel ? 8 : 28, color: staticText, animation: textAnimation }}>
+                  {isFinished ? 'Done!' : displayTitle}
+                </p>
+                {roundLabel && (
+                  <p style={{ fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 24, color: 'rgba(255,255,255,0.55)', animation: textAnimation }}>
+                    {roundLabel}
+                  </p>
+                )}
+                <div style={{ position: 'relative', width: cardioMode ? 248 : 224, height: cardioMode ? 248 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+                  {cardioMode && cardioSegments.length > 1
+                    ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
+                    : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />}
+                  <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 68 : 60, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
+                    {timerActive ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
+                  </span>
+                </div>
+                {/* Buttons — portrait, with bottom margin so Go isn't flush to screen edge */}
+                <div style={{ marginTop: 32, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
+                  {!timerActive ? (
+                    <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
+                      Go
+                    </PressBtn>
+                  ) : (
+                    <>
+                      <PressBtn onClick={handlePause}
+                        bg={paused ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)' : 'linear-gradient(to bottom, #f59e0b, #d97706, #b45309)'}
+                        shadow={paused ? '#1a3fa8' : '#78350f'}
+                        style={{ width: '100%', height: 50 }}>
+                        {paused ? 'Resume' : 'Pause'}
+                      </PressBtn>
+                      <PressBtn onClick={handleStop} bg="linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9))" shadow="#7f1d1d" style={{ width: '100%', height: 50 }}>
+                        Stop
+                      </PressBtn>
+                    </>
+                  )}
+                </div>
+                {/* Cardio routines — portrait */}
+                {!cardioMode && (
+                  <div style={{ position: 'absolute', bottom: 44, left: 24, maxWidth: '44%' }}>
+                    <CardioRouteList />
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Circle */}
-            <div style={{ position: 'relative', width: cardioMode ? 248 : 224, height: cardioMode ? 248 : 224, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
-              {cardioMode && cardioSegments.length > 1
-                ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
-                : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} />
-              }
-              <span style={{
-                color: '#fff', fontWeight: 900, fontSize: cardioMode ? 68 : 60,
-                fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10,
-                animation: (isPulsing || isRestWarning) ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-              }}>
-                {isActive || paused ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
-              </span>
-            </div>
-
-            {/* Buttons */}
-            <div style={{ marginTop: cardioMode ? 52 : 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
-              {!isActive && !paused ? (
-                <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
-                  Go
-                </PressBtn>
-              ) : (
-                <>
-                  <PressBtn
-                    onClick={handlePause}
-                    bg={paused ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)' : 'linear-gradient(to bottom, #f59e0b, #d97706, #b45309)'}
-                    shadow={paused ? '#1a3fa8' : '#78350f'}
-                    style={{ width: '100%', height: 50 }}>
-                    {paused ? 'Resume' : 'Pause'}
-                  </PressBtn>
-                  <PressBtn onClick={handleStop} bg="linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9))" shadow="#7f1d1d" style={{ width: '100%', height: 50 }}>
-                    Stop
-                  </PressBtn>
-                </>
-              )}
-            </div>
-
-            {/* Cardio routines */}
-            {cardioExercises.length > 0 && !cardioMode && (
-              <div style={{ position: 'absolute', bottom: 44, left: 24, maxWidth: '44%' }}>
-                <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(147,197,253,0.6)', marginBottom: 10 }}>
-                  Workout Routines
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {cardioExercises.map((c, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSelectCardio(c)}
-                      style={{
-                        padding: '10px 16px', borderRadius: 14,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        cursor: 'pointer', fontSize: 13, fontWeight: 700, textAlign: 'left',
-                        background: 'linear-gradient(135deg, rgba(30,35,60,0.8), rgba(8,10,20,0.9))',
-                        color: 'rgba(226,232,240,0.85)',
-                        boxShadow: '0 3px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                        backdropFilter: 'blur(12px)',
-                        transition: 'all 0.15s ease',
-                      }}>
-                      {c.exercise || 'Cardio'}
-                    </button>
-                  ))}
+            {/* ══ LANDSCAPE ══════════════════════════════════════════════════ */}
+            {isLandscape && (
+              <>
+                {/* Left: title + circle */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 10, paddingTop: 8 }}>
+                  <p style={{ fontSize: cardioMode ? 22 : 18, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, color: staticText, animation: textAnimation }}>
+                    {isFinished ? 'Done!' : displayTitle}
+                  </p>
+                  {roundLabel && (
+                    <p style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0, color: 'rgba(255,255,255,0.55)', animation: textAnimation }}>
+                      {roundLabel}
+                    </p>
+                  )}
+                  <div style={{ position: 'relative', width: cardioMode ? 196 : 180, height: cardioMode ? 196 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+                    {cardioMode && cardioSegments.length > 1
+                      ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={78} />
+                      : <SimpleArc smoothProgress={smoothProgress} isPulsing={isPulsing} radius={78} />}
+                    <span style={{ color: '#fff', fontWeight: 900, fontSize: cardioMode ? 52 : 46, fontVariantNumeric: 'tabular-nums', position: 'relative', zIndex: 10, animation: textAnimation }}>
+                      {timerActive ? fmt(t) : fmt(typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90)}
+                    </span>
+                  </div>
                 </div>
-              </div>
+
+                {/* Right: buttons (and cardio routines if not yet started) */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, width: 148, paddingRight: 28, paddingBottom: 8 }}>
+                  {!timerActive ? (
+                    <>
+                      <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 50 }}>
+                        Go
+                      </PressBtn>
+                      <CardioRouteList compact />
+                    </>
+                  ) : (
+                    <>
+                      <PressBtn onClick={handlePause}
+                        bg={paused ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)' : 'linear-gradient(to bottom, #f59e0b, #d97706, #b45309)'}
+                        shadow={paused ? '#1a3fa8' : '#78350f'}
+                        style={{ width: '100%', height: 46 }}>
+                        {paused ? 'Resume' : 'Pause'}
+                      </PressBtn>
+                      <PressBtn onClick={handleStop} bg="linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9), rgba(153,27,27,0.9))" shadow="#7f1d1d" style={{ width: '100%', height: 46 }}>
+                        Stop
+                      </PressBtn>
+                    </>
+                  )}
+                </div>
+              </>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Persistent bar — 10px taller, content shifted up slightly ── */}
+      {/* ── Persistent bar ── */}
       {!expanded && !showCompletion && (
         <div
           onClick={() => { if (!isFinished) setExpanded(true); }}
@@ -810,7 +798,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             position: 'fixed', left: 0, right: 0,
             bottom: 'calc(79px + env(safe-area-inset-bottom))',
             zIndex: 400, padding: '0 14px',
-            height: 72, // was 62, now 10px taller
+            height: 72,
             display: 'flex', alignItems: 'center',
             background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
@@ -818,28 +806,19 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             boxShadow: '0 -4px 24px rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             cursor: isFinished ? 'default' : 'pointer',
-            // Shift content up slightly within the taller bar
             paddingBottom: 8,
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
 
-            {/* Up chevron */}
             <button onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               <ChevronUp style={{ width: 20, height: 20, color: staticText }} />
             </button>
 
-            {/* Label */}
-            <span style={{
-              fontSize: 13, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.08em', color: staticText,
-              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
-              flexShrink: 0,
-            }}>
+            <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none', flexShrink: 0 }}>
               {isFinished ? 'Done!' : 'Timer'}
             </span>
 
-            {/* Centre: countdown or adjuster */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={e => e.stopPropagation()}>
               {isActive ? (
                 <span style={{ fontWeight: 900, fontSize: 26, fontVariantNumeric: 'tabular-nums', color: staticAccent, lineHeight: '36px', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
@@ -847,57 +826,28 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 </span>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-
-                  {/* − button — full 3D effect matching + button */}
                   <div style={{ position: 'relative' }}>
-                    <div style={{
-                      position: 'absolute', inset: 0, borderRadius: 10,
-                      background: '#1a3fa8', transform: 'translateY(3px)',
-                    }} />
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
                     <button
                       onClick={() => onTimerValueChange(Math.max(10, (parseInt(restTimer) || 90) - 10))}
                       style={{ ...barAdjBtnStyle }}
-                      onPointerDown={e => {
-                        e.currentTarget.style.transform = 'translateY(3px)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                      onPointerUp={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)';
-                      }}
-                      onPointerLeave={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)';
-                      }}>
+                      onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                      onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
                       −
                     </button>
                   </div>
-
                   <span style={{ fontWeight: 900, fontSize: 26, color: '#e2e8f0', minWidth: 52, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(parseInt(restTimer) || 90)}
                   </span>
-
-                  {/* + button */}
                   <div style={{ position: 'relative' }}>
-                    <div style={{
-                      position: 'absolute', inset: 0, borderRadius: 10,
-                      background: '#1a3fa8', transform: 'translateY(3px)',
-                    }} />
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
                     <button
                       onClick={() => onTimerValueChange((parseInt(restTimer) || 90) + 10)}
                       style={{ ...barAdjBtnStyle }}
-                      onPointerDown={e => {
-                        e.currentTarget.style.transform = 'translateY(3px)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                      onPointerUp={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)';
-                      }}
-                      onPointerLeave={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)';
-                      }}>
+                      onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                      onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
                       +
                     </button>
                   </div>
@@ -905,7 +855,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               )}
             </div>
 
-            {/* Go / Stop */}
             <button
               onClick={(e) => { e.stopPropagation(); isActive ? handleStop() : handleGo(); }}
               style={{
