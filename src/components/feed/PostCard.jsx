@@ -232,6 +232,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const touchStartY = React.useRef(null);
   const touchCurrentX = React.useRef(null);
   const swipePanelRef = React.useRef(null);
+  const reactMutationLockRef = React.useRef(false);
   const queryClient = useQueryClient();
   const contentRef = React.useRef(null);
 
@@ -350,6 +351,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       });
     },
     onMutate: async (isReacting) => {
+      reactMutationLockRef.current = true;
       // Update local state immediately for instant UI feedback
       setLocalReacted(isReacting);
       setLocalReactions(prev => {
@@ -388,10 +390,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       setLocalReactions({ ...(post.reactions || {}) });
       context?.snapshots?.forEach(({ queryKey, data }) => queryClient.setQueryData(queryKey, data));
       toast.error('Failed to react to post');
+      reactMutationLockRef.current = false;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      reactMutationLockRef.current = false;
     }
   });
 
@@ -613,7 +617,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
             <div className="flex items-center gap-1">
               {currentUser && (
-                <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                <motion.button onClick={() => { if (!reactMutationLockRef.current) reactMutation.mutate(!hasReacted); }} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
                   {userStreakVariant === 'sunglasses'
                     ? <div className="relative w-11 h-11 flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                     : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
@@ -726,7 +730,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
           <div className="flex items-center gap-1">
             {currentUser && (
-              <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+              <motion.button onClick={() => { if (!reactMutationLockRef.current) reactMutation.mutate(!hasReacted); }} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
                 {userStreakVariant === 'sunglasses'
                   ? <div className="relative w-11 h-11 flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                   : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
