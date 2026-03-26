@@ -275,7 +275,7 @@ function DeleteWorkoutDialog({ open, onClose, onConfirm, dayName }) {
   );
 }
 
-export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
+export default function CreateSplitModal({ isOpen, onClose, currentUser, openToActiveSplit = false }) {
   const [step, setStep] = useState('pick');
   const [previewSplit, setPreviewSplit] = useState(null);
   const [splitName, setSplitName] = useState('');
@@ -372,11 +372,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       const activeByName = saved.find((s) => s.name === activeName);
       setActiveSplitId(activeByName?.id || currentUser?.workout_split || '');
     }
-    setStep('pick'); setPreviewSplit(null); setPreviewWeights({}); setWeightsDirty(false);
-    setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
+    setPreviewSplit(null); setPreviewWeights({}); setWeightsDirty(false);
     setDotsMenuOpen(false); setShowSetActiveModal(false);
     setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
     setDeleteWorkoutDay(null); setDayDotsMenuOpen({});
+
+    // If openToActiveSplit, jump straight to editing the active custom split
+    if (openToActiveSplit) {
+      const activeId = currentUser?.active_split_id || '';
+      const customSplits = (currentUser?.saved_splits || []).filter((s) => !s.preset_id || s.preset_id === 'custom');
+      const activeSplit = customSplits.find((s) => s.id === activeId);
+      if (activeSplit) {
+        setSplitName(activeSplit.name || '');
+        setSelectedDays(activeSplit.training_days || []);
+        setWorkouts(activeSplit.workouts || {});
+        setEditingSplitId(activeSplit.id);
+        setMirroredPairs(activeSplit.mirrored_pairs || []);
+        setStep('configure');
+        return;
+      }
+    }
+
+    setStep('pick'); setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
   }, [isOpen]);
 
   const saveMutation = useMutation({

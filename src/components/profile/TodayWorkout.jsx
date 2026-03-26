@@ -914,7 +914,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       <p className="text-slate-200 text-sm font-bold mb-1">No exercises set for today</p>
                       <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">You don't have a workout routine set for today. Edit your custom split and add some exercises.</p>
                       <Link
-                        to="/Progress"
+                        to="/Profile?editSplit=true"
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white
                           bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700

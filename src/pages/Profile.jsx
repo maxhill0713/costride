@@ -103,7 +103,8 @@ const validateFile = (file) =>
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Profile() {
-  const [showSplitModal, setShowSplitModal] = useState(false);
+  const urlParams = new URLSearchParams(window.location.search);
+  const [showSplitModal, setShowSplitModal] = useState(urlParams.get('editSplit') === 'true');
   const [showProfilePicture, setShowProfilePicture] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showEditHero, setShowEditHero] = useState(false);
@@ -466,7 +467,7 @@ export default function Profile() {
       {/* ── MODALS ── */}
       <EditHeroImageModal open={showEditHero} onClose={() => setShowEditHero(false)} currentImageUrl={currentUser?.hero_image_url} onSave={(url) => updateHeroMutation.mutate(url)} isLoading={updateHeroMutation.isPending} />
       <EditHeroImageModal open={showEditAvatar} onClose={() => setShowEditAvatar(false)} currentImageUrl={currentUser?.avatar_url} onSave={(url) => updateAvatarMutation.mutate(url)} isLoading={updateAvatarMutation.isPending} />
-      <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} openToEdit={!!currentUser?.workout_split} />
+      <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} openToActiveSplit={urlParams.get('editSplit') === 'true'} />
       <BadgesModal isOpen={showBadgesModal} onClose={() => setShowBadgesModal(false)} user={currentUser} checkIns={checkIns} />
       <ProfilePictureModal isOpen={showProfilePicture} onClose={() => setShowProfilePicture(false)} imageUrl={currentUser?.avatar_url} userName={displayName} />
 
