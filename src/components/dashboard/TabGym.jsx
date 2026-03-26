@@ -555,10 +555,12 @@ export default function TabGym({
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div onClick={() => openModal('logo')}
-                style={{ width: 56, height: 56, borderRadius: 14, background: T.cyan, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${T.cyan}35`, border: `3px solid ${T.card}`, flexShrink: 0, cursor: 'pointer' }}>
+                style={{ width: 56, height: 56, borderRadius: '50%', padding: 1, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1px #2563eb, 0 0 11px 3px rgba(37,99,235,0.65)', flexShrink: 0, cursor: 'pointer' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#0c1422', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {selectedGym?.logo_url
-                  ? <img src={selectedGym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 11 }} />
-                  : <Dumbbell style={{ width: 22, height: 22, color: '#fff' }} />}
+                  ? <img src={selectedGym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <Dumbbell style={{ width: 22, height: 22, color: '#3b82f6' }} />}
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: T.text1, letterSpacing: '-0.03em', lineHeight: 1 }}>{selectedGym?.name}</div>
