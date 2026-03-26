@@ -532,18 +532,15 @@ export default function Home() {
     if (!feedBottomRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisiblePostCount(prev => {
-            if (prev < socialFeedPosts.length) return prev + POSTS_PER_PAGE;
-            return prev;
-          });
+        if (entries[0].isIntersecting && visiblePostCount < allPosts.length) {
+          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(feedBottomRef.current);
     return () => observer.disconnect();
-  }, [socialFeedPosts.length]);
+  }, [visiblePostCount, allPosts.length]);
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
