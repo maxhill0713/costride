@@ -96,9 +96,7 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
       {!hideNavigation &&
         <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
           <Link to={createPageUrl('Gyms')} className="mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-500 transition-colors duration-200">
-              <span className="text-2xl font-black text-white">G</span>
-            </div>
+
           </Link>
           <div className="flex flex-col gap-3">
             {navItems.map((item) => {
