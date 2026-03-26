@@ -327,7 +327,19 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
-  const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
+  // Local reaction state so toggles are instant regardless of memo/prop staleness
+  const [localReacted, setLocalReacted] = useState(() => !!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
+  const [localReactions, setLocalReactions] = useState(() => ({ ...(post.reactions || {}) }));
+  // Sync from prop when it changes externally (e.g. after refetch)
+  const prevReactionsRef = React.useRef(post.reactions);
+  useEffect(() => {
+    if (post.reactions !== prevReactionsRef.current) {
+      prevReactionsRef.current = post.reactions;
+      setLocalReacted(!!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
+      setLocalReactions({ ...(post.reactions || {}) });
+    }
+  }, [post.reactions, currentUser?.id]);
+  const hasReacted = localReacted;
 
   const reactMutation = useMutation({
     mutationFn: async (isReacting) => {
@@ -338,6 +350,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       });
     },
     onMutate: async (isReacting) => {
+      // Update local state immediately for instant UI feedback
+      setLocalReacted(isReacting);
+      setLocalReactions(prev => {
+        const updated = { ...prev };
+        if (isReacting) updated[currentUser.id] = userStreakVariant;
+        else delete updated[currentUser.id];
+        return updated;
+      });
       const applyUpdate = (old) => {
         if (!Array.isArray(old)) return old;
         return old.map((p) => {
@@ -363,6 +383,9 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       return { snapshots };
     },
     onError: (err, isReacting, context) => {
+      // Rollback local state
+      setLocalReacted(!isReacting);
+      setLocalReactions({ ...(post.reactions || {}) });
       context?.snapshots?.forEach(({ queryKey, data }) => queryClient.setQueryData(queryKey, data));
       toast.error('Failed to react to post');
     },
@@ -600,17 +623,17 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 <Send className="w-5 h-5" />
               </motion.button>
             </div>
-            {Object.keys(post.reactions || {}).length > 0 && (
+            {Object.keys(localReactions).length > 0 && (
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
                 <div className="flex items-center" style={{ gap: 0 }}>
-                  {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                  {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
                     <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
                       {variant === 'sunglasses'
                         ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                         : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                     </div>
                   ))}
-                  {Object.keys(post.reactions || {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(post.reactions || {}).length - 3}</span></div>}
+                  {Object.keys(localReactions).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
                 </div>
               </button>
             )}
@@ -633,7 +656,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   }
 
   // ── STANDARD POST ─────────────────────────────────────────────────────────
-  const totalReactions = Object.keys(post.reactions || {}).length;
+  const totalReactions = Object.keys(localReactions).length;
 
   const handleShare = async () => {
     const text = [post.content || '', `\n— shared from my workout app`].filter(Boolean).join('\n');
@@ -716,7 +739,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           {totalReactions > 0 && (
             <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
               <div className="flex items-center" style={{ gap: 0 }}>
-                {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
                   <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
                     {variant === 'sunglasses'
                       ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
