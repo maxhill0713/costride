@@ -384,62 +384,56 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
   };
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
 
       {/* Page header */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
-        <div>
-          <h2 style={{ fontSize:20, fontWeight:800, color:C.t0, margin:'0 0 5px',
-            letterSpacing:'-0.03em', display:'flex', alignItems:'center', gap:9 }}>
-            <div style={{ width:30, height:30, borderRadius:8, background:C.accentSub, border:`1px solid ${C.accentBrd}`,
-              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <Zap style={{ width:14, height:14, color:C.accent }} />
-            </div>
-            Automated Engagement
-          </h2>
-          <p style={{ fontSize:13, color:C.t3, margin:0, maxWidth:480, lineHeight:1.6 }}>
-            Set up rules to automatically message members based on their behaviour.
-            Runs in the background — no manual work required.
-          </p>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+          <div style={{ width:26, height:26, borderRadius:7, background:C.accentSub, border:`1px solid ${C.accentBrd}`,
+            display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <Zap style={{ width:12, height:12, color:C.accent }} />
+          </div>
+          <span style={{ fontSize:15, fontWeight:800, color:C.t0, letterSpacing:'-0.02em' }}>Automated Engagement</span>
+          <span style={{ fontSize:11, color:C.t3 }}>— rules fire automatically based on member behaviour</span>
         </div>
 
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           {savedMsg && (
             <span style={{ fontSize:11, fontWeight:700, color:C.success,
               background:C.successSub, border:`1px solid ${C.successBrd}`,
-              borderRadius:7, padding:'5px 10px' }}>
+              borderRadius:7, padding:'4px 9px' }}>
               Saved
             </span>
           )}
-          {isSaving && <span style={{ fontSize:11, color:C.t3 }}>Saving</span>}
+          {isSaving && <span style={{ fontSize:11, color:C.t3 }}>Saving…</span>}
           <button onClick={() => setShowAdd(v=>!v)}
-            style={{ display:'flex', alignItems:'center', gap:7, height:36, padding:'0 14px',
-              borderRadius:9, background: showAdd ? C.accentSub : C.accent,
+            style={{ display:'flex', alignItems:'center', gap:6, height:30, padding:'0 12px',
+              borderRadius:7, background: showAdd ? C.accentSub : C.accent,
               color: showAdd ? C.accent : '#fff',
               border:`1px solid ${showAdd ? C.accentBrd : 'transparent'}`,
-              fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit',
+              fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit',
               transition:'all .15s' }}>
-            <Plus style={{ width:13, height:13 }} />
+            <Plus style={{ width:11, height:11 }} />
             {showAdd ? 'Cancel' : 'Add rule'}
           </button>
         </div>
       </div>
 
       {/* Stats row */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8 }}>
         {[
           { label:'Total members',   value: totalMembers || 0, sub:'enrolled' },
           { label:'At-risk members', value: atRisk || 0,       sub:'need attention', risk:true },
           { label:'Active rules',    value: enabledCount,      sub:'running now' },
           { label:'Avg. open rate',  value:'68%',              sub:'push notifications' },
         ].map((s,i) => (
-          <Card key={i} style={{ padding:'16px 18px' }}>
-            <div style={{ fontSize:26, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:5,
+          <Card key={i} style={{ padding:'10px 14px' }}>
+            <div style={{ fontSize:20, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:3,
               color: s.risk && s.value > 0 ? C.danger : C.t0, fontVariantNumeric:'tabular-nums' }}>
               {s.value}
             </div>
-            <div style={{ fontSize:12, fontWeight:700, color:C.t2, marginBottom:1 }}>{s.label}</div>
-            <div style={{ fontSize:11, color:C.t3 }}>{s.sub}</div>
+            <div style={{ fontSize:11, fontWeight:700, color:C.t2 }}>{s.label}</div>
+            <div style={{ fontSize:10, color:C.t3 }}>{s.sub}</div>
           </Card>
         ))}
       </div>
@@ -449,10 +443,10 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
       )}
 
       {/* Two-column layout */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:16, alignItems:'start' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 260px', gap:12, alignItems:'start' }}>
 
         {/* Left column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
           <div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -501,13 +495,12 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
         </div>
 
         {/* Right column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
           <Card>
-            <div style={{ padding:'14px 16px', borderBottom:`1px solid ${C.border}` }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.t1, marginBottom:2 }}>Rule coverage</div>
-              <div style={{ fontSize:11, color:C.t3 }}>Who these rules will reach</div>
+            <div style={{ padding:'10px 14px', borderBottom:`1px solid ${C.border}` }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Rule coverage</div>
             </div>
-            <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10 }}>
+            <div style={{ padding:'10px 14px', display:'flex', flexDirection:'column', gap:8 }}>
               {[
                 { label:'Members enrolled',   value: totalMembers || 0 },
                 { label:'Potentially at-risk', value: atRisk || 0 },
@@ -523,11 +516,10 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
           </Card>
 
           <Card>
-            <div style={{ padding:'14px 16px', borderBottom:`1px solid ${C.border}` }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.t1, marginBottom:2 }}>Industry benchmarks</div>
-              <div style={{ fontSize:11, color:C.t3 }}>CoStride gyms using automation</div>
+            <div style={{ padding:'10px 14px', borderBottom:`1px solid ${C.border}` }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Industry benchmarks</div>
             </div>
-            <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:14 }}>
+            <div style={{ padding:'10px 14px', display:'flex', flexDirection:'column', gap:10 }}>
               {[
                 { label:'Push notification open rate', value:'68%', bar:68 },
                 { label:'Re-engagement of inactive',   value:'23%', bar:23 },
@@ -547,9 +539,9 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
           </Card>
 
           <Card>
-            <div style={{ padding:'14px 16px' }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.t1, marginBottom:10 }}>How it works</div>
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            <div style={{ padding:'10px 14px' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.t1, marginBottom:8 }}>How it works</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {[
                   { n:'1', text:'A trigger fires (e.g. 14 days inactive)' },
                   { n:'2', text:'After your chosen delay, we send the member a push notification' },
