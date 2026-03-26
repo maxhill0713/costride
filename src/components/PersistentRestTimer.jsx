@@ -494,9 +494,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isFinished    = t === 0 && isActive;
   const isRestSegment = cardioMode && cardioSegments[currentSegIdx]?.type === 'rest';
 
-  // FIX: rest timer (non-cardio) should pulse red↔blue when warning
-  const isPulsing     = isWarning && !cardioMode;
+  // Pulse red↔blue on normal rest timer AND cardio work segments; green pulse only on cardio rest segments
   const isRestWarning = isWarning && isRestSegment;
+  const isPulsing     = isWarning && !isRestSegment;
 
   const PULSE_DURATION = '2.2s ease-in-out infinite';
 
