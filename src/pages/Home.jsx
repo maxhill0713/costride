@@ -533,14 +533,17 @@ export default function Home() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
+          setVisiblePostCount(prev => {
+            if (prev < socialFeedPosts.length) return prev + POSTS_PER_PAGE;
+            return prev;
+          });
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(feedBottomRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [socialFeedPosts.length]);
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
