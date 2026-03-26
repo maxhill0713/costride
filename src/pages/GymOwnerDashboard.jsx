@@ -917,7 +917,7 @@ export default function GymOwnerDashboard() {
               <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: D.bgSurface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {selectedGym?.logo_url || selectedGym?.image_url
                   ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <Dumbbell style={{ width: 13, height: 13, color: D.blue }} />
+                  : <Dumbbell style={{ width: 15, height: 15, color: D.blue }} />
                 }
               </div>
             </div>
