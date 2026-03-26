@@ -307,11 +307,10 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['friends'] }),
       queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs'] }),
     ]);
-    await new Promise(r => setTimeout(r, 600));
-    setIsRefreshing(false);
   };
   useEffect(() => {
     const onHomeButtonClick = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerRefresh();
     };
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
