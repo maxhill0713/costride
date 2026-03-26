@@ -19,19 +19,16 @@ const quotes = [
   context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
 }];
 
-// Fixed collapsed height — sized for Aristotle (longest quote)
-const COLLAPSED_H  = 212;
-const DOTS_H       = 28;
-const CHEVRON_H    = 32;
+// Reduced by ~5%: 212 → 201. Dots and chevron slightly tightened to match.
+const COLLAPSED_H  = 201;
+const DOTS_H       = 26;
+const CHEVRON_H    = 30;
 const QUOTE_AREA_H = COLLAPSED_H - DOTS_H - CHEVRON_H;
 
 export default function QuoteCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  // Track whether the component has been interacted with — on first mount
-  // (every page visit) we skip the slide-in so the card appears static.
-  // After the first user-driven swipe/dot-click the animation re-enables.
   const hasInteracted = useRef(false);
 
   const paginate = (newDirection) => {
@@ -74,8 +71,8 @@ export default function QuoteCarousel() {
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
       <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
-      {/* Dots — fixed height */}
-      <div className="flex justify-center gap-2 pt-3 pb-1 relative z-10 flex-shrink-0" style={{ height: DOTS_H }}>
+      {/* Dots — slightly tighter top padding */}
+      <div className="flex justify-center gap-2 pt-2.5 pb-1 relative z-10 flex-shrink-0" style={{ height: DOTS_H }}>
         <LayoutGroup>
           {quotes.map((_, i) =>
             <motion.button
@@ -90,7 +87,7 @@ export default function QuoteCarousel() {
         </LayoutGroup>
       </div>
 
-      {/* Quote + author — FIXED height, never moves or resizes */}
+      {/* Quote + author — fixed height */}
       <div
         className="relative px-6 z-10 flex-shrink-0"
         style={{ height: QUOTE_AREA_H, overflow: 'hidden' }}>
@@ -99,9 +96,6 @@ export default function QuoteCarousel() {
             key={current}
             custom={direction}
             variants={variants}
-            // Skip the slide-in on first mount (every page visit).
-            // Once the user swipes or taps a dot, hasInteracted flips to true
-            // and all subsequent quote changes animate normally.
             initial={hasInteracted.current ? 'enter' : false}
             animate="center"
             exit="exit"
@@ -128,7 +122,7 @@ export default function QuoteCarousel() {
         </AnimatePresence>
       </div>
 
-      {/* Context — expands dynamically to fit however long the text is */}
+      {/* Context — expands dynamically */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -146,8 +140,8 @@ export default function QuoteCarousel() {
         )}
       </AnimatePresence>
 
-      {/* Chevron — bounces down when collapsed, bounces up when expanded */}
-      <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
+      {/* Chevron — slightly tighter */}
+      <div className="flex justify-center pb-1.5 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
         <motion.button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
