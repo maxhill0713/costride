@@ -108,7 +108,7 @@ function FriendsSection({
                             e.stopPropagation();
                             setPendingMenuOpen(pendingMenuOpen === request.friend_id ? null : request.friend_id);
                           }}
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100 outline-none focus:outline-none focus-visible:outline-none">
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100 outline-none focus:outline-none focus-visible:outline-none [&::after]:hidden [&::before]:hidden">
                           <MoreVertical className="w-4 h-4" />
                         </button>
                         {pendingMenuOpen === request.friend_id && (
@@ -175,7 +175,7 @@ function FriendsSection({
                           <p className="font-semibold text-white text-xs truncate">{name}</p>
                         </Link>
                         <div className="relative flex-shrink-0">
-                          <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(friendMenuOpen === friend.id ? null : friend.id); }} className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100 outline-none focus:outline-none focus-visible:outline-none">
+                          <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(friendMenuOpen === friend.id ? null : friend.id); }} className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-600/60 active:scale-90 transition-all duration-100 outline-none focus:outline-none focus-visible:outline-none [&::after]:hidden [&::before]:hidden">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           {friendMenuOpen === friend.id && (
