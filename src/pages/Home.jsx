@@ -532,7 +532,7 @@ export default function Home() {
     if (!feedBottomRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && visiblePostCount < allPosts.length) {
+        if (entries[0].isIntersecting) {
           setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
         }
       },
@@ -540,7 +540,7 @@ export default function Home() {
     );
     observer.observe(feedBottomRef.current);
     return () => observer.disconnect();
-  }, [visiblePostCount, allPosts.length]);
+  }, []);
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {

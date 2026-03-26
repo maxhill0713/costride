@@ -75,21 +75,19 @@ function ActivityFeedSection({
           {socialFeedPosts.slice(0, visiblePostCount).map(post => (
             <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
           ))}
+          <div ref={feedBottomRef} className="flex justify-center py-3">
+            {isLoadingMorePosts && (
+              <div style={{
+                width: 30, height: 30,
+                borderRadius: '50%',
+                border: '2.5px solid rgba(148,163,184,0.2)',
+                borderTop: '2.5px solid #60a5fa',
+                animation: 'spin 0.7s linear infinite',
+              }} />
+            )}
+          </div>
         </div>
       )}
-
-      {/* Sentinel — always rendered so the observer stays attached */}
-      <div ref={feedBottomRef} className="flex justify-center py-3">
-        {visiblePostCount < socialFeedPosts.length && (
-          <div style={{
-            width: 30, height: 30,
-            borderRadius: '50%',
-            border: '2.5px solid rgba(148,163,184,0.2)',
-            borderTop: '2.5px solid #60a5fa',
-            animation: 'spin 0.7s linear infinite',
-          }} />
-        )}
-      </div>
     </div>
   );
 }
