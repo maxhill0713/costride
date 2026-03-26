@@ -911,7 +911,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 if (isEmptySplit) {
                   return (
                     <div className="p-5 bg-gradient-to-br from-blue-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-blue-500/20 text-center mb-4">
-                      <Dumbbell className="w-7 h-7 text-blue-400/60 mx-auto mb-3" />
                       <p className="text-slate-200 text-sm font-bold mb-1">No exercises set for today</p>
                       <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">You don't have a workout routine set for today. Edit your custom split and add some exercises.</p>
                       <Link
