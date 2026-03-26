@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
@@ -29,11 +29,22 @@ export default function QuoteCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  // Track whether the component has been interacted with — on first mount
+  // (every page visit) we skip the slide-in so the card appears static.
+  // After the first user-driven swipe/dot-click the animation re-enables.
+  const hasInteracted = useRef(false);
 
   const paginate = (newDirection) => {
+    hasInteracted.current = true;
     const next = (current + newDirection + quotes.length) % quotes.length;
     setDirection(newDirection);
     setCurrent(next);
+  };
+
+  const handleDotClick = (i) => {
+    hasInteracted.current = true;
+    setDirection(i > current ? 1 : -1);
+    setCurrent(i);
   };
 
   const handleDragEnd = (e, info) => {
@@ -70,7 +81,7 @@ export default function QuoteCarousel() {
             <motion.button
               key={i}
               layoutId={i === current ? 'active-dot' : undefined}
-              onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+              onClick={() => handleDotClick(i)}
               animate={{ width: i === current ? '14px' : '8px' }}
               transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
               className={`h-2 rounded-full transition-colors duration-300 ${i === current ? 'bg-gradient-to-r from-blue-700 to-blue-800' : 'bg-slate-600/60 hover:bg-slate-500'}`}
@@ -88,7 +99,10 @@ export default function QuoteCarousel() {
             key={current}
             custom={direction}
             variants={variants}
-            initial="enter"
+            // Skip the slide-in on first mount (every page visit).
+            // Once the user swipes or taps a dot, hasInteracted flips to true
+            // and all subsequent quote changes animate normally.
+            initial={hasInteracted.current ? 'enter' : false}
             animate="center"
             exit="exit"
             transition={{ type: 'tween', duration: 0.3 }}
