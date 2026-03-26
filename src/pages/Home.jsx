@@ -743,7 +743,7 @@ export default function Home() {
     friendsWithActivity.forEach(friend => {
       if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id:`inactive-${friend.friend_id}`, type:'friend-inactive', title:`${friend.friend_name} Needs a Nudge`, message:`${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji:'👋' });
     });
-    if (lastCI && daysSince === 1) cards.push({ id:'streak-danger', type:'streak-warning', title:'Your Streak is at Risk!', message:'You have until midnight to check in and keep your streak alive! ⚠️', emoji:'⚠️' });
+
     return cards;
   })();
 
