@@ -93,14 +93,14 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
         userLocation.latitude,
         userLocation.longitude,
         [{ id: gym.id, name: gym.name, latitude: gym.latitude, longitude: gym.longitude }],
-        200
+        500
       );
 
       if (inRange) {
         setIsWithinRange(true);
       } else {
-        const distanceKm = (nearestGymDistance / 1000).toFixed(1);
-        setLocationError(`You're ${distanceKm}km away. Must be within 200m to check in.`);
+        const distanceM = nearestGymDistance;
+        setLocationError(`You're ${distanceM}m away. Must be within 500m to check in.`);
       }
       setIsCheckingLocation(false);
     };
@@ -138,64 +138,23 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
   };
 
   const handlePress = async (e) => {
-    if (checkInMutation.isPending || success || isCheckingLocation) return;
+    if (checkInMutation.isPending || success) return;
 
     setPressed(true);
     spawnRipple(e);
     setLocationError(null);
-    setIsCheckingLocation(true);
 
     try {
-      const userLocation = await getUserLocation();
-
-      if (!userLocation) {
-        setLocationError('Location access denied. Please enable location permissions to check in.');
-        setPressed(false);
-        setIsCheckingLocation(false);
-        return;
-      }
-
-      // Get all user's gyms to check distance
-      const gymsToCheck = gymMemberships.map(m => ({
-        id: m.gym_id,
-        name: m.gym_name,
-        latitude: m.gym_latitude,
-        longitude: m.gym_longitude,
-      })).filter(g => g.latitude && g.longitude);
-
-      if (gymsToCheck.length === 0) {
-        setLocationError('No gym location data available.');
-        setPressed(false);
-        setIsCheckingLocation(false);
-        return;
-      }
-
-      const { isWithinRange, nearestGymDistance } = checkDistanceToGyms(
-        userLocation.latitude,
-        userLocation.longitude,
-        gymsToCheck,
-        200 // 200 meters threshold
-      );
-
-      if (!isWithinRange) {
-        const distanceKm = (nearestGymDistance / 1000).toFixed(1);
-        setLocationError(`You're ${distanceKm}km away from the nearest gym. You must be within 200 meters to check in.`);
-        setPressed(false);
-        setIsCheckingLocation(false);
-        return;
-      }
-
-      // User is within range, proceed with check-in
+      // User is already confirmed within range (checked on mount), proceed directly
       if (!audioCtxRef.current) {
         audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtxRef.current) soundBounceIn(audioCtxRef.current);
       checkInMutation.mutate();
     } catch (error) {
-      console.error('Location check error:', error);
-      setLocationError('Error checking location. Please try again.');
+      console.error('Check-in error:', error);
+      setLocationError('Error during check-in. Please try again.');
       setPressed(false);
-      setIsCheckingLocation(false);
     }
   };
 
@@ -204,12 +163,13 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
     setPressed(false);
   };
 
-  const isLoading = checkInMutation.isPending || isCheckingLocation;
+  const isLoading = checkInMutation.isPending;
   const isSuccess = success;
 
-  if (isCheckingLocation || !isWithinRange) {
-    return null;
-  }
+  // Don't render until we've finished the initial location check
+  if (isCheckingLocation) return null;
+  // Only show button if user is within range
+  if (!isWithinRange) return null;
 
   return (
     <>
