@@ -435,9 +435,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   // Cardio: Time/Round and Rest reduced to 50px (≈30% smaller than original 72px)
   // Pencil column dropped once logged
   // 10px spacer column sits between Rounds and Time/Round for visual breathing room
-  const cardioGridCols = alreadyLoggedToday
-    ? '1fr 46px 10px 50px 50px'
-    : '1fr 46px 10px 50px 50px auto';
+const cardioGridCols = alreadyLoggedToday
+    ? '1fr 44px 12px 44px 44px'
+    : '1fr 44px 12px 44px 44px auto';
 
   return (
     <>
@@ -727,8 +727,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rounds</div>
                         <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Time/Round</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: '12px' }}>Rest</div>
-                        {!alreadyLoggedToday && <div className="w-6" />}
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Rest</div>
                       </motion.div>
 
                       {todayWorkout.cardio.map((c, index) =>
@@ -793,7 +792,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
 
                               {/* Rounds */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '40px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {c.rounds || '—'}
                               </div>
 
@@ -806,7 +805,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
 
                               {/* Rest */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-lg flex items-center justify-center mr-1" style={{ marginLeft: '12px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
 
@@ -816,7 +815,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       onClick={() => handleEditCardio(index, c)}
                       whileTap={{ scale: 0.78, y: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                      className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 mr-1">
+                      className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </motion.button>
                     }
