@@ -573,10 +573,8 @@ export default function GymOwnerDashboard() {
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
     queryFn: async () => {
       if (memberUserIds.length === 0) return [];
-      const results = await Promise.all(
-        memberUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
+      // Single batch query instead of N individual requests
+      return base44.entities.User.filter({ id: { $in: memberUserIds } }).catch(() => []);
     },
     enabled: !!selectedGym && memberUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -675,9 +673,9 @@ export default function GymOwnerDashboard() {
     monthChangePct < 0 && { icon: TrendingDown, color: D.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') },
   ].filter(Boolean).slice(0, 4);
 
-  // Tab content
+  // Tab content — only render the active tab to avoid computing all props on every render
   const tabContent = {
-    overview: <TabOverview
+    overview: tab === 'overview' && <TabOverview
       todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
       activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
       newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={[]}
@@ -695,10 +693,10 @@ export default function GymOwnerDashboard() {
       week1ReturnRate={week1ReturnRate}
       newNoReturnCount={newNoReturnCount}
     />,
-    schedule: isCoach
+    schedule: tab === 'schedule' && (isCoach
       ? <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />
-      : null,
-    members: isCoach
+      : null),
+    members: tab === 'members' && (isCoach
       ? <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} />
       : <TabMembersComponent
           allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30}
@@ -714,16 +712,16 @@ export default function GymOwnerDashboard() {
           memberPageSize={memberPageSize} selectedRows={selectedRows}
           setSelectedRows={setSelectedRows} openModal={openModal} now={now}
           Spark={Spark} Delta={Delta}
-        />,
-    content: isCoach
+        />),
+    content: tab === 'content' && (isCoach
       ? <TabCoachContent events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />
-      : <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />,
-    analytics: isCoach
+      : <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />),
+    analytics: tab === 'analytics' && (isCoach
       ? <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} />
-      : <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />,
-    profile:    isCoach ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} /> : null,
-    engagement: <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
-    gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={d => createRewardM.mutate(d)} onDeleteReward={id => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />,
+      : <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />),
+    profile:    tab === 'profile' && (isCoach ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} /> : null),
+    engagement: tab === 'engagement' && <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
+    gym: tab === 'gym' && <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={d => createRewardM.mutate(d)} onDeleteReward={id => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />,
   };
 
   // ── Splash screens ────────────────────────────────────────────────────────
