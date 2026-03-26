@@ -139,16 +139,16 @@ function RuleCard({ rule, gymName, onToggle, onEdit, onDelete, onTestSend }) {
         ? `linear-gradient(90deg, ${C.accent}80 0%, ${C.accent}18 60%, transparent 100%)`
         : 'rgba(255,255,255,0.04)' }} />
 
-      <div style={{ padding:'13px 16px', display:'flex', alignItems:'center', gap:12 }}>
-        <div style={{ width:34, height:34, borderRadius:9, flexShrink:0,
+      <div style={{ padding:'9px 12px', display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ width:28, height:28, borderRadius:8, flexShrink:0,
           background:'rgba(255,255,255,0.04)', border:`1px solid ${C.border}`,
           display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <IconEl style={{ width:15, height:15, color: rule.enabled ? C.t2 : C.t3 }} />
+          <IconEl style={{ width:13, height:13, color: rule.enabled ? C.t2 : C.t3 }} />
         </div>
 
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:3 }}>
-            <span style={{ fontSize:13, fontWeight:700, color: rule.enabled ? C.t1 : C.t2 }}>{trig.label}</span>
+          <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
+            <span style={{ fontSize:12, fontWeight:700, color: rule.enabled ? C.t1 : C.t2 }}>{trig.label}</span>
             <span style={{ fontSize:9, fontWeight:700, color:C.t3, background:'rgba(255,255,255,0.05)',
               border:`1px solid ${C.border}`, borderRadius:5, padding:'1.5px 7px',
               textTransform:'uppercase', letterSpacing:'.06em' }}>{trig.cat}</span>
@@ -427,8 +427,8 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
           { label:'Active rules',    value: enabledCount,      sub:'running now' },
           { label:'Avg. open rate',  value:'68%',              sub:'push notifications' },
         ].map((s,i) => (
-          <Card key={i} style={{ padding:'10px 14px' }}>
-            <div style={{ fontSize:20, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:3,
+          <Card key={i} style={{ padding:'8px 12px' }}>
+            <div style={{ fontSize:17, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:2,
               color: s.risk && s.value > 0 ? C.danger : C.t0, fontVariantNumeric:'tabular-nums' }}>
               {s.value}
             </div>
@@ -448,9 +448,9 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
         {/* Left column */}
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
           <div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <span style={{ fontSize:13, fontWeight:700, color:C.t1 }}>Active</span>
+                <span style={{ fontSize:12, fontWeight:700, color:C.t1 }}>Active</span>
                 <span style={{ fontSize:10, fontWeight:700, color:C.success,
                   background:C.successSub, border:`1px solid ${C.successBrd}`,
                   borderRadius:99, padding:'2px 9px' }}>
@@ -460,10 +460,10 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
             </div>
 
             {enabledRules.length === 0 ? (
-              <Card style={{ padding:'32px 24px', textAlign:'center' }}>
-                <div style={{ width:40, height:40, borderRadius:12, background:'rgba(255,255,255,0.04)',
+              <Card style={{ padding:'20px 16px', textAlign:'center' }}>
+                <div style={{ width:32, height:32, borderRadius:10, background:'rgba(255,255,255,0.04)',
                   border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center',
-                  margin:'0 auto 12px' }}>
+                  margin:'0 auto 8px' }}>
                   <Zap style={{ width:18, height:18, color:C.t3 }} />
                 </div>
                 <div style={{ fontSize:13, fontWeight:700, color:C.t2, marginBottom:4 }}>No active rules</div>
@@ -482,7 +482,7 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
 
           {pausedRules.length > 0 && (
             <div>
-              <div style={{ fontSize:10, fontWeight:700, color:C.t4, marginBottom:10, textTransform:'uppercase', letterSpacing:'.08em' }}>Paused</div>
+              <div style={{ fontSize:10, fontWeight:700, color:C.t4, marginBottom:6, textTransform:'uppercase', letterSpacing:'.08em' }}>Paused</div>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {pausedRules.map(rule => (
                   <RuleCard key={rule.id} rule={rule} gymName={gymName}
