@@ -8,8 +8,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 //    FIXED: likes are now tracked as a Set keyed by user_id (liked_by array).
 //    A user can only add one like; unlike removes them. Count derived from array length.
 
-const ALLOWED_REACTIONS = ['fire', 'strong', 'clap', 'heart', 'wow'];
-const ALLOWED_ACTIONS   = ['like', 'unlike', 'react', 'comment'];
+const ALLOWED_REACTIONS = ['fire', 'strong', 'clap', 'heart', 'wow', 'default', 'sunglasses'];
+const ALLOWED_ACTIONS   = ['like', 'unlike', 'react', 'unreact', 'comment'];
 
 function sanitise(str, maxLen = 1000) {
   if (typeof str !== 'string') return '';
@@ -69,11 +69,16 @@ Deno.serve(async (req) => {
         likes:    likedBy.length,
       });
     } else if (action === 'react') {
-      if (!reactionType || !ALLOWED_REACTIONS.includes(reactionType)) {
+      const variant = body.reactionType || body.reactionVariant || 'default';
+      if (!ALLOWED_REACTIONS.includes(variant)) {
         return Response.json({ error: 'Invalid reaction type' }, { status: 400 });
       }
       const reactions = { ...(post.reactions || {}) };
-      reactions[user.id] = reactionType;
+      reactions[user.id] = variant;
+      updated = await base44.asServiceRole.entities.Post.update(postId, { reactions });
+    } else if (action === 'unreact') {
+      const reactions = { ...(post.reactions || {}) };
+      delete reactions[user.id];
       updated = await base44.asServiceRole.entities.Post.update(postId, { reactions });
     } else if (action === 'comment') {
       const safeText = sanitise(text, 500);

@@ -331,32 +331,40 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const reactMutation = useMutation({
     mutationFn: async (isReacting) => {
-      const updatedReactions = { ...post.reactions };
-      if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
-      else delete updatedReactions[currentUser.id];
-      await base44.entities.Post.update(post.id, { reactions: updatedReactions });
+      return base44.functions.invoke('postInteraction', {
+        postId: post.id,
+        action: isReacting ? 'react' : 'unreact',
+        reactionVariant: userStreakVariant,
+      });
     },
     onMutate: async (isReacting) => {
-      const updatePost = (old = []) => old.map((p) => {
-        if (p.id !== post.id) return p;
-        const updatedReactions = { ...p.reactions };
-        if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
-        else delete updatedReactions[currentUser.id];
-        return { ...p, reactions: updatedReactions };
+      const applyUpdate = (old) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((p) => {
+          if (p.id !== post.id) return p;
+          const updatedReactions = { ...(p.reactions || {}) };
+          if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
+          else delete updatedReactions[currentUser.id];
+          return { ...p, reactions: updatedReactions };
+        });
+      };
+      // Snapshot and optimistically update all matching caches
+      const snapshots = [];
+      queryClient.getQueryCache().findAll({ type: 'active' }).forEach(({ queryKey, state }) => {
+        if (Array.isArray(state.data)) {
+          snapshots.push({ queryKey, data: state.data });
+          queryClient.setQueryData(queryKey, applyUpdate);
+        }
       });
-      const queries = [['posts'], ['friendPosts', currentUser?.id], ['userPosts', currentUser?.id]];
-      if (post.gym_id) queries.push(['posts', post.gym_id]);
-      const snapshots = queries.map((key) => ({ key, data: queryClient.getQueryData(key) }));
-      queries.forEach((key) => queryClient.setQueryData(key, updatePost));
       return { snapshots };
     },
     onError: (err, isReacting, context) => {
-      context?.snapshots?.forEach(({ key, data }) => queryClient.setQueryData(key, data));
+      context?.snapshots?.forEach(({ queryKey, data }) => queryClient.setQueryData(queryKey, data));
       toast.error('Failed to react to post');
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      if (post.gym_id) queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
     }
   });
 
