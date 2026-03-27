@@ -76,14 +76,14 @@ function GymHealthCard({ selectedGym, classes, coaches, checkIns, allMemberships
     cutoff.setDate(cutoff.getDate() - 30); return d >= cutoff;
   });
   const checks = useMemo(() => [
-    { label: 'Hero photo',         done: !!selectedGym?.image_url,   color: C.accent,    cta: 'Add photo',  action: 'heroPhoto' },
-    { label: 'Class added',        done: (classes?.length||0) > 0,   color: C.success,   cta: 'Add class',  action: 'classes'   },
-    { label: 'Coach added',        done: (coaches?.length||0) > 0,   color: C.accent,  cta: 'Add coach',  action: 'coaches'   },
-    { label: 'Members joined',     done: totalMembers > 0,           color: C.accent,   cta: 'Add member', action: 'members'   },
-    { label: 'Retention ≥ 70%',    done: retentionRate >= 70,        color: C.success,   cta: null,         action: null        },
-    { label: 'No at-risk members', done: atRisk === 0,               color: C.danger,     cta: 'Message',    action: 'message'   },
-    { label: 'Check-ins recorded', done: ci30.length > 0,            color: C.accent,  cta: 'Scan QR',    action: 'qrScanner' },
-    { label: 'Gym verified',       done: !!selectedGym?.verified,    color: C.accent,    cta: null,         action: null        },
+    { label: 'Hero photo',         done: !!selectedGym?.image_url,   cta: 'Add photo',  action: 'heroPhoto' },
+    { label: 'Class added',        done: (classes?.length||0) > 0,   cta: 'Add class',  action: 'classes'   },
+    { label: 'Coach added',        done: (coaches?.length||0) > 0,   cta: 'Add coach',  action: 'coaches'   },
+    { label: 'Members joined',     done: totalMembers > 0,           cta: 'Add member', action: 'members'   },
+    { label: 'Retention ≥ 70%',    done: retentionRate >= 70,        cta: null,         action: null        },
+    { label: 'No at-risk members', done: atRisk === 0,               cta: 'Message',    action: 'message'   },
+    { label: 'Check-ins recorded', done: ci30.length > 0,            cta: 'Scan QR',    action: 'qrScanner' },
+    { label: 'Gym verified',       done: !!selectedGym?.verified,    cta: null,         action: null        },
   ], [selectedGym, classes, coaches, totalMembers, retentionRate, atRisk, ci30]);
 
   const score = useMemo(() => {
@@ -147,8 +147,8 @@ function LiveStatsStrip({ allMemberships, checkIns, atRisk, retentionRate, now }
     { label: 'Members',       value: totalMembers,        color: C.t1,                                icon: Users,     sub: 'enrolled',                                   semantic: false },
     { label: 'Active / week', value: weekSet.size,         color: C.t1,                                icon: Activity,  sub: 'last 7 days',                                semantic: false },
     { label: 'Check-ins',     value: ci30,                 color: C.t1,                                icon: BarChart2, sub: 'this month',                                 semantic: false },
-    { label: 'Retention',     value: `${retentionRate}%`,  color: retentionRate >= 70 ? C.success : C.warn, icon: TrendingUp, sub: retentionRate >= 70 ? 'Healthy' : 'Below target', semantic: retentionRate < 70 },
-    { label: 'At Risk',       value: atRisk,               color: atRisk > 0 ? C.danger : C.success,           icon: Zap,       sub: atRisk > 0 ? '14+ days out' : 'All clear',    semantic: atRisk > 0 },
+    { label: 'Retention',     value: `${retentionRate}%`,  color: retentionRate >= 70 ? C.success : C.warn, icon: TrendingUp, sub: retentionRate >= 70 ? 'Healthy' : 'Below target', semantic: true },
+    { label: 'At Risk',       value: atRisk,               color: atRisk > 0 ? C.danger : C.success,           icon: Zap,       sub: atRisk > 0 ? '14+ days out' : 'All clear',    semantic: true },
   ];
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
@@ -160,7 +160,7 @@ function LiveStatsStrip({ allMemberships, checkIns, atRisk, retentionRate, now }
               <s.icon style={{ width: 10, height: 10, color: C.t3 }} />
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: s.semantic ? s.color : C.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
           <div style={{ fontSize: 9, color: C.t3, fontWeight: 500 }}>{s.sub}</div>
         </div>
       ))}
@@ -264,7 +264,7 @@ function NudgeSettings({ settings, onUpdate }) {
     { label: 'Dashboard panels', rows: [
       { key: 'showTodayPanel',         label: "Today's action panel",    sub: 'Daily priority actions on Overview',        color: C.accent   },
       { key: 'showContentSuggestions', label: 'Content suggestions',     sub: 'When to post, run polls, start challenges', color: C.accent },
-      { key: 'showDropOffMap',         label: 'Drop-off risk map',       sub: 'Lifecycle churn breakdown',                 color: C.danger    },
+      { key: 'showDropOffMap',         label: 'Drop-off risk map',       sub: 'Lifecycle churn breakdown',                 color: C.accent    },
     ]},
     { label: 'Member alerts', rows: [
       { key: 'showStreakRecovery', label: 'Streak recovery prompts',   sub: 'Surface members who broke a streak',      color: C.accent  },
@@ -289,7 +289,7 @@ function NudgeSettings({ settings, onUpdate }) {
             <div style={{ fontSize: 10, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${C.divider}` }}>{section.label}</div>
             {section.rows.map((r, i) => (
               <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0', borderBottom: i < section.rows.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{r.label}</div>
                   <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{r.sub}</div>
@@ -339,7 +339,7 @@ function AdminCard({ selectedGym, openModal }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, color: C.t3, fontWeight: 600 }}>Verification</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: statusVerified ? C.success : C.accent, marginTop: 1 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: statusVerified ? C.success : C.t2, marginTop: 1 }}>
               {statusVerified ? '✓ Verified & live' : 'Pending — 1–2 business days'}
             </div>
           </div>
@@ -577,10 +577,10 @@ export default function TabGym({
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginTop: 16 }}>
             {[
-              { label: 'Monthly Price', value: selectedGym?.price ? `£${selectedGym.price}/mo` : 'Not set', icon: Tag,         color: selectedGym?.price ? C.t1 : C.accent },
+              { label: 'Monthly Price', value: selectedGym?.price ? `£${selectedGym.price}/mo` : 'Not set', icon: Tag,         color: C.t1 },
               { label: 'Address',       value: selectedGym?.address || '—',                                  icon: MapPin,      color: C.t1 },
               { label: 'Postcode',      value: selectedGym?.postcode || '—',                                 icon: MapPin,      color: C.t1 },
-              { label: 'Status',        value: statusVerified ? 'Verified' : 'Pending',                      icon: ShieldCheck, color: statusVerified ? C.success : C.accent },
+              { label: 'Status',        value: statusVerified ? 'Verified' : 'Pending',                      icon: ShieldCheck, color: statusVerified ? C.success : C.t1 },
             ].map((f, i) => (
               <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: C.divider, border: `1px solid ${C.border}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
