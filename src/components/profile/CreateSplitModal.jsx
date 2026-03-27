@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2, Info } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input sanitisation helpers
@@ -292,6 +293,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const [activeSplitId, setActiveSplitId] = useState('');
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
 
+  // ── Info box for configure step ───────────────────────────────────────────
+  const [showConfigureInfo, setShowConfigureInfo] = useState(false);
+
   // ── Mirror state ──────────────────────────────────────────────────────────
   const [mirroredPairs, setMirroredPairs] = useState([]);
   const [pendingMirrorPair, setPendingMirrorPair] = useState(null);
@@ -299,14 +303,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
 
   // ── Delete workout state ──────────────────────────────────────────────────
   const [deleteWorkoutDay, setDeleteWorkoutDay] = useState(null);
-  // Per-day dots menu open state (keyed by day number)
   const [dayDotsMenuOpen, setDayDotsMenuOpen] = useState({});
 
   const queryClient = useQueryClient();
 
   // ── Mirror helpers ────────────────────────────────────────────────────────
-
-  // Returns the mirror partner of a day, or null
   const getMirrorDay = (day) => {
     for (const [a, b] of mirroredPairs) {
       if (a === day) return b;
@@ -315,9 +316,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     return null;
   };
 
-  // For a given day, find its potential mirror partner (same name, not yet mirrored).
-  // Returns the pair [lower, higher] if this day should show the Mirror button, else null.
-  // Now shows on BOTH days of a potential pair.
   const getMirrorablePartner = (day) => {
     const nameA = (workouts[day]?.name || '').trim().toLowerCase();
     if (!nameA) return null;
@@ -329,14 +327,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
         ([x, y]) => (x === day && y === other) || (x === other && y === day)
       );
       if (!alreadyMirrored) {
-        // Return the canonical pair (lower first) along with whether this day is part of it
         return day < other ? [day, other] : [other, day];
       }
     }
     return null;
   };
 
-  // ── Confirm mirror ────────────────────────────────────────────────────────
   const handleConfirmMirror = () => {
     if (!pendingMirrorPair) return;
     const [a, b] = pendingMirrorPair;
@@ -359,7 +355,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     toast.success('Workouts mirrored!');
   };
 
-  // ── Modal open / reset ────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const saved = currentUser?.saved_splits || [];
@@ -376,8 +371,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     setDotsMenuOpen(false); setShowSetActiveModal(false);
     setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
     setDeleteWorkoutDay(null); setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
 
-    // If openToActiveSplit, jump straight to editing the active custom split
     if (openToActiveSplit) {
       const activeId = currentUser?.active_split_id || '';
       const customSplits = (currentUser?.saved_splits || []).filter((s) => !s.preset_id || s.preset_id === 'custom');
@@ -457,6 +452,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     setShowMirrorConfirm(false);
     setDeleteWorkoutDay(null);
     setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
     setStep('configure');
   };
 
@@ -464,6 +460,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     setSplitName(''); setSelectedDays([]); setWorkouts({}); setEditingSplitId(null);
     setDotsMenuOpen(false); setMirroredPairs([]); setPendingMirrorPair(null); setShowMirrorConfirm(false);
     setDeleteWorkoutDay(null); setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
     setStep('configure');
   };
 
@@ -494,21 +491,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     }
   };
 
-  // ── Workout name change — unmirror if name diverges ───────────────────────
   const handleWorkoutNameChange = (day, newName) => {
     const sanitised = sanitiseDayName(newName);
-    // Check if this day is currently mirrored
     const mirrorDay = getMirrorDay(day);
     if (mirrorDay !== null) {
-      // Name is changing — break the mirror link (keep exercises as-is, no sync)
       setMirroredPairs((prev) => prev.filter(([a, b]) => !(a === day && b === mirrorDay) && !(a === mirrorDay && b === day)));
       toast('Mirror unlinked — names now differ', { icon: '🔓' });
     }
-    // Only update this day's name (not mirrored partner)
     setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], name: sanitised } }));
   };
-
-  // ── Workout mutators — sync mirror partner ────────────────────────────────
 
   const updateWorkout = (day, field, value) => setWorkouts((prev) => {
     const mirror = getMirrorDay(day);
@@ -579,13 +570,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     return { ...prev, [day]: { ...prev[day], cardio: arr } };
   });
 
-  // ── Delete workout for a day (clears exercises/cardio, keeps day selected) ─
   const handleDeleteWorkout = (day) => {
     setWorkouts((prev) => ({
       ...prev,
       [day]: { ...prev[day], name: prev[day]?.name || '', color: prev[day]?.color || 'blue', exercises: [], cardio: [] }
     }));
-    // Also break any mirror involving this day
     setMirroredPairs((prev) => prev.filter(([a, b]) => a !== day && b !== day));
     setDeleteWorkoutDay(null);
     toast.success('Workout cleared');
@@ -604,6 +593,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
+
+  // ── Configure step info bullets ───────────────────────────────────────────
+  const configureInfoBullets = [
+    { label: 'Set Active', text: 'To make this routine appear daily on your Today\'s Workout card, tap the Set Active button in the top right of this page and select this routine.' },
+    { label: 'Delete Split', text: 'To delete this routine, press the three dots (⋮) on the right side of the screen and select "Delete Split".' },
+    { label: 'Mirror Workouts', text: 'If two or more of your workouts in a week repeat the same session, give them the same name and a Mirror button will appear. Press it to sync exercises across both days — edit one and it updates the other automatically.' },
+  ];
 
   if (!isOpen) return null;
 
@@ -713,7 +709,24 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               {/* ── Split Name ── */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
+                  {/* Label + info icon */}
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
+                    <motion.button
+                      onClick={() => setShowConfigureInfo(v => !v)}
+                      whileTap={{ scale: 0.78, y: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                      style={{
+                        background: 'none', border: 'none', padding: 0,
+                        cursor: 'pointer',
+                        color: showConfigureInfo ? '#818cf8' : '#475569',
+                        display: 'flex', alignItems: 'center',
+                        transition: 'color 0.15s',
+                      }}>
+                      <Info size={13} />
+                    </motion.button>
+                  </div>
+
                   {editingSplitId && (
                     <div className="relative">
                       <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
@@ -729,6 +742,50 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                     </div>
                   )}
                 </div>
+
+                {/* ── Info Box ── */}
+                <AnimatePresence>
+                  {showConfigureInfo && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div style={{
+                        position: 'relative',
+                        background: 'linear-gradient(135deg, rgba(129,140,248,0.07) 0%, rgba(99,102,241,0.04) 100%)',
+                        border: '1px solid rgba(129,140,248,0.16)',
+                        borderRadius: 10,
+                        padding: '10px 13px',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                          background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)',
+                        }} />
+                        <p style={{
+                          fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+                          margin: '0 0 7px', letterSpacing: '0.02em',
+                        }}>
+                          How to use
+                        </p>
+                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {configureInfoBullets.map(({ label, text }) => (
+                            <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+                              <span style={{ color: '#475569', fontSize: 11, lineHeight: 1.55, flexShrink: 0 }}>•</span>
+                              <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontWeight: 500 }}>
+                                <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{label}:</span>{' '}{text}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <input type="text" value={splitName} onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))} placeholder="My Training Split" maxLength={40} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
               </div>
 
@@ -756,7 +813,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                     const exs = wt.exercises || [];
                     const mirrorDay = getMirrorDay(day);
                     const isMirrored = mirrorDay !== null;
-                    // Mirror button: show on BOTH days of a potential pair (same name, not yet mirrored)
                     const mirrorPair = !isMirrored ? getMirrorablePartner(day) : null;
                     const showMirrorBtn = mirrorPair !== null;
                     const isDayDotsOpen = !!dayDotsMenuOpen[day];
@@ -764,18 +820,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                     return (
                       <div key={day} className="rounded-2xl overflow-hidden" style={{
                         background: 'rgba(12,16,32,0.8)',
-                        // No special border for mirrored — same neutral border always
                         border: '1px solid rgba(255,255,255,0.06)',
                       }}>
-
-                        {/* ── Card header ── */}
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
-                          {/* Day pill */}
                           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
                             <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
                           </div>
-
-                          {/* Workout name */}
                           <input
                             type="text"
                             value={wt.name || ''}
@@ -788,8 +838,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                             style={{ fontSize: '16px' }}
                             className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0"
                           />
-
-                          {/* Mirror Workout button — grey premium, shows on BOTH matching-name days */}
                           {showMirrorBtn && (
                             <button
                               onClick={() => { setPendingMirrorPair(mirrorPair); setShowMirrorConfirm(true); }}
@@ -803,11 +851,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                               Mirror Workout
                             </button>
                           )}
-
-                          {/* Mirrored badge + 3-dots menu */}
                           {isMirrored && (
                             <div className="flex items-center gap-1 flex-shrink-0">
-                              {/* Static badge */}
                               <div
                                 className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
                                 style={{
@@ -821,7 +866,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                 }}>
                                 Mirrored
                               </div>
-                              {/* 3-dots button */}
                               <div className="relative">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] })); }}
@@ -830,7 +874,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                 </button>
                                 {isDayDotsOpen && (
                                   <>
-                                    {/* Backdrop to close */}
                                     <div className="fixed inset-0 z-[15]" onClick={() => setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }))} />
                                     <div className="absolute right-0 top-8 z-[16] rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)', minWidth: '140px' }}>
                                       <button
@@ -847,14 +890,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                           )}
                         </div>
 
-                        {/* Colour picker */}
                         <div className="flex gap-1.5 px-4 pb-3">
                           {COLOR_OPTIONS.map((c) => (
                             <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />
                           ))}
                         </div>
 
-                        {/* Strength exercises */}
                         {exs.length > 0 && (
                           <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
                             <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
@@ -882,7 +923,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                           </div>
                         )}
 
-                        {/* Cardio rows */}
                         {(wt.cardio || []).length > 0 && (
                           <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
                             <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
@@ -945,11 +985,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                 setSavedSplits(updated);
                 const isActive = activeSplitId === previewSplit.id;
                 setActiveMutation.mutate({ saved_splits: updated, ...(isActive ? { custom_workout_types: mergedWorkouts } : {}) });
-                toast.success('Weights saved!'); setWeightsDirty(false);
+                toast.success('Edits saved!'); setWeightsDirty(false);
               }}
               disabled={setActiveMutation.isPending}
               className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed">
-              {setActiveMutation.isPending ? 'Saving…' : 'Save Weights'}
+              {setActiveMutation.isPending ? 'Saving…' : 'Save Edits'}
             </button>
           </div>
         )}
@@ -965,14 +1005,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
 
       <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
 
-      {/* ── Mirror Workout confirmation ── */}
       <MirrorConfirmDialog
         open={showMirrorConfirm}
         onClose={() => { setShowMirrorConfirm(false); setPendingMirrorPair(null); }}
         onConfirm={handleConfirmMirror}
       />
 
-      {/* ── Delete Workout confirmation ── */}
       <DeleteWorkoutDialog
         open={deleteWorkoutDay !== null}
         onClose={() => setDeleteWorkoutDay(null)}
@@ -980,7 +1018,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
         dayName={deleteWorkoutDay ? (workouts[deleteWorkoutDay]?.name || DAY_NAMES[deleteWorkoutDay - 1]) : ''}
       />
 
-      {/* ── Delete Split confirmation ── */}
       {confirmDeleteSplitId && (
         <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
           <div className="w-full max-w-xs rounded-2xl p-6 space-y-4" style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }} onClick={(e) => e.stopPropagation()}>
