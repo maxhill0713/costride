@@ -762,11 +762,11 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
     const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
     const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
     return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.success,                    filter: 'active' },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: active > 0 ? C.accent : C.t1, filter: 'active' },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: casual > 0 ? C.accent : C.t1, filter: 'active' },
-      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   valueColor: atRisk > 0 ? C.danger : C.t1, filter: 'atRisk' },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: newM > 0 ? C.success : C.t1,  filter: 'new'    },
+      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.t1, filter: 'active' },
+      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: C.t1, filter: 'active' },
+      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: C.t1, filter: 'active' },
+      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   valueColor: C.t1, filter: 'atRisk' },
+      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: C.t1, filter: 'new'    },
     ];
   }, [memberRows]);
 
