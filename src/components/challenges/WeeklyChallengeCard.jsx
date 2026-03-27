@@ -14,8 +14,8 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
   const targetValue = challenge.target_value || 50;
 
   // For monthly challenges use personal progress, otherwise use participant count
-  const currentValue = isMonthly ? (userProgress || 0) : participantCount;
-  const progress = Math.min(100, Math.floor((currentValue / targetValue) * 100));
+  const currentValue = isMonthly ? userProgress || 0 : participantCount;
+  const progress = Math.min(100, Math.floor(currentValue / targetValue * 100));
   const remaining = Math.max(0, targetValue - currentValue);
   const daysLeft = Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24));
   const isExpired = daysLeft <= 0;
@@ -30,10 +30,10 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
       await queryClient.cancelQueries({ queryKey: ['weeklyChallenges'] });
       const previous = queryClient.getQueryData(['weeklyChallenges']);
       queryClient.setQueryData(['weeklyChallenges'], (old = []) =>
-        old.map(c => c.id === challenge.id
-          ? { ...c, participants: [...(c.participants || []), currentUser.id] }
-          : c
-        )
+      old.map((c) => c.id === challenge.id ?
+      { ...c, participants: [...(c.participants || []), currentUser.id] } :
+      c
+      )
       );
       return { previous };
     },
@@ -49,8 +49,8 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2 }}
-    >
+      transition={{ duration: 0.2 }}>
+      
       <div
         className="rounded-2xl overflow-hidden relative"
         style={{
@@ -58,12 +58,12 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
-        }}
-      >
+          boxShadow: '0 2px 12px rgba(0,0,0,0.35)'
+        }}>
+        
         {/* Top shine */}
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
 
         <div className="relative p-4 space-y-3">
 
@@ -71,12 +71,12 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
           <div className="flex items-start gap-3 mb-1">
             {/* Thumbnail */}
             <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
-              style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+            style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
                 alt="Challenge"
-                className="w-full h-full object-cover"
-              />
+                className="w-full h-full object-cover" />
+              
             </div>
 
             {/* Title + meta */}
@@ -97,25 +97,25 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
               </span>
             </div>
             <div className="h-4 rounded-full overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 1, ease: 'easeOut' }}
                 className="h-full rounded-full"
-                style={{ background: isCompleted ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
-              />
+                style={{ background: isCompleted ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }} />
+              
             </div>
           </div>
 
           {/* ── Reward ── */}
           <div className="flex items-center gap-3 rounded-xl px-3 py-2"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            {challenge.reward?.toLowerCase().includes('streak freeze') ? (
-              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="Streak Freeze" className="w-12 h-12 object-contain flex-shrink-0" />
-            ) : (
-              <UniqueBadge reward={challenge.reward} size="sm" />
-            )}
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {challenge.reward?.toLowerCase().includes('streak freeze') ?
+            <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="Streak Freeze" className="w-12 h-12 object-contain flex-shrink-0" /> :
+
+            <UniqueBadge reward={challenge.reward} size="sm" />
+            }
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
               <p className="text-[13px] font-black text-white truncate">{challenge.reward || 'Weekly Challenge Badge'}</p>
@@ -123,39 +123,39 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
           </div>
 
           {/* ── Status for monthly / join button for weekly ── */}
-          {isMonthly ? (
-            isCompleted && (
-              <div
-                className="w-full h-9 rounded-xl font-black text-[13px] flex items-center justify-center"
-                style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }}
-              >
-                ✓ Challenge Complete!
-              </div>
-            )
-          ) : !isExpired && (
-            <motion.div whileTap={!isParticipant ? { scale: 0.97 } : {}}>
-              <button
-                onClick={() => !isParticipant && joinMutation.mutate()}
-                disabled={joinMutation.isPending || isParticipant}
-                className="w-full h-9 rounded-xl font-black text-[13px] transition-all"
-                style={isParticipant ? {
-                  background: 'rgba(52,211,153,0.1)',
-                  border: '1px solid rgba(52,211,153,0.2)',
-                  color: '#34d399',
-                  cursor: 'default',
-                } : {
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'rgba(255,255,255,0.85)',
-                }}
-              >
-                {joinMutation.isPending ? '...' : isParticipant ? '✓ Joined' : 'Join Challenge'}
-              </button>
-            </motion.div>
-          )}
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
 
         </div>
       </div>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
