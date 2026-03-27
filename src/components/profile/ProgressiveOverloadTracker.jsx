@@ -69,6 +69,7 @@ function CustomTooltip({ active, payload, label }) {
 function WorkoutSelector({ options, selected, onSelect }) {
   const [open, setOpen] = useState(false);
   const current = options.find(o => o.key === selected);
+  const switchableOptions = options.filter(o => o.key !== selected);
 
   return (
     <div style={{ position: 'relative', minWidth: 0, flexShrink: 0 }}>
@@ -82,7 +83,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
           color: '#cbd5e1', fontSize: 11, fontWeight: 600,
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           transition: 'background 0.15s',
-          width: 120, // fixed — roughly "Legs and Abs" width
+          width: 120,
         }}>
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
           {current?.label ?? 'Select'}
@@ -91,7 +92,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
       </button>
 
-      {open && (
+      {open && switchableOptions.length > 0 && (
         <>
           <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
           <div style={{
@@ -101,26 +102,21 @@ function WorkoutSelector({ options, selected, onSelect }) {
             boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
             backdropFilter: 'blur(20px)',
           }}>
-            {options.map(opt => (
+            {switchableOptions.map(opt => (
               <button
                 key={opt.key}
                 onClick={() => { onSelect(opt.key); setOpen(false); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   width: '100%', padding: '9px 12px',
-                  background: selected === opt.key ? 'rgba(96,165,250,0.10)' : 'transparent',
+                  background: 'transparent',
                   border: 'none', cursor: 'pointer',
                   borderBottom: '1px solid rgba(255,255,255,0.05)',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                <span style={{ fontSize: 12, fontWeight: selected === opt.key ? 700 : 500,
-                  color: selected === opt.key ? '#60a5fa' : '#94a3b8' }}>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#94a3b8' }}>
                   {opt.label}
                 </span>
-                {selected === opt.key && (
-                  <div style={{ marginLeft: 'auto', width: 5, height: 5,
-                    borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
-                )}
               </button>
             ))}
           </div>
@@ -176,7 +172,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
         if (!matched) return;
         const w = parseFloat(ex.weight);
         if (!w || w <= 0) return;
-        // Parse reps — may live in ex.reps or ex.setsReps like "3x10"
         const reps = parseFloat(ex.reps) ||
           parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
           1;
@@ -197,7 +192,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
     const now = new Date();
     const cutoff = subMonths(now, CUTOFF_MONTHS);
 
-    // Build baselines from earliest e1RM per exercise (all time)
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
@@ -302,7 +296,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             <ResponsiveContainer width="100%" height={210}>
               <LineChart data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                {/* Zero baseline — solid, readable */}
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
                   dataKey="date"
@@ -313,7 +306,6 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                 />
                 <YAxis
                   stroke="rgba(255,255,255,0.04)"
-                  // Bumped from #334155 to #475569 so ticks are actually readable
                   tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
                   tickLine={false} axisLine={false}
                   width={40}
@@ -337,7 +329,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             </ResponsiveContainer>
           </div>
 
-          {/* Legend — 20% width, dot + truncated name, no extra info */}
+          {/* Legend — 20% width */}
           <div style={{
             width: '20%',
             paddingLeft: 8,
