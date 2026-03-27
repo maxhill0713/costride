@@ -5,7 +5,7 @@ import {
   Calendar, CheckCircle, Flame, Clock,
   Trophy, Bell, UserPlus,
   TrendingUp, BarChart2,
-  X, Target,
+  X, Target, Zap,
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
@@ -414,12 +414,19 @@ export default function TabCoachOverview({
         {/* ══ 3. KEY METRICS ROW ════════════════════════════════════════════ */}
         <section>
           <SectionLabel accent="#38bdf8">Key Metrics</SectionLabel>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 11 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 11, marginBottom: 11 }}>
             <KpiCard icon={Activity}    label="Check-ins Today"   value={todayMemberIds.length}  sub={`of ${totalM} members`}                                      accent="#10b981" subColor={todayMemberIds.length > 0 ? '#34d399' : '#64748b'} bar={totalM > 0 ? (todayMemberIds.length / totalM) * 100 : 0}/>
             <KpiCard icon={TrendingUp}  label="Active This Week"  value={activeW}                sub={weekTrend !== 0 ? `${weekTrend > 0 ? '↑' : '↓'}${Math.abs(weekTrend)}% vs last wk` : 'Flat vs last wk'} accent="#38bdf8" subColor={weekTrend > 0 ? '#34d399' : weekTrend < 0 ? '#f87171' : '#64748b'} spark={weekSpark} bar={totalM > 0 ? (activeW / totalM) * 100 : 0}/>
             <KpiCard icon={BarChart2}   label="Engagement Rate"   value={`${engRate}%`}           sub={`${superActive + active} engaged`}                            accent="#a78bfa" bar={engRate}/>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 11 }}>
             <KpiCard icon={AlertCircle} label="Needs Attention"   value={attentionCount}          sub={`${atRiskMembers.length} absent · ${expiringMembers.length} expiring`} accent={attentionCount > 0 ? '#ef4444' : '#10b981'} subColor={attentionCount > 0 ? '#f87171' : '#34d399'}/>
             <KpiCard icon={Trophy}      label="Active Challenges" value={activeChallenges.length} sub={`${activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0)} participants`} accent="#fbbf24"/>
+            {(() => {
+              const avgSessions = totalM > 0 ? (allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0) / totalM) : 0;
+              const compliancePct = Math.min(100, Math.round((avgSessions / 12) * 100));
+              return <KpiCard icon={Zap} label="Avg Compliance" value={`${compliancePct}%`} sub={`${avgSessions.toFixed(1)} sessions/member/mo`} accent={compliancePct >= 70 ? '#10b981' : compliancePct >= 40 ? '#fbbf24' : '#ef4444'} bar={compliancePct}/>;
+            })()}
           </div>
         </section>
 
@@ -581,7 +588,9 @@ export default function TabCoachOverview({
                     )}
                     <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
                       <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer' }}>Note</button>
-                      <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer' }}>Reach</button>
+                      <button onClick={() => openModal('post', { memberId: m.user_id, nudge: true })} style={{ fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Zap style={{ width: 9, height: 9 }} /> Nudge
+                      </button>
                     </div>
                   </div>
                 );
@@ -687,10 +696,11 @@ export default function TabCoachOverview({
           </div>
           <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
             {[
-              { icon: QrCode,   label: 'Scan Check-In',  sub: 'Start a class',       color: T.green,  fn: () => openModal('qrScanner') },
-              { icon: Calendar, label: 'Create Event',   sub: 'Schedule something',  color: T.green,  fn: () => openModal('event')     },
-              { icon: Bell,     label: 'Send Reminder',  sub: 'Post to members',     color: T.blue,   fn: () => openModal('post')      },
-              { icon: Dumbbell, label: 'Manage Classes', sub: 'Edit your timetable', color: T.purple, fn: () => openModal('classes')   },
+              { icon: QrCode,   label: 'Scan Check-In',   sub: 'Start a class',         color: T.green,  fn: () => openModal('qrScanner') },
+              { icon: UserPlus, label: 'Mark Attendance',  sub: 'Log class attendance',  color: '#38bdf8', fn: () => openModal('qrScanner') },
+              { icon: Calendar, label: 'Create Event',     sub: 'Schedule something',   color: T.green,  fn: () => openModal('event')     },
+              { icon: Bell,     label: 'Send Reminder',    sub: 'Post to members',       color: T.blue,   fn: () => openModal('post')      },
+              { icon: Dumbbell, label: 'Manage Classes',   sub: 'Edit your timetable',  color: T.purple, fn: () => openModal('classes')   },
             ].map(({ icon: Icon, label, sub, color, fn }, i) => (
               <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 9, background: T.divider, border: `1px solid ${T.border}`, cursor: 'pointer', transition: 'all 0.12s', textAlign: 'left', width: '100%', fontFamily: 'inherit' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}10`; e.currentTarget.style.borderColor = `${color}30`; }}

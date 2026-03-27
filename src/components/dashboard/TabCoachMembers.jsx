@@ -5,8 +5,10 @@ import {
   Users, Activity, AlertCircle, Flame, MessageCircle, ChevronRight,
   Search, Download, Plus, Check, X, Trophy, UserPlus, List,
   LayoutGrid, Heart, Dumbbell, ClipboardList, Calendar, Star,
-  TrendingUp, TrendingDown, Minus, Shield,
+  TrendingUp, TrendingDown, Minus, Shield, Zap, BarChart2,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { CoachKpiCard, CoachCard, MiniAvatar } from './CoachHelpers';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -136,6 +138,8 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
 
   const TABS = [
     { id: 'overview', label: 'Stats'        },
+    { id: 'logs',     label: '📋 Logs'      },
+    { id: 'progress', label: '📈 Progress'  },
     { id: 'health',   label: '🩺 Health'    },
     { id: 'goals',    label: 'Goals'        },
     { id: 'notes',    label: 'Notes'        },
@@ -167,6 +171,132 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
       </div>
 
       <div style={{ padding: '14px 16px' }}>
+
+        {/* ── LOGS TAB ── */}
+        {activeTab === 'logs' && (
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Recent Training Sessions</div>
+            {clientCIs.length === 0 ? (
+              <p style={{ fontSize: 11, color: '#3a5070', margin: 0, textAlign: 'center', padding: '20px 0' }}>No sessions logged yet</p>
+            ) : clientCIs.slice(0, 10).map((ci, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 7 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: ci.exercises?.length ? 8 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#34d399' : '#3a5070', flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{format(new Date(ci.check_in_date), 'EEE, MMM d, yyyy')}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {i === 0 && <span style={{ fontSize: 9, color: '#34d399', background: 'rgba(52,211,153,0.1)', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>Latest</span>}
+                    <span style={{ fontSize: 10, color: '#3a5070' }}>{format(new Date(ci.check_in_date), 'h:mm a')}</span>
+                  </div>
+                </div>
+                {ci.exercises?.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+                    {ci.exercises.slice(0, 4).map((ex, ei) => (
+                      <div key={ei} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <Dumbbell style={{ width: 9, height: 9, color: '#475569' }} />
+                          {ex.exercise || ex.name}
+                        </span>
+                        <span style={{ color: '#64748b', fontWeight: 600 }}>
+                          {ex.sets && ex.reps ? `${ex.sets}×${ex.reps}` : ex.setsReps || ''}
+                          {ex.weight ? ` @ ${ex.weight}kg` : ''}
+                        </span>
+                      </div>
+                    ))}
+                    {ci.exercises.length > 4 && <span style={{ fontSize: 10, color: '#3a5070' }}>+{ci.exercises.length - 4} more exercises</span>}
+                  </div>
+                )}
+                {!ci.exercises?.length && ci.workout_name && (
+                  <div style={{ marginTop: 4, fontSize: 10, color: '#64748b' }}>📋 {ci.workout_name}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── PROGRESS TAB ── */}
+        {activeTab === 'progress' && (() => {
+          // Extract lift history for key exercises from check-ins
+          const LIFT_EXERCISES = ['bench press', 'squat', 'deadlift', 'overhead press', 'barbell row'];
+          const liftHistory = {};
+          [...clientCIs].reverse().forEach(ci => {
+            (ci.exercises || []).forEach(ex => {
+              const name = (ex.exercise || ex.name || '').toLowerCase();
+              const match = LIFT_EXERCISES.find(l => name.includes(l.split(' ')[0]));
+              if (match && ex.weight && parseFloat(ex.weight) > 0) {
+                if (!liftHistory[match]) liftHistory[match] = [];
+                liftHistory[match].push({
+                  date: format(new Date(ci.check_in_date), 'MMM d'),
+                  weight: parseFloat(ex.weight),
+                });
+              }
+            });
+          });
+
+          const lifts = Object.entries(liftHistory).filter(([, data]) => data.length >= 2);
+
+          // Compliance: assigned workouts vs completed sessions (last 30 days)
+          const last30CIs = clientCIs.filter(ci => new Date(ci.check_in_date) >= subDays(new Date(), 30));
+          const compliance = m.visits > 0 ? Math.min(100, Math.round((last30CIs.length / Math.max(m.visits, 1)) * 100)) : 0;
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Compliance card */}
+              <div style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(167,139,250,0.05)', border: '1px solid rgba(167,139,250,0.18)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <BarChart2 style={{ width: 13, height: 13, color: '#a78bfa' }} />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Session Compliance (30d)</span>
+                  </div>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: compliance >= 70 ? '#34d399' : compliance >= 40 ? '#fbbf24' : '#f87171', letterSpacing: '-0.03em' }}>{last30CIs.length} sessions</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 6 }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, (last30CIs.length / 20) * 100)}%`, background: last30CIs.length >= 12 ? 'linear-gradient(90deg,#34d399,#10b981)' : last30CIs.length >= 6 ? 'linear-gradient(90deg,#fbbf24,#f59e0b)' : 'linear-gradient(90deg,#f87171,#ef4444)', borderRadius: 99, transition: 'width 0.8s ease' }} />
+                </div>
+                <div style={{ fontSize: 10, color: '#64748b' }}>
+                  {last30CIs.length >= 16 ? '🔥 Super Active — keep pushing!' : last30CIs.length >= 8 ? '👍 Active — good consistency' : last30CIs.length >= 4 ? '⚠️ Moderate — encourage more sessions' : '🚨 Low — needs follow-up'}
+                </div>
+              </div>
+
+              {/* Strength progression charts */}
+              {lifts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#3a5070' }}>
+                  <TrendingUp style={{ width: 20, height: 20, opacity: 0.4, margin: '0 auto 8px' }} />
+                  <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No lift data yet</p>
+                  <p style={{ fontSize: 10, margin: '4px 0 0' }}>Lift history appears when workout sessions include exercise data with weights</p>
+                </div>
+              ) : lifts.map(([liftName, data]) => {
+                const pr = Math.max(...data.map(d => d.weight));
+                const firstW = data[0].weight;
+                const lastW  = data[data.length - 1].weight;
+                const gain   = lastW - firstW;
+                return (
+                  <div key={liftName} style={{ padding: '14px 16px', borderRadius: 12, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', textTransform: 'capitalize' }}>{liftName}</div>
+                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>{data.length} sessions tracked · PR: {pr}kg</div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: gain >= 0 ? '#34d399' : '#f87171', background: gain >= 0 ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)', borderRadius: 6, padding: '2px 8px' }}>
+                        {gain >= 0 ? '+' : ''}{gain.toFixed(1)}kg
+                      </span>
+                    </div>
+                    <ResponsiveContainer width="100%" height={80}>
+                      <LineChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                        <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 9 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#475569', fontSize: 9 }} axisLine={false} tickLine={false} width={28} domain={['auto', 'auto']} />
+                        <Tooltip contentStyle={{ background: 'rgba(6,12,24,0.97)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, fontSize: 11 }} formatter={v => [`${v}kg`, 'Weight']} />
+                        <Line type="monotone" dataKey="weight" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} activeDot={{ r: 5 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* ── STATS TAB ── */}
         {activeTab === 'overview' && (
@@ -545,11 +675,16 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* ── KPIs ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
         <CoachKpiCard icon={Users}       label="Total Clients"     value={allMemberships.length}          sub="assigned to you"                                              accentColor="#0ea5e9"/>
         <CoachKpiCard icon={Activity}    label="Active This Month"  value={counts.vip + counts.active}    sub="visited this month"                                           accentColor="#10b981" footerBar={allMemberships.length > 0 ? ((counts.vip + counts.active) / allMemberships.length) * 100 : 0}/>
         <CoachKpiCard icon={UserPlus}    label="New This Month"     value={counts.new}                    sub="recently joined"                                              accentColor="#a78bfa"/>
         <CoachKpiCard icon={AlertCircle} label="Need Attention"     value={counts.at_risk + counts.lapsed} sub={`${counts.at_risk} absent · ${counts.lapsed} lapsed`}        accentColor={counts.at_risk > 0 ? '#ef4444' : '#34d399'} subColor={counts.at_risk > 0 ? '#f87171' : '#34d399'}/>
+        {(() => {
+          const avgSessions = enriched.length > 0 ? (enriched.reduce((s, m) => s + m.visits, 0) / enriched.length) : 0;
+          const compliancePct = Math.min(100, Math.round((avgSessions / 12) * 100));
+          return <CoachKpiCard icon={Zap} label="Avg Compliance" value={`${compliancePct}%`} sub={`${avgSessions.toFixed(1)} sessions/client/mo`} accentColor={compliancePct >= 70 ? '#10b981' : compliancePct >= 40 ? '#fbbf24' : '#ef4444'} footerBar={compliancePct}/>;
+        })()}
       </div>
 
       {/* ── Segment filters ── */}
@@ -721,6 +856,15 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
                   {/* Engagement bar */}
                   <EngagementBar visits={m.visits} trend={m.trend} streak={m.streak} color={sc.color}/>
 
+                  {/* Nudge button for at-risk members */}
+                  {m.status === 'at_risk' && (
+                    <button
+                      onClick={e => { e.stopPropagation(); openModal('post', { memberId: m.user_id, nudge: true }); }}
+                      title="Send a nudge"
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 7, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.22)', color: '#fbbf24', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      <Zap style={{ width: 9, height: 9 }}/> Nudge
+                    </button>
+                  )}
                   {/* Message icon */}
                   <button onClick={e => { e.stopPropagation(); openModal('post', { memberId: m.user_id }); }} style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.12)', color: '#38bdf8', cursor: 'pointer', flexShrink: 0 }}>
                     <MessageCircle style={{ width: 11, height: 11 }}/>
