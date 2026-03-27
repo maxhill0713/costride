@@ -304,180 +304,248 @@ function GoalCard({ goal, onUpdate, onDelete, onToggleReminder }) {
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
           style={{ background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.07) 50%,transparent 90%)' }} />
 
-        <div className="relative p-5 space-y-4">
+<div style={{ position: 'relative', padding: '18px 18px 0' }}>
 
-          {/* ── HEADER ── */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="flex-1 min-w-0 pt-0.5">
-                <p className="text-[15px] font-black text-white leading-tight truncate">{goal.title}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                    style={{ background: a(rgb, 0.10), color: hex, border: `1px solid ${a(rgb, 0.2)}` }}
-                  >
-                    {cfg.label}
-                  </span>
-                  {goal.exercise && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <Dumbbell className="w-2.5 h-2.5" />
-                      {goal.exercise}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+  {/* ── HEADER ── */}
+  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 16 }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p style={{
+        fontFamily: "'Syne', sans-serif",
+        fontSize: 17.5, fontWeight: 800,
+        color: '#fff', letterSpacing: -0.4,
+        lineHeight: 1.2, marginBottom: 9,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+      }}>
+        {goal.title}
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+        <span style={{
+          fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+          padding: '3.5px 9px', borderRadius: 100,
+          background: a(rgb, 0.10), color: hex, border: `1px solid ${a(rgb, 0.22)}`
+        }}>
+          {cfg.label}
+        </span>
+        {goal.exercise && (
+          <span style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+            padding: '3.5px 9px', borderRadius: 100,
+            background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.28)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            display: 'flex', alignItems: 'center', gap: 4
+          }}>
+            <Dumbbell style={{ width: 9, height: 9 }} />
+            {goal.exercise}
+          </span>
+        )}
+      </div>
+    </div>
+    <DotMenu
+      goal={goal}
+      onRequestDelete={() => setShowDeleteConfirm(true)}
+      onRequestToggleReminder={() => setShowReminderConfirm(true)}
+    />
+  </div>
 
-            {/* 3-dot menu — now opens confirm dialogs */}
-            <DotMenu
-              goal={goal}
-              onRequestDelete={() => setShowDeleteConfirm(true)}
-              onRequestToggleReminder={() => setShowReminderConfirm(true)}
-            />
-          </div>
+  {/* ── SEPARATOR ── */}
+  <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 -18px' }} />
 
-          {/* ── PROGRESS SECTION ── */}
-          <div
-            className="rounded-2xl p-4 flex items-center gap-4"
-            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
-          >
-            <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 108, height: 108 }}>
-              <ArcRing pct={progress} rgb={rgb} hex={hex} size={108} stroke={8} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[22px] font-black leading-none" style={{ color: hex }}>
-                  {Math.round(progress)}
-                  <span className="text-[12px] font-bold opacity-70">%</span>
-                </span>
-                {isCompleted && (
-                  <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: hex, opacity: 0.7 }}>Done</span>
-                )}
-              </div>
-            </div>
+  {/* ── PROGRESS ── */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 0 16px' }}>
 
-            <div className="flex-1 min-w-0 space-y-3">
-              <div>
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Progress</p>
-                <p className="text-[20px] font-black text-white leading-none">{valueDisplay.value}</p>
-                <p className="text-[11px] font-semibold mt-0.5" style={{ color: hex, opacity: 0.6 }}>{valueDisplay.unit}</p>
-              </div>
-              {goal.deadline && (
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3 h-3 flex-shrink-0"
-                    style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.25)' }} />
-                  <span className="text-[11px] font-bold"
-                    style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.3)' }}>
-                    {isOverdue
-                      ? `${Math.abs(daysLeft)}d overdue`
-                      : daysLeft === 0
-                        ? 'Due today'
-                        : `${daysLeft}d left · ${format(new Date(goal.deadline), 'MMM d')}`
-                    }
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5">
-                {[25, 50, 75, 100].map(m => (
-                  <div key={m} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full h-1 rounded-full transition-all duration-500"
-                      style={{
-                        background: progress >= m ? hex : a(rgb, 0.12),
-                        boxShadow: progress >= m ? `0 0 4px ${a(rgb, 0.35)}` : 'none',
-                      }} />
-                    <span className="text-[8px] font-bold" style={{ color: progress >= m ? hex : 'rgba(255,255,255,0.13)' }}>{m}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+    {/* Ring */}
+    <div style={{ position: 'relative', width: 108, height: 108, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <ArcRing pct={progress} rgb={rgb} hex={hex} size={108} stroke={7.5} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 25, fontWeight: 800, color: hex, lineHeight: 1 }}>
+          {Math.round(progress)}<sup style={{ fontSize: 12, fontWeight: 700, opacity: 0.6, verticalAlign: 'super' }}>%</sup>
+        </span>
+        {isCompleted && (
+          <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)', marginTop: 4 }}>Done</span>
+        )}
+        {!isCompleted && (
+          <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)', marginTop: 4 }}>of target</span>
+        )}
+      </div>
+    </div>
 
-          {/* ── UPDATE CONTROLS ── */}
-          {!isCompleted && (
-            isAutoTracked ? (
-              <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
-                style={{ background: a(rgb, 0.06), border: `1px solid ${a(rgb, 0.12)}` }}>
-                <Zap className="w-3.5 h-3.5" style={{ color: hex }} />
-                <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.7 }}>
-                  Auto-tracked from your check-ins
-                </span>
-              </div>
-            ) : isEditing ? (
-              <div className="rounded-xl overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${a(rgb, 0.25)}` }}>
-                <div className="flex items-center">
-                  <input
-                    ref={inputRef}
-                    type="number"
-                    value={editVal}
-                    onChange={e => setEditVal(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') setIsEditing(false); }}
-                    style={{ fontSize: 16, fontFamily: 'inherit' }}
-                    className="flex-1 px-4 py-3 bg-transparent text-white text-[15px] font-black focus:outline-none placeholder-slate-600"
-                    placeholder="Enter value…"
-                  />
-                  <button onClick={() => setIsEditing(false)}
-                    className="w-11 flex items-center justify-center h-full py-3 text-slate-500 hover:text-slate-300 transition-colors">
-                    <X className="w-4 h-4" />
-                  </button>
-                  <PressBtn onClick={handleEditSave}
-                    className="flex items-center justify-center gap-1.5 px-4 py-3 font-black text-[13px] text-white"
-                    style={{ background: hex, minWidth: 72 }}>
-                    <Check className="w-3.5 h-3.5" strokeWidth={3} /> Save
-                  </PressBtn>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <PressBtn
-                  onClick={() => handleStep(-increment)}
-                  disabled={(goal.current_value ?? 0) <= 0}
-                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-25"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)' }}
-                >
-                  <Minus className="w-4 h-4" strokeWidth={2.5} />
-                </PressBtn>
-                <button onClick={openEdit}
-                  className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 group transition-all active:scale-[0.97]"
-                  style={{ background: a(rgb, 0.08), border: `1px solid ${a(rgb, 0.18)}` }}>
-                  <span className="text-[15px] font-black text-white">{goal.current_value ?? 0}</span>
-                  <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.6 }}>{goal.unit || ''}</span>
-                  <Edit3 className="w-3 h-3 opacity-25 group-hover:opacity-50 transition-opacity" style={{ color: hex }} />
-                </button>
-                <PressBtn
-                  onClick={() => handleStep(+increment)}
-                  className="flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-black text-[13px] text-white flex-shrink-0"
-                  style={{ background: hex, boxShadow: `0 3px 0 0 ${hex2(hex, 0.3)}, 0 4px 12px ${a(rgb, 0.22)}` }}
-                >
-                  <Plus className="w-4 h-4" strokeWidth={2.5} />
-                  <span>+{increment}{goal.unit && goal.unit !== 'reps' ? ` ${goal.unit}` : ''}</span>
-                </PressBtn>
-              </div>
-            )
-          )}
+    {/* Stats */}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 3 }}>Progress</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -0.5 }}>
+        {valueDisplay.value}
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.22)', marginLeft: 4 }}>/ {goal.target_value}</span>
+      </p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: hex, opacity: 0.65, marginTop: 3 }}>{valueDisplay.unit}</p>
 
-          {isReady && (
-            <PressBtn
-              onClick={handleComplete}
-              className="w-full h-11 rounded-xl font-black text-[14px] text-white flex items-center justify-center gap-2"
-              style={{
-                background: 'linear-gradient(135deg, #22c55e, #10b981)',
-                boxShadow: '0 3px 0 0 rgba(16,185,129,0.3), 0 5px 16px rgba(34,197,94,0.18)',
-              }}
-            >
-              <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
-              Mark as Complete
-            </PressBtn>
-          )}
-
-          {isCompleted && (
-            <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
-              style={{ background: a(COMPLETED_RGB, 0.07), border: `1px solid ${a(COMPLETED_RGB, 0.15)}` }}>
-              <CheckCircle2 className="w-3.5 h-3.5" style={{ color: COMPLETED_HEX }} />
-              <span className="text-[12px] font-black" style={{ color: COMPLETED_HEX }}>Goal achieved</span>
-            </div>
-          )}
-
+      {goal.deadline && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, margin: '10px 0 11px' }}>
+          <Clock style={{
+            width: 10, height: 10, flexShrink: 0,
+            color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.28)'
+          }} />
+          <span style={{ fontSize: 11, fontWeight: 500, color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.26)' }}>
+            {isOverdue
+              ? `${Math.abs(daysLeft)}d overdue`
+              : daysLeft === 0
+                ? 'Due today'
+                : `${daysLeft}d left · ${format(new Date(goal.deadline), 'MMM d')}`}
+          </span>
         </div>
+      )}
+
+      {/* Milestone track */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
+        {[25, 50, 75, 100].map(m => {
+          const filled = progress >= m;
+          return (
+            <div key={m} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <div style={{
+                width: '100%', height: 2.5, borderRadius: 10,
+                background: filled ? hex : 'rgba(255,255,255,0.07)',
+                boxShadow: filled ? `0 0 5px ${a(rgb, 0.5)}` : 'none',
+                transition: 'all 0.5s ease'
+              }} />
+              <span style={{ fontSize: 8, fontWeight: 700, color: filled ? hex : 'rgba(255,255,255,0.12)' }}>{m}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+
+  {/* ── SEPARATOR ── */}
+  <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 -18px' }} />
+
+  {/* ── CONTROLS ── */}
+  <div style={{ padding: '15px 0 18px' }}>
+    {!isCompleted && (
+      isAutoTracked ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+          height: 44, borderRadius: 13,
+          background: a(rgb, 0.06), border: `1px solid ${a(rgb, 0.14)}`,
+          fontSize: 11, fontWeight: 600, color: hex
+        }}>
+          <Zap style={{ width: 13, height: 13 }} />
+          Auto-tracked from your check-ins
+        </div>
+      ) : isEditing ? (
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          borderRadius: 13, overflow: 'hidden',
+          background: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${a(rgb, 0.3)}`
+        }}>
+          <input
+            ref={inputRef}
+            type="number"
+            value={editVal}
+            onChange={e => setEditVal(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') setIsEditing(false); }}
+            style={{
+              flex: 1, padding: '0 14px', height: 44,
+              background: 'transparent', border: 'none', outline: 'none',
+              color: '#fff', fontSize: 15, fontWeight: 700,
+              fontFamily: "'Syne', sans-serif"
+            }}
+            placeholder="Enter value…"
+          />
+          <button
+            onClick={() => setIsEditing(false)}
+            style={{ width: 38, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)' }}
+          >
+            <X style={{ width: 13, height: 13 }} />
+          </button>
+          <PressBtn
+            onClick={handleEditSave}
+            style={{
+              padding: '0 16px', height: 44, background: hex, border: 'none',
+              color: '#050e1f', fontSize: 13, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 5
+            }}
+          >
+            <Check style={{ width: 12, height: 12 }} strokeWidth={3} />
+            Save
+          </PressBtn>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <PressBtn
+            onClick={() => handleStep(-increment)}
+            disabled={(goal.current_value ?? 0) <= 0}
+            style={{
+              width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.4)', opacity: (goal.current_value ?? 0) <= 0 ? 0.2 : 1
+            }}
+          >
+            <Minus style={{ width: 15, height: 15 }} strokeWidth={2.5} />
+          </PressBtn>
+
+          <button
+            onClick={openEdit}
+            style={{
+              flex: 1, height: 44, borderRadius: 13,
+              background: a(rgb, 0.06), border: `1px solid ${a(rgb, 0.15)}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              cursor: 'pointer', transition: 'background 0.12s'
+            }}
+          >
+            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 800, color: '#fff' }}>{goal.current_value ?? 0}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: hex, opacity: 0.6 }}>{goal.unit || ''}</span>
+            <Edit3 style={{ width: 11, height: 11, opacity: 0.18, color: hex }} />
+          </button>
+
+          <PressBtn
+            onClick={() => handleStep(+increment)}
+            style={{
+              height: 44, padding: '0 15px', borderRadius: 13, flexShrink: 0,
+              background: hex, border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              color: '#050e1f', fontSize: 13.5, fontWeight: 700,
+              boxShadow: `0 3px 0 ${hex2(hex, 0.3)}, 0 5px 18px ${a(rgb, 0.2)}`,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Plus style={{ width: 13, height: 13 }} strokeWidth={3} />
+            +{increment}{goal.unit && goal.unit !== 'reps' ? ` ${goal.unit}` : ''}
+          </PressBtn>
+        </div>
+      )
+    )}
+
+    {isReady && (
+      <PressBtn
+        onClick={handleComplete}
+        style={{
+          width: '100%', height: 44, borderRadius: 13, marginTop: 9,
+          background: '#18a05a', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+          color: '#fff', fontSize: 13.5, fontWeight: 700,
+          boxShadow: '0 3px 0 #0d6638, 0 5px 16px rgba(34,197,94,0.14)'
+        }}
+      >
+        <CheckCircle2 style={{ width: 15, height: 15 }} strokeWidth={2.5} />
+        Mark as Complete
+      </PressBtn>
+    )}
+
+    {isCompleted && (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+        height: 44, borderRadius: 13, marginTop: 9,
+        background: a(COMPLETED_RGB, 0.07), border: `1px solid ${a(COMPLETED_RGB, 0.15)}`,
+        fontSize: 12.5, fontWeight: 700, color: COMPLETED_HEX
+      }}>
+        <CheckCircle2 style={{ width: 14, height: 14 }} />
+        Goal achieved
+      </div>
+    )}
+  </div>
+
+</div>
       </div>
 
       {/* ── Delete goal confirm ── */}
