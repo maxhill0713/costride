@@ -33,6 +33,39 @@ function Avatar({ name, src, size = 32 }) {
   );
 }
 
+function MemberListRow({ member: m, avatarMap, currentUserId, onClick }) {
+  const { data: replies = [] } = useQuery({
+    queryKey: ['memberReply', m.user_id, currentUserId],
+    queryFn: () => base44.entities.Message.filter({ sender_id: m.user_id, receiver_id: currentUserId }, '-created_date', 1),
+    enabled: !!m.user_id && !!currentUserId,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+  const hasReply = replies.length > 0;
+  const lastReply = replies[0];
+
+  return (
+    <button
+      onClick={onClick}
+      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.1s', borderBottom: `1px solid rgba(255,255,255,0.04)` }}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+    >
+      <Avatar name={m.user_name} src={avatarMap[m.user_id]} size={34} />
+      <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: D.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</span>
+          {hasReply && <span style={{ fontSize: 9, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 4, padding: '1px 5px', flexShrink: 0 }}>Replied</span>}
+        </div>
+        <div style={{ fontSize: 10, color: hasReply ? D.t2 : D.t3, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {hasReply ? `↩ ${lastReply.content}` : (m.daysSince != null ? (m.daysSince === 0 ? 'Checked in today' : `${m.daysSince}d ago`) : 'No check-ins')}
+        </div>
+      </div>
+      <MessageCircle style={{ width: 13, height: 13, color: hasReply ? '#10b981' : D.t4 }} />
+    </button>
+  );
+}
+
 export default function MemberChatPanel({ open, onClose, allMemberships = [], currentUser, avatarMap = {} }) {
   const [selectedMember, setSelectedMember] = useState(null);
   const [search, setSearch]     = useState('');
@@ -40,18 +73,27 @@ export default function MemberChatPanel({ open, onClose, allMemberships = [], cu
   const bottomRef = useRef(null);
   const qc = useQueryClient();
 
-  // Fetch messages for the selected conversation
-  const { data: messages = [] } = useQuery({
-    queryKey: ['dashMessages', currentUser?.id, selectedMember?.user_id],
-    queryFn: () => base44.entities.Message.filter({
-      $or: [
-        { sender_id: currentUser.id, receiver_id: selectedMember.user_id },
-        { sender_id: selectedMember.user_id, receiver_id: currentUser.id },
-      ]
-    }, 'created_date', 100),
+  // Fetch both directions of the conversation
+  const { data: sentMsgs = [] } = useQuery({
+    queryKey: ['dashMessages', currentUser?.id, selectedMember?.user_id, 'sent'],
+    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id, receiver_id: selectedMember.user_id }, 'created_date', 100),
     enabled: !!currentUser && !!selectedMember,
     refetchInterval: 5000,
   });
+
+  const { data: receivedMsgs = [] } = useQuery({
+    queryKey: ['dashMessages', currentUser?.id, selectedMember?.user_id, 'received'],
+    queryFn: () => base44.entities.Message.filter({ sender_id: selectedMember.user_id, receiver_id: currentUser.id }, 'created_date', 100),
+    enabled: !!currentUser && !!selectedMember,
+    refetchInterval: 5000,
+  });
+
+  const messages = useMemo(() => {
+    const combined = [...sentMsgs, ...receivedMsgs];
+    const seen = new Set();
+    return combined.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; })
+      .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+  }, [sentMsgs, receivedMsgs]);
 
   const sendM = useMutation({
     mutationFn: content => base44.entities.Message.create({
@@ -64,7 +106,7 @@ export default function MemberChatPanel({ open, onClose, allMemberships = [], cu
       read: false,
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['dashMessages', currentUser?.id, selectedMember?.user_id] });
+      qc.invalidateQueries({ queryKey: ['dashMessages'] });
       setText('');
     },
   });
@@ -133,26 +175,13 @@ export default function MemberChatPanel({ open, onClose, allMemberships = [], cu
             {filtered.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center', color: D.t3, fontSize: 12 }}>No members found</div>
             ) : filtered.map((m, i) => (
-              <button key={m.user_id || i}
+              <MemberListRow
+                key={m.user_id || i}
+                member={m}
+                avatarMap={avatarMap}
+                currentUserId={currentUser?.id}
                 onClick={() => setSelectedMember(m)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 14px', border: 'none', background: 'transparent',
-                  cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.1s',
-                  borderBottom: `1px solid rgba(255,255,255,0.04)`,
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <Avatar name={m.user_name} src={avatarMap[m.user_id]} size={34} />
-                <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: D.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
-                  <div style={{ fontSize: 10, color: D.t3, marginTop: 1 }}>
-                    {m.daysSince != null ? (m.daysSince === 0 ? 'Checked in today' : `${m.daysSince}d ago`) : 'No check-ins'}
-                  </div>
-                </div>
-                <MessageCircle style={{ width: 13, height: 13, color: D.t4 }} />
-              </button>
+              />
             ))}
           </div>
         </>

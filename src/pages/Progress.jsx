@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User, Send } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
@@ -710,43 +710,77 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
 // ─── Coach Messages section ───────────────────────────────────────────────────
 function CoachMessages({ currentUser }) {
   const [openThread, setOpenThread] = useState(null); // sender_id of open chat
+  const [replyText, setReplyText] = useState('');
   const bottomRef = useRef(null);
+  const qc = useQueryClient();
 
-  const { data: messages = [], isLoading } = useQuery({
+  // Fetch ALL messages involving the current user (both sent and received)
+  const { data: received = [], isLoading } = useQuery({
     queryKey: ['coachMessages', currentUser?.id],
     queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
     enabled: !!currentUser,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 15 * 1000,
+    refetchInterval: 15 * 1000,
   });
 
-  // Group by sender
+  const { data: sent = [] } = useQuery({
+    queryKey: ['coachMessagesSent', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200),
+    enabled: !!currentUser,
+    staleTime: 15 * 1000,
+    refetchInterval: 15 * 1000,
+  });
+
+  const sendReply = useMutation({
+    mutationFn: content => base44.entities.Message.create({
+      sender_id:     currentUser.id,
+      sender_name:   currentUser.full_name || currentUser.email,
+      sender_avatar: currentUser.avatar_url || null,
+      receiver_id:   openThread,
+      receiver_name: threads.find(t => t.sender_id === openThread)?.name || 'Coach',
+      content,
+      read: false,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] });
+      qc.invalidateQueries({ queryKey: ['coachMessagesSent', currentUser?.id] });
+      // Also invalidate owner's dashboard messages
+      qc.invalidateQueries({ queryKey: ['dashMessages'] });
+      setReplyText('');
+    },
+  });
+
+  // Build threads: group by the "other person" (coach/owner side)
   const threads = useMemo(() => {
     const map = {};
-    messages.forEach(msg => {
-      if (!map[msg.sender_id]) {
-        map[msg.sender_id] = {
-          sender_id: msg.sender_id,
-          name: msg.sender_name || 'Coach',
-          avatar: msg.sender_avatar || null,
-          messages: [],
-        };
-      }
-      map[msg.sender_id].messages.push(msg);
+    // Messages received from coaches
+    received.forEach(msg => {
+      const otherId = msg.sender_id;
+      if (!map[otherId]) map[otherId] = { sender_id: otherId, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] };
+      map[otherId].messages.push(msg);
     });
-    // Sort messages oldest→newest inside each thread
-    Object.values(map).forEach(t => t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
-    // Sort threads newest first (by last message)
+    // My replies back to coaches (keyed by receiver = the coach)
+    sent.forEach(msg => {
+      const otherId = msg.receiver_id;
+      if (map[otherId]) map[otherId].messages.push(msg);
+      // Only add thread if we already received from them (don't create threads for unrelated sent msgs)
+    });
+    Object.values(map).forEach(t => {
+      // deduplicate by id, sort oldest→newest
+      const seen = new Set();
+      t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+      t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+    });
     return Object.values(map).sort((a, b) => {
       const la = a.messages[a.messages.length - 1]?.created_date || 0;
       const lb = b.messages[b.messages.length - 1]?.created_date || 0;
       return new Date(lb) - new Date(la);
     });
-  }, [messages]);
+  }, [received, sent]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [openThread, messages]);
+  }, [openThread, received, sent]);
 
   const activeThread = threads.find(t => t.sender_id === openThread);
 
@@ -763,77 +797,80 @@ function CoachMessages({ currentUser }) {
 
   // ── Open chat view ──
   if (activeThread) {
+    const handleSend = () => {
+      if (!replyText.trim()) return;
+      sendReply.mutate(replyText.trim());
+    };
+
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', background: 'linear-gradient(135deg, rgba(10,14,30,0.98) 0%, rgba(5,8,20,1) 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', background: 'linear-gradient(135deg, rgba(10,14,30,0.98) 0%, rgba(5,8,20,1) 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
         {/* Chat header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.02)' }}>
           <button onClick={() => setOpenThread(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: '#94a3b8' }}>
             <ChevronRight style={{ width: 20, height: 20, transform: 'rotate(180deg)' }} />
           </button>
-          {/* Avatar with blue glow */}
           <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
-              border: '2px solid #3b82f6',
-              boxShadow: '0 0 10px rgba(59,130,246,0.6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
-              fontSize: 15, fontWeight: 800, color: '#3b82f6',
-            }}>
-              {activeThread.avatar
-                ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : (activeThread.name || '?').charAt(0).toUpperCase()
-              }
+            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 10px rgba(59,130,246,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', fontSize: 15, fontWeight: 800, color: '#3b82f6' }}>
+              {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}
             </div>
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #080e18' }} />
           </div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>{activeThread.name}</p>
-            <p style={{ fontSize: 11, color: '#475569', margin: '1px 0 0' }}>Coach · {activeThread.messages.length} messages</p>
+            <p style={{ fontSize: 11, color: '#475569', margin: '1px 0 0' }}>Coach · Tap to reply</p>
           </div>
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {activeThread.messages.map((msg, i) => {
-            const showAvatar = i === 0 || activeThread.messages[i - 1]?.sender_id !== msg.sender_id;
+            const isMe = msg.sender_id === currentUser?.id;
+            const prevMsg = activeThread.messages[i - 1];
+            const showAvatar = !isMe && (i === 0 || prevMsg?.sender_id !== msg.sender_id);
             return (
-              <div key={msg.id || i} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-                {/* Coach avatar on left */}
-                <div style={{ width: 30, flexShrink: 0 }}>
-                  {showAvatar && (
-                    <div style={{
-                      width: 30, height: 30, borderRadius: '50%', overflow: 'hidden',
-                      border: '2px solid #3b82f6',
-                      boxShadow: '0 0 8px rgba(59,130,246,0.5)',
-                      background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 11, fontWeight: 800, color: '#3b82f6',
-                    }}>
-                      {activeThread.avatar
-                        ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : (activeThread.name || '?').charAt(0).toUpperCase()
-                      }
-                    </div>
-                  )}
-                </div>
-                <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8 }}>
+                {/* Coach avatar - left side */}
+                {!isMe && (
+                  <div style={{ width: 28, flexShrink: 0 }}>
+                    {showAvatar && (
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.5)', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#3b82f6' }}>
+                        {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2, alignItems: isMe ? 'flex-end' : 'flex-start' }}>
                   {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4 }}>{activeThread.name}</span>}
-                  <div style={{
-                    padding: '10px 14px',
-                    borderRadius: '18px 18px 18px 4px',
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    fontSize: 14, color: '#e2e8f0', lineHeight: 1.5,
-                  }}>
+                  <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? '#3b82f6' : 'rgba(255,255,255,0.08)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.5 }}>
                     {msg.content}
                   </div>
-                  <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4 }}>{fmtTime(msg.created_date)}</span>
+                  <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4, paddingRight: 4 }}>{fmtTime(msg.created_date)}</span>
                 </div>
               </div>
             );
           })}
           <div ref={bottomRef} />
+        </div>
+
+        {/* Reply input */}
+        <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 8, alignItems: 'flex-end', flexShrink: 0, background: 'rgba(255,255,255,0.01)' }}>
+          <textarea
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder={`Reply to ${activeThread.name}…`}
+            rows={1}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '10px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }}
+            onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!replyText.trim() || sendReply.isPending}
+            style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: replyText.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: 'none', cursor: replyText.trim() ? 'pointer' : 'default', transition: 'background 0.15s', flexShrink: 0, boxShadow: replyText.trim() ? '0 0 12px rgba(59,130,246,0.4)' : 'none' }}
+          >
+            <Send style={{ width: 16, height: 16, color: replyText.trim() ? '#fff' : '#334155' }} />
+          </button>
         </div>
       </div>
     );
