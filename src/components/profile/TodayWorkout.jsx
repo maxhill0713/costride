@@ -20,7 +20,18 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
   if (!open) return null;
 
   const workoutTypes = currentUser?.custom_workout_types || {};
+  const mirrored_pairs = currentUser?.mirrored_pairs || [];
   const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  // Build map of which days are mirrored
+  const mirrorMap = {};
+  mirrored_pairs.forEach(([dayA, dayB]) => {
+    mirrorMap[dayA] = dayB;
+    mirrorMap[dayB] = dayA;
+  });
+
+  // Track seen workout names to deduplicate mirrored pairs
+  const seenNames = new Set();
 
   const workoutDays = Object.entries(workoutTypes).
   map(([dayKey, workout]) => ({
@@ -29,7 +40,13 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
     exercises: workout?.exercises || [],
     dayName: DAY_NAMES[parseInt(dayKey)] || `Day ${dayKey}`
   })).
-  filter((d) => d.exercises.length > 0).
+  filter((d) => {
+    // Only show if has exercises AND not already shown (dedup mirrored)
+    if (d.exercises.length === 0) return false;
+    if (seenNames.has(d.name)) return false;
+    seenNames.add(d.name);
+    return true;
+  }).
   sort((a, b) => {
     if (a.dayKey === activeDayKey) return -1;
     if (b.dayKey === activeDayKey) return 1;
