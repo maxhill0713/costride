@@ -358,15 +358,15 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
       return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
     }).length;
     if (todayCount === 0 && now.getHours() >= 10) {
-      items.push({ priority: 5, color: C.accent, icon: QrCode, title: 'No check-ins recorded today', detail: 'Check-ins usually start arriving by 9–10am. Scanner issue?', action: 'Check scanner', fn: () => openModal('qrScanner') });
+      items.push({ priority: 5, color: C.warn, icon: QrCode, title: 'No check-ins recorded today', detail: 'Check-ins usually start arriving by 9–10am. Scanner issue?', action: 'Check scanner', fn: () => openModal('qrScanner') });
     }
     const dayOfWeek = now.getDay();
     if ((dayOfWeek === 4 || dayOfWeek === 5) && !recentPost) {
-      items.push({ priority: 6, color: C.accent, icon: Calendar, title: 'Thursday/Friday — prime time to promote weekend classes', detail: 'Promoting weekend classes on Thursday or Friday gives members time to plan ahead.', action: 'Post promo', fn: () => openModal('post') });
+      items.push({ priority: 6, color: C.warn, icon: Calendar, title: 'Thursday/Friday — prime time to promote weekend classes', detail: 'Promoting weekend classes on Thursday or Friday gives members time to plan ahead.', action: 'Post promo', fn: () => openModal('post') });
     }
     const recentPoll = (posts || []).find(p => (p.type === 'poll' || p.category === 'poll') && differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 14);
     if (!recentPoll && allMemberships.length >= 5) {
-      items.push({ priority: 7, color: C.accent, icon: BarChart2, title: 'No poll in the last 2 weeks', detail: 'Polls invite participation and show members their opinion counts.', action: 'Run a poll', fn: () => openModal('poll') });
+      items.push({ priority: 7, color: C.warn, icon: BarChart2, title: 'No poll in the last 2 weeks', detail: 'Polls invite participation and show members their opinion counts.', action: 'Run a poll', fn: () => openModal('poll') });
     }
     return items.sort((a, b) => a.priority - b.priority).slice(0, 5);
   }, [atRisk, checkIns, allMemberships, posts, challenges, now]);
@@ -585,8 +585,8 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
 function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   const rows = [
     { label: 'Super active', sub: '12+ visits/mo', val: (monthCiPer || []).filter(v => v >= 12).length,          dotColor: C.success },
-    { label: 'Active',       sub: '4–11 visits',   val: (monthCiPer || []).filter(v => v >= 4 && v < 12).length, dotColor: C.t3 },
-    { label: 'Occasional',   sub: '1–3 visits',    val: (monthCiPer || []).filter(v => v >= 1 && v < 4).length,  dotColor: C.t3 },
+    { label: 'Active',       sub: '4–11 visits',   val: (monthCiPer || []).filter(v => v >= 4 && v < 12).length, dotColor: C.accent },
+    { label: 'Occasional',   sub: '1–3 visits',    val: (monthCiPer || []).filter(v => v >= 1 && v < 4).length,  dotColor: C.accent },
     { label: 'At risk',      sub: '14+ days away', val: atRisk,                                                   dotColor: C.danger },
   ];
 
@@ -735,7 +735,7 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.divider}` }}>
         {[
-          { label: 'New',       value: newSignUps,   color: C.t1 },
+          { label: 'New',       value: newSignUps,   color: newSignUps > 0 ? C.success : C.t1 },
           { label: 'Cancelled', value: cancelledEst, color: cancelledEst > 0 ? C.danger : C.t4 },
           { label: 'Net',       value: `${net >= 0 ? '+' : ''}${net}`, color: netColor },
         ].map((s, i) => (
@@ -907,12 +907,12 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
 ══════════════════════════════════════════════════════════════════ */
 function QuickActionsGrid({ openModal }) {
   const actions = [
-    { icon: UserPlus,          label: 'Add Member',    color: C.t2, fn: () => openModal('members')   },
-    { icon: QrCode,            label: 'Scan Check-in', color: C.t2, fn: () => openModal('qrScanner') },
-    { icon: Trophy,            label: 'New Challenge', color: C.t2, fn: () => openModal('challenge') },
-    { icon: Calendar,          label: 'New Event',     color: C.t2, fn: () => openModal('event')     },
-    { icon: MessageSquarePlus, label: 'Post Update',   color: C.t2, fn: () => openModal('post')      },
-    { icon: Pencil,            label: 'New Poll',      color: C.t2, fn: () => openModal('poll')      },
+    { icon: UserPlus,          label: 'Add Member',    color: C.accent, fn: () => openModal('members')   },
+    { icon: QrCode,            label: 'Scan Check-in', color: C.accent, fn: () => openModal('qrScanner') },
+    { icon: Trophy,            label: 'New Challenge', color: C.accent, fn: () => openModal('challenge') },
+    { icon: Calendar,          label: 'New Event',     color: C.accent, fn: () => openModal('event')     },
+    { icon: MessageSquarePlus, label: 'Post Update',   color: C.accent, fn: () => openModal('post')      },
+    { icon: Pencil,            label: 'New Poll',      color: C.accent, fn: () => openModal('poll')      },
   ];
 
   return (
