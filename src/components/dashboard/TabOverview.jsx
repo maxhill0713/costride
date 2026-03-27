@@ -34,7 +34,7 @@ import {
 } from 'recharts';
 import {
   TrendingDown, ArrowUpRight, Zap,
-  CheckCircle, Trophy, MessageSquarePlus,
+  CheckCircle, Trophy, UserPlus, QrCode, MessageSquarePlus,
   Pencil, Calendar, Activity, Users, AlertTriangle,
   ChevronRight, Minus, TrendingUp,
   Clock, Flame, BarChart2, Shield,
@@ -1013,7 +1013,7 @@ export default function TabOverview({
             ring={showRing ? retentionRate : null}
             ringColor={retentionRate >= 70 ? C.success : retentionRate >= 50 ? C.warn : C.danger}
             sparkData={!showRing ? sparkData : null}
-            icon={UserPlus}
+            icon={Users}
           />
           <KpiCard
             label="In Gym Now"
