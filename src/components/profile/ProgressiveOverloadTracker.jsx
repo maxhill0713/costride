@@ -133,14 +133,22 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
+
+    // Get mirrored pairs from the active saved split
+    const activeSplitId = currentUser?.active_split_id;
+    const activeSplit = (currentUser?.saved_splits || []).find(s => s.id === activeSplitId);
+    const mirroredPairs = activeSplit?.mirrored_pairs || [];
+    const mirroredSecondDays = new Set(mirroredPairs.map(([a, b]) => String(Math.max(a, b))));
+
     const all = Object.entries(types)
-      .filter(([, w]) => w?.name && w?.exercises?.length > 0)
+      .filter(([dayKey, w]) => w?.name && w?.exercises?.length > 0 && !mirroredSecondDays.has(dayKey))
       .map(([dayKey, w]) => ({
         key: dayKey,
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
       }));
-    // Deduplicate by label — same workout name = mirrored day, keep first occurrence
+
+    // Fallback: also dedup by name in case mirrored_pairs isn't set
     const seen = new Set();
     return all.filter(opt => {
       if (seen.has(opt.label)) return false;
