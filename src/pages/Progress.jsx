@@ -707,8 +707,85 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
   );
 }
 
+// ─── Coach Messages section ───────────────────────────────────────────────────
+function CoachMessages({ currentUser }) {
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: ['coachMessages', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, '-created_date', 100),
+    enabled: !!currentUser,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+
+  // Group messages by sender, keep latest first per sender
+  const bySender = useMemo(() => {
+    const map = {};
+    messages.forEach(msg => {
+      if (!map[msg.sender_id]) map[msg.sender_id] = { name: msg.sender_name || 'Coach', messages: [] };
+      map[msg.sender_id].messages.push(msg);
+    });
+    // Sort each sender's messages newest first
+    Object.values(map).forEach(s => s.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+    // Sort senders by most recent message
+    return Object.values(map).sort((a, b) => new Date(b.messages[0].created_date) - new Date(a.messages[0].created_date));
+  }, [messages]);
+
+  if (isLoading) return (
+    <div className="space-y-3">
+      {[1,2].map(i => <div key={i} className="h-20 rounded-2xl bg-slate-800/60 animate-pulse" />)}
+    </div>
+  );
+
+  if (bySender.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+        <User style={{ width: 24, height: 24, color: '#a78bfa' }} />
+      </div>
+      <p style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>No messages yet</p>
+      <p style={{ fontSize: 13, fontWeight: 500, color: '#475569', lineHeight: 1.6, maxWidth: 240, margin: 0 }}>
+        When a coach or gym owner sends you a message, it will appear here.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {bySender.map((sender, idx) => (
+        <div key={idx} style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, overflow: 'hidden' }}>
+          {/* Sender header */}
+          <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#a78bfa', flexShrink: 0 }}>
+              {(sender.name || '?').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>{sender.name}</p>
+              <p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 500 }}>
+                {sender.messages.length} message{sender.messages.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+          {/* Messages */}
+          <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {sender.messages.slice(0, 5).map((msg, mi) => (
+              <div key={msg.id || mi} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <p style={{ fontSize: 14, color: '#cbd5e1', margin: 0, lineHeight: 1.55 }}>{msg.content}</p>
+                <p style={{ fontSize: 10, color: '#334155', margin: 0, fontWeight: 600 }}>
+                  {msg.created_date ? new Date(msg.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                </p>
+                {mi < sender.messages.slice(0, 5).length - 1 && (
+                  <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', marginTop: 2 }} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Trainer tab ─────────────────────────────────────────────────────────────
-function TrainerTab() {
+function TrainerTab({ currentUser }) {
   const [activeSection, setActiveSection] = useState('classes');
 
   const btnBase = "px-2 py-1.5 rounded-2xl font-bold text-sm transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu flex-1";
@@ -716,7 +793,7 @@ function TrainerTab() {
 
   return (
     <div className="space-y-5">
-      {/* ── Tab buttons — same style as RedeemReward page ── */}
+      {/* ── Tab buttons ── */}
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setActiveSection('classes')}
@@ -742,7 +819,6 @@ function TrainerTab() {
         </button>
       </div>
 
-      {/* ── Content areas (empty for now) ── */}
       {activeSection === 'classes' && (
         <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
           <p style={{ fontSize: 14, fontWeight: 500, color: '#475569', lineHeight: 1.6, maxWidth: 260, margin: 0 }}>
@@ -750,8 +826,9 @@ function TrainerTab() {
           </p>
         </div>
       )}
+
       {activeSection === 'coaches' && (
-        <div />
+        <CoachMessages currentUser={currentUser} />
       )}
     </div>
   );
@@ -858,7 +935,7 @@ export default function Progress() {
         {/* ── Trainer ── */}
         <TabsContent value="rank" className="mt-0 px-3 md:px-4 py-5">
           <div className="max-w-4xl mx-auto">
-            <TrainerTab />
+            <TrainerTab currentUser={currentUser} />
           </div>
         </TabsContent>
 
