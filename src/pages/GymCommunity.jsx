@@ -1763,47 +1763,37 @@ export default function GymCommunity() {
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
                 {isGhostGym && (
-                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
-                      <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock full challenges, leaderboards & more.</p>
-                    </div>
-                    <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg, #7c3aed, #db2777)', boxShadow:'0 3px 0 0 #5b21b6' }}>
-                      <Crown className="w-3.5 h-3.5" />Make Official
-                    </button>
+                  <div className="rounded-2xl p-4" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
+                    <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock full challenges, leaderboards & more. Use the "Make Official" button above to get started.</p>
                   </div>
                 )}
-                {showOwnerControls && (
+                {!isGhostGym && showOwnerControls && (
                   <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background:'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border:'1px solid rgba(59,130,246,0.3)' }}>
                     <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
                   </button>
                 )}
-                {gymChallenges.length > 0
+                {!isGhostGym && (gymChallenges.length > 0
                   ? gymChallenges.map(challenge => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? id => { if(window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} gymImageUrl={gym?.image_url} />))
                   : (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>)
-                }
+                )}
               </motion.div>
             </TabsContent>
 
             {/* ── CLASSES ── */}
             <TabsContent value="classes" className="space-y-3 mt-0 w-full">
               {isGhostGym && (
-                <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock classes, coaches & more features.</p>
-                  </div>
-                  <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg, #7c3aed, #db2777)', boxShadow:'0 3px 0 0 #5b21b6' }}>
-                    <Crown className="w-3.5 h-3.5" />Make Official
-                  </button>
+                <div className="rounded-2xl p-4" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
+                  <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock classes, coaches & more features. Use the "Make Official" button above to get started.</p>
                 </div>
               )}
-              <ClassesTabContent
+              {!isGhostGym && <ClassesTabContent
                 classes={classes}
                 showOwnerControls={showOwnerControls}
                 onManage={() => setShowManageClasses(true)}
                 onDelete={id => deleteClassMutation.mutate(id)}
-              />
+              />}
             </TabsContent>
 
             {/* ── ACTIVITY ── */}
