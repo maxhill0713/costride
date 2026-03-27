@@ -80,14 +80,14 @@ function FriendsSection({
                 const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
                 return (
                   <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
-                    <div className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
+                    <Link to={createPageUrl('UserProfile') + `?id=${request.friend_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {(u?.avatar_url || request.friend_avatar)
                           ? <img src={u?.avatar_url || request.friend_avatar} alt={name} className="w-full h-full object-cover" />
                           : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                       </div>
                       <p className="font-semibold text-white text-xs truncate max-w-[90px]">{name}</p>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
                       <span className="text-[10px] font-bold px-2 py-1 rounded-lg whitespace-nowrap"
@@ -143,12 +143,12 @@ function FriendsSection({
                 const name = u?.display_name || u?.full_name || request.user_name || 'User';
                 return (
                   <div key={request.id} className="p-3 rounded-lg bg-slate-700/40 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 flex-1 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                       </div>
                       <p className="font-semibold text-white text-xs truncate">{name}</p>
-                    </div>
+                    </Link>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Button size="icon" onClick={() => acceptFriendMutation.mutate(request.user_id)} className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"><CheckCircle className="w-3 h-3" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => rejectFriendMutation.mutate(request.user_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"><X className="w-3 h-3" /></Button>
