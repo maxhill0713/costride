@@ -19,10 +19,10 @@ function ActivityFeedSection({
   queryClient,
   dismissCard,
 }) {
+  if (friends.length === 0) return null;
+
   const { seenPosts, isSeen, markPostAsSeen } = useSeenPosts();
   const postRefsRef = React.useRef(new Map());
-
-  if (friends.length === 0) return null;
 
   // Tier and sort posts: unseen friends → unseen community → seen (by last_seen_date)
   const tieredPosts = React.useMemo(() => {
