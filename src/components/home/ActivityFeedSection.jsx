@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -6,18 +6,41 @@ import { formatDistanceToNow } from 'date-fns';
 import PostCard from '../feed/PostCard';
 import { createPageUrl } from '../../utils';
 
+const POSTS_PER_PAGE = 4;
+
 function ActivityFeedSection({
   friends,
   filteredActivityCards,
   activityFeed,
   socialFeedPosts,
-  visiblePostCount,
-  feedBottomRef,
-  isLoadingMorePosts,
   currentUser,
   queryClient,
   dismissCard,
 }) {
+  const [visiblePostCount, setVisiblePostCount] = React.useState(POSTS_PER_PAGE);
+  const feedBottomRef = useRef(null);
+
+  // Reset visible count when posts change (e.g. on refresh)
+  useEffect(() => {
+    setVisiblePostCount(POSTS_PER_PAGE);
+  }, [socialFeedPosts.length]);
+
+  // IntersectionObserver — lives here where the ref is always rendered
+  useEffect(() => {
+    const el = feedBottomRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
+        }
+      },
+      { rootMargin: '200px', threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [socialFeedPosts.length]); // re-observe when posts list changes
+
   if (friends.length === 0) return null;
 
   return (
@@ -75,8 +98,9 @@ function ActivityFeedSection({
           {socialFeedPosts.slice(0, visiblePostCount).map(post => (
             <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
           ))}
+          {/* Sentinel — always rendered so observer can attach */}
           <div ref={feedBottomRef} className="flex justify-center py-3">
-            {isLoadingMorePosts && (
+            {visiblePostCount < socialFeedPosts.length && (
               <div style={{
                 width: 30, height: 30,
                 borderRadius: '50%',
@@ -88,6 +112,8 @@ function ActivityFeedSection({
           </div>
         </div>
       )}
+      {/* Sentinel when no posts yet but friends exist — allows future load */}
+      {socialFeedPosts.length === 0 && <div ref={feedBottomRef} />}
     </div>
   );
 }

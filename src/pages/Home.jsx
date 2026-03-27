@@ -298,7 +298,6 @@ export default function Home() {
     };
   }, []);
   const triggerRefresh = async () => {
-    setVisiblePostCount(POSTS_PER_PAGE);
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
       queryClient.invalidateQueries({ queryKey: ['checkIns'] }),
@@ -438,9 +437,6 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
   });
   const POSTS_PER_PAGE = 4;
-  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
-  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
-  const feedBottomRef = useRef(null);
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -528,19 +524,7 @@ export default function Home() {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
-  useEffect(() => {
-    if (!feedBottomRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(feedBottomRef.current);
-    return () => observer.disconnect();
-  }, []);
+
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
@@ -1203,9 +1187,6 @@ export default function Home() {
             filteredActivityCards={filteredActivityCards}
             activityFeed={activityFeed}
             socialFeedPosts={socialFeedPosts}
-            visiblePostCount={visiblePostCount}
-            feedBottomRef={feedBottomRef}
-            isLoadingMorePosts={isLoadingMorePosts}
             currentUser={currentUser}
             queryClient={queryClient}
             dismissCard={dismissCard}
