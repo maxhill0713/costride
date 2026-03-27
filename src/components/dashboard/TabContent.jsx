@@ -91,7 +91,7 @@ function Pill({ label, muted = false }) {
 
 /* Urgency pill — only used for time-sensitive warnings */
 function UrgencyPill({ label, urgent }) {
-  const color = urgent ? C.danger : C.t3;
+  const color = urgent ? C.warn : C.t3;
   return (
     <span style={{
       fontSize:     9.5,
@@ -146,7 +146,7 @@ function IconBadge({ icon: Icon, size = 26 }) {
    STAT NUDGE — left border accent
 ══════════════════════════════════════════════════════════════════ */
 function StatNudge({ positive = true, icon: Icon, stat, detail, action, onAction }) {
-  const color = positive ? C.accent : C.danger;
+  const color = positive ? C.success : C.warn;
   return (
     <div style={{
       marginTop:    12,
@@ -552,9 +552,9 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 11px',
           borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`,
-          borderLeft: `2px solid ${C.accent}`,
+          borderLeft: `2px solid ${C.success}`,
         }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.accent, flexShrink: 0, marginTop: 1 }} />
+          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0, marginTop: 1 }} />
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Content is up to date.</div>
             <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Keep the cadence going.</div>
@@ -567,13 +567,13 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
               display: 'flex', alignItems: 'center', gap: 9,
               padding: '9px 10px', borderRadius: 9,
               background: C.surfaceEl, border: `1px solid ${C.border}`,
-              borderLeft: `2px solid ${C.accent}`, cursor: 'pointer', transition: 'background .15s',
+              borderLeft: `2px solid ${C.warn}`, cursor: 'pointer', transition: 'background .15s',
             }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
               onMouseLeave={e => e.currentTarget.style.background = C.surfaceEl}>
-              <s.icon style={{ width: 12, height: 12, color: C.accent, flexShrink: 0 }} />
+              <s.icon style={{ width: 12, height: 12, color: C.warn, flexShrink: 0 }} />
               <span style={{ flex: 1, fontSize: 11, fontWeight: 500, color: C.t2, lineHeight: 1.4 }}>{s.label}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: C.accent, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: C.warn, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
                 {s.action} <ChevronRight style={{ width: 9, height: 9 }} />
               </span>
             </div>
@@ -701,7 +701,7 @@ function EngagementTrend({ allPosts, polls, now }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {[
-          { label: 'This week', val: thisWeek, color: up ? C.success : C.danger },
+          { label: 'This week', val: thisWeek, color: up ? C.success : C.t1 },
           { label: 'Last week', val: lastWeek, color: C.t3 },
         ].map((s, i) => (
           <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
@@ -888,9 +888,9 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
 
       <div style={{ fontSize: 11, color: C.t3, fontWeight: 500 }}>
         {activeDays} active {activeDays === 1 ? 'day' : 'days'} this week
-        {activeDays === 0                  && <span style={{ color: C.danger, marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
-        {activeDays >= 1 && activeDays < 3 && <span style={{ color: C.t2,    marginLeft: 6, fontWeight: 600 }}>— spread posts across more days</span>}
-        {activeDays >= 3                   && <span style={{ color: C.accent, marginLeft: 6, fontWeight: 600 }}>— good consistency</span>}
+        {activeDays === 0                  && <span style={{ color: C.warn,    marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
+        {activeDays >= 1 && activeDays < 3 && <span style={{ color: C.t2,     marginLeft: 6, fontWeight: 600 }}>— spread posts across more days</span>}
+        {activeDays >= 3                   && <span style={{ color: C.success, marginLeft: 6, fontWeight: 600 }}>— good consistency</span>}
       </div>
 
       {activeDays === 0 && (
@@ -965,7 +965,7 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
         ].map((s, i, arr) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < arr.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
             <span style={{ fontSize: 12, color: C.t2, fontWeight: 500 }}>{s.label}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>{s.value}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{s.value}</span>
           </div>
         ))}
       </SideCard>
