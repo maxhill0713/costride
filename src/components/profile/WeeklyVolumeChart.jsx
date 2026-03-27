@@ -242,45 +242,51 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={198}>
-          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
-            <XAxis
-              dataKey="day"
-              stroke="rgba(255,255,255,0.04)"
-              tick={{ fill: '#475569', fontSize: 10, fontWeight: 500 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              stroke="rgba(255,255,255,0.04)"
-              tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
-              tickLine={false}
-              axisLine={false}
-              width={32}
-              domain={yDomain}
-              ticks={yTicks}
-              tickFormatter={v => `${v}r`}
-            />
-            <Tooltip
-              content={<CustomTooltip compoundOnly={compoundOnly} />}
-              cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
-            />
-            <Line
-              key={animationKey}
-              type="monotone"
-              dataKey="totalReps"
-              stroke={LINE_COLOR}
-              strokeWidth={2}
-              dot={<CustomDot />}
-              activeDot={<CustomActiveDot />}
-              connectNulls={false}
-              isAnimationActive={localKey > 0}
-              animationDuration={800}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <motion.div
+          key={animationKey}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <ResponsiveContainer width="100%" height={198}>
+            <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
+              <XAxis
+                dataKey="day"
+                stroke="rgba(255,255,255,0.04)"
+                tick={{ fill: '#475569', fontSize: 10, fontWeight: 500 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="rgba(255,255,255,0.04)"
+                tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
+                tickLine={false}
+                axisLine={false}
+                width={32}
+                domain={yDomain}
+                ticks={yTicks}
+                tickFormatter={v => `${v}r`}
+              />
+              <Tooltip
+                content={<CustomTooltip compoundOnly={compoundOnly} />}
+                cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="totalReps"
+                stroke={LINE_COLOR}
+                strokeWidth={2}
+                dot={<CustomDot />}
+                activeDot={<CustomActiveDot />}
+                connectNulls={false}
+                isAnimationActive={false}
+                animationDuration={800}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
       )}
     </div>
   );
