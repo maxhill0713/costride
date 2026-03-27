@@ -25,21 +25,23 @@ function ActivityFeedSection({
     setVisiblePostCount(POSTS_PER_PAGE);
   }, [socialFeedPosts.length]);
 
-  // IntersectionObserver — lives here where the ref is always rendered
+  // IntersectionObserver — more aggressive for mobile
   useEffect(() => {
     const el = feedBottomRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
-        }
+        entries.forEach(entry => {
+          if (entry.isIntersecting && visiblePostCount < socialFeedPosts.length) {
+            setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
+          }
+        });
       },
-      { rootMargin: '200px', threshold: 0 }
+      { rootMargin: '500px', threshold: [0, 0.5] }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [socialFeedPosts.length]); // re-observe when posts list changes
+  }, [visiblePostCount, socialFeedPosts.length]);
 
   if (friends.length === 0) return null;
 
@@ -98,8 +100,8 @@ function ActivityFeedSection({
           {socialFeedPosts.slice(0, visiblePostCount).map(post => (
             <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
           ))}
-          {/* Sentinel — always rendered so observer can attach */}
-          <div ref={feedBottomRef} className="flex justify-center py-3">
+          {/* Sentinel — guaranteed minimum height for observer to trigger on mobile */}
+          <div ref={feedBottomRef} style={{ minHeight: '16px' }} className="flex justify-center py-3">
             {visiblePostCount < socialFeedPosts.length && (
               <div style={{
                 width: 30, height: 30,
@@ -112,8 +114,6 @@ function ActivityFeedSection({
           </div>
         </div>
       )}
-      {/* Sentinel when no posts yet but friends exist — allows future load */}
-      {socialFeedPosts.length === 0 && <div ref={feedBottomRef} />}
     </div>
   );
 }
