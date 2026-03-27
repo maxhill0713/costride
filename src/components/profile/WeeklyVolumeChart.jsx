@@ -243,7 +243,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={198}>
-          <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
             <XAxis
@@ -275,8 +275,9 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              isAnimationActive={localKey > 0}
-              animationDuration={800}
+              isAnimationActive={true}
+              animationDuration={600}
+              animationEasing="ease-in-out"
             />
           </LineChart>
         </ResponsiveContainer>
