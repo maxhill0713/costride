@@ -35,13 +35,13 @@ const MOBILE_CSS = `
 `;
 
 /* ══════════════════════════════════════════════════════════════════
-   CARD PRIMITIVES — mirrored from TabOverview style system
+   CARD PRIMITIVES
 ══════════════════════════════════════════════════════════════════ */
-function Card({ children, style = {}, accentColor }) {
+function Card({ children, style = {}, highlight = false }) {
   return (
     <div style={{
       background:   C.surface,
-      border:       `1px solid ${accentColor ? `${accentColor}28` : C.border}`,
+      border:       `1px solid ${highlight ? `${C.accent}30` : C.border}`,
       borderRadius: CARD_RADIUS,
       boxShadow:    CARD_SHADOW,
       overflow:     'hidden',
@@ -49,14 +49,14 @@ function Card({ children, style = {}, accentColor }) {
       flexShrink:   0,
       ...style,
     }}>
-      {accentColor && (
+      {highlight && (
         <div style={{
           position:      'absolute',
           top:           0,
           left:          0,
           right:         0,
           height:        1.5,
-          background:    `linear-gradient(90deg,${accentColor}60 0%,${accentColor}18 60%,transparent 100%)`,
+          background:    `linear-gradient(90deg,${C.accent}50 0%,${C.accent}14 60%,transparent 100%)`,
           pointerEvents: 'none',
         }} />
       )}
@@ -69,32 +69,17 @@ function CardBody({ children, style = {} }) {
   return <div style={{ padding: 18, ...style }}>{children}</div>;
 }
 
-function CardHeader({ title, sub, right }) {
-  return (
-    <div style={{
-      display:        'flex',
-      alignItems:     sub ? 'flex-start' : 'center',
-      justifyContent: 'space-between',
-      marginBottom:   14,
-    }}>
-      <div>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>{title}</div>
-        {sub && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{sub}</div>}
-      </div>
-      {right}
-    </div>
-  );
-}
-
 /* ── Small reusable atoms ───────────────────────────────────────── */
-function Pill({ label, color }) {
+/* Single unified pill colour — blue for type labels, muted for status */
+function Pill({ label, muted = false }) {
+  const color = muted ? C.t3 : C.accent;
   return (
     <span style={{
       fontSize:     9.5,
       fontWeight:   700,
       color,
       background:   `${color}12`,
-      border:       `1px solid ${color}28`,
+      border:       `1px solid ${color}24`,
       borderRadius: 5,
       padding:      '2px 7px',
       flexShrink:   0,
@@ -104,23 +89,42 @@ function Pill({ label, color }) {
   );
 }
 
-function Chip({ val, label, color }) {
+/* Urgency pill — only used for time-sensitive warnings */
+function UrgencyPill({ label, urgent }) {
+  const color = urgent ? C.danger : C.t3;
+  return (
+    <span style={{
+      fontSize:     9.5,
+      fontWeight:   700,
+      color,
+      background:   `${color}10`,
+      border:       `1px solid ${color}20`,
+      borderRadius: 5,
+      padding:      '2px 7px',
+      flexShrink:   0,
+    }}>
+      {label}
+    </span>
+  );
+}
+
+function Chip({ val, label }) {
   return (
     <div style={{
       fontSize:     10,
       fontWeight:   700,
       padding:      '3px 8px',
       borderRadius: 6,
-      background:   `${color}10`,
-      border:       `1px solid ${color}20`,
-      color,
+      background:   `${C.accent}10`,
+      border:       `1px solid ${C.accent}20`,
+      color:        C.t2,
     }}>
-      {val} {label}
+      <span style={{ color: C.t1 }}>{val}</span> {label}
     </div>
   );
 }
 
-function IconBadge({ icon: Icon, color, size = 26 }) {
+function IconBadge({ icon: Icon, size = 26 }) {
   return (
     <div style={{
       width:           size,
@@ -133,15 +137,16 @@ function IconBadge({ icon: Icon, color, size = 26 }) {
       justifyContent:  'center',
       flexShrink:      0,
     }}>
-      <Icon style={{ width: size * 0.46, height: size * 0.46, color }} />
+      <Icon style={{ width: size * 0.46, height: size * 0.46, color: C.accent }} />
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   STAT NUDGE — 2px left border is only color (matches TabOverview)
+   STAT NUDGE — left border accent
 ══════════════════════════════════════════════════════════════════ */
-function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
+function StatNudge({ positive = true, icon: Icon, stat, detail, action, onAction }) {
+  const color = positive ? C.accent : C.danger;
   return (
     <div style={{
       marginTop:    12,
@@ -156,25 +161,16 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: C.t1 }}>{stat} </span>
+        {stat && <span style={{ fontSize: 11, fontWeight: 600, color: C.t1 }}>{stat} </span>}
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</span>
       </div>
       {action && onAction && (
         <button onClick={e => { e.stopPropagation(); onAction(); }}
           style={{
-            flexShrink:  0,
-            fontSize:    10,
-            fontWeight:  600,
-            color,
-            background:  'transparent',
-            border:      'none',
-            cursor:      'pointer',
-            fontFamily:  'inherit',
-            whiteSpace:  'nowrap',
-            display:     'flex',
-            alignItems:  'center',
-            gap:         2,
-            padding:     0,
+            flexShrink: 0, fontSize: 10, fontWeight: 600, color: C.accent,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontFamily: 'inherit', whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', gap: 2, padding: 0,
           }}>
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
@@ -199,46 +195,25 @@ function DeleteBtn({ onDelete }) {
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
         style={{
-          width:           24,
-          height:          24,
-          display:         'flex',
-          alignItems:      'center',
-          justifyContent:  'center',
-          background:      C.surfaceEl,
-          border:          `1px solid ${C.border}`,
-          borderRadius:    6,
-          cursor:          'pointer',
+          width: 24, height: 24, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', background: C.surfaceEl,
+          border: `1px solid ${C.border}`, borderRadius: 6, cursor: 'pointer',
         }}>
         <MoreHorizontal style={{ width: 12, height: 12, color: C.t3 }} />
       </button>
       {open && (
         <div style={{
-          position:     'absolute',
-          top:          28,
-          right:        0,
-          zIndex:       9999,
-          background:   '#0d1528',
-          border:       `1px solid ${C.borderEl}`,
-          borderRadius: 10,
-          boxShadow:    '0 8px 24px rgba(0,0,0,0.6)',
-          minWidth:     110,
-          overflow:     'hidden',
+          position: 'absolute', top: 28, right: 0, zIndex: 9999,
+          background: '#0d1528', border: `1px solid ${C.borderEl}`,
+          borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+          minWidth: 110, overflow: 'hidden',
         }}>
           <button onClick={e => { e.stopPropagation(); setOpen(false); onDelete(); }}
             style={{
-              width:      '100%',
-              display:    'flex',
-              alignItems: 'center',
-              gap:        8,
-              padding:    '9px 14px',
-              fontSize:   12,
-              fontWeight: 700,
-              color:      C.danger,
-              background: 'none',
-              border:     'none',
-              cursor:     'pointer',
-              textAlign:  'left',
-              fontFamily: 'inherit',
+              width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+              padding: '9px 14px', fontSize: 12, fontWeight: 700, color: C.danger,
+              background: 'none', border: 'none', cursor: 'pointer',
+              textAlign: 'left', fontFamily: 'inherit',
             }}
             onMouseEnter={e => e.currentTarget.style.background = C.dangerSub}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}>
@@ -257,7 +232,7 @@ function getEngagementRate(post, totalMembers) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   FEED CARDS — card shell matches TabOverview exactly
+   FEED CARDS
 ══════════════════════════════════════════════════════════════════ */
 function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
   const likes    = post.likes?.length    || 0;
@@ -267,10 +242,10 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
   const seenBy   = post.view_count || post.member_views?.length || Math.max((likes + comments) * 3, 0);
 
   return (
-    <Card accentColor={isTopPerformer ? C.success : null}>
+    <Card highlight={isTopPerformer}>
       {isTopPerformer && (
         <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
-          <Pill label="Top post" color={C.success} />
+          <Pill label="Top post" />
         </div>
       )}
       <CardBody style={{ padding: '12px 14px 0' }}>
@@ -308,10 +283,10 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
       )}
 
       <div style={{ padding: '8px 14px 12px', display: 'flex', alignItems: 'center', gap: 10, borderTop: `1px solid ${C.divider}` }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: likes > 0 ? C.danger : C.t3 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: C.t3 }}>
           <Heart style={{ width: 11, height: 11 }} /> {likes}
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: comments > 0 ? C.success : C.t3 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: C.t3 }}>
           <MessageCircle style={{ width: 11, height: 11 }} /> {comments}
         </span>
         {seenBy > 0 && (
@@ -321,14 +296,9 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
         )}
         {engRate !== null && engRate > 0 && (
           <span style={{
-            marginLeft:   'auto',
-            fontSize:     10,
-            fontWeight:   700,
-            color:        engRate >= 20 ? C.success : engRate >= 10 ? C.accent : C.t3,
-            background:   C.surfaceEl,
-            border:       `1px solid ${C.borderEl}`,
-            borderRadius: 5,
-            padding:      '2px 6px',
+            marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: C.accent,
+            background: `${C.accent}10`, border: `1px solid ${C.accent}20`,
+            borderRadius: 5, padding: '2px 6px',
           }}>
             {engRate}% engaged
           </span>
@@ -345,9 +315,9 @@ function EventCard({ event, now, onDelete }) {
     <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-          <IconBadge icon={Calendar} color={C.success} />
-          <Pill label="Event" color={C.success} />
-          <Pill label={diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d`} color={diff <= 2 ? C.danger : C.success} />
+          <IconBadge icon={Calendar} />
+          <Pill label="Event" />
+          <UrgencyPill label={diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d`} urgent={diff <= 2} />
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(event.id)} /></div>
         </div>
         <p style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: '0 0 5px', lineHeight: 1.3 }}>{event.title}</p>
@@ -365,41 +335,30 @@ function ChallengeCard({ challenge, now, onDelete }) {
   const remaining = Math.max(0, totalD - elapsed);
   const pct       = Math.min(100, Math.round((elapsed / totalD) * 100));
   const parts     = challenge.participants?.length || 0;
-  const progressColor = pct >= 75 ? C.warn : C.accent;
 
   return (
     <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-          <IconBadge icon={Trophy} color={C.warn} />
-          <Pill label="Challenge" color={C.accent} />
-          <Pill label={`${remaining}d left`} color={remaining <= 3 ? C.danger : C.t3} />
+          <IconBadge icon={Trophy} />
+          <Pill label="Challenge" />
+          <UrgencyPill label={`${remaining}d left`} urgent={remaining <= 3} />
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(challenge.id)} /></div>
         </div>
         <p style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: '0 0 10px', lineHeight: 1.3 }}>{challenge.title}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
           <span style={{ fontSize: 11, color: C.t3 }}>{parts} joined</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: progressColor }}>{pct}% complete</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>{pct}%</span>
         </div>
         <div style={{ height: 2.5, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: progressColor, transition: 'width 0.8s ease' }} />
+          <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: C.accent, transition: 'width 0.8s ease' }} />
         </div>
       </CardBody>
     </Card>
   );
 }
 
-const CLASS_CFG = {
-  hiit:     { color: C.danger,  label: 'HIIT'     },
-  yoga:     { color: C.success, label: 'Yoga'     },
-  strength: { color: C.accent,  label: 'Strength' },
-  cardio:   { color: C.warn,    label: 'Cardio'   },
-  spin:     { color: C.accent,  label: 'Spin'     },
-  boxing:   { color: C.danger,  label: 'Boxing'   },
-  pilates:  { color: C.success, label: 'Pilates'  },
-  default:  { color: C.accent,  label: 'Class'    },
-};
-
+/* Single class card style — no per-type colour splashing */
 const CLASS_IMGS = {
   hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
   yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
@@ -411,22 +370,27 @@ const CLASS_IMGS = {
   default:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
 };
 
+const CLASS_LABELS = {
+  hiit: 'HIIT', yoga: 'Yoga', strength: 'Strength',
+  cardio: 'Cardio', spin: 'Spin', boxing: 'Boxing', pilates: 'Pilates', default: 'Class',
+};
+
 function getClassType(c) {
   const n = (c.class_type || c.name || '').toLowerCase();
-  if (n.includes('hiit') || n.includes('interval'))                        return 'hiit';
-  if (n.includes('yoga') || n.includes('flow') || n.includes('vinyasa'))   return 'yoga';
+  if (n.includes('hiit') || n.includes('interval'))                         return 'hiit';
+  if (n.includes('yoga') || n.includes('flow') || n.includes('vinyasa'))    return 'yoga';
   if (n.includes('strength') || n.includes('lift') || n.includes('weight')) return 'strength';
-  if (n.includes('cardio') || n.includes('run') || n.includes('aerobic'))  return 'cardio';
-  if (n.includes('spin') || n.includes('cycle') || n.includes('bike'))     return 'spin';
-  if (n.includes('box') || n.includes('mma') || n.includes('kickbox'))     return 'boxing';
-  if (n.includes('pilates') || n.includes('barre'))                        return 'pilates';
+  if (n.includes('cardio') || n.includes('run') || n.includes('aerobic'))   return 'cardio';
+  if (n.includes('spin') || n.includes('cycle') || n.includes('bike'))      return 'spin';
+  if (n.includes('box') || n.includes('mma') || n.includes('kickbox'))      return 'boxing';
+  if (n.includes('pilates') || n.includes('barre'))                         return 'pilates';
   return 'default';
 }
 
 function ClassCard({ gymClass, onDelete }) {
-  const type = getClassType(gymClass);
-  const cfg  = CLASS_CFG[type];
-  const img  = gymClass.image_url || CLASS_IMGS[type];
+  const type     = getClassType(gymClass);
+  const img      = gymClass.image_url || CLASS_IMGS[type];
+  const label    = CLASS_LABELS[type];
   const initials = (n = '') => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
@@ -435,21 +399,12 @@ function ClassCard({ gymClass, onDelete }) {
         <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom,rgba(0,0,0,0.05),${C.surface}d8)` }} />
         <div style={{
-          position:        'absolute',
-          top:             8,
-          left:            8,
-          fontSize:        9,
-          fontWeight:      800,
-          letterSpacing:   '0.07em',
-          textTransform:   'uppercase',
-          color:           cfg.color,
-          background:      'rgba(0,0,0,0.55)',
-          border:          `1px solid ${cfg.color}40`,
-          borderRadius:    5,
-          padding:         '2px 7px',
-          backdropFilter:  'blur(6px)',
+          position: 'absolute', top: 8, left: 8,
+          fontSize: 9, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase',
+          color: C.accent, background: 'rgba(0,0,0,0.55)',
+          border: `1px solid ${C.accent}40`, borderRadius: 5, padding: '2px 7px', backdropFilter: 'blur(6px)',
         }}>
-          {cfg.label}
+          {label}
         </div>
       </div>
       <CardBody style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -470,18 +425,9 @@ function ClassCard({ gymClass, onDelete }) {
         {(gymClass.instructor || gymClass.coach_name) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
             <div style={{
-              width:           20,
-              height:          20,
-              borderRadius:    '50%',
-              background:      C.surfaceEl,
-              border:          `1px solid ${C.border}`,
-              display:         'flex',
-              alignItems:      'center',
-              justifyContent:  'center',
-              fontSize:        8,
-              fontWeight:      800,
-              color:           cfg.color,
-              flexShrink:      0,
+              width: 20, height: 20, borderRadius: '50%', background: C.surfaceEl,
+              border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 8, fontWeight: 800, color: C.accent, flexShrink: 0,
             }}>
               {initials(gymClass.instructor || gymClass.coach_name)}
             </div>
@@ -497,20 +443,19 @@ function PollCard({ poll, onDelete, allMemberships }) {
   const votes   = poll.voters?.length || 0;
   const total   = allMemberships?.length || 0;
   const partPct = total > 0 ? Math.round((votes / total) * 100) : 0;
-  const color   = partPct >= 50 ? C.success : C.accent;
 
   return (
     <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-          <IconBadge icon={BarChart2} color={C.accent} />
-          <Pill label="Poll" color={C.accent} />
-          {partPct > 0 && <Pill label={`${partPct}% voted`} color={color} />}
+          <IconBadge icon={BarChart2} />
+          <Pill label="Poll" />
+          {partPct > 0 && <Pill label={`${partPct}% voted`} muted />}
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(poll.id)} /></div>
         </div>
         <p style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: '0 0 10px', lineHeight: 1.3 }}>{poll.title}</p>
         <div style={{ height: 2.5, borderRadius: 99, background: C.divider, overflow: 'hidden', marginBottom: 7 }}>
-          <div style={{ height: '100%', width: `${partPct}%`, borderRadius: 99, background: color, transition: 'width 0.6s ease' }} />
+          <div style={{ height: '100%', width: `${partPct}%`, borderRadius: 99, background: C.accent, transition: 'width 0.6s ease' }} />
         </div>
         <div style={{ fontSize: 11, color: C.t3, fontWeight: 500 }}>
           {votes} {votes === 1 ? 'vote' : 'votes'}{total > 0 ? ` of ${total} members` : ''}
@@ -540,14 +485,37 @@ function useBestPostTime(allPosts) {
     });
     return {
       bestDay,
-      bestDayName:  bestDay >= 0 ? FULL_NAMES[bestDay] : null,
-      isTodayBest:  bestDay === new Date().getDay(),
+      bestDayName: bestDay >= 0 ? FULL_NAMES[bestDay] : null,
+      isTodayBest: bestDay === new Date().getDay(),
     };
   }, [allPosts]);
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIDEBAR CARDS — all use TabOverview card shell
+   SIDEBAR CARD SHELL
+══════════════════════════════════════════════════════════════════ */
+function SideCard({ children, style = {} }) {
+  return (
+    <div style={{
+      padding: 18, borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`,
+      boxShadow: CARD_SHADOW, ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function SideLabel({ children }) {
+  return (
+    <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>
+      {children}
+    </span>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SIDEBAR CONTENT CARDS
 ══════════════════════════════════════════════════════════════════ */
 function ContentSuggestions({ allPosts, polls, challenges, events, now, openModal }) {
   const { bestDayName, isTodayBest } = useBestPostTime(allPosts);
@@ -562,36 +530,31 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         : bestDayName
           ? `No post in ${days} days (best: ${bestDayName})`
           : `No post in ${days} days — keep your feed active`;
-      items.push({ color: C.accent, icon: MessageSquarePlus, label, action: 'Post now', fn: () => openModal('post') });
+      items.push({ label, action: 'Post now', fn: () => openModal('post'), icon: MessageSquarePlus });
     }
     if (!polls.filter(p => !p.ended_at).length)
-      items.push({ color: C.accent, icon: BarChart2, label: 'No active poll — polls drive more replies than standard posts', action: 'Create', fn: () => openModal('poll') });
+      items.push({ label: 'No active poll — polls drive more replies than standard posts', action: 'Create', fn: () => openModal('poll'), icon: BarChart2 });
     if (!challenges.find(c => c.status === 'active'))
-      items.push({ color: C.warn, icon: Trophy, label: 'No active challenge — challenges drive more consistent attendance', action: 'Start one', fn: () => openModal('challenge') });
+      items.push({ label: 'No active challenge — challenges drive more consistent attendance', action: 'Start one', fn: () => openModal('challenge'), icon: Trophy });
     if (!events.find(e => new Date(e.event_date) >= now))
-      items.push({ color: C.success, icon: Calendar, label: 'No upcoming events — give members something to look forward to', action: 'Add event', fn: () => openModal('event') });
+      items.push({ label: 'No upcoming events — give members something to look forward to', action: 'Add event', fn: () => openModal('event'), icon: Calendar });
     return items.slice(0, 3);
   }, [allPosts, polls, challenges, events, now, bestDayName, isTodayBest, dayName]);
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: suggestions.length ? 14 : 12 }}>
-        <IconBadge icon={Sparkles} color={C.accent} />
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Content Suggestions</span>
+        <IconBadge icon={Sparkles} />
+        <SideLabel>Content Suggestions</SideLabel>
       </div>
 
       {!suggestions.length ? (
         <div style={{
-          display:    'flex',
-          alignItems: 'flex-start',
-          gap:        9,
-          padding:    '9px 11px',
-          borderRadius: 8,
-          background: C.surfaceEl,
-          border:     `1px solid ${C.border}`,
-          borderLeft: `3px solid ${C.success}`,
+          display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 11px',
+          borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`,
+          borderLeft: `2px solid ${C.accent}`,
         }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0, marginTop: 1 }} />
+          <CheckCircle style={{ width: 12, height: 12, color: C.accent, flexShrink: 0, marginTop: 1 }} />
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Content is up to date.</div>
             <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Keep the cadence going.</div>
@@ -601,36 +564,30 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {suggestions.map((s, i) => (
             <div key={i} onClick={s.fn} style={{
-              display:     'flex',
-              alignItems:  'center',
-              gap:         9,
-              padding:     '9px 10px',
-              borderRadius: 9,
-              background:  C.surfaceEl,
-              border:      `1px solid ${C.border}`,
-              borderLeft:  `3px solid ${s.color}`,
-              cursor:      'pointer',
-              transition:  'background .15s',
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '9px 10px', borderRadius: 9,
+              background: C.surfaceEl, border: `1px solid ${C.border}`,
+              borderLeft: `2px solid ${C.accent}`, cursor: 'pointer', transition: 'background .15s',
             }}
-              onMouseEnter={e => e.currentTarget.style.background = `rgba(255,255,255,0.03)`}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
               onMouseLeave={e => e.currentTarget.style.background = C.surfaceEl}>
-              <s.icon style={{ width: 12, height: 12, color: s.color, flexShrink: 0 }} />
+              <s.icon style={{ width: 12, height: 12, color: C.accent, flexShrink: 0 }} />
               <span style={{ flex: 1, fontSize: 11, fontWeight: 500, color: C.t2, lineHeight: 1.4 }}>{s.label}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: s.color, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: C.accent, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
                 {s.action} <ChevronRight style={{ width: 9, height: 9 }} />
               </span>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </SideCard>
   );
 }
 
 function BestTimeToPost({ allPosts, now, openModal }) {
   const { bestDayName, isTodayBest } = useBestPostTime(allPosts);
-  const hour       = now.getHours();
-  const todayName  = format(now, 'EEEE');
+  const hour      = now.getHours();
+  const todayName = format(now, 'EEEE');
   const peakWindow = hour < 12
     ? 'Members engage most in the evening — 6–8pm is worth targeting'
     : hour < 17
@@ -640,25 +597,19 @@ function BestTimeToPost({ allPosts, now, openModal }) {
   if (!bestDayName && allPosts.length < 3) return null;
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <IconBadge icon={Clock} color={C.accent} />
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Best Time to Post</span>
+        <IconBadge icon={Clock} />
+        <SideLabel>Best Time to Post</SideLabel>
       </div>
 
       {bestDayName && (
         <div style={{
-          display:      'flex',
-          alignItems:   'center',
-          gap:          9,
-          padding:      '9px 11px',
-          borderRadius: 9,
-          marginBottom: 8,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${isTodayBest ? C.success : C.accent}`,
+          display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px',
+          borderRadius: 9, marginBottom: 8, background: C.surfaceEl,
+          border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}`,
         }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: isTodayBest ? C.success : C.accent, flexShrink: 0 }} />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />
           <span style={{ fontSize: 11, fontWeight: 500, color: C.t2, lineHeight: 1.4 }}>
             {isTodayBest
               ? <><span style={{ fontWeight: 700, color: C.t1 }}>{todayName}</span> is your best engagement day</>
@@ -669,41 +620,25 @@ function BestTimeToPost({ allPosts, now, openModal }) {
       )}
 
       <div style={{
-        display:      'flex',
-        alignItems:   'flex-start',
-        gap:          9,
-        padding:      '9px 11px',
-        borderRadius: 9,
-        background:   C.surfaceEl,
-        border:       `1px solid ${C.border}`,
-        marginBottom: 12,
+        display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 11px',
+        borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, marginBottom: 12,
       }}>
         <Eye style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.4 }}>{peakWindow}</span>
       </div>
 
       <button onClick={() => openModal('post')} style={{
-        width:           '100%',
-        padding:         '7px 12px',
-        borderRadius:    8,
-        background:      C.surfaceEl,
-        border:          `1px solid ${C.borderEl}`,
-        color:           C.t1,
-        fontSize:        11,
-        fontWeight:      600,
-        cursor:          'pointer',
-        fontFamily:      'inherit',
-        display:         'flex',
-        alignItems:      'center',
-        justifyContent:  'center',
-        gap:             6,
-        transition:      'border-color .15s',
+        width: '100%', padding: '7px 12px', borderRadius: 8,
+        background: C.surfaceEl, border: `1px solid ${C.borderEl}`,
+        color: C.t1, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+        fontFamily: 'inherit', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: 6, transition: 'border-color .15s',
       }}
         onMouseEnter={e => e.currentTarget.style.borderColor = `${C.accent}60`}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.borderEl}>
         <Plus style={{ width: 11, height: 11 }} /> Write a post
       </button>
-    </div>
+    </SideCard>
   );
 }
 
@@ -716,22 +651,22 @@ function EngagementScoreCard({ allPosts, polls, activeChallenges, events, totalC
   , [allPosts, polls, activeChallenges, events]);
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Score</span>
-        <IconBadge icon={Zap} color={C.accent} />
+        <SideLabel>Engagement Score</SideLabel>
+        <IconBadge icon={Zap} />
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
         <span style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</span>
         <span style={{ fontSize: 12, color: C.t3, fontWeight: 400 }}>total interactions</span>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"        color={C.danger}  />
-        <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"     color={C.success} />
-        <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes"   color={C.accent}  />
-        <Chip val={totalChalPart}                                                label="In challenge" color={C.warn}    />
+        <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"        />
+        <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"     />
+        <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes"   />
+        <Chip val={totalChalPart}                                                label="In challenge" />
       </div>
-    </div>
+    </SideCard>
   );
 }
 
@@ -750,14 +685,14 @@ function EngagementTrend({ allPosts, polls, now }) {
   const up = change >= 0;
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Trend</span>
+        <SideLabel>Engagement Trend</SideLabel>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           {up
-            ? <TrendingUp   style={{ width: 11, height: 11, color: C.success }} />
-            : <TrendingDown style={{ width: 11, height: 11, color: C.danger  }} />}
-          <span style={{ fontSize: 13, fontWeight: 700, color: up ? C.success : C.danger, letterSpacing: '-0.02em' }}>
+            ? <TrendingUp   style={{ width: 11, height: 11, color: C.accent }} />
+            : <TrendingDown style={{ width: 11, height: 11, color: C.danger }} />}
+          <span style={{ fontSize: 13, fontWeight: 700, color: up ? C.accent : C.danger, letterSpacing: '-0.02em' }}>
             {up ? '+' : ''}{change}%
           </span>
         </div>
@@ -766,7 +701,7 @@ function EngagementTrend({ allPosts, polls, now }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {[
-          { label: 'This week', val: thisWeek, color: up ? C.success : C.danger },
+          { label: 'This week', val: thisWeek, color: up ? C.accent : C.danger },
           { label: 'Last week', val: lastWeek, color: C.t3 },
         ].map((s, i) => (
           <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
@@ -777,18 +712,18 @@ function EngagementTrend({ allPosts, polls, now }) {
       </div>
 
       {change < 0 && (
-        <StatNudge color={C.danger} icon={TrendingDown}
+        <StatNudge positive={false} icon={TrendingDown}
           stat="Engagement dropped this week."
           detail={thisWeek === 0
             ? 'No interactions — try a poll or question to invite a response.'
             : `Down from ${lastWeek} to ${thisWeek}. A new poll or challenge can re-engage members.`} />
       )}
       {change > 20 && thisWeek > 3 && (
-        <StatNudge color={C.success} icon={TrendingUp}
+        <StatNudge positive icon={TrendingUp}
           stat="Strong week."
           detail="Consistent posting is the most reliable way to maintain momentum." />
       )}
-    </div>
+    </SideCard>
   );
 }
 
@@ -798,16 +733,21 @@ function ActivityChart({ allPosts, now }) {
     const s   = new Date(day.getFullYear(), day.getMonth(), day.getDate());
     const e   = new Date(s.getTime() + 86400000);
     const p   = allPosts.filter(x => { const d = new Date(x.created_date); return d >= s && d < e; });
-    return { label: format(day, 'EEE'), posts: p.length, likes: p.reduce((a, x) => a + (x.likes?.length || 0), 0), comments: p.reduce((a, x) => a + (x.comments?.length || 0), 0) };
+    return {
+      label:    format(day, 'EEE'),
+      posts:    p.length,
+      likes:    p.reduce((a, x) => a + (x.likes?.length    || 0), 0),
+      comments: p.reduce((a, x) => a + (x.comments?.length || 0), 0),
+    };
   }).map(d => ({ ...d, total: d.posts + d.likes + d.comments })), [allPosts, now]);
 
   const maxV = Math.max(...days.map(d => d.total), 1);
   const sum  = days.reduce((a, d) => a + d.total, 0);
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Community Activity</span>
+        <SideLabel>Community Activity</SideLabel>
         <span style={{ fontSize: 20, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em' }}>{sum}</span>
       </div>
       <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Posts, likes & comments</div>
@@ -817,41 +757,28 @@ function ActivityChart({ allPosts, now }) {
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 32, gap: 1 }}>
             {d.total === 0
               ? <div style={{ height: 3, borderRadius: 2, background: C.divider }} />
-              : <>
-                  {d.comments > 0 && <div style={{ height: Math.max(3, (d.comments / maxV) * 28), borderRadius: 2, background: C.success, opacity: 0.85 }} />}
-                  {d.likes    > 0 && <div style={{ height: Math.max(3, (d.likes    / maxV) * 28), borderRadius: 2, background: C.danger,  opacity: 0.85 }} />}
-                  {d.posts    > 0 && <div style={{ height: Math.max(3, (d.posts    / maxV) * 28), borderRadius: 2, background: C.accent,  opacity: 0.85 }} />}
-                </>
+              : <div style={{ height: Math.max(3, (d.total / maxV) * 28), borderRadius: 2, background: C.accent, opacity: 0.8 }} />
             }
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 4 }}>
         {days.map((d, i) => (
           <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: C.t3 }}>{d.label}</div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
-        {[{ color: C.accent, label: 'Posts' }, { color: C.danger, label: 'Likes' }, { color: C.success, label: 'Comments' }].map((l, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 7, height: 7, borderRadius: 2, background: l.color }} />
-            <span style={{ fontSize: 9, fontWeight: 600, color: C.t3 }}>{l.label}</span>
-          </div>
-        ))}
-      </div>
-
       {sum === 0 && (
-        <StatNudge color={C.accent} icon={MessageSquarePlus}
+        <StatNudge positive icon={MessageSquarePlus}
           stat="No activity in the last 7 days."
           detail="Publishing a post now will start filling this chart." />
       )}
-    </div>
+    </SideCard>
   );
 }
 
-function TopPostsCard({ allPosts, openModal }) {
+function TopPostsCard({ allPosts }) {
   const top3 = useMemo(() =>
     [...allPosts]
       .map(p => ({ ...p, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 }))
@@ -863,45 +790,33 @@ function TopPostsCard({ allPosts, openModal }) {
   if (!top3.length) return null;
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Top Posts</div>
-        <div style={{ fontSize: 11, color: C.t3 }}>Most engagement this period</div>
+        <SideLabel>Top Posts</SideLabel>
+        <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Most engagement this period</div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {top3.map((p, i) => (
           <div key={p.id || i} style={{
-            display:     'flex',
-            alignItems:  'center',
-            gap:         8,
-            padding:     '8px 10px',
-            borderRadius: 8,
-            background:  C.surfaceEl,
-            border:      `1px solid ${C.border}`,
-            borderLeft:  `3px solid ${C.success}`,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 10px', borderRadius: 8,
+            background: C.surfaceEl, border: `1px solid ${C.border}`,
+            borderLeft: `2px solid ${C.accent}`,
           }}>
             <div style={{
-              width:           18,
-              height:          18,
-              borderRadius:    5,
-              background:      C.successSub,
-              border:          `1px solid ${C.successBrd}`,
-              display:         'flex',
-              alignItems:      'center',
-              justifyContent:  'center',
-              fontSize:        9,
-              fontWeight:      800,
-              color:           C.success,
-              flexShrink:      0,
+              width: 18, height: 18, borderRadius: 5,
+              background: `${C.accent}14`, border: `1px solid ${C.accent}24`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, fontWeight: 800, color: C.accent, flexShrink: 0,
             }}>
               {i + 1}
             </div>
             <span style={{ flex: 1, fontSize: 11, fontWeight: 500, color: C.t2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {(p.title || p.content || '').split('\n')[0].slice(0, 38) || 'Post'}
             </span>
-            <span style={{ fontSize: 10, color: C.danger,  flexShrink: 0 }}>{p.likes?.length    || 0} lk</span>
-            <span style={{ fontSize: 10, color: C.success, flexShrink: 0 }}>{p.comments?.length || 0} cmt</span>
+            <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{p.likes?.length || 0} lk</span>
+            <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{p.comments?.length || 0} cmt</span>
           </div>
         ))}
       </div>
@@ -912,14 +827,14 @@ function TopPostsCard({ allPosts, openModal }) {
         const likes    = best.likes?.length    || 0;
         const hasImage = !!(best.image_url || best.media_url);
         if (comments > likes && comments > 2)
-          return <StatNudge color={C.success} icon={CheckCircle} stat={`Top post got ${comments} comments.`} detail="Posts that invite a response drive the most conversation — repeat this format." />;
+          return <StatNudge positive icon={CheckCircle} stat={`Top post got ${comments} comments.`} detail="Posts that invite a response drive the most conversation — repeat this format." />;
         if (hasImage && likes > 2)
-          return <StatNudge color={C.success} icon={CheckCircle} stat="Top post included an image." detail="Visual posts tend to catch more attention in the feed." />;
+          return <StatNudge positive icon={CheckCircle} stat="Top post included an image." detail="Visual posts tend to catch more attention in the feed." />;
         if (likes > 0 || comments > 0)
-          return <StatNudge color={C.accent} icon={TrendingUp} stat="" detail="Look at what made your top post work — format, topic, or timing — and repeat it." />;
+          return <StatNudge positive icon={TrendingUp} detail="Look at what made your top post work — format, topic, or timing — and repeat it." />;
         return null;
       })()}
-    </div>
+    </SideCard>
   );
 }
 
@@ -938,19 +853,19 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
     const tot = allPosts.length + events.length + polls.length + challenges.length;
     if (!tot) return null;
     return [
-      { label: 'Posts',      count: allPosts.length,   color: C.accent   },
-      { label: 'Events',     count: events.length,     color: C.success  },
-      { label: 'Polls',      count: polls.length,      color: C.accent   },
-      { label: 'Challenges', count: challenges.length, color: C.warn     },
+      { label: 'Posts',      count: allPosts.length    },
+      { label: 'Events',     count: events.length      },
+      { label: 'Polls',      count: polls.length       },
+      { label: 'Challenges', count: challenges.length  },
     ].filter(c => c.count > 0);
   }, [allPosts, events, polls, challenges]);
 
   return (
-    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <SideCard>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Posting Cadence</div>
-          <div style={{ fontSize: 11, color: C.t3 }}>Last 7 days</div>
+          <SideLabel>Posting Cadence</SideLabel>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Last 7 days</div>
         </div>
         <TrendingUp style={{ width: 12, height: 12, color: C.t3 }} />
       </div>
@@ -958,12 +873,10 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
       <div style={{ display: 'flex', gap: 4, height: 32, alignItems: 'flex-end', marginBottom: 6 }}>
         {cadence.map((d, i) => (
           <div key={i} style={{
-            flex:        1,
-            height:      d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28),
-            borderRadius: 3,
-            background:  d.count === 0 ? C.divider : C.accent,
-            opacity:     d.count === 0 ? 1 : 0.75,
-            transition:  'height 0.4s ease',
+            flex: 1,
+            height: d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28),
+            borderRadius: 3, background: d.count === 0 ? C.divider : C.accent,
+            opacity: d.count === 0 ? 1 : 0.75, transition: 'height 0.4s ease',
           }} />
         ))}
       </div>
@@ -975,24 +888,25 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
 
       <div style={{ fontSize: 11, color: C.t3, fontWeight: 500 }}>
         {activeDays} active {activeDays === 1 ? 'day' : 'days'} this week
-        {activeDays === 0                  && <span style={{ color: C.danger,  marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
-        {activeDays >= 1 && activeDays < 3 && <span style={{ color: C.warn,   marginLeft: 6, fontWeight: 700 }}>— spread posts across more days</span>}
-        {activeDays >= 3                   && <span style={{ color: C.success, marginLeft: 6, fontWeight: 700 }}>— good consistency</span>}
+        {activeDays === 0                  && <span style={{ color: C.danger, marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
+        {activeDays >= 1 && activeDays < 3 && <span style={{ color: C.t2,    marginLeft: 6, fontWeight: 600 }}>— spread posts across more days</span>}
+        {activeDays >= 3                   && <span style={{ color: C.accent, marginLeft: 6, fontWeight: 600 }}>— good consistency</span>}
       </div>
 
       {activeDays === 0 && (
-        <StatNudge color={C.warn} icon={AlertTriangle}
-          stat="" detail="Nothing posted this week. Even a short update keeps the community alive." />
+        <StatNudge positive={false} icon={AlertTriangle}
+          detail="Nothing posted this week. Even a short update keeps the community alive." />
       )}
 
       {mix && (
         <>
           <div style={{ height: 1, background: C.divider, margin: '14px 0' }} />
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 8 }}>Content Mix</div>
+          {/* Single-colour stacked bar */}
           <div style={{ display: 'flex', height: 3.5, borderRadius: 99, overflow: 'hidden', gap: 1, marginBottom: 12 }}>
             {mix.map((c, i) => {
               const tot = mix.reduce((s, x) => s + x.count, 0);
-              return <div key={i} style={{ width: `${Math.round((c.count / tot) * 100)}%`, background: c.color, borderRadius: 99 }} />;
+              return <div key={i} style={{ width: `${Math.round((c.count / tot) * 100)}%`, background: C.accent, opacity: 0.5 + (i * 0.15), borderRadius: 99 }} />;
             })}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -1000,7 +914,7 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
               const tot = mix.reduce((s, x) => s + x.count, 0);
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < mix.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.accent, opacity: 0.5 + (i * 0.15), flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: C.t2 }}>{c.label}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{c.count}</span>
                   <span style={{ fontSize: 10, color: C.t3, width: 28, textAlign: 'right' }}>{Math.round((c.count / tot) * 100)}%</span>
@@ -1010,7 +924,7 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
           </div>
         </>
       )}
-    </div>
+    </SideCard>
   );
 }
 
@@ -1020,10 +934,10 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
 function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEvents, activeChallenges, openModal, now }) {
   return (
     <>
-      <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <SideCard>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>My Content Impact</span>
-          <IconBadge icon={Zap} color={C.accent} />
+          <SideLabel>My Content Impact</SideLabel>
+          <IconBadge icon={Zap} />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1 }}>
@@ -1033,28 +947,28 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
           <span style={{ fontSize: 12, color: C.t3 }}>interactions</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"      color={C.danger}  />
-          <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"   color={C.success} />
-          <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes" color={C.accent}  />
+          <Chip val={allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0)} label="Likes"      />
+          <Chip val={allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0)} label="Comments"   />
+          <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes" />
         </div>
-      </div>
+      </SideCard>
 
       <EngagementTrend allPosts={allPosts} polls={polls} now={now} />
 
-      <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>My Schedule</div>
+      <SideCard>
+        <div style={{ marginBottom: 14 }}><SideLabel>My Schedule</SideLabel></div>
         {[
-          { label: 'My Classes',        value: classes.length,          color: C.accent  },
-          { label: 'Upcoming Events',   value: upcomingEvents.length,   color: C.success },
-          { label: 'Active Challenges', value: activeChallenges.length, color: C.warn    },
-          { label: 'Active Polls',      value: polls.length,            color: C.accent  },
+          { label: 'My Classes',        value: classes.length          },
+          { label: 'Upcoming Events',   value: upcomingEvents.length   },
+          { label: 'Active Challenges', value: activeChallenges.length },
+          { label: 'Active Polls',      value: polls.length            },
         ].map((s, i, arr) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < arr.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
             <span style={{ fontSize: 12, color: C.t2, fontWeight: 500 }}>{s.label}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: s.color }}>{s.value}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>{s.value}</span>
           </div>
         ))}
-      </div>
+      </SideCard>
 
       <BestTimeToPost allPosts={allPosts} now={now} openModal={openModal} />
       <ContentSuggestions allPosts={allPosts} polls={polls} challenges={challenges} events={events} now={now} openModal={openModal} />
@@ -1113,23 +1027,23 @@ export default function TabContent({
 
   const renderItem = (item, i) => {
     if (item.type === 'post')      return <PostCard key={item.data.id || i} post={item.data} currentUser={currentUser} isOwnProfile={item.data.created_by === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => onDeletePost(item.data.id)} fullWidth />;
-    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}   now={now} />;
+    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
     if (item.type === 'challenge') return <GymChallengeCard key={item.data.id || i} challenge={item.data} isJoined={false} onJoin={null} currentUser={currentUser} isOwner={true} onDelete={id => onDeleteChallenge(id)} gymImageUrl={null} />;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}    allMemberships={allMemberships} />;
+    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
     if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass} />;
     return null;
   };
 
   const secondaryActions = isCoach ? [
-    { icon: Dumbbell,          label: 'My Classes',    sub: `${classes.length} classes`,         color: C.accent,  fn: () => openModal('classes')   },
-    { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
-    { icon: Trophy,            label: 'Challenge',     sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
-    { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
+    { icon: Dumbbell,  label: 'My Classes',    sub: `${classes.length} classes`,         fn: () => openModal('classes')   },
+    { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, fn: () => openModal('event')     },
+    { icon: Trophy,    label: 'Challenge',     sub: `${activeChallenges.length} active`, fn: () => openModal('challenge') },
+    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,            fn: () => openModal('poll')      },
   ] : [
-    { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
-    { icon: Dumbbell,          label: 'Classes',       sub: `${classes.length} total`,           color: C.accent,  fn: () => openModal('classes')   },
-    { icon: Trophy,            label: 'New Challenge', sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
-    { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
+    { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, fn: () => openModal('event')     },
+    { icon: Dumbbell,  label: 'Classes',       sub: `${classes.length} total`,           fn: () => openModal('classes')   },
+    { icon: Trophy,    label: 'New Challenge', sub: `${activeChallenges.length} active`, fn: () => openModal('challenge') },
+    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,            fn: () => openModal('poll')      },
   ];
 
   return (
@@ -1144,23 +1058,13 @@ export default function TabContent({
           <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginBottom: 14, flexShrink: 0 }}>
             {/* Primary CTA */}
             <button onClick={() => openModal('post')} style={{
-              display:     'flex',
-              alignItems:  'center',
-              gap:         10,
-              padding:     '13px 20px',
-              borderRadius: CARD_RADIUS,
-              background:  C.accent,
-              color:       '#fff',
-              border:      'none',
-              fontSize:    14,
-              fontWeight:  800,
-              cursor:      'pointer',
-              flexShrink:  0,
-              fontFamily:  'inherit',
-              boxShadow:   `0 0 0 1px ${C.accentBrd}, 0 4px 14px rgba(59,130,246,0.25)`,
-              transition:  'opacity 0.15s',
-              position:    'relative',
-              overflow:    'hidden',
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '13px 20px', borderRadius: CARD_RADIUS,
+              background: C.accent, color: '#fff', border: 'none',
+              fontSize: 14, fontWeight: 800, cursor: 'pointer',
+              flexShrink: 0, fontFamily: 'inherit',
+              boxShadow: `0 0 0 1px ${C.accentBrd}, 0 4px 14px rgba(59,130,246,0.25)`,
+              transition: 'opacity 0.15s', position: 'relative', overflow: 'hidden',
             }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
@@ -1174,25 +1078,17 @@ export default function TabContent({
               </div>
             </button>
 
-            {/* Secondary actions */}
+            {/* Secondary actions — no per-button colour */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${secondaryActions.length},1fr)`, gap: 8 }}>
-              {secondaryActions.map(({ icon: Icon, label, sub, color, fn }, i) => (
+              {secondaryActions.map(({ icon: Icon, label, sub, fn }, i) => (
                 <div key={i} onClick={fn} style={{
-                  borderRadius: CARD_RADIUS,
-                  padding:      '10px 12px',
-                  cursor:       'pointer',
-                  background:   C.surface,
-                  border:       `1px solid ${C.border}`,
-                  boxShadow:    CARD_SHADOW,
-                  display:      'flex',
-                  flexDirection: 'column',
-                  gap:          5,
-                  transition:   'all 0.15s',
-                  position:     'relative',
-                  overflow:     'hidden',
+                  borderRadius: CARD_RADIUS, padding: '10px 12px', cursor: 'pointer',
+                  background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
+                  display: 'flex', flexDirection: 'column', gap: 5,
+                  transition: 'all 0.15s', position: 'relative', overflow: 'hidden',
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;      e.currentTarget.style.transform = ''; }}>
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = `${C.accent}40`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;         e.currentTarget.style.transform = ''; }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{label}</div>
                   <div style={{ fontSize: 9, color: C.t3, fontWeight: 500 }}>{sub}</div>
                 </div>
@@ -1223,7 +1119,7 @@ export default function TabContent({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: CARD_RADIUS, background: C.accentSub, border: `1px solid ${C.accentBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: CARD_RADIUS, background: `${C.accent}14`, border: `1px solid ${C.accent}24`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <MessageSquarePlus style={{ width: 18, height: 18, color: C.accent, opacity: 0.6 }} />
                 </div>
                 <p style={{ fontSize: 13, fontWeight: 700, color: C.t2, margin: 0 }}>Nothing here yet</p>
@@ -1254,7 +1150,7 @@ export default function TabContent({
               <EngagementTrend allPosts={allPosts} polls={polls} now={now} />
               <BestTimeToPost allPosts={allPosts} now={now} openModal={openModal} />
               <ActivityChart allPosts={allPosts} now={now} />
-              <TopPostsCard allPosts={allPosts} openModal={openModal} />
+              <TopPostsCard allPosts={allPosts} />
               <ContentStatsCard allPosts={allPosts} events={events} polls={polls} challenges={challenges} now={now} />
             </>
           )}
