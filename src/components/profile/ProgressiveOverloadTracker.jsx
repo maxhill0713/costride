@@ -131,14 +131,20 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
-    return Object.entries(types)
+    const all = Object.entries(types)
       .filter(([, w]) => w?.name && w?.exercises?.length > 0)
       .map(([dayKey, w]) => ({
         key: dayKey,
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
-      }))
-      .filter((opt, idx, arr) => arr.findIndex(o => o.label === opt.label) === idx);
+      }));
+    // Deduplicate by label — same workout name = mirrored day, keep first occurrence
+    const seen = new Set();
+    return all.filter(opt => {
+      if (seen.has(opt.label)) return false;
+      seen.add(opt.label);
+      return true;
+    });
   }, [currentUser]);
 
   const [selectedWorkoutKey, setSelectedWorkoutKey] = useState(() => workoutOptions[0]?.key ?? null);
