@@ -894,7 +894,7 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
             </button>
             <button
               onClick={() => openModal('post')}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.danger, border: `1px solid ${C.dangerBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
             >
               Message them
             </button>
@@ -921,7 +921,7 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
           </div>
           <button
             onClick={() => setMemberFilter('new')}
-            style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+            style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: `${C.warn}10`, color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
           >
             View new members
           </button>
@@ -951,7 +951,7 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
             icon={TrendingDown}
             stat={`${frequencyDroppers.length} member${frequencyDroppers.length > 1 ? 's' : ''} visited much less than usual.`}
             detail="A drop in frequency is an early churn signal — reaching out now is more effective than waiting."
-            action="Message them"
+            action="Message them →"
             onAction={() => openModal('message')}
           />
         </div>
@@ -1135,7 +1135,7 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
               </div>
               <button
                 onClick={() => setMemberFilter('new')}
-                style={{ fontSize: 11, fontWeight: 600, color: C.danger, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
+                style={{ fontSize: 11, fontWeight: 600, color: C.warn, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
               >
                 View new members <ChevronRight style={{ width: 10, height: 10 }} />
               </button>
