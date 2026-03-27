@@ -236,9 +236,16 @@ export default function RedeemReward() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-black text-white">Monthly Challenges</h2>
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <span className="text-[11px] font-bold text-slate-400">⏱ {Math.ceil((monthEnd - new Date()) / (1000 * 60 * 60 * 24))}d left</span>
-              </div>
+<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{
+  background: 'rgba(0,0,0,0.35)',
+  border: '1px solid rgba(255,255,255,0.06)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)'
+}}>
+  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>⏱</span>
+  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.45)' }}>
+    {Math.ceil((monthEnd - new Date()) / (1000 * 60 * 60 * 24))}d left
+  </span>
+</div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {monthlyChallengesWithProgress.map((challenge) => (
