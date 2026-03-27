@@ -72,7 +72,7 @@ function ActivityFeedSection({
     });
 
     return () => observer.disconnect();
-  }, [markPostAsSeen]);
+  }, [markPostAsSeen, visiblePostCount]);
 
   return (
     <div className="space-y-3 mt-12">
