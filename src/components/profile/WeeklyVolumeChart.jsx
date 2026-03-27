@@ -27,7 +27,7 @@ const LINE_COLOR = '#818cf8';
 function CustomTooltip({ active, payload, label, compoundOnly }) {
   if (!active || !payload?.length) return null;
   const val = payload[0]?.value ?? 0;
-  const isRest = val === 0;
+  const { isRest, workoutName } = payload[0]?.payload ?? {};
   return (
     <div style={{
       background: 'rgba(8,12,28,0.97)',
@@ -41,17 +41,25 @@ function CustomTooltip({ active, payload, label, compoundOnly }) {
         letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4,
       }}>{label}</p>
       {isRest ? (
-        <span style={{ fontSize: 11, fontWeight: 500, color: '#475569' }}>Rest day</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: '#475569' }}>Rest</span>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: LINE_COLOR, flexShrink: 0 }} />
-          <span style={{ color: '#94a3b8', fontSize: 10 }}>
-            {compoundOnly ? 'Compound reps' : 'Reps'}
-          </span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: LINE_COLOR, marginLeft: 'auto' }}>
-            {val.toLocaleString()}
-          </span>
-        </div>
+        <>
+          {workoutName && (
+            <p style={{
+              fontSize: 11, fontWeight: 600, color: '#e2e8f0',
+              margin: '0 0 6px', lineHeight: 1.3,
+            }}>{workoutName}</p>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: LINE_COLOR, flexShrink: 0 }} />
+            <span style={{ color: '#94a3b8', fontSize: 10 }}>
+              {compoundOnly ? 'Compound reps' : 'Reps'}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: LINE_COLOR, marginLeft: 'auto' }}>
+              {val.toLocaleString()}
+            </span>
+          </div>
+        </>
       )}
     </div>
   );
@@ -129,7 +137,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
       const workout = workoutTypes?.[dayKey];
 
       if (!isTrainingDay || !workout?.exercises?.length) {
-        return { day: label, totalReps: 0, isRest: true };
+        return { day: label, totalReps: 0, isRest: true, workoutName: null };
       }
 
       let totalReps = 0;
@@ -146,7 +154,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
         totalReps += sets * reps;
       });
 
-      return { day: label, totalReps, isRest: false };
+      return { day: label, totalReps, isRest: false, workoutName: workout.name || workout.label || null };
     });
   }, [currentUser, compoundOnly]);
 
