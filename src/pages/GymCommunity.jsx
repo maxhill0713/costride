@@ -1762,6 +1762,17 @@ export default function GymCommunity() {
             {/* ── CHALLENGES ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.25 }} className="space-y-3">
+                {isGhostGym && (
+                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
+                      <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock full challenges, leaderboards & more.</p>
+                    </div>
+                    <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg, #7c3aed, #db2777)', boxShadow:'0 3px 0 0 #5b21b6' }}>
+                      <Crown className="w-3.5 h-3.5" />Make Official
+                    </button>
+                  </div>
+                )}
                 {showOwnerControls && (
                   <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background:'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border:'1px solid rgba(59,130,246,0.3)' }}>
                     <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
@@ -1776,6 +1787,17 @@ export default function GymCommunity() {
 
             {/* ── CLASSES ── */}
             <TabsContent value="classes" className="space-y-3 mt-0 w-full">
+              {isGhostGym && (
+                <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background:'linear-gradient(135deg, rgba(124,58,237,0.18), rgba(219,39,119,0.12))', border:'1px solid rgba(139,92,246,0.3)' }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white mb-0.5">This isn't an official community yet!</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">Get your gym involved to unlock classes, coaches & more features.</p>
+                  </div>
+                  <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background:'linear-gradient(135deg, #7c3aed, #db2777)', boxShadow:'0 3px 0 0 #5b21b6' }}>
+                    <Crown className="w-3.5 h-3.5" />Make Official
+                  </button>
+                </div>
+              )}
               <ClassesTabContent
                 classes={classes}
                 showOwnerControls={showOwnerControls}
