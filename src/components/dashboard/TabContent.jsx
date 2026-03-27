@@ -555,6 +555,7 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
           borderLeft: `2px solid ${C.accent}`,
         }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.accent, flexShrink: 0, marginTop: 1 }} />
+
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Content is up to date.</div>
             <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Keep the cadence going.</div>
