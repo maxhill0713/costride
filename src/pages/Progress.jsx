@@ -517,7 +517,7 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
   return (
     <div className="space-y-6">
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
+        <ProgressiveOverloadTracker currentUser={currentUser} />
       </div>
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
