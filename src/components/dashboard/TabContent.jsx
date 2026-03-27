@@ -690,9 +690,9 @@ function EngagementTrend({ allPosts, polls, now }) {
         <SideLabel>Engagement Trend</SideLabel>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           {up
-            ? <TrendingUp   style={{ width: 11, height: 11, color: C.accent }} />
+            ? <TrendingUp   style={{ width: 11, height: 11, color: C.success }} />
             : <TrendingDown style={{ width: 11, height: 11, color: C.danger }} />}
-          <span style={{ fontSize: 13, fontWeight: 700, color: up ? C.accent : C.danger, letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: up ? C.success : C.danger, letterSpacing: '-0.02em' }}>
             {up ? '+' : ''}{change}%
           </span>
         </div>
@@ -701,7 +701,7 @@ function EngagementTrend({ allPosts, polls, now }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {[
-          { label: 'This week', val: thisWeek, color: up ? C.accent : C.danger },
+          { label: 'This week', val: thisWeek, color: up ? C.success : C.danger },
           { label: 'Last week', val: lastWeek, color: C.t3 },
         ].map((s, i) => (
           <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
