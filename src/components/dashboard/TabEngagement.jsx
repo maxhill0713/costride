@@ -74,9 +74,9 @@ function DelayPicker({ value, onChange }) {
       {DELAY_OPTS.map(o => (
         <button key={o.v} onClick={() => onChange(o.v)}
           style={{ padding:'5px 12px', borderRadius:7, fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
-            background: value===o.v ? C.blueDim : 'rgba(255,255,255,0.03)',
-            color: value===o.v ? C.blue : C.t3,
-            border:`1px solid ${value===o.v ? C.blueBrd : C.border}`,
+            background: value===o.v ? C.accentSub : 'rgba(255,255,255,0.03)',
+            color: value===o.v ? C.accent : C.t3,
+            border:`1px solid ${value===o.v ? C.accentBrd : C.border}`,
             transition:'all .15s' }}>
           {o.label}
         </button>
@@ -100,7 +100,7 @@ function RuleEditor({ rule, gymName, onSave, onCancel }) {
           background:'rgba(255,255,255,0.03)', border:`1px solid ${C.border}`,
           borderRadius:9, color:C.t1, fontSize:12.5, lineHeight:1.65,
           resize:'vertical', outline:'none', fontFamily:'inherit', marginBottom:14 }}
-        onFocus={e=>e.target.style.borderColor=C.blueBrd}
+        onFocus={e=>e.target.style.borderColor=C.accentBrd}
         onBlur={e=>e.target.style.borderColor=C.border} />
 
       {/* Delay */}
@@ -113,7 +113,7 @@ function RuleEditor({ rule, gymName, onSave, onCancel }) {
       <div style={{ display:'flex', gap:8 }}>
         <button onClick={() => onSave({ message:msg, delay_hours:delay })}
           style={{ flex:1, height:36, borderRadius:8,
-            background:C.blue, color:'#fff', border:'none',
+            background:C.accent, color:'#fff', border:'none',
             fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit',
             display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
           <CheckCircle style={{ width:12, height:12 }} /> Save changes
@@ -155,7 +155,7 @@ function RuleCard({ rule, gymName, onToggle, onEdit, onDelete, onTestSend }) {
 
       {/* Status strip — very subtle */}
       <div style={{ height:1.5, background: rule.enabled
-        ? `linear-gradient(90deg, ${C.blue}80 0%, ${C.blue}18 60%, transparent 100%)`
+        ? `linear-gradient(90deg, ${C.accent}80 0%, ${C.accent}18 60%, transparent 100%)`
         : 'rgba(255,255,255,0.04)' }} />
 
       {/* Main row */}
@@ -194,9 +194,9 @@ function RuleCard({ rule, gymName, onToggle, onEdit, onDelete, onTestSend }) {
           {/* Test */}
           <button onClick={handleTest} disabled={sending||sent}
             style={{ height:28, padding:'0 10px', borderRadius:7,
-              background: sent ? C.greenDim : 'rgba(255,255,255,0.04)',
-              border:`1px solid ${sent ? 'rgba(16,185,129,0.25)' : C.border}`,
-              color: sent ? C.green : C.t3,
+              background: sent ? C.successSub : 'rgba(255,255,255,0.04)',
+              border:`1px solid ${sent ? C.successBrd : C.border}`,
+              color: sent ? C.success : C.t3,
               fontSize:10.5, fontWeight:600, cursor: sending||sent ? 'default' : 'pointer',
               fontFamily:'inherit', display:'flex', alignItems:'center', gap:4,
               transition:'all .15s' }}>
@@ -208,18 +208,18 @@ function RuleCard({ rule, gymName, onToggle, onEdit, onDelete, onTestSend }) {
           {/* Edit */}
           <button onClick={() => setOpen(v=>!v)}
             style={{ width:28, height:28, borderRadius:7, display:'flex', alignItems:'center', justifyContent:'center',
-              background: open ? C.blueDim : 'rgba(255,255,255,0.04)',
-              border:`1px solid ${open ? C.blueBrd : C.border}`,
-              color: open ? C.blue : C.t3, cursor:'pointer', transition:'all .15s' }}>
+              background: open ? C.accentSub : 'rgba(255,255,255,0.04)',
+              border:`1px solid ${open ? C.accentBrd : C.border}`,
+              color: open ? C.accent : C.t3, cursor:'pointer', transition:'all .15s' }}>
             <Edit3 style={{ width:11, height:11 }} />
           </button>
 
           {/* Toggle */}
           <button onClick={onToggle}
             style={{ width:28, height:28, borderRadius:7, display:'flex', alignItems:'center', justifyContent:'center',
-              background: rule.enabled ? C.greenDim : 'rgba(255,255,255,0.04)',
-              border:`1px solid ${rule.enabled ? 'rgba(16,185,129,0.25)' : C.border}`,
-              color: rule.enabled ? C.green : C.t3, cursor:'pointer', transition:'all .15s' }}>
+              background: rule.enabled ? C.successSub : 'rgba(255,255,255,0.04)',
+              border:`1px solid ${rule.enabled ? C.successBrd : C.border}`,
+              color: rule.enabled ? C.success : C.t3, cursor:'pointer', transition:'all .15s' }}>
             {rule.enabled
               ? <ToggleRight style={{ width:13, height:13 }} />
               : <ToggleLeft  style={{ width:13, height:13 }} />}
@@ -230,7 +230,7 @@ function RuleCard({ rule, gymName, onToggle, onEdit, onDelete, onTestSend }) {
             style={{ width:28, height:28, borderRadius:7, display:'flex', alignItems:'center', justifyContent:'center',
               background:'rgba(255,255,255,0.04)', border:`1px solid ${C.border}`,
               color:C.t3, cursor:'pointer', transition:'all .15s' }}
-            onMouseEnter={e=>{e.currentTarget.style.background=C.redDim;e.currentTarget.style.borderColor='rgba(239,68,68,0.25)';e.currentTarget.style.color=C.red;}}
+            onMouseEnter={e=>{e.currentTarget.style.background=C.dangerSub;e.currentTarget.style.borderColor=C.dangerBrd;e.currentTarget.style.color=C.danger;}}
             onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.04)';e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.t3;}}>
             <Trash2 style={{ width:11, height:11 }} />
           </button>
@@ -286,9 +286,9 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
               <button key={c} onClick={() => setCat(c)}
                 style={{ padding:'4px 12px', borderRadius:99, fontSize:11, fontWeight:600,
                   cursor:'pointer', fontFamily:'inherit',
-                  background: cat===c ? C.blueDim : 'rgba(255,255,255,0.03)',
-                  color: cat===c ? C.blue : C.t3,
-                  border:`1px solid ${cat===c ? C.blueBrd : C.border}`,
+                  background: cat===c ? C.accentSub : 'rgba(255,255,255,0.03)',
+                  color: cat===c ? C.accent : C.t3,
+                  border:`1px solid ${cat===c ? C.accentBrd : C.border}`,
                   transition:'all .15s' }}>
                 {c}
               </button>
@@ -304,22 +304,22 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
                 <button key={t.id} onClick={() => pick(t)}
                   style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px',
                     borderRadius:10, cursor:'pointer', textAlign:'left', fontFamily:'inherit',
-                    background: isSel ? C.blueDim : 'rgba(255,255,255,0.025)',
-                    border:`1px solid ${isSel ? C.blueBrd : C.border}`,
+                    background: isSel ? C.accentSub : 'rgba(255,255,255,0.025)',
+                    border:`1px solid ${isSel ? C.accentBrd : C.border}`,
                     transition:'all .15s' }}
                   onMouseEnter={e=>{ if(!isSel){ e.currentTarget.style.background='rgba(255,255,255,0.045)'; e.currentTarget.style.borderColor=C.borderHi; }}}
                   onMouseLeave={e=>{ if(!isSel){ e.currentTarget.style.background='rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor=C.border; }}}>
                   <div style={{ width:28, height:28, borderRadius:8, flexShrink:0,
-                    background: isSel ? C.blueDim : 'rgba(255,255,255,0.04)',
-                    border:`1px solid ${isSel ? C.blueBrd : C.border}`,
+                    background: isSel ? C.accentSub : 'rgba(255,255,255,0.04)',
+                    border:`1px solid ${isSel ? C.accentBrd : C.border}`,
                     display:'flex', alignItems:'center', justifyContent:'center' }}>
-                    <IconEl style={{ width:12, height:12, color: isSel ? C.blue : C.t3 }} />
+                    <IconEl style={{ width:12, height:12, color: isSel ? C.accent : C.t3 }} />
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:12, fontWeight:700, color: isSel ? C.t1 : C.t2, marginBottom:1 }}>{t.label}</div>
                     <div style={{ fontSize:10.5, color:C.t3, lineHeight:1.4 }}>{t.desc}</div>
                   </div>
-                  {isSel && <ChevronRight style={{ width:12, height:12, color:C.blue, flexShrink:0 }} />}
+                  {isSel && <ChevronRight style={{ width:12, height:12, color:C.accent, flexShrink:0 }} />}
                 </button>
               );
             })}
@@ -334,10 +334,10 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
         {/* Right — configuration (only when trigger is selected) */}
         {selected && (
           <div>
-            <div style={{ padding:'12px 14px', borderRadius:10, background:C.blueDim,
-              border:`1px solid ${C.blueBrd}`, marginBottom:16,
+            <div style={{ padding:'12px 14px', borderRadius:10, background:C.accentSub,
+              border:`1px solid ${C.accentBrd}`, marginBottom:16,
               display:'flex', alignItems:'center', gap:9 }}>
-              {(() => { const I = selected.Icon; return <I style={{ width:13, height:13, color:C.blue, flexShrink:0 }} />; })()}
+              {(() => { const I = selected.Icon; return <I style={{ width:13, height:13, color:C.accent, flexShrink:0 }} />; })()}
               <span style={{ fontSize:12.5, fontWeight:700, color:C.t1 }}>{selected.label}</span>
             </div>
 
@@ -347,7 +347,7 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
                 background:'rgba(255,255,255,0.03)', border:`1px solid ${C.border}`,
                 borderRadius:9, color:C.t1, fontSize:12.5, lineHeight:1.65,
                 resize:'vertical', outline:'none', fontFamily:'inherit', marginBottom:14 }}
-              onFocus={e=>e.target.style.borderColor=C.blueBrd}
+              onFocus={e=>e.target.style.borderColor=C.accentBrd}
               onBlur={e=>e.target.style.borderColor=C.border} />
 
             <Label>Send timing</Label>
@@ -358,7 +358,7 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
             <button onClick={() => { if(msg.trim()){ onAdd({trigger_id:selected.id,message:msg.trim(),delay_hours:delay,enabled:true}); onClose(); }}}
               disabled={!msg.trim()}
               style={{ width:'100%', height:40, borderRadius:9,
-                background: msg.trim() ? C.blue : 'rgba(255,255,255,0.06)',
+                background: msg.trim() ? C.accent : 'rgba(255,255,255,0.06)',
                 color: msg.trim() ? '#fff' : C.t3,
                 border:'none', fontSize:13, fontWeight:700,
                 cursor: msg.trim() ? 'pointer' : 'default', fontFamily:'inherit',
@@ -441,9 +441,9 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
         <div>
           <h2 style={{ fontSize:20, fontWeight:800, color:C.t1, margin:'0 0 5px',
             letterSpacing:'-0.03em', display:'flex', alignItems:'center', gap:9 }}>
-            <div style={{ width:30, height:30, borderRadius:8, background:C.blueDim, border:`1px solid ${C.blueBrd}`,
+            <div style={{ width:30, height:30, borderRadius:8, background:C.accentSub, border:`1px solid ${C.accentBrd}`,
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <Zap style={{ width:14, height:14, color:C.blue }} />
+              <Zap style={{ width:14, height:14, color:C.accent }} />
             </div>
             Automated Engagement
           </h2>
@@ -455,8 +455,8 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
 
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           {savedMsg && (
-            <span style={{ fontSize:10.5, fontWeight:700, color:C.green,
-              background:C.greenDim, border:'1px solid rgba(16,185,129,0.22)',
+            <span style={{ fontSize:10.5, fontWeight:700, color:C.success,
+              background:C.successSub, border:`1px solid ${C.successBrd}`,
               borderRadius:6, padding:'4px 10px' }}>
               Saved
             </span>
@@ -464,9 +464,9 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
           {isSaving && <span style={{ fontSize:11, color:C.t3 }}>Saving</span>}
           <button onClick={() => setShowAdd(v=>!v)}
             style={{ display:'flex', alignItems:'center', gap:7, height:36, padding:'0 14px',
-              borderRadius:9, background: showAdd ? C.blueDim : C.blue,
-              color: showAdd ? C.blue : '#fff',
-              border:`1px solid ${showAdd ? C.blueBrd : 'transparent'}`,
+              borderRadius:9, background: showAdd ? C.accentSub : C.accent,
+              color: showAdd ? C.accent : '#fff',
+              border:`1px solid ${showAdd ? C.accentBrd : 'transparent'}`,
               fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit',
               transition:'all .15s' }}>
             <Plus style={{ width:13, height:13 }} />
@@ -485,7 +485,7 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
         ].map((s,i) => (
           <Card key={i} style={{ padding:'16px 18px' }}>
             <div style={{ fontSize:26, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:5,
-              color: s.risk && s.value > 0 ? C.red : C.t1 }}>
+              color: C.t1 }}>
               {s.value}
             </div>
             <div style={{ fontSize:12, fontWeight:600, color:C.t2, marginBottom:1 }}>{s.label}</div>
@@ -514,8 +514,8 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <span style={{ fontSize:13, fontWeight:700, color:C.t1 }}>Active</span>
-                <span style={{ fontSize:10, fontWeight:700, color:C.green,
-                  background:C.greenDim, border:'1px solid rgba(16,185,129,0.2)',
+                <span style={{ fontSize:10, fontWeight:700, color:C.success,
+                  background:C.successSub, border:`1px solid ${C.successBrd}`,
                   borderRadius:6, padding:'2px 8px' }}>
                   {enabledCount} running
                 </span>
@@ -606,7 +606,7 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
                   </div>
                   <div style={{ height:2, background:'rgba(255,255,255,0.06)', borderRadius:99, overflow:'hidden' }}>
                     <div style={{ width:`${s.bar}%`, height:'100%',
-                      background:`linear-gradient(90deg,${C.blue},${C.blue}88)`,
+                      background:`linear-gradient(90deg,${C.accent},${C.accent}88)`,
                       borderRadius:99 }} />
                   </div>
                 </div>
