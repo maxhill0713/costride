@@ -56,8 +56,13 @@ Deno.serve(async (req) => {
     if (missedCount > 0) {
       const currentFreezes = user.streak_freezes || 0;
       const newFreezes     = Math.max(0, currentFreezes - missedCount);
+      const freezesActuallyConsumed = currentFreezes - newFreezes;
       await base44.auth.updateMe({ streak_freezes: newFreezes, last_freeze_animation_shown: today });
-      return Response.json({ shouldShowAnimation: true, freezesLostCount: missedCount, currentFreezes: newFreezes });
+      // Only show freeze animation if at least one freeze was actually consumed
+      if (freezesActuallyConsumed > 0) {
+        return Response.json({ shouldShowAnimation: true, freezesLostCount: freezesActuallyConsumed, currentFreezes: newFreezes });
+      }
+      return Response.json({ shouldShowAnimation: false, freezesLostCount: 0, currentFreezes: newFreezes });
     }
 
     return Response.json({ shouldShowAnimation: false, freezesLostCount: 0, currentFreezes: user.streak_freezes || 0 });
