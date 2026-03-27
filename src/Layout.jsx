@@ -42,10 +42,10 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   const getTabLink = (item) => tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
 
   const handleTabClick = (item, e) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (currentPageName === item.page) {
       e.preventDefault();
       if (item.page === 'Home') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         window.dispatchEvent(new Event('homeButtonClicked'));
       }
     }
