@@ -167,15 +167,15 @@ function ActivityChip({ m }) {
     label  = `${m.visits30}/mo · high`;
     color  = C.success; bg = C.successSub; border = C.successBrd;
   } else if (m.visits30 >= 8) {
-    // Tier 3: Neutral — active, no alarm needed
+    // Tier 3: Blue — active, healthy
     label  = `${m.visits30}/mo · active`;
-    color  = C.t2; bg = 'transparent'; border = C.border;
+    color  = C.accent; bg = C.accentSub; border = C.accentBrd;
   } else if (m.visits30 >= 4) {
     label  = `${m.visits30}/mo`;
-    color  = C.t2; bg = 'transparent'; border = C.border;
+    color  = C.accent; bg = 'transparent'; border = C.border;
   } else if (m.visits30 >= 1) {
     label  = `${m.visits30}/mo · low`;
-    color  = C.t3; bg = 'transparent'; border = C.border;
+    color  = C.t2; bg = 'transparent'; border = C.border;
   } else if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 7) {
     // New — not alarming, neutral
     label  = 'Just joined';
@@ -329,7 +329,7 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
         onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
       >
-        <Bell style={{ width: 11, height: 11, color: C.t3 }} />
+        <Bell style={{ width: 11, height: 11, color: C.accent }} />
       </button>
       <button
         onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
@@ -762,11 +762,11 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
     const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
     const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
     return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.success, filter: 'active' },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: C.t1,      filter: 'active' },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: C.t1,      filter: 'active' },
+      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.success,                    filter: 'active' },
+      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: active > 0 ? C.accent : C.t1, filter: 'active' },
+      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: casual > 0 ? C.accent : C.t1, filter: 'active' },
       { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   valueColor: atRisk > 0 ? C.danger : C.t1, filter: 'atRisk' },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: C.t1,      filter: 'new'    },
+      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: newM > 0 ? C.success : C.t1,  filter: 'new'    },
     ];
   }, [memberRows]);
 
