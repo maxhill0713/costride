@@ -1,95 +1,103 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import PostCard from '../feed/PostCard';
-import { createPageUrl } from '../../utils';
 
-// ─── localStorage helpers ────────────────────────────────────────────────────
-const LS_KEY = 'feedSeenOrder';
+// ─── localStorage helpers ─────────────────────────────────────────────────────
+const LS_KEY = 'feedSeenOrder_v2';
 
-function loadSeenOrder() {
+function loadSeenIds() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return new Set(raw ? JSON.parse(raw) : []);
   } catch {
-    return [];
+    return new Set();
   }
 }
 
-function saveSeenOrder(order) {
+function saveSeenIds(seenSet) {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify(order));
+    localStorage.setItem(LS_KEY, JSON.stringify([...seenSet]));
   } catch {}
 }
 
-// ─── Build the initial display order ─────────────────────────────────────────
-// Posts the user has already scrolled past go to the back (in the order they
-// were seen), unseen posts stay at the front sorted newest-first.
+// ─── Sort posts newest-first ──────────────────────────────────────────────────
+function sortByNewest(posts) {
+  return [...posts].sort(
+    (a, b) => new Date(b.created_date) - new Date(a.created_date)
+  );
+}
+
+// ─── Build ordered list: unseen (newest-first) then seen (newest-first) ───────
 function buildOrderedPosts(posts, seenIds) {
-  const seenSet = new Set(seenIds);
-  const unseen = posts.filter(p => !seenSet.has(p.id));
-  const seen   = seenIds
-    .map(id => posts.find(p => p.id === id))
-    .filter(Boolean);
+  const sorted = sortByNewest(posts);
+  const unseen = sorted.filter(p => !seenIds.has(p.id));
+  const seen   = sorted.filter(p =>  seenIds.has(p.id));
   return [...unseen, ...seen];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-function ActivityFeedSection({
-  friends,
-  socialFeedPosts,
-  currentUser,
-  queryClient,
-}) {
+function ActivityFeedSection({ friends, socialFeedPosts, currentUser, queryClient }) {
   if (friends.length === 0) return null;
 
-  // orderedPosts is the live display list
-  const [orderedPosts, setOrderedPosts] = useState(() => {
-    const seenIds = loadSeenOrder();
-    return buildOrderedPosts(socialFeedPosts, seenIds);
-  });
+  // postMap for fast id → post lookup
+  const postMapRef = useRef({});
+  socialFeedPosts.forEach(p => { postMapRef.current[p.id] = p; });
 
-  // Rebuild when the raw post list changes (new data from server, etc.)
-  // but preserve seen ordering.
+  const seenIdsRef   = useRef(loadSeenIds());
+  const movedRef     = useRef(new Set());
+  const observersRef = useRef({});
+
+  // visibleIds is the single source of render truth.
+  // We only ever APPEND to the end when a post is cycled — never reorder
+  // what's already on screen — so scroll position never jumps.
+  const [visibleIds, setVisibleIds] = useState(() =>
+    buildOrderedPosts(socialFeedPosts, seenIdsRef.current).map(p => p.id)
+  );
+
+  // Rebuild when the server gives us fresh posts (pull-to-refresh / refetch).
+  // Only prepend genuinely new posts; don't disturb the existing order.
   useEffect(() => {
-    const seenIds = loadSeenOrder();
-    setOrderedPosts(buildOrderedPosts(socialFeedPosts, seenIds));
+    socialFeedPosts.forEach(p => { postMapRef.current[p.id] = p; });
+
+    setVisibleIds(prev => {
+      const prevSet = new Set(prev);
+      const freshSorted = sortByNewest(socialFeedPosts);
+
+      // Brand-new posts not yet in the list → prepend at top (newest first)
+      const brandNew = freshSorted
+        .filter(p => !prevSet.has(p.id))
+        .map(p => p.id);
+
+      // Posts that were in prev but have now disappeared from server → remove
+      const serverIds = new Set(socialFeedPosts.map(p => p.id));
+      const kept = prev.filter(id => serverIds.has(id));
+
+      return [...brandNew, ...kept];
+    });
   }, [socialFeedPosts]);
 
-  // Track which post ids are currently observed
-  const observersRef = useRef({});   // postId → IntersectionObserver
-  const movedRef    = useRef(new Set()); // ids already moved this session (debounce)
-
+  // Called when a post fully scrolls above the viewport.
+  // Moves it to the BOTTOM of visibleIds without touching anything above it.
   const markSeen = useCallback((postId) => {
     if (movedRef.current.has(postId)) return;
     movedRef.current.add(postId);
 
-    // Update localStorage seen order
-    const seenIds = loadSeenOrder();
-    const updated = seenIds.filter(id => id !== postId);
-    updated.push(postId); // move/add to end
-    saveSeenOrder(updated);
+    seenIdsRef.current.add(postId);
+    saveSeenIds(seenIdsRef.current);
 
-    // Move post to back of display list
-    setOrderedPosts(prev => {
-      const idx = prev.findIndex(p => p.id === postId);
-      if (idx === -1) return prev;
-      const next = [...prev];
-      const [moved] = next.splice(idx, 1);
-      next.push(moved);
-      return next;
+    setVisibleIds(prev => {
+      const without = prev.filter(id => id !== postId);
+      return [...without, postId];
     });
   }, []);
 
-  // Attach / detach an IntersectionObserver for each rendered post card.
-  // We detect "scrolled past" by checking that the bottom of the card is
-  // above the top of the viewport (rootMargin pushes the top boundary down
-  // so we only fire once the card is fully gone).
+  // Attach an IntersectionObserver per card.
+  // Triggers when the card's bottom edge goes above the top of the viewport.
   const attachObserver = useCallback((el, postId) => {
     if (!el || observersRef.current[postId]) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          // Card has left the viewport upwards
           if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
             markSeen(postId);
             observer.disconnect();
@@ -97,17 +105,14 @@ function ActivityFeedSection({
           }
         });
       },
-      // rootMargin extends the bottom of the observed area by 600px so the
-      // next posts are already rendered before the user reaches them.
-      // The top margin is 0 so "scrolled past" detection is unaffected.
-      { threshold: 0, rootMargin: '0px 0px 600px 0px' }
+      { threshold: 0 }
     );
 
     observer.observe(el);
     observersRef.current[postId] = observer;
   }, [markSeen]);
 
-  // Cleanup all observers on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       Object.values(observersRef.current).forEach(obs => obs.disconnect());
@@ -115,32 +120,28 @@ function ActivityFeedSection({
     };
   }, []);
 
-  // Render all posts — cycling handles the infinite feel, no pagination needed
+  const postsToRender = visibleIds
+    .map(id => postMapRef.current[id])
+    .filter(Boolean);
 
-  if (orderedPosts.length === 0) return null;
+  if (postsToRender.length === 0) return null;
 
   return (
     <div className="space-y-3 mt-12">
-      <div className="space-y-3">
-        {orderedPosts.map(post => (
-          <div
-            key={post.id}
-            ref={el => attachObserver(el, post.id)}
-          >
-            <PostCard
-              post={post}
-              fullWidth={true}
-              currentUser={currentUser}
-              isOwnProfile={post.member_id === currentUser?.id}
-              onLike={() => {}}
-              onComment={() => {}}
-              onSave={() => {}}
-              onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-            />
-          </div>
-        ))}
-      </div>
-
+      {postsToRender.map(post => (
+        <div key={post.id} ref={el => attachObserver(el, post.id)}>
+          <PostCard
+            post={post}
+            fullWidth={true}
+            currentUser={currentUser}
+            isOwnProfile={post.member_id === currentUser?.id}
+            onLike={() => {}}
+            onComment={() => {}}
+            onSave={() => {}}
+            onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+          />
+        </div>
+      ))}
     </div>
   );
 }
