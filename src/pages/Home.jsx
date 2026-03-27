@@ -235,10 +235,6 @@ export default function Home() {
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [debouncedFriendSearch, setDebouncedFriendSearch] = useState('');
   const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
-  const [dismissedCardIds, setDismissedCardIds] = useState(() => {
-    try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
-    catch { return new Set(); }
-  });
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -298,7 +294,6 @@ export default function Home() {
     };
   }, []);
   const triggerRefresh = async () => {
-    setVisiblePostCount(POSTS_PER_PAGE);
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
       queryClient.invalidateQueries({ queryKey: ['checkIns'] }),
@@ -437,10 +432,6 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
-  const POSTS_PER_PAGE = 4;
-  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PER_PAGE);
-  const [isLoadingMorePosts, setIsLoadingMorePosts] = useState(false);
-  const feedBottomRef = useRef(null);
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -529,19 +520,6 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
   useEffect(() => {
-    if (!feedBottomRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisiblePostCount(prev => prev + POSTS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(feedBottomRef.current);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
       runStreakAnimation(celebrationStreakNum, audioCtxRef, celebTimers);
@@ -564,9 +542,7 @@ export default function Home() {
           <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
         </div>
         <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
-          {/* Check-in card skeleton */}
           <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
-          {/* Friends row skeleton */}
           <div className="flex gap-3 overflow-hidden">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
@@ -575,7 +551,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-          {/* Feed card skeletons */}
           {[...Array(3)].map((_, i) => (
             <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
               <div className="flex items-center gap-3">
@@ -597,13 +572,6 @@ export default function Home() {
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
-  const friendPosts = allPosts.filter((post) =>
-    friendIdList.includes(post.member_id) &&
-    !post.is_system_generated &&
-    !post.is_hidden &&
-    !post.content?.includes('well done') &&
-    !post.content?.includes('workout finished')
-  );
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const effectiveToday = (() => {
@@ -651,6 +619,7 @@ export default function Home() {
     if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
+  // ── Social feed: last 3 days, real content only ──────────────────────────
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const socialFeedPosts = allPosts.filter(post =>
     (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
@@ -659,41 +628,7 @@ export default function Home() {
     !post.is_hidden &&
     new Date(post.created_date) >= threeDaysAgo
   );
-  const activityFeed = (() => {
-    const activities = [];
-    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
-    const exerciseNames = { bench_press:'Bench Press', squat:'Squat', deadlift:'Deadlift', overhead_press:'Overhead Press', barbell_row:'Barbell Row', power_clean:'Power Clean' };
-    friendPRs.forEach(lift => {
-      const friend = friends.find(f => f.friend_id === lift.member_id);
-      if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
-        activities.push({ id:`pr-${lift.id}`, type:'pr', friendId:lift.member_id, friendName:friend?.friend_name||lift.member_name, friendAvatar:friend?.friend_avatar, message:`hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise]||lift.exercise}`, timestamp:new Date(lift.created_date), emoji:'🏆' });
-      }
-    });
-    notifications.forEach(n => {
-      const text = (n.message||n.title||'').toLowerCase();
-      if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
-        activities.push({ id:`notif-${n.id}`, type:'notification', message:n.message||n.title, timestamp:new Date(n.created_date) });
-      }
-    });
-    return activities.sort((a,b) => b.timestamp - a.timestamp);
-  })();
-  const activityCards = (() => {
-    const cards = [];
-    const lastCI = allCheckIns.filter(c => c.user_id === currentUser?.id)[0];
-    const daysSince = lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null;
-    if (daysSince && daysSince >= 3) cards.push({ id:'nudge-checkin', type:'nudge', title:'Time to Check In', message:`You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji:'⏰' });
-    friendsWithActivity.forEach(friend => {
-      if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id:`inactive-${friend.friend_id}`, type:'friend-inactive', title:`${friend.friend_name} Needs a Nudge`, message:`${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji:'👋' });
-    });
-    return cards;
-  })();
-  const filteredActivityCards = activityCards.filter(c => !dismissedCardIds.has(c.id));
   const filteredSearchResults = searchResults.filter(u => !friendIdList.includes(u.id));
-  const dismissCard = (id) => {
-    const updated = new Set(dismissedCardIds).add(id);
-    setDismissedCardIds(updated);
-    localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
-  };
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -887,7 +822,7 @@ export default function Home() {
               )}
             </div>
           )}
-          {/* ── Community card — static, no entrance animations ── */}
+          {/* ── Community card ── */}
           {memberGym?.id && (
             <div
               className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100"
@@ -1200,15 +1135,9 @@ export default function Home() {
           {/* ── Social Feed ── */}
           <ActivityFeedSection
             friends={friends}
-            filteredActivityCards={filteredActivityCards}
-            activityFeed={activityFeed}
             socialFeedPosts={socialFeedPosts}
-            visiblePostCount={visiblePostCount}
-            feedBottomRef={feedBottomRef}
-            isLoadingMorePosts={isLoadingMorePosts}
             currentUser={currentUser}
             queryClient={queryClient}
-            dismissCard={dismissCard}
           />
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
@@ -1225,14 +1154,12 @@ export default function Home() {
           )}
         </div>
       </div>
-      {/* Streak Freeze Animation */}
       <StreakFreezeAnimation
         isOpen={showFreezeAnimation}
         freezesLostCount={freezeAnimationData.freezesLostCount}
         finalFreezeCount={freezeAnimationData.finalFreezeCount}
         onComplete={() => setShowFreezeAnimation(false)}
       />
-      {/* Streak Loss Animation */}
       <StreakLossAnimation
         isOpen={showStreakLossAnimation}
         previousStreak={streakLossAnimationData.previousStreak}
@@ -1285,9 +1212,7 @@ export default function Home() {
         cancelFriendMutation={cancelFriendMutation}
         addFriendMutation={addFriendMutation}
       />
-      {/* ── Workout Summary Modal ── */}
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
-      {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
