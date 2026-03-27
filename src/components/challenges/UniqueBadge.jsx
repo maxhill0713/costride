@@ -95,7 +95,7 @@ export default function UniqueBadge({ reward, size = 'md' }) {
         <Icon className={`${iconSizes[size]} text-white drop-shadow-md relative z-10`} strokeWidth={1.5} />
       </div>
       <div className="text-center">
-        <p className="text-xs font-bold text-white">{config.label}</p>
+
       </div>
     </div>
   );
