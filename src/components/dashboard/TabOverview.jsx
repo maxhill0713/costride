@@ -34,7 +34,7 @@ import {
 } from 'recharts';
 import {
   TrendingDown, ArrowUpRight, Zap,
-  CheckCircle, Trophy, UserPlus, QrCode, MessageSquarePlus,
+  CheckCircle, Trophy, MessageSquarePlus,
   Pencil, Calendar, Activity, Users, AlertTriangle,
   ChevronRight, Minus, TrendingUp,
   Clock, Flame, BarChart2, Shield,
@@ -906,14 +906,12 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
    Icon glyphs retain semantic color (small enough not to compete).
 ══════════════════════════════════════════════════════════════════ */
 function QuickActionsGrid({ openModal }) {
-  const actions = [
-    { icon: UserPlus,          label: 'Add Member',    color: C.accent, fn: () => openModal('members')   },
-    { icon: QrCode,            label: 'Scan Check-in', color: C.accent, fn: () => openModal('qrScanner') },
+   const actions = [
     { icon: Trophy,            label: 'New Challenge', color: C.accent, fn: () => openModal('challenge') },
     { icon: Calendar,          label: 'New Event',     color: C.accent, fn: () => openModal('event')     },
     { icon: MessageSquarePlus, label: 'Post Update',   color: C.accent, fn: () => openModal('post')      },
     { icon: Pencil,            label: 'New Poll',      color: C.accent, fn: () => openModal('poll')      },
-  ];
+   ];
 
   return (
     <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
