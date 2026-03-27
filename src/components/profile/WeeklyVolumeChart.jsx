@@ -268,6 +268,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
             />
             <Line
+              key={animationKey}
               type="monotone"
               dataKey="totalReps"
               stroke={LINE_COLOR}
@@ -275,7 +276,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              isAnimationActive={true}
+              isAnimationActive={localKey > 0}
               animationDuration={800}
             />
           </LineChart>
