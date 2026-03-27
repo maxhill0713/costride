@@ -532,6 +532,9 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
     overflow: 'hidden',
   }}
 >
+  <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
+</div>
+>
   {/* Subtle top accent rule */}
   <div
     style={{
