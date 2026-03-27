@@ -36,9 +36,6 @@ function buildOrderedPosts(posts, seenIds) {
 function ActivityFeedSection({
   friends,
   socialFeedPosts,
-  visiblePostCount,
-  feedBottomRef,
-  isLoadingMorePosts,
   currentUser,
   queryClient,
 }) {
@@ -100,7 +97,10 @@ function ActivityFeedSection({
           }
         });
       },
-      { threshold: 0 }
+      // rootMargin extends the bottom of the observed area by 600px so the
+      // next posts are already rendered before the user reaches them.
+      // The top margin is 0 so "scrolled past" detection is unaffected.
+      { threshold: 0, rootMargin: '0px 0px 600px 0px' }
     );
 
     observer.observe(el);
@@ -115,14 +115,14 @@ function ActivityFeedSection({
     };
   }, []);
 
-  const visiblePosts = orderedPosts.slice(0, visiblePostCount);
+  // Render all posts — cycling handles the infinite feel, no pagination needed
 
   if (orderedPosts.length === 0) return null;
 
   return (
     <div className="space-y-3 mt-12">
       <div className="space-y-3">
-        {visiblePosts.map(post => (
+        {orderedPosts.map(post => (
           <div
             key={post.id}
             ref={el => attachObserver(el, post.id)}
@@ -141,19 +141,6 @@ function ActivityFeedSection({
         ))}
       </div>
 
-      {/* Infinite scroll sentinel */}
-      <div ref={feedBottomRef} className="flex justify-center py-3">
-        {isLoadingMorePosts && (
-          <div style={{
-            width: 30,
-            height: 30,
-            borderRadius: '50%',
-            border: '2.5px solid rgba(148,163,184,0.2)',
-            borderTop: '2.5px solid #60a5fa',
-            animation: 'spin 0.7s linear infinite',
-          }} />
-        )}
-      </div>
     </div>
   );
 }
