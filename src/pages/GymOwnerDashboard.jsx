@@ -7,13 +7,15 @@ import {
   TrendingDown, Users, Trophy, AlertCircle, BarChart2,
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
-  Plus, Dumbbell, Clock, Crown, Trash2, X, Download, Send, Bell,
+  Plus, Dumbbell, Clock, Crown, Trash2, X, Download, Send,
   Sun, Zap, TrendingUp, Activity, Calendar, CheckCircle,
   MessageCircle, Star, UserCheck, Flame, ChevronRight, Pencil, Gift
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
+import ProfileDropdown from '../components/dashboard/ProfileDropdown';
+import MemberChatPanel from '../components/dashboard/MemberChatPanel';
 import ManageRewardsModal    from '../components/gym/ManageRewardsModal';
 import ManageClassesModal    from '../components/gym/ManageClassesModal';
 import ManageCoachesModal    from '../components/gym/ManageCoachesModal';
@@ -527,6 +529,7 @@ export default function GymOwnerDashboard() {
   const [memberPage, setMemberPage]     = useState(1);
   const [memberPageSize]                = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
+  const [showChat, setShowChat] = useState(false);
 
   const openModal  = useCallback((name) => { if (name === 'message') { setTab('members'); return; } setModal(name); }, []);
   const closeModal = useCallback(() => setModal(null), []);
@@ -563,6 +566,25 @@ export default function GymOwnerDashboard() {
       tabInitialised.current = true;
     }
   }, [currentUser, isCoach]);
+
+  // Listen for logout from ProfileDropdown
+  useEffect(() => {
+    const h = () => base44.auth.logout();
+    document.addEventListener('dash-logout', h);
+    return () => document.removeEventListener('dash-logout', h);
+  }, []);
+
+  const handleRoleSelect = (roleId) => {
+    if (roleId === 'gym_owner') {
+      setRoleOverride(null);
+      localStorage.removeItem('dashRoleOverride');
+    } else {
+      // roleId is a coach record id — switch to coach view
+      setRoleOverride('coach');
+      localStorage.setItem('dashRoleOverride', 'coach');
+    }
+    setTab('overview');
+  };
 
   const NAV = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
     ...item,
@@ -910,6 +932,13 @@ export default function GymOwnerDashboard() {
       </AlertDialog>
 
       <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)} />
+      <MemberChatPanel
+        open={showChat}
+        onClose={() => setShowChat(false)}
+        allMemberships={allMemberships}
+        currentUser={currentUser}
+        avatarMap={memberAvatarMapResolved}
+      />
     </>
   );
 
@@ -1202,39 +1231,29 @@ export default function GymOwnerDashboard() {
               <Plus style={{ width: 12, height: 12 }} /> New Post
             </button>
 
-            {/* Role preview toggle — DEV only */}
-            {isDev && (
-              <button onClick={toggleRole}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t3, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.12s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = D.borderHi}
-                onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
-                {isCoach ? 'Coach' : 'Owner'} <span style={{ opacity: 0.4, fontSize: 9 }}>preview</span>
-              </button>
-            )}
+            {/* Profile dropdown with role switcher */}
+            <ProfileDropdown
+              currentUser={currentUser}
+              coaches={coaches}
+              currentRole={isCoach ? 'coach' : 'gym_owner'}
+              onRoleSelect={handleRoleSelect}
+            />
 
-            {/* User avatar — neutral */}
-            <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 9px 4px 5px', borderRadius: 9, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, cursor: 'pointer', transition: 'border-color 0.12s', fontFamily: 'inherit' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = D.borderHi}
-              onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: D.t2 }}>
-                {(currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase()}
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: D.t2 }}>{(currentUser?.full_name || currentUser?.email || 'User').split(' ')[0]}</span>
-              <ChevronDown style={{ width: 10, height: 10, color: D.t4 }} />
+            {/* Chat with members */}
+            <button
+              onClick={() => setShowChat(o => !o)}
+              style={{
+                width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', background: showChat ? D.blueDim : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${showChat ? D.blueBrd : D.border}`,
+                color: showChat ? D.blue : D.t3, cursor: 'pointer', position: 'relative',
+                transition: 'all 0.12s', fontFamily: 'inherit',
+              }}
+              onMouseEnter={e => { if (!showChat) { e.currentTarget.style.color = D.t1; e.currentTarget.style.borderColor = D.borderHi; } }}
+              onMouseLeave={e => { if (!showChat) { e.currentTarget.style.color = D.t3; e.currentTarget.style.borderColor = D.border; } }}
+            >
+              <MessageCircle style={{ width: 13, height: 13 }} />
             </button>
-
-            {/* Notifications */}
-            <Link to={createPageUrl('NotificationsHub')}>
-              <button style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer', position: 'relative', transition: 'all 0.12s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { e.currentTarget.style.color = D.t1; e.currentTarget.style.borderColor = D.borderHi; }}
-                onMouseLeave={e => { e.currentTarget.style.color = D.t3; e.currentTarget.style.borderColor = D.border; }}>
-                <Bell style={{ width: 13, height: 13 }} />
-                {/* Red dot ONLY when there are real alerts */}
-                {atRisk > 0 && (
-                  <div style={{ position: 'absolute', top: 7, right: 7, width: 5, height: 5, borderRadius: '50%', background: D.red, border: `1.5px solid ${D.bgSidebar}` }} />
-                )}
-              </button>
-            </Link>
           </div>
         </header>
 
