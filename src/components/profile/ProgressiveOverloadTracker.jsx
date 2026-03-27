@@ -379,6 +379,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                     dot={false}
                     activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
+                    isAnimationActive={false}
                   />
                 ))}
               </LineChart>

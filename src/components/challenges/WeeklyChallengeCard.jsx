@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+// Module-level set — tracks which challenge cards have already animated this session
+const animatedCards = new Set();
+
 export default function WeeklyChallengeCard({ challenge, currentUser, userProgress, isMonthly = false }) {
   const [showStats, setShowStats] = React.useState(false);
   const queryClient = useQueryClient();
+
+  // Only animate on first render per challenge per session
+  const cardKey = `challenge-${challenge.id}`;
+  const isFirstRender = !animatedCards.has(cardKey);
+  React.useEffect(() => { animatedCards.add(cardKey); }, [cardKey]);
 
   const isParticipant = challenge.participants?.includes(currentUser?.id);
   const participantCount = challenge.participants?.length || 0;
@@ -47,7 +55,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
+      initial={isFirstRender ? { opacity: 0, scale: 0.97 } : false}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}>
       
@@ -99,7 +107,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
             <div className="h-4 rounded-full overflow-hidden"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <motion.div
-                initial={{ width: 0 }}
+                initial={isFirstRender ? { width: 0 } : false}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 1, ease: 'easeOut' }}
                 className="h-full rounded-full"
