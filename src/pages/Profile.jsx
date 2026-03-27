@@ -323,7 +323,7 @@ export default function Profile() {
           {/* ── Stats column — nudged up so @username sits near avatar top ── */}
           <div className="flex flex-col gap-1 justify-center flex-1 -mt-2">
             {currentUser.username && (
-              <p className="text-[12px] text-slate-400 font-semibold -mb-0.5">@{currentUser.username}</p>
+<p className="text-[12px] text-slate-400 font-semibold mb-3">@{currentUser.username}</p>
             )}
             <div className="flex justify-around items-center">
               <div className="text-center">
