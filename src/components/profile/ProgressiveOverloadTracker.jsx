@@ -125,8 +125,10 @@ function WorkoutSelector({ options, selected, onSelect }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function ProgressiveOverloadTracker({ currentUser }) {
+export default function ProgressiveOverloadTracker({ currentUser, animate = 0 }) {
   const [showInfo, setShowInfo] = useState(false);
+  const [localKey, setLocalKey] = useState(0);
+  const animationKey = localKey + animate;
 
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
@@ -285,7 +287,10 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
           <WorkoutSelector
             options={workoutOptions}
             selected={validKey}
-            onSelect={setSelectedWorkoutKey}
+            onSelect={(key) => {
+              setSelectedWorkoutKey(key);
+              setLocalKey(k => k + 1);
+            }}
           />
         )}
       </div>
@@ -350,7 +355,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
-              <LineChart data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
+              <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
@@ -379,7 +384,8 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
                     dot={false}
                     activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
-                    isAnimationActive={false}
+                    isAnimationActive={true}
+                    animationDuration={800}
                   />
                 ))}
               </LineChart>

@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+
+const animatedSections = new Set();
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -48,6 +50,17 @@ const MONTHLY_CHALLENGES = [
 export default function RedeemReward() {
   const [activeSection, setActiveSection] = useState('weekly');
   const queryClient = useQueryClient();
+  const [animatedProgressBars, setAnimatedProgressBars] = useState(false);
+
+  // Trigger on mount for 'weekly' (default tab) and on switch to 'community'
+  useEffect(() => {
+    const section = activeSection;
+    if (!animatedSections.has(section)) {
+      animatedSections.add(section);
+      setAnimatedProgressBars(false);
+      requestAnimationFrame(() => setAnimatedProgressBars(true));
+    }
+  }, [activeSection]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -282,7 +295,10 @@ export default function RedeemReward() {
                       </div>
                       <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden">
                         <div
-                          style={{ width: `${challenge.progress}%` }}
+                          style={{
+                            width: animatedProgressBars ? `${challenge.progress}%` : '0%',
+                            transition: animatedProgressBars ? 'width 0.9s cubic-bezier(0.34,1.1,0.64,1)' : 'none',
+                          }}
                           className="h-full bg-gradient-to-r from-amber-400 to-amber-600"
                         />
                       </div>

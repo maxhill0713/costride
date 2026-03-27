@@ -70,10 +70,13 @@ function CustomActiveDot(props) {
 }
 
 // ─── Compound toggle checkbox ─────────────────────────────────────────────────
-function CompoundToggle({ checked, onChange }) {
+function CompoundToggle({ checked, onChange, onToggle = () => {} }) {
   return (
     <button
-      onClick={() => onChange(!checked)}
+      onClick={() => {
+        onChange(!checked);
+        onToggle();
+      }}
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
         padding: '5px 9px', borderRadius: 8, flexShrink: 0,
@@ -108,9 +111,12 @@ function CompoundToggle({ checked, onChange }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function WeeklyVolumeChart({ currentUser }) {
+export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
   const [compoundOnly, setCompoundOnly] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  // animationKey changes when compound toggled OR when parent triggers first-load animation
+  const [localKey, setLocalKey] = useState(0);
+  const animationKey = localKey + animate;
 
   const chartData = useMemo(() => {
     const workoutTypes = currentUser?.custom_workout_types;
@@ -186,7 +192,7 @@ export default function WeeklyVolumeChart({ currentUser }) {
             Planned reps · current split
           </p>
         </div>
-        <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} />
+        <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} onToggle={() => setLocalKey(k => k + 1)} />
       </div>
 
       {/* ── Info Box ── */}
@@ -269,7 +275,8 @@ export default function WeeklyVolumeChart({ currentUser }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationDuration={800}
             />
           </LineChart>
         </ResponsiveContainer>

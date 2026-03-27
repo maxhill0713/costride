@@ -1,4 +1,7 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+
+// Module-level set — tracks which tabs have animated this session
+const animatedTabs = new Set();
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User, Send } from 'lucide-react';
@@ -510,14 +513,14 @@ function CommunityLiftCard({ currentUser }) {
 }
 
 // ─── Analytics tab ────────────────────────────────────────────────────────────
-function AnalyticsTab({ currentUser, workoutLogs, checkIns }) {
+function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
   return (
     <div className="space-y-6">
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <ProgressiveOverloadTracker currentUser={currentUser} />
+        <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
       </div>
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <WeeklyVolumeChart currentUser={currentUser} />
+        <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
       </div>
       {currentUser?.workout_split && (
         <WorkoutSplitHeatmap
@@ -1020,6 +1023,14 @@ export default function Progress() {
   });
 
   const [showAddGoal, setShowAddGoal] = useState(false);
+  // Trigger chart animation once per session when analytics tab is first seen
+  const [analyticsAnimKey, setAnalyticsAnimKey] = useState(0);
+  useEffect(() => {
+    if (!animatedTabs.has('analytics') && currentUser) {
+      animatedTabs.add('analytics');
+      setAnalyticsAnimKey(k => k + 1);
+    }
+  }, [currentUser]);
 
   if (!currentUser) {
     return (
@@ -1072,7 +1083,7 @@ export default function Progress() {
         {/* ── Analytics ── */}
         <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5">
           <div className="max-w-4xl mx-auto">
-            <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} />
+            <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} animateCharts={analyticsAnimKey} />
           </div>
         </TabsContent>
 
