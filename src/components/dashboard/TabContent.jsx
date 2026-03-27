@@ -1,14 +1,3 @@
-/**
- * TabContent — Community feed, challenges, events, polls, classes
- *
- * Design system mirrors TabAnalytics / TabGym exactly:
- *   - ONE brand accent (#3b82f6): interactive states, chart lines, CTAs
- *   - THREE semantic colors: danger (risk/churn), success (thresholds), warn (caution)
- *   - FOUR neutral text levels: t1 → t4
- *   - No colored card backgrounds, no gradient borders
- *   - 2px left border is the ONLY color signal on insight/nudge rows
- */
-
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { format, subDays, differenceInDays, getDay } from 'date-fns';
 import {
@@ -21,53 +10,9 @@ import { Avatar } from './DashboardPrimitives';
 import PostCard from '../feed/PostCard';
 import GymChallengeCard from '../challenges/GymChallengeCard';
 
-/* ══════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — single source of truth, exact match to TabAnalytics
-══════════════════════════════════════════════════════════════════ */
-const C = {
-  // ── Backgrounds ─────────────────────────────────────────────────
-  bg:        '#080e18',
-  surface:   '#0c1422',
-  surfaceEl: '#101929',
+import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
-  // ── Borders & dividers (neutral ONLY) ───────────────────────────
-  border:   'rgba(255,255,255,0.07)',
-  borderEl: 'rgba(255,255,255,0.12)',
-  divider:  'rgba(255,255,255,0.04)',
-
-  // ── Text scale (4 levels) ────────────────────────────────────────
-  t1: '#f1f5f9',   // Primary — metric values, headings
-  t2: '#94a3b8',   // Secondary — labels, descriptions
-  t3: '#475569',   // Muted — timestamps, supporting copy
-  t4: '#2d3f55',   // Ghost — decorative, disabled, rank numbers
-
-  // ── Brand accent (1 color — interactive + data only) ────────────
-  accent:    '#3b82f6',
-  accentSub: 'rgba(59,130,246,0.12)',
-  accentBrd: 'rgba(59,130,246,0.24)',
-
-  // ── Semantic: Danger ────────────────────────────────────────────
-  danger:    '#ef4444',
-  dangerSub: 'rgba(239,68,68,0.10)',
-  dangerBrd: 'rgba(239,68,68,0.22)',
-
-  // ── Semantic: Success ───────────────────────────────────────────
-  success:    '#10b981',
-  successSub: 'rgba(16,185,129,0.10)',
-  successBrd: 'rgba(16,185,129,0.22)',
-
-  // ── Semantic: Warn ──────────────────────────────────────────────
-  warn:    '#f59e0b',
-  warnSub: 'rgba(245,158,11,0.10)',
-  warnBrd: 'rgba(245,158,11,0.22)',
-};
-
-const CARD_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)';
-const CARD_RADIUS = 14;
-
-/* ══════════════════════════════════════════════════════════════════
-   RESPONSIVE CSS
-══════════════════════════════════════════════════════════════════ */
+/* ── Responsive CSS ──────────────────────────────────────────────── */
 const MOBILE_CSS = `
   .tc-root { display: grid; grid-template-columns: minmax(0,1fr) clamp(260px,22%,300px); gap: 16px; }
   .tc-left  { display: flex; flex-direction: column; height: 100%; overflow: hidden; min-height: 0; }
@@ -90,10 +35,7 @@ const MOBILE_CSS = `
 `;
 
 /* ══════════════════════════════════════════════════════════════════
-   CARD PRIMITIVES
-   Clean surface, no glows, no gradient highlights.
-   Border is always neutral. accentColor adds a 1.5px top line only
-   when explicitly required (e.g. top-performing post).
+   CARD PRIMITIVES — mirrored from TabOverview style system
 ══════════════════════════════════════════════════════════════════ */
 function Card({ children, style = {}, accentColor }) {
   return (
@@ -136,7 +78,7 @@ function CardHeader({ title, sub, right }) {
       marginBottom:   14,
     }}>
       <div>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.04em', textTransform: 'uppercase' }}>{title}</div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>{title}</div>
         {sub && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{sub}</div>}
       </div>
       {right}
@@ -145,11 +87,6 @@ function CardHeader({ title, sub, right }) {
 }
 
 /* ── Small reusable atoms ───────────────────────────────────────── */
-
-/**
- * Pill — semantic label. Gets color only when meaning requires it.
- * e.g. "Top post" → success. "Today" → danger. "Poll" → accent (interactive).
- */
 function Pill({ label, color }) {
   return (
     <span style={{
@@ -183,22 +120,18 @@ function Chip({ val, label, color }) {
   );
 }
 
-/**
- * IconBadge — always neutral container. Color is only on the icon glyph.
- * Never use a colored background on icon containers (matches TabAnalytics rule).
- */
 function IconBadge({ icon: Icon, color, size = 26 }) {
   return (
     <div style={{
-      width:          size,
-      height:         size,
-      borderRadius:   7,
-      background:     C.surfaceEl,
-      border:         `1px solid ${C.border}`,
-      display:        'flex',
-      alignItems:     'center',
-      justifyContent: 'center',
-      flexShrink:     0,
+      width:           size,
+      height:          size,
+      borderRadius:    7,
+      background:      C.surfaceEl,
+      border:          `1px solid ${C.border}`,
+      display:         'flex',
+      alignItems:      'center',
+      justifyContent:  'center',
+      flexShrink:      0,
     }}>
       <Icon style={{ width: size * 0.46, height: size * 0.46, color }} />
     </div>
@@ -206,9 +139,7 @@ function IconBadge({ icon: Icon, color, size = 26 }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   STAT NUDGE
-   2px left border is the ONLY color signal — matches TabAnalytics
-   SmartInsightsPanel exactly. No colored backgrounds.
+   STAT NUDGE — 2px left border is only color (matches TabOverview)
 ══════════════════════════════════════════════════════════════════ */
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
@@ -258,27 +189,25 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
 function DeleteBtn({ onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
   useEffect(() => {
     if (!open) return;
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [open]);
-
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
         style={{
-          width:          24,
-          height:         24,
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'center',
-          background:     C.surfaceEl,
-          border:         `1px solid ${C.border}`,
-          borderRadius:   6,
-          cursor:         'pointer',
+          width:           24,
+          height:          24,
+          display:         'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          background:      C.surfaceEl,
+          border:          `1px solid ${C.border}`,
+          borderRadius:    6,
+          cursor:          'pointer',
         }}>
         <MoreHorizontal style={{ width: 12, height: 12, color: C.t3 }} />
       </button>
@@ -328,10 +257,7 @@ function getEngagementRate(post, totalMembers) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   FEED CARDS
-   Card shell matches TabAnalytics exactly.
-   accentColor (top line) used only for top-performing posts.
-   All other cards: neutral border, no accent top line.
+   FEED CARDS — card shell matches TabOverview exactly
 ══════════════════════════════════════════════════════════════════ */
 function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
   const likes    = post.likes?.length    || 0;
@@ -359,6 +285,7 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
           <DeleteBtn onDelete={() => onDelete(post.id)} />
         </div>
       </CardBody>
+
       {content && (
         <CardBody style={{ padding: '10px 14px 12px' }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: C.t1, margin: 0, lineHeight: 1.4 }}>
@@ -371,6 +298,7 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
           )}
         </CardBody>
       )}
+
       {(post.image_url || post.media_url) && (
         <div style={{ overflow: 'hidden', margin: '0 14px 12px', borderRadius: 9 }}>
           <img src={post.image_url || post.media_url} alt=""
@@ -378,7 +306,7 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
             onError={e => e.currentTarget.parentElement.style.display = 'none'} />
         </div>
       )}
-      {/* Footer: likes use danger (action = love), comments use success, engagement rate is semantic */}
+
       <div style={{ padding: '8px 14px 12px', display: 'flex', alignItems: 'center', gap: 10, borderTop: `1px solid ${C.divider}` }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: likes > 0 ? C.danger : C.t3 }}>
           <Heart style={{ width: 11, height: 11 }} /> {likes}
@@ -413,14 +341,12 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
 function EventCard({ event, now, onDelete }) {
   const evDate = new Date(event.event_date);
   const diff   = Math.floor((evDate - now) / 86400000);
-
   return (
     <Card>
       <CardBody style={{ padding: '12px 14px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
           <IconBadge icon={Calendar} color={C.success} />
           <Pill label="Event" color={C.success} />
-          {/* Danger only for imminent events (≤2 days), success otherwise */}
           <Pill label={diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d`} color={diff <= 2 ? C.danger : C.success} />
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(event.id)} /></div>
         </div>
@@ -439,7 +365,6 @@ function ChallengeCard({ challenge, now, onDelete }) {
   const remaining = Math.max(0, totalD - elapsed);
   const pct       = Math.min(100, Math.round((elapsed / totalD) * 100));
   const parts     = challenge.participants?.length || 0;
-  // Progress bar: warn when nearly complete (sense of urgency), accent otherwise
   const progressColor = pct >= 75 ? C.warn : C.accent;
 
   return (
@@ -448,7 +373,6 @@ function ChallengeCard({ challenge, now, onDelete }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
           <IconBadge icon={Trophy} color={C.warn} />
           <Pill label="Challenge" color={C.accent} />
-          {/* Danger only for ≤3 days remaining — action required */}
           <Pill label={`${remaining}d left`} color={remaining <= 3 ? C.danger : C.t3} />
           <div style={{ marginLeft: 'auto' }}><DeleteBtn onDelete={() => onDelete(challenge.id)} /></div>
         </div>
@@ -465,7 +389,6 @@ function ChallengeCard({ challenge, now, onDelete }) {
   );
 }
 
-/* ── Class type config — color only on the type badge overlay ────── */
 const CLASS_CFG = {
   hiit:     { color: C.danger,  label: 'HIIT'     },
   yoga:     { color: C.success, label: 'Yoga'     },
@@ -490,13 +413,13 @@ const CLASS_IMGS = {
 
 function getClassType(c) {
   const n = (c.class_type || c.name || '').toLowerCase();
-  if (n.includes('hiit') || n.includes('interval'))                         return 'hiit';
-  if (n.includes('yoga') || n.includes('flow') || n.includes('vinyasa'))    return 'yoga';
+  if (n.includes('hiit') || n.includes('interval'))                        return 'hiit';
+  if (n.includes('yoga') || n.includes('flow') || n.includes('vinyasa'))   return 'yoga';
   if (n.includes('strength') || n.includes('lift') || n.includes('weight')) return 'strength';
-  if (n.includes('cardio') || n.includes('run') || n.includes('aerobic'))   return 'cardio';
-  if (n.includes('spin') || n.includes('cycle') || n.includes('bike'))      return 'spin';
-  if (n.includes('box') || n.includes('mma') || n.includes('kickbox'))      return 'boxing';
-  if (n.includes('pilates') || n.includes('barre'))                         return 'pilates';
+  if (n.includes('cardio') || n.includes('run') || n.includes('aerobic'))  return 'cardio';
+  if (n.includes('spin') || n.includes('cycle') || n.includes('bike'))     return 'spin';
+  if (n.includes('box') || n.includes('mma') || n.includes('kickbox'))     return 'boxing';
+  if (n.includes('pilates') || n.includes('barre'))                        return 'pilates';
   return 'default';
 }
 
@@ -511,21 +434,20 @@ function ClassCard({ gymClass, onDelete }) {
       <div style={{ position: 'relative', height: 90, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom,rgba(0,0,0,0.05),${C.surface}d8)` }} />
-        {/* Type badge: color only inside the badge, not as a card border */}
         <div style={{
-          position:       'absolute',
-          top:            8,
-          left:           8,
-          fontSize:       9,
-          fontWeight:     800,
-          letterSpacing:  '0.07em',
-          textTransform:  'uppercase',
-          color:          cfg.color,
-          background:     'rgba(0,0,0,0.55)',
-          border:         `1px solid ${cfg.color}40`,
-          borderRadius:   5,
-          padding:        '2px 7px',
-          backdropFilter: 'blur(6px)',
+          position:        'absolute',
+          top:             8,
+          left:            8,
+          fontSize:        9,
+          fontWeight:      800,
+          letterSpacing:   '0.07em',
+          textTransform:   'uppercase',
+          color:           cfg.color,
+          background:      'rgba(0,0,0,0.55)',
+          border:          `1px solid ${cfg.color}40`,
+          borderRadius:    5,
+          padding:         '2px 7px',
+          backdropFilter:  'blur(6px)',
         }}>
           {cfg.label}
         </div>
@@ -548,18 +470,18 @@ function ClassCard({ gymClass, onDelete }) {
         {(gymClass.instructor || gymClass.coach_name) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
             <div style={{
-              width:          20,
-              height:         20,
-              borderRadius:   '50%',
-              background:     C.surfaceEl,
-              border:         `1px solid ${C.border}`,
-              display:        'flex',
-              alignItems:     'center',
-              justifyContent: 'center',
-              fontSize:       8,
-              fontWeight:     800,
-              color:          cfg.color,
-              flexShrink:     0,
+              width:           20,
+              height:          20,
+              borderRadius:    '50%',
+              background:      C.surfaceEl,
+              border:          `1px solid ${C.border}`,
+              display:         'flex',
+              alignItems:      'center',
+              justifyContent:  'center',
+              fontSize:        8,
+              fontWeight:      800,
+              color:           cfg.color,
+              flexShrink:      0,
             }}>
               {initials(gymClass.instructor || gymClass.coach_name)}
             </div>
@@ -575,7 +497,6 @@ function PollCard({ poll, onDelete, allMemberships }) {
   const votes   = poll.voters?.length || 0;
   const total   = allMemberships?.length || 0;
   const partPct = total > 0 ? Math.round((votes / total) * 100) : 0;
-  // Success threshold: ≥50% participation is meaningful
   const color   = partPct >= 50 ? C.success : C.accent;
 
   return (
@@ -626,10 +547,7 @@ function useBestPostTime(allPosts) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIDEBAR CARDS
-   All use the same card shell as TabAnalytics.
-   Insight rows: 2px left border is the ONLY color signal.
-   No colored backgrounds on insight cards.
+   SIDEBAR CARDS — all use TabOverview card shell
 ══════════════════════════════════════════════════════════════════ */
 function ContentSuggestions({ allPosts, polls, challenges, events, now, openModal }) {
   const { bestDayName, isTodayBest } = useBestPostTime(allPosts);
@@ -659,19 +577,19 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: suggestions.length ? 14 : 12 }}>
         <IconBadge icon={Sparkles} color={C.accent} />
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>Content Suggestions</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Content Suggestions</span>
       </div>
+
       {!suggestions.length ? (
-        /* Success state: left border signal only, neutral background */
         <div style={{
-          display:      'flex',
-          alignItems:   'flex-start',
-          gap:          9,
-          padding:      '9px 11px',
+          display:    'flex',
+          alignItems: 'flex-start',
+          gap:        9,
+          padding:    '9px 11px',
           borderRadius: 8,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `2px solid ${C.success}`,
+          background: C.surfaceEl,
+          border:     `1px solid ${C.border}`,
+          borderLeft: `3px solid ${C.success}`,
         }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0, marginTop: 1 }} />
           <div>
@@ -683,16 +601,16 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {suggestions.map((s, i) => (
             <div key={i} onClick={s.fn} style={{
-              display:      'flex',
-              alignItems:   'center',
-              gap:          9,
-              padding:      '9px 10px',
+              display:     'flex',
+              alignItems:  'center',
+              gap:         9,
+              padding:     '9px 10px',
               borderRadius: 9,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              borderLeft:   `2px solid ${s.color}`,
-              cursor:       'pointer',
-              transition:   'background .12s',
+              background:  C.surfaceEl,
+              border:      `1px solid ${C.border}`,
+              borderLeft:  `3px solid ${s.color}`,
+              cursor:      'pointer',
+              transition:  'background .15s',
             }}
               onMouseEnter={e => e.currentTarget.style.background = `rgba(255,255,255,0.03)`}
               onMouseLeave={e => e.currentTarget.style.background = C.surfaceEl}>
@@ -711,8 +629,8 @@ function ContentSuggestions({ allPosts, polls, challenges, events, now, openModa
 
 function BestTimeToPost({ allPosts, now, openModal }) {
   const { bestDayName, isTodayBest } = useBestPostTime(allPosts);
-  const hour      = now.getHours();
-  const todayName = format(now, 'EEEE');
+  const hour       = now.getHours();
+  const todayName  = format(now, 'EEEE');
   const peakWindow = hour < 12
     ? 'Members engage most in the evening — 6–8pm is worth targeting'
     : hour < 17
@@ -725,8 +643,9 @@ function BestTimeToPost({ allPosts, now, openModal }) {
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <IconBadge icon={Clock} color={C.accent} />
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>Best Time to Post</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Best Time to Post</span>
       </div>
+
       {bestDayName && (
         <div style={{
           display:      'flex',
@@ -737,7 +656,7 @@ function BestTimeToPost({ allPosts, now, openModal }) {
           marginBottom: 8,
           background:   C.surfaceEl,
           border:       `1px solid ${C.border}`,
-          borderLeft:   `2px solid ${isTodayBest ? C.success : C.accent}`,
+          borderLeft:   `3px solid ${isTodayBest ? C.success : C.accent}`,
         }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: isTodayBest ? C.success : C.accent, flexShrink: 0 }} />
           <span style={{ fontSize: 11, fontWeight: 500, color: C.t2, lineHeight: 1.4 }}>
@@ -748,6 +667,7 @@ function BestTimeToPost({ allPosts, now, openModal }) {
           </span>
         </div>
       )}
+
       <div style={{
         display:      'flex',
         alignItems:   'flex-start',
@@ -761,22 +681,23 @@ function BestTimeToPost({ allPosts, now, openModal }) {
         <Eye style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.4 }}>{peakWindow}</span>
       </div>
+
       <button onClick={() => openModal('post')} style={{
-        width:          '100%',
-        padding:        '7px 12px',
-        borderRadius:   8,
-        background:     C.surfaceEl,
-        border:         `1px solid ${C.borderEl}`,
-        color:          C.t1,
-        fontSize:       11,
-        fontWeight:     600,
-        cursor:         'pointer',
-        fontFamily:     'inherit',
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        gap:            6,
-        transition:     'border-color .12s',
+        width:           '100%',
+        padding:         '7px 12px',
+        borderRadius:    8,
+        background:      C.surfaceEl,
+        border:          `1px solid ${C.borderEl}`,
+        color:           C.t1,
+        fontSize:        11,
+        fontWeight:      600,
+        cursor:          'pointer',
+        fontFamily:      'inherit',
+        display:         'flex',
+        alignItems:      'center',
+        justifyContent:  'center',
+        gap:             6,
+        transition:      'border-color .15s',
       }}
         onMouseEnter={e => e.currentTarget.style.borderColor = `${C.accent}60`}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.borderEl}>
@@ -797,10 +718,9 @@ function EngagementScoreCard({ allPosts, polls, activeChallenges, events, totalC
   return (
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>Engagement Score</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Score</span>
         <IconBadge icon={Zap} color={C.accent} />
       </div>
-      {/* Score value: t1 (neutral) — it's informational, not a threshold */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
         <span style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</span>
         <span style={{ fontSize: 12, color: C.t3, fontWeight: 400 }}>total interactions</span>
@@ -832,18 +752,18 @@ function EngagementTrend({ allPosts, polls, now }) {
   return (
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>Engagement Trend</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Trend</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           {up
             ? <TrendingUp   style={{ width: 11, height: 11, color: C.success }} />
             : <TrendingDown style={{ width: 11, height: 11, color: C.danger  }} />}
-          {/* Trend change: semantic only — danger if down, success if up */}
           <span style={{ fontSize: 13, fontWeight: 700, color: up ? C.success : C.danger, letterSpacing: '-0.02em' }}>
             {up ? '+' : ''}{change}%
           </span>
         </div>
       </div>
       <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Week over week</div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {[
           { label: 'This week', val: thisWeek, color: up ? C.success : C.danger },
@@ -855,6 +775,7 @@ function EngagementTrend({ allPosts, polls, now }) {
           </div>
         ))}
       </div>
+
       {change < 0 && (
         <StatNudge color={C.danger} icon={TrendingDown}
           stat="Engagement dropped this week."
@@ -886,11 +807,11 @@ function ActivityChart({ allPosts, now }) {
   return (
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>Community Activity</span>
-        {/* Sum value: t1 neutral — informational */}
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Community Activity</span>
         <span style={{ fontSize: 20, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em' }}>{sum}</span>
       </div>
       <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Posts, likes & comments</div>
+
       <div style={{ display: 'flex', gap: 4, height: 36, alignItems: 'flex-end', marginBottom: 6 }}>
         {days.map((d, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 32, gap: 1 }}>
@@ -905,11 +826,13 @@ function ActivityChart({ allPosts, now }) {
           </div>
         ))}
       </div>
+
       <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
         {days.map((d, i) => (
           <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: C.t3 }}>{d.label}</div>
         ))}
       </div>
+
       <div style={{ display: 'flex', gap: 12, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
         {[{ color: C.accent, label: 'Posts' }, { color: C.danger, label: 'Likes' }, { color: C.success, label: 'Comments' }].map((l, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -918,6 +841,7 @@ function ActivityChart({ allPosts, now }) {
           </div>
         ))}
       </div>
+
       {sum === 0 && (
         <StatNudge color={C.accent} icon={MessageSquarePlus}
           stat="No activity in the last 7 days."
@@ -941,34 +865,35 @@ function TopPostsCard({ allPosts, openModal }) {
   return (
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 2 }}>Top Posts</div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Top Posts</div>
         <div style={{ fontSize: 11, color: C.t3 }}>Most engagement this period</div>
       </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {top3.map((p, i) => (
           <div key={p.id || i} style={{
-            display:      'flex',
-            alignItems:   'center',
-            gap:          8,
-            padding:      '8px 10px',
+            display:     'flex',
+            alignItems:  'center',
+            gap:         8,
+            padding:     '8px 10px',
             borderRadius: 8,
-            background:   C.surfaceEl,
-            border:       `1px solid ${C.border}`,
-            borderLeft:   `2px solid ${C.success}`,
+            background:  C.surfaceEl,
+            border:      `1px solid ${C.border}`,
+            borderLeft:  `3px solid ${C.success}`,
           }}>
             <div style={{
-              width:          18,
-              height:         18,
-              borderRadius:   5,
-              background:     C.successSub,
-              border:         `1px solid ${C.successBrd}`,
-              display:        'flex',
-              alignItems:     'center',
-              justifyContent: 'center',
-              fontSize:       9,
-              fontWeight:     800,
-              color:          C.success,
-              flexShrink:     0,
+              width:           18,
+              height:          18,
+              borderRadius:    5,
+              background:      C.successSub,
+              border:          `1px solid ${C.successBrd}`,
+              display:         'flex',
+              alignItems:      'center',
+              justifyContent:  'center',
+              fontSize:        9,
+              fontWeight:      800,
+              color:           C.success,
+              flexShrink:      0,
             }}>
               {i + 1}
             </div>
@@ -980,6 +905,7 @@ function TopPostsCard({ allPosts, openModal }) {
           </div>
         ))}
       </div>
+
       {(() => {
         const best     = top3[0];
         const comments = best.comments?.length || 0;
@@ -1012,10 +938,10 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
     const tot = allPosts.length + events.length + polls.length + challenges.length;
     if (!tot) return null;
     return [
-      { label: 'Posts',      count: allPosts.length,   color: C.accent  },
-      { label: 'Events',     count: events.length,     color: C.success },
-      { label: 'Polls',      count: polls.length,      color: C.accent  },
-      { label: 'Challenges', count: challenges.length, color: C.warn    },
+      { label: 'Posts',      count: allPosts.length,   color: C.accent   },
+      { label: 'Events',     count: events.length,     color: C.success  },
+      { label: 'Polls',      count: polls.length,      color: C.accent   },
+      { label: 'Challenges', count: challenges.length, color: C.warn     },
     ].filter(c => c.count > 0);
   }, [allPosts, events, polls, challenges]);
 
@@ -1023,20 +949,21 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
     <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 2 }}>Posting Cadence</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Posting Cadence</div>
           <div style={{ fontSize: 11, color: C.t3 }}>Last 7 days</div>
         </div>
         <TrendingUp style={{ width: 12, height: 12, color: C.t3 }} />
       </div>
+
       <div style={{ display: 'flex', gap: 4, height: 32, alignItems: 'flex-end', marginBottom: 6 }}>
         {cadence.map((d, i) => (
           <div key={i} style={{
-            flex:         1,
-            height:       d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28),
+            flex:        1,
+            height:      d.count === 0 ? 3 : Math.max(4, (d.count / cadenceMax) * 28),
             borderRadius: 3,
-            background:   d.count === 0 ? C.divider : C.accent,
-            opacity:      d.count === 0 ? 1 : 0.75,
-            transition:   'height 0.4s ease',
+            background:  d.count === 0 ? C.divider : C.accent,
+            opacity:     d.count === 0 ? 1 : 0.75,
+            transition:  'height 0.4s ease',
           }} />
         ))}
       </div>
@@ -1045,17 +972,19 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
           <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, fontWeight: 600, color: C.t3 }}>{d.label}</div>
         ))}
       </div>
-      {/* Consistency label: semantic only when actionable */}
+
       <div style={{ fontSize: 11, color: C.t3, fontWeight: 500 }}>
         {activeDays} active {activeDays === 1 ? 'day' : 'days'} this week
         {activeDays === 0                  && <span style={{ color: C.danger,  marginLeft: 6, fontWeight: 700 }}>— no posts this week</span>}
         {activeDays >= 1 && activeDays < 3 && <span style={{ color: C.warn,   marginLeft: 6, fontWeight: 700 }}>— spread posts across more days</span>}
         {activeDays >= 3                   && <span style={{ color: C.success, marginLeft: 6, fontWeight: 700 }}>— good consistency</span>}
       </div>
+
       {activeDays === 0 && (
         <StatNudge color={C.warn} icon={AlertTriangle}
           stat="" detail="Nothing posted this week. Even a short update keeps the community alive." />
       )}
+
       {mix && (
         <>
           <div style={{ height: 1, background: C.divider, margin: '14px 0' }} />
@@ -1071,7 +1000,6 @@ function ContentStatsCard({ allPosts, events, polls, challenges, now }) {
               const tot = mix.reduce((s, x) => s + x.count, 0);
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: i < mix.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
-                  {/* Status dot: uses semantic color for the data series */}
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: C.t2 }}>{c.label}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{c.count}</span>
@@ -1094,10 +1022,9 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
     <>
       <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em' }}>My Content Impact</span>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>My Content Impact</span>
           <IconBadge icon={Zap} color={C.accent} />
         </div>
-        {/* Score: t1 neutral — informational aggregate, no threshold */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1 }}>
             {allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0)
@@ -1111,9 +1038,11 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
           <Chip val={polls.reduce((s, p)    => s + (p.voters?.length   || 0), 0)} label="Poll votes" color={C.accent}  />
         </div>
       </div>
+
       <EngagementTrend allPosts={allPosts} polls={polls} now={now} />
+
       <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 14 }}>My Schedule</div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>My Schedule</div>
         {[
           { label: 'My Classes',        value: classes.length,          color: C.accent  },
           { label: 'Upcoming Events',   value: upcomingEvents.length,   color: C.success },
@@ -1126,6 +1055,7 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
           </div>
         ))}
       </div>
+
       <BestTimeToPost allPosts={allPosts} now={now} openModal={openModal} />
       <ContentSuggestions allPosts={allPosts} polls={polls} challenges={challenges} events={events} now={now} openModal={openModal} />
     </>
@@ -1133,7 +1063,7 @@ function CoachSidebar({ allPosts, polls, challenges, events, classes, upcomingEv
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MAIN EXPORT — TabContent
+   MAIN EXPORT
 ══════════════════════════════════════════════════════════════════ */
 export default function TabContent({
   events, challenges, polls, posts, userPosts = [], checkIns, ci30, avatarMap,
@@ -1191,15 +1121,15 @@ export default function TabContent({
   };
 
   const secondaryActions = isCoach ? [
-    { icon: Dumbbell,  label: 'My Classes',    sub: `${classes.length} classes`,         color: C.accent,  fn: () => openModal('classes')   },
-    { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
-    { icon: Trophy,    label: 'Challenge',     sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
-    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
+    { icon: Dumbbell,          label: 'My Classes',    sub: `${classes.length} classes`,         color: C.accent,  fn: () => openModal('classes')   },
+    { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
+    { icon: Trophy,            label: 'Challenge',     sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
+    { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
   ] : [
-    { icon: Calendar,  label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
-    { icon: Dumbbell,  label: 'Classes',       sub: `${classes.length} total`,           color: C.accent,  fn: () => openModal('classes')   },
-    { icon: Trophy,    label: 'New Challenge', sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
-    { icon: BarChart2, label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
+    { icon: Calendar,          label: 'New Event',     sub: `${upcomingEvents.length} upcoming`, color: C.success, fn: () => openModal('event')     },
+    { icon: Dumbbell,          label: 'Classes',       sub: `${classes.length} total`,           color: C.accent,  fn: () => openModal('classes')   },
+    { icon: Trophy,            label: 'New Challenge', sub: `${activeChallenges.length} active`, color: C.warn,    fn: () => openModal('challenge') },
+    { icon: BarChart2,         label: 'New Poll',      sub: `${polls.length} active`,            color: C.accent,  fn: () => openModal('poll')      },
   ];
 
   return (
@@ -1207,29 +1137,30 @@ export default function TabContent({
       <style>{MOBILE_CSS}</style>
       <div className="tc-root">
 
-        {/* ── LEFT COLUMN ──────────────────────────────────────────── */}
+        {/* ── LEFT ─────────────────────────────────────────────────── */}
         <div className="tc-left">
 
-          {/* Primary CTA + secondary action row */}
+          {/* Action row */}
           <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginBottom: 14, flexShrink: 0 }}>
+            {/* Primary CTA */}
             <button onClick={() => openModal('post')} style={{
-              display:      'flex',
-              alignItems:   'center',
-              gap:          10,
-              padding:      '13px 20px',
+              display:     'flex',
+              alignItems:  'center',
+              gap:         10,
+              padding:     '13px 20px',
               borderRadius: CARD_RADIUS,
-              background:   C.accent,
-              color:        '#fff',
-              border:       'none',
-              fontSize:     14,
-              fontWeight:   800,
-              cursor:       'pointer',
-              flexShrink:   0,
-              fontFamily:   'inherit',
-              boxShadow:    `0 0 0 1px ${C.accentBrd}, 0 4px 14px rgba(59,130,246,0.25)`,
-              transition:   'opacity 0.12s',
-              position:     'relative',
-              overflow:     'hidden',
+              background:  C.accent,
+              color:       '#fff',
+              border:      'none',
+              fontSize:    14,
+              fontWeight:  800,
+              cursor:      'pointer',
+              flexShrink:  0,
+              fontFamily:  'inherit',
+              boxShadow:   `0 0 0 1px ${C.accentBrd}, 0 4px 14px rgba(59,130,246,0.25)`,
+              transition:  'opacity 0.15s',
+              position:    'relative',
+              overflow:    'hidden',
             }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
@@ -1243,22 +1174,22 @@ export default function TabContent({
               </div>
             </button>
 
-            {/* Secondary actions — neutral cards, border lifts to color on hover only */}
+            {/* Secondary actions */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${secondaryActions.length},1fr)`, gap: 8 }}>
               {secondaryActions.map(({ icon: Icon, label, sub, color, fn }, i) => (
                 <div key={i} onClick={fn} style={{
-                  borderRadius:  CARD_RADIUS,
-                  padding:       '10px 12px',
-                  cursor:        'pointer',
-                  background:    C.surface,
-                  border:        `1px solid ${C.border}`,
-                  boxShadow:     CARD_SHADOW,
-                  display:       'flex',
+                  borderRadius: CARD_RADIUS,
+                  padding:      '10px 12px',
+                  cursor:       'pointer',
+                  background:   C.surface,
+                  border:       `1px solid ${C.border}`,
+                  boxShadow:    CARD_SHADOW,
+                  display:      'flex',
                   flexDirection: 'column',
-                  gap:           5,
-                  transition:    'all 0.13s',
-                  position:      'relative',
-                  overflow:      'hidden',
+                  gap:          5,
+                  transition:   'all 0.15s',
+                  position:     'relative',
+                  overflow:     'hidden',
                 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;      e.currentTarget.style.transform = ''; }}>
@@ -1271,12 +1202,11 @@ export default function TabContent({
 
           {/* Filter tabs */}
           <div className="tc-tabs" style={{ flexShrink: 0 }}>
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.04em', padding: '8px 14px 8px 0', marginBottom: -1, flexShrink: 0 }}>Feed</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', padding: '8px 14px 8px 0', marginBottom: -1, flexShrink: 0 }}>Feed</span>
             {FILTERS.map(f => (
               <button key={f.id} onClick={() => setActiveFilter(f.id)} className="tc-tab-btn" style={{
                 fontWeight:   activeFilter === f.id ? 700 : 500,
                 color:        activeFilter === f.id ? C.t1 : C.t3,
-                // Active tab: accent underline only — no background fill
                 borderBottom: `2px solid ${activeFilter === f.id ? C.accent : 'transparent'}`,
                 marginBottom: -1,
               }}>
@@ -1299,15 +1229,8 @@ export default function TabContent({
                 <p style={{ fontSize: 13, fontWeight: 700, color: C.t2, margin: 0 }}>Nothing here yet</p>
                 <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>Create your first post to get the community going</p>
                 <button onClick={() => openModal('post')} style={{
-                  fontSize:   12,
-                  fontWeight: 700,
-                  color:      '#fff',
-                  background: C.accent,
-                  border:     'none',
-                  borderRadius: 8,
-                  padding:    '8px 18px',
-                  cursor:     'pointer',
-                  fontFamily: 'inherit',
+                  fontSize: 12, fontWeight: 700, color: '#fff', background: C.accent,
+                  border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontFamily: 'inherit',
                 }}>
                   Create first post
                 </button>
@@ -1316,7 +1239,7 @@ export default function TabContent({
           </div>
         </div>
 
-        {/* ── RIGHT SIDEBAR ─────────────────────────────────────────── */}
+        {/* ── SIDEBAR ──────────────────────────────────────────────── */}
         <div className="tc-sidebar">
           {isCoach ? (
             <CoachSidebar
@@ -1336,7 +1259,6 @@ export default function TabContent({
             </>
           )}
         </div>
-
       </div>
     </>
   );

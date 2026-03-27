@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import {
@@ -130,8 +131,18 @@ const ALL_NAV = [
   { id: 'gym',        label: 'Settings',    icon: Settings,        roles: ['gym_owner'] },
 ];
 
-// ── Global CSS — clean, purposeful ────────────────────────────────────────────
-const DASH_CSS = `
+// ── Global CSS — injected once at module load ─────────────────────────────────
+// Values reference D.* constants which are all module-level, so the string is
+// built once and never changes. Injecting via DOM avoids style tag re-rendering.
+function injectDashCSS() {
+  if (typeof document === 'undefined' || document.getElementById('dash-root-css')) return;
+  const el = document.createElement('style');
+  el.id = 'dash-root-css';
+  el.textContent = DASH_CSS_TEXT;
+  document.head.appendChild(el);
+}
+
+const DASH_CSS_TEXT = `
   .dash-root, .dash-root * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; box-sizing: border-box; }
   .dash-root {
     --bg:       #080e18;
@@ -244,6 +255,7 @@ const DASH_CSS = `
   .dash-root .pill-amber   { color: ${D.amber}; background: rgba(245,158,11,0.08);  border-color: rgba(245,158,11,0.22);  }
   .dash-root .pill-neutral { color: ${D.t3};   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
 `;
+injectDashCSS();
 
 // ── Sparkline ─────────────────────────────────────────────────────────────────
 // Rule: chart lines use a single neutral blue — no multi-color fills
@@ -412,6 +424,84 @@ function classColor(cls) {
   return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find(k => n.includes(k)) || 'default'];
 }
 
+// ── Mobile KPI strip ──────────────────────────────────────────────────────────
+// Compact metric row shown between the header and tab content on mobile.
+// Surfaces the 3-4 most relevant numbers for the active tab at a glance.
+function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
+  const {
+    todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0,
+    newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0,
+  } = stats;
+
+  let items;
+  if (tab === 'overview') {
+    items = [
+      { label: 'TODAY',    value: todayCI,       color: D.blue },
+      { label: 'WEEK',     value: activeThisWeek, color: null },
+      { label: 'AT RISK',  value: atRisk,        color: atRisk > 0 ? D.red : null },
+      { label: 'MEMBERS',  value: totalMembers,  color: null },
+    ];
+  } else if (tab === 'members') {
+    items = [
+      { label: 'TOTAL',   value: totalMembers,   color: null },
+      { label: 'ACTIVE',  value: activeThisWeek, color: null },
+      { label: 'AT RISK', value: atRisk,         color: atRisk > 0 ? D.red : null },
+      { label: 'NEW',     value: newSignUps,     color: newSignUps > 0 ? D.green : null },
+    ];
+  } else if (tab === 'content') {
+    items = [
+      { label: 'POSTS',      value: posts.length,      color: null },
+      { label: 'EVENTS',     value: events.length,     color: null },
+      { label: 'CHALLENGES', value: challenges.length, color: null },
+      { label: 'POLLS',      value: polls.length,      color: null },
+    ];
+  } else if (tab === 'analytics') {
+    items = [
+      { label: 'RETENTION', value: retentionRate + '%', color: retentionRate >= 70 ? D.green : retentionRate >= 40 ? D.amber : D.red },
+      { label: '30-DAY Δ',  value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? D.green : monthChangePct < 0 ? D.red : null },
+      { label: 'ACTIVE',    value: activeThisMonth,    color: null },
+      { label: 'AT RISK',   value: atRisk,             color: atRisk > 0 ? D.red : null },
+    ];
+  } else if (tab === 'engagement') {
+    items = [
+      { label: 'MEMBERS', value: totalMembers,   color: null },
+      { label: 'ACTIVE',  value: activeThisWeek, color: null },
+      { label: 'AT RISK', value: atRisk,         color: atRisk > 0 ? D.red : null },
+    ];
+  } else if (tab === 'gym') {
+    items = [
+      { label: 'COACHES',  value: coaches.length, color: null },
+      { label: 'CLASSES',  value: classes.length, color: null },
+      { label: 'MEMBERS',  value: totalMembers,   color: null },
+    ];
+  } else if (tab === 'schedule' && isCoach) {
+    items = [
+      { label: 'CLASSES', value: myClasses.length,       color: null },
+      { label: 'CLIENTS', value: allMemberships.length,  color: null },
+    ];
+  } else {
+    return null;
+  }
+
+  return (
+    <div style={{ flexShrink: 0, background: D.bgSurface, borderBottom: `1px solid ${D.border}`, display: 'flex' }}>
+      {items.map((item, i) => (
+        <React.Fragment key={item.label}>
+          {i > 0 && <div style={{ width: 1, background: D.divider, alignSelf: 'stretch', margin: '7px 0' }} />}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '9px 2px' }}>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: item.color || D.t1 }}>
+              {item.value}
+            </div>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: D.t4, marginTop: 3 }}>
+              {item.label}
+            </div>
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 // ── Main dashboard ────────────────────────────────────────────────────────────
 export default function GymOwnerDashboard() {
   const [tab, setTab]             = useState('overview');
@@ -438,8 +528,8 @@ export default function GymOwnerDashboard() {
   const [memberPageSize]                = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
 
-  const openModal  = (name) => { if (name === 'message') { setTab('members'); return; } setModal(name); };
-  const closeModal = ()     => setModal(null);
+  const openModal  = useCallback((name) => { if (name === 'message') { setTab('members'); return; } setModal(name); }, []);
+  const closeModal = useCallback(() => setModal(null), []);
   const queryClient = useQueryClient();
   const navigate    = useNavigate();
 
@@ -528,33 +618,35 @@ export default function GymOwnerDashboard() {
   const allMemberships    = stats.membersWithActivity || [];
   const effectiveMemberships = allMemberships;
 
-  const inv = (...keys) => {
+  const inv = useCallback((...keys) => {
     keys.forEach(k => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] }));
     queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });
-  };
-  const invGyms = () => queryClient.invalidateQueries({ queryKey: ['gyms'] });
+  }, [queryClient, selectedGym?.id]);
+  const invGyms = useCallback(() => queryClient.invalidateQueries({ queryKey: ['gyms'] }), [queryClient]);
 
-  const createRewardM    = useMutation({ mutationFn: d  => base44.entities.Reward.create(d), onSuccess: () => inv('rewards') });
-  const deleteRewardM    = useMutation({ mutationFn: id => base44.entities.Reward.delete(id), onSuccess: () => inv('rewards') });
-  const createClassM     = useMutation({ mutationFn: d  => base44.entities.GymClass.create(d), onSuccess: () => inv('classes') });
-  const deleteClassM     = useMutation({ mutationFn: id => base44.entities.GymClass.delete(id), onSuccess: () => inv('classes') });
-  const updateClassM     = useMutation({ mutationFn: ({ id, data }) => base44.entities.GymClass.update(id, data), onSuccess: () => inv('classes') });
-  const createCoachM     = useMutation({ mutationFn: d  => base44.entities.Coach.create(d), onSuccess: () => inv('coaches') });
-  const deleteCoachM     = useMutation({ mutationFn: id => base44.entities.Coach.delete(id), onSuccess: () => inv('coaches') });
-  const updateCoachM     = useMutation({ mutationFn: ({ id, data }) => base44.entities.Coach.update(id, data), onSuccess: () => inv('coaches') });
-  const updateGalleryM   = useMutation({ mutationFn: g  => base44.entities.Gym.update(selectedGym.id, { gallery: g }), onSuccess: () => { invGyms(); closeModal(); } });
-  const updateGymM       = useMutation({ mutationFn: d  => base44.entities.Gym.update(selectedGym.id, d), onSuccess: () => { invGyms(); closeModal(); } });
-  const createEventM     = useMutation({ mutationFn: d  => base44.entities.Event.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, attendees: 0 }), onSuccess: () => { inv('events'); closeModal(); } });
-  const createChallengeM = useMutation({ mutationFn: d  => base44.entities.Challenge.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, participants: [], status: 'upcoming' }), onSuccess: () => { inv('challenges'); closeModal(); } });
-  const banMemberM       = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'ban' }), onSuccess: invGyms });
-  const unbanMemberM     = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'unban' }), onSuccess: invGyms });
-  const deleteGymM       = useMutation({ mutationFn: () => base44.functions.invoke('deleteGym', { gymId: selectedGym.id }), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); } });
-  const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); } });
-  const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); } });
-  const deletePostM      = useMutation({ mutationFn: id => base44.entities.Post.delete(id), onSuccess: () => inv('posts') });
-  const deleteEventM     = useMutation({ mutationFn: id => base44.entities.Event.delete(id), onSuccess: () => inv('events') });
-  const deleteChallengeM = useMutation({ mutationFn: id => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges') });
-  const deletePollM      = useMutation({ mutationFn: id => base44.entities.Poll.delete(id), onSuccess: () => inv('polls') });
+  const onErr = useCallback((e) => toast.error(e?.message || 'Something went wrong'), []);
+
+  const createRewardM    = useMutation({ mutationFn: d  => base44.entities.Reward.create(d),                                                                                                    onSuccess: () => inv('rewards'),              onError: onErr });
+  const deleteRewardM    = useMutation({ mutationFn: id => base44.entities.Reward.delete(id),                                                                                                   onSuccess: () => inv('rewards'),              onError: onErr });
+  const createClassM     = useMutation({ mutationFn: d  => base44.entities.GymClass.create(d),                                                                                                  onSuccess: () => inv('classes'),              onError: onErr });
+  const deleteClassM     = useMutation({ mutationFn: id => base44.entities.GymClass.delete(id),                                                                                                 onSuccess: () => inv('classes'),              onError: onErr });
+  const updateClassM     = useMutation({ mutationFn: ({ id, data }) => base44.entities.GymClass.update(id, data),                                                                               onSuccess: () => inv('classes'),              onError: onErr });
+  const createCoachM     = useMutation({ mutationFn: d  => base44.entities.Coach.create(d),                                                                                                     onSuccess: () => inv('coaches'),              onError: onErr });
+  const deleteCoachM     = useMutation({ mutationFn: id => base44.entities.Coach.delete(id),                                                                                                    onSuccess: () => inv('coaches'),              onError: onErr });
+  const updateCoachM     = useMutation({ mutationFn: ({ id, data }) => base44.entities.Coach.update(id, data),                                                                                  onSuccess: () => inv('coaches'),              onError: onErr });
+  const updateGalleryM   = useMutation({ mutationFn: g  => base44.entities.Gym.update(selectedGym.id, { gallery: g }),                                                                          onSuccess: () => { invGyms(); closeModal(); }, onError: onErr });
+  const updateGymM       = useMutation({ mutationFn: d  => base44.entities.Gym.update(selectedGym.id, d),                                                                                       onSuccess: () => { invGyms(); closeModal(); }, onError: onErr });
+  const createEventM     = useMutation({ mutationFn: d  => base44.entities.Event.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, attendees: 0 }),                           onSuccess: () => { inv('events'); closeModal(); }, onError: onErr });
+  const createChallengeM = useMutation({ mutationFn: d  => base44.entities.Challenge.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, participants: [], status: 'upcoming' }),onSuccess: () => { inv('challenges'); closeModal(); }, onError: onErr });
+  const banMemberM       = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'ban' }),                                   onSuccess: invGyms, onError: onErr });
+  const unbanMemberM     = useMutation({ mutationFn: uid => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'unban' }),                                 onSuccess: invGyms, onError: onErr });
+  const deleteGymM       = useMutation({ mutationFn: () => base44.functions.invoke('deleteGym', { gymId: selectedGym.id }),                                                                     onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); }, onError: onErr });
+  const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'),                                                                                        onSuccess: () => { closeModal(); base44.auth.logout(); }, onError: onErr });
+  const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }),  onSuccess: () => { inv('polls'); closeModal(); }, onError: onErr });
+  const deletePostM      = useMutation({ mutationFn: id => base44.entities.Post.delete(id),                                                                                                     onSuccess: () => inv('posts'),                onError: onErr });
+  const deleteEventM     = useMutation({ mutationFn: id => base44.entities.Event.delete(id),                                                                                                    onSuccess: () => inv('events'),               onError: onErr });
+  const deleteChallengeM = useMutation({ mutationFn: id => base44.entities.Challenge.delete(id),                                                                                                onSuccess: () => inv('challenges'),           onError: onErr });
+  const deletePollM      = useMutation({ mutationFn: id => base44.entities.Poll.delete(id),                                                                                                     onSuccess: () => inv('polls'),                onError: onErr });
 
   const now = new Date();
 
@@ -571,11 +663,7 @@ export default function GymOwnerDashboard() {
 
   const { data: memberUserRecords = [] } = useQuery({
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
-    queryFn: async () => {
-      if (memberUserIds.length === 0) return [];
-      // Single batch query instead of N individual requests
-      return base44.entities.User.filter({ id: { $in: memberUserIds } }).catch(() => []);
-    },
+    queryFn: () => base44.entities.User.filter({ id: { $in: memberUserIds } }),
     enabled: !!selectedGym && memberUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -673,7 +761,7 @@ export default function GymOwnerDashboard() {
     monthChangePct < 0 && { icon: TrendingDown, color: D.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') },
   ].filter(Boolean).slice(0, 4);
 
-  // Tab content — all tabs rendered but hidden when inactive (keeps them mounted, no re-render on switch)
+  // Tab content
   const tabContent = {
     overview: <TabOverview
       todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
@@ -727,7 +815,7 @@ export default function GymOwnerDashboard() {
   // ── Splash screens ────────────────────────────────────────────────────────
   const Splash = ({ children }) => (
     <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.bgBase }}>
-      <style>{DASH_CSS}</style>
+
       <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 16, padding: 36, maxWidth: 380, width: '100%', textAlign: 'center' }}>
         {children}
       </div>
@@ -828,7 +916,7 @@ export default function GymOwnerDashboard() {
   // ── MOBILE ────────────────────────────────────────────────────────────────
   if (isMobile) return (
     <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: D.bgBase, overflow: 'hidden' }}>
-      <style>{DASH_CSS}</style>
+
 
       {/* Mobile header — minimal */}
       <header style={{ flexShrink: 0, background: D.bgSidebar, borderBottom: `1px solid ${D.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -860,28 +948,41 @@ export default function GymOwnerDashboard() {
         </div>
       </header>
 
+      {/* Per-tab KPI summary strip */}
+      <MobileKpiStrip
+        tab={tab} isCoach={isCoach} stats={stats}
+        posts={posts} events={events} challenges={challenges} polls={polls}
+        coaches={coaches} classes={classes} myClasses={myClasses}
+        allMemberships={effectiveMemberships}
+      />
+
       <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
         <div style={{ maxWidth: '100%' }}>
           <Suspense fallback={<TabLoader />}>
-            {Object.entries(tabContent).map(([key, content]) => (
-              <div key={key} style={{ display: tab === key ? 'block' : 'none' }}>
-                {content}
-              </div>
-            ))}
+            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
           </Suspense>
         </div>
       </main>
 
-      {/* Mobile bottom nav — neutral icons, single blue active indicator */}
+      {/* Mobile bottom nav — neutral icons, blue accent line on active */}
       <nav style={{ flexShrink: 0, background: D.bgSidebar, borderTop: `1px solid ${D.border}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map(item => {
           const active = tab === item.id;
           return (
             <button key={item.id} onClick={() => setTab(item.id)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 4px 8px', border: 'none', background: 'transparent', cursor: 'pointer', color: active ? D.blue : D.t4, transition: 'color 0.12s', fontFamily: 'inherit' }}>
-              <item.icon style={{ width: 17, height: 17 }} />
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                padding: '11px 4px 9px', border: 'none',
+                background: active ? 'rgba(59,130,246,0.06)' : 'transparent',
+                cursor: 'pointer', color: active ? D.blue : D.t4,
+                transition: 'color 0.15s, background 0.15s',
+                fontFamily: 'inherit', position: 'relative',
+              }}>
+              {active && (
+                <div style={{ position: 'absolute', top: 0, left: '25%', right: '25%', height: 2, background: D.blue, borderRadius: '0 0 2px 2px' }} />
+              )}
+              <item.icon style={{ width: 18, height: 18 }} />
               <span style={{ fontSize: 9, fontWeight: active ? 700 : 500, letterSpacing: '0.03em' }}>{item.label}</span>
-              {active && <div style={{ width: 3, height: 3, borderRadius: '50%', background: D.blue }} />}
             </button>
           );
         })}
@@ -899,7 +1000,7 @@ export default function GymOwnerDashboard() {
 
   return (
     <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: D.bgBase }}>
-      <style>{DASH_CSS}</style>
+
 
       {/* ── SIDEBAR ────────────────────────────────────────────────────── */}
       <aside style={{
@@ -912,14 +1013,9 @@ export default function GymOwnerDashboard() {
         {/* Brand / gym name */}
         <div style={{ padding: collapsed ? '16px 0' : '16px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
-            {/* Gym logo / profile pic */}
-            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, padding: 1, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', boxShadow: '0 0 0 1px #2563eb, 0 0 11px 3px rgba(37,99,235,0.65)' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: D.bgSurface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {selectedGym?.logo_url || selectedGym?.image_url
-                  ? <img src={selectedGym.logo_url || selectedGym.image_url} alt={selectedGym?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
-                }
-              </div>
+            {/* Logo mark — neutral dark, blue icon only */}
+            <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
             </div>
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
@@ -1143,11 +1239,7 @@ export default function GymOwnerDashboard() {
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
             <Suspense fallback={<TabLoader />}>
-              {Object.entries(tabContent).map(([key, content]) => (
-                <div key={key} style={{ display: tab === key ? 'block' : 'none' }}>
-                  {content}
-                </div>
-              ))}
+              {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
             </Suspense>
           </div>
         </main>

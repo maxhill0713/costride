@@ -117,47 +117,7 @@ import {
    Single source of truth. Every style value comes from here.
    No magic numbers. No inline colors outside this object.
 ══════════════════════════════════════════════════════════════════ */
-const C = {
-  // ── Backgrounds ─────────────────────────────────────────────────
-  bg:         '#080e18',          // Page body
-  surface:    '#0c1422',          // Cards, panels
-  surfaceEl:  '#101929',          // Hover, elevated, selected rows
-
-  // ── Borders & dividers (neutral ONLY — never colored) ───────────
-  border:     'rgba(255,255,255,0.07)',
-  borderEl:   'rgba(255,255,255,0.12)',
-  divider:    'rgba(255,255,255,0.04)',
-
-  // ── Text scale (4 levels, no more) ──────────────────────────────
-  t1:  '#f1f5f9',   // Primary — metric values, headings
-  t2:  '#94a3b8',   // Secondary — labels, descriptions
-  t3:  '#475569',   // Muted — timestamps, supporting copy
-  t4:  '#2d3f55',   // Ghost — decorative, disabled, rank numbers
-
-  // ── Brand accent (1 color — interactive + data only) ────────────
-  // Used for: chart lines, active states, CTA, heatmap fills
-  // NOT used for: decorative card accents, random labels
-  accent:    '#3b82f6',
-  accentSub: 'rgba(59,130,246,0.08)',
-  accentBrd: 'rgba(59,130,246,0.18)',
-
-  // ── Semantic: Danger (action required) ──────────────────────────
-  // Used for: at-risk members, churn signals, drops >10%, week-1 low
-  danger:    '#ef4444',
-  dangerSub: 'rgba(239,68,68,0.07)',
-  dangerBrd: 'rgba(239,68,68,0.18)',
-
-  // ── Semantic: Success (threshold crossed) ───────────────────────
-  // Used for: retention ≥70%, 0 at-risk, strong return rate
-  // NOT used for: routine healthy metrics (use t1 instead)
-  success:    '#10b981',
-  successSub: 'rgba(16,185,129,0.07)',
-  successBrd: 'rgba(16,185,129,0.16)',
-
-  // ── Semantic: Warn (caution — used sparingly) ────────────────────
-  warn:    '#f59e0b',
-  warnSub: 'rgba(245,158,11,0.07)',
-};
+import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
 /* ── Axis tick style — always muted, never colored ─────────────── */
 const tick = { fill: C.t3, fontSize: 10, fontFamily: 'system-ui, sans-serif' };
@@ -176,8 +136,8 @@ function Card({ children, style = {} }) {
     <div style={{
       background:   C.surface,
       border:       `1px solid ${C.border}`,
-      borderRadius: 12,
-      boxShadow:    '0 1px 3px rgba(0,0,0,0.35)',
+      borderRadius: CARD_RADIUS,
+      boxShadow:    CARD_SHADOW,
       overflow:     'hidden',
       position:     'relative',
       ...style,
@@ -242,11 +202,11 @@ function Empty({ icon: Icon, label }) {
 function SectionLabel({ children }) {
   return (
     <div style={{
-      fontSize:      10,
-      fontWeight:    600,
+      fontSize:      10.5,
+      fontWeight:    700,
       color:         C.t3,
       textTransform: 'uppercase',
-      letterSpacing: '.1em',
+      letterSpacing: '.13em',
       marginBottom:  10,
     }}>
       {children}
@@ -310,18 +270,18 @@ function KpiCard({ icon: Icon, label, value, unit, trend, spark, subContext, val
 
   return (
     <div style={{
-      borderRadius: 12,
-      padding:      '16px 18px',
-      background:   C.surface,
-      border:       `1px solid ${C.border}`,
-      boxShadow:    '0 1px 3px rgba(0,0,0,0.35)',
-      display:      'flex',
+      borderRadius:  CARD_RADIUS,
+      padding:       '16px 18px',
+      background:    C.surface,
+      border:        `1px solid ${C.border}`,
+      boxShadow:     CARD_SHADOW,
+      display:       'flex',
       flexDirection: 'column',
       // NO gradient top line. NO colored border.
     }}>
       {/* Label row — icon is always muted, never colored */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: C.t3, letterSpacing: '.04em' }}>{label}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>{label}</span>
         {/* Icon: no colored container, just the glyph at t3 */}
         <Icon style={{ width: 13, height: 13, color: C.t3 }} />
       </div>
@@ -449,7 +409,7 @@ function HeatmapChart({ gymId }) {
               background:  weeks === o.v ? C.surfaceEl : 'transparent',
               color:       weeks === o.v ? C.t1 : C.t3,
               border:      `1px solid ${weeks === o.v ? C.borderEl : 'transparent'}`,
-              transition:  'all .12s',
+              transition:  'all .15s',
             }}
           >
             {o.l}
@@ -488,7 +448,7 @@ function HeatmapChart({ gymId }) {
                     display:        'flex',
                     alignItems:     'center',
                     justifyContent: 'center',
-                    transition:     'background .12s',
+                    transition:     'background .15s',
                   }}
                 >
                   {val > 0 && (

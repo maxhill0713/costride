@@ -119,7 +119,7 @@ import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
-import { C } from '@/lib/dashboard-tokens';
+import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
 /* ── Shared card ─────────────────────────────────────────────────── */
 function Card({ children, style = {} }) {
@@ -127,8 +127,8 @@ function Card({ children, style = {} }) {
     <div style={{
       background:   C.surface,
       border:       `1px solid ${C.border}`,
-      borderRadius: 12,
-      boxShadow:    '0 1px 3px rgba(0,0,0,0.35)',
+      borderRadius: CARD_RADIUS,
+      boxShadow:    CARD_SHADOW,
       overflow:     'hidden',
       position:     'relative',
       ...style,
@@ -140,7 +140,7 @@ function Card({ children, style = {} }) {
 
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 8 }}>
+    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 8 }}>
       {children}
     </div>
   );
@@ -324,7 +324,7 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
           width: 26, height: 26, borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'transparent', border: `1px solid ${C.border}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .12s',
+          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
         }}
         onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
@@ -338,7 +338,7 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
           width: 26, height: 26, borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'transparent', border: `1px solid ${C.border}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .12s',
+          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
         }}
         onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
         onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
@@ -408,7 +408,7 @@ function ModeToggle({ mode, setMode }) {
             border:      `1px solid ${mode === m.id ? C.borderEl : 'transparent'}`,
             color:       mode === m.id ? C.t1 : C.t3,
             fontFamily:  'inherit',
-            transition:  'all .12s',
+            transition:  'all .15s',
           }}
         >
           {m.label}
@@ -433,7 +433,7 @@ function PresetGrid({ preset, setPreset }) {
             textAlign:   'left',
             background:  preset === p.id ? C.surfaceEl : 'transparent',
             border:      `1px solid ${preset === p.id ? C.borderEl : C.border}`,
-            transition:  'all .12s',
+            transition:  'all .15s',
             fontFamily:  'inherit',
           }}
         >
@@ -782,12 +782,12 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
             onClick={() => setMemberFilter(selected ? 'all' : s.filter)}
             style={{
               padding:      '14px 14px',
-              borderRadius: 12,
+              borderRadius: CARD_RADIUS,
               cursor:       'pointer',
               background:   C.surface,
               border:       `1px solid ${selected ? C.borderEl : C.border}`,
-              boxShadow:    '0 1px 3px rgba(0,0,0,0.3)',
-              transition:   'all .14s',
+              boxShadow:    CARD_SHADOW,
+              transition:   'all .15s',
               // NO gradient strip. Border elevation is the only selected signal.
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderEl; e.currentTarget.style.transform = 'translateY(-1px)'; }}
@@ -886,7 +886,7 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
             {/* Action buttons: neutral surface, not colored */}
             <button
               onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${C.border}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .12s' }}
+              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${C.border}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
@@ -1224,7 +1224,7 @@ function InviteStaffPanel({ gym }) {
               background:  role === r.id ? C.surface : 'transparent',
               color:       role === r.id ? C.t1 : C.t3,
               border:      `1px solid ${role === r.id ? C.borderEl : 'transparent'}`,
-              transition:  'all .12s',
+              transition:  'all .15s',
             }}
           >
             {r.label}
@@ -1307,7 +1307,7 @@ function InviteStaffPanel({ gym }) {
                 border:      `1px solid ${copied ? C.successBrd : C.border}`,
                 cursor:      'pointer',
                 fontFamily:  'inherit',
-                transition:  'all .12s',
+                transition:  'all .15s',
               }}
             >
               {copied ? <><Check style={{ width: 9, height: 9 }} /> Copied</> : <><Copy style={{ width: 9, height: 9 }} /> Copy</>}
@@ -1564,7 +1564,7 @@ export default function TabMembers({
                       // Text: danger for At Risk tab only
                       color:       on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
                       border:      `1px solid ${on ? C.borderEl : 'transparent'}`,
-                      transition:  'all .12s',
+                      transition:  'all .15s',
                       display:     'flex',
                       alignItems:  'center',
                       gap:         5,
@@ -1628,7 +1628,7 @@ export default function TabMembers({
                   outline:     'none',
                   fontFamily:  'inherit',
                   width:       160,
-                  transition:  'border-color .12s',
+                  transition:  'border-color .15s',
                 }}
                 onFocus={e => e.target.style.borderColor = C.borderEl}
                 onBlur={e => e.target.style.borderColor = C.border}
@@ -1679,7 +1679,7 @@ export default function TabMembers({
                   border:     `1px solid ${showBulkPanel ? C.accentBrd : C.border}`,
                   color:      showBulkPanel ? C.accent : C.t2,
                   fontFamily: 'inherit',
-                  transition: 'all .12s',
+                  transition: 'all .15s',
                 }}
               >
                 <Bell style={{ width: 10, height: 10 }} />
@@ -1773,7 +1773,7 @@ export default function TabMembers({
                             overflow:      'hidden',
                             textOverflow:  'ellipsis',
                             whiteSpace:    'nowrap',
-                            transition:    'color .12s',
+                            transition:    'color .15s',
                           }}>
                             {m.name}
                           </span>
