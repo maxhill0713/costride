@@ -1210,7 +1210,7 @@ export default function Home() {
             queryClient={queryClient}
             dismissCard={dismissCard}
           />
-          {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
+          {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
               <div className="flex items-center justify-between gap-4">
                 <div>
