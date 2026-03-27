@@ -782,7 +782,7 @@ export default function Home() {
           setShowFriendsModal(true);
           setFriendsModalViewed(true);
         }}
-        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu relative">
+        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
         <Users className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
         {!friendsModalViewed && (friendRequests.length > 0 || sentFriendRequests.some(r => {
           const friend = friendUsersList.find(u => u.id === r.friend_id);
