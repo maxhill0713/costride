@@ -15,7 +15,15 @@ const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c
 // ── Reactions Modal — standalone component rendered outside any overflow:hidden parent ──
 // backdrop uses top:-100px to bleed above the safe-area/status-bar and eliminate the gap
 function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
+  const [search, setSearch] = useState('');
   if (!open) return null;
+
+  const sanitised = search.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
+  const filtered = reactedUsers.filter(user => {
+    const name = user.display_name || user.full_name || user.username || '';
+    return name.toLowerCase().includes(sanitised.toLowerCase());
+  });
+
   return (
     <>
       <div
@@ -36,28 +44,47 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">Reactions</h3>
         </div>
-        <div className="overflow-y-auto max-h-80 px-3 pb-4">
-          {reactedUsers.map((user) => {
-            const variant = reactions[user.id];
-            const displayName = user.display_name || user.full_name || user.username || 'Unknown';
-            return (
-              <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
-                  {variant === 'sunglasses'
-                    ? <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-                    : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+        <div className="px-3 pb-2">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/20">
+            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30))}
+              placeholder="Search by name..."
+              maxLength={30}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              style={{ fontSize: '16px' }}
+              className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-slate-300 text-sm"
+            />
+          </div>
+        </div>
+        <div className="overflow-y-auto max-h-72 px-3 pb-4">
+          {filtered.length === 0
+            ? <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
+            : filtered.map((user) => {
+              const variant = reactions[user.id];
+              const displayName = user.display_name || user.full_name || user.username || 'Unknown';
+              return (
+                <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                  <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
+                    {variant === 'sunglasses'
+                      ? <div className="relative w-full h-full flex items-center justify-center">
+                          <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                      : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+                  </div>
+                  <span className="text-sm text-slate-200 font-semibold">{displayName}</span>
                 </div>
-                <span className="text-sm text-slate-200 font-semibold">{displayName}</span>
-              </div>
-            );
-          })}
+              );
+            })
+          }
         </div>
       </div>
     </>
