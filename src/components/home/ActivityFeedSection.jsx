@@ -1,147 +1,93 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 import PostCard from '../feed/PostCard';
+import { createPageUrl } from '../../utils';
 
-// ─── localStorage helpers ─────────────────────────────────────────────────────
-const LS_KEY = 'feedSeenOrder_v2';
-
-function loadSeenIds() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return new Set(raw ? JSON.parse(raw) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveSeenIds(seenSet) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify([...seenSet]));
-  } catch {}
-}
-
-// ─── Sort posts newest-first ──────────────────────────────────────────────────
-function sortByNewest(posts) {
-  return [...posts].sort(
-    (a, b) => new Date(b.created_date) - new Date(a.created_date)
-  );
-}
-
-// ─── Build ordered list: unseen (newest-first) then seen (newest-first) ───────
-function buildOrderedPosts(posts, seenIds) {
-  const sorted = sortByNewest(posts);
-  const unseen = sorted.filter(p => !seenIds.has(p.id));
-  const seen   = sorted.filter(p =>  seenIds.has(p.id));
-  return [...unseen, ...seen];
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
-function ActivityFeedSection({ friends, socialFeedPosts, currentUser, queryClient }) {
+function ActivityFeedSection({
+  friends,
+  filteredActivityCards,
+  activityFeed,
+  socialFeedPosts,
+  visiblePostCount,
+  feedBottomRef,
+  isLoadingMorePosts,
+  currentUser,
+  queryClient,
+  dismissCard,
+}) {
   if (friends.length === 0) return null;
-
-  // postMap for fast id → post lookup
-  const postMapRef = useRef({});
-  socialFeedPosts.forEach(p => { postMapRef.current[p.id] = p; });
-
-  const seenIdsRef   = useRef(loadSeenIds());
-  const movedRef     = useRef(new Set());
-  const observersRef = useRef({});
-
-  // visibleIds is the single source of render truth.
-  // We only ever APPEND to the end when a post is cycled — never reorder
-  // what's already on screen — so scroll position never jumps.
-  const [visibleIds, setVisibleIds] = useState(() =>
-    buildOrderedPosts(socialFeedPosts, seenIdsRef.current).map(p => p.id)
-  );
-
-  // Rebuild when the server gives us fresh posts (pull-to-refresh / refetch).
-  // Only prepend genuinely new posts; don't disturb the existing order.
-  useEffect(() => {
-    socialFeedPosts.forEach(p => { postMapRef.current[p.id] = p; });
-
-    setVisibleIds(prev => {
-      const prevSet = new Set(prev);
-      const freshSorted = sortByNewest(socialFeedPosts);
-
-      // Brand-new posts not yet in the list → prepend at top (newest first)
-      const brandNew = freshSorted
-        .filter(p => !prevSet.has(p.id))
-        .map(p => p.id);
-
-      // Posts that were in prev but have now disappeared from server → remove
-      const serverIds = new Set(socialFeedPosts.map(p => p.id));
-      const kept = prev.filter(id => serverIds.has(id));
-
-      return [...brandNew, ...kept];
-    });
-  }, [socialFeedPosts]);
-
-  // Called when a post fully scrolls above the viewport.
-  // Moves it to the BOTTOM of visibleIds without touching anything above it.
-  const markSeen = useCallback((postId) => {
-    if (movedRef.current.has(postId)) return;
-    movedRef.current.add(postId);
-
-    seenIdsRef.current.add(postId);
-    saveSeenIds(seenIdsRef.current);
-
-    setVisibleIds(prev => {
-      const without = prev.filter(id => id !== postId);
-      return [...without, postId];
-    });
-  }, []);
-
-  // Attach an IntersectionObserver per card.
-  // Triggers when the card's bottom edge goes above the top of the viewport.
-  const attachObserver = useCallback((el, postId) => {
-    if (!el || observersRef.current[postId]) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
-            markSeen(postId);
-            observer.disconnect();
-            delete observersRef.current[postId];
-          }
-        });
-      },
-      { threshold: 0 }
-    );
-
-    observer.observe(el);
-    observersRef.current[postId] = observer;
-  }, [markSeen]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(observersRef.current).forEach(obs => obs.disconnect());
-      observersRef.current = {};
-    };
-  }, []);
-
-  const postsToRender = visibleIds
-    .map(id => postMapRef.current[id])
-    .filter(Boolean);
-
-  if (postsToRender.length === 0) return null;
 
   return (
     <div className="space-y-3 mt-12">
-      {postsToRender.map(post => (
-        <div key={post.id} ref={el => attachObserver(el, post.id)}>
-          <PostCard
-            post={post}
-            fullWidth={true}
-            currentUser={currentUser}
-            isOwnProfile={post.member_id === currentUser?.id}
-            onLike={() => {}}
-            onComment={() => {}}
-            onSave={() => {}}
-            onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-          />
+      {filteredActivityCards.length > 0 && (
+        <div className="space-y-3">
+          {filteredActivityCards.map(card => (
+            <div key={card.id} style={{ background:'#1e293b', border:'1.5px solid #334155', borderBottom:'4px solid #0f172a', borderRadius:16 }} className="relative overflow-hidden">
+              <button onClick={() => dismissCard(card.id)} className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all text-[10px] font-bold z-10">✕</button>
+              <div className="px-4 py-4 flex items-center gap-4">
+                <span className="text-3xl select-none flex-shrink-0">{card.emoji}</span>
+                <div className="flex-1 min-w-0 pr-4">
+                  <p className="font-extrabold text-white text-[14px] leading-tight">{card.title}</p>
+                  <p className="text-[12px] text-slate-400 mt-1 font-medium">{card.message}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {activityFeed.length > 0 && (
+        <div className="space-y-3">
+          {activityFeed.map(activity =>
+            activity.type === 'notification' ? (
+              <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
+                <div className="p-3"><p className="text-xs text-white leading-tight">{activity.message}</p></div>
+              </Card>
+            ) : (
+              <Card key={activity.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
+                <div className="p-3">
+                  <div className="flex items-center gap-3">
+                    <Link to={createPageUrl('UserProfile') + `?id=${activity.friendId}`} className="flex-shrink-0">
+                      {activity.friendAvatar
+                        ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover" />
+                        : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center"><span className="text-white font-bold text-sm">{activity.friendName?.charAt(0)?.toUpperCase()||'U'}</span></div>}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white leading-tight"><span className="font-semibold">{activity.friendName}</span> <span className="text-slate-300">{activity.message}</span>{activity.emoji && <span className="ml-1">{activity.emoji}</span>}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-slate-500">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
+                        {activity.type === 'pr' && <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">🏆 PR</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )
+          )}
+        </div>
+      )}
+
+      {socialFeedPosts.length > 0 && (
+        <div className="space-y-3">
+          {socialFeedPosts.slice(0, visiblePostCount).map(post => (
+            <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+          ))}
+          <div ref={feedBottomRef} className="flex justify-center py-3">
+            {isLoadingMorePosts && (
+              <div style={{
+                width: 30, height: 30,
+                borderRadius: '50%',
+                border: '2.5px solid rgba(148,163,184,0.2)',
+                borderTop: '2.5px solid #60a5fa',
+                animation: 'spin 0.7s linear infinite',
+              }} />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
