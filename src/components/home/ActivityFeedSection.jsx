@@ -52,13 +52,7 @@ function ActivityFeedSection({
           {filteredActivityCards.map(card => (
             <div key={card.id} style={{ background:'#1e293b', border:'1.5px solid #334155', borderBottom:'4px solid #0f172a', borderRadius:16 }} className="relative overflow-hidden">
               <button onClick={() => dismissCard(card.id)} className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all text-[10px] font-bold z-10">✕</button>
-              <div className="px-4 py-4 flex items-center gap-4">
-                <span className="text-3xl select-none flex-shrink-0">{card.emoji}</span>
-                <div className="flex-1 min-w-0 pr-4">
-                  <p className="font-extrabold text-white text-[14px] leading-tight">{card.title}</p>
-                  <p className="text-[12px] text-slate-400 mt-1 font-medium">{card.message}</p>
-                </div>
-              </div>
+
             </div>
           ))}
         </div>
