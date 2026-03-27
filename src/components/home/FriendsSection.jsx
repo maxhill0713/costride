@@ -142,18 +142,42 @@ function FriendsSection({
                 const u = friendUsersList.find(u => u.id === request.user_id);
                 const name = u?.display_name || u?.full_name || request.user_name || 'User';
                 return (
-                  <div key={request.id} className="p-3 rounded-lg bg-slate-700/40 flex items-center justify-between gap-3">
-                    <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
-                      </div>
-                      <p className="font-semibold text-white text-xs truncate">{name}</p>
-                    </Link>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button size="icon" onClick={() => acceptFriendMutation.mutate(request.user_id)} className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"><CheckCircle className="w-3 h-3" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => rejectFriendMutation.mutate(request.user_id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"><X className="w-3 h-3" /></Button>
-                    </div>
-                  </div>
+                  <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
+  <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0 flex-1">
+    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+      {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+    </div>
+    <p className="font-semibold text-white text-xs truncate max-w-[120px]">{name}</p>
+  </Link>
+  <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+    <button
+      onClick={() => acceptFriendMutation.mutate(request.user_id)}
+      disabled={acceptFriendMutation.isPending}
+      className="h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100 disabled:opacity-50"
+      style={{
+        background: 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)',
+        border: '1px solid rgba(74,222,128,0.4)',
+        boxShadow: '0 3px 0 0 #14532d, 0 5px 12px rgba(0,120,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+      }}>
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+    <button
+      onClick={() => rejectFriendMutation.mutate(request.user_id)}
+      disabled={rejectFriendMutation.isPending}
+      className="h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100 disabled:opacity-50"
+      style={{
+        background: 'linear-gradient(to bottom, #f87171 0%, #ef4444 40%, #b91c1c 100%)',
+        border: '1px solid rgba(248,113,113,0.4)',
+        boxShadow: '0 3px 0 0 #7f1d1d, 0 5px 12px rgba(180,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+      }}>
+      <svg width="10" height="10" viewBox="0 0 20 20" fill="none">
+        <path d="M5 5l10 10M15 5L5 15" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
+      </svg>
+    </button>
+  </div>
+</div>
                 );
               })}
 
