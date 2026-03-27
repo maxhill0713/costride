@@ -60,15 +60,15 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
             />
           </div>
         </div>
-        <div className="overflow-y-auto max-h-72 px-3 pb-4">
+        <div className="overflow-y-auto max-h-80 px-3 pb-4">
           {filtered.length === 0
             ? <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
             : filtered.map((user) => {
               const variant = reactions[user.id];
               const displayName = user.display_name || user.full_name || user.username || 'Unknown';
               return (
-                <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                  <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
+                <div key={user.id} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-800/50 transition-colors">
+                  <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
                     {variant === 'sunglasses'
                       ? <div className="relative w-full h-full flex items-center justify-center">
                           <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
