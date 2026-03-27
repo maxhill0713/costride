@@ -14,25 +14,15 @@ import PostCard from '../components/feed/PostCard';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Caption sanitisation
-// Strips control characters and zero-width/invisible characters that can be
-// used for obfuscation or injection tricks. Character limit enforced here too.
 // ─────────────────────────────────────────────────────────────────────────────
 const sanitiseCaption = (v) =>
   v
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // control characters
-    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '')   // zero-width / soft hyphen
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '')
     .slice(0, 200);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// File validation — MIME whitelist + magic byte checks
-//
-// file.type is trivially spoofable, so we also read the first 12 bytes of the
-// actual file and compare against known file signatures. This stops someone
-// renaming a .exe to .jpg and uploading it.
-//
-// NOTE: This is a client-side friction layer. Real virus scanning must happen
-// server-side. This catches casual/accidental bad actors and provides a good
-// UX error message before a wasted upload attempt.
+// File validation
 // ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -44,20 +34,16 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/webm',
 ]);
 
-// Each entry maps a MIME type to either a static byte prefix or a custom check
-// function that receives the first 12 bytes as a Uint8Array.
 const MAGIC_BYTE_RULES = [
   { mime: 'image/jpeg',      bytes: [0xFF, 0xD8, 0xFF] },
   { mime: 'image/png',       bytes: [0x89, 0x50, 0x4E, 0x47] },
   { mime: 'image/gif',       bytes: [0x47, 0x49, 0x46] },
   {
     mime: 'image/webp',
-    // RIFF????WEBP — bytes 8-11 are "WEBP"
     check: (arr) => arr[8] === 0x57 && arr[9] === 0x45 && arr[10] === 0x42 && arr[11] === 0x50,
   },
   {
     mime: 'video/mp4',
-    // ftyp box at offset 4
     check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70,
   },
   {
@@ -74,19 +60,14 @@ const matchesMagicBytes = (arr, rule) => {
 
 const validateFile = (file) =>
   new Promise((resolve, reject) => {
-    // 1. MIME type must be in whitelist
     if (!ALLOWED_MIME_TYPES.has(file.type)) {
       return reject(new Error('File type not allowed. Please upload an image or video.'));
     }
-
-    // 2. Size limit — 50 MB for video, 10 MB for images
     const isVideo = file.type.startsWith('video/');
     const maxBytes = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
     if (file.size > maxBytes) {
       return reject(new Error(`File too large. Max size is ${isVideo ? '50 MB' : '10 MB'}.`));
     }
-
-    // 3. Magic bytes — read first 12 bytes only (fast, no full file read)
     const reader = new FileReader();
     reader.onload = (e) => {
       const arr = new Uint8Array(e.target.result);
@@ -203,17 +184,13 @@ export default function Profile() {
     setShareWithCommunity(false);
   };
 
-  // ── File upload with client-side validation ────────────────────────────────
   const handleFileUpload = async (file, type) => {
-    // Validate before touching the network
     try {
       await validateFile(file);
     } catch (err) {
-      // toast is imported below — use it here if available, otherwise alert
       alert(err.message || 'Invalid file');
       return;
     }
-
     try {
       setUploading(true);
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -261,13 +238,11 @@ export default function Profile() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-        {/* Top bar */}
         <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
           <div className="w-28 h-4 rounded bg-slate-700/60 animate-pulse" />
           <div className="w-6 h-6 rounded bg-slate-700/60 animate-pulse" />
         </div>
         <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
-          {/* Avatar + stats row */}
           <div className="flex items-center gap-5">
             <div className="w-[99px] h-[99px] rounded-full bg-slate-700/60 animate-pulse flex-shrink-0" />
             <div className="flex flex-col gap-2 flex-1">
@@ -282,12 +257,10 @@ export default function Profile() {
               </div>
             </div>
           </div>
-          {/* Status / location lines */}
           <div className="space-y-2">
             <div className="w-32 h-5 rounded-full bg-slate-700/60 animate-pulse" />
             <div className="w-24 h-3 rounded bg-slate-700/60 animate-pulse" />
           </div>
-          {/* Post grid */}
           <div className="pt-2 grid grid-cols-3 gap-1">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="aspect-square rounded-sm bg-slate-700/60 animate-pulse" />
@@ -337,19 +310,20 @@ export default function Profile() {
 
         {/* Avatar + stats */}
         <div className="flex items-center gap-5">
+
+          {/* ── Avatar — plain circle, no ring or glow ── */}
           <button onClick={() => setShowProfilePicture(true)} className="flex-shrink-0 active:scale-95 transition-transform">
-            <div className="w-[99px] h-[99px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
-              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
-                {currentUser.avatar_url
-                  ? <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                  : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>}
-              </div>
+            <div className="w-[99px] h-[99px] rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+              {currentUser.avatar_url
+                ? <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>}
             </div>
           </button>
 
-          <div className="flex flex-col gap-1 justify-center flex-1">
+          {/* ── Stats column — nudged up so @username sits near avatar top ── */}
+          <div className="flex flex-col gap-1 justify-center flex-1 -mt-2">
             {currentUser.username && (
-              <p className="text-[12px] text-slate-400 font-semibold">@{currentUser.username}</p>
+              <p className="text-[12px] text-slate-400 font-semibold -mb-0.5">@{currentUser.username}</p>
             )}
             <div className="flex justify-around items-center">
               <div className="text-center">
@@ -505,16 +479,11 @@ export default function Profile() {
                 WebkitBackdropFilter: 'blur(20px)',
               }}>
 
-              {/* Top shine */}
               <div
                 className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                 style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
               <div className="px-4 pt-5 pb-5 space-y-3">
-
-                {/* Caption
-                    font-size is 16px to prevent iOS Safari auto-zooming on focus.
-                    Any font-size below 16px triggers the zoom behaviour. */}
                 <div className="relative">
                   <Textarea
                     value={postContent}
@@ -530,7 +499,6 @@ export default function Profile() {
                   </span>
                 </div>
 
-                {/* Media area */}
                 <div className="rounded-2xl overflow-hidden" style={{ height: 220 }}>
                   {uploading && (
                     <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
@@ -555,7 +523,6 @@ export default function Profile() {
                           <span className="text-[10px] text-slate-500 font-semibold">Video</span>
                         </label>
                         <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          {/* Camera capture — images only, explicit MIME whitelist */}
                           <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                           <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
                             <Camera className="w-5 h-5 text-slate-400" />
@@ -584,7 +551,6 @@ export default function Profile() {
                   )}
                 </div>
 
-                {/* Share with community toggle */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-slate-500" />
@@ -601,7 +567,6 @@ export default function Profile() {
                     }} />
                   </button>
                 </div>
-
               </div>
             </div>
 
