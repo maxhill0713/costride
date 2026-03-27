@@ -42,7 +42,7 @@ const TabMembersComponent   = lazy(() => import('../components/dashboard/TabMemb
 const TabContentComponent   = lazy(() => import('../components/dashboard/TabContent'));
 const TabAnalyticsComponent = lazy(() => import('../components/dashboard/TabAnalytics'));
 const TabGym                = lazy(() => import('../components/dashboard/TabGym'));
-const CoachDashboard        = lazy(() => import('../components/dashboard/CoachDashboard'));
+const TabCoachSchedule      = lazy(() => import('../components/dashboard/TabCoachSchedule'));
 const TabCoachMembers       = lazy(() => import('../components/dashboard/TabCoachMembers'));
 const TabCoachContent       = lazy(() => import('../components/dashboard/TabCoachContent'));
 const TabCoachAnalytics     = lazy(() => import('../components/dashboard/TabCoachAnalytics'));
@@ -554,7 +554,7 @@ export default function GymOwnerDashboard() {
   const tabInitialised = React.useRef(false);
   useEffect(() => {
     if (!tabInitialised.current && currentUser) {
-      setTab(isCoach ? 'members' : 'overview');
+      setTab(isCoach ? 'schedule' : 'overview');
       tabInitialised.current = true;
     }
   }, [currentUser, isCoach]);
@@ -576,11 +576,7 @@ export default function GymOwnerDashboard() {
     setTab(roleId === 'gym_owner' ? 'overview' : 'schedule');
   };
 
-  const NAV = ALL_NAV.filter(item => {
-    // Coaches don't get the schedule tab anymore - new dashboard replaces it
-    if (isCoach && item.id === 'schedule') return false;
-    return item.roles.includes(dashRole);
-  }).map(item => ({
+  const NAV = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
     ...item,
     label: isCoach && item.coachLabel ? item.coachLabel : item.label,
   }));
@@ -813,10 +809,6 @@ export default function GymOwnerDashboard() {
 
   // Tab content
   const tabContent = {
-    // Coach dashboard replaces old schedule view
-    schedule: isCoach
-      ? <CoachDashboard myClasses={myClasses} checkIns={checkIns} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />
-      : null,
     overview: <TabOverview
       todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
       activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
@@ -835,6 +827,9 @@ export default function GymOwnerDashboard() {
       week1ReturnRate={week1ReturnRate}
       newNoReturnCount={newNoReturnCount}
     />,
+    schedule: isCoach
+      ? <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />
+      : null,
     members: isCoach
       ? <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} />
       : <TabMembersComponent
@@ -1017,7 +1012,7 @@ export default function GymOwnerDashboard() {
       <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
         <div style={{ maxWidth: '100%' }}>
           <Suspense fallback={<TabLoader />}>
-            {tabContent[tab] || tabContent[isCoach ? 'members' : 'overview']}
+            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
           </Suspense>
         </div>
       </main>
@@ -1053,7 +1048,7 @@ export default function GymOwnerDashboard() {
   const tabTitle = {
     members: isCoach ? 'Clients' : 'Members',
     content: 'Content', analytics: 'Analytics', gym: 'Settings',
-    schedule: 'Dashboard', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
+    schedule: 'Schedule', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
   }[tab] || selectedGym?.name || 'Dashboard';
 
   return (
@@ -1290,7 +1285,7 @@ export default function GymOwnerDashboard() {
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
             <Suspense fallback={<TabLoader />}>
-              {tabContent[tab] || tabContent[isCoach ? 'members' : 'overview']}
+              {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
             </Suspense>
           </div>
         </main>
