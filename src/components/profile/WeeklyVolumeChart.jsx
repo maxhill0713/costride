@@ -275,7 +275,6 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              key={animationKey}
               isAnimationActive={true}
               animationDuration={600}
               animationEasing="ease-in-out"
