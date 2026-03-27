@@ -125,9 +125,10 @@ function WorkoutSelector({ options, selected, onSelect }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function ProgressiveOverloadTracker({ currentUser }) {
+export default function ProgressiveOverloadTracker({ currentUser, animate = 0 }) {
   const [showInfo, setShowInfo] = useState(false);
-  const [animationKey, setAnimationKey] = useState(0);
+  const [localKey, setLocalKey] = useState(0);
+  const animationKey = localKey + animate;
 
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
@@ -288,7 +289,7 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
             selected={validKey}
             onSelect={(key) => {
               setSelectedWorkoutKey(key);
-              setAnimationKey(k => k + 1);
+              setLocalKey(k => k + 1);
             }}
           />
         )}
