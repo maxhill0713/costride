@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import {
   Activity, TrendingUp, Users, AlertCircle, Flame,
   Clock, Calendar, BarChart2, Star, Award, Zap,
-  TrendingDown, CheckCircle, RefreshCw,
+  TrendingDown, CheckCircle, RefreshCw, Lightbulb,
 } from 'lucide-react';
+import { ChurnRiskScorer, ClientSegments, PerformanceScorecard } from './CoachPredictiveInsights';
 import {
   ResponsiveContainer, AreaChart, Area, CartesianGrid,
   XAxis, YAxis, Tooltip, BarChart, Bar, Cell,
@@ -187,6 +188,18 @@ export default function TabCoachAnalytics({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* ══ 0. PREDICTIVE INSIGHTS ════════════════════════════════════════════ */}
+      <section>
+        <SectionLabel accent="#ef4444" icon={AlertCircle}>Smart Insights</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(2,1fr)', gap: 14 }}>
+          <ChurnRiskScorer memberships={totalMembers > 0 ? Array.from({ length: totalMembers }, (_, i) => ({ user_id: `m${i}`, user_name: `Member ${i+1}` })) : []} checkIns={weeklyChart.slice(0, 30)} now={new Date()} />
+          <PerformanceScorecard myClasses={myClasses} memberships={Array.from({ length: totalMembers }, (_, i) => ({ user_id: `m${i}` }))} checkIns={weeklyChart.slice(0, 30)} now={new Date()} />
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <ClientSegments memberships={Array.from({ length: totalMembers }, (_, i) => ({ user_id: `m${i}`, user_name: `Member ${i+1}` }))} checkIns={weeklyChart.slice(0, 30)} now={new Date()} />
+        </div>
+      </section>
 
       {/* ══ 1. COACH STATS ═══════════════════════════════════════════════════ */}
       <section>

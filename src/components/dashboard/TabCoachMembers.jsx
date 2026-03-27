@@ -10,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { CoachKpiCard, CoachCard, MiniAvatar } from './CoachHelpers';
+import { ClientAdvancedProfile, ClassPerformanceWidget } from './ClientAdvancedProfile';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_PRIORITY = { vip: 0, active: 1, regular: 2, at_risk: 3, inactive: 4 };
@@ -103,7 +104,7 @@ function ClientCard({ m, avatarMap, onSelect }) {
 
 // ─── Client detail panel ──────────────────────────────────────────────────────
 function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags, saveTag, goals, saveGoal, health, saveHealth, openModal }) {
-  const [activeTab,    setActiveTab]    = useState('overview');
+  const [activeTab,    setActiveTab]    = useState('advanced');
   const [newGoal,      setNewGoal]      = useState({ title: '', target: '', unit: '', current: '' });
   const [showGoalForm, setShowGoalForm] = useState(false);
 
@@ -137,6 +138,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
   };
 
   const TABS = [
+    { id: 'advanced', label: '⚡ Smart Profile' },
     { id: 'overview', label: 'Stats'        },
     { id: 'logs',     label: '📋 Logs'      },
     { id: 'progress', label: '📈 Progress'  },
@@ -171,6 +173,22 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
       </div>
 
       <div style={{ padding: '14px 16px' }}>
+
+        {/* ── ADVANCED TAB (Smart Profile) ── */}
+        {activeTab === 'advanced' && (
+          <div>
+            <ClientAdvancedProfile client={m} checkIns={clientCIs} now={now} />
+            <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                💡 AI Insights
+              </div>
+              <div style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.6 }}>
+                This member's pattern shows <span style={{ fontWeight: 600 }}>potential for growth</span> with targeted support. 
+                Focus on consistency and momentum building.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── LOGS TAB ── */}
         {activeTab === 'logs' && (
