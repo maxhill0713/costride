@@ -542,18 +542,10 @@ export default function GymOwnerDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Role override is a dev-only debug tool — never active in production
-  const isDev = import.meta.env.DEV;
-  const [roleOverride, setRoleOverride] = useState(() => isDev ? (localStorage.getItem('dashRoleOverride') || null) : null);
-  const toggleRole = () => {
-    if (!isDev) return;
-    const next = roleOverride === 'coach' ? 'gym_owner' : roleOverride === 'gym_owner' ? null : 'coach';
-    if (next) localStorage.setItem('dashRoleOverride', next);
-    else      localStorage.removeItem('dashRoleOverride');
-    setRoleOverride(next);
-  };
+  // selectedCoachId: when the gym owner switches to view as a specific coach
+  const [selectedCoachId, setSelectedCoachId] = useState(null);
 
-  const effectiveAccountType = roleOverride || currentUser?.account_type;
+  const effectiveAccountType = selectedCoachId ? 'coach' : currentUser?.account_type;
   const isCoach    = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole   = isCoach ? 'coach' : 'gym_owner';
@@ -576,14 +568,12 @@ export default function GymOwnerDashboard() {
 
   const handleRoleSelect = (roleId) => {
     if (roleId === 'gym_owner') {
-      setRoleOverride(null);
-      localStorage.removeItem('dashRoleOverride');
+      setSelectedCoachId(null);
     } else {
-      // roleId is a coach record id — switch to coach view
-      setRoleOverride('coach');
-      localStorage.setItem('dashRoleOverride', 'coach');
+      // roleId is the coach record id — store it so we filter data to that coach
+      setSelectedCoachId(roleId);
     }
-    setTab('overview');
+    setTab(roleId === 'gym_owner' ? 'overview' : 'schedule');
   };
 
   const NAV = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
@@ -758,22 +748,56 @@ export default function GymOwnerDashboard() {
   const ci30          = [];
   const avatarMapFull = useMemo(() => avatarMap, [stats]);
 
-  const myClasses = useMemo(() => {
-    if (!isCoach || !currentUser) return classes;
-    return classes.filter(c =>
-      c.instructor === currentUser.full_name || c.instructor === currentUser.email ||
-      c.coach_name === currentUser.full_name || c.coach_email === currentUser.email ||
-      c.coach_id === currentUser.id
-    );
-  }, [classes, currentUser, isCoach]);
+  // The "active coach" is either the logged-in coach user, or the coach the owner has impersonated
+  const activeCoachRecord = useMemo(() => {
+    if (!isCoach) return null;
+    if (selectedCoachId) return coaches.find(c => c.id === selectedCoachId) || null;
+    // Logged-in coach — match by email
+    return coaches.find(c => c.user_email === currentUser?.email) || null;
+  }, [isCoach, selectedCoachId, coaches, currentUser]);
 
-  const coachMemberships = allMemberships;
-  const coachCheckIns    = checkIns;
+  const myClasses = useMemo(() => {
+    if (!isCoach) return classes;
+    if (activeCoachRecord) {
+      return classes.filter(c =>
+        c.coach_id === activeCoachRecord.id ||
+        c.instructor === activeCoachRecord.name ||
+        c.coach_name === activeCoachRecord.name ||
+        c.coach_email === activeCoachRecord.user_email
+      );
+    }
+    // fallback: match against currentUser
+    return classes.filter(c =>
+      c.instructor === currentUser?.full_name || c.instructor === currentUser?.email ||
+      c.coach_name === currentUser?.full_name || c.coach_email === currentUser?.email ||
+      c.coach_id === currentUser?.id
+    );
+  }, [classes, currentUser, isCoach, activeCoachRecord]);
+
+  // Filter members/checkins/content to the specific coach's clients
+  const coachMemberships = useMemo(() => {
+    if (!isCoach || !activeCoachRecord) return allMemberships;
+    // If the coach has client_notes keyed by member IDs, use those as their client list
+    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
+    if (clientIds && clientIds.length > 0) {
+      return allMemberships.filter(m => clientIds.includes(m.user_id));
+    }
+    return allMemberships;
+  }, [isCoach, activeCoachRecord, allMemberships]);
+
+  const coachCheckIns = useMemo(() => {
+    if (!isCoach || !activeCoachRecord) return checkIns;
+    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
+    if (clientIds && clientIds.length > 0) return checkIns.filter(c => clientIds.includes(c.user_id));
+    return checkIns;
+  }, [isCoach, activeCoachRecord, checkIns]);
+
   const coachCi30        = [];
-  const coachPosts       = isCoach ? posts.filter(p => p.author_id === currentUser?.id || p.created_by === currentUser?.id || !p.author_id) : posts;
-  const coachEvents      = isCoach ? events.filter(e => e.created_by === currentUser?.id || e.coach_id === currentUser?.id || !e.created_by) : events;
-  const coachChallenges  = isCoach ? challenges.filter(c => c.created_by === currentUser?.id || c.coach_id === currentUser?.id || !c.created_by) : challenges;
-  const coachPolls       = isCoach ? polls.filter(p => p.created_by === currentUser?.id || !p.created_by) : polls;
+  const coachUserId      = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
+  const coachPosts       = isCoach ? posts.filter(p => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
+  const coachEvents      = isCoach ? events.filter(e => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
+  const coachChallenges  = isCoach ? challenges.filter(c => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
+  const coachPolls       = isCoach ? polls.filter(p => p.created_by === coachUserId || !p.created_by) : polls;
 
   // Priorities — only surfaced in at-risk scenarios (red = danger only)
   const priorities = [
@@ -1235,7 +1259,7 @@ export default function GymOwnerDashboard() {
             <ProfileDropdown
               currentUser={currentUser}
               coaches={coaches}
-              currentRole={isCoach ? 'coach' : 'gym_owner'}
+              currentRole={selectedCoachId || (isCoach ? 'coach' : 'gym_owner')}
               onRoleSelect={handleRoleSelect}
             />
 

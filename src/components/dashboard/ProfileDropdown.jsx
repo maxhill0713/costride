@@ -24,8 +24,13 @@ export default function ProfileDropdown({ currentUser, coaches, onRoleSelect, cu
     return () => document.removeEventListener('mousedown', h);
   }, [open]);
 
-  const firstName = (currentUser?.full_name || currentUser?.email || 'User').split(' ')[0];
-  const initials = (currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase();
+  // Determine the currently "active" identity for display in the button
+  const activeCoach = (coaches || []).find(c => c.id === currentRole);
+  const displayName = activeCoach
+    ? (activeCoach.name || 'Coach').split(' ')[0]
+    : (currentUser?.full_name || currentUser?.email || 'User').split(' ')[0];
+  const displayAvatar = activeCoach?.avatar_url || currentUser?.avatar_url || null;
+  const displayInitial = (activeCoach?.name || currentUser?.full_name || currentUser?.email || 'U').charAt(0).toUpperCase();
 
   // Build role options: owner + each coach
   const roleOptions = [
@@ -60,12 +65,12 @@ export default function ProfileDropdown({ currentUser, coaches, onRoleSelect, cu
           justifyContent: 'center', fontSize: 11, fontWeight: 700, color: D.t2,
           overflow: 'hidden', flexShrink: 0,
         }}>
-          {currentUser?.avatar_url
-            ? <img src={currentUser.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : initials
+          {displayAvatar
+            ? <img src={displayAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : displayInitial
           }
         </div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: D.t2 }}>{firstName}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: D.t2 }}>{displayName}</span>
         <ChevronDown style={{ width: 10, height: 10, color: D.t4, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }} />
       </button>
 
