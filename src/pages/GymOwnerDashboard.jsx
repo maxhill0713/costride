@@ -1014,7 +1014,7 @@ export default function GymOwnerDashboard() {
         <div style={{ padding: collapsed ? '16px 0' : '16px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start' }}>
             {/* Gym profile picture */}
-            <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: D.bgSurface, border: `2px solid ${D.blue}`, boxShadow: `0 0 8px rgba(59,130,246,0.45)`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {selectedGym?.logo_url || selectedGym?.image_url
                 ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
