@@ -529,6 +529,7 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
           weeklyGoal={currentUser?.weekly_goal}
           trainingDays={currentUser?.training_days}
           customWorkoutTypes={currentUser?.custom_workout_types || {}}
+          joinDate={currentUser?.created_date}
         />
       )}
       <ExerciseInsights

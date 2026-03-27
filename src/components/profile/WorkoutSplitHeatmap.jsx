@@ -111,9 +111,10 @@ function DayTooltip({ label, colorKey, onClose }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WorkoutSplitHeatmap({
-  checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}
+  checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}, joinDate = null
 }) {
   const today = new Date();
+  const joinDay = joinDate ? new Date(joinDate) : null;
   const [selectedYear, setSelectedYear]   = useState(getYear(today));
   const [selectedMonth, setSelectedMonth] = useState(getMonth(today));
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
@@ -305,13 +306,13 @@ export default function WorkoutSplitHeatmap({
                   // Fallback if no meta (shouldn't normally happen)
                   bg     = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
                   border = '1px solid rgba(96,165,250,0.3)';
-                } else if (isRestDay && !isFuture && inMonth) {
+                } else if (isRestDay && !isFuture && inMonth && !(joinDay && day < joinDay)) {
                   bg     = 'linear-gradient(135deg, #10b981 0%, #065f46 100%)';
                   border = '1px solid rgba(52,211,153,0.25)';
-                } else if (isMissed) {
-                  bg      = 'rgba(15,18,30,0.9)';
-                  border  = '1px solid rgba(71,85,105,0.4)';
-                  opacity = inMonth ? 0.55 : 0.12;
+                } else if (isMissed && !(joinDay && day < joinDay)) {
+                  bg      = 'linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%)';
+                  border  = '1px solid rgba(239,68,68,0.35)';
+                  opacity = inMonth ? 0.8 : 0.12;
                 } else {
                   bg     = 'rgba(30,37,56,0.7)';
                   border = '1px solid rgba(71,85,105,0.3)';
@@ -398,7 +399,7 @@ export default function WorkoutSplitHeatmap({
             <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>Rest</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 9, height: 9, borderRadius: 2, background: 'rgba(15,18,30,0.9)', border: '1px solid rgba(71,85,105,0.4)', opacity: 0.55, flexShrink: 0 }} />
+            <div style={{ width: 9, height: 9, borderRadius: 2, background: 'linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%)', border: '1px solid rgba(239,68,68,0.35)', flexShrink: 0 }} />
             <span style={{ fontSize: 10, fontWeight: 500, color: '#475569' }}>Missed</span>
           </div>
         </div>
