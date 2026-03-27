@@ -373,14 +373,19 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
   const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
-  const { data: memberGymData } = useQuery({
-    queryKey: ['gym', primaryGymIdForQuery],
-    queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then((r) => r[0] || null),
-    enabled: !!primaryGymIdForQuery,
+  const { data: allMemberGyms = [] } = useQuery({
+    queryKey: ['memberGyms', gymMemberships.map(m => m.gym_id).join(',')],
+    queryFn: () => {
+      const gymIds = gymMemberships.map(m => m.gym_id);
+      return gymIds.length > 0 ? base44.entities.Gym.filter({ id: { $in: gymIds } }) : Promise.resolve([]);
+    },
+    enabled: gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
+  const memberGymData = allMemberGyms.find(g => g.id === primaryGymIdForQuery) || allMemberGyms[0] || null;
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
@@ -825,7 +830,7 @@ export default function Home() {
             <>
               {showCheckInButton && !userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
                 <LocationBasedCheckInButton
-                  gym={memberGym}
+                  gyms={allMemberGyms}
                   onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
                   gymMemberships={gymMemberships} />
               )}

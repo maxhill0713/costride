@@ -60,14 +60,14 @@ function soundBounceIn(ctx) {
   osc.start(now); osc.stop(now + 0.3);
 }
 
-export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymMemberships }) {
+export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gymMemberships }) {
   const queryClient = useQueryClient();
   const [pressed, setPressed] = useState(false);
   const [success, setSuccess] = useState(false);
   const [ripples, setRipples] = useState([]);
   const [locationError, setLocationError] = useState(null);
   const [isCheckingLocation, setIsCheckingLocation] = useState(true);
-  const [isWithinRange, setIsWithinRange] = useState(false);
+  const [selectedGym, setSelectedGym] = useState(null);
   const btnRef = useRef(null);
   const rippleId = useRef(0);
   const audioCtxRef = useRef(null);
@@ -82,22 +82,23 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
         return;
       }
 
-      if (!gym?.latitude || !gym?.longitude) {
-        console.warn('Gym missing coordinates:', { gym_id: gym?.id, latitude: gym?.latitude, longitude: gym?.longitude });
-        setLocationError('No gym location data available');
+      if (!gyms || gyms.length === 0) {
+        setLocationError('No gym data available');
         setIsCheckingLocation(false);
         return;
       }
 
-      const { isWithinRange: inRange, nearestGymDistance } = checkDistanceToGyms(
+      const gymList = gyms.map(g => ({ id: g.id, name: g.name, latitude: g.latitude, longitude: g.longitude }));
+      const { isWithinRange: inRange, nearestGym, nearestGymDistance } = checkDistanceToGyms(
         userLocation.latitude,
         userLocation.longitude,
-        [{ id: gym.id, name: gym.name, latitude: gym.latitude, longitude: gym.longitude }],
+        gymList,
         500
       );
 
-      if (inRange) {
-        setIsWithinRange(true);
+      if (inRange && nearestGym) {
+        const closest = gyms.find(g => g.id === nearestGym.id);
+        setSelectedGym(closest);
       } else {
         const distanceM = nearestGymDistance;
         setLocationError(`You're ${distanceM}m away. Must be within 500m to check in.`);
@@ -106,7 +107,7 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
     };
 
     checkLocationOnMount();
-  }, [gym]);
+  }, [gyms]);
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
@@ -114,8 +115,8 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
       return base44.entities.CheckIn.create({
         user_id: me.id,
         user_name: me.full_name,
-        gym_id: gym.id,
-        gym_name: gym.name,
+        gym_id: selectedGym.id,
+        gym_name: selectedGym.name,
         check_in_date: new Date().toISOString(),
       });
     },
@@ -168,8 +169,8 @@ export default function LocationBasedCheckInButton({ gym, onCheckInSuccess, gymM
 
   // Don't render until we've finished the initial location check
   if (isCheckingLocation) return null;
-  // Only show button if user is within range
-  if (!isWithinRange) return null;
+  // Only show button if user is within range of a gym
+  if (!selectedGym) return null;
 
   return (
     <>
