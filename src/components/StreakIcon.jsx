@@ -1,6 +1,6 @@
 import React from 'react';
 
-const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 export default function StreakIcon({ variant = 'default', className = 'w-9 h-9', outline = false }) {
   return (
