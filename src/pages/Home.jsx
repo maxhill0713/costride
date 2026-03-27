@@ -239,6 +239,7 @@ export default function Home() {
     try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
     catch { return new Set(); }
   });
+  const [friendsModalViewed, setFriendsModalViewed] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -777,9 +778,18 @@ export default function Home() {
         CoStride
       </h1>
       <button
-        onClick={() => setShowFriendsModal(true)}
-        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
+        onClick={() => {
+          setShowFriendsModal(true);
+          setFriendsModalViewed(true);
+        }}
+        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu relative">
         <Users className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
+        {!friendsModalViewed && (friendRequests.length > 0 || sentFriendRequests.some(r => {
+          const friend = friendUsersList.find(u => u.id === r.friend_id);
+          return friend && friends.some(f => f.friend_id === r.friend_id);
+        })) && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50 animate-pulse" />
+        )}
       </button>
     </div>
   );
@@ -1241,7 +1251,10 @@ export default function Home() {
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
       <FriendsSection
         showFriendsModal={showFriendsModal}
-        setShowFriendsModal={setShowFriendsModal}
+        setShowFriendsModal={(val) => {
+          setShowFriendsModal(val);
+          if (val) setFriendsModalViewed(true);
+        }}
         showAddFriendModal={showAddFriendModal}
         setShowAddFriendModal={setShowAddFriendModal}
         confirmRemoveFriend={confirmRemoveFriend}
