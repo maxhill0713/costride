@@ -57,6 +57,7 @@ export default function MemberChatPanel({ open, onClose, allMemberships = [], cu
     mutationFn: content => base44.entities.Message.create({
       sender_id:     currentUser.id,
       sender_name:   currentUser.full_name || currentUser.email,
+      sender_avatar: currentUser.avatar_url || currentUser.logo_url || null,
       receiver_id:   selectedMember.user_id,
       receiver_name: selectedMember.user_name,
       content,

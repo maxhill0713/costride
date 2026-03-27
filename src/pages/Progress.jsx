@@ -709,77 +709,205 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
 
 // ─── Coach Messages section ───────────────────────────────────────────────────
 function CoachMessages({ currentUser }) {
+  const [openThread, setOpenThread] = useState(null); // sender_id of open chat
+  const bottomRef = useRef(null);
+
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['coachMessages', currentUser?.id],
-    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
     enabled: !!currentUser,
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
   });
 
-  // Group messages by sender, keep latest first per sender
-  const bySender = useMemo(() => {
+  // Group by sender
+  const threads = useMemo(() => {
     const map = {};
     messages.forEach(msg => {
-      if (!map[msg.sender_id]) map[msg.sender_id] = { name: msg.sender_name || 'Coach', messages: [] };
+      if (!map[msg.sender_id]) {
+        map[msg.sender_id] = {
+          sender_id: msg.sender_id,
+          name: msg.sender_name || 'Coach',
+          avatar: msg.sender_avatar || null,
+          messages: [],
+        };
+      }
       map[msg.sender_id].messages.push(msg);
     });
-    // Sort each sender's messages newest first
-    Object.values(map).forEach(s => s.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
-    // Sort senders by most recent message
-    return Object.values(map).sort((a, b) => new Date(b.messages[0].created_date) - new Date(a.messages[0].created_date));
+    // Sort messages oldest→newest inside each thread
+    Object.values(map).forEach(t => t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
+    // Sort threads newest first (by last message)
+    return Object.values(map).sort((a, b) => {
+      const la = a.messages[a.messages.length - 1]?.created_date || 0;
+      const lb = b.messages[b.messages.length - 1]?.created_date || 0;
+      return new Date(lb) - new Date(la);
+    });
   }, [messages]);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [openThread, messages]);
+
+  const activeThread = threads.find(t => t.sender_id === openThread);
+
+  const fmtTime = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const now = new Date();
+    const diffDays = Math.floor((now - d) / 86400000);
+    if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday: 'short' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
+  // ── Open chat view ──
+  if (activeThread) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', background: 'linear-gradient(135deg, rgba(10,14,30,0.98) 0%, rgba(5,8,20,1) 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+        {/* Chat header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.02)' }}>
+          <button onClick={() => setOpenThread(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: '#94a3b8' }}>
+            <ChevronRight style={{ width: 20, height: 20, transform: 'rotate(180deg)' }} />
+          </button>
+          {/* Avatar with blue glow */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+              border: '2px solid #3b82f6',
+              boxShadow: '0 0 10px rgba(59,130,246,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
+              fontSize: 15, fontWeight: 800, color: '#3b82f6',
+            }}>
+              {activeThread.avatar
+                ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : (activeThread.name || '?').charAt(0).toUpperCase()
+              }
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #080e18' }} />
+          </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>{activeThread.name}</p>
+            <p style={{ fontSize: 11, color: '#475569', margin: '1px 0 0' }}>Coach · {activeThread.messages.length} messages</p>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {activeThread.messages.map((msg, i) => {
+            const showAvatar = i === 0 || activeThread.messages[i - 1]?.sender_id !== msg.sender_id;
+            return (
+              <div key={msg.id || i} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+                {/* Coach avatar on left */}
+                <div style={{ width: 30, flexShrink: 0 }}>
+                  {showAvatar && (
+                    <div style={{
+                      width: 30, height: 30, borderRadius: '50%', overflow: 'hidden',
+                      border: '2px solid #3b82f6',
+                      boxShadow: '0 0 8px rgba(59,130,246,0.5)',
+                      background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 11, fontWeight: 800, color: '#3b82f6',
+                    }}>
+                      {activeThread.avatar
+                        ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : (activeThread.name || '?').charAt(0).toUpperCase()
+                      }
+                    </div>
+                  )}
+                </div>
+                <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4 }}>{activeThread.name}</span>}
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '18px 18px 18px 4px',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    fontSize: 14, color: '#e2e8f0', lineHeight: 1.5,
+                  }}>
+                    {msg.content}
+                  </div>
+                  <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4 }}>{fmtTime(msg.created_date)}</span>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={bottomRef} />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Thread list (WhatsApp style) ──
   if (isLoading) return (
-    <div className="space-y-3">
-      {[1,2].map(i => <div key={i} className="h-20 rounded-2xl bg-slate-800/60 animate-pulse" />)}
+    <div className="space-y-2">
+      {[1,2,3].map(i => <div key={i} style={{ height: 72, borderRadius: 16, background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite' }} />)}
     </div>
   );
 
-  if (bySender.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-        <User style={{ width: 24, height: 24, color: '#a78bfa' }} />
+  if (threads.length === 0) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
+      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+        <User style={{ width: 26, height: 26, color: '#a78bfa' }} />
       </div>
       <p style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>No messages yet</p>
-      <p style={{ fontSize: 13, fontWeight: 500, color: '#475569', lineHeight: 1.6, maxWidth: 240, margin: 0 }}>
-        When a coach or gym owner sends you a message, it will appear here.
+      <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, maxWidth: 240, margin: 0 }}>
+        When a coach or gym owner messages you, it will appear here.
       </p>
     </div>
   );
 
   return (
-    <div className="space-y-4">
-      {bySender.map((sender, idx) => (
-        <div key={idx} style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, overflow: 'hidden' }}>
-          {/* Sender header */}
-          <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#a78bfa', flexShrink: 0 }}>
-              {(sender.name || '?').charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>{sender.name}</p>
-              <p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 500 }}>
-                {sender.messages.length} message{sender.messages.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          {/* Messages */}
-          <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {sender.messages.slice(0, 5).map((msg, mi) => (
-              <div key={msg.id || mi} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <p style={{ fontSize: 14, color: '#cbd5e1', margin: 0, lineHeight: 1.55 }}>{msg.content}</p>
-                <p style={{ fontSize: 10, color: '#334155', margin: 0, fontWeight: 600 }}>
-                  {msg.created_date ? new Date(msg.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
-                </p>
-                {mi < sender.messages.slice(0, 5).length - 1 && (
-                  <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', marginTop: 2 }} />
-                )}
+    <div style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(10,14,30,0.97) 0%, rgba(5,8,20,1) 100%)' }}>
+      {threads.map((thread, idx) => {
+        const lastMsg = thread.messages[thread.messages.length - 1];
+        return (
+          <button
+            key={thread.sender_id}
+            onClick={() => setOpenThread(thread.sender_id)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+              padding: '14px 16px', border: 'none', cursor: 'pointer',
+              background: 'transparent', fontFamily: 'inherit', textAlign: 'left',
+              borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              transition: 'background 0.12s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            {/* Avatar with blue glow */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', overflow: 'hidden',
+                border: '2px solid #3b82f6',
+                boxShadow: '0 0 12px rgba(59,130,246,0.55)',
+                background: thread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 18, fontWeight: 800, color: '#3b82f6',
+              }}>
+                {thread.avatar
+                  ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (thread.name || '?').charAt(0).toUpperCase()
+                }
               </div>
-            ))}
-          </div>
-        </div>
-      ))}
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{thread.name}</span>
+                <span style={{ fontSize: 11, color: '#334155', flexShrink: 0, marginLeft: 8 }}>{fmtTime(lastMsg?.created_date)}</span>
+              </div>
+              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                {lastMsg?.content || ''}
+              </span>
+            </div>
+
+            <ChevronRight style={{ width: 16, height: 16, color: '#2d3f55', flexShrink: 0 }} />
+          </button>
+        );
+      })}
     </div>
   );
 }
