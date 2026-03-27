@@ -883,9 +883,9 @@ function SmartInsightsPanel({ checkIns, ci30, allMemberships, atRisk, retentionR
   }, [checkIns, ci30, atRisk, retentionRate, monthChangePct, totalMembers]);
 
   /* Color per insight type — border only, no background tint */
-  const borderColor = { danger: C.danger, success: C.success, info: C.t4 };
-  const iconColor   = { danger: C.danger, success: C.success, info: C.t3 };
-  const labelColor  = { danger: C.t1,     success: C.t1,      info: C.t2 };
+  const borderColor = { danger: C.danger, success: C.success, info: C.warn };
+  const iconColor   = { danger: C.danger, success: C.success, info: C.warn };
+  const labelColor  = { danger: C.t1,     success: C.t1,      info: C.t1 };
 
   return (
     <Card style={{ padding: 20 }}>
@@ -1239,7 +1239,7 @@ function SegmentBreakdown({ title, segments, total }) {
                 {s.sub && <span style={{ fontSize: 9, color: C.t3 }}>{s.sub}</span>}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: s.color }}>{s.val}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{s.val}</span>
                 <span style={{ fontSize: 9, color: C.t3, minWidth: 24, textAlign: 'right' }}>{pct}%</span>
               </div>
             </div>
@@ -1429,7 +1429,7 @@ export default function TabAnalytics({
           <KpiCard icon={Activity}   label="Monthly Check-ins" value={ci30.length}     unit="this month"           trend={monthChangePct} />
           <KpiCard icon={Users}      label="Active Members"    value={activeThisMonth} unit={`of ${totalMembers}`} />
           <KpiCard icon={TrendingUp} label="Avg Visits/Member" value={avgPerMem}       unit="this month"           />
-          <KpiCard icon={Zap}        label="At Risk"           value={atRisk}          unit="14+ days absent"      valueColor={atRisk > 0 ? C.danger : undefined} />
+          <KpiCard icon={Zap}        label="At Risk"           value={atRisk}          unit="14+ days absent"      />
         </div>
 
         {classAttendance.length > 0 && (
@@ -1489,8 +1489,8 @@ export default function TabAnalytics({
         {/* Segment: strict 3-tier colors */}
         <SegmentBreakdown title="Member Frequency" total={totalMembers} segments={[
           { label: 'Frequent',   sub: '12+/mo', val: memberFrequency.frequent,   color: C.success },
-          { label: 'Occasional', sub: '4–11',   val: memberFrequency.occasional, color: C.t3 },
-          { label: 'Rare',       sub: '1–3',    val: memberFrequency.rare,       color: C.t3 },
+          { label: 'Occasional', sub: '4–11',   val: memberFrequency.occasional, color: C.accent },
+          { label: 'Rare',       sub: '1–3',    val: memberFrequency.rare,       color: C.accent },
           { label: 'Inactive',   sub: '0',      val: memberFrequency.inactive,   color: C.danger },
         ]} />
 
@@ -1546,7 +1546,6 @@ export default function TabAnalytics({
               value={`${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`}
               unit="vs last month"
               trend={monthChangePct}
-              valueColor={monthChangePct < -5 ? C.danger : monthChangePct > 10 ? C.success : undefined}
               subContext={monthChangePct > 0 ? 'Growing' : monthChangePct < 0 ? 'Declining' : 'Flat'}
             />
             <KpiCard
@@ -1561,7 +1560,6 @@ export default function TabAnalytics({
               label="Return Rate"
               value={`${returnRate}%`}
               unit="repeat check-ins"
-              valueColor={returnRate < 50 ? C.danger : returnRate >= 70 ? C.success : undefined}
               subContext={returnRate >= 70 ? 'Strong loyalty' : returnRate < 50 ? 'Needs attention' : ''}
             />
           </div>
@@ -1675,8 +1673,8 @@ export default function TabAnalytics({
         {/* Segment breakdown — strict 3-tier color rule */}
         <SegmentBreakdown title="Member Segments" total={totalMembers} segments={[
           { label: 'Super Active', sub: '15+/mo', val: superActive, color: C.success },
-          { label: 'Active',       sub: '8–14',   val: active,      color: C.t2 },
-          { label: 'Casual',       sub: '1–7',    val: casual,      color: C.t3 },
+          { label: 'Active',       sub: '8–14',   val: active,      color: C.accent },
+          { label: 'Casual',       sub: '1–7',    val: casual,      color: C.accent },
           { label: 'Inactive',     sub: '0',       val: inactive,    color: C.danger },
         ]} />
 
