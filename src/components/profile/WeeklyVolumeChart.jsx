@@ -3,10 +3,11 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
+import { Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Keywords that identify compound / heavy movements
 const COMPOUND_KEYWORDS = [
   'squat', 'deadlift', 'bench', 'press', 'row', 'pull-up', 'pullup',
   'chin-up', 'chinup', 'lunge', 'clean', 'snatch', 'jerk', 'thruster',
@@ -20,8 +21,7 @@ function isCompound(exerciseName = '', weight = 0) {
   return nameMatch || weight >= 30;
 }
 
-// Premium colour — muted slate-blue, not green
-const LINE_COLOR = '#818cf8'; // indigo-400 — cool, premium, distinct
+const LINE_COLOR = '#818cf8';
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label, compoundOnly }) {
@@ -83,7 +83,6 @@ function CompoundToggle({ checked, onChange }) {
         transition: 'background 0.15s, border-color 0.15s',
       }}
     >
-      {/* Checkbox */}
       <div style={{
         width: 14, height: 14, borderRadius: 3, flexShrink: 0,
         background: checked ? LINE_COLOR : 'rgba(255,255,255,0.08)',
@@ -111,6 +110,7 @@ function CompoundToggle({ checked, onChange }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WeeklyVolumeChart({ currentUser }) {
   const [compoundOnly, setCompoundOnly] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const chartData = useMemo(() => {
     const workoutTypes = currentUser?.custom_workout_types;
@@ -158,21 +158,70 @@ export default function WeeklyVolumeChart({ currentUser }) {
 
   return (
     <div>
-      {/* ── Header row: title left, toggle right — mirrors Overload Tracker ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 10 : 16 }}>
         <div style={{ flexShrink: 0 }}>
-          <h2 style={{
-            fontSize: 16, fontWeight: 700, color: '#e2e8f0',
-            letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
-          }}>
-            Weekly Rep Volume
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <h2 style={{
+              fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+              letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+            }}>
+              Weekly Rep Volume
+            </h2>
+            <motion.button
+              onClick={() => setShowInfo(v => !v)}
+              whileTap={{ scale: 0.78, y: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+              style={{
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer',
+                color: showInfo ? '#818cf8' : '#475569',
+                display: 'flex', alignItems: 'center',
+                transition: 'color 0.15s',
+              }}>
+              <Info size={13} />
+            </motion.button>
+          </div>
           <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
             Planned reps · current split
           </p>
         </div>
         <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} />
       </div>
+
+      {/* ── Info Box ── */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 14 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              position: 'relative',
+              background: 'linear-gradient(135deg, rgba(129,140,248,0.07) 0%, rgba(99,102,241,0.04) 100%)',
+              border: '1px solid rgba(129,140,248,0.16)',
+              borderRadius: 10,
+              padding: '10px 13px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)',
+              }} />
+              <p style={{
+                fontSize: 11, lineHeight: 1.65, color: '#94a3b8',
+                margin: 0, fontWeight: 500,
+              }}>
+                <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Volume</span> is the total reps you perform each day — keeping it balanced across your week means no single session overtaxes your body, reducing soreness and improving recovery.{' '}
+                <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Compound lifts</span> carry the most load, so their volume matters most — piling too many heavy reps into one day raises your injury and fatigue risk significantly. Use the Compound toggle to check your heaviest work is spread evenly.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!hasAnyData ? (
         <div style={{
