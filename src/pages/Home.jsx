@@ -788,7 +788,7 @@ export default function Home() {
           const friend = friendUsersList.find(u => u.id === r.friend_id);
           return friend && friends.some(f => f.friend_id === r.friend_id);
         })) && (
-          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" />
+          <div className="absolute top-0 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" />
         )}
       </button>
     </div>
