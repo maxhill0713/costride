@@ -1,11 +1,10 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import PostCard from '../feed/PostCard';
 import { createPageUrl } from '../../utils';
-import { useSeenPosts } from '@/hooks/useSeenPosts';
 
 function ActivityFeedSection({
   friends,
@@ -20,59 +19,6 @@ function ActivityFeedSection({
   dismissCard,
 }) {
   if (friends.length === 0) return null;
-
-  const { seenPosts, isSeen, markPostAsSeen } = useSeenPosts();
-  const postRefsRef = React.useRef(new Map());
-
-  // Tier and sort posts: unseen friends → unseen community → seen (by last_seen_date)
-  const tieredPosts = React.useMemo(() => {
-    const unseenFriends = [];
-    const unseenCommunity = [];
-    const seenList = [];
-
-    socialFeedPosts.forEach(post => {
-      const postSeen = isSeen(post.id);
-      const isFriend = friends.some(f => f.friend_id === post.member_id);
-
-      if (postSeen) {
-        seenList.push({ ...post, last_seen: seenPosts[post.id].last_seen_date });
-      } else if (isFriend) {
-        unseenFriends.push(post);
-      } else {
-        unseenCommunity.push(post);
-      }
-    });
-
-    // Sort seen posts by last_seen_date (newest first)
-    seenList.sort((a, b) => b.last_seen - a.last_seen);
-
-    return [...unseenFriends, ...unseenCommunity, ...seenList];
-  }, [socialFeedPosts, seenPosts, friends, isSeen]);
-
-  // Track when posts scroll out of view
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          const postId = entry.target.dataset.postId;
-          if (!postId) return;
-
-          // Post has scrolled completely out of view above the viewport
-          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-            markPostAsSeen(postId);
-          }
-        });
-      },
-      { threshold: 0 }
-    );
-
-    // Observe all post elements
-    postRefsRef.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [markPostAsSeen, visiblePostCount]);
 
   return (
     <div className="space-y-3 mt-12">
@@ -124,19 +70,10 @@ function ActivityFeedSection({
         </div>
       )}
 
-      {tieredPosts.length > 0 && (
+      {socialFeedPosts.length > 0 && (
         <div className="space-y-3">
-          {tieredPosts.slice(0, visiblePostCount).map(post => (
-            <div
-              key={post.id}
-              data-post-id={post.id}
-              ref={el => {
-                if (el) postRefsRef.current.set(post.id, el);
-                else postRefsRef.current.delete(post.id);
-              }}
-            >
-              <PostCard post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-            </div>
+          {socialFeedPosts.slice(0, visiblePostCount).map(post => (
+            <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
           ))}
           <div ref={feedBottomRef} className="flex justify-center py-3">
             {isLoadingMorePosts && (
