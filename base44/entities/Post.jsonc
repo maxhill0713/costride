@@ -1,0 +1,206 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "member_id": {
+      "type": "string",
+      "description": "Reference to GymMember"
+    },
+    "member_name": {
+      "type": "string",
+      "description": "Member's name"
+    },
+    "member_avatar": {
+      "type": "string",
+      "description": "Member's avatar URL"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym ID for which this post is created (for RLS)"
+    },
+    "content": {
+      "type": "string",
+      "description": "Post caption/content"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Post image URL"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Post video URL"
+    },
+    "exercise": {
+      "type": "string",
+      "description": "Exercise performed"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight lifted"
+    },
+    "workout_name": {
+      "type": "string",
+      "description": "Name of the shared workout"
+    },
+    "workout_exercises": {
+      "type": "array",
+      "description": "Structured exercise list for workout posts",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "sets": {
+            "type": "string"
+          },
+          "reps": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "workout_duration": {
+      "type": "string",
+      "description": "Duration of the workout (e.g. '45 min')"
+    },
+    "workout_volume": {
+      "type": "string",
+      "description": "Total volume lifted (e.g. '4,200 kg')"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of likes"
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Comments on the post"
+    },
+    "reactions": {
+      "type": "object",
+      "description": "Reactions by users",
+      "default": {},
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "is_favourite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this post is favorited by the member"
+    },
+    "is_system_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an automatically generated system post"
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this post is hidden from the feed"
+    }
+  },
+  "required": [
+    "member_id",
+    "member_name",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "data.member_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

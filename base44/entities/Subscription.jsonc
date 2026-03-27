@@ -1,0 +1,54 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID or Gym ID"
+    },
+    "subscriber_name": {
+      "type": "string",
+      "description": "Name of subscriber"
+    },
+    "subscription_type": {
+      "type": "string",
+      "enum": [
+        "user_premium",
+        "gym_basic",
+        "gym_pro",
+        "gym_enterprise"
+      ],
+      "description": "Type of subscription"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired",
+        "trial"
+      ],
+      "default": "trial",
+      "description": "Subscription status"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Subscription start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Subscription end date"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monthly amount"
+    }
+  },
+  "required": [
+    "user_id",
+    "subscription_type",
+    "status"
+  ]
+}

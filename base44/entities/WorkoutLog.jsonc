@@ -1,0 +1,77 @@
+{
+  "name": "WorkoutLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who completed the workout"
+    },
+    "workout_name": {
+      "type": "string",
+      "description": "Name of the workout (e.g., Push Day)"
+    },
+    "split_day": {
+      "type": "string",
+      "description": "Split day name (e.g., Push, Pull, Legs, Back, Abs)"
+    },
+    "day_of_week": {
+      "type": "number",
+      "description": "Day of week (1-7, Mon-Sun)"
+    },
+    "exercises": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise": {
+            "type": "string"
+          },
+          "setsReps": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Completed exercises with weights and reps"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Workout notes"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when workout was completed"
+    }
+  },
+  "required": [
+    "user_id",
+    "exercises",
+    "completed_date"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

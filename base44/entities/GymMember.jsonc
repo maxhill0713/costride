@@ -1,0 +1,121 @@
+{
+  "name": "GymMember",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Member's full name"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Gym nickname or handle"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile photo URL"
+    },
+    "join_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When they joined the gym"
+    },
+    "weight_class": {
+      "type": "string",
+      "enum": [
+        "lightweight",
+        "middleweight",
+        "heavyweight",
+        "super_heavyweight"
+      ],
+      "description": "Competition weight class"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "membership",
+                "in": "$$membership.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "membership",
+                "in": "$$membership.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "membership",
+                "in": "$$membership.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "membership",
+                "in": "$$membership.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

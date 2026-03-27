@@ -1,0 +1,96 @@
+{
+  "name": "BrandDiscountCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Discount code or gift card code"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "discount_code",
+        "gift_card"
+      ],
+      "default": "discount_code"
+    },
+    "discount_value": {
+      "type": "string",
+      "description": "Discount value"
+    },
+    "description": {
+      "type": "string"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unused",
+        "used"
+      ],
+      "default": "unused"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "User ID who can use this code"
+    },
+    "redeemed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "premium_only": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "code",
+    "brand",
+    "type",
+    "discount_value",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.assigned_to": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.assigned_to": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

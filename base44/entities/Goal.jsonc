@@ -1,0 +1,84 @@
+{
+  "name": "Goal",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who set the goal"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User name"
+    },
+    "title": {
+      "type": "string",
+      "description": "Goal title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Goal description"
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "numerical",
+        "frequency",
+        "consistency"
+      ],
+      "default": "numerical",
+      "description": "Type of goal: numerical (lift weight), frequency (workouts per week), consistency (maintain streak)"
+    },
+    "target_value": {
+      "type": "number",
+      "description": "Target value (e.g., weight, reps, workouts per week)"
+    },
+    "current_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Current progress value"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement (lbs, reps, workouts, days, etc.)"
+    },
+    "exercise": {
+      "type": "string",
+      "description": "Related exercise if applicable"
+    },
+    "frequency_period": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "description": "For frequency goals: daily, weekly, or monthly"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Goal deadline"
+    },
+    "reminder_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable weekly reminders"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "Goal status"
+    }
+  },
+  "required": [
+    "user_id",
+    "title",
+    "target_value",
+    "unit"
+  ]
+}

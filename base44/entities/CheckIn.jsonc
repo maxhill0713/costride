@@ -1,0 +1,79 @@
+{
+  "name": "CheckIn",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who checked in"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User name"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym where checked in"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "check_in_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of check-in"
+    },
+    "first_visit": {
+      "type": "boolean",
+      "default": false,
+      "description": "Is this the first visit to this gym"
+    },
+    "is_rest_day": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if auto-logged as a rest day"
+    }
+  },
+  "required": [
+    "user_id",
+    "gym_id",
+    "check_in_date"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "name": "ChallengeParticipant",
+  "type": "object",
+  "properties": {
+    "challenge_id": {
+      "type": "string",
+      "description": "Reference to Challenge"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Reference to User"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User name for display"
+    },
+    "starting_streak": {
+      "type": "number",
+      "description": "User's streak value when they joined"
+    },
+    "current_progress": {
+      "type": "number",
+      "default": 0,
+      "description": "Current progress toward target"
+    },
+    "target_value": {
+      "type": "number",
+      "description": "Target value needed to win"
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "longest_streak",
+        "most_check_ins",
+        "total_weight",
+        "participation"
+      ],
+      "description": "Type of goal for this challenge"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "Participant status in challenge"
+    },
+    "joined_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user joined challenge"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user completed challenge (if completed)"
+    }
+  },
+  "required": [
+    "challenge_id",
+    "user_id",
+    "user_name",
+    "target_value",
+    "goal_type"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

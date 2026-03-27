@@ -1,0 +1,70 @@
+{
+  "name": "LiftRecord",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who logged this lift"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User's display name"
+    },
+    "lift_type": {
+      "type": "string",
+      "enum": [
+        "squat",
+        "bench",
+        "deadlift",
+        "ohp",
+        "row"
+      ],
+      "description": "Type of lift"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight lifted (PR)"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "lbs"
+      ],
+      "default": "kg"
+    },
+    "logged_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_name",
+    "lift_type",
+    "weight"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

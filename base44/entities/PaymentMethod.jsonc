@@ -1,0 +1,70 @@
+{
+  "name": "PaymentMethod",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this payment method"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "card",
+        "paypal",
+        "bank_transfer"
+      ],
+      "description": "Payment method type"
+    },
+    "card_last_four": {
+      "type": "string",
+      "description": "Last 4 digits of card (for cards only)"
+    },
+    "card_brand": {
+      "type": "string",
+      "enum": [
+        "visa",
+        "mastercard",
+        "amex",
+        "discover"
+      ],
+      "description": "Card brand (for cards only)"
+    },
+    "expiry_month": {
+      "type": "string",
+      "description": "Card expiry month (MM)"
+    },
+    "expiry_year": {
+      "type": "string",
+      "description": "Card expiry year (YYYY)"
+    },
+    "paypal_email": {
+      "type": "string",
+      "description": "PayPal email (for PayPal only)"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "Is this the default payment method"
+    },
+    "billing_name": {
+      "type": "string",
+      "description": "Name on card/account"
+    },
+    "billing_address": {
+      "type": "string",
+      "description": "Billing address"
+    },
+    "billing_postcode": {
+      "type": "string",
+      "description": "Billing postcode"
+    }
+  },
+  "required": [
+    "user_id",
+    "type"
+  ]
+}

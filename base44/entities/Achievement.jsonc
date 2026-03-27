@@ -1,0 +1,56 @@
+{
+  "name": "Achievement",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who earned achievement"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User name"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym where achieved (optional)"
+    },
+    "achievement_type": {
+      "type": "string",
+      "enum": [
+        "first_pr",
+        "streak_7",
+        "streak_30",
+        "challenge_winner",
+        "top_3_leaderboard",
+        "100_lifts",
+        "500_lifts",
+        "community_leader",
+        "referral_5",
+        "referral_25"
+      ],
+      "description": "Type of achievement"
+    },
+    "title": {
+      "type": "string",
+      "description": "Achievement title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Achievement description"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Achievement icon/emoji"
+    },
+    "points": {
+      "type": "number",
+      "default": 10,
+      "description": "Points earned"
+    }
+  },
+  "required": [
+    "user_id",
+    "achievement_type",
+    "title"
+  ]
+}

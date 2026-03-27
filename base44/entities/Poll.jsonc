@@ -1,0 +1,176 @@
+{
+  "name": "Poll",
+  "type": "object",
+  "properties": {
+    "gym_id": {
+      "type": "string",
+      "description": "Gym ID where the poll is created"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name for display"
+    },
+    "title": {
+      "type": "string",
+      "description": "Poll question/title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional poll description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "equipment_replacement",
+        "favorite_equipment",
+        "rewards",
+        "playlist"
+      ],
+      "description": "Category of the poll"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "votes": {
+            "type": "number",
+            "default": 0
+          }
+        }
+      },
+      "description": "Poll options with vote counts"
+    },
+    "voters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs who have voted",
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed"
+      ],
+      "default": "active",
+      "description": "Poll status"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User ID of poll creator"
+    }
+  },
+  "required": [
+    "gym_id",
+    "gym_name",
+    "title",
+    "category",
+    "options"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.created_by": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.created_by": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

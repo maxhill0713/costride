@@ -1,0 +1,70 @@
+{
+  "name": "Payment",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who made the payment"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym being paid for"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Payment amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "GBP",
+      "description": "Payment currency"
+    },
+    "payment_method_id": {
+      "type": "string",
+      "description": "Payment method used"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "membership",
+        "class",
+        "personal_training"
+      ],
+      "description": "What the payment is for"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Payment status"
+    },
+    "membership_type": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual",
+        "lifetime"
+      ],
+      "description": "Type of membership purchased"
+    },
+    "receipt_url": {
+      "type": "string",
+      "description": "URL to payment receipt"
+    }
+  },
+  "required": [
+    "user_id",
+    "gym_id",
+    "amount",
+    "payment_type"
+  ]
+}

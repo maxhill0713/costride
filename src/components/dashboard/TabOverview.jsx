@@ -412,12 +412,12 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
           borderRadius: 9,
           background:   C.surfaceEl,
           border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.accent}`,
+          borderLeft:   `3px solid ${C.success}`,
           display:      'flex',
           alignItems:   'center',
           gap:          8,
         }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.accent, flexShrink: 0 }} />
+          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>All clear today</div>
             <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>No immediate actions needed</div>
@@ -435,8 +435,8 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
           {positives.map((p, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: i < positives.length - 1 ? 4 : 0 }}>
-              <CheckCircle style={{ width: 10, height: 10, color: C.accent, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: C.accent }}>{p}</span>
+              <CheckCircle style={{ width: 10, height: 10, color: C.success, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: C.success }}>{p}</span>
             </div>
           ))}
         </div>
@@ -477,8 +477,8 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
       </div>
 
       {total === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}` }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.accent, flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.success}` }}>
+          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: C.t2 }}>No drop-off risks detected</span>
         </div>
       ) : rows.map((r, i) => (
@@ -504,7 +504,7 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           action="Follow up" onAction={() => setTab && setTab('members')} />
       )}
       {computed.week1 === 0 && total > 0 && (
-        <StatNudge color={C.accent} icon={CheckCircle}
+        <StatNudge color={C.success} icon={CheckCircle}
           stat="No immediate drop-offs."
           detail="Keep it up — the month 2–3 window is the next common drop-off point to watch." />
       )}
@@ -625,7 +625,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
           action="View members" onAction={() => setTab('members')} />
       )}
       {atRisk === 0 && totalMembers >= 5 && (
-        <StatNudge color={C.accent} icon={CheckCircle}
+        <StatNudge color={C.success} icon={CheckCircle}
           stat="All members active."
           detail="Active gyms maintain this by running a challenge every 6–8 weeks." />
       )}
@@ -755,7 +755,7 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           stat="More cancellations than sign-ups this month."
           detail="Run a referral incentive or re-engagement challenge to reverse the trend." />
       ) : newSignUps > 0 ? (
-        <StatNudge color={C.accent} icon={TrendingUp}
+        <StatNudge color={C.success} icon={TrendingUp}
           stat={`+${newSignUps} new member${newSignUps > 1 ? 's' : ''} this month.`}
           detail="Early habit formation matters — new members who visit frequently in their first weeks are far more likely to stick." />
       ) : null}

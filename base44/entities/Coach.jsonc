@@ -1,0 +1,203 @@
+{
+  "name": "Coach",
+  "type": "object",
+  "properties": {
+    "gym_id": {
+      "type": "string",
+      "description": "Gym where coach works"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Coach's email (to grant access)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Coach full name"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Coach bio/description"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile photo URL"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Areas of expertise"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Professional certifications"
+    },
+    "experience_years": {
+      "type": "number",
+      "description": "Years of coaching experience"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Coach rating out of 5"
+    },
+    "total_clients": {
+      "type": "number",
+      "default": 0,
+      "description": "Total clients coached"
+    },
+    "can_post": {
+      "type": "boolean",
+      "default": false,
+      "description": "Can post on gym feed"
+    },
+    "can_manage_events": {
+      "type": "boolean",
+      "default": true,
+      "description": "Can create/edit events"
+    },
+    "can_manage_classes": {
+      "type": "boolean",
+      "default": true,
+      "description": "Can create/edit classes"
+    },
+    "client_notes": {
+      "type": "object",
+      "description": "JSON map of client notes keyed by member ID",
+      "additionalProperties": true
+    },
+    "client_tags": {
+      "type": "object",
+      "description": "JSON map of client tags keyed by member ID",
+      "additionalProperties": true
+    },
+    "client_goals": {
+      "type": "object",
+      "description": "JSON map of client goals keyed by member ID",
+      "additionalProperties": true
+    },
+    "client_health": {
+      "type": "object",
+      "description": "JSON map of client health info keyed by member ID",
+      "additionalProperties": true
+    },
+    "session_notes": {
+      "type": "object",
+      "description": "JSON map of session notes keyed by session/date",
+      "additionalProperties": true
+    },
+    "attendance_sheets": {
+      "type": "object",
+      "description": "JSON map of attendance records keyed by class/date",
+      "additionalProperties": true
+    },
+    "cancelled_classes": {
+      "type": "object",
+      "description": "JSON map of cancelled class records keyed by class/date",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "gym_id",
+    "name",
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

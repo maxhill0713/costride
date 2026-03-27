@@ -1,0 +1,69 @@
+{
+  "name": "GymStats",
+  "type": "object",
+  "properties": {
+    "gym_id": {
+      "type": "string",
+      "description": "Gym ID"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "total_members": {
+      "type": "number",
+      "default": 0,
+      "description": "Total members"
+    },
+    "active_members": {
+      "type": "number",
+      "default": 0,
+      "description": "Active members this month"
+    },
+    "total_lifts": {
+      "type": "number",
+      "default": 0,
+      "description": "Total lifts logged"
+    },
+    "total_weight_moved": {
+      "type": "number",
+      "default": 0,
+      "description": "Total weight moved in lbs"
+    },
+    "challenges_won": {
+      "type": "number",
+      "default": 0,
+      "description": "Challenges won"
+    },
+    "community_rank": {
+      "type": "number",
+      "description": "Rank among all gyms"
+    },
+    "engagement_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall engagement score"
+    },
+    "stats_cache": {
+      "type": "string",
+      "description": "Cached stats data (long text)"
+    },
+    "stats_cache_computed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When stats cache was last computed"
+    },
+    "foot_traffic_data": {
+      "type": "string",
+      "description": "Cached foot traffic data (long text)"
+    },
+    "foot_traffic_cached_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When foot traffic data was last cached"
+    }
+  },
+  "required": [
+    "gym_id"
+  ]
+}

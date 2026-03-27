@@ -1,0 +1,155 @@
+{
+  "name": "GymClass",
+  "type": "object",
+  "properties": {
+    "gym_id": {
+      "type": "string",
+      "description": "Gym offering the class"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "name": {
+      "type": "string",
+      "description": "Class name (e.g., 'HIIT', 'Yoga', 'Spin')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Class description"
+    },
+    "instructor": {
+      "type": "string",
+      "description": "Instructor name"
+    },
+    "schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Class schedule"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Class duration in minutes"
+    },
+    "max_capacity": {
+      "type": "number",
+      "description": "Maximum participants"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "all_levels"
+      ],
+      "description": "Difficulty level"
+    }
+  },
+  "required": [
+    "gym_id",
+    "name",
+    "instructor"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

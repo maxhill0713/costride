@@ -1,0 +1,98 @@
+{
+  "name": "Lift",
+  "type": "object",
+  "properties": {
+    "member_id": {
+      "type": "string",
+      "description": "Reference to GymMember"
+    },
+    "member_name": {
+      "type": "string",
+      "description": "Member's name for display"
+    },
+    "exercise": {
+      "type": "string",
+      "enum": [
+        "bench_press",
+        "squat",
+        "deadlift",
+        "overhead_press",
+        "barbell_row",
+        "power_clean"
+      ],
+      "description": "Type of lift"
+    },
+    "weight_lbs": {
+      "type": "number",
+      "description": "Weight lifted in pounds"
+    },
+    "reps": {
+      "type": "number",
+      "description": "Number of reps"
+    },
+    "is_pr": {
+      "type": "boolean",
+      "description": "Is this a personal record?"
+    },
+    "lift_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the lift"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the lift"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Video proof URL"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym where lift was performed"
+    }
+  },
+  "required": [
+    "member_id",
+    "member_name",
+    "exercise",
+    "weight_lbs"
+  ],
+  "rls": {
+    "create": {
+      "data.member_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "membership",
+                "in": "$$membership.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.member_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.member_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referrer_id": {
+      "type": "string",
+      "description": "User who made the referral"
+    },
+    "referred_id": {
+      "type": "string",
+      "description": "User who was referred"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym that was joined"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "rewarded"
+      ],
+      "default": "pending",
+      "description": "Referral status"
+    },
+    "reward_amount": {
+      "type": "number",
+      "description": "Reward earned"
+    }
+  },
+  "required": [
+    "referrer_id",
+    "referred_id"
+  ]
+}

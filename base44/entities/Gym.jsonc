@@ -1,0 +1,208 @@
+{
+  "name": "Gym",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Gym owner's email"
+    },
+    "admin_id": {
+      "type": "string",
+      "description": "User ID of the gym owner/admin"
+    },
+    "google_place_id": {
+      "type": "string",
+      "description": "Unique Google Places ID"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude coordinate"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude coordinate"
+    },
+    "join_code": {
+      "type": "string",
+      "description": "Unique 6-character join code for members (e.g., FIT123)"
+    },
+    "qr_code": {
+      "type": "string",
+      "description": "QR code URL for gym join code"
+    },
+    "address": {
+      "type": "string",
+      "description": "Gym address"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "postcode": {
+      "type": "string",
+      "description": "Postcode for location"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "powerlifting",
+        "bodybuilding",
+        "crossfit",
+        "boxing",
+        "mma",
+        "general"
+      ],
+      "description": "Type of gym"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es"
+      ],
+      "default": "en",
+      "description": "Gym community language"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Rating out of 5"
+    },
+    "members_count": {
+      "type": "number",
+      "description": "Number of members"
+    },
+    "amenities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available amenities"
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available equipment"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Hero background image"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Gym profile logo/picture"
+    },
+    "gallery": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Gallery of gym photos"
+    },
+    "price": {
+      "type": "string",
+      "description": "Monthly price"
+    },
+    "reward_offer": {
+      "type": "string",
+      "description": "Special reward offer (e.g., \u00a35 free day pass)"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Distance from user in km"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Is gym verified"
+    },
+    "specializes_in": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Gym specializations (e.g., 'Weight Loss', 'Muscle Gain', 'Bulking Programs')"
+    },
+    "banned_members": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of banned user IDs"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Gym approval status"
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "claimed",
+        "unclaimed"
+      ],
+      "default": "unclaimed",
+      "description": "Whether gym has been claimed by owner"
+    }
+  },
+  "required": [
+    "name",
+    "city",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.status": "approved"
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "data.admin_id": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "data.admin_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

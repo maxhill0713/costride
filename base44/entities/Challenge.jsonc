@@ -1,0 +1,121 @@
+{
+  "name": "Challenge",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Challenge title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Challenge description"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "gym_vs_gym",
+        "individual",
+        "team",
+        "community"
+      ],
+      "description": "Type of challenge"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "lifting",
+        "attendance",
+        "streak"
+      ],
+      "default": "lifting",
+      "description": "Challenge category"
+    },
+    "is_app_challenge": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if created by app administrators, false if gym-created"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Hosting gym ID (optional for gym challenges, null for app challenges)"
+    },
+    "gym_name": {
+      "type": "string",
+      "description": "Hosting gym name"
+    },
+    "competing_gym_id": {
+      "type": "string",
+      "description": "Competing gym ID for gym vs gym"
+    },
+    "competing_gym_name": {
+      "type": "string",
+      "description": "Competing gym name"
+    },
+    "exercise": {
+      "type": "string",
+      "description": "Exercise for the challenge (for lifting category)"
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "total_weight",
+        "total_reps",
+        "max_weight",
+        "participation",
+        "most_check_ins",
+        "longest_streak"
+      ],
+      "description": "How to measure success"
+    },
+    "target_value": {
+      "type": "number",
+      "description": "Target value for the challenge (e.g., 20 check-ins, 30-day streak)"
+    },
+    "reward": {
+      "type": "string",
+      "description": "Reward description (e.g., '\u00a310 gift card', 'Free protein shake')"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Challenge start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Challenge end date"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of participant IDs"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "completed"
+      ],
+      "default": "upcoming",
+      "description": "Challenge status"
+    },
+    "winner_id": {
+      "type": "string",
+      "description": "Winner ID (user or gym)"
+    },
+    "winner_name": {
+      "type": "string",
+      "description": "Winner name"
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "goal_type",
+    "start_date",
+    "end_date"
+  ]
+}

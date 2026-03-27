@@ -1,0 +1,49 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "coach",
+        "staff"
+      ],
+      "default": "user",
+      "description": "User role in the platform"
+    },
+    "streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Current workout streak count"
+    },
+    "streak_freezes": {
+      "type": "number",
+      "default": 3,
+      "description": "Number of streak freezes available. Used automatically when a planned workout day is missed."
+    },
+    "monthly_challenge_progress": {
+      "type": "object",
+      "description": "Tracks monthly challenge progress keyed by month string",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "streak_master": {
+          "type": "number",
+          "default": 0
+        },
+        "discipline_builder": {
+          "type": "number",
+          "default": 0
+        },
+        "weekend_warrior": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    }
+  },
+  "required": []
+}

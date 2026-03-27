@@ -1,0 +1,52 @@
+{
+  "name": "Group",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Group name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Group description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "running",
+        "weightlifting",
+        "yoga",
+        "crossfit",
+        "cycling",
+        "boxing",
+        "general"
+      ],
+      "description": "Group interest category"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of member user IDs"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Group image"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of members"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "creator_id"
+  ]
+}
