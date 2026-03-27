@@ -275,9 +275,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              isAnimationActive={true}
-              animationDuration={600}
-              animationEasing="ease-in-out"
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
