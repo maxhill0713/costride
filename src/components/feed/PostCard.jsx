@@ -42,7 +42,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
       />
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
         <div className="px-5 pt-5 pb-3">
-          <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">Reactions</h3>
+          <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">{Object.keys(reactions).length} Reactions</h3>
         </div>
         <div className="px-3 pb-2">
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/20">
