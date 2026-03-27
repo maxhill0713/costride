@@ -384,7 +384,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                     dot={false}
                     activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
-                    isAnimationActive={true}
+                    isAnimationActive={localKey > 0}
                     animationDuration={800}
                   />
                 ))}
