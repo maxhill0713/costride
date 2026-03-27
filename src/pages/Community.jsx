@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { base44 } from '@/api/base44Client'
 import { ChevronRight, ChevronDown, Trophy, TrendingUp, Flame } from 'lucide-react'
+import GymChallengeCard from '../components/challenges/GymChallengeCard'
 
 /* ───────────────── CONFIG ───────────────── */
 
@@ -423,6 +424,36 @@ export default function Community() {
   const gymName  = gymMemberships[0]?.gym_name || 'Community'
   const liftMeta = LIFTS.find(l => l.id === activeLift) || LIFTS[0]
 
+  const queryClient = useQueryClient()
+
+  const { data: gymChallenges = [] } = useQuery({
+    queryKey: ['communityChallenges', gymId],
+    queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }, '-created_date', 20),
+    enabled: !!gymId,
+    staleTime: 3 * 60 * 1000,
+    placeholderData: p => p,
+  })
+  const { data: challengeParticipants = [] } = useQuery({
+    queryKey: ['challengeParticipants', currentUser?.id],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const joinChallengeMutation = useMutation({
+    mutationFn: async (challenge) => {
+      const currentParticipants = challenge.participants || []
+      await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] })
+      await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] })
+      queryClient.invalidateQueries({ queryKey: ['communityChallenges', gymId] })
+    },
+  })
+
+  const activeChallenges = gymChallenges.filter(c => c.status === 'active' || c.status === 'upcoming')
+
   if (lbOpen) return (
     <FullLeaderboard
       leaderboard={leaderboard}
@@ -652,6 +683,33 @@ export default function Community() {
           </div>
 
         </div>
+
+        {/* ─── GYM CHALLENGES ─── */}
+        {activeChallenges.length > 0 && (
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <Trophy style={{ width: 16, height: 16, color: '#f97316' }} />
+              <p style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', margin: 0 }}>Gym Challenges</p>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(249,115,22,0.7)', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', padding: '2px 7px', borderRadius: 99 }}>{activeChallenges.length} active</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {activeChallenges.map(challenge => (
+                <GymChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  isJoined={challengeParticipants.some(p => p.challenge_id === challenge.id)}
+                  onJoin={c => joinChallengeMutation.mutate(c)}
+                  currentUser={currentUser}
+                  disabled={false}
+                  isOwner={false}
+                  onDelete={null}
+                  gymImageUrl={null}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   )
