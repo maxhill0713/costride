@@ -22,9 +22,6 @@ export default function UserProfile() {
 
   const { data: profileUser, isLoading: loadingUser, isError } = useQuery({
     queryKey: ['userProfile', userId],
-    // SECURITY: Route through getUserById backend — returns only public display fields.
-    // Direct base44.entities.User.filter({ id }) would return the full user record
-    // including email (IDOR). getUserById returns only safe fields.
     queryFn: () => base44.functions.invoke('getUserById', { userId }).then(r => r.data?.user || null),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000
@@ -67,7 +64,6 @@ export default function UserProfile() {
   const streak = profileUser?.current_streak || 0;
   const longestStreak = profileUser?.longest_streak || 0;
 
-  // Privacy: check if viewer is a friend of the profile owner
   const isOwnProfile = currentUser?.id === userId;
   const isProfilePrivate = profileUser?.public_profile === false;
   const isFriend = friendsList.some(f => f.friend_id === currentUser?.id || f.user_id === currentUser?.id);
@@ -118,35 +114,36 @@ export default function UserProfile() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
 
       {/* ── TOP BAR ── */}
-       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
-         <Link to={createPageUrl('Home')} className="active:scale-90 transition-transform">
-           <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
-         </Link>
-         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
-       </div>
+      <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
+        <Link to={createPageUrl('Home')} className="active:scale-90 transition-transform">
+          <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
+        </Link>
+        <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
+      </div>
 
       {/* ── HERO ── */}
       <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
 
         {/* Avatar + stats */}
         <div className="flex items-center gap-5">
+
+          {/* ── Avatar — plain circle, no ring or glow ── */}
           <div className="flex-shrink-0">
             <div
-              className="w-[99px] h-[99px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)] cursor-pointer active:scale-95 transition-transform"
+              className="w-[99px] h-[99px] rounded-full overflow-hidden bg-slate-800 flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
               onClick={() => profileUser.avatar_url && setShowAvatarModal(true)}
             >
-              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
-                {profileUser.avatar_url
-                  ? <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                  : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
-                }
-              </div>
+              {profileUser.avatar_url
+                ? <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
+              }
             </div>
           </div>
 
-          <div className="flex flex-col gap-1 justify-center flex-1">
+          {/* ── Stats column — @username shifted up with gap below ── */}
+          <div className="flex flex-col gap-1 justify-center flex-1 -mt-2">
             {profileUser.username && (
-              <p className="text-[12px] text-slate-400 font-semibold">@{profileUser.username}</p>
+              <p className="text-[12px] text-slate-400 font-semibold mb-3">@{profileUser.username}</p>
             )}
             <div className="flex justify-around items-center">
               <div className="text-center">
@@ -177,21 +174,23 @@ export default function UserProfile() {
         )}
 
         {/* Status + meta */}
-        {!isBlocked && <div className="space-y-1">
-          <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
-          {primaryMembership && (
-            <div className="flex items-center gap-1.5">
-              <Building2 className="w-3 h-3 text-blue-400 flex-shrink-0" />
-              <span className="text-[11px] text-blue-400 font-semibold">{primaryMembership.gym_name}</span>
-            </div>
-          )}
-          {longestStreak > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />
-              <span className="text-[11px] text-slate-400">Best streak: <span className="text-orange-300 font-semibold">{longestStreak} days</span></span>
-            </div>
-          )}
-        </div>}
+        {!isBlocked && (
+          <div className="space-y-1">
+            <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
+            {primaryMembership && (
+              <div className="flex items-center gap-1.5">
+                <Building2 className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                <span className="text-[11px] text-blue-400 font-semibold">{primaryMembership.gym_name}</span>
+              </div>
+            )}
+            {longestStreak > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />
+                <span className="text-[11px] text-slate-400">Best streak: <span className="text-orange-300 font-semibold">{longestStreak} days</span></span>
+              </div>
+            )}
+          </div>
+        )}
 
         {!isBlocked && profileUser.equipped_badges?.length > 0 && (
           <div className="flex items-center gap-1.5">
