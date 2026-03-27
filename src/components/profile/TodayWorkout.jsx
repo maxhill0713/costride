@@ -457,7 +457,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
     { label: 'Switch workout', text: "Tap the workout name to swap to a different day's session." },
     { label: 'Update weight/reps', text: 'Click the pencil icon next to any exercise, enter new values, then save.' },
-    { label: 'Track progress', text: 'Green/red badges show weight increases or decreases vs. your last session.' },
     { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer bar at the bottom of the screen.' },
     { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
     { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' },
