@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Trash2, CheckCircle, Circle } from 'lucide-react';
 
-export default function AssignedWorkoutsList({ assignedWorkouts = [], currentUser }) {
+export default function AssignedWorkoutsList({ currentUser }) {
   const queryClient = useQueryClient();
   const [activatingId, setActivatingId] = useState(null);
 
+  // Fetch assigned workouts from AssignedWorkout entity
+  const { data: assignments = [] } = useQuery({
+    queryKey: ['assignedWorkouts', currentUser?.id],
+    queryFn: () => base44.entities.AssignedWorkout.filter({ member_id: currentUser.id }),
+    enabled: !!currentUser?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const activateMutation = useMutation({
-    mutationFn: async (workoutId) => {
-      const assignedWorkout = assignedWorkouts.find(w => w.assigned_date === workoutId);
-      if (!assignedWorkout) return;
+    mutationFn: async (assignmentId) => {
+      const assignment = assignments.find(a => a.id === assignmentId);
+      if (!assignment) return;
+
+      const workout = assignment.workout_data;
 
       // Create active split from assigned workout
       const activeSplit = {
-        name: assignedWorkout.name,
-        exercises: assignedWorkout.exercises || [],
-        assigned_by_coach_id: assignedWorkout.assigned_by_coach_id,
-        assigned_by_coach_name: assignedWorkout.assigned_by_coach_name,
+        name: workout.name,
+        exercises: workout.exercises || [],
+        assigned_by_coach_id: assignment.coach_id,
+        assigned_by_coach_name: assignment.coach_name,
         is_active: true,
         created_from_assignment: true,
       };
@@ -32,59 +42,58 @@ export default function AssignedWorkoutsList({ assignedWorkouts = [], currentUse
         active_workout: activeSplit.name,
       });
 
+      // Mark assignment as activated
+      await base44.entities.AssignedWorkout.update(assignmentId, { is_activated: true });
+
       return activeSplit;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignedWorkouts'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setActivatingId(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (workoutId) => {
-      const filtered = assignedWorkouts.filter(w => w.assigned_date !== workoutId);
-      await base44.auth.updateMe({
-        assigned_workouts: filtered,
-      });
-    },
+    mutationFn: (assignmentId) => base44.entities.AssignedWorkout.delete(assignmentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: ['assignedWorkouts'] });
     },
   });
 
-  if (!assignedWorkouts || assignedWorkouts.length === 0) {
+  if (!assignments || assignments.length === 0) {
     return null;
   }
 
-  const isActive = (workout) => currentUser?.active_workout === workout.name;
+  const isActive = (assignment) => currentUser?.active_workout === assignment.workout_data.name;
 
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Coach Assigned Workouts</h3>
-      {assignedWorkouts.map((workout, i) => (
+      {assignments.map((assignment) => (
         <div
-          key={i}
+          key={assignment.id}
           className="p-4 rounded-lg border transition-all"
           style={{
-            background: isActive(workout) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.03)',
-            borderColor: isActive(workout) ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.1)',
+            background: isActive(assignment) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.03)',
+            borderColor: isActive(assignment) ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.1)',
           }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                {isActive(workout) ? (
+                {isActive(assignment) ? (
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                 ) : (
                   <Circle className="w-4 h-4 text-slate-500 flex-shrink-0" />
                 )}
-                <h4 className="font-bold text-white text-sm">{workout.name}</h4>
+                <h4 className="font-bold text-white text-sm">{assignment.workout_data.name}</h4>
               </div>
               <p className="text-xs text-slate-400 mb-2">
-                Assigned by {workout.assigned_by_coach_name}
+                Assigned by {assignment.coach_name}
               </p>
               <div className="text-xs text-slate-400 space-y-1">
-                {workout.exercises?.map((ex, idx) => (
+                {assignment.workout_data.exercises?.map((ex, idx) => (
                   <div key={idx} className="flex items-center justify-between">
                     <span>{ex.name}</span>
                     <span className="text-slate-500">
@@ -95,23 +104,23 @@ export default function AssignedWorkoutsList({ assignedWorkouts = [], currentUse
               </div>
             </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
-              {!isActive(workout) && (
+              {!isActive(assignment) && !assignment.is_activated && (
                 <Button
                   onClick={() => {
-                    setActivatingId(workout.assigned_date);
-                    activateMutation.mutate(workout.assigned_date);
+                    setActivatingId(assignment.id);
+                    activateMutation.mutate(assignment.id);
                   }}
-                  disabled={activateMutation.isPending && activatingId === workout.assigned_date}
+                  disabled={activateMutation.isPending && activatingId === assignment.id}
                   className="text-xs h-8 bg-blue-600 hover:bg-blue-700"
                 >
                   Activate
                 </Button>
               )}
-              {isActive(workout) && (
+              {isActive(assignment) && (
                 <div className="text-xs text-green-500 font-bold">Active</div>
               )}
               <button
-                onClick={() => deleteMutation.mutate(workout.assigned_date)}
+                onClick={() => deleteMutation.mutate(assignment.id)}
                 disabled={deleteMutation.isPending}
                 className="p-1.5 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
               >

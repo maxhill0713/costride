@@ -1,0 +1,64 @@
+{
+  "name": "AssignedWorkout",
+  "type": "object",
+  "properties": {
+    "member_id": {
+      "type": "string",
+      "description": "ID of the member receiving the assignment"
+    },
+    "coach_id": {
+      "type": "string",
+      "description": "ID of the coach assigning the workout"
+    },
+    "coach_name": {
+      "type": "string",
+      "description": "Name of the coach"
+    },
+    "workout_data": {
+      "type": "object",
+      "description": "The actual workout data with exercises",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "sets": {
+                "type": "number"
+              },
+              "reps": {
+                "type": "number"
+              },
+              "weight": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "assigned_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the workout was assigned"
+    },
+    "is_activated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the member has activated this workout"
+    }
+  },
+  "required": [
+    "member_id",
+    "coach_id",
+    "coach_name",
+    "workout_data",
+    "assigned_date"
+  ]
+}

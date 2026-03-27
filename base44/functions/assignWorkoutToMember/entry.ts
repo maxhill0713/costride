@@ -16,15 +16,10 @@ Deno.serve(async (req) => {
     }
 
     // Get coach info
-    const coach = await base44.asServiceRole.entities.Coach.filter({ user_email: user.email }).then(r => r[0]);
+    const coaches = await base44.asServiceRole.entities.Coach.filter({ user_email: user.email });
+    const coach = coaches[0];
     if (!coach) {
       return Response.json({ error: 'User is not a coach' }, { status: 403 });
-    }
-
-    // Get member's current workouts
-    const member = await base44.asServiceRole.entities.User.filter({ id: memberId }).then(r => r[0]);
-    if (!member) {
-      return Response.json({ error: 'Member not found' }, { status: 404 });
     }
 
     // Create assigned workout with coach name
@@ -37,12 +32,13 @@ Deno.serve(async (req) => {
       is_assigned: true,
     };
 
-    // Add to member's assigned workouts (stored in user profile)
-    const assignedWorkouts = member.assigned_workouts || [];
-    assignedWorkouts.push(assignedWorkout);
-
-    await base44.asServiceRole.auth.updateUser(memberId, {
-      assigned_workouts: assignedWorkouts,
+    // Store assigned workout in a new entity to track assignments
+    const assignment = await base44.asServiceRole.entities.AssignedWorkout.create({
+      member_id: memberId,
+      coach_id: coach.id,
+      coach_name: coach.name,
+      workout_data: assignedWorkout,
+      assigned_date: new Date().toISOString(),
     });
 
     // Create notification for member
@@ -55,9 +51,12 @@ Deno.serve(async (req) => {
       read: false,
     });
 
+    console.log('Workout assigned successfully:', { memberId, coachId: coach.id, assignmentId: assignment.id });
+
     return Response.json({
       success: true,
       message: 'Workout assigned successfully',
+      assignment_id: assignment.id,
       assigned_workout: assignedWorkout,
     });
   } catch (error) {
