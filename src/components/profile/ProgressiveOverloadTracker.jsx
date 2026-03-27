@@ -5,8 +5,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Info } from 'lucide-react';
 import { format, subMonths, startOfDay } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const LINE_COLORS = [
   '#60a5fa','#34d399','#f97316','#f472b6','#a78bfa','#fbbf24',
@@ -15,9 +16,6 @@ const LINE_COLORS = [
 
 const CUTOFF_MONTHS = 2;
 
-// ─── Epley estimated 1 Rep Max formula ───────────────────────────────────────
-// e1RM = weight × (1 + reps / 30)
-// If reps = 1, this just returns weight (correct — 1RM is 1RM)
 function epley(weight, reps) {
   if (!weight || weight <= 0) return 0;
   const r = Math.max(1, reps || 1);
@@ -128,6 +126,8 @@ function WorkoutSelector({ options, selected, onSelect }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProgressiveOverloadTracker({ currentUser }) {
+  const [showInfo, setShowInfo] = useState(false);
+
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
@@ -248,14 +248,29 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
   return (
     <div>
       {/* ── Title left, selector right ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 10 : 16 }}>
         <div style={{ flexShrink: 0 }}>
-          <h2 style={{
-            fontSize: 16, fontWeight: 700, color: '#e2e8f0',
-            letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
-          }}>
-            Overload Tracker
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <h2 style={{
+              fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+              letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+            }}>
+              Overload Tracker
+            </h2>
+            <motion.button
+              onClick={() => setShowInfo(v => !v)}
+              whileTap={{ scale: 0.78, y: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+              style={{
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer',
+                color: showInfo ? '#60a5fa' : '#475569',
+                display: 'flex', alignItems: 'center',
+                transition: 'color 0.15s',
+              }}>
+              <Info size={13} />
+            </motion.button>
+          </div>
           <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
             Est. 1RM change vs. baseline · 2 m
           </p>
@@ -268,6 +283,41 @@ export default function ProgressiveOverloadTracker({ currentUser }) {
           />
         )}
       </div>
+
+      {/* ── Info Box ── */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 14 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              position: 'relative',
+              background: 'linear-gradient(135deg, rgba(96,165,250,0.07) 0%, rgba(52,211,153,0.04) 100%)',
+              border: '1px solid rgba(96,165,250,0.16)',
+              borderRadius: 10,
+              padding: '10px 13px',
+              overflow: 'hidden',
+            }}>
+              {/* top shimmer line */}
+              <div style={{
+                position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)',
+              }} />
+              <p style={{
+                fontSize: 11, lineHeight: 1.65, color: '#94a3b8',
+                margin: 0, fontWeight: 500,
+              }}>
+                <span style={{ color: '#93c5fd', fontWeight: 700 }}>Progressive overload</span> means consistently lifting more over time — the primary stimulus for muscle and strength growth.{' '}
+                This graph tracks your estimated 1-rep max per exercise over the last 2 months, so you can see exactly where you're gaining.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Chart + Legend ── */}
       {isLoading ? (
