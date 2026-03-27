@@ -117,8 +117,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
   // animationKey changes when compound toggled OR when parent triggers first-load animation
   const [localKey, setLocalKey] = useState(0);
   const animationKey = localKey + animate;
-  const [mounted, setMounted] = useState(false);
-  React.useEffect(() => { setMounted(true); }, []);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const chartData = useMemo(() => {
     const workoutTypes = currentUser?.custom_workout_types;
@@ -194,7 +193,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
             Planned reps · current split
           </p>
         </div>
-        <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} onToggle={() => setLocalKey(k => k + 1)} />
+        <CompoundToggle checked={compoundOnly} onChange={setCompoundOnly} onToggle={() => { setLocalKey(k => k + 1); setHasInteracted(true); }} />
       </div>
 
       {/* ── Info Box ── */}
@@ -277,7 +276,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               dot={<CustomDot />}
               activeDot={<CustomActiveDot />}
               connectNulls={false}
-              isAnimationActive={mounted}
+              isAnimationActive={hasInteracted}
               animationDuration={600}
               animationEasing="ease-in-out"
             />
