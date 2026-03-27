@@ -415,7 +415,7 @@ export default function Home() {
       return base44.entities.Post.filter(
         { member_id: { $in: authorIds }, is_system_generated: false },
         '-created_date',
-        30
+        200
       );
     },
     enabled: !!currentUser && friendIdList.length > 0,
