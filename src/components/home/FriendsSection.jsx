@@ -137,10 +137,10 @@ function FriendsSection({
               {/* ── Incoming friend requests ── */}
               {friendRequests.filter(req => {
                 const u = friendUsersList.find(u => u.id === req.user_id);
-                return (u?.full_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                return (u?.full_name || u?.display_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
               }).map(request => {
                 const u = friendUsersList.find(u => u.id === request.user_id);
-                const name = u?.display_name || u?.full_name || request.user_name || request.friend_name;
+                const name = u?.display_name || u?.full_name || request.user_name || 'User';
                 return (
                   <div key={request.id} className="p-3 rounded-lg bg-slate-700/40 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
