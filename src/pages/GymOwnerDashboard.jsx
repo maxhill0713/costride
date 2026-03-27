@@ -49,6 +49,7 @@ const TabCoachAnalytics     = lazy(() => import('../components/dashboard/TabCoac
 const TabCoachProfile       = lazy(() => import('../components/dashboard/TabCoachProfile'));
 const TabEngagement         = lazy(() => import('../components/dashboard/TabEngagement'));
 const TabRewards            = lazy(() => import('../components/dashboard/TabRewards'));
+const TabCoachBookings      = lazy(() => import('../components/dashboard/TabCoachBookings'));
 
 function TabLoader() {
   return (
@@ -125,6 +126,7 @@ const D = {
 const ALL_NAV = [
   { id: 'overview',   label: 'Overview',    icon: LayoutDashboard, roles: ['gym_owner'] },
   { id: 'schedule',   label: 'Schedule',    icon: Calendar,        roles: ['coach'] },
+  { id: 'bookings',   label: 'Bookings',    icon: Clock,           roles: ['coach'] },
   { id: 'members',    label: 'Members',     coachLabel: 'Clients', icon: Users,    roles: ['gym_owner', 'coach'] },
   { id: 'content',    label: 'Content',     icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics',  label: 'Analytics',   icon: BarChart3,       roles: ['gym_owner', 'coach'] },
@@ -853,6 +855,7 @@ export default function GymOwnerDashboard() {
     analytics: isCoach
       ? <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} />
       : <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />,
+    bookings:   isCoach ? <TabCoachBookings /> : null,
     profile:    isCoach ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} /> : null,
     engagement: <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={d => createRewardM.mutate(d)} onDeleteReward={id => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />,
@@ -1048,7 +1051,7 @@ export default function GymOwnerDashboard() {
   const tabTitle = {
     members: isCoach ? 'Clients' : 'Members',
     content: 'Content', analytics: 'Analytics', gym: 'Settings',
-    schedule: 'Schedule', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
+    schedule: 'Schedule', bookings: 'Bookings', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
   }[tab] || selectedGym?.name || 'Dashboard';
 
   return (
