@@ -519,36 +519,9 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
       </div>
-<div
-  style={{
-    ...CARD,
-    borderRadius: 14,
-    padding: '20px 20px 12px',
-    border: '1px solid rgba(255,255,255,0.07)',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3)',
-    outline: '1px solid rgba(255,255,255,0.03)',
-    outlineOffset: '-1px',
-    position: 'relative',
-    overflow: 'hidden',
-  }}
->
-  <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
-</div>
->
-  {/* Subtle top accent rule */}
-  <div
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: '10%',
-      right: '10%',
-      height: 1,
-      background: 'rgba(140,130,255,0.35)',
-      borderRadius: '0 0 4px 4px',
-    }}
-  />
-  <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
-</div>
+      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
+        <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
+      </div>
       {currentUser?.workout_split && (
         <WorkoutSplitHeatmap
           checkIns={checkIns}
