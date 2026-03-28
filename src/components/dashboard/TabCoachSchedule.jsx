@@ -10,7 +10,7 @@ import {
   UserCheck, Users, AlertCircle, CheckCircle, RefreshCw, Pencil, Trash2,
   X, ClipboardList, User, DollarSign, Repeat, MapPin, Filter, ChevronLeft,
   ChevronRight, TrendingUp, Zap, BarChart2, Eye, Ban, AlertTriangle,
-  Activity, Flame, ArrowRight, Info,
+  Activity, Flame, ArrowRight, Info, MessageCircle, TrendingDown, UserX,
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
@@ -119,6 +119,203 @@ function getLateCancel(cls, now) {
     if (!cancelledAt || !classTime) return false;
     return differenceInMinutes(classTime, cancelledAt) < LATE_CANCEL_WINDOW_HRS * 60;
   });
+}
+
+// ─── Retention score (lightweight, same logic as Today page) ─────────────────
+function calcRS(userId, checkIns, now) {
+  const uci    = checkIns.filter(c => c.user_id === userId);
+  const ms     = d => now - new Date(d.check_in_date);
+  const r30    = uci.filter(c => ms(c) < 30 * 864e5).length;
+  const p30    = uci.filter(c => ms(c) >= 30 * 864e5 && ms(c) < 60 * 864e5).length;
+  const sorted = [...uci].sort((a,b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+  const daysAgo= sorted[0] ? Math.floor(ms(sorted[0]) / 864e5) : 999;
+  let score = 100;
+  if      (daysAgo >= 999) score -= 60;
+  else if (daysAgo > 21)   score -= 45;
+  else if (daysAgo > 14)   score -= 30;
+  else if (daysAgo > 7)    score -= 15;
+  if      (r30 === 0)      score -= 25;
+  else if (r30 <= 2)       score -= 15;
+  score = Math.max(0, Math.min(100, score));
+  const trend  = p30 > 0 ? (r30 > p30*1.1 ? 'improving' : r30 < p30*0.7 ? 'declining' : 'stable') : (r30 >= 2 ? 'improving' : 'stable');
+  const status = score >= 65 ? 'safe' : score >= 35 ? 'at_risk' : 'high_risk';
+  const color  = status === 'safe' ? '#10b981' : status === 'at_risk' ? '#f59e0b' : '#ef4444';
+  const emoji  = status === 'safe' ? '🟢' : status === 'at_risk' ? '🟡' : '🔴';
+  return { score, status, trend, color, emoji, daysAgo, recent30: r30 };
+}
+
+// ─── Contextual Side Panel ─────────────────────────────────────────────────────
+function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
+  const D = {
+    surface: '#0c1a2e', card: '#060c14', border: 'rgba(255,255,255,0.07)',
+    t1: '#f0f4f8', t2: '#94a3b8', t3: '#475569', t4: '#2d3f55',
+    red: '#ef4444', amber: '#f59e0b', green: '#10b981', blue: '#38bdf8',
+  };
+
+  const btnStyle = (color) => ({
+    display:'flex', alignItems:'center', gap:4, padding:'4px 9px', borderRadius:7,
+    background:`${color}0e`, border:`1px solid ${color}22`, color, fontSize:10,
+    fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'inherit',
+  });
+
+  // A. Today's Exceptions: no-shows + late cancels
+  const todayExceptions = useMemo(() => {
+    const noShows = myClasses.flatMap(cls => {
+      const booked   = cls.bookings || [];
+      const attended = checkIns.filter(c => isSameDay(new Date(c.check_in_date), now));
+      return booked.filter(b => !attended.some(a => a.user_id === b.user_id))
+        .map(b => ({ ...b, className: cls.name, type: 'no_show', reason: `Booked "${cls.name}" — didn't show` }));
+    });
+    const lateCancels = myClasses.flatMap(cls =>
+      (cls.late_cancels || []).filter(lc => {
+        const d = lc.cancelled_at ? new Date(lc.cancelled_at) : null;
+        return d && isSameDay(d, now);
+      }).map(lc => ({ ...lc, className: cls.name, type: 'late_cancel', reason: `Late cancellation — "${cls.name}"` }))
+    );
+    return [...noShows, ...lateCancels].slice(0, 6);
+  }, [myClasses, checkIns, now]);
+
+  // B. Clients with no upcoming sessions this week
+  const notScheduled = useMemo(() => {
+    const weekEnd = addDays(startOfDay(now), 7);
+    const bookedThisWeek = new Set(
+      myClasses.flatMap(cls => (cls.bookings || []).map(b => b.user_id))
+    );
+    return allMemberships.filter(m => {
+      if (bookedThisWeek.has(m.user_id)) return false;
+      const r30 = checkIns.filter(c => c.user_id===m.user_id && (now-new Date(c.check_in_date)) < 30*864e5).length;
+      return r30 >= 2; // only surface members who were somewhat active
+    }).slice(0, 5);
+  }, [allMemberships, myClasses, checkIns, now]);
+
+  // C. Attendance irregularities
+  const irregulars = useMemo(() => {
+    return allMemberships.map(m => {
+      const rs   = calcRS(m.user_id, checkIns, now);
+      if (rs.status === 'safe') return null;
+      const r30  = checkIns.filter(c => c.user_id===m.user_id && (now-new Date(c.check_in_date)) < 30*864e5).length;
+      const p30  = checkIns.filter(c => c.user_id===m.user_id && (now-new Date(c.check_in_date)) >= 30*864e5 && (now-new Date(c.check_in_date)) < 60*864e5).length;
+      let reason='', action='';
+      if (rs.daysAgo > 21)           { reason = `${rs.daysAgo}d without visiting`; action = 'Book session'; }
+      else if (p30 > 0 && r30 < p30 * 0.5) { reason = `Visits down ${Math.round((1-r30/p30)*100)}% vs last month`; action = 'Send check-in'; }
+      else                           { reason = 'Low engagement this month'; action = 'Message'; }
+      return { ...m, rs, reason, action };
+    }).filter(Boolean).sort((a,b) => a.rs.score - b.rs.score).slice(0, 5);
+  }, [allMemberships, checkIns, now]);
+
+  const SH = ({ icon: Icon, label, color, count }) => (
+    <div style={{ display:'flex', alignItems:'center', gap:7, padding:'10px 14px', borderBottom:`1px solid ${D.border}` }}>
+      <div style={{ width:22, height:22, borderRadius:6, background:`${color}12`, border:`1px solid ${color}22`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+        <Icon style={{ width:10, height:10, color }}/>
+      </div>
+      <span style={{ fontSize:11, fontWeight:800, color:D.t1, flex:1 }}>{label}</span>
+      {count > 0 && <span style={{ fontSize:9, fontWeight:800, color, background:`${color}12`, border:`1px solid ${color}22`, borderRadius:99, padding:'1px 6px' }}>{count}</span>}
+    </div>
+  );
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
+      {/* A. Today's Exceptions */}
+      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+        <SH icon={AlertTriangle} label="Today's Exceptions" color={D.red} count={todayExceptions.length}/>
+        <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
+          {todayExceptions.length === 0 ? (
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 2px' }}>
+              <CheckCircle style={{ width:12, height:12, color:D.green, flexShrink:0 }}/>
+              <span style={{ fontSize:11, color:D.green, fontWeight:600 }}>No exceptions today</span>
+            </div>
+          ) : todayExceptions.map((m, i) => (
+            <div key={i} style={{ padding:'9px 11px', borderRadius:9, background:D.card, border:`1px solid ${m.type==='no_show'?`${D.red}20`:`${D.amber}20`}`, borderLeft:`2px solid ${m.type==='no_show'?D.red:D.amber}` }}>
+              <div style={{ fontSize:11, fontWeight:700, color:D.t1 }}>{m.user_name || 'Client'}</div>
+              <div style={{ fontSize:10, color:D.t3, margin:'2px 0 6px' }}>{m.reason}</div>
+              <div style={{ display:'flex', gap:5 }}>
+                <button style={btnStyle(D.blue)} onClick={() => openModal('post', { memberId: m.user_id })}>
+                  <MessageCircle style={{ width:9, height:9 }}/> Message
+                </button>
+                {m.type === 'no_show' && (
+                  <button style={btnStyle(D.amber)} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })}>
+                    <Calendar style={{ width:9, height:9 }}/> Rebook
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* B. Not Scheduled This Week */}
+      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+        <SH icon={UserX} label="Not Booked This Week" color={D.amber} count={notScheduled.length}/>
+        <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
+          {notScheduled.length === 0 ? (
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 2px' }}>
+              <CheckCircle style={{ width:12, height:12, color:D.green, flexShrink:0 }}/>
+              <span style={{ fontSize:11, color:D.green, fontWeight:600 }}>All active clients are booked</span>
+            </div>
+          ) : notScheduled.map((m, i) => {
+            const rs = calcRS(m.user_id, checkIns, now);
+            return (
+              <div key={i} style={{ padding:'9px 11px', borderRadius:9, background:D.card, border:`1px solid ${D.border}` }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:D.t1 }}>{m.user_name || 'Client'}</div>
+                    <div style={{ fontSize:9, color:D.t3 }}>{rs.emoji} {rs.label} · {rs.recent30} visits this month</div>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:5 }}>
+                  <button style={btnStyle(D.amber)} onClick={() => openModal('bookIntoClass', { memberId: m.user_id, memberName: m.user_name })}>
+                    <Calendar style={{ width:9, height:9 }}/> Book Session
+                  </button>
+                  <button style={btnStyle(D.blue)} onClick={() => openModal('post', { memberId: m.user_id })}>
+                    <MessageCircle style={{ width:9, height:9 }}/> Message
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* C. Attendance Irregularities */}
+      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+        <SH icon={TrendingDown} label="Attendance Irregularities" color={D.red} count={irregulars.length}/>
+        <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
+          {irregulars.length === 0 ? (
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 2px' }}>
+              <CheckCircle style={{ width:12, height:12, color:D.green, flexShrink:0 }}/>
+              <span style={{ fontSize:11, color:D.green, fontWeight:600 }}>Attendance looking healthy</span>
+            </div>
+          ) : irregulars.map((m, i) => (
+            <div key={i} style={{ padding:'9px 11px', borderRadius:9, background:D.card, border:`1px solid ${m.rs.color}18`, borderLeft:`2px solid ${m.rs.color}` }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:D.t1 }}>{m.user_name || 'Client'}</div>
+                  <div style={{ fontSize:9, color:D.t3 }}>{m.reason}</div>
+                  <div style={{ fontSize:9, color:m.rs.color, marginTop:1, fontWeight:600 }}>→ {m.action}</div>
+                </div>
+                <div style={{ textAlign:'center', flexShrink:0 }}>
+                  <div style={{ fontSize:12, fontWeight:900, color:m.rs.color }}>{m.rs.score}</div>
+                  <div style={{ fontSize:7, color:D.t4, textTransform:'uppercase', letterSpacing:'0.05em' }}>score</div>
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:5 }}>
+                <button style={btnStyle(D.blue)} onClick={() => openModal('post', { memberId: m.user_id })}>
+                  <MessageCircle style={{ width:9, height:9 }}/> Message
+                </button>
+                <button style={btnStyle('#a78bfa')} onClick={() => openModal('bookIntoClass', { memberId: m.user_id, memberName: m.user_name })}>
+                  <Calendar style={{ width:9, height:9 }}/> Book
+                </button>
+                <button style={btnStyle('#10b981')} onClick={() => openModal('assignWorkout', { memberId: m.user_id, memberName: m.user_name })}>
+                  <Dumbbell style={{ width:9, height:9 }}/> Workout
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Month view cell ──────────────────────────────────────────────────────────
@@ -413,7 +610,7 @@ export default function TabCoachSchedule({
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
 
           {/* ══ LEFT ══════════════════════════════════════════════════════════ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -661,17 +858,26 @@ export default function TabCoachSchedule({
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                   {(cls.booked.length > 0 ? cls.booked : cls.regulars).map((m, j) => {
                                     const isCheckedIn = checkedIds.includes(m.user_id) || manualIds.includes(m.user_id);
+                                    const isCancelled = (cls.late_cancels || []).some(lc => lc.user_id === m.user_id);
+                                    const attendeeStatus = isCheckedIn ? 'confirmed' : isCancelled ? 'cancelled' : 'booked';
+                                    const statusCfg = {
+                                      confirmed: { label: '✓ Confirmed', color: '#34d399' },
+                                      cancelled: { label: '✗ Cancelled', color: '#f87171' },
+                                      booked:    { label: 'Booked',      color: '#a78bfa' },
+                                    }[attendeeStatus];
                                     return (
-                                      <div key={m.user_id || j} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 11, background: isCheckedIn ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.025)', border: `1px solid ${isCheckedIn ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
-                                        <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={30} color={isCheckedIn ? '#34d399' : '#64748b'}/>
+                                      <div key={m.user_id || j} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 11, background: isCheckedIn ? 'rgba(52,211,153,0.06)' : isCancelled ? 'rgba(248,113,113,0.04)' : 'rgba(255,255,255,0.025)', border: `1px solid ${isCheckedIn ? 'rgba(52,211,153,0.2)' : isCancelled ? 'rgba(248,113,113,0.18)' : 'rgba(255,255,255,0.06)'}` }}>
+                                        <MiniAvatar name={m.user_name} src={avatarMap[m.user_id]} size={30} color={statusCfg.color}/>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                           <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Member'}</div>
                                           {m.membership_type && <div style={{ fontSize: 9, color: '#3a5070' }}>{m.membership_type}</div>}
                                         </div>
-                                        {isCheckedIn
-                                          ? <StatusPill label="✓ Checked in" color="#34d399"/>
-                                          : <StatusPill label="Booked"       color="#a78bfa"/>
-                                        }
+                                        <StatusPill label={statusCfg.label} color={statusCfg.color}/>
+                                        {!isCheckedIn && !isCancelled && (
+                                          <button onClick={() => openModal('post', { memberId: m.user_id })} style={{ fontSize:9, fontWeight:700, color:'#38bdf8', background:'rgba(56,189,248,0.07)', border:'1px solid rgba(56,189,248,0.18)', borderRadius:6, padding:'3px 7px', cursor:'pointer', flexShrink:0 }}>
+                                            Message
+                                          </button>
+                                        )}
                                       </div>
                                     );
                                   })}
@@ -893,6 +1099,9 @@ export default function TabCoachSchedule({
 
           {/* ══ RIGHT SIDEBAR ═════════════════════════════════════════════════ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 0 }}>
+
+            {/* Contextual retention + exceptions panel */}
+            <ContextPanel allMemberships={allMemberships} checkIns={checkIns} myClasses={myClasses} now={now} openModal={openModal}/>
 
             {/* Quick Actions */}
             <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
