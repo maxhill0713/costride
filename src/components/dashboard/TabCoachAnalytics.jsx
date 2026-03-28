@@ -460,44 +460,7 @@ function CheckInTrends({ checkIns = [], ci7Count = 0, ci7pCount = 0, ci30Count =
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Weekly */}
-      <div style={{ ...card, padding: '18px 20px 14px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.t1 }}>Weekly Check-ins</div>
-            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>8-week rolling view</div>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: weeklyTrend > 0 ? `${C.green}18` : weeklyTrend < 0 ? `${C.red}18` : `${C.t3}18`, color: weeklyTrend > 0 ? C.green : weeklyTrend < 0 ? C.red : C.t3 }}>
-            {weeklyTrend > 0 ? `↑${weeklyTrend}%` : weeklyTrend < 0 ? `↓${Math.abs(weeklyTrend)}%` : '→'} vs prior wk
-          </span>
-        </div>
-        <ResponsiveContainer width="100%" height={130}>
-          <AreaChart data={weeklyChart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="weekGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={C.blue} stopOpacity={0.35} />
-                <stop offset="100%" stopColor={C.blue} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.b2} vertical={false} />
-            <XAxis dataKey="label" tick={tick} axisLine={false} tickLine={false} interval={1} />
-            <YAxis tick={tick} axisLine={false} tickLine={false} width={24} allowDecimals={false} />
-            <Tooltip content={<ChartTip />} cursor={{ stroke: `${C.blue}33`, strokeWidth: 1 }} />
-            <Area type="monotone" dataKey="value" stroke={C.blue} strokeWidth={2.5} fill="url(#weekGrad)" dot={false} activeDot={{ r: 5, fill: C.blue, stroke: '#fff', strokeWidth: 2 }} />
-          </AreaChart>
-        </ResponsiveContainer>
-        <div style={{ display: 'flex', gap: 18, paddingTop: 10, borderTop: `1px solid ${C.b2}`, marginTop: 8 }}>
-          {[
-            { label: 'This week', value: ci7Count, color: C.blue },
-            { label: 'Last week', value: ci7pCount, color: C.t3 },
-            { label: 'Avg/week', value: weeklyChart.length ? Math.round(weeklyChart.reduce((s, d) => s + d.value, 0) / weeklyChart.length) : 0, color: C.purple },
-          ].map((s, i) => (
-            <div key={i}>
-              <div style={{ fontSize: 17, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
-              <div style={{ fontSize: 9, color: C.t4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
       {/* Monthly */}
       <div style={{ ...card, padding: '18px 20px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
