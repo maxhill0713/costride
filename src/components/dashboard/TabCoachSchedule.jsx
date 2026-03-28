@@ -241,7 +241,7 @@ function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
               <span style={{ fontSize:11, color:D.green, fontWeight:600 }}>No exceptions today</span>
             </div>
           ) : todayExceptions.map((m, i) => (
-            <div key={i} style={{ padding:'9px 11px', borderRadius:9, background:D.card, border:`1px solid ${m.type==='no_show'?`${D.red}20`:`${D.amber}20`}`, borderLeft:`2px solid ${m.type==='no_show'?D.red:D.amber}` }}>
+            <div key={i} style={{ padding:'9px 11px', borderRadius:9, background:D.bgCard, border:`1px solid ${m.type==='no_show'?`${D.red}20`:`${D.amber}20`}`, borderLeft:`2px solid ${m.type==='no_show'?D.red:D.amber}` }}>
               <div style={{ fontSize:11, fontWeight:700, color:D.t1 }}>{m.user_name || 'Client'}</div>
               <div style={{ fontSize:10, color:D.t3, margin:'2px 0 6px' }}>{m.reason}</div>
               <div style={{ display:'flex', gap:5 }}>

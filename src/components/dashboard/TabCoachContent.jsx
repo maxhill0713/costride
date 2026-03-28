@@ -92,7 +92,7 @@ const DEFAULT_WORKOUTS = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
-function SectionLabel({ children, accent = '#a78bfa' }) {
+function SectionLabel({ children, accent = '#8b5cf6' }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
       <div style={{ width: 3, height: 14, borderRadius: 99, background: accent, flexShrink: 0 }}/>
@@ -191,19 +191,19 @@ function WorkoutCard({ workout, stats, isSelected, onSelect, onEdit, onDelete, o
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 8, padding: '8px', borderRadius: 9, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: '#38bdf8', letterSpacing: '-0.02em' }}>{stats.assignedCount}</div>
-            <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assigned</div>
+            <div style={{ fontSize: 8, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assigned</div>
           </div>
           <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.06)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: stats.completionRate >= 70 ? '#10b981' : stats.completionRate >= 40 ? '#f59e0b' : stats.assignedCount === 0 ? '#3a5070' : '#ef4444', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: stats.completionRate >= 70 ? '#10b981' : stats.completionRate >= 40 ? '#f59e0b' : stats.assignedCount === 0 ? DC.t4 : '#ef4444', letterSpacing: '-0.02em' }}>
               {stats.assignedCount === 0 ? '—' : `${stats.completionRate}%`}
             </div>
-            <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completion</div>
+            <div style={{ fontSize: 8, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completion</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: '#a78bfa', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: DC.purple, letterSpacing: '-0.02em' }}>
               {stats.daysSinceUpdate === null ? '—' : stats.daysSinceUpdate === 0 ? 'Today' : `${stats.daysSinceUpdate}d`}
             </div>
-            <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Updated</div>
+            <div style={{ fontSize: 8, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Updated</div>
           </div>
         </div>
 
@@ -273,7 +273,7 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, onE
   }, [allMemberships, stats.assignedMemberIds, checkIns, now]);
 
   return (
-    <div style={{ borderRadius: 18, background: '#0c1a2e', border: `1px solid ${tc.color}30`, overflow: 'hidden' }}>
+    <div style={{ borderRadius: 12, background: DC.bgSurface, border: `1px solid ${tc.color}30`, overflow: 'hidden' }}>
 
       {/* Header */}
       <div style={{ padding: '16px 18px 14px', background: `${tc.color}06`, borderBottom: `1px solid ${tc.color}18` }}>
@@ -472,8 +472,8 @@ function LowEngagementAlerts({ workouts, workoutStats, allMemberships, checkIns,
   if (alerts.length === 0) return null;
 
   return (
-    <div style={{ borderRadius: 14, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ borderRadius: 12, background: DC.bgSurface, border: `1px solid ${DC.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 16px', borderBottom: `1px solid ${DC.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <AlertTriangle style={{ width: 13, height: 13, color: '#f59e0b' }}/>
         <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8', flex: 1 }}>Engagement Alerts</span>
         <span style={{ fontSize: 9, fontWeight: 700, color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 99, padding: '1px 6px' }}>{alerts.length}</span>
@@ -648,7 +648,7 @@ function WorkoutEditor({ workout, onSave, onCancel }) {
   const tc = WORKOUT_TYPES[draft.type] || WORKOUT_TYPES.strength;
 
   return (
-    <div style={{ borderRadius: 18, background: '#0c1a2e', border: `1px solid ${tc.color}30`, overflow: 'hidden' }}>
+    <div style={{ borderRadius: 12, background: DC.bgSurface, border: `1px solid ${tc.color}30`, overflow: 'hidden' }}>
       <div style={{ padding: '16px 18px 14px', background: `${tc.color}08`, borderBottom: `1px solid ${tc.color}18` }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -859,8 +859,8 @@ export default function TabCoachContent({
             <>
               {/* ── Library header + health summary ── */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                <SectionLabel accent="#a78bfa">Workout Library</SectionLabel>
-                <button onClick={handleNew} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(167,139,250,0.2),rgba(167,139,250,0.1))', border: '1px solid rgba(167,139,250,0.35)', color: '#a78bfa', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <SectionLabel>Workout Library</SectionLabel>
+                <button onClick={handleNew} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: DC.purpleDim, border: `1px solid ${DC.purpleBrd}`, color: DC.purple, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   <Plus style={{ width: 12, height: 12 }}/> New Workout
                 </button>
               </div>
@@ -898,12 +898,12 @@ export default function TabCoachContent({
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 140 }}>
                   <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: '#3a5070' }}/>
-                  <input value={libSearch} onChange={e => setLibSearch(e.target.value)} placeholder="Search workouts…" style={{ width: '100%', padding: '7px 12px 7px 30px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#f0f4f8', fontSize: 12, outline: 'none', boxSizing: 'border-box' }}/>
+                  <input value={libSearch} onChange={e => setLibSearch(e.target.value)} placeholder="Search workouts…" style={{ width: '100%', padding: '7px 12px 7px 30px', borderRadius: 9, background: DC.bgSurface, border: `1px solid ${DC.border}`, color: DC.t1, fontSize: 12, outline: 'none', boxSizing: 'border-box' }}/>
                 </div>
 
                 {/* Sort dropdown */}
                 <div ref={sortRef} style={{ position: 'relative', flexShrink: 0 }}>
-                  <button onClick={() => setShowSort(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: '#0c1a2e', border: `1px solid ${showSort ? 'rgba(167,139,250,0.35)' : 'rgba(255,255,255,0.07)'}`, color: showSort ? '#a78bfa' : '#64748b', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                  <button onClick={() => setShowSort(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: DC.bgSurface, border: `1px solid ${showSort ? DC.purpleBrd : DC.border}`, color: showSort ? DC.purple : DC.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
                     <ArrowUpDown style={{ width: 11, height: 11 }}/> {currentSort?.label || 'Sort'}
                   </button>
                   {showSort && (
@@ -933,7 +933,7 @@ export default function TabCoachContent({
 
               {/* ── Workout grid ── */}
               {filteredWorkouts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '36px 0', borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ textAlign: 'center', padding: '36px 0', borderRadius: 12, background: DC.bgSurface, border: `1px solid ${DC.border}` }}>
                   <Dumbbell style={{ width: 28, height: 28, color: '#3a5070', margin: '0 auto 10px' }}/>
                   <p style={{ fontSize: 12, color: '#3a5070', fontWeight: 600, margin: '0 0 12px' }}>{sortBy === 'not_assigned' ? 'All workouts are assigned' : 'No workouts found'}</p>
                   <button onClick={handleNew} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>Create a workout</button>
@@ -995,7 +995,7 @@ export default function TabCoachContent({
                   </div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8' }}>{label}</div>
-                    <div style={{ fontSize: 9, color: '#3a5070' }}>{sub}</div>
+                    <div style={{ fontSize: 9, color: DC.t4 }}>{sub}</div>
                   </div>
                 </button>
               ))}
@@ -1076,7 +1076,7 @@ export default function TabCoachContent({
               <button onClick={() => openModal('post')} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer' }}>+ New</button>
             </div>
             {posts.length === 0
-              ? <div style={{ fontSize: 11, color: '#3a5070', textAlign: 'center', padding: '10px 0' }}>No posts yet</div>
+              ? <div style={{ fontSize: 11, color: DC.t4, textAlign: 'center', padding: '10px 0' }}>No posts yet</div>
               : posts.slice(0, 3).map((p, i) => (
                 <div key={p.id || i} style={{ padding: '6px 8px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: i < 2 ? 5 : 0, fontSize: 11, fontWeight: 600, color: '#8ba0b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {p.content?.split('\n')[0] || p.title || 'Post'}
