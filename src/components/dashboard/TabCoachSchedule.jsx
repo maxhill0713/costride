@@ -485,9 +485,10 @@ export default function TabCoachSchedule({
       const isCancelled = cancelledClasses.includes(`${cls.id}-${selDateStr}`);
       const lateCancels = getLateCancel(cls, now);
       const revenue     = calcRevenue(cls, allMemberships);
+      const _schedStr   = typeof cls.schedule === 'string' ? cls.schedule : (Array.isArray(cls.schedule) && cls.schedule[0]?.time ? cls.schedule[0].time : '');
       const attended    = selCIs.filter(ci => {
-        if (!scheduleStr) return false;
-        const match = scheduleStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
+        if (!_schedStr) return false;
+        const match = _schedStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
         if (!match) return false;
         let sh = parseInt(match[1]);
         if (match[2].toLowerCase() === 'pm' && sh !== 12) sh += 12;
@@ -495,8 +496,8 @@ export default function TabCoachSchedule({
         return h === sh || h === sh + 1;
       });
       const classHour = (() => {
-        if (!scheduleStr) return null;
-        const match = scheduleStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
+        if (!_schedStr) return null;
+        const match = _schedStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
         if (!match) return null;
         let h = parseInt(match[1]);
         if (match[2].toLowerCase() === 'pm' && h !== 12) h += 12;
