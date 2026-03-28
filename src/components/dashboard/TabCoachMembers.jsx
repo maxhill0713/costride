@@ -763,9 +763,7 @@ export default function ClientsPage(){
   return(
     <>
       <style>{S}</style>
-      <div className="app">
-        <Sidebar/>
-        <div className="main">
+      <div className="main" style={{height:'100%'}}>
 
           {/* HEADER */}
           <div className="hdr">
@@ -877,7 +875,6 @@ export default function ClientsPage(){
             />
           </div>
 
-        </div>
       </div>
 
       {/* MODALS */}
