@@ -21,20 +21,18 @@ export function MiniAvatar({ name, src, size = 30, color = '#a78bfa' }) {
 }
 
 // ── KPI card ─────────────────────────────────────────────────────────────────
-export function CoachKpiCard({ icon: Icon, label, value, sub, subColor = '#64748b', accentColor = '#a78bfa', footerBar, trend }) {
+export function CoachKpiCard({ icon: Icon, label, value, sub, subColor, accentColor = '#a78bfa', footerBar, trend }) {
   return (
-    <div style={{ borderRadius: 16, padding: '16px 18px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}>
-      <div style={{ position: 'absolute', bottom: -16, right: -16, width: 64, height: 64, borderRadius: '50%', background: accentColor, opacity: 0.07, filter: 'blur(24px)', pointerEvents: 'none' }}/>
-      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${accentColor}45,transparent)`, pointerEvents: 'none' }}/>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontSize: 9, fontWeight: 800, color: '#3a5070', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
-        <div style={{ width: 26, height: 26, borderRadius: 8, background: `${accentColor}18`, border: `1px solid ${accentColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon style={{ width: 12, height: 12, color: accentColor }}/>
+    <div style={{ borderRadius: 12, padding: '20px', background: '#0c1422', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.10em', textTransform: 'uppercase' }}>{label}</span>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon style={{ width: 12, height: 12, color: '#475569' }}/>
         </div>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 900, color: '#f0f4f8', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
+      <div style={{ fontSize: 32, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 11, color: subColor, fontWeight: 600 }}>{sub}</span>
+        <span style={{ fontSize: 11, color: subColor || '#475569', fontWeight: 500 }}>{sub}</span>
         {trend != null && (
           <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 4, background: trend > 0 ? 'rgba(52,211,153,0.1)' : trend < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(100,116,139,0.1)', color: trend > 0 ? '#34d399' : trend < 0 ? '#f87171' : '#64748b' }}>
             {trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→'}
@@ -42,8 +40,8 @@ export function CoachKpiCard({ icon: Icon, label, value, sub, subColor = '#64748
         )}
       </div>
       {footerBar != null && (
-        <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: `${accentColor}18`, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, footerBar)}%`, background: `linear-gradient(90deg,${accentColor},${accentColor}cc)`, borderRadius: 99, transition: 'width 0.8s ease' }}/>
+        <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, footerBar)}%`, background: accentColor, borderRadius: 99, transition: 'width 0.8s ease' }}/>
         </div>
       )}
     </div>

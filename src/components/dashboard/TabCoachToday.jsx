@@ -110,7 +110,7 @@ function Pill({ label, color, bg }) {
     <span style={{
       display:'inline-flex', alignItems:'center',
       fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:4,
-      color, background: bg||`${color}12`, border:`1px solid ${color}28`,
+      color: color || T.t2, background: bg || 'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
       textTransform:'uppercase', letterSpacing:'0.05em', whiteSpace:'nowrap',
     }}>{label}</span>
   );
@@ -172,12 +172,12 @@ function Divider() {
 // ─── KPI Strip ─────────────────────────────────────────────────────────────────
 function KpiStrip({ todayCI, atRiskCount, attentionCount, noShows, totalMembers, healthPct, hc }) {
   const items = [
-    { label:'Roster Health', value:healthPct+'%', color:hc, sub: healthPct>=70?'On track':healthPct>=45?'Needs attention':'Critical' },
-    { label:'Check-ins Today', value:todayCI, color:T.blue, sub:'vs. yesterday' },
-    { label:'At Risk', value:atRiskCount, color:atRiskCount>0?T.red:T.t3, sub:'need follow-up' },
-    { label:'No-shows', value:noShows, color:noShows>0?T.amber:T.t3, sub:'this week' },
-    { label:'Need Attention', value:attentionCount, color:attentionCount>0?T.amber:T.t3, sub:'missed this week' },
-    { label:'Total Clients', value:totalMembers, color:T.t2, sub:'active roster' },
+    { label:'Roster Health', value:healthPct+'%', sub: healthPct>=70?'On track':healthPct>=45?'Needs attention':'Critical' },
+    { label:'Check-ins Today', value:todayCI, sub:'vs. yesterday' },
+    { label:'At Risk', value:atRiskCount, sub:'need follow-up' },
+    { label:'No-shows', value:noShows, sub:'this week' },
+    { label:'Need Attention', value:attentionCount, sub:'missed this week' },
+    { label:'Total Clients', value:totalMembers, sub:'active roster' },
   ];
   return (
     <div style={{
@@ -193,7 +193,7 @@ function KpiStrip({ todayCI, atRiskCount, attentionCount, noShows, totalMembers,
           display:'flex', flexDirection:'column', gap:4,
         }}>
           <div className="tv2-count" style={{
-            fontSize:26, fontWeight:900, color:item.color,
+            fontSize:26, fontWeight:800, color:T.t1,
             letterSpacing:'-0.04em', lineHeight:1,
             animationDelay:`${i*0.05}s`,
           }}>{item.value}</div>
@@ -227,14 +227,14 @@ function PageHeader({ currentUser, date }) {
       <div style={{display:'flex',gap:8}}>
         <button className="tv2-btn" style={{
           display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:8,
-          background:T.blueDim,border:`1px solid ${T.blueBrd}`,color:T.blue,
+          background:'rgba(255,255,255,0.04)',border:`1px solid rgba(255,255,255,0.09)`,color:T.t2,
           fontSize:12,fontWeight:700,fontFamily:'inherit',
         }}>
           <QrCode style={{width:13,height:13}}/> Scan Check-in
         </button>
         <button className="tv2-btn" style={{
           display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:8,
-          background:T.blue,border:'none',color:'#fff',
+          background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',color:'#a78bfa',
           fontSize:12,fontWeight:700,fontFamily:'inherit',
         }}>
           <Plus style={{width:13,height:13}}/> New Session
@@ -577,10 +577,10 @@ function RetentionRadar({ memberships, checkIns, now }) {
         ].map((s,i)=>(
           <div key={i} style={{marginBottom:9}}>
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-              <span style={{fontSize:10,fontWeight:600,color:s.color}}>{s.label}</span>
+              <span style={{fontSize:10,fontWeight:600,color:T.t2}}>{s.label}</span>
               <span style={{fontSize:10,color:T.t3}}>{s.count} clients · {s.pct}%</span>
             </div>
-            <div style={{height:5,borderRadius:99,background:'rgba(255,255,255,0.05)',overflow:'hidden'}}>
+            <div style={{height:3,borderRadius:99,background:'rgba(255,255,255,0.05)',overflow:'hidden'}}>
               <div style={{height:'100%',width:`${s.pct}%`,background:s.color,borderRadius:99,transition:'width 0.8s ease'}}/>
             </div>
           </div>

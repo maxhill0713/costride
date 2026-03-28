@@ -874,9 +874,9 @@ export default function TabCoachContent({
                     { label: 'Low Engagement',   value: healthSummary.lowEngagement,  color: '#ef4444' },
                     { label: 'Not Assigned',     value: healthSummary.unassigned,     color: '#64748b' },
                   ].map((s, i) => (
-                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: DC.bgSurface, border: `1px solid ${s.value > 0 && i > 0 ? `${s.color}22` : DC.border}`, textAlign: 'center', cursor: i > 0 && s.value > 0 ? 'pointer' : 'default' }}
+                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: DC.bgSurface, border: `1px solid ${DC.border}`, textAlign: 'center', cursor: i > 0 && s.value > 0 ? 'pointer' : 'default' }}
                       onClick={() => { if (i === 3 && s.value > 0) setSortBy('not_assigned'); else if (i === 2 && s.value > 0) setSortBy('least_engaged'); }}>
-                      <div style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
                       <div style={{ fontSize: 9, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
                     </div>
                   ))}

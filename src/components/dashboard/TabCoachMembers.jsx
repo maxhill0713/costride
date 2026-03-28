@@ -106,7 +106,7 @@ function EngagementBar({ visits, trend, streak, color }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: 64, flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, fontWeight: 800, color }}>{visits}<span style={{ fontSize: 9, color: 'DM.t4', fontWeight: 400 }}>/mo</span></span>
+        <span style={{ fontSize: 11, fontWeight: 800, color }}>{visits}<span style={{ fontSize: 9, color: DM.t4, fontWeight: 400 }}>/mo</span></span>
         {trend > 0  && <TrendingUp   style={{ width: 9, height: 9, color: '#34d399' }}/>}
         {trend < 0  && <TrendingDown style={{ width: 9, height: 9, color: '#f87171' }}/>}
         {trend === 0 && <Minus        style={{ width: 9, height: 9, color: '#475569' }}/>}
@@ -160,10 +160,10 @@ function ClientCard({ m, avatarMap, onSelect, isSelected, onToggleSelect, bulkMo
         {m.streak >= 3 && <span style={{ fontSize: 10, color: '#f59e0b' }}>🔥{m.streak}</span>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-        {[{ val: m.visits, sub: 'this month', color: '#38bdf8' }, { val: m.totalVisits, sub: 'all time', color: '#a78bfa' }].map((s, i) => (
+        {[{ val: m.visits, sub: 'this month' }, { val: m.totalVisits, sub: 'all time' }].map((s, i) => (
           <div key={i} style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.03)', textAlign: 'center' }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
-            <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{s.sub}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.03em' }}>{s.val}</div>
+            <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -267,7 +267,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
       {/* Tab strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', paddingLeft: 16 }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '9px 13px', border: 'none', background: 'transparent', color: activeTab === t.id ? sc.color : 'DM.t4', fontSize: 10.5, fontWeight: activeTab === t.id ? 800 : 500, cursor: 'pointer', borderBottom: `2px solid ${activeTab === t.id ? sc.color : 'transparent'}`, marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '9px 13px', border: 'none', background: 'transparent', color: activeTab === t.id ? sc.color : DM.t4, fontSize: 10.5, fontWeight: activeTab === t.id ? 800 : 500, cursor: 'pointer', borderBottom: `2px solid ${activeTab === t.id ? sc.color : 'transparent'}`, marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0 }}>
             {t.label}
           </button>
         ))}
@@ -338,7 +338,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               const recentMsgs = 0; // placeholder — messages not passed here
               return (
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>14-Day Engagement</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>14-Day Engagement</div>
                   <div style={{ display: 'flex', gap: 3 }}>
                     {last14.map((d, i) => (
                       <div key={i} title={d.label}
@@ -348,8 +348,8 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                    <span style={{ fontSize: 8, color: 'DM.t4' }}>{format(subDays(now, 13), 'MMM d')}</span>
-                    <span style={{ fontSize: 8, color: 'DM.t4' }}>Today</span>
+                    <span style={{ fontSize: 8, color: DM.t4 }}>{format(subDays(now, 13), 'MMM d')}</span>
+                    <span style={{ fontSize: 8, color: DM.t4 }}>Today</span>
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                     <div style={{ fontSize: 10, color: '#64748b' }}>
@@ -380,7 +380,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               );
               return (
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Insights</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Insights</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {insights.map((ins, i) => (
                       <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: `${ins.color}08`, border: `1px solid ${ins.color}20`, borderLeft: `2px solid ${ins.color}` }}>
@@ -421,18 +421,18 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               return (
                 <div style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 16, marginBottom: 14 }}>
                   <div>
-                    <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Last Visit</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: lastCI ? sc.color : 'DM.t4' }}>
+                    <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Last Visit</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#f1f5f9' }}>
                       {lastCI ? (m.daysAgo === 0 ? 'Today' : `${m.daysAgo}d ago`) : 'Never'}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Avg/week</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa' }}>{avgVisitsPerWeek(m.user_id, clientCIs, now)}</div>
+                    <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Avg/week</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#f1f5f9' }}>{avgVisitsPerWeek(m.user_id, clientCIs, now)}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>This Month</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>{m.visits}</div>
+                    <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>This Month</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#f1f5f9' }}>{m.visits}</div>
                   </div>
                 </div>
               );
@@ -461,20 +461,20 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 }}>
               {[
-                { label: 'Visits / Month', value: m.visits,      color: '#38bdf8' },
-                { label: 'Last Visit',     value: m.daysAgo === null ? 'Never' : m.daysAgo === 0 ? 'Today' : `${m.daysAgo}d ago`, color: m.daysAgo > 14 ? '#f87171' : '#34d399' },
-                { label: 'Total Check-ins',value: m.totalVisits, color: '#a78bfa' },
-                { label: 'No-Show Rate',   value: `${m.noShowRate}%`, color: m.noShowRate >= 30 ? '#f87171' : m.noShowRate >= 15 ? '#fbbf24' : '#34d399' },
+                { label: 'Visits / Month', value: m.visits },
+                { label: 'Last Visit',     value: m.daysAgo === null ? 'Never' : m.daysAgo === 0 ? 'Today' : `${m.daysAgo}d ago` },
+                { label: 'Total Check-ins',value: m.totalVisits },
+                { label: 'No-Show Rate',   value: `${m.noShowRate}%` },
               ].map((s, i) => (
                 <div key={i} style={{ padding: '10px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 17, fontWeight: 900, color: s.color, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
-                  <div style={{ fontSize: 8, color: 'DM.t4', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                  <div style={{ fontSize: 8, color: DM.t4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
                 </div>
               ))}
             </div>
             {/* Membership status card */}
             <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 12 }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Membership</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Membership</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                 {[
                   { label: 'Plan', value: m.membership_type || 'Monthly' },
@@ -482,7 +482,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                   { label: 'Expires', value: membershipExpiry ? format(membershipExpiry.date, 'MMM d, yyyy') : 'Ongoing' },
                 ].map((item, i) => (
                   <div key={i}>
-                    <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{item.label}</div>
+                    <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{item.label}</div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: membershipExpiry?.urgent && item.label === 'Expires' ? '#f87171' : '#f0f4f8' }}>{item.value}</div>
                   </div>
                 ))}
@@ -498,20 +498,20 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 </div>
               </div>
             )}
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Recent Visits</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Recent Visits</div>
             {clientCIs.length === 0
-              ? <p style={{ fontSize: 11, color: 'DM.t4', margin: '0 0 12px' }}>No visits yet</p>
+              ? <p style={{ fontSize: 11, color: DM.t4, margin: '0 0 12px' }}>No visits yet</p>
               : clientCIs.slice(0, 5).map((ci, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#34d399' : 'DM.t4', flexShrink: 0 }}/>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#34d399' : DM.t4, flexShrink: 0 }}/>
                   <span style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', flex: 1 }}>{format(new Date(ci.check_in_date), 'EEE, MMM d')}</span>
-                  <span style={{ fontSize: 10, color: 'DM.t4' }}>{format(new Date(ci.check_in_date), 'h:mm a')}</span>
+                  <span style={{ fontSize: 10, color: DM.t4 }}>{format(new Date(ci.check_in_date), 'h:mm a')}</span>
                   {i === 0 && <span style={{ fontSize: 9, color: '#34d399', background: 'rgba(52,211,153,0.1)', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>Latest</span>}
                 </div>
               ))
             }
             {/* 14-day heat strip */}
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 7, marginTop: 12 }}>14-Day Activity</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 7, marginTop: 12 }}>14-Day Activity</div>
             <div style={{ display: 'flex', gap: 3 }}>
               {m.spark.map((v, si) => (
                 <div key={si} title={format(subDays(now, 13 - si), 'MMM d')} style={{ flex: 1, aspectRatio: '1', borderRadius: 4, background: v > 0 ? `${sc.color}cc` : 'rgba(255,255,255,0.05)', border: `1px solid ${v > 0 ? `${sc.color}40` : 'rgba(255,255,255,0.05)'}`, maxWidth: 22 }}/>
@@ -522,19 +522,19 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
         {/* ── LOGS TAB ── */}
         {activeTab === 'logs' && (
           <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Training Session History</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Training Session History</div>
             {clientCIs.length === 0 ? (
-              <p style={{ fontSize: 11, color: 'DM.t4', margin: 0, textAlign: 'center', padding: '20px 0' }}>No sessions logged yet</p>
+              <p style={{ fontSize: 11, color: DM.t4, margin: 0, textAlign: 'center', padding: '20px 0' }}>No sessions logged yet</p>
             ) : clientCIs.slice(0, 10).map((ci, i) => (
               <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 7 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: ci.exercises?.length ? 8 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#34d399' : 'DM.t4', flexShrink: 0 }}/>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#34d399' : DM.t4, flexShrink: 0 }}/>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{format(new Date(ci.check_in_date), 'EEE, MMM d, yyyy')}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {i === 0 && <span style={{ fontSize: 9, color: '#34d399', background: 'rgba(52,211,153,0.1)', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>Latest</span>}
-                    <span style={{ fontSize: 10, color: 'DM.t4' }}>{format(new Date(ci.check_in_date), 'h:mm a')}</span>
+                    <span style={{ fontSize: 10, color: DM.t4 }}>{format(new Date(ci.check_in_date), 'h:mm a')}</span>
                   </div>
                 </div>
                 {ci.exercises?.length > 0 && (
@@ -550,7 +550,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                         </span>
                       </div>
                     ))}
-                    {ci.exercises.length > 4 && <span style={{ fontSize: 10, color: 'DM.t4' }}>+{ci.exercises.length - 4} more exercises</span>}
+                    {ci.exercises.length > 4 && <span style={{ fontSize: 10, color: DM.t4 }}>+{ci.exercises.length - 4} more exercises</span>}
                   </div>
                 )}
                 {!ci.exercises?.length && ci.workout_name && (
@@ -594,7 +594,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 </div>
               </div>
               {lifts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px 0', color: 'DM.t4' }}>
+                <div style={{ textAlign: 'center', padding: '20px 0', color: DM.t4 }}>
                   <TrendingUp style={{ width: 20, height: 20, opacity: 0.4, margin: '0 auto 8px' }}/>
                   <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No lift data yet</p>
                   <p style={{ fontSize: 10, margin: '4px 0 0' }}>Appears when sessions include exercises with weights</p>
@@ -632,7 +632,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
         {activeTab === 'health' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <Dumbbell style={{ width: 9, height: 9 }}/> Fitness Level
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -655,7 +655,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               { field: 'notes',        label: 'Additional Health Notes',  icon: ClipboardList, placeholder: 'Medications, GP clearance, anything relevant…'      },
             ].map(({ field, label, icon: Ic, placeholder }) => (
               <div key={field}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Ic style={{ width: 9, height: 9 }}/> {label}
                   {clientHealth[field] && <span style={{ fontSize: 9, color: '#34d399', fontWeight: 600 }}>✓ saved</span>}
                 </div>
@@ -669,7 +669,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
             ))}
             {(clientHealth.fitnessLevel || clientHealth.injuries || clientHealth.restrictions) && (
               <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: 9, color: 'DM.t4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 7 }}>Summary</div>
+                <div style={{ fontSize: 9, color: DM.t4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 7 }}>Summary</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {clientHealth.fitnessLevel && <span style={{ fontSize: 10, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 6, padding: '2px 8px' }}>{clientHealth.fitnessLevel}</span>}
                   {clientHealth.injuries     && <span style={{ fontSize: 10, fontWeight: 700, color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 6, padding: '2px 8px' }}>⚠️ Injury noted</span>}
@@ -704,7 +704,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               </div>
             )}
             {clientGoals.length === 0
-              ? <p style={{ fontSize: 11, color: 'DM.t4', margin: 0, textAlign: 'center', padding: '12px 0' }}>No goals set yet.</p>
+              ? <p style={{ fontSize: 11, color: DM.t4, margin: 0, textAlign: 'center', padding: '12px 0' }}>No goals set yet.</p>
               : clientGoals.map((g, i) => {
                 const current = parseFloat(g.current) || 0;
                 const target  = parseFloat(g.target)  || 0;
@@ -760,7 +760,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               </div>
             )}
             {clientPkgs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: 'DM.t4' }}>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: DM.t4 }}>
                 <Package style={{ width: 24, height: 24, opacity: 0.3, margin: '0 auto 8px' }}/>
                 <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No packages yet</p>
               </div>
@@ -792,9 +792,9 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                     <div style={{ height: '100%', width: `${pct}%`, background: done ? 'linear-gradient(90deg,#34d399,#10b981)' : low ? 'linear-gradient(90deg,#fbbf24,#f59e0b)' : 'linear-gradient(90deg,#38bdf8,#0ea5e9)', borderRadius: 99, transition: 'width 0.6s ease' }}/>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                    <span style={{ fontSize: 9, color: 'DM.t4' }}>0</span>
-                    <span style={{ fontSize: 9, color: 'DM.t4', fontWeight: 600 }}>{pct}% used</span>
-                    <span style={{ fontSize: 9, color: 'DM.t4' }}>{total}</span>
+                    <span style={{ fontSize: 9, color: DM.t4 }}>0</span>
+                    <span style={{ fontSize: 9, color: DM.t4, fontWeight: 600 }}>{pct}% used</span>
+                    <span style={{ fontSize: 9, color: DM.t4 }}>{total}</span>
                   </div>
                   {low && !done && (
                     <button onClick={() => openModal('post', { memberId: m.user_id, packageRenewal: true })} style={{ marginTop: 8, width: '100%', padding: '6px', borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
@@ -855,13 +855,13 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
             {/* Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
               {[
-                { label: 'Membership', value: m.membership_type || 'Monthly', color: '#38bdf8' },
-                { label: 'Status',     value: m.membership_status || 'Active', color: '#34d399' },
-                { label: 'Plan Price', value: m.membership_price ? `£${m.membership_price}/mo` : '—', color: '#a78bfa' },
+                { label: 'Membership', value: m.membership_type || 'Monthly' },
+                { label: 'Status',     value: m.membership_status || 'Active' },
+                { label: 'Plan Price', value: m.membership_price ? `£${m.membership_price}/mo` : '—' },
               ].map((s, i) => (
                 <div key={i} style={{ padding: '10px', borderRadius: 10, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, fontWeight: 900, color: s.color }}>{s.value}</div>
-                  <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{s.value}</div>
+                  <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -883,7 +883,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
               </div>
             )}
             {/* Payment history (from membership data) */}
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Payment History</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Payment History</div>
             {m.payment_history && m.payment_history.length > 0 ? (
               m.payment_history.slice(0, 8).map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 6 }}>
@@ -898,7 +898,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 </div>
               ))
             ) : (
-              <div style={{ textAlign: 'center', padding: '20px 0', color: 'DM.t4' }}>
+              <div style={{ textAlign: 'center', padding: '20px 0', color: DM.t4 }}>
                 <CreditCard style={{ width: 20, height: 20, opacity: 0.3, margin: '0 auto 8px' }}/>
                 <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No payment data available</p>
                 <p style={{ fontSize: 10, margin: '4px 0 0' }}>Payments will appear here when connected via Stripe</p>
@@ -922,7 +922,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
         {/* ── NOTES TAB ── */}
         {activeTab === 'notes' && (
           <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
               Coach Notes {notes[m.user_id] && <span style={{ fontSize: 9, color: '#34d399', fontWeight: 600 }}>✓ saved</span>}
             </div>
             <textarea
@@ -936,7 +936,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
         {/* ── PROFILE TAB ── */}
         {activeTab === 'profile' && (
           <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Tags & Labels</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Tags & Labels</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
               {PRESET_TAGS.map(tag => {
                 const isActive = clientTags.includes(tag);
@@ -947,7 +947,7 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 );
               })}
             </div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Client Info</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Client Info</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
               {[
                 { label: 'Email',        value: m.user_email || '—' },
@@ -958,12 +958,12 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 { label: 'No-Show Rate', value: `${m.noShowRate}%` },
               ].map((item, i) => (
                 <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: 8, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{item.label}</div>
+                  <div style={{ fontSize: 8, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{item.label}</div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', wordBreak: 'break-all' }}>{item.value}</div>
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'DM.t4', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Coach Actions</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: DM.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Coach Actions</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
                 { icon: MessageCircle, label: 'Send Message',    color: '#38bdf8', modal: 'post',            data: { memberId: m.user_id } },
@@ -1168,7 +1168,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Search */}
         <div style={{ position: 'relative', flex: 1, minWidth: 160 }}>
-          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: 'DM.t4' }}/>
+          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: DM.t4 }}/>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients…" style={{ width: '100%', padding: '8px 12px 8px 30px', borderRadius: 10, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#f0f4f8', fontSize: 12, outline: 'none', boxSizing: 'border-box' }}/>
         </div>
         {/* Sort */}
@@ -1192,7 +1192,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
               {PRESET_TAGS.map(t => (
                 <button key={t} onClick={() => { setTagFilter(tagFilter === t ? null : t); setShowTagMenu(false); }} style={{ width: '100%', padding: '6px 10px', background: tagFilter === t ? 'rgba(167,139,250,0.1)' : 'none', border: 'none', color: tagFilter === t ? '#a78bfa' : '#94a3b8', fontSize: 11, textAlign: 'left', cursor: 'pointer', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                   {tagFilter === t && <Check style={{ width: 9, height: 9 }}/>}{t}
-                  <span style={{ fontSize: 9, color: 'DM.t4', marginLeft: 'auto' }}>
+                  <span style={{ fontSize: 9, color: DM.t4, marginLeft: 'auto' }}>
                     {enriched.filter(m => (tags[m.user_id] || []).includes(t)).length}
                   </span>
                 </button>
@@ -1203,7 +1203,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
         {/* View toggles */}
         <div style={{ display: 'flex', gap: 2, padding: 3, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 9, flexShrink: 0 }}>
           {[{ id: 'list', icon: List }, { id: 'cards', icon: LayoutGrid }, { id: 'leaderboard', icon: Trophy }].map(v => (
-            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: viewMode === v.id ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent', background: viewMode === v.id ? '#0c1a2e' : 'transparent', color: viewMode === v.id ? '#a78bfa' : 'DM.t4', cursor: 'pointer' }}>
+            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: viewMode === v.id ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent', background: viewMode === v.id ? '#0c1a2e' : 'transparent', color: viewMode === v.id ? '#a78bfa' : DM.t4, cursor: 'pointer' }}>
               <v.icon style={{ width: 12, height: 12 }}/>
             </button>
           ))}
@@ -1240,7 +1240,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
           </div>
           <CoachCard accent="#fbbf24">
             {lbData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '36px 0', color: 'DM.t4' }}>
+              <div style={{ textAlign: 'center', padding: '36px 0', color: DM.t4 }}>
                 <Trophy style={{ width: 24, height: 24, opacity: 0.3, margin: '0 auto 8px' }}/>
                 <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No data yet</p>
               </div>
@@ -1270,7 +1270,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
       {viewMode === 'cards' && (
         <>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '36px 0', color: 'DM.t4' }}>
+            <div style={{ textAlign: 'center', padding: '36px 0', color: DM.t4 }}>
               <Users style={{ width: 24, height: 24, opacity: 0.3, margin: '0 auto 8px' }}/>
               <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No clients found</p>
             </div>
@@ -1319,7 +1319,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
       {viewMode === 'list' && (
         <CoachCard style={{ overflow: 'hidden' }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '36px 0', color: 'DM.t4' }}>
+            <div style={{ textAlign: 'center', padding: '36px 0', color: DM.t4 }}>
               <Users style={{ width: 24, height: 24, opacity: 0.3, margin: '0 auto 8px' }}/>
               <p style={{ fontSize: 12, fontWeight: 600, margin: 0 }}>No clients found</p>
             </div>
@@ -1366,9 +1366,9 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
                         {m.daysAgo === null ? '⚫ Never visited' : m.daysAgo === 0 ? '🟢 Visited today' : m.daysAgo <= 3 ? `🟢 ${m.daysAgo}d ago` : m.daysAgo <= 7 ? `🟡 ${m.daysAgo}d ago` : `🔴 ${m.daysAgo}d ago`}
                       </span>
                       <span style={{ fontSize: 9, color: '#475569' }}>·</span>
-                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#a78bfa', fontWeight: 700 }}>{avgVisitsPerWeek(m.user_id, checkIns, now)}</span>/wk avg</span>
+                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#94a3b8', fontWeight: 700 }}>{avgVisitsPerWeek(m.user_id, checkIns, now)}</span>/wk avg</span>
                       <span style={{ fontSize: 9, color: '#475569' }}>·</span>
-                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#38bdf8', fontWeight: 700 }}>{m.visits}</span>/mo</span>
+                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#94a3b8', fontWeight: 700 }}>{m.visits}</span>/mo</span>
                       {m.trend !== 0 && <span style={{ fontSize: 10, color: m.trend > 0 ? '#34d399' : '#f87171' }}>{m.trend > 0 ? `↑${m.trend}%` : `↓${Math.abs(m.trend)}%`}</span>}
                       {/* Attention flags */}
                       {(() => {
@@ -1405,7 +1405,7 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
                       <MessageCircle style={{ width: 11, height: 11 }}/>
                     </button>
                   )}
-                  {!bulkMode && <ChevronRight style={{ width: 13, height: 13, color: 'DM.t4', flexShrink: 0, transform: isExp ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}/>}
+                  {!bulkMode && <ChevronRight style={{ width: 13, height: 13, color: DM.t4, flexShrink: 0, transform: isExp ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}/>}
                 </div>
                 {/* Expanded detail */}
                 {isExp && !bulkMode && <ClientDetailPanel m={m} {...detailProps}/>}

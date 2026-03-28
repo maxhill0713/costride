@@ -76,15 +76,15 @@ function ScheduleKpi({ icon: Ic, label, value, sub, color, bar }) {
     <div style={{ borderRadius: 12, padding: '20px', background: D.bgSurface, border: `1px solid ${D.border}`, position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: D.t3 }}>{label}</span>
-        <div style={{ width: 26, height: 26, borderRadius: 7, background: `rgba(255,255,255,0.04)`, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Ic style={{ width: 12, height: 12, color: D.t3 }}/>
         </div>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 800, color: color || D.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
+      <div style={{ fontSize: 32, fontWeight: 800, color: D.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: D.t3 }}>{sub}</div>}
       {bar !== undefined && (
         <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: color || D.purple, borderRadius: 99, transition: 'width 0.7s ease' }}/>
+          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: D.purple, borderRadius: 99, transition: 'width 0.7s ease' }}/>
         </div>
       )}
     </div>
