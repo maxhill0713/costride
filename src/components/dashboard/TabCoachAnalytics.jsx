@@ -1330,22 +1330,7 @@ export default function TabCoachAnalytics({
               ].map((s, i) => <StatRow key={i} label={s.label} value={s.value} color={s.color} pct={s.pct} />)}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 800, color: C.t1, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Clock style={{ width: 11, height: 11, color: C.amber }} /> Peak Hours
-                </div>
-                {peakHours.length === 0
-                  ? <p style={{ fontSize: 10, color: C.t4, margin: 0 }}>No data yet</p>
-                  : peakHours.map((h, i) => (
-                    <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: C.t1, width: 32, flexShrink: 0 }}>{h.label}</span>
-                      <div style={{ flex: 1, height: 5, borderRadius: 99, background: C.b2, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${h.pct}%`, borderRadius: 99, background: i === 0 ? `linear-gradient(90deg,${C.amber},${C.red})` : `linear-gradient(90deg,${C.purple},${C.blue})` }} />
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? C.amber : C.t3, width: 20, textAlign: 'right', flexShrink: 0 }}>{h.count}</span>
-                    </div>
-                  ))}
-              </div>
+
               <div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: C.t1, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Calendar style={{ width: 11, height: 11, color: C.green }} /> Busiest Days
