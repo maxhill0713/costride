@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { subDays, startOfDay, isWithinInterval, format, differenceInDays, addDays, isSameMonth, isSameDay, parseISO, isValid } from 'date-fns';
+import { subDays, startOfDay, isWithinInterval, format, differenceInDays, addDays, isSameMonth, isSameDay, parseISO, isValid, isToday } from 'date-fns';
 import {
   Users, Activity, AlertCircle, Flame, MessageCircle, ChevronRight,
   Search, Download, Plus, Check, X, Trophy, UserPlus, List,
@@ -14,6 +14,27 @@ import { useQuery } from '@tanstack/react-query';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { CoachKpiCard, CoachCard, MiniAvatar } from './CoachHelpers';
 import { ClientAdvancedProfile, ClassPerformanceWidget } from './ClientAdvancedProfile';
+// ─── Attention flag config ────────────────────────────────────────────────────
+function getAttentionFlags(m, checkIns, now) {
+  const flags = [];
+  const r7  = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) < 7  * 864e5).length;
+  const r30 = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) < 30 * 864e5).length;
+  const p30 = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) >= 30 * 864e5 && (now - new Date(c.check_in_date)) < 60 * 864e5).length;
+  const hasUpcoming = false; // no booking data — flag absence of r7 visits
+  if (m.daysAgo === null || m.daysAgo > 14)       flags.push({ label: 'No upcoming sessions', color: '#f87171', key: 'no_sessions' });
+  if (r7 === 0 && r30 >= 2)                         flags.push({ label: 'No visit this week',  color: '#f59e0b', key: 'inactive_week' });
+  if (p30 > 2 && r30 < p30 * 0.5)                  flags.push({ label: 'Declining attendance', color: '#f87171', key: 'declining' });
+  if (r30 === 0 && m.totalVisits > 0)               flags.push({ label: 'Low engagement',       color: '#64748b', key: 'low_eng' });
+  return flags;
+}
+
+// ─── Avg visits per week ──────────────────────────────────────────────────────
+function avgVisitsPerWeek(userId, checkIns, now) {
+  const weeks = 4;
+  const count = checkIns.filter(c => c.user_id === userId && (now - new Date(c.check_in_date)) < weeks * 7 * 864e5).length;
+  return (count / weeks).toFixed(1);
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_PRIORITY = { vip: 0, active: 1, regular: 2, at_risk: 3, inactive: 4 };
 const STATUS_CFG = {
@@ -302,6 +323,115 @@ function ClientDetailPanel({ m, checkIns, avatarMap, now, notes, saveNote, tags,
                 <button onClick={() => setActiveTab('onboarding')} style={{ marginTop: 8, fontSize: 10, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View checklist →</button>
               </div>
             )}
+            {/* ── ENGAGEMENT TIMELINE ── */}
+            {(() => {
+              const last14 = Array.from({ length: 14 }, (_, i) => {
+                const d = subDays(now, 13 - i);
+                const visited = clientCIs.some(ci => isSameDay(new Date(ci.check_in_date), d));
+                return { d, visited, label: format(d, 'EEE d') };
+              });
+              const recentMsgs = 0; // placeholder — messages not passed here
+              return (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>14-Day Engagement</div>
+                  <div style={{ display: 'flex', gap: 3 }}>
+                    {last14.map((d, i) => (
+                      <div key={i} title={d.label}
+                        style={{ flex: 1, height: 22, borderRadius: 4, background: d.visited ? `${sc.color}cc` : 'rgba(255,255,255,0.05)', border: `1px solid ${d.visited ? `${sc.color}50` : 'rgba(255,255,255,0.05)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: d.visited ? '#fff' : 'transparent' }}>
+                        {d.visited ? '✓' : ''}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 8, color: '#3a5070' }}>{format(subDays(now, 13), 'MMM d')}</span>
+                    <span style={{ fontSize: 8, color: '#3a5070' }}>Today</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                      <span style={{ fontWeight: 700, color: sc.color }}>{last14.filter(d => d.visited).length}</span> visits in 14d
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                      Avg <span style={{ fontWeight: 700, color: '#a78bfa' }}>{avgVisitsPerWeek(m.user_id, clientCIs, now)}</span>/week
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            {/* ── INSIGHTS PANEL ── */}
+            {(() => {
+              const insights = [];
+              if (m.daysAgo !== null && m.daysAgo > 6) insights.push({ icon: '🕐', text: `No visit in ${m.daysAgo} days`, action: 'Send a check-in message', actionModal: 'post', color: m.daysAgo > 14 ? '#f87171' : '#f59e0b' });
+              const r7 = clientCIs.filter(ci => (now - new Date(ci.check_in_date)) < 7 * 864e5).length;
+              if (r7 === 0 && m.visits >= 2) insights.push({ icon: '📅', text: 'No session this week', action: 'Book a session', actionModal: 'bookIntoClass', color: '#f59e0b' });
+              const r30 = clientCIs.filter(ci => (now - new Date(ci.check_in_date)) < 30 * 864e5).length;
+              const p30 = clientCIs.filter(ci => { const age = now - new Date(ci.check_in_date); return age >= 30 * 864e5 && age < 60 * 864e5; }).length;
+              if (p30 > 2 && r30 < p30 * 0.6) insights.push({ icon: '📉', text: `Attendance down ${Math.round((1 - r30 / p30) * 100)}% vs last month`, action: 'Assign a new workout', actionModal: 'assignWorkout', color: '#f87171' });
+              if (m.noShowRate >= 25) insights.push({ icon: '🚫', text: `${m.noShowRate}% no-show rate`, action: 'Follow up on commitment', actionModal: 'post', color: '#fbbf24' });
+              if (insights.length === 0) return (
+                <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.18)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 14 }}>✅</span>
+                  <span style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>Engaging well — no immediate concerns</span>
+                </div>
+              );
+              return (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Insights</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {insights.map((ins, i) => (
+                      <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: `${ins.color}08`, border: `1px solid ${ins.color}20`, borderLeft: `2px solid ${ins.color}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+                          <span style={{ fontSize: 13 }}>{ins.icon}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#f0f4f8', flex: 1 }}>{ins.text}</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>→ {ins.action}</div>
+                        <button onClick={() => openModal(ins.actionModal, { memberId: m.user_id, memberName: m.user_name })}
+                          style={{ fontSize: 10, fontWeight: 700, color: ins.color, background: `${ins.color}0e`, border: `1px solid ${ins.color}25`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>
+                          {ins.action}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+            {/* ── QUICK ACTIONS ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 14 }}>
+              {[
+                { label: 'Message',       icon: MessageCircle, color: '#38bdf8', modal: 'post',         data: { memberId: m.user_id } },
+                { label: 'Book Session',  icon: Calendar,      color: '#a78bfa', modal: 'bookIntoClass', data: { memberId: m.user_id, memberName: m.user_name } },
+                { label: 'Assign Workout',icon: Dumbbell,      color: '#10b981', modal: 'assignWorkout', data: { memberId: m.user_id, memberName: m.user_name } },
+              ].map(({ label, icon: Ic, color, modal, data }) => (
+                <button key={label} onClick={() => openModal(modal, data)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '10px 6px', borderRadius: 10, background: `${color}0d`, border: `1px solid ${color}22`, color, fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = `${color}1a`}
+                  onMouseLeave={e => e.currentTarget.style.background = `${color}0d`}>
+                  <Ic style={{ width: 14, height: 14 }}/>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* ── LAST INTERACTION ── */}
+            {(() => {
+              const lastCI = clientCIs[0];
+              return (
+                <div style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 16, marginBottom: 14 }}>
+                  <div>
+                    <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Last Visit</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: lastCI ? sc.color : '#3a5070' }}>
+                      {lastCI ? (m.daysAgo === 0 ? 'Today' : `${m.daysAgo}d ago`) : 'Never'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Avg/week</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa' }}>{avgVisitsPerWeek(m.user_id, clientCIs, now)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 8, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>This Month</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>{m.visits}</div>
+                  </div>
+                </div>
+              );
+            })()}
             <ClientAdvancedProfile client={m} checkIns={clientCIs} now={now} />
             {/* No-show alert */}
             {m.noShowRate >= 25 && (
@@ -938,34 +1068,44 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
   }), [allMemberships, checkIns, ci30, memberLastCI, now, health, tags]);
   // ── Segment counts ────────────────────────────────────────────────────────
   const counts = {
-    all:      enriched.length,
-    new:      enriched.filter(m => m.isNew).length,
-    vip:      enriched.filter(m => m.status === 'vip').length,
-    active:   enriched.filter(m => m.status === 'active' || m.status === 'regular').length,
-    at_risk:  enriched.filter(m => m.status === 'at_risk').length,
-    lapsed:   enriched.filter(m => m.status === 'inactive').length,
-    birthdays:enriched.filter(m => m.hasBirthday).length,
-    no_shows: enriched.filter(m => m.noShowRate >= 25).length,
+    all:           enriched.length,
+    new:           enriched.filter(m => m.isNew).length,
+    vip:           enriched.filter(m => m.status === 'vip').length,
+    active:        enriched.filter(m => m.status === 'active' || m.status === 'regular').length,
+    at_risk:       enriched.filter(m => m.status === 'at_risk').length,
+    lapsed:        enriched.filter(m => m.status === 'inactive').length,
+    birthdays:     enriched.filter(m => m.hasBirthday).length,
+    no_shows:      enriched.filter(m => m.noShowRate >= 25).length,
+    no_session_wk: enriched.filter(m => { const r7 = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) < 7*864e5).length; return r7 === 0 && m.visits >= 2; }).length,
+    low_engage:    enriched.filter(m => m.visits === 0 && m.totalVisits > 0).length,
+    recent_inactive: enriched.filter(m => m.daysAgo !== null && m.daysAgo >= 7 && m.daysAgo <= 21).length,
   };
   const SEGMENTS = [
-    { id: 'all',      label: 'All Clients',  count: counts.all      },
-    { id: 'new',      label: '🌱 New',        count: counts.new      },
-    { id: 'vip',      label: '⭐ VIP',        count: counts.vip      },
-    { id: 'active',   label: 'Active',        count: counts.active   },
-    { id: 'at_risk',  label: '⚠️ At Risk',    count: counts.at_risk  },
-    { id: 'lapsed',   label: 'Lapsed',        count: counts.lapsed   },
-    { id: 'birthdays',label: '🎂 Birthdays',  count: counts.birthdays},
-    { id: 'no_shows', label: '🚫 No-shows',   count: counts.no_shows },
+    { id: 'all',           label: 'All Clients',       count: counts.all           },
+    { id: 'at_risk',       label: '⚠️ At Risk',         count: counts.at_risk,  highlight: true },
+    { id: 'no_session_wk', label: '📅 Not Booked',      count: counts.no_session_wk },
+    { id: 'low_engage',    label: '📉 Low Engagement',  count: counts.low_engage    },
+    { id: 'recent_inactive',label:'⏱ Recently Inactive',count: counts.recent_inactive},
+    { id: 'new',           label: '🌱 New',             count: counts.new           },
+    { id: 'vip',           label: '⭐ VIP',             count: counts.vip           },
+    { id: 'active',        label: 'Active',             count: counts.active        },
+    { id: 'lapsed',        label: 'Lapsed',             count: counts.lapsed        },
+    { id: 'birthdays',     label: '🎂 Birthdays',       count: counts.birthdays     },
+    { id: 'no_shows',      label: '🚫 No-shows',        count: counts.no_shows      },
   ];
   // ── Filter + sort ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => enriched
     .filter(m => {
-      const matchSeg  = segment === 'all'      ? true
-                      : segment === 'new'      ? m.isNew
-                      : segment === 'vip'      ? m.status === 'vip'
-                      : segment === 'active'   ? (m.status === 'active' || m.status === 'regular')
-                      : segment === 'birthdays'? m.hasBirthday
-                      : segment === 'no_shows' ? m.noShowRate >= 25
+      const r7_ = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) < 7*864e5).length;
+      const matchSeg  = segment === 'all'            ? true
+                      : segment === 'new'            ? m.isNew
+                      : segment === 'vip'            ? m.status === 'vip'
+                      : segment === 'active'         ? (m.status === 'active' || m.status === 'regular')
+                      : segment === 'birthdays'      ? m.hasBirthday
+                      : segment === 'no_shows'       ? m.noShowRate >= 25
+                      : segment === 'no_session_wk'  ? (r7_ === 0 && m.visits >= 2)
+                      : segment === 'low_engage'     ? (m.visits === 0 && m.totalVisits > 0)
+                      : segment === 'recent_inactive'? (m.daysAgo !== null && m.daysAgo >= 7 && m.daysAgo <= 21)
                       : m.status === segment;
       const matchTag  = !tagFilter || (tags[m.user_id] || []).includes(tagFilter);
       const matchSrch = !search || (m.user_name || '').toLowerCase().includes(search.toLowerCase());
@@ -973,7 +1113,8 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
     })
     .sort((a, b) => {
       if (sort === 'recentlyActive') { if (!a.last && !b.last) return 0; if (!a.last) return 1; if (!b.last) return -1; return new Date(b.last) - new Date(a.last); }
-      if (sort === 'mostVisits') return b.visits - a.visits;
+      if (sort === 'mostVisits')  return b.visits - a.visits;
+      if (sort === 'leastVisits') return a.visits - b.visits;
       if (sort === 'name')       return (a.user_name || '').localeCompare(b.user_name || '');
       if (sort === 'streak')     return b.streak - a.streak;
       if (sort === 'risk')       return (STATUS_PRIORITY[a.status] ?? 4) - (STATUS_PRIORITY[b.status] ?? 4);
@@ -1006,12 +1147,17 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
       </div>
       {/* ── Segment pills ── */}
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
-        {SEGMENTS.map(s => (
-          <button key={s.id} onClick={() => setSegment(s.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 99, border: segment === s.id ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.06)', background: segment === s.id ? 'rgba(167,139,250,0.12)' : 'transparent', color: segment === s.id ? '#a78bfa' : '#64748b', fontSize: 11, fontWeight: segment === s.id ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s' }}>
-            {s.label}
-            {s.count > 0 && <span style={{ fontSize: 9, fontWeight: 800, background: segment === s.id ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.06)', borderRadius: 99, padding: '1px 5px' }}>{s.count}</span>}
-          </button>
-        ))}
+        {SEGMENTS.map(s => {
+          const isActive = segment === s.id;
+          const urgentColor = s.highlight ? '#f87171' : null;
+          const activeColor = urgentColor || '#a78bfa';
+          return (
+            <button key={s.id} onClick={() => setSegment(s.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 99, border: isActive ? `1px solid ${activeColor}40` : `1px solid ${s.highlight && s.count > 0 ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.06)'}`, background: isActive ? `${activeColor}12` : 'transparent', color: isActive ? activeColor : (s.highlight && s.count > 0 ? '#f87171' : '#64748b'), fontSize: 11, fontWeight: isActive ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s' }}>
+              {s.label}
+              {s.count > 0 && <span style={{ fontSize: 9, fontWeight: 800, background: isActive ? `${activeColor}20` : (s.highlight ? 'rgba(248,113,113,0.12)' : 'rgba(255,255,255,0.06)'), borderRadius: 99, padding: '1px 5px' }}>{s.count}</span>}
+            </button>
+          );
+        })}
       </div>
       {/* ── Controls ── */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1022,11 +1168,12 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
         </div>
         {/* Sort */}
         <select value={sort} onChange={e => setSort(e.target.value)} style={{ padding: '8px 10px', borderRadius: 9, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: 11, outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
+          <option value="risk">⚠️ At Risk First</option>
           <option value="recentlyActive">Recently Active</option>
           <option value="mostVisits">Most Visits</option>
+          <option value="leastVisits">Least Visits</option>
           <option value="name">Name A–Z</option>
           <option value="streak">Streak</option>
-          <option value="risk">Risk Level</option>
           <option value="noShows">No-Show Rate</option>
         </select>
         {/* Tag filter */}
@@ -1209,10 +1356,22 @@ export default function TabCoachMembers({ allMemberships, checkIns, ci30, avatar
                       {m.noShowRate >= 25 && <NoShowBadge rate={m.noShowRate}/>}
                       {clientTagList.slice(0, 1).map(t => <span key={t} style={{ fontSize: 8, color: '#a78bfa', background: 'rgba(167,139,250,0.06)', borderRadius: 3, padding: '1px 5px', flexShrink: 0, border: '1px solid rgba(167,139,250,0.15)' }}>{t}</span>)}
                     </div>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <span style={{ fontSize: 10, color: '#64748b' }}>{m.visits} visits/mo</span>
-                      {m.daysAgo !== null && <span style={{ fontSize: 10, color: '#3a5070' }}>Last: {m.daysAgo === 0 ? 'today' : `${m.daysAgo}d ago`}</span>}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 10, color: '#64748b' }}>
+                        {m.daysAgo === null ? '⚫ Never visited' : m.daysAgo === 0 ? '🟢 Visited today' : m.daysAgo <= 3 ? `🟢 ${m.daysAgo}d ago` : m.daysAgo <= 7 ? `🟡 ${m.daysAgo}d ago` : `🔴 ${m.daysAgo}d ago`}
+                      </span>
+                      <span style={{ fontSize: 9, color: '#475569' }}>·</span>
+                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#a78bfa', fontWeight: 700 }}>{avgVisitsPerWeek(m.user_id, checkIns, now)}</span>/wk avg</span>
+                      <span style={{ fontSize: 9, color: '#475569' }}>·</span>
+                      <span style={{ fontSize: 10, color: '#64748b' }}><span style={{ color: '#38bdf8', fontWeight: 700 }}>{m.visits}</span>/mo</span>
                       {m.trend !== 0 && <span style={{ fontSize: 10, color: m.trend > 0 ? '#34d399' : '#f87171' }}>{m.trend > 0 ? `↑${m.trend}%` : `↓${Math.abs(m.trend)}%`}</span>}
+                      {/* Attention flags */}
+                      {(() => {
+                        const flags = getAttentionFlags(m, checkIns, now);
+                        return flags.slice(0,1).map(f => (
+                          <span key={f.key} style={{ fontSize: 8, fontWeight: 700, color: f.color, background: `${f.color}10`, border: `1px solid ${f.color}22`, borderRadius: 4, padding: '1px 5px' }}>{f.label}</span>
+                        ));
+                      })()}
                     </div>
                   </div>
                   {/* Spark dots */}
