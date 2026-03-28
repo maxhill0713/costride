@@ -296,6 +296,352 @@ function LivePreview({ draft, onOpenModal }) {
   );
 }
 
+/* ─── Profile Entry Card (shown in the tab before opening) ─── */
+function ProfileEntryCard({ coach, onOpen }) {
+  const name = coach?.name || 'Your Profile';
+  const title = coach?.title || 'Personal Coach';
+  const specialties = coach?.specialties || [];
+  const rating = coach?.rating;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, gap: 20, fontFamily: 'Figtree,system-ui,sans-serif' }}>
+      <style>{CSS}</style>
+      {/* Profile card button */}
+      <div
+        onClick={onOpen}
+        style={{
+          width: '100%', maxWidth: 380,
+          borderRadius: 20,
+          background: 'linear-gradient(160deg,#0c1128 0%,#060810 100%)',
+          border: '1px solid rgba(255,255,255,0.09)',
+          overflow: 'hidden', cursor: 'pointer',
+          transition: 'border-color 0.18s, transform 0.18s, box-shadow 0.18s',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.5)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.25)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)'; }}
+      >
+        {/* Top blue stripe */}
+        <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,#2563eb 35%,rgba(59,130,246,0.9) 50%,#2563eb 65%,transparent)' }} />
+
+        {/* Hero banner */}
+        <div style={{ height: 80, overflow: 'hidden', position: 'relative', background: 'rgba(37,99,235,0.1)' }}>
+          {coach?.image_url && <img src={coach.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.05),rgba(6,8,18,0.8))' }} />
+        </div>
+
+        {/* Identity */}
+        <div style={{ padding: '14px 18px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.7),rgba(37,99,235,0.4))', border: '2px solid rgba(59,130,246,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: BLUE_LT, flexShrink: 0 }}>
+              {coach?.avatar_url ? <img src={coach.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>{name}</div>
+              <div style={{ fontSize: 11, color: BLUE_LT, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 3 }}>{title}</div>
+              {rating && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <div style={{ display: 'flex', gap: 1 }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: 9, height: 9, fill: s <= Math.round(rating) ? '#fbbf24' : 'rgba(255,255,255,0.15)', color: 'transparent' }} />)}</div>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24' }}>{rating}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {specialties.length > 0 && (
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
+              {specialties.slice(0, 3).map((s, i) => (
+                <span key={i} style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: i === 0 ? BLUE : 'rgba(255,255,255,0.05)', border: `1px solid ${i === 0 ? BLUE : 'rgba(255,255,255,0.09)'}`, color: i === 0 ? '#fff' : SUB }}>{s}</span>
+              ))}
+              {specialties.length > 3 && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: MUTE }}>+{specialties.length - 3}</span>}
+            </div>
+          )}
+
+          {/* Open button */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px', borderRadius: 12, background: `linear-gradient(135deg,${BLUE},#1d4ed8)`, boxShadow: '0 4px 16px rgba(37,99,235,0.4)' }}>
+            <Edit2 style={{ width: 13, height: 13, color: '#fff' }} />
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>Edit Profile</span>
+            <ChevronRight style={{ width: 13, height: 13, color: 'rgba(255,255,255,0.7)' }} />
+          </div>
+        </div>
+      </div>
+
+      <p style={{ fontSize: 12, color: MUTE, textAlign: 'center', maxWidth: 300 }}>
+        Click to edit your public profile, manage packages, availability, and more.
+      </p>
+    </div>
+  );
+}
+
+/* ─── Full-screen profile editor overlay ─────────────────── */
+function ProfileEditorOverlay({ selectedGym, currentUser, onClose, coach, draft, setDraft, dirty, setDirty, handleSave, handleDiscard, uploading, heroUploading, handleAvatarUpload, handleHeroUpload, updateMutation, createMutation, showPreviewModal, setShowPreviewModal, sectionRefs, patch, isLoading, createProfile }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: BG, overflowY: 'auto', fontFamily: 'Figtree,system-ui,sans-serif' }}>
+      <style>{CSS}</style>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
+
+        {/* Sticky top bar */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: BG, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 0', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={onClose} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: MUTE, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>
+            <X style={{ width: 13, height: 13 }} /> Close
+          </button>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+            {draft?.avatar_url
+              ? <img src={draft.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(59,130,246,0.4)' }} />
+              : <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(37,99,235,0.6),rgba(37,99,235,0.3))', border: '1.5px solid rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: BLUE_LT }}>{ini(draft?.name)}</div>
+            }
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{draft?.name || 'Coach Profile'}</div>
+              <div style={{ fontSize: 11, color: SUB }}>{selectedGym?.name}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {dirty && <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24' }} /> Unsaved</span>}
+            {dirty && <button onClick={handleDiscard} className="tcp-btn" style={{ fontSize: 12, fontWeight: 700, color: MUTE, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>Discard</button>}
+            <button onClick={() => setShowPreviewModal(true)} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: BLUE_LT, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, padding: '8px 14px' }}>
+              <Eye style={{ width: 13, height: 13 }} /> Preview
+            </button>
+            <button onClick={handleSave} disabled={!dirty || updateMutation.isPending || createMutation.isPending} className="tcp-btn"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fff', background: dirty ? `linear-gradient(135deg,${BLUE},#1d4ed8)` : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '8px 18px', opacity: dirty ? 1 : 0.4, boxShadow: dirty ? '0 4px 16px rgba(37,99,235,0.4)' : 'none', cursor: dirty ? 'pointer' : 'default' }}>
+              {(updateMutation.isPending || createMutation.isPending) ? <Loader2 style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 13, height: 13 }} />}
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        {/* Body — same two-column layout as before */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+          <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            <div ref={el => sectionRefs.current['identity'] = el}>
+              <SectionCard title="Identity" icon={Camera} iconColor="#38bdf8">
+                <div>
+                  <SLabel>Hero / Cover Photo</SLabel>
+                  <div style={{ position: 'relative', height: 120, borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)', cursor: 'pointer' }}>
+                    {draft.image_url && <img src={draft.image_url} alt="hero" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />}
+                    <label style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', background: draft.image_url ? 'rgba(0,0,0,0.45)' : 'transparent', transition: 'background .15s' }}>
+                      {heroUploading ? <Loader2 style={{ width: 22, height: 22, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <><Image style={{ width: 20, height: 20, color: '#fff', opacity: 0.7 }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{draft.image_url ? 'Change photo' : 'Upload cover photo'}</span></>}
+                      <input type="file" accept="image/*" onChange={handleHeroUpload} style={{ display: 'none' }} />
+                    </label>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                  <div style={{ flexShrink: 0, position: 'relative' }}>
+                    <label className="avatar-wrap" style={{ cursor: 'pointer', display: 'block' }}>
+                      <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.7),rgba(37,99,235,0.4))', border: '2.5px solid rgba(59,130,246,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: BLUE_LT, position: 'relative' }}>
+                        {draft.avatar_url ? <img src={draft.avatar_url} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} /> : ini(draft.name)}
+                        <div className="avatar-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity .15s' }}>
+                          {uploading ? <Loader2 style={{ width: 18, height: 18, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <Camera style={{ width: 18, height: 18, color: '#fff' }} />}
+                        </div>
+                      </div>
+                      <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                    </label>
+                    <div style={{ position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: '#22c55e', border: '2px solid #060810' }} />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Field label="Display Name" value={draft.name} onChange={v => patch('name', v)} placeholder="Your full name" />
+                    <Field label="Professional Title" value={draft.title} onChange={v => patch('title', v)} placeholder="e.g. Elite Performance Coach" />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Location" value={draft.location} onChange={v => patch('location', v)} placeholder="City, Country" />
+                  <Field label="Member Since" value={draft.member_since} onChange={v => patch('member_since', v)} placeholder="2020" />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  <Field label="Years Experience" value={draft.experience_years?.toString()} onChange={v => patch('experience_years', parseInt(v) || 0)} type="number" placeholder="e.g. 11" />
+                  <Field label="Total Clients" value={draft.total_clients?.toString()} onChange={v => patch('total_clients', parseInt(v) || 0)} type="number" placeholder="e.g. 840" />
+                  <Field label="Rating (out of 5)" value={draft.rating?.toString()} onChange={v => patch('rating', parseFloat(v) || null)} type="number" placeholder="e.g. 4.9" />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Next Available" value={draft.next_available} onChange={v => patch('next_available', v)} placeholder="Tomorrow · 7:00 AM" />
+                  <Field label="Response Time" value={draft.response_time} onChange={v => patch('response_time', v)} placeholder="< 1 hr" />
+                </div>
+                <TagPicker label="Languages" items={draft.languages || []} suggestions={LANGUAGES_OPTIONS} color="#34d399"
+                  onAdd={v => patch('languages', [...(draft.languages || []), v])}
+                  onRemove={v => patch('languages', (draft.languages || []).filter(l => l !== v))} />
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['bio'] = el}>
+              <SectionCard title="Bio & Philosophy" icon={Edit2} iconColor="#818cf8">
+                <Field label="Bio" value={draft.bio} onChange={v => patch('bio', v)} multiline rows={3} placeholder="Tell members who you are and what you do…" hint="Shown on your public profile — keep it punchy and personal." />
+                <Field label="My Approach / Training Philosophy" value={draft.philosophy} onChange={v => patch('philosophy', v)} multiline rows={4} placeholder="Describe your coaching philosophy and methodology…" hint="Shown as an italicised quote block on your profile." />
+                <TagPicker label="Specialties" items={draft.specialties || []} suggestions={SPECIALTIES_OPTIONS} color="#a78bfa" hint="Displayed as pills on your hero card"
+                  onAdd={v => patch('specialties', [...(draft.specialties || []), v])}
+                  onRemove={v => patch('specialties', (draft.specialties || []).filter(s => s !== v))} />
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['credentials'] = el}>
+              <SectionCard title="Credentials & Certifications" icon={Award} iconColor="#fbbf24">
+                <TagPicker label="Certifications" items={draft.certifications || []} suggestions={CERT_SUGGESTIONS} color="#38bdf8"
+                  onAdd={v => patch('certifications', [...(draft.certifications || []), v])}
+                  onRemove={v => patch('certifications', (draft.certifications || []).filter(c => c !== v))} />
+                <div>
+                  <SLabel hint="Trophy items shown on your about tab">Client Achievements</SLabel>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {(draft.achievements || []).map((a, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <Trophy style={{ width: 13, height: 13, color: '#fbbf24', flexShrink: 0 }} />
+                        <span style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{a}</span>
+                        <button onClick={() => patch('achievements', (draft.achievements || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
+                      </div>
+                    ))}
+                    <AchievementAdder onAdd={v => patch('achievements', [...(draft.achievements || []), v])} />
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['trust'] = el}>
+              <SectionCard title="Trust & Verification" icon={BadgeCheck} iconColor="#34d399">
+                <div>
+                  <SLabel>Verification Status</SLabel>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[{ key: 'id', icon: ScanFace, label: 'ID Verified' }, { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' }, { key: 'background', icon: ClipboardCheck, label: 'Background Checked' }].map(({ key, icon: Ic, label }) => {
+                      const ver = draft.verification || {}; const on = ver[key];
+                      return (
+                        <button key={key} onClick={() => patch('verification', { ...(draft.verification || {}), [key]: !on })} className="tcp-btn"
+                          style={{ flex: 1, padding: '10px 6px', borderRadius: 12, background: on ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                          <Ic style={{ width: 16, height: 16, color: on ? '#34d399' : MUTE }} />
+                          <span style={{ fontSize: 9.5, fontWeight: 800, color: on ? '#34d399' : MUTE, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: on ? '#34d399' : MUTE, opacity: 0.7 }}>{on ? '✓ Active' : '✗ Off'}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <SLabel hint="Displayed on about tab as a match percentage ring">Coach Match Score</SLabel>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input type="range" min={0} max={100} value={draft.match_score || 0} onChange={e => patch('match_score', parseInt(e.target.value))} style={{ flex: 1, accentColor: '#c084fc' }} />
+                    <div style={{ minWidth: 46, textAlign: 'right', fontSize: 15, fontWeight: 900, color: '#c084fc', letterSpacing: '-0.02em' }}>{draft.match_score || 0}%</div>
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['schedule'] = el}>
+              <SectionCard title="Availability" icon={Calendar} iconColor="#38bdf8">
+                <div>
+                  <SLabel hint="Show members when you're available each week">Weekly Schedule</SLabel>
+                  <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    {DAYS.map((day, di) => {
+                      const existing = (draft.weekly_schedule || []);
+                      const entry = existing.find(d => d.day === day) || { day, slots: [] };
+                      const slots = entry.slots || [];
+                      const toggle = (slot) => {
+                        const newSlots = slots.includes(slot) ? slots.filter(s => s !== slot) : [...slots, slot];
+                        const updated = existing.filter(d => d.day !== day);
+                        patch('weekly_schedule', [...updated, { day, slots: newSlots }]);
+                      };
+                      return (
+                        <div key={day} style={{ padding: '10px 14px', borderBottom: di < DAYS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: slots.length ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: slots.length ? 8 : 0 }}>
+                            <span style={{ width: 32, fontSize: 10, fontWeight: 800, color: slots.length ? BLUE_LT : MUTE, letterSpacing: '.08em', flexShrink: 0 }}>{day}</span>
+                            <div style={{ display: 'flex', gap: 5, overflowX: 'auto', flex: 1 }}>
+                              {TIME_SLOTS.map(slot => (
+                                <button key={slot} onClick={() => toggle(slot)} className="tcp-btn"
+                                  style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, padding: '4px 9px', borderRadius: 99, border: `1px solid ${slots.includes(slot) ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.08)'}`, background: slots.includes(slot) ? 'rgba(37,99,235,0.18)' : 'rgba(255,255,255,0.03)', color: slots.includes(slot) ? BLUE_LT : MUTE }}>
+                                  {slot}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {slots.length === 0 && <span style={{ fontSize: 10, color: MUTE, fontStyle: 'italic', paddingLeft: 42 }}>Rest day</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <SLabel hint="Quick-pick slots shown in the footer of your profile">Next Available Slots (preview)</SLabel>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {(draft.availability_slots || []).map((sl, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <Clock style={{ width: 13, height: 13, color: '#38bdf8', flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', flex: 1 }}>{sl.date} · {sl.time}</span>
+                        <span style={{ fontSize: 11, color: '#34d399', fontWeight: 700 }}>{sl.spots} spots</span>
+                        <button onClick={() => patch('availability_slots', (draft.availability_slots || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
+                      </div>
+                    ))}
+                    <SlotAdder onAdd={sl => patch('availability_slots', [...(draft.availability_slots || []), sl])} />
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['packages'] = el}>
+              <SectionCard title="Session Packages" icon={Package} iconColor="#fbbf24">
+                <SLabel hint="Packages displayed in the booking footer of your profile card">Configure packages to drive multi-session bookings</SLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {(draft.packages || []).map((pkg, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 14px', borderRadius: 14, background: pkg.popular ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pkg.popular ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.07)'}` }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '60px 80px 1fr auto', gap: 8, flex: 1, alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Sessions</div>
+                          <input className="tcp-input" type="number" value={pkg.sessions} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], sessions: parseInt(e.target.value) || 1 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Price £</div>
+                          <input className="tcp-input" type="number" value={pkg.price} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], price: parseInt(e.target.value) || 0 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Discount label</div>
+                          <input className="tcp-input" value={pkg.discount || ''} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], discount: e.target.value }; patch('packages', p); }} placeholder="e.g. Save 10%" style={{ padding: '6px 9px', fontSize: 13 }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em' }}>Popular</div>
+                          <div onClick={() => { const p = draft.packages.map((x, j) => ({ ...x, popular: j === i ? !x.popular : false })); patch('packages', p); }}
+                            className="tcp-toggle" style={{ width: 36, height: 20, borderRadius: 10, background: pkg.popular ? BLUE : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer' }}>
+                            <div style={{ position: 'absolute', top: 2, left: pkg.popular ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+                          </div>
+                        </div>
+                      </div>
+                      <button onClick={() => patch('packages', (draft.packages || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 4, flexShrink: 0 }}><Trash2 style={{ width: 14, height: 14 }} /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => patch('packages', [...(draft.packages || []), { sessions: 5, price: 400, label: '5 Pack', popular: false, discount: '' }])} className="tcp-btn"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.02)', color: MUTE, fontSize: 12, fontWeight: 700 }}>
+                    <Plus style={{ width: 13, height: 13 }} /> Add Package
+                  </button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Single Session Price (£)" value={draft.price_per_session?.toString()} onChange={v => patch('price_per_session', parseInt(v) || null)} type="number" placeholder="85" />
+                  <Field label="Sessions Completed" value={draft.sessions_completed?.toString()} onChange={v => patch('sessions_completed', parseInt(v) || 0)} type="number" placeholder="3200" />
+                </div>
+              </SectionCard>
+            </div>
+
+            <div ref={el => sectionRefs.current['settings'] = el}>
+              <SectionCard title="Settings & Visibility" icon={Shield} iconColor="#c084fc">
+                <Toggle label="Offer Free Consultation" sub="Show a 'Free Consult' CTA button on your profile" value={!!draft.free_consultation} onChange={v => patch('free_consultation', v)} />
+                <Toggle label="Show Availability Calendar" sub="Let members see your next available time slots" value={!!(draft.availability_slots?.length)} onChange={v => { if (!v) patch('availability_slots', []); }} />
+                <Toggle label="Show Coach Match Score" sub="Display personalised % match badge on your card" value={!!draft.match_score} onChange={v => { if (!v) patch('match_score', null); }} />
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <AlertCircle style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 3 }}>Booking Policy</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Cancellation and refund policies are set by the gym owner. Contact <span style={{ color: BLUE_LT }}>{selectedGym?.name}</span> to update these.</div>
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <div style={{ height: 40 }} />
+          </div>
+
+          {/* Live preview sidebar */}
+          <LivePreview draft={draft} onOpenModal={() => setShowPreviewModal(true)} />
+        </div>
+      </div>
+
+      <CoachProfileModal coach={draft} open={showPreviewModal} onClose={() => setShowPreviewModal(false)} />
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════ */
@@ -306,6 +652,7 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   const [draft, setDraft] = useState(null);
   const [dirty, setDirty] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const sectionRefs = useRef({});
 
   // ── Query: try multiple field names the Coach entity might use ──
@@ -485,328 +832,34 @@ export default function TabCoachProfile({ selectedGym, currentUser }) {
   }
 
   return (
-    <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <style>{CSS}</style>
+    <>
+      <ProfileEntryCard coach={coach || draft} onOpen={() => setEditorOpen(true)} />
 
-      {/* ── Professional page header ───────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 46, height: 46, borderRadius: 13, overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.6),rgba(37,99,235,0.3))', border: '1.5px solid rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: BLUE_LT }}>
-              {draft.avatar_url ? <img src={draft.avatar_url} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} /> : ini(draft.name)}
-            </div>
-            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '2px solid #060810' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>{draft.name || 'Your Profile'}</div>
-            <div style={{ fontSize: 12, color: SUB, marginTop: 2 }}>
-              {draft.title || 'Personal Coach'}{selectedGym?.name ? <> · <span style={{ color: BLUE_LT, fontWeight: 600 }}>{selectedGym.name}</span></> : ''}
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {dirty && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24' }} /> Unsaved changes
-            </span>
-          )}
-          {dirty && (
-            <button onClick={handleDiscard} className="tcp-btn" style={{ fontSize: 12, fontWeight: 700, color: MUTE, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>
-              Discard
-            </button>
-          )}
-          <button onClick={() => setShowPreviewModal(true)} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: BLUE_LT, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, padding: '8px 14px' }}>
-            <Eye style={{ width: 13, height: 13 }} /> Preview
-          </button>
-          <button onClick={handleSave} disabled={!dirty || updateMutation.isPending} className="tcp-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fff', background: dirty ? `linear-gradient(135deg,${BLUE},#1d4ed8)` : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '8px 18px', opacity: dirty ? 1 : 0.4, boxShadow: dirty ? '0 4px 16px rgba(37,99,235,0.4)' : 'none', transition: 'all .2s', cursor: dirty ? 'pointer' : 'default' }}>
-            {updateMutation.isPending ? <Loader2 style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 13, height: 13 }} />}
-            Save Changes
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
-
-        {/* ── Edit columns ────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* IDENTITY */}
-          <div ref={el => sectionRefs.current['identity'] = el}>
-            <SectionCard title="Identity" icon={Camera} iconColor="#38bdf8">
-              {/* Hero image upload */}
-              <div>
-                <SLabel>Hero / Cover Photo</SLabel>
-                <div style={{ position: 'relative', height: 120, borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)', cursor: 'pointer' }}>
-                  {draft.image_url && <img src={draft.image_url} alt="hero" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />}
-                  <label style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', background: draft.image_url ? 'rgba(0,0,0,0.45)' : 'transparent', transition: 'background .15s' }}>
-                    {heroUploading ? <Loader2 style={{ width: 22, height: 22, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <><Image style={{ width: 20, height: 20, color: '#fff', opacity: 0.7 }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{draft.image_url ? 'Change photo' : 'Upload cover photo'}</span></>}
-                    <input type="file" accept="image/*" onChange={handleHeroUpload} style={{ display: 'none' }} />
-                  </label>
-                </div>
-              </div>
-
-              {/* Avatar + name row */}
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <div style={{ flexShrink: 0, position: 'relative' }}>
-                  <label className="avatar-wrap" style={{ cursor: 'pointer', display: 'block' }}>
-                    <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.7),rgba(37,99,235,0.4))', border: '2.5px solid rgba(59,130,246,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: BLUE_LT, position: 'relative' }}>
-                      {draft.avatar_url ? <img src={draft.avatar_url} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} /> : ini(draft.name)}
-                      <div className="avatar-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity .15s' }}>
-                        {uploading ? <Loader2 style={{ width: 18, height: 18, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <Camera style={{ width: 18, height: 18, color: '#fff' }} />}
-                      </div>
-                    </div>
-                    <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
-                  </label>
-                  <div style={{ position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: '#22c55e', border: '2px solid #060810', boxShadow: '0 0 6px rgba(34,197,94,0.7)' }} />
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Field label="Display Name" value={draft.name} onChange={v => patch('name', v)} placeholder="Your full name" />
-                  <Field label="Professional Title" value={draft.title} onChange={v => patch('title', v)} placeholder="e.g. Elite Performance Coach" />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <Field label="Location" value={draft.location} onChange={v => patch('location', v)} placeholder="City, Country" />
-                <Field label="Member Since" value={draft.member_since} onChange={v => patch('member_since', v)} placeholder="2020" />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                <Field label="Years Experience" value={draft.experience_years?.toString()} onChange={v => patch('experience_years', parseInt(v) || 0)} type="number" placeholder="e.g. 11" />
-                <Field label="Total Clients" value={draft.total_clients?.toString()} onChange={v => patch('total_clients', parseInt(v) || 0)} type="number" placeholder="e.g. 840" />
-                <Field label="Rating (out of 5)" value={draft.rating?.toString()} onChange={v => patch('rating', parseFloat(v) || null)} type="number" placeholder="e.g. 4.9" />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <Field label="Next Available" value={draft.next_available} onChange={v => patch('next_available', v)} placeholder="Tomorrow · 7:00 AM" />
-                <Field label="Response Time" value={draft.response_time} onChange={v => patch('response_time', v)} placeholder="< 1 hr" />
-              </div>
-              <TagPicker label="Languages" items={draft.languages || []} suggestions={LANGUAGES_OPTIONS} color="#34d399"
-                onAdd={v => patch('languages', [...(draft.languages || []), v])}
-                onRemove={v => patch('languages', (draft.languages || []).filter(l => l !== v))} />
-            </SectionCard>
-          </div>
-
-          {/* BIO & PHILOSOPHY */}
-          <div ref={el => sectionRefs.current['bio'] = el}>
-            <SectionCard title="Bio & Philosophy" icon={Edit2} iconColor="#818cf8">
-              <Field label="Bio" value={draft.bio} onChange={v => patch('bio', v)} multiline rows={3} placeholder="Tell members who you are and what you do…" hint="Shown on your public profile — keep it punchy and personal." />
-              <Field label="My Approach / Training Philosophy" value={draft.philosophy} onChange={v => patch('philosophy', v)} multiline rows={4} placeholder="Describe your coaching philosophy and methodology…" hint="Shown as an italicised quote block on your profile." />
-              <TagPicker label="Specialties" items={draft.specialties || []} suggestions={SPECIALTIES_OPTIONS} color="#a78bfa" hint="Displayed as pills on your hero card"
-                onAdd={v => patch('specialties', [...(draft.specialties || []), v])}
-                onRemove={v => patch('specialties', (draft.specialties || []).filter(s => s !== v))} />
-            </SectionCard>
-          </div>
-
-          {/* CREDENTIALS */}
-          <div ref={el => sectionRefs.current['credentials'] = el}>
-            <SectionCard title="Credentials & Certifications" icon={Award} iconColor="#fbbf24">
-              <TagPicker label="Certifications" items={draft.certifications || []} suggestions={CERT_SUGGESTIONS} color="#38bdf8"
-                onAdd={v => patch('certifications', [...(draft.certifications || []), v])}
-                onRemove={v => patch('certifications', (draft.certifications || []).filter(c => c !== v))} />
-              <div>
-                <SLabel hint="Trophy items shown on your about tab">Client Achievements</SLabel>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {(draft.achievements || []).map((a, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <Trophy style={{ width: 13, height: 13, color: '#fbbf24', flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{a}</span>
-                      <button onClick={() => patch('achievements', (draft.achievements || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
-                    </div>
-                  ))}
-                  <AchievementAdder onAdd={v => patch('achievements', [...(draft.achievements || []), v])} />
-                </div>
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* TRUST SIGNALS */}
-          <div ref={el => sectionRefs.current['trust'] = el}>
-            <SectionCard title="Trust & Verification" icon={BadgeCheck} iconColor="#34d399">
-              <div>
-                <SLabel>Verification Status</SLabel>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[
-                    { key: 'id', icon: ScanFace, label: 'ID Verified' },
-                    { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' },
-                    { key: 'background', icon: ClipboardCheck, label: 'Background Checked' },
-                  ].map(({ key, icon: Ic, label }) => {
-                    const ver = draft.verification || {};
-                    const on = ver[key];
-                    return (
-                      <button key={key} onClick={() => patch('verification', { ...(draft.verification || {}), [key]: !on })} className="tcp-btn"
-                        style={{ flex: 1, padding: '10px 6px', borderRadius: 12, background: on ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                        <Ic style={{ width: 16, height: 16, color: on ? '#34d399' : MUTE }} />
-                        <span style={{ fontSize: 9.5, fontWeight: 800, color: on ? '#34d399' : MUTE, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: on ? '#34d399' : MUTE, opacity: 0.7 }}>{on ? '✓ Active' : '✗ Off'}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <SLabel hint="Displayed on about tab as a match percentage ring">Coach Match Score</SLabel>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <input type="range" min={0} max={100} value={draft.match_score || 0} onChange={e => patch('match_score', parseInt(e.target.value))}
-                    style={{ flex: 1, accentColor: '#c084fc' }} />
-                  <div style={{ minWidth: 46, textAlign: 'right', fontSize: 15, fontWeight: 900, color: '#c084fc', letterSpacing: '-0.02em' }}>{draft.match_score || 0}%</div>
-                </div>
-              </div>
-              <div>
-                <SLabel hint="Before / after transformation photos from real clients">Before & After Transformations</SLabel>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {(draft.transformations || []).map((t, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 7, overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
-                          <img src={t.before} alt="before" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <div style={{ width: 32, height: 32, borderRadius: 7, overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
-                          <img src={t.after} alt="after" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.caption}</div>
-                        <div style={{ fontSize: 11, color: MUTE }}>{t.name}</div>
-                      </div>
-                      <button onClick={() => patch('transformations', (draft.transformations || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 2 }}><Trash2 style={{ width: 13, height: 13 }} /></button>
-                    </div>
-                  ))}
-                  <div style={{ fontSize: 12, color: MUTE, padding: '8px 0' }}>
-                    <Info style={{ width: 11, height: 11, display: 'inline', marginRight: 4 }} />
-                    Add transformation images via your media library or ask your admin.
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* AVAILABILITY / SCHEDULE */}
-          <div ref={el => sectionRefs.current['schedule'] = el}>
-            <SectionCard title="Availability" icon={Calendar} iconColor="#38bdf8">
-              <div>
-                <SLabel hint="Show members when you're available each week">Weekly Schedule</SLabel>
-                <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  {DAYS.map((day, di) => {
-                    const existing = (draft.weekly_schedule || []);
-                    const entry = existing.find(d => d.day === day) || { day, slots: [] };
-                    const slots = entry.slots || [];
-                    const toggle = (slot) => {
-                      const newSlots = slots.includes(slot) ? slots.filter(s => s !== slot) : [...slots, slot];
-                      const updated = existing.filter(d => d.day !== day);
-                      patch('weekly_schedule', [...updated, { day, slots: newSlots }]);
-                    };
-                    return (
-                      <div key={day} style={{ padding: '10px 14px', borderBottom: di < DAYS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: slots.length ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: slots.length ? 8 : 0 }}>
-                          <span style={{ width: 32, fontSize: 10, fontWeight: 800, color: slots.length ? BLUE_LT : MUTE, letterSpacing: '.08em', flexShrink: 0 }}>{day}</span>
-                          <div className="cpm-hscroll" style={{ display: 'flex', gap: 5, overflowX: 'auto', flex: 1 }}>
-                            {TIME_SLOTS.map(slot => (
-                              <button key={slot} onClick={() => toggle(slot)} className="tcp-btn"
-                                style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, padding: '4px 9px', borderRadius: 99, border: `1px solid ${slots.includes(slot) ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.08)'}`, background: slots.includes(slot) ? 'rgba(37,99,235,0.18)' : 'rgba(255,255,255,0.03)', color: slots.includes(slot) ? BLUE_LT : MUTE }}>
-                                {slot}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        {slots.length === 0 && <span style={{ fontSize: 10, color: MUTE, fontStyle: 'italic', paddingLeft: 42 }}>Rest day</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <SLabel hint="Quick-pick slots shown in the footer of your profile">Next Available Slots (preview)</SLabel>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {(draft.availability_slots || []).map((sl, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <Clock style={{ width: 13, height: 13, color: '#38bdf8', flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', flex: 1 }}>{sl.date} · {sl.time}</span>
-                      <span style={{ fontSize: 11, color: '#34d399', fontWeight: 700 }}>{sl.spots} spots</span>
-                      <button onClick={() => patch('availability_slots', (draft.availability_slots || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
-                    </div>
-                  ))}
-                  <SlotAdder onAdd={sl => patch('availability_slots', [...(draft.availability_slots || []), sl])} />
-                </div>
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* PACKAGES */}
-          <div ref={el => sectionRefs.current['packages'] = el}>
-            <SectionCard title="Session Packages" icon={Package} iconColor="#fbbf24">
-              <SLabel hint="Packages displayed in the booking footer of your profile card">Configure packages to drive multi-session bookings</SLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(draft.packages || []).map((pkg, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 14px', borderRadius: 14, background: pkg.popular ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pkg.popular ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.07)'}` }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '60px 80px 1fr auto', gap: 8, flex: 1, alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Sessions</div>
-                        <input className="tcp-input" type="number" value={pkg.sessions} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], sessions: parseInt(e.target.value) || 1 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Price £</div>
-                        <input className="tcp-input" type="number" value={pkg.price} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], price: parseInt(e.target.value) || 0 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Discount label</div>
-                        <input className="tcp-input" value={pkg.discount || ''} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], discount: e.target.value }; patch('packages', p); }} placeholder="e.g. Save 10%" style={{ padding: '6px 9px', fontSize: 13 }} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE, textTransform: 'uppercase', letterSpacing: '.08em' }}>Popular</div>
-                        <div onClick={() => { const p = draft.packages.map((x, j) => ({ ...x, popular: j === i ? !x.popular : false })); patch('packages', p); }}
-                          className="tcp-toggle" style={{ width: 36, height: 20, borderRadius: 10, background: pkg.popular ? BLUE : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer' }}>
-                          <div style={{ position: 'absolute', top: 2, left: pkg.popular ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
-                        </div>
-                      </div>
-                    </div>
-                    <button onClick={() => patch('packages', (draft.packages || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE, background: 'none', border: 'none', padding: 4, flexShrink: 0 }}><Trash2 style={{ width: 14, height: 14 }} /></button>
-                  </div>
-                ))}
-                <button onClick={() => patch('packages', [...(draft.packages || []), { sessions: 5, price: 400, label: '5 Pack', popular: false, discount: '' }])} className="tcp-btn"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.02)', color: MUTE, fontSize: 12, fontWeight: 700 }}>
-                  <Plus style={{ width: 13, height: 13 }} /> Add Package
-                </button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <Field label="Single Session Price (£)" value={draft.price_per_session?.toString()} onChange={v => patch('price_per_session', parseInt(v) || null)} type="number" placeholder="85" />
-                <Field label="Sessions Completed" value={draft.sessions_completed?.toString()} onChange={v => patch('sessions_completed', parseInt(v) || 0)} type="number" placeholder="3200" />
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* SETTINGS */}
-          <div ref={el => sectionRefs.current['settings'] = el}>
-            <SectionCard title="Settings & Visibility" icon={Shield} iconColor="#c084fc">
-              <Toggle label="Offer Free Consultation" sub="Show a 'Free Consult' CTA button on your profile" value={!!draft.free_consultation} onChange={v => patch('free_consultation', v)} />
-              <Toggle label="Show Availability Calendar" sub="Let members see your next available time slots" value={!!(draft.availability_slots?.length)} onChange={v => { if (!v) patch('availability_slots', []); }} />
-              <Toggle label="Show Coach Match Score" sub="Display personalised % match badge on your card" value={!!draft.match_score} onChange={v => { if (!v) patch('match_score', null); }} />
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
-              <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <AlertCircle style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 3 }}>Booking Policy</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Cancellation and refund policies are set by the gym owner. Contact <span style={{ color: BLUE_LT }}>{selectedGym?.name}</span> to update these.</div>
-                </div>
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* bottom padding */}
-          <div style={{ height: 80 }} />
-        </div>
-
-        {/* ── Live preview ──────────────────────────────── */}
-        <LivePreview draft={draft} onOpenModal={() => setShowPreviewModal(true)} />
-      </div>
-
-
-
-      {/* ── Full profile preview modal ───────────────────── */}
-      <CoachProfileModal
-        coach={draft}
-        open={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-      />
-    </div>
+      {editorOpen && draft && (
+        <ProfileEditorOverlay
+          selectedGym={selectedGym}
+          currentUser={currentUser}
+          onClose={() => setEditorOpen(false)}
+          coach={coach}
+          draft={draft}
+          setDraft={setDraft}
+          dirty={dirty}
+          setDirty={setDirty}
+          handleSave={handleSave}
+          handleDiscard={handleDiscard}
+          uploading={uploading}
+          heroUploading={heroUploading}
+          handleAvatarUpload={handleAvatarUpload}
+          handleHeroUpload={handleHeroUpload}
+          updateMutation={updateMutation}
+          createMutation={createMutation}
+          showPreviewModal={showPreviewModal}
+          setShowPreviewModal={setShowPreviewModal}
+          sectionRefs={sectionRefs}
+          patch={patch}
+        />
+      )}
+    </>
   );
 }
 
