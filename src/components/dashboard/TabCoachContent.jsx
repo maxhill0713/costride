@@ -865,19 +865,29 @@ export default function TabCoachContent({
                 </button>
               </div>
 
-              {/* Health summary strip */}
+              {/* Health summary strip — stat-card style matching gym owner dashboard */}
               {workouts.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
                   {[
-                    { label: 'Healthy',         value: healthSummary.healthy,        color: '#10b981' },
-                    { label: 'Needs Attention',  value: healthSummary.needsAttention, color: '#f59e0b' },
-                    { label: 'Low Engagement',   value: healthSummary.lowEngagement,  color: '#ef4444' },
-                    { label: 'Not Assigned',     value: healthSummary.unassigned,     color: '#64748b' },
+                    { label: 'Healthy',        value: healthSummary.healthy,        sub: 'active & engaged' },
+                    { label: 'Needs Attention', value: healthSummary.needsAttention, sub: 'engagement dropping', clickable: true, onClick: () => {} },
+                    { label: 'Low Engagement',  value: healthSummary.lowEngagement,  sub: 'follow-up needed',   clickable: true, onClick: () => setSortBy('least_engaged') },
+                    { label: 'Not Assigned',    value: healthSummary.unassigned,     sub: 'assign to clients',  clickable: true, onClick: () => setSortBy('not_assigned') },
                   ].map((s, i) => (
-                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: DC.bgSurface, border: `1px solid ${DC.border}`, textAlign: 'center', cursor: i > 0 && s.value > 0 ? 'pointer' : 'default' }}
-                      onClick={() => { if (i === 3 && s.value > 0) setSortBy('not_assigned'); else if (i === 2 && s.value > 0) setSortBy('least_engaged'); }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
-                      <div style={{ fontSize: 9, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
+                    <div key={i}
+                      onClick={s.clickable && s.value > 0 ? s.onClick : undefined}
+                      style={{
+                        padding: '18px 18px 16px', borderRadius: 12,
+                        background: DC.bgSurface, border: `1px solid ${DC.border}`,
+                        position: 'relative', overflow: 'hidden',
+                        cursor: s.clickable && s.value > 0 ? 'pointer' : 'default',
+                        transition: 'border-color 0.15s',
+                      }}
+                      onMouseEnter={e => { if (s.clickable && s.value > 0) e.currentTarget.style.borderColor = DC.borderHi; }}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = DC.border}>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: DC.t3 }}>{s.label}</div>
+                      <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#fff', margin: '8px 0 5px' }}>{s.value}</div>
+                      <div style={{ fontSize: 11, color: DC.t3 }}>{s.sub}</div>
                     </div>
                   ))}
                 </div>
