@@ -47,7 +47,6 @@ const S = `
   /* layout */
   --sw:  220px;
   --pw:  392px;
-  --hkpi: 72px;
   --hdr-h: 52px;
   --fbar-h: 41px;
   --tb-h: 44px;
@@ -139,31 +138,40 @@ input[type="date"],input[type="time"]{ color-scheme:dark; }
 /* ── KPI BAR — top of content ────────────────────────────────────────────── */
 .kpi-bar{
   display:grid; grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  padding:16px 22px;
   border-bottom:1px solid var(--b);
   flex-shrink:0;
-  background:var(--surf);
+  background:var(--bg);
 }
 .kpi{
-  padding:14px 20px 13px;
-  border-right:1px solid var(--b);
-  transition:var(--tr); cursor:default;
+  background:var(--surf);
+  border:1px solid var(--b);
+  border-radius:12px;
+  padding:18px 18px 16px;
+  position:relative; overflow:hidden;
+  transition:border-color var(--tr); cursor:default;
 }
-.kpi:last-child{ border-right:none; }
 .kpi.clickable{ cursor:pointer; }
-.kpi.clickable:hover{ background:var(--card); }
+.kpi.clickable:hover{ border-color:var(--bhi); }
 .kpi-lbl{
-  font-size:9.5px; text-transform:uppercase; letter-spacing:.09em;
-  color:var(--t3); font-weight:600; margin-bottom:5px;
+  font-size:10px; text-transform:uppercase; letter-spacing:.10em;
+  color:var(--t3); font-weight:700; margin-bottom:0;
+}
+.kpi-icon{
+  width:26px; height:26px; border-radius:7px; flex-shrink:0;
+  background:rgba(255,255,255,0.04); border:1px solid var(--b);
+  display:flex; align-items:center; justify-content:center;
 }
 .kpi-val{
-  font-size:26px; font-weight:700; letter-spacing:-.03em;
-  line-height:1; color:#fff;
-  font-family:'DM Mono',monospace;
+  font-size:32px; font-weight:800; letter-spacing:-.04em;
+  line-height:1; color:var(--t1);
+  margin:8px 0 5px;
 }
-.kpi-sub{ font-size:10.5px; color:var(--t3); margin-top:4px; }
+.kpi-sub{ font-size:11px; color:var(--t3); display:flex; align-items:center; gap:5px; }
 .kpi-dot{
   display:inline-block; width:6px; height:6px; border-radius:50%;
-  margin-right:5px; margin-bottom:1px; vertical-align:middle;
+  margin-right:4px; margin-bottom:1px; vertical-align:middle;
 }
 
 /* ── HEADER ──────────────────────────────────────────────────────────────── */
@@ -1103,25 +1111,37 @@ export default function ClientsPage(){
           {/* ── KPI BAR ── */}
           <div className="kpi-bar">
             <div className="kpi">
-              <div className="kpi-lbl">Total Clients</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span className="kpi-lbl">Total Clients</span>
+                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 13.5a4.5 4.5 0 019 0"/><circle cx="12" cy="6" r="2"/><path d="M14.5 13a3.5 3.5 0 00-5 0"/></svg></div>
+              </div>
               <div className="kpi-val">{clients.length}</div>
               <div className="kpi-sub">assigned to you</div>
             </div>
             <div className="kpi">
-              <div className="kpi-lbl">Active This Month</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span className="kpi-lbl">Active This Month</span>
+                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><path d="M8 2v12M2 8h12" strokeLinecap="round"/></svg></div>
+              </div>
               <div className="kpi-val">{activeThisMonth}</div>
-              <div className="kpi-sub">visited at least once</div>
+              <div className="kpi-sub">visited this month</div>
             </div>
             <div className="kpi clickable" onClick={()=>setActiveF("at-risk")}>
-              <div className="kpi-lbl">At Risk</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span className="kpi-lbl">At Risk</span>
+                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><path d="M8 2l6 12H2z" strokeLinejoin="round"/><path d="M8 7v3M8 11.5v.5" strokeLinecap="round"/></svg></div>
+              </div>
               <div className="kpi-val">{atRisk}</div>
               <div className="kpi-sub">
                 <span className="kpi-dot" style={{background:"var(--red)"}}/>
-                need immediate action
+                need follow-up
               </div>
             </div>
             <div className="kpi clickable" onClick={()=>setActiveF("not-booked")}>
-              <div className="kpi-lbl">Not Booked</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span className="kpi-lbl">Not Booked</span>
+                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 2v2M11 2v2"/></svg></div>
+              </div>
               <div className="kpi-val">{notBooked}</div>
               <div className="kpi-sub">
                 <span className="kpi-dot" style={{background:"var(--amber)"}}/>
@@ -1129,7 +1149,10 @@ export default function ClientsPage(){
               </div>
             </div>
             <div className="kpi">
-              <div className="kpi-lbl">Avg No-Show Rate</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <span className="kpi-lbl">Avg No-Show Rate</span>
+                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><circle cx="8" cy="8" r="6"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" strokeLinecap="round"/></svg></div>
+              </div>
               <div className="kpi-val">0%</div>
               <div className="kpi-sub">last 30 days</div>
             </div>
