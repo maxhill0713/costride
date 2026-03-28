@@ -1098,10 +1098,7 @@ export default function ClientsPage(){
   return(
     <>
       <style>{S}</style>
-      <div className="app">
-        <Sidebar onNewClient={()=>showToast("New client flow opened")}/>
-
-        <div className="main">
+      <div className="main" style={{height:"100%"}}>
 
           {/* ── KPI BAR ── */}
           <div className="kpi-bar">
@@ -1225,7 +1222,6 @@ export default function ClientsPage(){
               onAssign={openAssign}
             />
           </div>
-        </div>
       </div>
 
       {/* ── MODALS ── */}
