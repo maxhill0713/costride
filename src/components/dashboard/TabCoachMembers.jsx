@@ -1,988 +1,892 @@
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+/* ─────────────────────────────────────────────────────────────────────────────
+   STYLES
+───────────────────────────────────────────────────────────────────────────── */
+const S = `
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b12;--surf:#0c1018;--card:#10151f;--card2:#141922;
+  --b:rgba(255,255,255,0.07);--bhi:rgba(255,255,255,0.13);
+  --blue:#3b82f6;--bd:rgba(59,130,246,0.11);--bm:rgba(59,130,246,0.22);--bb:rgba(59,130,246,0.35);
+  --green:#22c55e;--gd:rgba(34,197,94,0.1);--gb:rgba(34,197,94,0.28);
+  --amber:#f59e0b;--ad:rgba(245,158,11,0.1);--ab:rgba(245,158,11,0.28);
+  --red:#ef4444;--rd:rgba(239,68,68,0.1);--rb:rgba(239,68,68,0.28);
+  --t1:#edf1ff;--t2:#8890a8;--t3:#454d64;
+  --r:9px;--rs:6px;--f:'Outfit',sans-serif;--tr:0.14s ease;
+  --sw:218px;--pw:400px;
+}
+body{font-family:var(--f);background:var(--bg);color:var(--t1);font-size:14px}
+button,select,input{font-family:var(--f)}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.body-split{flex:1;display:flex;overflow:hidden}
 
-  :root {
-    --bg: #0a0d14;
-    --surface: #0f1320;
-    --card: #141927;
-    --card-hover: #181f30;
-    --border: rgba(255,255,255,0.07);
-    --border-active: rgba(59,130,246,0.4);
-    --text1: #f0f4ff;
-    --text2: #8b93a8;
-    --text3: #555f78;
-    --blue: #3b82f6;
-    --blue-dim: rgba(59,130,246,0.12);
-    --blue-mid: rgba(59,130,246,0.25);
-    --green: #22c55e;
-    --green-dim: rgba(34,197,94,0.1);
-    --amber: #f59e0b;
-    --amber-dim: rgba(245,158,11,0.1);
-    --red: #ef4444;
-    --red-dim: rgba(239,68,68,0.1);
-    --radius: 10px;
-    --radius-sm: 6px;
-    --font: 'Outfit', sans-serif;
-    --panel-w: 400px;
-    --sidebar-w: 220px;
-    --transition: 0.18s ease;
-  }
+/* SIDEBAR */
+.sb{width:var(--sw);flex-shrink:0;background:var(--surf);border-right:1px solid var(--b);display:flex;flex-direction:column}
+.sb-top{padding:16px 14px;border-bottom:1px solid var(--b)}
+.sb-gym{display:flex;align-items:center;gap:9px}
+.sb-ico{width:33px;height:33px;border-radius:7px;background:var(--bd);border:1px solid var(--bb);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--blue);flex-shrink:0}
+.sb-gname{font-size:13px;font-weight:700;color:var(--t1)}
+.sb-grole{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.sb-sec{padding:12px 0 4px}
+.sb-lbl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.09em;font-weight:700;padding:0 14px 5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;transition:var(--tr);border-left:2px solid transparent}
+.sb-item:hover{color:var(--t1);background:rgba(255,255,255,0.025)}
+.sb-item.on{color:var(--t1);background:var(--bd);border-left-color:var(--blue)}
+.sb-item svg{width:14px;height:14px;opacity:.6;flex-shrink:0}
+.sb-item.on svg{opacity:1}
+.sb-foot{margin-top:auto;border-top:1px solid var(--b);padding:8px 0}
+.sb-link{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--t3);cursor:pointer;transition:var(--tr)}
+.sb-link:hover{color:var(--t2)}
+.sb-link.out{color:#ef4444}
+.sb-link.out:hover{color:#f87171}
 
-  body { font-family: var(--font); background: var(--bg); color: var(--text1); font-size: 14px; min-height: 100vh; }
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--b);background:var(--surf);flex-shrink:0}
+.hdr-l h1{font-size:16.5px;font-weight:700;letter-spacing:-.01em}
+.hdr-l p{font-size:11px;color:var(--t3);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:6px}
 
-  /* Layout */
-  .layout { display: flex; height: 100vh; overflow: hidden; }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--rs);font-size:12.5px;font-weight:500;cursor:pointer;border:none;transition:var(--tr)}
+.btn-gh{background:transparent;color:var(--t2);border:1px solid var(--b)}
+.btn-gh:hover{background:rgba(255,255,255,0.04);color:var(--t1);border-color:var(--bhi)}
+.btn-pr{background:var(--blue);color:#fff}
+.btn-pr:hover{background:#2563eb}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-green{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.btn-green:hover{background:rgba(34,197,94,0.18)}
+.btn-red{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.btn-red:hover{background:rgba(239,68,68,0.18)}
+.iBtn{width:29px;height:29px;padding:0;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;background:transparent;color:var(--t2);border:1px solid var(--b);cursor:pointer;transition:var(--tr)}
+.iBtn:hover{background:rgba(255,255,255,0.04);color:var(--t1);border-color:var(--bhi)}
+.iBtn.on{background:var(--bd);border-color:var(--bb);color:var(--blue)}
+.avatar-chip{width:29px;height:29px;border-radius:50%;background:var(--bd);border:1px solid var(--bb);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;flex-shrink:0}
 
-  /* Sidebar */
-  .sidebar {
-    width: var(--sidebar-w);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    padding: 20px 0;
-  }
-  .sidebar-gym {
-    display: flex; align-items: center; gap: 10px;
-    padding: 0 18px 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
-  .gym-avatar {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: var(--blue-dim); border: 1px solid var(--border-active);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 15px; color: var(--blue); flex-shrink: 0;
-  }
-  .gym-name { font-weight: 600; font-size: 14px; color: var(--text1); line-height: 1.2; }
-  .gym-role { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--b);flex-shrink:0}
+.sc{padding:16px 20px;border-right:1px solid var(--b);background:var(--card);transition:var(--tr);cursor:default}
+.sc:last-child{border-right:none}
+.sc:hover{background:var(--card2)}
+.sc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:var(--t3);font-weight:700;margin-bottom:5px}
+.sc-val{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.sc-val.g{color:var(--green)} .sc-val.r{color:var(--red)} .sc-val.a{color:var(--amber)}
+.sc-sub{font-size:10.5px;color:var(--t3);margin-top:4px}
 
-  .nav-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 18px 6px; font-weight: 600; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 18px; cursor: pointer; color: var(--text2);
-    font-size: 13.5px; font-weight: 500; transition: var(--transition);
-    border-left: 2px solid transparent; margin: 1px 0;
-  }
-  .nav-item:hover { color: var(--text1); background: rgba(255,255,255,0.03); }
-  .nav-item.active { color: var(--text1); border-left-color: var(--blue); background: var(--blue-dim); }
-  .nav-icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
-  .nav-item.active .nav-icon { opacity: 1; }
+/* FILTER BAR */
+.fbar{display:flex;align-items:center;gap:4px;padding:9px 24px;border-bottom:1px solid var(--b);background:var(--surf);flex-shrink:0;overflow-x:auto}
+.fbar::-webkit-scrollbar{display:none}
+.ft{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1px solid var(--b);font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;white-space:nowrap;transition:var(--tr)}
+.ft:hover{color:var(--t1);border-color:var(--bhi)}
+.ft.on{color:var(--t1);background:var(--bd);border-color:var(--bb)}
+.ft .n{font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;background:rgba(255,255,255,0.07);color:var(--t2)}
+.ft.on .n{background:var(--bm);color:var(--blue)}
+.ft.rt .n{background:var(--rd);color:var(--red)}
+.ft.at .n{background:var(--ad);color:var(--amber)}
+.fdiv{width:1px;height:13px;background:var(--b);flex-shrink:0;margin:0 2px}
 
-  .sidebar-footer {
-    margin-top: auto; padding: 12px 18px 0;
-    border-top: 1px solid var(--border);
-  }
-  .sidebar-link {
-    display: flex; align-items: center; gap: 8px; padding: 7px 0;
-    font-size: 12px; color: var(--text3); cursor: pointer;
-    transition: var(--transition);
-  }
-  .sidebar-link:hover { color: var(--text2); }
-  .logout { color: #ef4444 !important; }
-  .logout:hover { color: #f87171 !important; }
+/* TOOLBAR */
+.tb{display:flex;align-items:center;gap:8px;padding:9px 24px;border-bottom:1px solid var(--b);background:var(--card);flex-shrink:0}
+.sw{flex:1;max-width:360px;position:relative}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:12px;pointer-events:none}
+.sinp{width:100%;padding:6px 10px 6px 30px;background:var(--surf);border:1px solid var(--b);border-radius:var(--rs);color:var(--t1);font-size:12.5px;outline:none;transition:var(--tr)}
+.sinp::placeholder{color:var(--t3)}
+.sinp:focus{border-color:var(--bb);background:var(--card)}
+.ssel{padding:5px 9px;background:var(--surf);border:1px solid var(--b);border-radius:var(--rs);color:var(--t2);font-size:12px;cursor:pointer;outline:none;transition:var(--tr)}
+.ssel:hover{border-color:var(--bhi);color:var(--t1)}
+.tb-r{display:flex;align-items:center;gap:5px;margin-left:auto}
 
-  /* Main */
-  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+/* LIST */
+.clist{flex:1;overflow-y:auto}
+.clist::-webkit-scrollbar{width:3px}
+.clist::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px}
+.ghdr{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:7px;padding:8px 24px 5px;background:var(--bg);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em}
+.ghdr::after{content:'';flex:1;height:1px;background:var(--b)}
+.ghdr.r{color:var(--red)} .ghdr.a{color:var(--amber)} .ghdr.g{color:var(--green)}
 
-  /* Header */
-  .header {
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--surface); flex-shrink: 0;
-  }
-  .header-left h1 { font-size: 18px; font-weight: 700; color: var(--text1); }
-  .header-left p { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .header-actions { display: flex; align-items: center; gap: 8px; }
-  .btn {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: var(--radius-sm);
-    font-family: var(--font); font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; transition: var(--transition);
-  }
-  .btn-ghost {
-    background: transparent; color: var(--text2);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--text1); }
-  .btn-primary { background: var(--blue); color: #fff; }
-  .btn-primary:hover { background: #2563eb; }
-  .avatar-btn {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--blue-dim); border: 1px solid var(--border-active);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer;
-  }
+.crow{display:flex;align-items:center;gap:12px;padding:11px 24px;border-bottom:1px solid var(--b);cursor:pointer;transition:var(--tr);border-left:2px solid transparent;position:relative}
+.crow:hover{background:rgba(255,255,255,0.018)}
+.crow.sel{background:var(--bd)}
+.crow.at-risk{border-left-color:var(--red)}
+.crow.needs-attention{border-left-color:var(--amber)}
+.crow.healthy{border-left-color:transparent}
+.crow.sel{border-left-color:var(--blue) !important}
 
-  /* Content area */
-  .content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.cav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;position:relative}
+.cring{position:absolute;inset:-2px;border-radius:50%;border:2px solid transparent}
+.rr{border-color:var(--red)} .ra{border-color:var(--amber)} .rg{border-color:transparent}
 
-  /* Stats Row */
-  .stats-row {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 1px; background: var(--border);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .stat-card {
-    background: var(--card); padding: 20px 22px;
-    display: flex; flex-direction: column; gap: 6px;
-    transition: var(--transition);
-  }
-  .stat-card:hover { background: var(--card-hover); }
-  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; }
-  .stat-value { font-size: 26px; font-weight: 700; color: var(--text1); line-height: 1; }
-  .stat-sub { font-size: 11px; color: var(--text3); }
-  .stat-accent-green { color: var(--green) !important; }
-  .stat-accent-red { color: var(--red) !important; }
-  .stat-accent-amber { color: var(--amber) !important; }
+.ci{flex:1;min-width:0}
+.cnr{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cn{font-size:13.5px;font-weight:600}
+.tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.treg{background:rgba(255,255,255,0.06);color:var(--t3)}
+.tnew{background:var(--bd);color:var(--blue)}
+.tvip{background:rgba(234,179,8,0.1);color:#eab308}
+.cm{display:flex;align-items:center;gap:12px;margin-top:3px;flex-wrap:wrap}
+.mi{display:flex;align-items:center;gap:3px;font-size:11.5px;color:var(--t2)}
+.sd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sdg{background:var(--green)} .sda{background:var(--amber)} .sdr{background:var(--red)}
+.tup{color:var(--green);font-size:11px} .tdn{color:var(--red);font-size:11px} .tfl{color:var(--t3);font-size:11px}
+.flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.fl{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px}
+.flr{background:var(--rd);color:var(--red)} .fla{background:var(--ad);color:var(--amber)} .flg{background:rgba(255,255,255,0.05);color:var(--t3)}
 
-  /* Filter bar */
-  .filter-bar {
-    padding: 14px 28px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 6px;
-    background: var(--surface); flex-shrink: 0; overflow-x: auto;
-  }
-  .filter-tab {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 12px; border-radius: 20px;
-    font-size: 12.5px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--border); color: var(--text2);
-    transition: var(--transition); white-space: nowrap;
-    background: transparent;
-  }
-  .filter-tab:hover { color: var(--text1); border-color: rgba(255,255,255,0.15); }
-  .filter-tab.active { color: var(--text1); background: var(--blue-dim); border-color: var(--border-active); }
-  .filter-tab .badge {
-    font-size: 10px; padding: 1px 5px; border-radius: 10px;
-    font-weight: 600; background: rgba(255,255,255,0.08);
-  }
-  .filter-tab.danger .badge { background: var(--red-dim); color: var(--red); }
-  .filter-tab.warning .badge { background: var(--amber-dim); color: var(--amber); }
-  .filter-tab.active .badge { background: var(--blue-mid); color: var(--blue); }
-  .filter-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.cr{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.srng{width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0}
+.srgr{background:var(--rd);color:var(--red);border:1.5px solid var(--rb)}
+.srga{background:var(--ad);color:var(--amber);border:1.5px solid var(--ab)}
+.srgg{background:var(--gd);color:var(--green);border:1.5px solid var(--gb)}
+.ract{width:27px;height:27px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;border:1px solid var(--b);background:transparent;color:var(--t3);cursor:pointer;transition:var(--tr);font-size:12px}
+.ract:hover{color:var(--t1);border-color:var(--bhi);background:rgba(255,255,255,0.04)}
+.chev{color:var(--t3);font-size:12px;transition:var(--tr)}
+.crow:hover .chev{color:var(--t2)}
 
-  /* Toolbar */
-  .toolbar {
-    padding: 12px 28px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
-    background: var(--card); flex-shrink: 0;
-  }
-  .search-wrap {
-    flex: 1; position: relative; max-width: 420px;
-  }
-  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); width: 14px; height: 14px; }
-  .search-input {
-    width: 100%; padding: 7px 12px 7px 34px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text1);
-    font-family: var(--font); font-size: 13px;
-    transition: var(--transition); outline: none;
-  }
-  .search-input::placeholder { color: var(--text3); }
-  .search-input:focus { border-color: var(--border-active); background: var(--card); }
-  .sort-select {
-    padding: 7px 10px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    color: var(--text2); font-family: var(--font); font-size: 12.5px;
-    cursor: pointer; outline: none;
-  }
-  .toolbar-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-  .icon-btn {
-    width: 30px; height: 30px; border-radius: var(--radius-sm);
-    background: var(--surface); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text2); transition: var(--transition);
-  }
-  .icon-btn:hover { color: var(--text1); border-color: rgba(255,255,255,0.15); }
-  .icon-btn.active { background: var(--blue-dim); border-color: var(--border-active); color: var(--blue); }
+.empty-list{padding:48px 24px;text-align:center;color:var(--t3);font-size:12.5px}
 
-  /* List + Panel wrapper */
-  .list-panel-wrap { flex: 1; display: flex; overflow: hidden; }
+/* PANEL */
+.panel{width:var(--pw);flex-shrink:0;background:var(--surf);border-left:1px solid var(--b);display:flex;flex-direction:column;overflow:hidden}
+@keyframes pi{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.pan{animation:pi .18s ease;display:flex;flex-direction:column;height:100%;overflow:hidden}
+.pempty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:40px 24px;text-align:center;color:var(--t3)}
+.pempty .ei{font-size:24px;opacity:.25;margin-bottom:4px}
+.pempty h4{font-size:13px;font-weight:600;color:var(--t2)}
+.pempty p{font-size:11.5px;line-height:1.6}
 
-  /* Client list */
-  .client-list { flex: 1; overflow-y: auto; padding: 0; }
-  .client-list::-webkit-scrollbar { width: 4px; }
-  .client-list::-webkit-scrollbar-track { background: transparent; }
-  .client-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.ph{padding:16px 16px 13px;border-bottom:1px solid var(--b);flex-shrink:0}
+.ph-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.phav{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.pname{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.psub{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);margin-top:3px;flex-wrap:wrap}
+.pclose{margin-left:auto;width:24px;height:24px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;color:var(--t3);cursor:pointer;border:1px solid var(--b);font-size:11px;flex-shrink:0;transition:var(--tr)}
+.pclose:hover{color:var(--t1);border-color:var(--bhi)}
+.qas{display:flex;gap:6px}
+.qa{flex:1;padding:7px 6px;background:var(--card);border:1px solid var(--b);border-radius:var(--rs);color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:4px}
+.qa:hover{background:var(--card2);color:var(--t1);border-color:var(--bhi)}
+.qa.qp{background:var(--bd);border-color:var(--bb);color:var(--blue)}
+.qa.qp:hover{background:var(--bm)}
+.qa.qbook{background:var(--gd);border-color:var(--gb);color:var(--green)}
+.qa.qbook:hover{background:rgba(34,197,94,0.18)}
 
-  .group-header {
-    padding: 10px 28px 6px;
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.09em; color: var(--text3);
-    display: flex; align-items: center; gap: 8px;
-    position: sticky; top: 0; background: var(--bg); z-index: 2;
-  }
-  .group-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.pb{flex:1;overflow-y:auto;padding:14px 16px 20px}
+.pb::-webkit-scrollbar{width:3px}
+.pb::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px}
 
-  .client-row {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 28px; cursor: pointer;
-    border-bottom: 1px solid var(--border);
-    transition: var(--transition); position: relative;
-    background: transparent;
-  }
-  .client-row:hover { background: rgba(255,255,255,0.02); }
-  .client-row.selected { background: var(--blue-dim); border-left: 2px solid var(--blue); }
-  .client-row.at-risk { border-left: 2px solid var(--red); }
-  .client-row.needs-attention { border-left: 2px solid var(--amber); }
-  .client-row.healthy { border-left: 2px solid transparent; }
-  .client-row.at-risk.selected, .client-row.needs-attention.selected { border-left-color: var(--blue); }
+.psec{margin-bottom:18px}
+.pst{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pst::after{content:'';flex:1;height:1px;background:var(--b)}
 
-  /* Avatar */
-  .client-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px; flex-shrink: 0;
-    position: relative;
-  }
-  .avatar-ring { position: absolute; inset: -2px; border-radius: 50%; border: 2px solid transparent; }
-  .status-ring-red { border-color: var(--red); }
-  .status-ring-amber { border-color: var(--amber); }
-  .status-ring-green { border-color: transparent; }
+.sbc{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px}
+.sbt{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.sbl{font-size:11.5px;color:var(--t2)}
+.sbv{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.sbtr{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.sbf{height:100%;border-radius:2px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.sblb{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--t3)}
 
-  /* Client info */
-  .client-info { flex: 1; min-width: 0; }
-  .client-name-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-  .client-name { font-weight: 600; font-size: 13.5px; color: var(--text1); }
-  .tag {
-    font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
-    text-transform: uppercase; letter-spacing: 0.04em;
-  }
-  .tag-regular { background: rgba(255,255,255,0.07); color: var(--text3); }
-  .tag-new { background: var(--blue-dim); color: var(--blue); }
-  .tag-vip { background: rgba(234,179,8,0.12); color: #eab308; }
-  .tag-lapsed { background: var(--red-dim); color: var(--red); }
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mc{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px}
+.mcl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:4px}
+.mcv{font-size:17px;font-weight:700;line-height:1;letter-spacing:-.01em}
+.mcsm{font-size:13px}
+.mcg{color:var(--green)} .mcr{color:var(--red)} .mca{color:var(--amber)}
+.mcs{font-size:10px;color:var(--t3);margin-top:2px}
 
-  .client-meta { display: flex; align-items: center; gap: 16px; margin-top: 4px; flex-wrap: wrap; }
-  .meta-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text2); }
-  .meta-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .meta-dot-green { background: var(--green); }
-  .meta-dot-amber { background: var(--amber); }
-  .meta-dot-red { background: var(--red); }
-  .meta-dot-gray { background: var(--text3); }
+.ins{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;margin-bottom:5px;border-left:3px solid transparent}
+.ins.ic{border-left-color:var(--red)} .ins.iw{border-left-color:var(--amber)} .ins.ii{border-left-color:var(--blue)}
+.insh{display:flex;align-items:flex-start;justify-content:space-between;gap:5px}
+.inst{font-size:12px;font-weight:600}
+.insb{font-size:11px;color:var(--t2);margin-top:3px;line-height:1.55}
+.insct{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--blue);font-weight:500;margin-top:6px;cursor:pointer}
+.insct:hover{text-decoration:underline}
 
-  .trend-up { color: var(--green); display: flex; align-items: center; gap: 2px; }
-  .trend-down { color: var(--red); display: flex; align-items: center; gap: 2px; }
-  .trend-flat { color: var(--text3); display: flex; align-items: center; gap: 2px; }
+.tli{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--b)}
+.tli:last-child{border-bottom:none}
+.tld{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tlv{background:var(--green)} .tlm{background:var(--red)} .tlmsg{background:var(--blue)} .tlw{background:var(--amber)}
+.tllb{font-size:12px;color:var(--t1);font-weight:500}
+.tlt{font-size:10.5px;color:var(--t3);margin-top:1px}
 
-  .flag-chip {
-    font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 4px;
-    display: inline-flex; align-items: center; gap: 3px;
-  }
-  .flag-red { background: var(--red-dim); color: var(--red); }
-  .flag-amber { background: var(--amber-dim); color: var(--amber); }
-  .flag-gray { background: rgba(255,255,255,0.05); color: var(--text3); }
+.lintb{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lirow{display:flex;flex-direction:column;gap:2px}
+.lilbl{font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.lival{font-size:12.5px;font-weight:600;color:var(--t1)}
 
-  /* Row right */
-  .row-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .score-badge {
-    width: 38px; height: 38px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; flex-shrink: 0;
-  }
-  .score-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-  .score-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
-  .score-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+/* MODAL OVERLAY */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+@keyframes mIn{from{opacity:0;transform:scale(.96)translateY(8px)}to{opacity:1;transform:scale(1)translateY(0)}}
+.modal{background:var(--surf);border:1px solid var(--b);border-radius:var(--r);width:100%;max-width:440px;animation:mIn .18s ease;overflow:hidden}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--b)}
+.mhdr h3{font-size:14.5px;font-weight:700}
+.mcls{width:26px;height:26px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;border:1px solid var(--b);color:var(--t3);cursor:pointer;font-size:12px;transition:var(--tr)}
+.mcls:hover{color:var(--t1);border-color:var(--bhi)}
+.mbody{padding:18px}
+.mfld{margin-bottom:14px}
+.mfld label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.mfld input,.mfld textarea,.mfld select{width:100%;padding:8px 10px;background:var(--card);border:1px solid var(--b);border-radius:var(--rs);color:var(--t1);font-family:var(--f);font-size:13px;outline:none;transition:var(--tr);resize:vertical}
+.mfld input:focus,.mfld textarea:focus,.mfld select:focus{border-color:var(--bb);background:var(--card2)}
+.mfld textarea{min-height:80px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid var(--b)}
 
-  .row-action {
-    width: 28px; height: 28px; border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border); background: transparent;
-    color: var(--text3); cursor: pointer; transition: var(--transition);
-  }
-  .row-action:hover { color: var(--text1); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
-  .row-chevron { color: var(--text3); transition: var(--transition); }
-  .client-row:hover .row-chevron { color: var(--text2); }
+/* TOAST */
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--card2);border:1px solid var(--b);border-radius:var(--r);padding:11px 16px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;animation:tin .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.ts{border-left:3px solid var(--green);color:var(--t1)}
 
-  /* ── DETAIL PANEL ── */
-  .detail-panel {
-    width: var(--panel-w);
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow: hidden; flex-shrink: 0;
-    animation: slideIn 0.22s ease;
-  }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+/* TOGGLE GROUP */
+.tgl{display:flex;gap:0;border:1px solid var(--b);border-radius:var(--rs);overflow:hidden}
+.tgl-btn{padding:5px 10px;background:transparent;color:var(--t2);border:none;cursor:pointer;font-size:12px;transition:var(--tr);font-family:var(--f)}
+.tgl-btn:hover{background:rgba(255,255,255,0.04);color:var(--t1)}
+.tgl-btn.on{background:var(--bd);color:var(--blue)}
 
-  .panel-header {
-    padding: 18px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .panel-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .panel-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 16px; flex-shrink: 0;
-  }
-  .panel-name { font-size: 15px; font-weight: 700; color: var(--text1); }
-  .panel-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .panel-close {
-    margin-left: auto; width: 26px; height: 26px; border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text3); border: 1px solid var(--border);
-    transition: var(--transition);
-  }
-  .panel-close:hover { color: var(--text1); }
-
-  .quick-actions { display: flex; gap: 8px; }
-  .qa-btn {
-    flex: 1; padding: 7px 10px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text2);
-    font-family: var(--font); font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: var(--transition);
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-  }
-  .qa-btn:hover { background: var(--card-hover); color: var(--text1); border-color: rgba(255,255,255,0.14); }
-  .qa-btn.primary { background: var(--blue-dim); border-color: var(--border-active); color: var(--blue); }
-  .qa-btn.primary:hover { background: var(--blue-mid); }
-
-  /* Panel body */
-  .panel-body { flex: 1; overflow-y: auto; padding: 16px 20px 20px; }
-  .panel-body::-webkit-scrollbar { width: 3px; }
-  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .panel-section { margin-bottom: 22px; }
-  .panel-section-title {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.09em; color: var(--text3); margin-bottom: 10px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  /* Metrics grid */
-  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .metric-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 12px 14px;
-  }
-  .metric-card-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-  .metric-card-value { font-size: 20px; font-weight: 700; color: var(--text1); margin-top: 4px; line-height: 1; }
-  .metric-card-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
-
-  /* Insights */
-  .insight-item {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 11px 13px; margin-bottom: 7px;
-    border-left: 3px solid transparent;
-  }
-  .insight-item.critical { border-left-color: var(--red); }
-  .insight-item.warning { border-left-color: var(--amber); }
-  .insight-item.info { border-left-color: var(--blue); }
-
-  .insight-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .insight-title { font-size: 12.5px; font-weight: 600; color: var(--text1); }
-  .insight-body { font-size: 11.5px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
-  .insight-action {
-    margin-top: 8px; font-size: 11.5px; color: var(--blue); cursor: pointer;
-    display: inline-flex; align-items: center; gap: 4px; font-weight: 500;
-  }
-  .insight-action:hover { text-decoration: underline; }
-
-  /* Timeline */
-  .timeline-item {
-    display: flex; gap: 12px; padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .timeline-item:last-child { border-bottom: none; }
-  .timeline-dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
-  }
-  .tl-visit { background: var(--green); }
-  .tl-miss { background: var(--red); }
-  .tl-msg { background: var(--blue); }
-  .tl-workout { background: var(--amber); }
-  .timeline-content { flex: 1; }
-  .tl-title { font-size: 12.5px; color: var(--text1); font-weight: 500; }
-  .tl-time { font-size: 11px; color: var(--text3); margin-top: 1px; }
-
-  /* Retention score bar */
-  .score-bar-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
-  .score-bar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .score-bar-label { font-size: 12px; font-weight: 500; color: var(--text2); }
-  .score-bar-value { font-size: 22px; font-weight: 700; }
-  .score-bar-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-
-  /* Empty panel */
-  .empty-panel {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 10px;
-    color: var(--text3); padding: 40px 30px; text-align: center;
-  }
-  .empty-icon { font-size: 28px; opacity: 0.4; }
-  .empty-title { font-size: 14px; font-weight: 600; color: var(--text2); }
-  .empty-sub { font-size: 12px; line-height: 1.6; }
-
-  /* Responsive scroll fix */
-  @media (max-width: 900px) { .detail-panel { width: 320px; } }
+/* NO SHOW banner */
+.ns-banner{background:var(--rd);border:1px solid var(--rb);border-radius:var(--rs);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.ns-txt{font-size:11.5px;color:var(--red);font-weight:500}
 `;
 
-// ─── DATA ───────────────────────────────────────────────────────────────────
-const clients = [
+/* ─── DATA ──────────────────────────────────────────────────────────────────── */
+const INIT_CLIENTS = [
   {
-    id: 1,
-    name: "Max Hill",
-    initials: "MH",
-    avatarColor: "#1e3a5f",
-    tags: ["Regular"],
-    status: "at-risk",
-    score: 28,
-    trend: "down",
-    lastVisit: "8d ago",
-    visitsPerWeek: 0.8,
-    completionPct: 0,
-    lastMessage: "12d ago",
-    flags: ["no-visit", "declining", "low-workout"],
-    insights: [
-      { level: "critical", title: "No visit in 8 days", body: "Client's longest gap in 3 months. At serious risk of lapsing.", action: "Book a session now" },
-      { level: "critical", title: "Workout completion dropped to 0%", body: "Last 3 assigned workouts not completed.", action: "Simplify current programme" },
-      { level: "warning", title: "No message in 12 days", body: "Last interaction was 12 days ago — client may feel neglected.", action: "Send a check-in message" },
+    id:1, name:"Max Hill", initials:"MH", bg:"#1a1040",
+    tags:["Regular"],
+    status:"at-risk", score:24, trend:"down",
+    lastVisit:"8d ago", lvDays:8, vpw:0.8, completion:0,
+    lastMsg:"12d ago", lastAct:"8 days ago",
+    booked:false, streak:0, total:6,
+    phone:"+44 7700 900001", email:"max.hill@example.com",
+    flags:["no-visit","declining","low-workout"],
+    notes:"Showed strong commitment in first 6 weeks. Drop-off coincides with job change.",
+    insights:[
+      {lv:"ic",title:"No visit in 8 days",body:"Longest gap in 3 months — serious lapse risk.",cta:"Book a session now"},
+      {lv:"ic",title:"Workout completion 0%",body:"Last 3 assigned workouts uncompleted.",cta:"Simplify programme"},
+      {lv:"iw",title:"No contact in 12 days",body:"Client may feel neglected without recent outreach.",cta:"Send check-in message"},
     ],
-    timeline: [
-      { type: "miss", label: "Missed session", time: "2 days ago" },
-      { type: "miss", label: "Missed session", time: "5 days ago" },
-      { type: "visit", label: "Gym visit", time: "8 days ago" },
-      { type: "workout", label: "Workout not completed", time: "9 days ago" },
-      { type: "msg", label: "Message sent by coach", time: "12 days ago" },
-      { type: "visit", label: "Gym visit", time: "15 days ago" },
+    timeline:[
+      {tp:"m",lb:"Missed booked session",tm:"2 days ago"},
+      {tp:"m",lb:"Missed booked session",tm:"5 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"8 days ago"},
+      {tp:"w",lb:"Workout not completed",tm:"9 days ago"},
+      {tp:"msg",lb:"Coach sent message",tm:"12 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"15 days ago"},
     ],
-    metrics: { totalVisits: 6, streak: 0, bookedNext: false, avgPerMonth: 3 }
   },
   {
-    id: 2,
-    name: "Hddbdh Xhxhxg",
-    initials: "HX",
-    avatarColor: "#1e3f2a",
-    tags: ["Regular", "New"],
-    status: "needs-attention",
-    score: 51,
-    trend: "flat",
-    lastVisit: "4d ago",
-    visitsPerWeek: 1.0,
-    completionPct: 40,
-    lastMessage: "5d ago",
-    flags: ["not-booked"],
-    insights: [
-      { level: "warning", title: "No session booked this week", body: "Client has not booked any upcoming sessions.", action: "Suggest available slots" },
-      { level: "warning", title: "Visit frequency below target", body: "Currently averaging 1.0/wk vs 2.0/wk target.", action: "Review schedule barriers" },
+    id:2, name:"Priya Sharma", initials:"PS", bg:"#0e2820",
+    tags:["Regular","New"],
+    status:"needs-attention", score:50, trend:"flat",
+    lastVisit:"4d ago", lvDays:4, vpw:1.0, completion:40,
+    lastMsg:"5d ago", lastAct:"4 days ago",
+    booked:false, streak:1, total:8,
+    phone:"+44 7700 900002", email:"priya.sharma@example.com",
+    flags:["not-booked"],
+    notes:"Joined referral from Emma. Interested in weight management programme.",
+    insights:[
+      {lv:"iw",title:"No session booked this week",body:"No upcoming sessions in the schedule.",cta:"Suggest available slots"},
+      {lv:"iw",title:"Visit frequency below target",body:"Averaging 1.0/wk vs 2.0/wk goal.",cta:"Review schedule barriers"},
     ],
-    timeline: [
-      { type: "visit", label: "Gym visit", time: "4 days ago" },
-      { type: "workout", label: "Workout partially completed", time: "4 days ago" },
-      { type: "msg", label: "Message received from client", time: "5 days ago" },
-      { type: "visit", label: "Gym visit", time: "11 days ago" },
+    timeline:[
+      {tp:"v",lb:"Gym visit",tm:"4 days ago"},
+      {tp:"w",lb:"Workout partially completed",tm:"4 days ago"},
+      {tp:"msg",lb:"Client sent message",tm:"5 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"11 days ago"},
     ],
-    metrics: { totalVisits: 8, streak: 1, bookedNext: false, avgPerMonth: 4 }
   },
   {
-    id: 3,
-    name: "Max Hill",
-    initials: "MH",
-    avatarColor: "#2a1e3f",
-    tags: ["Regular", "New"],
-    status: "needs-attention",
-    score: 62,
-    trend: "down",
-    lastVisit: "4d ago",
-    visitsPerWeek: 3.8,
-    completionPct: 0,
-    lastMessage: "3d ago",
-    flags: ["low-workout"],
-    insights: [
-      { level: "warning", title: "Workouts not being completed", body: "High attendance but 0% workout completion this month.", action: "Check workout difficulty" },
-      { level: "info", title: "Attendance is strong", body: "3.8 visits/wk is above average — capitalize on this.", action: "Assign progressive programme" },
+    id:3, name:"Jordan Blake", initials:"JB", bg:"#1a1030",
+    tags:["Regular","New"],
+    status:"needs-attention", score:61, trend:"down",
+    lastVisit:"4d ago", lvDays:4, vpw:3.8, completion:0,
+    lastMsg:"3d ago", lastAct:"3 days ago",
+    booked:true, streak:4, total:22,
+    phone:"+44 7700 900003", email:"jordan.blake@example.com",
+    flags:["low-workout"],
+    notes:"High attendance but not engaging with assigned workouts. May need in-person guidance.",
+    insights:[
+      {lv:"iw",title:"Workouts not being completed",body:"High attendance but 0% workout completion.",cta:"Check workout difficulty"},
+      {lv:"ii",title:"Attendance is above average",body:"3.8 visits/wk — capitalise with a progressive plan.",cta:"Assign new programme"},
     ],
-    timeline: [
-      { type: "visit", label: "Gym visit", time: "4 days ago" },
-      { type: "workout", label: "Workout not completed", time: "4 days ago" },
-      { type: "msg", label: "Message sent by coach", time: "3 days ago" },
-      { type: "visit", label: "Gym visit", time: "5 days ago" },
-      { type: "visit", label: "Gym visit", time: "6 days ago" },
+    timeline:[
+      {tp:"v",lb:"Gym visit",tm:"4 days ago"},
+      {tp:"w",lb:"Workout not completed",tm:"4 days ago"},
+      {tp:"msg",lb:"Coach sent message",tm:"3 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"5 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"6 days ago"},
     ],
-    metrics: { totalVisits: 22, streak: 4, bookedNext: true, avgPerMonth: 16 }
   },
   {
-    id: 4,
-    name: "Matthew Mottershead",
-    initials: "MM",
-    avatarColor: "#1e2f3f",
-    tags: ["Regular"],
-    status: "healthy",
-    score: 84,
-    trend: "up",
-    lastVisit: "3d ago",
-    visitsPerWeek: 1.3,
-    completionPct: 75,
-    lastMessage: "2d ago",
-    flags: [],
-    insights: [
-      { level: "info", title: "Consistent engagement", body: "Client has maintained steady visits and strong workout completion.", action: "Consider progression plan" },
+    id:4, name:"Matthew Mottershead", initials:"MM", bg:"#0a1828",
+    tags:["Regular"],
+    status:"healthy", score:83, trend:"up",
+    lastVisit:"3d ago", lvDays:3, vpw:1.3, completion:75,
+    lastMsg:"1d ago", lastAct:"1 day ago",
+    booked:true, streak:3, total:18,
+    phone:"+44 7700 900004", email:"m.mottershead@example.com",
+    flags:[],
+    notes:"Consistent and self-motivated. Approaching target weight — discuss next phase.",
+    insights:[
+      {lv:"ii",title:"Consistent engagement",body:"Steady visits and strong completion rate.",cta:"Plan next progression phase"},
     ],
-    timeline: [
-      { type: "visit", label: "Gym visit", time: "3 days ago" },
-      { type: "workout", label: "Workout completed", time: "3 days ago" },
-      { type: "msg", label: "Message sent by coach", time: "2 days ago" },
-      { type: "msg", label: "Message received from client", time: "1 day ago" },
-      { type: "visit", label: "Gym visit", time: "7 days ago" },
+    timeline:[
+      {tp:"msg",lb:"Client replied",tm:"1 day ago"},
+      {tp:"v",lb:"Gym visit",tm:"3 days ago"},
+      {tp:"w",lb:"Workout completed",tm:"3 days ago"},
+      {tp:"msg",lb:"Coach sent message",tm:"2 days ago"},
+      {tp:"v",lb:"Gym visit",tm:"7 days ago"},
     ],
-    metrics: { totalVisits: 18, streak: 3, bookedNext: true, avgPerMonth: 6 }
   },
 ];
 
 const FILTERS = [
-  { id: "all", label: "All Clients", count: 4 },
-  { id: "at-risk", label: "At Risk", count: 1, danger: true },
-  { id: "not-booked", label: "Not Booked", count: 2, warning: true },
-  { id: "low-engagement", label: "Low Engagement", count: 2, warning: true },
-  { id: "recently-inactive", label: "Recently Inactive", count: 1 },
-  { id: "new", label: "New", count: 2 },
-  { id: "vip", label: "VIP", count: 0 },
-  { id: "healthy", label: "Active", count: 1 },
-  { id: "lapsed", label: "Lapsed", count: 0 },
-  { id: "birthdays", label: "Birthdays", count: 0 },
+  {id:"all",     label:"All Clients",       cls:"",   fn:()=>true},
+  {id:"at-risk", label:"At Risk",            cls:"rt", fn:c=>c.status==="at-risk"},
+  {id:"not-booked",label:"Not Booked",       cls:"at", fn:c=>!c.booked},
+  {id:"low-eng", label:"Low Engagement",     cls:"at", fn:c=>c.completion<50},
+  {id:"inactive",label:"Recently Inactive",  cls:"",   fn:c=>c.lvDays>=5},
+  null,
+  {id:"new",   label:"New",    cls:"", fn:c=>c.tags.includes("New")},
+  {id:"vip",   label:"VIP",    cls:"", fn:c=>c.tags.includes("VIP")},
+  {id:"active",label:"Active", cls:"", fn:c=>c.status==="healthy"},
+  {id:"lapsed",label:"Lapsed", cls:"", fn:c=>c.tags.includes("Lapsed")},
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function StatusDot({ status }) {
-  const colors = { "at-risk": "#ef4444", "needs-attention": "#f59e0b", healthy: "#22c55e" };
-  return <span style={{ width: 7, height: 7, borderRadius: "50%", background: colors[status], display: "inline-block", flexShrink: 0 }} />;
-}
+/* ─── SMALL HELPERS ─────────────────────────────────────────────────────────── */
+const statusLabel = s => s==="at-risk"?"At Risk":s==="needs-attention"?"Needs Attention":"Healthy";
+const scoreCls    = s => s==="at-risk"?"srgr":s==="needs-attention"?"srga":"srgg";
+const ringCls     = s => s==="at-risk"?"rr":s==="needs-attention"?"ra":"rg";
+const dotCls      = s => s==="at-risk"?"sdr":s==="needs-attention"?"sda":"sdg";
+const scoreColor  = s => s==="at-risk"?"var(--red)":s==="needs-attention"?"var(--amber)":"var(--green)";
+const tlDotCls    = t => ({v:"tlv",m:"tlm",msg:"tlmsg",w:"tlw"}[t]||"tlv");
 
-function TrendIcon({ trend }) {
-  if (trend === "up") return <span className="trend-up" style={{ fontSize: 11 }}>↑ Improving</span>;
-  if (trend === "down") return <span className="trend-down" style={{ fontSize: 11 }}>↓ Declining</span>;
-  return <span className="trend-flat" style={{ fontSize: 11 }}>— Stable</span>;
+function Trend({t}){
+  if(t==="up")   return <span className="tup">↑ Improving</span>;
+  if(t==="down") return <span className="tdn">↓ Declining</span>;
+  return <span className="tfl">— Stable</span>;
 }
-
-function ScoreBadge({ score, status }) {
-  const cls = status === "at-risk" ? "score-red" : status === "needs-attention" ? "score-amber" : "score-green";
-  return <div className={`score-badge ${cls}`}>{score}</div>;
+function InsIco({lv}){
+  const c=lv==="ic"?"var(--red)":lv==="iw"?"var(--amber)":"var(--blue)";
+  const s=lv==="ic"?"⚠":lv==="iw"?"◉":"ℹ";
+  return <span style={{color:c,fontSize:12,flexShrink:0}}>{s}</span>;
 }
-
-function FlagChips({ flags }) {
-  const map = {
-    "no-visit": { label: "No visit this week", cls: "flag-red" },
-    "declining": { label: "Declining", cls: "flag-amber" },
-    "low-workout": { label: "Low workout", cls: "flag-amber" },
-    "not-booked": { label: "Not booked", cls: "flag-gray" },
+function FlagChips({flags}){
+  const map={
+    "no-visit":{l:"No visit this week",c:"flr"},
+    "declining":{l:"Declining",c:"fla"},
+    "low-workout":{l:"Low workout",c:"fla"},
+    "not-booked":{l:"Not booked",c:"flg"},
   };
-  return (
-    <span style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-      {flags.map(f => map[f] ? <span key={f} className={`flag-chip ${map[f].cls}`}>{map[f].label}</span> : null)}
-    </span>
+  if(!flags.length) return null;
+  return <div className="flags">{flags.map(f=>map[f]?<span key={f} className={`fl ${map[f].c}`}>{map[f].l}</span>:null)}</div>;
+}
+
+/* ─── TOAST ─────────────────────────────────────────────────────────────────── */
+function Toast({msg,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,2800);return()=>clearTimeout(t)},[onDone]);
+  return <div className="toast ts">✓ {msg}</div>;
+}
+
+/* ─── MODALS ─────────────────────────────────────────────────────────────────── */
+function MessageModal({client,onClose,onSend}){
+  const [msg,setMsg]=useState(`Hi ${client.name.split(" ")[0]}, just checking in — how are you getting on?`);
+  return(
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="mhdr">
+          <h3>Message — {client.name}</h3>
+          <div className="mcls" onClick={onClose}>✕</div>
+        </div>
+        <div className="mbody">
+          <div className="mfld">
+            <label>To</label>
+            <input readOnly value={`${client.name} · ${client.email}`}/>
+          </div>
+          <div className="mfld">
+            <label>Message</label>
+            <textarea value={msg} onChange={e=>setMsg(e.target.value)}/>
+          </div>
+        </div>
+        <div className="mfoot">
+          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
+          <button className="btn btn-pr btn-sm" onClick={()=>{onSend(`Message sent to ${client.name}`);onClose();}}>Send Message</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function TlDot({ type }) {
-  const cls = { visit: "tl-visit", miss: "tl-miss", msg: "tl-msg", workout: "tl-workout" };
-  return <span className={`timeline-dot ${cls[type] || "tl-visit"}`} />;
+function BookModal({client,onClose,onSend}){
+  const [date,setDate]=useState("");
+  const [time,setTime]=useState("09:00");
+  const [type,setType]=useState("1-to-1 Session");
+  return(
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="mhdr">
+          <h3>Book Session — {client.name}</h3>
+          <div className="mcls" onClick={onClose}>✕</div>
+        </div>
+        <div className="mbody">
+          <div className="mfld">
+            <label>Session Type</label>
+            <select value={type} onChange={e=>setType(e.target.value)}>
+              <option>1-to-1 Session</option>
+              <option>Group Class</option>
+              <option>Online Check-in</option>
+              <option>Assessment</option>
+            </select>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <div className="mfld">
+              <label>Date</label>
+              <input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
+            </div>
+            <div className="mfld">
+              <label>Time</label>
+              <input type="time" value={time} onChange={e=>setTime(e.target.value)}/>
+            </div>
+          </div>
+          <div className="mfld">
+            <label>Notes (optional)</label>
+            <textarea placeholder="Any focus areas or goals for this session..."/>
+          </div>
+        </div>
+        <div className="mfoot">
+          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
+          <button className="btn btn-pr btn-sm" onClick={()=>{
+            if(!date){alert("Please select a date");return;}
+            onSend(`Session booked for ${client.name}`);onClose();
+          }}>Confirm Booking</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function InsightLevelIcon({ level }) {
-  if (level === "critical") return <span style={{ fontSize: 13, color: "var(--red)" }}>⚠</span>;
-  if (level === "warning") return <span style={{ fontSize: 13, color: "var(--amber)" }}>◉</span>;
-  return <span style={{ fontSize: 13, color: "var(--blue)" }}>ℹ</span>;
+function AssignModal({client,onClose,onSend}){
+  const [prog,setProg]=useState("Strength Foundation");
+  const [note,setNote]=useState("");
+  const progs=["Strength Foundation","Fat Loss Phase 1","Hypertrophy Block","Cardio Endurance","Flexibility & Mobility","Custom Programme"];
+  return(
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="mhdr">
+          <h3>Assign Workout — {client.name}</h3>
+          <div className="mcls" onClick={onClose}>✕</div>
+        </div>
+        <div className="mbody">
+          <div className="mfld">
+            <label>Programme</label>
+            <select value={prog} onChange={e=>setProg(e.target.value)}>
+              {progs.map(p=><option key={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="mfld">
+            <label>Coach Note</label>
+            <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Add guidance or context for this assignment..."/>
+          </div>
+        </div>
+        <div className="mfoot">
+          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
+          <button className="btn btn-pr btn-sm" onClick={()=>{onSend(`"${prog}" assigned to ${client.name}`);onClose();}}>Assign Workout</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
-function Sidebar({ activePage }) {
-  const nav = [
-    { id: "today", label: "Today", icon: "◈" },
-    { id: "clients", label: "Clients", icon: "⊡" },
-    { id: "schedule", label: "Schedule", icon: "▦" },
-    { id: "content", label: "Content", icon: "❑" },
-    { id: "profile", label: "Profile", icon: "◎" },
+function NoShowModal({client,onClose,onConfirm}){
+  return(
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="mhdr">
+          <h3>Mark No-Show — {client.name}</h3>
+          <div className="mcls" onClick={onClose}>✕</div>
+        </div>
+        <div className="mbody">
+          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>
+            Marking this client as a no-show will update their attendance record and retention score. This action can affect their engagement status.
+          </p>
+          <div style={{marginTop:14}}>
+            <div className="mfld">
+              <label>Session</label>
+              <input readOnly value="Today's session"/>
+            </div>
+          </div>
+        </div>
+        <div className="mfoot">
+          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
+          <button className="btn btn-red btn-sm" onClick={()=>{onConfirm();onClose();}}>Confirm No-Show</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────────────────────── */
+function Sidebar(){
+  const nav=[
+    {id:"today",icon:<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>,label:"Today"},
+    {id:"clients",icon:<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>,label:"Clients"},
+    {id:"schedule",icon:<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 2v2M11 2v2"/></svg>,label:"Schedule"},
+    {id:"content",icon:<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>,label:"Content"},
+    {id:"profile",icon:<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 13.5a5.5 5.5 0 0111 0"/></svg>,label:"Profile"},
   ];
-  return (
-    <div className="sidebar">
-      <div className="sidebar-gym">
-        <div className="gym-avatar">F</div>
-        <div>
-          <div className="gym-name">Foundry Gym</div>
-          <div className="gym-role">Coach</div>
+  return(
+    <div className="sb">
+      <div className="sb-top">
+        <div className="sb-gym">
+          <div className="sb-ico">F</div>
+          <div><div className="sb-gname">Foundry Gym</div><div className="sb-grole">Coach</div></div>
         </div>
       </div>
-      <div className="nav-label">Navigation</div>
-      {nav.map(n => (
-        <div key={n.id} className={`nav-item ${activePage === n.id ? "active" : ""}`}>
-          <span className="nav-icon">{n.icon}</span>
-          {n.label}
-        </div>
-      ))}
-      <div className="sidebar-footer">
-        <div className="sidebar-link">⊞ View Gym Page</div>
-        <div className="sidebar-link">⊟ Member View</div>
-        <div className="sidebar-link logout">↩ Log Out</div>
+      <div className="sb-sec">
+        <div className="sb-lbl">Navigation</div>
+        {nav.map(n=>(
+          <div key={n.id} className={`sb-item${n.id==="clients"?" on":""}`}>
+            <svg viewBox="0 0 16 16" style={{width:14,height:14}}>{n.icon.props.children}</svg>
+            {n.label}
+          </div>
+        ))}
       </div>
-    </div>
-  );
-}
-
-// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
-function DetailPanel({ client, onClose }) {
-  if (!client) {
-    return (
-      <div className="detail-panel" style={{ width: "var(--panel-w)" }}>
-        <div className="empty-panel">
-          <div className="empty-icon">⊡</div>
-          <div className="empty-title">No client selected</div>
-          <div className="empty-sub">Click a client row to view their full profile, insights, and engagement history.</div>
-        </div>
-      </div>
-    );
-  }
-
-  const scoreColor = client.status === "at-risk" ? "var(--red)" : client.status === "needs-attention" ? "var(--amber)" : "var(--green)";
-  const barFill = `linear-gradient(90deg, ${scoreColor} 0%, ${scoreColor}88 100%)`;
-
-  return (
-    <div className="detail-panel">
-      {/* Header */}
-      <div className="panel-header">
-        <div className="panel-header-top">
-          <div className="panel-avatar" style={{ background: client.avatarColor }}>
-            {client.initials}
-          </div>
-          <div>
-            <div className="panel-name">{client.name}</div>
-            <div className="panel-sub" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <StatusDot status={client.status} />
-              <span style={{ textTransform: "capitalize" }}>{client.status.replace("-", " ")}</span>
-              <span style={{ color: "var(--text3)" }}>·</span>
-              <TrendIcon trend={client.trend} />
-            </div>
-          </div>
-          <div className="panel-close" onClick={onClose}>✕</div>
-        </div>
-        <div className="quick-actions">
-          <button className="qa-btn primary">✉ Message</button>
-          <button className="qa-btn">📅 Book</button>
-          <button className="qa-btn">⊕ Assign</button>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="panel-body">
-
-        {/* Retention Score */}
-        <div className="panel-section">
-          <div className="panel-section-title">Retention Score</div>
-          <div className="score-bar-wrap">
-            <div className="score-bar-header">
-              <div className="score-bar-label">Overall health score</div>
-              <div className="score-bar-value" style={{ color: scoreColor }}>{client.score}</div>
-            </div>
-            <div className="score-bar-track">
-              <div className="score-bar-fill" style={{ width: `${client.score}%`, background: barFill }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Metrics */}
-        <div className="panel-section">
-          <div className="panel-section-title">Key Metrics</div>
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-card-label">Last Visit</div>
-              <div className="metric-card-value" style={{ fontSize: 16 }}>{client.lastVisit}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card-label">Visits / Week</div>
-              <div className="metric-card-value">{client.visitsPerWeek}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card-label">Completion</div>
-              <div className="metric-card-value">{client.completionPct}%</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card-label">Streak</div>
-              <div className="metric-card-value">{client.metrics.streak}<span style={{ fontSize: 13 }}> wks</span></div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card-label">Last Message</div>
-              <div className="metric-card-value" style={{ fontSize: 15 }}>{client.lastMessage}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-card-label">Next Session</div>
-              <div className="metric-card-value" style={{ fontSize: 14, color: client.metrics.bookedNext ? "var(--green)" : "var(--red)" }}>
-                {client.metrics.bookedNext ? "Booked" : "Not booked"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Insights */}
-        <div className="panel-section">
-          <div className="panel-section-title">Insights</div>
-          {client.insights.map((ins, i) => (
-            <div key={i} className={`insight-item ${ins.level}`}>
-              <div className="insight-header">
-                <div className="insight-title">{ins.title}</div>
-                <InsightLevelIcon level={ins.level} />
-              </div>
-              <div className="insight-body">{ins.body}</div>
-              <div className="insight-action">→ {ins.action}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Engagement Timeline */}
-        <div className="panel-section">
-          <div className="panel-section-title">Recent Activity</div>
-          {client.timeline.map((tl, i) => (
-            <div key={i} className="timeline-item">
-              <TlDot type={tl.type} />
-              <div className="timeline-content">
-                <div className="tl-title">{tl.label}</div>
-                <div className="tl-time">{tl.time}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
+      <div className="sb-foot">
+        <div className="sb-link">⊞ View Gym Page</div>
+        <div className="sb-link">⊟ Member View</div>
+        <div className="sb-link out">↩ Log Out</div>
       </div>
     </div>
   );
 }
 
-// ─── CLIENT ROW ───────────────────────────────────────────────────────────────
-function ClientRow({ client, selected, onClick }) {
-  const ringCls = client.status === "at-risk" ? "status-ring-red" : client.status === "needs-attention" ? "status-ring-amber" : "status-ring-green";
-  return (
-    <div
-      className={`client-row ${client.status} ${selected ? "selected" : ""}`}
-      onClick={onClick}
-    >
-      {/* Avatar */}
-      <div className="client-avatar" style={{ background: client.avatarColor }}>
-        <div className={`avatar-ring ${ringCls}`} />
-        {client.initials}
-      </div>
-
-      {/* Info */}
-      <div className="client-info">
-        <div className="client-name-row">
-          <span className="client-name">{client.name}</span>
-          {client.tags.map(t => (
-            <span key={t} className={`tag tag-${t.toLowerCase()}`}>{t}</span>
-          ))}
-        </div>
-        <div className="client-meta">
-          <div className="meta-item">
-            <span className={`meta-dot meta-dot-${client.status === "healthy" ? "green" : client.status === "needs-attention" ? "amber" : "red"}`} />
-            <span>{client.lastVisit}</span>
-          </div>
-          <div className="meta-item">{client.visitsPerWeek}/wk avg</div>
-          <div className="meta-item">{client.completionPct}% completion</div>
-          <TrendIcon trend={client.trend} />
-        </div>
-        {client.flags.length > 0 && (
-          <div style={{ marginTop: 5 }}>
-            <FlagChips flags={client.flags} />
-          </div>
-        )}
-      </div>
-
-      {/* Right */}
-      <div className="row-right">
-        <ScoreBadge score={client.score} status={client.status} />
-        <div className="row-action" title="Message">✉</div>
-        <div className="row-action" title="Book">📅</div>
-        <div className="row-chevron">›</div>
+/* ─── DETAIL PANEL ────────────────────────────────────────────────────────────── */
+function DetailPanel({client,onClose,onMsg,onBook,onAssign}){
+  if(!client) return(
+    <div className="panel">
+      <div className="pempty">
+        <div className="ei">⊡</div>
+        <h4>No client selected</h4>
+        <p>Click any client row to view their full profile, insights and engagement history.</p>
       </div>
     </div>
   );
-}
-
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-export default function ClientsPage() {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedId, setSelectedId] = useState(null);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("priority");
-
-  const selectedClient = clients.find(c => c.id === selectedId) || null;
-
-  const filterMap = {
-    "all": () => true,
-    "at-risk": c => c.status === "at-risk",
-    "needs-attention": c => c.status === "needs-attention",
-    "healthy": c => c.status === "healthy",
-    "not-booked": c => !c.metrics.bookedNext,
-    "low-engagement": c => c.completionPct < 50,
-    "recently-inactive": c => parseInt(c.lastVisit) >= 7,
-    "new": c => c.tags.includes("New"),
-    "vip": c => c.tags.includes("VIP"),
-    "lapsed": c => c.tags.includes("Lapsed"),
-    "birthdays": () => false,
-  };
-
-  let filtered = clients.filter(filterMap[activeFilter] || (() => true));
-  if (search) {
-    filtered = filtered.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
-  }
-
-  // Priority order
-  const priorityOrder = { "at-risk": 0, "needs-attention": 1, healthy: 2 };
-  const sorted = [...filtered].sort((a, b) => {
-    if (sort === "priority") return priorityOrder[a.status] - priorityOrder[b.status];
-    if (sort === "score-asc") return a.score - b.score;
-    if (sort === "score-desc") return b.score - a.score;
-    if (sort === "last-visit") return parseInt(a.lastVisit) - parseInt(b.lastVisit);
-    return 0;
-  });
-
-  // Group by status for priority view
-  const groups = sort === "priority"
-    ? [
-        { key: "at-risk", label: "⬤  At Risk", rows: sorted.filter(c => c.status === "at-risk") },
-        { key: "needs-attention", label: "⬤  Needs Attention", rows: sorted.filter(c => c.status === "needs-attention") },
-        { key: "healthy", label: "⬤  Healthy", rows: sorted.filter(c => c.status === "healthy") },
-      ].filter(g => g.rows.length > 0)
-    : [{ key: "all", label: null, rows: sorted }];
-
-  const atRiskCount = clients.filter(c => c.status === "at-risk").length;
-  const attentionCount = clients.filter(c => c.status === "needs-attention").length;
-  const noShowRate = 0;
-
-  return (
-    <>
-      <style>{css}</style>
-      <div className="layout">
-        <Sidebar activePage="clients" />
-
-        <div className="main">
-          {/* Header */}
-          <div className="header">
-            <div className="header-left">
-              <h1>Clients</h1>
-              <p>4 clients · Foundry Gym</p>
+  const sc=scoreColor(client.status);
+  const compColor=client.completion>60?"var(--green)":client.completion>25?"var(--amber)":"var(--red)";
+  return(
+    <div className="panel">
+      <div className="pan">
+        <div className="ph">
+          <div className="ph-top">
+            <div className="phav" style={{background:client.bg}}>{client.initials}</div>
+            <div style={{flex:1}}>
+              <div className="pname">{client.name}</div>
+              <div className="psub">
+                <span className={`sd ${dotCls(client.status)}`}/>
+                <span>{statusLabel(client.status)}</span>
+                <span style={{color:"var(--t3)"}}>·</span>
+                <Trend t={client.trend}/>
+              </div>
             </div>
-            <div className="header-actions">
-              <button className="btn btn-ghost">⊞ Scan QR</button>
-              <button className="btn btn-primary">+ New Client</button>
-              <div className="avatar-btn">M</div>
-              <div className="icon-btn">✉</div>
+            <div className="pclose" onClick={onClose}>✕</div>
+          </div>
+          <div className="qas">
+            <button className="qa qp" onClick={()=>onMsg(client)}>✉ Message</button>
+            <button className="qa qbook" onClick={()=>onBook(client)}>📅 Book</button>
+            <button className="qa" onClick={()=>onAssign(client)}>⊕ Assign</button>
+          </div>
+        </div>
+        <div className="pb">
+
+          {/* Score */}
+          <div className="psec">
+            <div className="pst">Retention Score</div>
+            <div className="sbc">
+              <div className="sbt">
+                <span className="sbl">Overall health</span>
+                <span className="sbv" style={{color:sc}}>{client.score}</span>
+              </div>
+              <div className="sbtr">
+                <div className="sbf" style={{width:`${client.score}%`,background:`linear-gradient(90deg,${sc},${sc}77)`}}/>
+              </div>
+              <div className="sblb"><span>At Risk</span><span>Healthy</span></div>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="stats-row">
-            <div className="stat-card">
-              <div className="stat-label">Total Clients</div>
-              <div className="stat-value">4</div>
-              <div className="stat-sub">assigned to you</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Active This Month</div>
-              <div className="stat-value stat-accent-green">4</div>
-              <div className="stat-sub">visited this month</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">At Risk</div>
-              <div className="stat-value stat-accent-red">{atRiskCount}</div>
-              <div className="stat-sub">need immediate action</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Needs Attention</div>
-              <div className="stat-value stat-accent-amber">{attentionCount}</div>
-              <div className="stat-sub">monitor closely</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Avg No-Show Rate</div>
-              <div className="stat-value">{noShowRate}%</div>
-              <div className="stat-sub">last 30 days</div>
+          {/* Last interaction */}
+          <div className="psec">
+            <div className="pst">Last Interaction</div>
+            <div className="lintb">
+              <div className="lirow"><div className="lilbl">Last message</div><div className="lival">{client.lastMsg}</div></div>
+              <div style={{width:1,height:28,background:"var(--b)"}}/>
+              <div className="lirow"><div className="lilbl">Last activity</div><div className="lival">{client.lastAct}</div></div>
+              <div style={{width:1,height:28,background:"var(--b)"}}/>
+              <div className="lirow"><div className="lilbl">Next session</div><div className={`lival ${client.booked?"mcg":"mcr"}`}>{client.booked?"Booked ✓":"Not booked"}</div></div>
             </div>
           </div>
 
-          {/* Filter bar */}
-          <div className="filter-bar">
-            {FILTERS.map((f, i) => (
-              <>
-                {i === 4 && <div key={`div-${i}`} className="filter-divider" />}
-                <div
-                  key={f.id}
-                  className={`filter-tab ${activeFilter === f.id ? "active" : ""} ${f.danger ? "danger" : ""} ${f.warning ? "warning" : ""}`}
-                  onClick={() => setActiveFilter(f.id)}
-                >
-                  {f.label}
-                  {f.count > 0 && <span className="badge">{f.count}</span>}
-                </div>
-              </>
+          {/* Metrics */}
+          <div className="psec">
+            <div className="pst">Key Metrics</div>
+            <div className="mg">
+              <div className="mc"><div className="mcl">Last Visit</div><div className="mcv mcsm">{client.lastVisit}</div></div>
+              <div className="mc"><div className="mcl">Visits / Week</div><div className="mcv">{client.vpw}</div><div className="mcs">avg this month</div></div>
+              <div className="mc"><div className="mcl">Completion</div><div className="mcv" style={{color:compColor}}>{client.completion}%</div></div>
+              <div className="mc"><div className="mcl">Streak</div><div className="mcv">{client.streak}<span style={{fontSize:12,color:"var(--t3)"}}> wk</span></div></div>
+              <div className="mc"><div className="mcl">Total Visits</div><div className="mcv">{client.total}</div></div>
+              <div className="mc">
+                <div className="mcl">Contact</div>
+                <div className="mcv mcsm" style={{cursor:"pointer",color:"var(--blue)"}} onClick={()=>onMsg(client)}>Message ↗</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          {client.notes&&(
+            <div className="psec">
+              <div className="pst">Coach Notes</div>
+              <div style={{background:"var(--card)",border:"1px solid var(--b)",borderRadius:"var(--r)",padding:"10px 12px",fontSize:12,color:"var(--t2)",lineHeight:1.6}}>{client.notes}</div>
+            </div>
+          )}
+
+          {/* Insights */}
+          <div className="psec">
+            <div className="pst">Insights</div>
+            {client.insights.map((ins,i)=>(
+              <div key={i} className={`ins ${ins.lv}`}>
+                <div className="insh"><div className="inst">{ins.title}</div><InsIco lv={ins.lv}/></div>
+                <div className="insb">{ins.body}</div>
+                <div className="insct">→ {ins.cta}</div>
+              </div>
             ))}
           </div>
 
-          {/* Toolbar */}
-          <div className="toolbar">
-            <div className="search-wrap">
-              <span className="search-icon">⊙</span>
-              <input
-                className="search-input"
-                placeholder="Search clients..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+          {/* Timeline */}
+          <div className="psec">
+            <div className="pst">Recent Activity</div>
+            {client.timeline.map((tl,i)=>(
+              <div key={i} className="tli">
+                <span className={`tld ${tlDotCls(tl.tp)}`}/>
+                <div><div className="tllb">{tl.lb}</div><div className="tlt">{tl.tm}</div></div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── CLIENT ROW ──────────────────────────────────────────────────────────────── */
+function ClientRow({client,selected,onClick,onMsg,onBook}){
+  return(
+    <div className={`crow ${client.status}${selected?" sel":""}`} onClick={onClick}>
+      <div className="cav" style={{background:client.bg}}>
+        <div className={`cring ${ringCls(client.status)}`}/>
+        {client.initials}
+      </div>
+      <div className="ci">
+        <div className="cnr">
+          <span className="cn">{client.name}</span>
+          {client.tags.map(t=>(
+            <span key={t} className={`tag ${t==="New"?"tnew":t==="VIP"?"tvip":"treg"}`}>{t}</span>
+          ))}
+        </div>
+        <div className="cm">
+          <div className="mi"><span className={`sd ${dotCls(client.status)}`}/><span>{client.lastVisit}</span></div>
+          <div className="mi">{client.vpw}/wk avg</div>
+          <div className="mi">{client.completion}% completion</div>
+          <Trend t={client.trend}/>
+        </div>
+        <FlagChips flags={client.flags}/>
+      </div>
+      <div className="cr">
+        <div className={`srng ${scoreCls(client.status)}`}>{client.score}</div>
+        <div className="ract" title="Message" onClick={e=>{e.stopPropagation();onMsg(client);}}>✉</div>
+        <div className="ract" title="Book" onClick={e=>{e.stopPropagation();onBook(client);}}>📅</div>
+        <span className="chev">›</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN PAGE ───────────────────────────────────────────────────────────────── */
+export default function ClientsPage(){
+  const [clients,setClients]       = useState(INIT_CLIENTS);
+  const [activeF,setActiveF]       = useState("all");
+  const [selId,setSelId]           = useState(null);
+  const [search,setSearch]         = useState("");
+  const [sort,setSort]             = useState("priority");
+  const [viewMode,setViewMode]     = useState("list");
+  const [modal,setModal]           = useState(null); // {type, client}
+  const [toast,setToast]           = useState(null);
+
+  const showToast = msg => { setToast(msg); };
+  const selClient = clients.find(c=>c.id===selId)||null;
+
+  /* counts */
+  const counts = {};
+  FILTERS.forEach(f=>{ if(f) counts[f.id]=clients.filter(f.fn).length; });
+
+  /* filtered + sorted */
+  const sorted = useMemo(()=>{
+    const fn=FILTERS.find(f=>f&&f.id===activeF)?.fn||(()=>true);
+    let list=clients.filter(fn);
+    if(search) list=list.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()));
+    const pri={"at-risk":0,"needs-attention":1,"healthy":2};
+    if(sort==="priority")  return [...list].sort((a,b)=>pri[a.status]-pri[b.status]);
+    if(sort==="score-asc") return [...list].sort((a,b)=>a.score-b.score);
+    if(sort==="score-desc")return [...list].sort((a,b)=>b.score-a.score);
+    if(sort==="last-visit")return [...list].sort((a,b)=>a.lvDays-b.lvDays);
+    if(sort==="name")      return [...list].sort((a,b)=>a.name.localeCompare(b.name));
+    return list;
+  },[clients,activeF,search,sort]);
+
+  const groups = sort==="priority"
+    ?[
+      {key:"at-risk",         label:"At Risk",          cls:"r", rows:sorted.filter(c=>c.status==="at-risk")},
+      {key:"needs-attention", label:"Needs Attention",  cls:"a", rows:sorted.filter(c=>c.status==="needs-attention")},
+      {key:"healthy",         label:"Healthy",          cls:"g", rows:sorted.filter(c=>c.status==="healthy")},
+    ].filter(g=>g.rows.length)
+    :[{key:"all",label:null,rows:sorted}];
+
+  const atRisk    = clients.filter(c=>c.status==="at-risk").length;
+  const attention = clients.filter(c=>c.status==="needs-attention").length;
+  const healthy   = clients.filter(c=>c.status==="healthy").length;
+  const activeThisMonth = clients.filter(c=>c.lvDays<=30).length;
+
+  const openMsg    = c => setModal({type:"msg",client:c});
+  const openBook   = c => setModal({type:"book",client:c});
+  const openAssign = c => setModal({type:"assign",client:c});
+
+  return(
+    <>
+      <style>{S}</style>
+      <div className="app">
+        <Sidebar/>
+        <div className="main">
+
+          {/* HEADER */}
+          <div className="hdr">
+            <div className="hdr-l">
+              <h1>Clients</h1>
+              <p>{clients.length} clients · Foundry Gym</p>
             </div>
-            <select className="sort-select" value={sort} onChange={e => setSort(e.target.value)}>
-              <option value="priority">Sort: Priority</option>
-              <option value="score-asc">Sort: Score ↑</option>
-              <option value="score-desc">Sort: Score ↓</option>
-              <option value="last-visit">Sort: Last Visit</option>
-            </select>
-            <div className="toolbar-right">
-              <div className="icon-btn active" title="List view">☰</div>
-              <div className="icon-btn" title="Card view">⊞</div>
-              <div className="icon-btn" title="Bulk">⊟ Bulk</div>
-              <div className="icon-btn" title="Export">↓ Export</div>
+            <div className="hdr-r">
+              <button className="btn btn-gh">⊞ Scan QR</button>
+              <button className="btn btn-pr">+ New Client</button>
+              <div className="avatar-chip">M</div>
+              <div className="iBtn" title="Messages">✉</div>
             </div>
           </div>
 
-          {/* List + panel */}
-          <div className="list-panel-wrap">
-            <div className="client-list">
-              {groups.map(group => (
-                <div key={group.key}>
-                  {group.label && (
-                    <div className="group-header" style={{
-                      color: group.key === "at-risk" ? "var(--red)" : group.key === "needs-attention" ? "var(--amber)" : "var(--green)"
-                    }}>
-                      {group.label}
-                    </div>
-                  )}
-                  {group.rows.map(client => (
+          {/* STATS */}
+          <div className="stats">
+            <div className="sc">
+              <div className="sc-lbl">Total Clients</div>
+              <div className="sc-val">{clients.length}</div>
+              <div className="sc-sub">assigned to you</div>
+            </div>
+            <div className="sc">
+              <div className="sc-lbl">Active This Month</div>
+              <div className="sc-val g">{activeThisMonth}</div>
+              <div className="sc-sub">visited this month</div>
+            </div>
+            <div className="sc" style={{cursor:"pointer"}} onClick={()=>setActiveF("at-risk")}>
+              <div className="sc-lbl">At Risk</div>
+              <div className="sc-val r">{atRisk}</div>
+              <div className="sc-sub">need immediate action</div>
+            </div>
+            <div className="sc" style={{cursor:"pointer"}} onClick={()=>setActiveF("not-booked")}>
+              <div className="sc-lbl">Needs Attention</div>
+              <div className="sc-val a">{attention}</div>
+              <div className="sc-sub">monitor closely</div>
+            </div>
+            <div className="sc">
+              <div className="sc-lbl">Avg No-Show Rate</div>
+              <div className="sc-val">0%</div>
+              <div className="sc-sub">last 30 days</div>
+            </div>
+          </div>
+
+          {/* FILTER BAR */}
+          <div className="fbar">
+            {FILTERS.map((f,i)=>
+              f===null
+                ?<div key={`d${i}`} className="fdiv"/>
+                :<div key={f.id} className={`ft ${f.cls} ${activeF===f.id?"on":""}`} onClick={()=>setActiveF(f.id)}>
+                  {f.label}<span className="n">{counts[f.id]}</span>
+                </div>
+            )}
+          </div>
+
+          {/* TOOLBAR */}
+          <div className="tb">
+            <div className="sw">
+              <span className="si">⊙</span>
+              <input className="sinp" placeholder="Search clients..." value={search} onChange={e=>setSearch(e.target.value)}/>
+            </div>
+            <select className="ssel" value={sort} onChange={e=>setSort(e.target.value)}>
+              <option value="priority">Sort: Priority</option>
+              <option value="score-asc">Score: Low → High</option>
+              <option value="score-desc">Score: High → Low</option>
+              <option value="last-visit">Last Visit</option>
+              <option value="name">Name A–Z</option>
+            </select>
+            <div className="tb-r">
+              <div className="tgl">
+                <button className={`tgl-btn${viewMode==="list"?" on":""}`} onClick={()=>setViewMode("list")}>☰ List</button>
+                <button className={`tgl-btn${viewMode==="grid"?" on":""}`} onClick={()=>setViewMode("grid")}>⊞ Grid</button>
+              </div>
+              <button className="btn btn-gh btn-sm">⊟ Bulk</button>
+              <button className="btn btn-gh btn-sm">↓ Export</button>
+            </div>
+          </div>
+
+          {/* BODY */}
+          <div className="body-split">
+            <div className="clist">
+              {groups.map(g=>(
+                <div key={g.key}>
+                  {g.label&&<div className={`ghdr ${g.cls}`}>● {g.label}</div>}
+                  {g.rows.map(c=>(
                     <ClientRow
-                      key={client.id}
-                      client={client}
-                      selected={selectedId === client.id}
-                      onClick={() => setSelectedId(selectedId === client.id ? null : client.id)}
+                      key={c.id} client={c}
+                      selected={selId===c.id}
+                      onClick={()=>setSelId(selId===c.id?null:c.id)}
+                      onMsg={openMsg}
+                      onBook={openBook}
                     />
                   ))}
                 </div>
               ))}
-              {sorted.length === 0 && (
-                <div style={{ padding: "40px 28px", color: "var(--text3)", textAlign: "center" }}>
+              {sorted.length===0&&(
+                <div className="empty-list">
+                  <div style={{fontSize:22,opacity:.25,marginBottom:8}}>⊡</div>
                   No clients match the current filter.
                 </div>
               )}
             </div>
-
-            {/* Detail panel */}
-            <DetailPanel client={selectedClient} onClose={() => setSelectedId(null)} />
+            <DetailPanel
+              client={selClient}
+              onClose={()=>setSelId(null)}
+              onMsg={openMsg}
+              onBook={openBook}
+              onAssign={openAssign}
+            />
           </div>
+
         </div>
       </div>
+
+      {/* MODALS */}
+      {modal?.type==="msg"    && <MessageModal client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
+      {modal?.type==="book"   && <BookModal    client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
+      {modal?.type==="assign" && <AssignModal  client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
+
+      {/* TOAST */}
+      {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </>
   );
 }
