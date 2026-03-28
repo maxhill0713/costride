@@ -462,42 +462,7 @@ function CheckInTrends({ checkIns = [], ci7Count = 0, ci7pCount = 0, ci30Count =
       {/* Weekly */}
 
       {/* Monthly */}
-      <div style={{ ...card, padding: '18px 20px 14px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.t1 }}>Monthly Check-ins</div>
-            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Last 6 months</div>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: monthlyTrend > 0 ? `${C.green}18` : monthlyTrend < 0 ? `${C.red}18` : `${C.t3}18`, color: monthlyTrend > 0 ? C.green : monthlyTrend < 0 ? C.red : C.t3 }}>
-            {monthlyTrend > 0 ? `↑${monthlyTrend}%` : monthlyTrend < 0 ? `↓${Math.abs(monthlyTrend)}%` : '→'} vs prior mo
-          </span>
-        </div>
-        <ResponsiveContainer width="100%" height={130}>
-          <RBarChart data={monthlyChart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={22}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.b2} vertical={false} />
-            <XAxis dataKey="label" tick={tick} axisLine={false} tickLine={false} />
-            <YAxis tick={tick} axisLine={false} tickLine={false} width={24} allowDecimals={false} />
-            <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-            <Bar dataKey="value" radius={[5, 5, 2, 2]}>
-              {monthlyChart.map((_, i) => (
-                <Cell key={i} fill={i === monthlyChart.length - 1 ? C.purple : 'rgba(167,139,250,0.35)'} />
-              ))}
-            </Bar>
-          </RBarChart>
-        </ResponsiveContainer>
-        <div style={{ display: 'flex', gap: 18, paddingTop: 10, borderTop: `1px solid ${C.b2}`, marginTop: 8 }}>
-          {[
-            { label: 'This month', value: ci30Count, color: C.purple },
-            { label: 'Last month', value: monthlyChart[monthlyChart.length - 2]?.value ?? 0, color: C.t3 },
-            { label: 'Avg/day', value: Math.round(ci30Count / 30), color: C.blue },
-          ].map((s, i) => (
-            <div key={i}>
-              <div style={{ fontSize: 17, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.value}</div>
-              <div style={{ fontSize: 9, color: C.t4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
     </div>
   );
 }
