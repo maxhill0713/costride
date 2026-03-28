@@ -485,9 +485,10 @@ export default function TabCoachSchedule({
       const isCancelled = cancelledClasses.includes(`${cls.id}-${selDateStr}`);
       const lateCancels = getLateCancel(cls, now);
       const revenue     = calcRevenue(cls, allMemberships);
+      const scheduleStr = typeof cls.schedule === 'string' ? cls.schedule : '';
       const attended    = selCIs.filter(ci => {
-        if (!cls.schedule) return false;
-        const match = cls.schedule.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
+        if (!scheduleStr) return false;
+        const match = scheduleStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
         if (!match) return false;
         let sh = parseInt(match[1]);
         if (match[2].toLowerCase() === 'pm' && sh !== 12) sh += 12;
@@ -495,8 +496,8 @@ export default function TabCoachSchedule({
         return h === sh || h === sh + 1;
       });
       const classHour = (() => {
-        if (!cls.schedule) return null;
-        const match = cls.schedule.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
+        if (!scheduleStr) return null;
+        const match = scheduleStr.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
         if (!match) return null;
         let h = parseInt(match[1]);
         if (match[2].toLowerCase() === 'pm' && h !== 12) h += 12;
@@ -785,9 +786,9 @@ export default function TabCoachSchedule({
 
                             {/* Meta row */}
                             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-                              {cls.schedule && (
+                              {scheduleStr && (
                                 <span style={{ fontSize: 11, fontWeight: 800, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 6, padding: '2px 8px' }}>
-                                  🕐 {cls.schedule}
+                                  🕐 {scheduleStr}
                                 </span>
                               )}
                               {cls.duration_minutes && <span style={{ fontSize: 11, color: '#64748b' }}>{cls.duration_minutes}min</span>}
