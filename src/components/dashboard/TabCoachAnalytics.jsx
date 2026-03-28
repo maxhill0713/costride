@@ -1248,10 +1248,7 @@ export default function TabCoachAnalytics({
       {/* ══ 1. FINANCIAL OVERVIEW ═══════════════════════════════════════════ */}
       <section>
         <SectionLabel accent={C.green} icon={DollarSign}>Financial Overview</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: col2, gap: 14 }}>
-          <RevenueDashboard payments={payments} now={nowMs} />
-          <RevenueForecast payments={payments} now={nowMs} />
-        </div>
+
       </section>
 
       {/* ══ 2. MEMBERSHIP ═══════════════════════════════════════════════════ */}
