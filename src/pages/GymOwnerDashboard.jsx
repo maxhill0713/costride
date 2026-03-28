@@ -49,7 +49,7 @@ const TabCoachAnalytics     = lazy(() => import('../components/dashboard/TabCoac
 const TabCoachProfile       = lazy(() => import('../components/dashboard/TabCoachProfile'));
 const TabEngagement         = lazy(() => import('../components/dashboard/TabEngagement'));
 const TabRewards            = lazy(() => import('../components/dashboard/TabRewards'));
-const TabCoachBookings      = lazy(() => import('../components/dashboard/TabCoachBookings'));
+const TabCoachToday         = lazy(() => import('../components/dashboard/TabCoachToday'));
 
 function TabLoader() {
   return (
@@ -125,9 +125,9 @@ const D = {
 // ── Nav config ─────────────────────────────────────────────────────────────────
 const ALL_NAV = [
   { id: 'overview',   label: 'Overview',    icon: LayoutDashboard, roles: ['gym_owner'] },
-  { id: 'schedule',   label: 'Schedule',    icon: Calendar,        roles: ['coach'] },
-  { id: 'bookings',   label: 'Bookings',    icon: Clock,           roles: ['coach'] },
+  { id: 'today',      label: 'Today',       icon: Sun,             roles: ['coach'] },
   { id: 'members',    label: 'Members',     coachLabel: 'Clients', icon: Users,    roles: ['gym_owner', 'coach'] },
+  { id: 'schedule',   label: 'Schedule',    icon: Calendar,        roles: ['coach'] },
   { id: 'content',    label: 'Content',     icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics',  label: 'Analytics',   icon: BarChart3,       roles: ['gym_owner', 'coach'] },
   { id: 'profile',    label: 'Profile',     icon: Crown,           roles: ['coach'] },
@@ -478,6 +478,11 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
       { label: 'CLASSES',  value: classes.length, color: null },
       { label: 'MEMBERS',  value: totalMembers,   color: null },
     ];
+  } else if (tab === 'today' && isCoach) {
+    items = [
+      { label: 'CLASSES', value: myClasses.length,       color: null },
+      { label: 'CLIENTS', value: allMemberships.length,  color: null },
+    ];
   } else if (tab === 'schedule' && isCoach) {
     items = [
       { label: 'CLASSES', value: myClasses.length,       color: null },
@@ -556,7 +561,7 @@ export default function GymOwnerDashboard() {
   const tabInitialised = React.useRef(false);
   useEffect(() => {
     if (!tabInitialised.current && currentUser) {
-      setTab(isCoach ? 'schedule' : 'overview');
+      setTab(isCoach ? 'today' : 'overview');
       tabInitialised.current = true;
     }
   }, [currentUser, isCoach]);
@@ -575,7 +580,7 @@ export default function GymOwnerDashboard() {
       // roleId is the coach record id — store it so we filter data to that coach
       setSelectedCoachId(roleId);
     }
-    setTab(roleId === 'gym_owner' ? 'overview' : 'schedule');
+    setTab(roleId === 'gym_owner' ? 'overview' : 'today');
   };
 
   const NAV = ALL_NAV.filter(item => item.roles.includes(dashRole)).map(item => ({
@@ -855,7 +860,7 @@ export default function GymOwnerDashboard() {
     analytics: isCoach
       ? <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} />
       : <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />,
-    bookings:   isCoach ? <TabCoachBookings /> : null,
+    today:      isCoach ? <TabCoachToday allMemberships={coachMemberships} checkIns={coachCheckIns} myClasses={myClasses} currentUser={currentUser} openModal={openModal} setTab={setTab} now={now} /> : null,
     profile:    isCoach ? <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} /> : null,
     engagement: <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />,
     gym: <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={d => createRewardM.mutate(d)} onDeleteReward={id => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />,
@@ -1015,7 +1020,7 @@ export default function GymOwnerDashboard() {
       <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
         <div style={{ maxWidth: '100%' }}>
           <Suspense fallback={<TabLoader />}>
-            {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+            {tabContent[tab] || tabContent[isCoach ? 'today' : 'overview']}
           </Suspense>
         </div>
       </main>
@@ -1051,7 +1056,7 @@ export default function GymOwnerDashboard() {
   const tabTitle = {
     members: isCoach ? 'Clients' : 'Members',
     content: 'Content', analytics: 'Analytics', gym: 'Settings',
-    schedule: 'Schedule', bookings: 'Bookings', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
+    schedule: 'Schedule', today: 'Today', engagement: 'Automations', overview: selectedGym?.name || 'Overview',
   }[tab] || selectedGym?.name || 'Dashboard';
 
   return (
@@ -1288,7 +1293,7 @@ export default function GymOwnerDashboard() {
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
             <Suspense fallback={<TabLoader />}>
-              {tabContent[tab] || tabContent[isCoach ? 'schedule' : 'overview']}
+              {tabContent[tab] || tabContent[isCoach ? 'today' : 'overview']}
             </Suspense>
           </div>
         </main>
