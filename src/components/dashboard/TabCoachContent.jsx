@@ -11,21 +11,34 @@ import {
 } from 'lucide-react';
 import { Avatar } from './DashboardPrimitives';
 
+// ─── Design tokens (matches owner dashboard, purple primary) ──────────────────
+const DC = {
+  bgSurface: '#0c1422',
+  bgCard:    '#0f1c30',
+  border:    'rgba(255,255,255,0.07)',
+  borderHi:  'rgba(255,255,255,0.13)',
+  divider:   'rgba(255,255,255,0.05)',
+  purple:    '#8b5cf6',
+  purpleDim: 'rgba(139,92,246,0.10)',
+  purpleBrd: 'rgba(139,92,246,0.22)',
+  t1: '#f1f5f9', t2: '#94a3b8', t3: '#475569', t4: '#2d3f55',
+};
+
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
   .twp-root  { display: grid; grid-template-columns: minmax(0,1fr) clamp(260px,22%,300px); gap: 16px; align-items: start; }
   .twp-left  { display: flex; flex-direction: column; gap: 16px; }
   .twp-right { display: flex; flex-direction: column; gap: 12px; }
-  .workout-card { border-radius: 14px; background: #0c1a2e; border: 1px solid rgba(255,255,255,0.07); overflow: hidden; transition: border-color 0.15s, transform 0.15s; cursor: pointer; }
-  .workout-card:hover { border-color: rgba(167,139,250,0.35); transform: translateY(-1px); }
-  .workout-card.selected { border-color: rgba(167,139,250,0.5); background: rgba(167,139,250,0.04); }
+  .workout-card { border-radius: 12px; background: #0c1422; border: 1px solid rgba(255,255,255,0.07); overflow: hidden; transition: border-color 0.15s, transform 0.15s; cursor: pointer; }
+  .workout-card:hover { border-color: rgba(139,92,246,0.35); transform: translateY(-1px); }
+  .workout-card.selected { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.04); }
   .exercise-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; }
   .exercise-row:hover .ex-delete { opacity: 1; }
   .ex-delete { opacity: 0; transition: opacity 0.1s; }
   .section-block { border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
   .type-btn { padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; white-space: nowrap; }
-  .assign-btn { display: flex; align-items: center; gap: 8px; padding: 10px 13px; border-radius: 11px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.025); cursor: pointer; transition: all 0.14s; text-align: left; width: 100%; }
-  .assign-btn:hover { background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
+  .assign-btn { display: flex; align-items: center; gap: 8px; padding: 10px 13px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.025); cursor: pointer; transition: all 0.14s; text-align: left; width: 100%; }
+  .assign-btn:hover { background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.12); }
   .wo-client-row:hover { background: rgba(255,255,255,0.035) !important; }
   @media (max-width: 768px) {
     .twp-root  { grid-template-columns: 1fr !important; }
@@ -796,7 +809,7 @@ export default function TabCoachContent({
     [posts, polls]
   );
 
-  const cardStyle = { background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 16, flexShrink: 0 };
+  const cardStyle = { background: DC.bgSurface, border: `1px solid ${DC.border}`, borderRadius: 12, padding: 16, flexShrink: 0 };
   const currentSort = SORT_OPTIONS.find(s => s.id === sortBy);
 
   // Library-level health summary
@@ -861,10 +874,10 @@ export default function TabCoachContent({
                     { label: 'Low Engagement',   value: healthSummary.lowEngagement,  color: '#ef4444' },
                     { label: 'Not Assigned',     value: healthSummary.unassigned,     color: '#64748b' },
                   ].map((s, i) => (
-                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: '#0c1a2e', border: `1px solid ${s.value > 0 && i > 0 ? `${s.color}20` : 'rgba(255,255,255,0.07)'}`, textAlign: 'center', cursor: i > 0 && s.value > 0 ? 'pointer' : 'default' }}
+                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: DC.bgSurface, border: `1px solid ${s.value > 0 && i > 0 ? `${s.color}22` : DC.border}`, textAlign: 'center', cursor: i > 0 && s.value > 0 ? 'pointer' : 'default' }}
                       onClick={() => { if (i === 3 && s.value > 0) setSortBy('not_assigned'); else if (i === 2 && s.value > 0) setSortBy('least_engaged'); }}>
                       <div style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
-                      <div style={{ fontSize: 9, color: '#3a5070', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
+                      <div style={{ fontSize: 9, color: DC.t4, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>

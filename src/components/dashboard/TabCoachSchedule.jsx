@@ -14,6 +14,30 @@ import {
 } from 'lucide-react';
 import { CoachCard, MiniAvatar, classColor } from './CoachHelpers';
 
+// ─── Design tokens (matches owner dashboard, purple primary) ──────────────────
+const D = {
+  bgBase:    '#080e18',
+  bgSurface: '#0c1422',
+  bgCard:    '#0f1c30',
+  border:    'rgba(255,255,255,0.07)',
+  borderHi:  'rgba(255,255,255,0.13)',
+  divider:   'rgba(255,255,255,0.05)',
+  purple:    '#8b5cf6',
+  purpleDim: 'rgba(139,92,246,0.10)',
+  purpleBrd: 'rgba(139,92,246,0.22)',
+  green:     '#10b981',
+  greenDim:  'rgba(16,185,129,0.09)',
+  greenBrd:  'rgba(16,185,129,0.20)',
+  red:       '#ef4444',
+  redDim:    'rgba(239,68,68,0.09)',
+  redBrd:    'rgba(239,68,68,0.22)',
+  amber:     '#f59e0b',
+  amberDim:  'rgba(245,158,11,0.09)',
+  amberBrd:  'rgba(245,158,11,0.22)',
+  blue:      '#3b82f6',
+  t1: '#f1f5f9', t2: '#94a3b8', t3: '#475569', t4: '#2d3f55',
+};
+
 // ─── Class type config ─────────────────────────────────────────────────────────
 const CLASS_TYPE_CFG = {
   hiit:            { color: '#f87171', label: 'HIIT',       emoji: '🔥' },
@@ -46,25 +70,23 @@ function StatusPill({ label, color }) {
   );
 }
 
-// ─── KPI card ─────────────────────────────────────────────────────────────────
+// ─── KPI card (owner dashboard style) ─────────────────────────────────────────
 function ScheduleKpi({ icon: Ic, label, value, sub, color, bar }) {
   return (
-    <div style={{ borderRadius: 14, padding: '14px 16px', background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}14`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Ic style={{ width: 15, height: 15, color }}/>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
-          {sub && <div style={{ fontSize: 9, color: '#3a5070', marginTop: 3, fontWeight: 600 }}>{sub}</div>}
+    <div style={{ borderRadius: 12, padding: '20px', background: D.bgSurface, border: `1px solid ${D.border}`, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: D.t3 }}>{label}</span>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: `rgba(255,255,255,0.04)`, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Ic style={{ width: 12, height: 12, color: D.t3 }}/>
         </div>
       </div>
+      <div style={{ fontSize: 32, fontWeight: 800, color: color || D.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: D.t3 }}>{sub}</div>}
       {bar !== undefined && (
-        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: `linear-gradient(90deg,${color},${color}88)`, borderRadius: 99, transition: 'width 0.7s ease' }}/>
+        <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: color || D.purple, borderRadius: 99, transition: 'width 0.7s ease' }}/>
         </div>
       )}
-      <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b' }}>{label}</div>
     </div>
   );
 }
@@ -146,11 +168,6 @@ function calcRS(userId, checkIns, now) {
 
 // ─── Contextual Side Panel ─────────────────────────────────────────────────────
 function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
-  const D = {
-    surface: '#0c1a2e', card: '#060c14', border: 'rgba(255,255,255,0.07)',
-    t1: '#f0f4f8', t2: '#94a3b8', t3: '#475569', t4: '#2d3f55',
-    red: '#ef4444', amber: '#f59e0b', green: '#10b981', blue: '#38bdf8',
-  };
 
   const btnStyle = (color) => ({
     display:'flex', alignItems:'center', gap:4, padding:'4px 9px', borderRadius:7,
@@ -204,12 +221,10 @@ function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
   }, [allMemberships, checkIns, now]);
 
   const SH = ({ icon: Icon, label, color, count }) => (
-    <div style={{ display:'flex', alignItems:'center', gap:7, padding:'10px 14px', borderBottom:`1px solid ${D.border}` }}>
-      <div style={{ width:22, height:22, borderRadius:6, background:`${color}12`, border:`1px solid ${color}22`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-        <Icon style={{ width:10, height:10, color }}/>
-      </div>
-      <span style={{ fontSize:11, fontWeight:800, color:D.t1, flex:1 }}>{label}</span>
-      {count > 0 && <span style={{ fontSize:9, fontWeight:800, color, background:`${color}12`, border:`1px solid ${color}22`, borderRadius:99, padding:'1px 6px' }}>{count}</span>}
+    <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 16px', borderBottom:`1px solid ${D.divider}` }}>
+      <Icon style={{ width:14, height:14, color }}/>
+      <span style={{ fontSize:13, fontWeight:700, color:D.t1, flex:1 }}>{label}</span>
+      {count > 0 && <span style={{ fontSize:9, fontWeight:800, color, background:`${color}12`, border:`1px solid ${color}25`, borderRadius:99, padding:'2px 7px' }}>{count}</span>}
     </div>
   );
 
@@ -217,7 +232,7 @@ function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
 
       {/* A. Today's Exceptions */}
-      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+      <div style={{ borderRadius:12, background:D.bgSurface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
         <SH icon={AlertTriangle} label="Today's Exceptions" color={D.red} count={todayExceptions.length}/>
         <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
           {todayExceptions.length === 0 ? (
@@ -245,7 +260,7 @@ function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
       </div>
 
       {/* B. Not Scheduled This Week */}
-      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+      <div style={{ borderRadius:12, background:D.bgSurface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
         <SH icon={UserX} label="Not Booked This Week" color={D.amber} count={notScheduled.length}/>
         <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
           {notScheduled.length === 0 ? (
@@ -278,7 +293,7 @@ function ContextPanel({ allMemberships, checkIns, myClasses, now, openModal }) {
       </div>
 
       {/* C. Attendance Irregularities */}
-      <div style={{ borderRadius:14, background:D.surface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
+      <div style={{ borderRadius:12, background:D.bgSurface, border:`1px solid ${D.border}`, overflow:'hidden' }}>
         <SH icon={TrendingDown} label="Attendance Irregularities" color={D.red} count={irregulars.length}/>
         <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
           {irregulars.length === 0 ? (
@@ -325,24 +340,24 @@ function MonthCell({ date, isCurrentMonth, isSelected, isToday, classCount, chec
       onClick={onClick}
       style={{
         padding: '6px 5px', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
-        background: isSelected ? 'rgba(167,139,250,0.16)' : isToday ? 'rgba(167,139,250,0.07)' : 'transparent',
-        border: isSelected ? '1px solid rgba(167,139,250,0.45)' : isToday ? '1px solid rgba(167,139,250,0.2)' : '1px solid transparent',
+        background: isSelected ? D.purpleDim : isToday ? 'rgba(139,92,246,0.07)' : 'transparent',
+        border: isSelected ? `1px solid ${D.purpleBrd}` : isToday ? `1px solid rgba(139,92,246,0.2)` : `1px solid transparent`,
         transition: 'all 0.12s', opacity: isCurrentMonth ? 1 : 0.28,
       }}
       onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = isToday ? 'rgba(167,139,250,0.07)' : 'transparent'; }}>
-      <div style={{ fontSize: 13, fontWeight: isToday || isSelected ? 900 : 600, color: isSelected ? '#a78bfa' : isToday ? '#e2d9f3' : '#64748b', lineHeight: 1, marginBottom: 4 }}>
+      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = isToday ? 'rgba(139,92,246,0.07)' : 'transparent'; }}>
+      <div style={{ fontSize: 13, fontWeight: isToday || isSelected ? 900 : 600, color: isSelected ? D.purple : isToday ? D.t1 : D.t3, lineHeight: 1, marginBottom: 4 }}>
         {format(date, 'd')}
       </div>
       {classCount > 0 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginBottom: 2 }}>
           {Array.from({ length: Math.min(classCount, 3) }, (_, j) => (
-            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: isSelected ? '#a78bfa' : 'rgba(167,139,250,0.5)' }}/>
+            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: isSelected ? D.purple : `${D.purple}55` }}/>
           ))}
         </div>
       )}
       {checkInCount > 0 && (
-        <div style={{ fontSize: 8, fontWeight: 700, color: isSelected ? '#a78bfa' : '#3a5070' }}>{checkInCount}</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: isSelected ? D.purple : D.t4 }}>{checkInCount}</div>
       )}
     </div>
   );
@@ -616,29 +631,29 @@ export default function TabCoachSchedule({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* ── CALENDAR HEADER ──────────────────────────────────────────── */}
-            <div style={{ borderRadius: 18, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '16px 18px' }}>
+            <div style={{ borderRadius: 18, background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 12, padding: '16px 18px' }}>
 
               {/* View controls + navigation */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 {/* View toggle */}
-                <div style={{ display: 'flex', gap: 2, padding: 3, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 2, padding: 3, background: 'rgba(255,255,255,0.02)', border: `1px solid ${D.border}`, borderRadius: 10, flexShrink: 0 }}>
                   {[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }, { id: 'month', label: 'Month' }].map(v => (
-                    <button key={v.id} onClick={() => setCalView(v.id)} style={{ padding: '5px 12px', borderRadius: 7, border: calView === v.id ? '1px solid rgba(167,139,250,0.35)' : '1px solid transparent', background: calView === v.id ? 'rgba(167,139,250,0.12)' : 'transparent', color: calView === v.id ? '#a78bfa' : '#64748b', fontSize: 11, fontWeight: calView === v.id ? 700 : 500, cursor: 'pointer', transition: 'all 0.12s' }}>
+                    <button key={v.id} onClick={() => setCalView(v.id)} style={{ padding: '5px 12px', borderRadius: 7, border: calView === v.id ? `1px solid ${D.purpleBrd}` : '1px solid transparent', background: calView === v.id ? D.purpleDim : 'transparent', color: calView === v.id ? D.purple : D.t3, fontSize: 11, fontWeight: calView === v.id ? 700 : 500, cursor: 'pointer', transition: 'all 0.12s' }}>
                       {v.label}
                     </button>
                   ))}
                 </div>
                 {/* Month/week nav */}
-                <button onClick={() => navigate(-1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => navigate(-1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ChevronLeft style={{ width: 13, height: 13 }}/>
                 </button>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', flex: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: D.t1, flex: 1 }}>
                   {calView === 'month' ? format(monthDate, 'MMMM yyyy') : calView === 'week' ? `${format(week[0], 'MMM d')} – ${format(week[6], 'MMM d, yyyy')}` : format(selectedDate, 'EEEE, MMM d, yyyy')}
                 </span>
-                <button onClick={() => navigate(1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => navigate(1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ChevronRight style={{ width: 13, height: 13 }}/>
                 </button>
-                <button onClick={() => { setSelectedDate(now); setMonthDate(now); }} style={{ padding: '5px 12px', borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', color: '#a78bfa', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Today</button>
+                <button onClick={() => { setSelectedDate(now); setMonthDate(now); }} style={{ padding: '5px 12px', borderRadius: 8, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, color: D.purple, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Today</button>
               </div>
 
               {/* ── WEEK STRIP ── */}
@@ -650,16 +665,16 @@ export default function TabCoachSchedule({
                     const count  = dayCounts[i];
                     return (
                       <button key={i} onClick={() => { setSelectedDate(d); setCalView('day'); setExpandedClass(null); }}
-                        style={{ flex: 1, padding: '12px 4px 10px', borderRadius: 13, border: active ? '1px solid rgba(167,139,250,0.5)' : isT ? '1px solid rgba(167,139,250,0.22)' : '1px solid rgba(255,255,255,0.06)', background: active ? 'rgba(167,139,250,0.13)' : isT ? 'rgba(167,139,250,0.05)' : 'transparent', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', position: 'relative' }}>
-                        <div style={{ fontSize: 8, fontWeight: 800, color: active ? '#a78bfa' : '#3a5070', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>{format(d, 'EEE')}</div>
-                        <div style={{ fontSize: 20, fontWeight: 900, color: active ? '#a78bfa' : isT ? '#f0f4f8' : '#64748b', lineHeight: 1, marginBottom: 6 }}>{format(d, 'd')}</div>
+                        style={{ flex: 1, padding: '12px 4px 10px', borderRadius: 10, border: active ? `1px solid ${D.purpleBrd}` : isT ? `1px solid rgba(139,92,246,0.2)` : `1px solid ${D.divider}`, background: active ? D.purpleDim : isT ? 'rgba(139,92,246,0.05)' : 'transparent', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', position: 'relative' }}>
+                        <div style={{ fontSize: 8, fontWeight: 800, color: active ? D.purple : D.t4, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>{format(d, 'EEE')}</div>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: active ? D.purple : isT ? D.t1 : D.t3, lineHeight: 1, marginBottom: 6 }}>{format(d, 'd')}</div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginBottom: 3 }}>
                           {Array.from({ length: Math.min(groupClasses.length, 4) }, (_, j) => (
-                            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: active ? '#a78bfa' : 'rgba(167,139,250,0.35)' }}/>
+                            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: active ? D.purple : `${D.purple}40` }}/>
                           ))}
                         </div>
-                        {count > 0 && <div style={{ fontSize: 9, fontWeight: 700, color: active ? '#a78bfa' : '#3a5070' }}>{count} in</div>}
-                        {isT && !active && <div style={{ position: 'absolute', top: 6, right: 8, width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa' }}/>}
+                        {count > 0 && <div style={{ fontSize: 9, fontWeight: 700, color: active ? D.purple : D.t4 }}>{count} in</div>}
+                        {isT && !active && <div style={{ position: 'absolute', top: 6, right: 8, width: 5, height: 5, borderRadius: '50%', background: D.purple }}/>}
                       </button>
                     );
                   })}
@@ -696,16 +711,16 @@ export default function TabCoachSchedule({
             {/* ── CLASS TYPE FILTER + CLASS LIST HEADER ────────────────────── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                <div style={{ width: 3, height: 16, borderRadius: 99, background: '#38bdf8', flexShrink: 0 }}/>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#f0f4f8', letterSpacing: '-0.01em' }}>
+                <div style={{ width: 3, height: 16, borderRadius: 99, background: D.purple, flexShrink: 0 }}/>
+                <span style={{ fontSize: 13, fontWeight: 800, color: D.t1, letterSpacing: '-0.01em' }}>
                   {isToday ? `Today's Classes` : `${format(selectedDate, 'EEEE, MMM d')} Classes`}
                 </span>
-                <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>{selCIs.length} checked in</span>
+                <span style={{ fontSize: 11, color: D.t3, fontWeight: 600 }}>{selCIs.length} checked in</span>
               </div>
               {/* Type filter chips */}
               <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 1 }}>
                 {['all', ...classTypes].map(type => {
-                  const cfg = type === 'all' ? { color: '#a78bfa', label: 'All', emoji: '📋' } : CLASS_TYPE_CFG[type] || CLASS_TYPE_CFG.default;
+                  const cfg = type === 'all' ? { color: D.purple, label: 'All', emoji: '📋' } : CLASS_TYPE_CFG[type] || CLASS_TYPE_CFG.default;
                   return (
                     <button key={type} onClick={() => setTypeFilter(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, border: typeFilter === type ? `1px solid ${cfg.color}45` : '1px solid rgba(255,255,255,0.07)', background: typeFilter === type ? `${cfg.color}12` : 'transparent', color: typeFilter === type ? cfg.color : '#64748b', fontSize: 10, fontWeight: typeFilter === type ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.12s' }}>
                       {cfg.emoji} {cfg.label}
@@ -713,16 +728,16 @@ export default function TabCoachSchedule({
                   );
                 })}
               </div>
-              <button onClick={() => openModal('classes')} style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 7, padding: '5px 11px', cursor: 'pointer', flexShrink: 0 }}>+ Add Class</button>
+              <button onClick={() => openModal('classes')} style={{ fontSize: 10, fontWeight: 700, color: D.purple, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, borderRadius: 7, padding: '5px 11px', cursor: 'pointer', flexShrink: 0 }}>+ Add Class</button>
             </div>
 
             {/* ── CLASS CARDS ─────────────────────────────────────────────── */}
             {classesWithData.length === 0 ? (
-              <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', padding: '36px', textAlign: 'center' }}>
-                <Clock style={{ width: 22, height: 22, color: '#3a5070', margin: '0 auto 12px' }}/>
-                <p style={{ fontSize: 13, color: '#3a5070', fontWeight: 700, margin: '0 0 4px' }}>No classes on this day</p>
-                <p style={{ fontSize: 11, color: '#3a5070', margin: '0 0 16px' }}>{typeFilter !== 'all' ? 'Try clearing the type filter' : 'Add your first class to get started'}</p>
-                <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 9, padding: '8px 16px', cursor: 'pointer' }}>Add a Class</button>
+              <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, padding: '36px', textAlign: 'center' }}>
+                <Clock style={{ width: 22, height: 22, color: D.t4, margin: '0 auto 12px' }}/>
+                <p style={{ fontSize: 13, color: D.t2, fontWeight: 700, margin: '0 0 4px' }}>No classes on this day</p>
+                <p style={{ fontSize: 11, color: D.t3, margin: '0 0 16px' }}>{typeFilter !== 'all' ? 'Try clearing the type filter' : 'Add your first class to get started'}</p>
+                <button onClick={() => openModal('classes')} style={{ fontSize: 11, fontWeight: 700, color: D.purple, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, borderRadius: 9, padding: '8px 16px', cursor: 'pointer' }}>Add a Class</button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -739,7 +754,7 @@ export default function TabCoachSchedule({
                   const spotsLeft   = cls.capacity - (cls.booked.length || cls.attended.length);
 
                   return (
-                    <div key={cls.id || idx} style={{ borderRadius: 18, background: '#0c1a2e', border: `1px solid ${isOpen ? c : 'rgba(255,255,255,0.07)'}`, overflow: 'hidden', transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: isOpen ? `0 0 0 1px ${c}20` : 'none' }}>
+                    <div key={cls.id || idx} style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${isOpen ? c : D.border}`, overflow: 'hidden', transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: isOpen ? `0 0 0 1px ${c}20` : 'none' }}>
 
                       {/* Top color bar */}
                       <div style={{ height: 3, background: cls.isCancelled ? 'linear-gradient(90deg,#ef4444,#f87171)' : `linear-gradient(90deg,${c},${c}66)` }}/>
@@ -1104,9 +1119,9 @@ export default function TabCoachSchedule({
             <ContextPanel allMemberships={allMemberships} checkIns={checkIns} myClasses={myClasses} now={now} openModal={openModal}/>
 
             {/* Quick Actions */}
-            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-              <div style={{ padding: '13px 15px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Quick Actions</span>
+            <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+              <div style={{ padding: '14px 16px', borderBottom: `1px solid ${D.divider}` }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>Quick Actions</span>
               </div>
               <div style={{ padding: '9px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
@@ -1135,9 +1150,9 @@ export default function TabCoachSchedule({
             </div>
 
             {/* Week Summary */}
-            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-              <div style={{ padding: '13px 15px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Week Summary</span>
+            <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+              <div style={{ padding: '14px 16px', borderBottom: `1px solid ${D.divider}` }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>Week Summary</span>
               </div>
               <div style={{ padding: '9px 14px' }}>
                 {[
@@ -1149,8 +1164,8 @@ export default function TabCoachSchedule({
                   { label: 'Est. revenue',     value: totalRevToday > 0 ? `£${totalRevToday}` : '—', color: '#34d399' },
                 ].map((s, i, arr) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <span style={{ fontSize: 11, color: '#7a93ad', fontWeight: 500 }}>{s.label}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: s.color, background: `${s.color}12`, border: `1px solid ${s.color}20`, borderRadius: 6, padding: '1px 8px' }}>{s.value}</span>
+                    <span style={{ fontSize: 11, color: D.t2, fontWeight: 500 }}>{s.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.value}</span>
                   </div>
                 ))}
               </div>
@@ -1158,9 +1173,9 @@ export default function TabCoachSchedule({
 
             {/* Class type breakdown */}
             {classTypes.length > 0 && (
-              <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-                <div style={{ padding: '13px 15px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Class Types Today</span>
+              <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${D.divider}` }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>Class Types Today</span>
                 </div>
                 <div style={{ padding: '9px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
                   {classTypes.map(type => {
@@ -1188,10 +1203,10 @@ export default function TabCoachSchedule({
 
             {/* Upcoming Events */}
             {upcomingEvents.length > 0 && (
-              <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-                <div style={{ padding: '13px 15px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>Upcoming Events</span>
-                  <button onClick={() => openModal('event')} style={{ fontSize: 10, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>+ New</button>
+              <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${D.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>Upcoming Events</span>
+                  <button onClick={() => openModal('event')} style={{ fontSize: 10, fontWeight: 700, color: D.green, background: D.greenDim, border: `1px solid ${D.greenBrd}`, borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>+ New</button>
                 </div>
                 <div style={{ padding: '8px 14px' }}>
                   {upcomingEvents.map((ev, i) => {
@@ -1215,9 +1230,9 @@ export default function TabCoachSchedule({
             )}
 
             {/* 30-Day Client Activity */}
-            <div style={{ borderRadius: 16, background: '#0c1a2e', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-              <div style={{ padding: '13px 15px 9px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4f8' }}>30-Day Client Activity</span>
+            <div style={{ borderRadius: 12, background: D.bgSurface, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+              <div style={{ padding: '14px 16px', borderBottom: `1px solid ${D.divider}` }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>30-Day Client Activity</span>
               </div>
               <div style={{ padding: '14px 14px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 56 }}>
