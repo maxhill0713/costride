@@ -64,6 +64,14 @@ export default function GymOwnerDashboard() {
   const now = useMemo(() => new Date(), []);
   const [tab, setTab] = useState('overview');
 
+  // Member table state (lifted so it persists across tab switches)
+  const [memberFilter,   setMemberFilter]   = useState('all');
+  const [memberSearch,   setMemberSearch]   = useState('');
+  const [memberSort,     setMemberSort]     = useState('recentlyActive');
+  const [memberPage,     setMemberPage]     = useState(1);
+  const [memberPageSize] = useState(25);
+  const [selectedRows,   setSelectedRows]   = useState(new Set());
+
   // ── Current user ──────────────────────────────────────────────────────────
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -365,7 +373,7 @@ export default function GymOwnerDashboard() {
 
           {/* GYM OWNER TABS */}
           {!isCoach && tab === 'overview'   && <TabOverview   selectedGym={selectedGym} allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} events={events} posts={posts} coaches={coaches} challenges={challenges} rewards={rewards} avatarMap={avatarMap} openModal={openModal} now={now} gymId={gymId} ci30Count={ci30Count} ci7Count={ci7Count} ci7pCount={ci7pCount} totalMembers={totalMembers} weeklyTrend={weeklyTrend} monthlyTrend={monthlyTrend} weeklyChart={weeklyChart} monthlyChart={monthlyChart} atRisk={atRisk} activeThisMonth={activeThisMonth} returningCount={returningCount} newMembersThis30={newMembersThis30} peakHours={peakHours} busiestDays={busiestDays} engagementSegmentsCoach={engagementSegmentsCoach}/>}
-          {!isCoach && tab === 'members'    && <TabMembers    selectedGym={selectedGym} allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} avatarMap={avatarMap} openModal={openModal} now={now} gymId={gymId}/>}
+          {!isCoach && tab === 'members'    && <TabMembers    selectedGym={selectedGym} allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} avatarMap={avatarMap} openModal={openModal} now={now} gymId={gymId} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} atRisk={atRisk} atRiskMembersList={[]} totalMembers={totalMembers} posts={posts}/>}
           {!isCoach && tab === 'analytics'  && <TabAnalytics  selectedGym={selectedGym} allMemberships={allMemberships} checkIns={checkIns} ci30={ci30} events={events} coaches={coaches} challenges={challenges} avatarMap={avatarMap} openModal={openModal} now={now} gymId={gymId} ci30Count={ci30Count} ci7Count={ci7Count} ci7pCount={ci7pCount} totalMembers={totalMembers} weeklyTrend={weeklyTrend} monthlyTrend={monthlyTrend} weeklyChart={weeklyChart} monthlyChart={monthlyChart} atRisk={atRisk} activeThisMonth={activeThisMonth} returningCount={returningCount} newMembersThis30={newMembersThis30} peakHours={peakHours} busiestDays={busiestDays} engagementSegmentsCoach={engagementSegmentsCoach}/>}
           {!isCoach && tab === 'content'    && <TabContent    selectedGym={selectedGym} events={events} posts={posts} polls={polls} classes={allClasses} coaches={coaches} challenges={challenges} avatarMap={avatarMap} checkIns={checkIns} ci30={ci30} openModal={openModal} now={now} gymId={gymId} allMemberships={allMemberships}/>}
           {!isCoach && tab === 'gym'        && <TabGym        selectedGym={selectedGym} allMemberships={allMemberships} coaches={coaches} classes={allClasses} rewards={rewards} events={events} checkIns={checkIns} openModal={openModal} now={now} gymId={gymId}/>}
