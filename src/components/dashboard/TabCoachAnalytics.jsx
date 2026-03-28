@@ -1242,38 +1242,7 @@ export default function TabCoachAnalytics({
         </div>
 
         {/* Retention funnel + peak hours */}
-        <div style={{ ...card, padding: '18px 20px', marginBottom: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginBottom: 16 }}>Retention Breakdown</div>
-          <div style={{ display: 'grid', gridTemplateColumns: col2, gap: 18 }}>
-            <div>
-              {[
-                { label: 'Total Members',      value: totalMembers,    color: C.blue,   pct: 100 },
-                { label: 'Active This Month',  value: activeThisMonth, color: C.green,  pct: totalMembers > 0 ? Math.round((activeThisMonth / totalMembers) * 100) : 0 },
-                { label: 'Returning Members',  value: returningCount,  color: C.purple, pct: totalMembers > 0 ? Math.round((returningCount / totalMembers) * 100) : 0 },
-                { label: 'New Members (30d)',   value: newMembersThis30, color: C.amber, pct: totalMembers > 0 ? Math.round((newMembersThis30 / totalMembers) * 100) : 0 },
-                { label: 'At Risk',            value: atRisk,          color: C.red,    pct: totalMembers > 0 ? Math.round((atRisk / totalMembers) * 100) : 0 },
-              ].map((s, i) => <StatRow key={i} label={s.label} value={s.value} color={s.color} pct={s.pct} />)}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 800, color: C.t1, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Calendar style={{ width: 11, height: 11, color: C.green }} /> Busiest Days
-                </div>
-                {busiestDays.slice(0, 5).map(({ name, count }, rank) => (
-                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-                    <span style={{ fontSize: 9, fontWeight: 800, color: rank === 0 ? C.amber : C.t3, width: 16, textAlign: 'center', flexShrink: 0 }}>#{rank + 1}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: C.t1, width: 28, flexShrink: 0 }}>{name}</span>
-                    <div style={{ flex: 1, height: 5, borderRadius: 99, background: C.b2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${(count / dayMax) * 100}%`, borderRadius: 99, background: rank === 0 ? `linear-gradient(90deg,${C.amber},${C.red})` : `linear-gradient(90deg,${C.blue},${C.teal})` }} />
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: rank === 0 ? C.amber : C.t2, width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
         <ChurnRiskScorer memberships={memberships} checkIns={checkIns} now={nowMs} />
       </section>
