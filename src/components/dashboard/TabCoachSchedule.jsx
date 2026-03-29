@@ -350,7 +350,7 @@ function SessionDetailPanel({ cls, allMemberships, checkIns, avatarMap, attendan
   ];
 
   return (
-    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 420, zIndex: 9000, background: C.bg, borderLeft: `1px solid ${C.borderEl}`, display: 'flex', flexDirection: 'column', boxShadow: '-32px 0 80px rgba(0,0,0,0.6)' }}>
+    <div onClick={e => e.stopPropagation()} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 420, zIndex: 9000, background: C.bg, borderLeft: `1px solid ${C.borderEl}`, display: 'flex', flexDirection: 'column', boxShadow: '-32px 0 80px rgba(0,0,0,0.6)' }}>
 
       {/* Header */}
       <div style={{ padding: '18px 20px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
