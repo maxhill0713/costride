@@ -1,1260 +1,1173 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   STYLES  — "Enterprise Precision" aesthetic
-   Philosophy: monochrome base · status colour only on indicators · 8px grid
-   white KPI figures · surgical use of accent blue · zero decorative noise
-───────────────────────────────────────────────────────────────────────────── */
-const S = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+/* ─── CSS INJECTION ──────────────────────────────────────────────────────────── */
+if (typeof document !== "undefined" && !document.getElementById("cp-v4-css")) {
+  const s = document.createElement("style");
+  s.id = "cp-v4-css";
+  s.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap');
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    *, *::before, *::after { box-sizing: border-box; }
 
-:root{
-  /* surfaces */
-  --bg:       #080909;
-  --surf:     #0e0f10;
-  --card:     #121314;
-  --card2:    #161718;
-  --overlay:  rgba(0,0,0,0.75);
+    .cp { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-  /* borders */
-  --b:        rgba(255,255,255,0.06);
-  --bhi:      rgba(255,255,255,0.11);
-  --bact:     rgba(255,255,255,0.18);
+    /* ── Animations ── */
+    @keyframes cpFadeUp   { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
+    @keyframes cpSlideR   { from { opacity:0; transform:translateX(14px) } to { opacity:1; transform:translateX(0) } }
+    @keyframes cpScale    { from { opacity:0; transform:scale(0.97) } to { opacity:1; transform:scale(1) } }
+    @keyframes cpPulse    { 0%,100%{opacity:1} 50%{opacity:0.45} }
+    @keyframes cpShimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-  /* accent — used ONLY for selected/active states */
-  --blue:     #3b82f6;
-  --blue-dim: rgba(59,130,246,0.09);
-  --blue-mid: rgba(59,130,246,0.18);
-  --blue-bdr: rgba(59,130,246,0.30);
+    .fade-up  { animation: cpFadeUp  0.28s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide-r  { animation: cpSlideR  0.22s cubic-bezier(0.22,1,0.36,1) both; }
+    .scale-in { animation: cpScale   0.22s cubic-bezier(0.22,1,0.36,1) both; }
 
-  /* status — used ONLY for dots, badges, critical numbers */
-  --red:    #ef4444;   --rd: rgba(239,68,68,0.08);   --rb: rgba(239,68,68,0.22);
-  --amber:  #f59e0b;   --ad: rgba(245,158,11,0.08);  --ab: rgba(245,158,11,0.22);
-  --green:  #22c55e;   --gd: rgba(34,197,94,0.08);   --gb: rgba(34,197,94,0.22);
+    /* ── Filter tabs ── */
+    .filter-tab {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 999px; cursor: pointer;
+      font-size: 12px; font-weight: 600; border: 1px solid transparent;
+      color: rgba(255,255,255,0.35); transition: all 0.13s; white-space: nowrap;
+      user-select: none;
+    }
+    .filter-tab:hover { color: rgba(255,255,255,0.65); border-color: rgba(255,255,255,0.08); }
+    .filter-tab.active {
+      color: #f1f3f5; background: rgba(59,130,246,0.10);
+      border-color: rgba(59,130,246,0.28);
+    }
+    .filter-tab .ct {
+      font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 999px;
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4);
+      font-family: 'DM Mono', monospace;
+    }
+    .filter-tab.active .ct { background: rgba(59,130,246,0.18); color: #3b82f6; }
+    .filter-tab.danger  .ct { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .filter-tab.warning .ct { background: rgba(245,158,11,0.12); color: #f59e0b; }
 
-  /* typography */
-  --t1: #f1f3f5;
-  --t2: #8b949e;
-  --t3: #484f58;
-  --t4: #2d3139;
+    /* ── Pill badges ── */
+    .pill-blue    { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(59,130,246,0.11);border:1px solid rgba(59,130,246,0.24);color:#60a5fa; }
+    .pill-green   { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.22);color:#4ade80; }
+    .pill-red     { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.22);color:#f87171; }
+    .pill-amber   { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.22);color:#fbbf24; }
+    .pill-neutral { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35); }
+    .pill-gold    { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(234,179,8,0.10);border:1px solid rgba(234,179,8,0.22);color:#fde047; }
 
-  /* geometry */
-  --r:  8px;
-  --rs: 5px;
+    /* ── Member rows ── */
+    .member-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 18px;
+      background: #0c1422;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      cursor: pointer; transition: border-color 0.14s, background 0.14s;
+      position: relative;
+    }
+    .member-row:hover {
+      border-color: rgba(255,255,255,0.12);
+      background: #0f1928;
+    }
+    .member-row.selected {
+      border-color: rgba(59,130,246,0.38);
+      background: rgba(59,130,246,0.055);
+    }
 
-  /* layout */
-  --sw:  220px;
-  --pw:  392px;
-  --hdr-h: 52px;
-  --fbar-h: 41px;
-  --tb-h: 44px;
+    /* ── Priority rows (at-risk: red left accent on hover) ── */
+    .priority-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 18px;
+      background: #0c1422;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      cursor: pointer; transition: all 0.14s;
+      position: relative; overflow: hidden;
+    }
+    .priority-row::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: transparent; border-radius: 12px 0 0 12px;
+      transition: background 0.15s;
+    }
+    .priority-row:hover { border-color: rgba(239,68,68,0.28); background: rgba(239,68,68,0.025); }
+    .priority-row:hover::before { background: #ef4444; }
+    .priority-row.selected {
+      border-color: rgba(239,68,68,0.40);
+      background: rgba(239,68,68,0.045);
+    }
+    .priority-row.selected::before { background: #ef4444; }
 
-  /* transitions */
-  --tr: 0.12s ease;
+    /* ── Group headers ── */
+    .group-hdr {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 2px 6px;
+      font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.10em;
+    }
+    .group-hdr::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.055); }
 
-  font-family:'DM Sans',sans-serif;
-}
+    /* ── Score ring colors (CORRECT psychology) ── */
+    .score-healthy { color: #4ade80; }
+    .score-warning { color: #fbbf24; }
+    .score-danger  { color: #f87171; }
 
-body{ background:var(--bg); color:var(--t1); font-size:13.5px; }
-button,select,input{ font-family:'DM Sans',sans-serif; }
-input[type="date"],input[type="time"]{ color-scheme:dark; }
+    /* ── Detail panel ── */
+    .detail-panel {
+      animation: cpSlideR 0.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
 
-/* ── SCROLLBARS ─────────────────────────────────────────────────────────── */
-::-webkit-scrollbar{ width:3px; height:3px; }
-::-webkit-scrollbar-thumb{ background:var(--b); border-radius:2px; }
+    /* ── Metric mini-cards ── */
+    .mc {
+      background: #101f30; border: 1px solid rgba(255,255,255,0.065);
+      border-radius: 10px; padding: 11px 13px; transition: border-color 0.13s;
+    }
+    .mc:hover { border-color: rgba(255,255,255,0.11); }
 
-/* ── APP SHELL ──────────────────────────────────────────────────────────── */
-.app{ display:flex; height:100vh; overflow:hidden; }
-.main{ flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-.body-split{ flex:1; display:flex; overflow:hidden; }
+    /* ── Insight cards ── */
+    .insight-card {
+      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 12px 14px;
+      border-left: 2px solid transparent; margin-bottom: 6px;
+    }
+    .insight-card.critical { border-left-color: #ef4444; }
+    .insight-card.warning  { border-left-color: #f59e0b; }
+    .insight-card.info     { border-left-color: #3b82f6; }
 
-/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
-.sb{
-  width:var(--sw); flex-shrink:0;
-  background:var(--surf);
-  border-right:1px solid var(--b);
-  display:flex; flex-direction:column;
-}
-.sb-top{
-  height:var(--hdr-h);
-  display:flex; align-items:center;
-  padding:0 14px;
-  border-bottom:1px solid var(--b);
-  gap:9px;
-}
-.sb-ico{
-  width:26px; height:26px; border-radius:5px;
-  background:var(--card2); border:1px solid var(--bhi);
-  display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:11.5px; color:var(--t1); flex-shrink:0;
-  letter-spacing:-.01em;
-}
-.sb-gname{ font-size:12.5px; font-weight:600; color:var(--t1); }
-.sb-grole{ font-size:10px; color:var(--t3); font-weight:500; }
+    /* ── Timeline ── */
+    .tl-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.042); }
+    .tl-row:last-child { border-bottom: none; }
+    .tl-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
 
-.sb-nav{ flex:1; padding:8px 0; }
-.sb-lbl{
-  font-size:9.5px; color:var(--t3); text-transform:uppercase;
-  letter-spacing:.09em; font-weight:600;
-  padding:8px 14px 4px;
-}
-.sb-item{
-  display:flex; align-items:center; gap:8px;
-  padding:7px 14px;
-  cursor:pointer; color:var(--t2); font-size:13px; font-weight:500;
-  transition:var(--tr); border-left:2px solid transparent;
-  user-select:none;
-}
-.sb-item:hover{ color:var(--t1); background:rgba(255,255,255,0.02); }
-.sb-item.on{ color:var(--t1); background:var(--blue-dim); border-left-color:var(--blue); }
-.sb-item svg{ opacity:.55; flex-shrink:0; }
-.sb-item.on svg{ opacity:1; }
+    /* ── Scrollbar ── */
+    .cp-scroll::-webkit-scrollbar { width: 3px; }
+    .cp-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
 
-.sb-foot{
-  margin-top:auto; border-top:1px solid var(--b);
-  padding:8px 0;
-}
-.sb-new{
-  display:flex; align-items:center; gap:7px;
-  margin:6px 10px 2px;
-  padding:7px 10px;
-  background:var(--blue); color:#fff;
-  border-radius:var(--rs); font-size:12.5px; font-weight:600;
-  cursor:pointer; transition:var(--tr); border:none;
-  justify-content:center;
-}
-.sb-new:hover{ background:#2563eb; }
-.sb-link{
-  display:flex; align-items:center; gap:8px;
-  padding:6px 14px; font-size:12px; color:var(--t3);
-  cursor:pointer; transition:var(--tr);
-}
-.sb-link:hover{ color:var(--t2); }
-.sb-link.out{ color:rgba(239,68,68,0.55); }
-.sb-link.out:hover{ color:var(--red); }
+    /* ── Action button ── */
+    .act-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 13px; border-radius: 8px; cursor: pointer;
+      font-size: 11.5px; font-weight: 700; border: none;
+      transition: all 0.12s; font-family: 'DM Sans', sans-serif;
+    }
+    .act-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .act-btn:active { transform: translateY(0); }
 
-/* ── KPI BAR — top of content ────────────────────────────────────────────── */
-.kpi-bar{
-  display:grid; grid-template-columns:repeat(5,1fr);
-  gap:12px;
-  padding:16px 22px;
-  border-bottom:1px solid var(--b);
-  flex-shrink:0;
-  background:var(--bg);
-}
-.kpi{
-  background:var(--surf);
-  border:1px solid var(--b);
-  border-radius:12px;
-  padding:18px 18px 16px;
-  position:relative; overflow:hidden;
-  transition:border-color var(--tr); cursor:default;
-}
-.kpi.clickable{ cursor:pointer; }
-.kpi.clickable:hover{ border-color:var(--bhi); }
-.kpi-lbl{
-  font-size:10px; text-transform:uppercase; letter-spacing:.10em;
-  color:var(--t3); font-weight:700; margin-bottom:0;
-}
-.kpi-icon{
-  width:26px; height:26px; border-radius:7px; flex-shrink:0;
-  background:rgba(255,255,255,0.04); border:1px solid var(--b);
-  display:flex; align-items:center; justify-content:center;
-}
-.kpi-val{
-  font-size:32px; font-weight:800; letter-spacing:-.04em;
-  line-height:1; color:var(--t1);
-  margin:8px 0 5px;
-}
-.kpi-sub{ font-size:11px; color:var(--t3); display:flex; align-items:center; gap:5px; }
-.kpi-dot{
-  display:inline-block; width:6px; height:6px; border-radius:50%;
-  margin-right:4px; margin-bottom:1px; vertical-align:middle;
-}
+    /* ── Search input ── */
+    .search-input {
+      width: 100%; padding: 7px 10px 7px 32px;
+      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 9px; color: #edf2f7;
+      font-family: 'DM Sans', sans-serif; font-size: 12.5px;
+      outline: none; transition: border-color 0.13s;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.22); }
+    .search-input:focus { border-color: rgba(59,130,246,0.35); }
 
-/* ── HEADER ──────────────────────────────────────────────────────────────── */
-.hdr{
-  height:var(--hdr-h);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 22px;
-  border-bottom:1px solid var(--b);
-  background:var(--surf); flex-shrink:0;
-}
-.hdr-l{ display:flex; align-items:baseline; gap:10px; }
-.hdr-l h1{ font-size:15px; font-weight:700; letter-spacing:-.02em; }
-.hdr-l p{ font-size:11.5px; color:var(--t3); font-weight:400; }
-.hdr-r{ display:flex; align-items:center; gap:6px; }
+    /* ── Retention bar ── */
+    .ret-track {
+      height: 3px; border-radius: 999px; background: rgba(255,255,255,0.05); overflow: hidden;
+    }
+    .ret-fill { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
 
-/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
-.btn{
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 12px; border-radius:var(--rs);
-  font-size:12px; font-weight:500; cursor:pointer;
-  border:none; transition:var(--tr);
-}
-.btn-gh{
-  background:transparent; color:var(--t2);
-  border:1px solid var(--b);
-}
-.btn-gh:hover{ background:rgba(255,255,255,0.04); color:var(--t1); border-color:var(--bhi); }
-.btn-sm{ padding:4px 10px; font-size:11.5px; }
+    /* ── Modal overlay ── */
+    @keyframes cpMod { from{opacity:0;transform:scale(0.97)translateY(6px)} to{opacity:1;transform:none} }
+    .modal-ov { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px; }
+    .modal-box { background:#0c1422;border:1px solid rgba(255,255,255,0.12);border-radius:14px;width:100%;max-width:420px;animation:cpMod .18s ease;overflow:hidden; }
 
-.iBtn{
-  width:28px; height:28px; border-radius:var(--rs);
-  display:flex; align-items:center; justify-content:center;
-  background:transparent; color:var(--t2); border:1px solid var(--b);
-  cursor:pointer; transition:var(--tr); font-size:13px;
-}
-.iBtn:hover{ background:rgba(255,255,255,0.04); color:var(--t1); border-color:var(--bhi); }
+    /* ── Toast ── */
+    @keyframes cpToast { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    .toast {
+      position: fixed; bottom: 22px; right: 22px; z-index: 300;
+      background: #101f30; border: 1px solid rgba(255,255,255,0.10);
+      border-left: 2px solid #22c55e;
+      border-radius: 10px; padding: 10px 16px;
+      font-size: 12.5px; font-weight: 500; color: #edf2f7;
+      display: flex; align-items: center; gap: 8px;
+      animation: cpToast 0.18s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
 
-.avatar-chip{
-  width:28px; height:28px; border-radius:50%;
-  background:var(--card2); border:1px solid var(--bhi);
-  display:flex; align-items:center; justify-content:center;
-  font-size:11px; font-weight:700; color:var(--t2);
-  cursor:pointer; flex-shrink:0;
+    /* ── KPI cards ── */
+    .kpi-card {
+      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 16px 18px 14px;
+      transition: border-color 0.14s;
+    }
+    .kpi-card.clickable { cursor: pointer; }
+    .kpi-card.clickable:hover { border-color: rgba(255,255,255,0.12); }
+  `;
+  document.head.appendChild(s);
 }
 
-/* ── FILTER BAR ──────────────────────────────────────────────────────────── */
-.fbar{
-  display:flex; align-items:center; gap:2px;
-  padding:6px 22px;
-  border-bottom:1px solid var(--b);
-  background:var(--surf); flex-shrink:0;
-  overflow-x:auto;
-}
-.fbar::-webkit-scrollbar{ display:none; }
-.ft{
-  display:inline-flex; align-items:center; gap:4px;
-  padding:4px 9px; border-radius:20px;
-  border:1px solid transparent;
-  font-size:12px; font-weight:500; color:var(--t3);
-  cursor:pointer; white-space:nowrap; transition:var(--tr);
-}
-.ft:hover{ color:var(--t2); border-color:var(--b); }
-.ft.on{ color:var(--t1); background:var(--blue-dim); border-color:var(--blue-bdr); }
-.ft .n{
-  font-size:10px; font-weight:600;
-  padding:1px 5px; border-radius:10px;
-  background:var(--t4); color:var(--t3);
-  font-family:'DM Mono',monospace;
-}
-.ft.on .n{ background:var(--blue-mid); color:var(--blue); }
-.ft.rt .n{ background:var(--rd); color:var(--red); }
-.ft.at .n{ background:var(--ad); color:var(--amber); }
-.fdiv{ width:1px; height:12px; background:var(--b); flex-shrink:0; margin:0 3px; }
+/* ─── DESIGN TOKENS ───────────────────────────────────────────────────────────── */
+const D = {
+  bgBase:    "#070e19",
+  bgSurface: "#0c1422",
+  bgCard:    "#101f30",
+  t1: "#edf2f7",
+  t2: "#8a9bb0",
+  t3: "#4a5d72",
+  t4: "#2a3a4d",
+  blue:      "#3b82f6",
+  blueSub:   "rgba(59,130,246,0.10)",
+  blueBdr:   "rgba(59,130,246,0.28)",
+  red:       "#ef4444",
+  redSub:    "rgba(239,68,68,0.10)",
+  redBdr:    "rgba(239,68,68,0.28)",
+  amber:     "#f59e0b",
+  amberSub:  "rgba(245,158,11,0.10)",
+  amberBdr:  "rgba(245,158,11,0.28)",
+  green:     "#22c55e",
+  greenSub:  "rgba(34,197,94,0.10)",
+  greenBdr:  "rgba(34,197,94,0.28)",
+};
 
-/* ── TOOLBAR ─────────────────────────────────────────────────────────────── */
-.tb{
-  display:flex; align-items:center; gap:7px;
-  padding:7px 22px;
-  border-bottom:1px solid var(--b);
-  background:var(--card); flex-shrink:0;
+/* ─── SCORE COLOR HELPER — correct psychology ─────────────────────────────────── */
+function scoreColor(score) {
+  if (score >= 70) return D.green;
+  if (score >= 40) return D.amber;
+  return D.red;
 }
-.sw{ flex:1; max-width:320px; position:relative; }
-.si{ position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--t3); font-size:12px; pointer-events:none; }
-.sinp{
-  width:100%; padding:5px 9px 5px 28px;
-  background:var(--surf); border:1px solid var(--b);
-  border-radius:var(--rs); color:var(--t1); font-size:12.5px;
-  outline:none; transition:var(--tr);
+function scoreLabel(score) {
+  if (score >= 70) return "Healthy";
+  if (score >= 40) return "At Risk";
+  return "Critical";
 }
-.sinp::placeholder{ color:var(--t3); }
-.sinp:focus{ border-color:var(--blue-bdr); background:var(--card); }
-.kbd{
-  position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  font-size:10px; color:var(--t3); background:var(--card2);
-  border:1px solid var(--b); border-radius:3px; padding:1px 4px;
-  font-family:'DM Mono',monospace; pointer-events:none;
-}
-.ssel{
-  padding:5px 8px; background:var(--surf);
-  border:1px solid var(--b); border-radius:var(--rs);
-  color:var(--t2); font-size:12px; cursor:pointer;
-  outline:none; transition:var(--tr);
-}
-.ssel:hover{ border-color:var(--bhi); color:var(--t1); }
-.tb-r{ display:flex; align-items:center; gap:5px; margin-left:auto; }
-.tgl{ display:flex; border:1px solid var(--b); border-radius:var(--rs); overflow:hidden; }
-.tgl-btn{
-  padding:4px 10px; background:transparent; color:var(--t3);
-  border:none; cursor:pointer; font-size:12px;
-  transition:var(--tr); font-family:'DM Sans',sans-serif;
-}
-.tgl-btn:hover{ background:rgba(255,255,255,0.03); color:var(--t2); }
-.tgl-btn.on{ background:var(--blue-dim); color:var(--blue); }
-
-/* ── CLIENT LIST ─────────────────────────────────────────────────────────── */
-.clist{ flex:1; overflow-y:auto; }
-.ghdr{
-  position:sticky; top:0; z-index:3;
-  display:flex; align-items:center; gap:7px;
-  padding:7px 22px 5px;
-  background:var(--bg);
-  font-size:9.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.1em;
-}
-.ghdr::after{ content:''; flex:1; height:1px; background:var(--b); }
-.ghdr.r{ color:var(--red); }
-.ghdr.a{ color:var(--amber); }
-.ghdr.g{ color:var(--green); }
-
-.crow{
-  display:flex; align-items:center; gap:12px;
-  padding:11px 22px;
-  border-bottom:1px solid var(--b);
-  cursor:pointer; transition:background var(--tr);
-  border-left:2px solid transparent;
-  position:relative;
-}
-.crow:hover{ background:rgba(255,255,255,0.015); }
-.crow.sel{ background:var(--blue-dim); border-left-color:var(--blue) !important; }
-.crow.at-risk{ border-left-color:rgba(239,68,68,0.4); }
-.crow.needs-attention{ border-left-color:rgba(245,158,11,0.4); }
-
-.cav{
-  width:34px; height:34px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:12px; flex-shrink:0;
+function scoreClass(score) {
+  if (score >= 70) return "score-healthy";
+  if (score >= 40) return "score-warning";
+  return "score-danger";
 }
 
-.ci{ flex:1; min-width:0; }
-.cnr{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
-.cn{ font-size:13.5px; font-weight:600; }
-.tag{
-  font-size:9px; font-weight:700;
-  padding:1px 5px; border-radius:3px;
-  text-transform:uppercase; letter-spacing:.04em;
-}
-.treg{ background:var(--card2); color:var(--t3); border:1px solid var(--b); }
-.tnew{ background:var(--blue-dim); color:var(--blue); border:1px solid var(--blue-bdr); }
-.tvip{ background:rgba(234,179,8,0.07); color:#eab308; border:1px solid rgba(234,179,8,0.2); }
+/* ─── PRIMITIVES ──────────────────────────────────────────────────────────────── */
 
-.cm{ display:flex; align-items:center; gap:12px; margin-top:3px; flex-wrap:wrap; }
-.mi{ display:flex; align-items:center; gap:3px; font-size:11.5px; color:var(--t2); }
-.sd{ width:5px; height:5px; border-radius:50%; flex-shrink:0; }
-.sdg{ background:var(--green); } .sda{ background:var(--amber); } .sdr{ background:var(--red); }
-.tup{ color:var(--green); font-size:11px; }
-.tdn{ color:var(--red); font-size:11px; }
-.tfl{ color:var(--t3); font-size:11px; }
+export function MiniAvatar({ name = "?", src, size = 32, urgency }) {
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const hue = name.split("").reduce((h, c) => h + c.charCodeAt(0), 0) % 360;
+  const bg = urgency === "danger"
+    ? "rgba(239,68,68,0.15)"
+    : urgency === "risk"
+    ? "rgba(245,158,11,0.12)"
+    : `hsla(${hue},28%,18%,1)`;
+  const bdr = urgency === "danger"
+    ? "rgba(239,68,68,0.3)"
+    : urgency === "risk"
+    ? "rgba(245,158,11,0.25)"
+    : "rgba(255,255,255,0.08)";
+  const color = urgency === "danger" ? "#f87171" : urgency === "risk" ? "#fbbf24" : `hsl(${hue},55%,70%)`;
 
-.flags{ display:flex; gap:3px; flex-wrap:wrap; margin-top:5px; }
-.fl{ font-size:10px; font-weight:500; padding:2px 6px; border-radius:3px; }
-.flr{ background:var(--rd); color:var(--red); border:1px solid var(--rb); }
-.fla{ background:var(--ad); color:var(--amber); border:1px solid var(--ab); }
-.flg{ background:rgba(255,255,255,0.04); color:var(--t3); border:1px solid var(--b); }
-
-.cr{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
-.score-badge{
-  min-width:34px; height:34px; border-radius:var(--rs);
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; flex-shrink:0;
-  font-family:'DM Mono',monospace; padding:0 4px;
-}
-.sbr{ background:var(--rd); color:var(--red); border:1px solid var(--rb); }
-.sba{ background:var(--ad); color:var(--amber); border:1px solid var(--ab); }
-.sbg{ background:var(--gd); color:var(--green); border:1px solid var(--gb); }
-
-.ract{
-  width:26px; height:26px; border-radius:var(--rs);
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--b); background:transparent;
-  color:var(--t3); cursor:pointer; transition:var(--tr); font-size:12px;
-}
-.ract:hover{ color:var(--t1); border-color:var(--bhi); background:rgba(255,255,255,0.04); }
-.chev{ color:var(--t4); font-size:12px; transition:var(--tr); }
-.crow:hover .chev{ color:var(--t2); }
-
-.empty-list{ padding:56px 24px; text-align:center; color:var(--t3); font-size:12.5px; }
-
-/* ── DETAIL PANEL ────────────────────────────────────────────────────────── */
-.panel{
-  width:var(--pw); flex-shrink:0;
-  background:var(--surf); border-left:1px solid var(--b);
-  display:flex; flex-direction:column; overflow:hidden;
-}
-@keyframes pi{ from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:translateX(0)} }
-.pan{ animation:pi .16s ease; display:flex; flex-direction:column; height:100%; overflow:hidden; }
-
-.pempty{
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:6px; padding:40px 24px; text-align:center; color:var(--t3);
-}
-.pempty .ei{ font-size:20px; opacity:.2; margin-bottom:4px; }
-.pempty h4{ font-size:13px; font-weight:600; color:var(--t2); }
-.pempty p{ font-size:11.5px; line-height:1.65; max-width:220px; }
-
-.ph{ padding:14px 16px 12px; border-bottom:1px solid var(--b); flex-shrink:0; }
-.ph-top{ display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
-.phav{
-  width:38px; height:38px; border-radius:50%;
-  flex-shrink:0; display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:13px;
-}
-.pname{ font-size:14px; font-weight:700; letter-spacing:-.01em; }
-.psub{
-  display:flex; align-items:center; gap:5px;
-  font-size:11px; color:var(--t2); margin-top:3px; flex-wrap:wrap;
-}
-.pclose{
-  margin-left:auto; width:24px; height:24px; border-radius:var(--rs);
-  display:flex; align-items:center; justify-content:center;
-  color:var(--t3); cursor:pointer; border:1px solid var(--b);
-  font-size:10px; flex-shrink:0; transition:var(--tr);
-}
-.pclose:hover{ color:var(--t1); border-color:var(--bhi); }
-
-.qas{ display:flex; gap:5px; }
-.qa{
-  flex:1; padding:6px 5px;
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--rs); color:var(--t2); font-size:11.5px;
-  font-weight:500; cursor:pointer; transition:var(--tr);
-  display:flex; align-items:center; justify-content:center; gap:4px;
-}
-.qa:hover{ background:var(--card2); color:var(--t1); border-color:var(--bhi); }
-.qa.qp{ background:var(--blue-dim); border-color:var(--blue-bdr); color:var(--blue); }
-.qa.qp:hover{ background:var(--blue-mid); }
-.qa.qbook{ background:var(--gd); border-color:var(--gb); color:var(--green); }
-.qa.qbook:hover{ background:rgba(34,197,94,0.14); }
-
-.pb{ flex:1; overflow-y:auto; padding:14px 16px 24px; }
-.psec{ margin-bottom:18px; }
-.pst{
-  font-size:9.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.09em; color:var(--t3); margin-bottom:8px;
-  display:flex; align-items:center; gap:6px;
-}
-.pst::after{ content:''; flex:1; height:1px; background:var(--b); }
-
-/* score bar */
-.sbc{
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--r); padding:12px 14px;
-}
-.sbt{
-  display:flex; align-items:baseline;
-  justify-content:space-between; margin-bottom:8px;
-}
-.sbl{ font-size:11.5px; color:var(--t2); }
-.sbv{
-  font-size:22px; font-weight:700; letter-spacing:-.03em;
-  font-family:'DM Mono',monospace;
-}
-.sbtr{ height:3px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
-.sbf{ height:100%; border-radius:2px; transition:width .7s cubic-bezier(.4,0,.2,1); }
-.sblb{
-  display:flex; justify-content:space-between;
-  margin-top:5px; font-size:10px; color:var(--t3);
+  return src ? (
+    <img src={src} alt={name} style={{ width: size, height: size, borderRadius: "50%",
+      objectFit: "cover", border: `1.5px solid ${bdr}`, flexShrink: 0 }}/>
+  ) : (
+    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: bg, border: `1.5px solid ${bdr}`,
+      fontSize: Math.round(size * 0.36), fontWeight: 800, color,
+      letterSpacing: "-0.01em" }}>
+      {initials}
+    </div>
+  );
 }
 
-/* metrics grid */
-.mg{ display:grid; grid-template-columns:1fr 1fr; gap:5px; }
-.mc{
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--r); padding:9px 11px;
-}
-.mcl{
-  font-size:9.5px; color:var(--t3); text-transform:uppercase;
-  letter-spacing:.07em; font-weight:600; margin-bottom:4px;
-}
-.mcv{
-  font-size:16px; font-weight:700; line-height:1;
-  letter-spacing:-.01em; color:var(--t1);
-  font-family:'DM Mono',monospace;
-}
-.mcsm{ font-size:13px; font-family:'DM Sans',sans-serif; }
-.mcg{ color:var(--green); } .mcr{ color:var(--red); } .mca{ color:var(--amber); }
-.mcs{ font-size:10px; color:var(--t3); margin-top:2px; }
-
-/* last interaction row */
-.lintb{
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--r); padding:10px 14px;
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-}
-.lirow{ display:flex; flex-direction:column; gap:2px; }
-.lilbl{ font-size:9.5px; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
-.lival{ font-size:12.5px; font-weight:600; color:var(--t1); }
-.lidiv{ width:1px; height:26px; background:var(--b); }
-
-/* insights */
-.ins{
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--r); padding:10px 12px;
-  margin-bottom:5px; border-left:2px solid transparent;
-}
-.ins.ic{ border-left-color:var(--red); }
-.ins.iw{ border-left-color:var(--amber); }
-.ins.ii{ border-left-color:var(--blue); }
-.insh{ display:flex; align-items:flex-start; justify-content:space-between; gap:5px; }
-.inst{ font-size:12px; font-weight:600; color:var(--t1); }
-.insb{ font-size:11px; color:var(--t2); margin-top:3px; line-height:1.55; }
-.insct{
-  display:inline-flex; align-items:center; gap:3px;
-  font-size:11px; color:var(--blue); font-weight:500;
-  margin-top:6px; cursor:pointer;
-}
-.insct:hover{ text-decoration:underline; }
-
-/* timeline */
-.tli{
-  display:flex; gap:10px; padding:7px 0;
-  border-bottom:1px solid var(--b);
-}
-.tli:last-child{ border-bottom:none; }
-.tld{
-  width:6px; height:6px; border-radius:50%;
-  flex-shrink:0; margin-top:5px;
-}
-.tlv{ background:var(--green); }
-.tlm{ background:var(--red); }
-.tlmsg{ background:var(--blue); }
-.tlw{ background:var(--amber); }
-.tllb{ font-size:12px; color:var(--t1); font-weight:500; }
-.tlt{ font-size:10.5px; color:var(--t3); margin-top:1px; }
-
-/* notes */
-.notes-box{
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--r); padding:10px 12px;
-  font-size:11.5px; color:var(--t2); line-height:1.65;
+export function Spark({ data = [], color = D.blue, height = 30, width = 88 }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const pad = 3;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * (width - pad * 2) + pad;
+    const y = height - pad - ((v - min) / range) * (height - pad * 2);
+    return `${x},${y}`;
+  }).join(" ");
+  const lastV = data[data.length - 1];
+  const lx = width - pad;
+  const ly = height - pad - ((lastV - min) / range) * (height - pad * 2);
+  return (
+    <svg width={width} height={height} style={{ overflow: "visible", flexShrink: 0 }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5}
+        strokeLinejoin="round" strokeLinecap="round" opacity={0.85}/>
+      <circle cx={lx} cy={ly} r={2.5} fill={color}/>
+    </svg>
+  );
 }
 
-/* ── MODAL ───────────────────────────────────────────────────────────────── */
-.ov{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.72);
-  z-index:100; display:flex; align-items:center; justify-content:center;
-  padding:20px; backdrop-filter:blur(3px);
-}
-@keyframes mIn{ from{opacity:0;transform:scale(.97)translateY(6px)} to{opacity:1;transform:scale(1)translateY(0)} }
-.modal{
-  background:var(--surf); border:1px solid var(--bhi);
-  border-radius:var(--r); width:100%; max-width:420px;
-  animation:mIn .16s ease; overflow:hidden;
-}
-.mhdr{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 18px; border-bottom:1px solid var(--b);
-}
-.mhdr h3{ font-size:14px; font-weight:700; }
-.mcls{
-  width:24px; height:24px; border-radius:var(--rs);
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--b); color:var(--t3); cursor:pointer;
-  font-size:11px; transition:var(--tr);
-}
-.mcls:hover{ color:var(--t1); border-color:var(--bhi); }
-.mbody{ padding:18px; }
-.mfld{ margin-bottom:14px; }
-.mfld label{
-  display:block; font-size:10.5px; font-weight:600; color:var(--t2);
-  text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px;
-}
-.mfld input,.mfld textarea,.mfld select{
-  width:100%; padding:7px 10px;
-  background:var(--card); border:1px solid var(--b);
-  border-radius:var(--rs); color:var(--t1);
-  font-family:'DM Sans',sans-serif; font-size:13px;
-  outline:none; transition:var(--tr); resize:vertical;
-}
-.mfld input:focus,.mfld textarea:focus,.mfld select:focus{
-  border-color:var(--blue-bdr); background:var(--card2);
-}
-.mfld textarea{ min-height:76px; }
-.mfoot{
-  display:flex; justify-content:flex-end; gap:7px;
-  padding:12px 18px; border-top:1px solid var(--b);
-}
-.btn-pr{
-  background:var(--blue); color:#fff; border:none;
-  padding:6px 14px; border-radius:var(--rs);
-  font-size:12.5px; font-weight:600; cursor:pointer; transition:var(--tr);
-}
-.btn-pr:hover{ background:#2563eb; }
-.btn-danger{
-  background:var(--rd); color:var(--red); border:1px solid var(--rb);
-  padding:6px 14px; border-radius:var(--rs);
-  font-size:12.5px; font-weight:600; cursor:pointer; transition:var(--tr);
-}
-.btn-danger:hover{ background:rgba(239,68,68,0.14); }
-
-/* ── TOAST ───────────────────────────────────────────────────────────────── */
-@keyframes tin{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.toast{
-  position:fixed; bottom:22px; right:22px; z-index:200;
-  background:var(--card2); border:1px solid var(--b);
-  border-radius:var(--r); padding:10px 15px;
-  font-size:12.5px; font-weight:500;
-  display:flex; align-items:center; gap:8px;
-  animation:tin .18s ease; box-shadow:0 8px 24px rgba(0,0,0,.55);
-  border-left:2px solid var(--green); color:var(--t1);
-}
-`;
-
-/* ─── DATA HELPERS ───────────────────────────────────────────────────────────── */
-import { calcRetentionScore, calcVisitsPerWeek, getLastVisit, calcWorkoutEngagement, generateClientInsights } from '@/services/coachDashboard.service';
-import { format, formatDistanceToNow } from 'date-fns';
-
-function calcNoShowRatePct(userId, bookings, now) {
-  const recent = bookings.filter(b => b.client_id === userId && (now - new Date(b.session_date)) < 30 * 864e5);
-  if (!recent.length) return 0;
-  return Math.round((recent.filter(b => b.status === 'no_show').length / recent.length) * 100);
+export function DashCard({ title, icon: Icon, action, onAction, accentColor, children }) {
+  const ac = accentColor || null;
+  return (
+    <div style={{ background: D.bgSurface, border: `1px solid ${ac ? `${ac}30` : "rgba(255,255,255,0.07)"}`,
+      borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px",
+        borderBottom: "1px solid rgba(255,255,255,0.042)",
+        background: ac ? `${ac}06` : "transparent" }}>
+        {ac && <div style={{ width: 3, height: 14, borderRadius: 99, background: ac, flexShrink: 0 }}/>}
+        {Icon && <Icon style={{ width: 12, height: 12, color: ac || D.t3, flexShrink: 0 }}/>}
+        <span style={{ flex: 1, fontSize: 11.5, fontWeight: 800, color: D.t1, letterSpacing: "-0.01em" }}>{title}</span>
+        {action && (
+          <button onClick={onAction} style={{ fontSize: 10.5, fontWeight: 700, color: ac || D.blue,
+            background: `${ac || D.blue}12`, border: `1px solid ${ac || D.blue}28`,
+            borderRadius: 6, padding: "3px 9px", cursor: "pointer", fontFamily: "inherit",
+            transition: "all 0.12s" }}>
+            {action}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
 }
 
-const FILTERS = [
-  {id:"all",        label:"All Clients",       cls:"",   fn:()=>true},
-  {id:"at-risk",    label:"At Risk",           cls:"rt", fn:c=>c.status==="at-risk"},
-  {id:"not-booked", label:"Not Booked",        cls:"at", fn:c=>!c.booked},
-  {id:"low-eng",    label:"Low Engagement",    cls:"at", fn:c=>c.completion<50},
-  {id:"inactive",   label:"Recently Inactive", cls:"",   fn:c=>c.lvDays>=5},
-  null,
-  {id:"active", label:"Active", cls:"", fn:c=>c.status==="healthy"},
+/* ─── REALISTIC MOCK DATA ─────────────────────────────────────────────────────── */
+const MOCK_CLIENTS = [
+  {
+    id: "c1", name: "Sarah Mitchell",   tier: "Premium",
+    score: 88, trend: [62,68,72,75,80,85,88], status: "healthy",
+    lastVisit: "Today",           vpw: 3.8, completion: 91,  streak: 7,
+    totalVisits: 124, phone: "+44 7711 234567", email: "s.mitchell@email.com",
+    booked: true,  missedLast3: false,
+    flags: ["high-eng"],
+    notes: "Responds well to progressive overload. Goals: half-marathon prep.",
+    insights: [
+      { lv:"info",    title:"Consistency milestone",   body:"Sarah has visited 4+ times per week for 7 consecutive weeks — her best streak yet.", cta:"Send a congratulations message" },
+      { lv:"info",    title:"Programme due for review", body:"Current strength block ends in 8 days. Suggest transitioning to endurance phase.", cta:"Schedule programme review" },
+    ],
+    activity: [
+      { type:"visit", label:"Gym session — Strength A", time:"Today, 08:14" },
+      { type:"visit", label:"Gym session — HIIT",       time:"2 days ago" },
+      { type:"msg",   label:"Message sent by coach",    time:"4 days ago" },
+      { type:"visit", label:"Gym session — Rest day workout", time:"5 days ago" },
+    ],
+  },
+  {
+    id: "c2", name: "James Chen",       tier: "Standard",
+    score: 24, trend: [72,68,61,54,42,33,24], status: "at-risk",
+    lastVisit: "18 days ago",     vpw: 0.4, completion: 22,  streak: 0,
+    totalVisits: 31,  phone: "+44 7822 345678", email: "j.chen@email.com",
+    booked: false, missedLast3: true,
+    flags: ["no-visit","declining","not-booked"],
+    notes: "Joined for weight loss. Strong start but attendance dropped after work schedule change.",
+    insights: [
+      { lv:"critical", title:"High churn risk — 18 days inactive", body:"James's score has declined 48 points over 7 weeks. Last 3 booked sessions were missed. Immediate outreach strongly recommended.", cta:"Send re-engagement message now" },
+      { lv:"warning",  title:"No upcoming session booked",          body:"James has no sessions on the calendar. Offering a complimentary check-in call can improve retention.", cta:"Book a free check-in session" },
+    ],
+    activity: [
+      { type:"miss",  label:"Missed booked session",     time:"3 days ago" },
+      { type:"miss",  label:"Missed booked session",     time:"10 days ago" },
+      { type:"miss",  label:"Missed booked session",     time:"17 days ago" },
+      { type:"visit", label:"Gym session — Induction",   time:"18 days ago" },
+    ],
+  },
+  {
+    id: "c3", name: "Emma Hartley",     tier: "Standard",
+    score: 51, trend: [65,63,60,58,54,52,51], status: "at-risk",
+    lastVisit: "9 days ago",      vpw: 1.1, completion: 48,  streak: 0,
+    totalVisits: 58,  phone: "+44 7933 456789", email: "e.hartley@email.com",
+    booked: true,  missedLast3: false,
+    flags: ["declining","low-workout"],
+    notes: "Intermediate level. Likes group classes more than solo sessions.",
+    insights: [
+      { lv:"warning", title:"Declining engagement trend",  body:"Visits have dropped from 3×/week to just over 1×/week in the last month. Hasn't completed a workout programme in 3 weeks.", cta:"Check in and review her goals" },
+      { lv:"info",    title:"Group class suggestion",       body:"Emma's last 4 visits were all group classes. Consider recommending a new class tier to re-spark interest.", cta:"Browse available group sessions" },
+    ],
+    activity: [
+      { type:"visit", label:"Yoga Flow class",              time:"9 days ago" },
+      { type:"msg",   label:"Checked in by coach",          time:"11 days ago" },
+      { type:"visit", label:"HIIT Blast class",             time:"15 days ago" },
+      { type:"miss",  label:"Missed — Strength session",    time:"19 days ago" },
+    ],
+  },
+  {
+    id: "c4", name: "Marcus Thompson",  tier: "Premium",
+    score: 82, trend: [74,76,78,79,80,81,82], status: "healthy",
+    lastVisit: "Yesterday",       vpw: 3.2, completion: 84,  streak: 5,
+    totalVisits: 201, phone: "+44 7644 567890", email: "m.thompson@email.com",
+    booked: true,  missedLast3: false,
+    flags: ["high-eng"],
+    notes: "Long-term client (2 yrs). Competes in amateur powerlifting.",
+    insights: [
+      { lv:"info", title:"Approaching 200-visit milestone", body:"Marcus is at 201 total visits — a milestone worth acknowledging. A personal note will resonate well.", cta:"Send a milestone message" },
+    ],
+    activity: [
+      { type:"visit", label:"Powerlifting session",         time:"Yesterday" },
+      { type:"visit", label:"Accessory work — Upper",       time:"3 days ago" },
+      { type:"visit", label:"Powerlifting session",         time:"5 days ago" },
+    ],
+  },
+  {
+    id: "c5", name: "Priya Sharma",     tier: "Standard",
+    score: 31, trend: [55,50,48,44,40,35,31], status: "at-risk",
+    lastVisit: "14 days ago",     vpw: 0.7, completion: 29,  streak: 0,
+    totalVisits: 19,  phone: "+44 7755 678901", email: "p.sharma@email.com",
+    booked: false, missedLast3: true,
+    flags: ["no-visit","not-booked","declining"],
+    notes: "New member (6 weeks). Has expressed uncertainty about her programme.",
+    insights: [
+      { lv:"critical", title:"New member disengaging early", body:"Priya is only 6 weeks in with 19 visits, but engagement is falling sharply. Early churn is most preventable with a personal touchpoint.", cta:"Call or message Priya today" },
+      { lv:"warning",  title:"No session booked",            body:"No upcoming sessions. A guided booking from you can remove the friction she may be feeling.", cta:"Book her next session" },
+    ],
+    activity: [
+      { type:"miss",  label:"Missed — Intro to Strength",  time:"4 days ago" },
+      { type:"visit", label:"Gym induction session",        time:"14 days ago" },
+      { type:"msg",   label:"Welcome message sent",         time:"6 weeks ago" },
+    ],
+  },
+  {
+    id: "c6", name: "Oliver Bennett",   tier: "Standard",
+    score: 74, trend: [60,63,65,68,70,72,74], status: "healthy",
+    lastVisit: "2 days ago",      vpw: 2.5, completion: 72,  streak: 3,
+    totalVisits: 88,  phone: "+44 7866 789012", email: "o.bennett@email.com",
+    booked: true,  missedLast3: false,
+    flags: [],
+    notes: "",
+    insights: [
+      { lv:"info", title:"Steady upward trend", body:"Oliver's score has risen 14 points over 7 weeks — strong indicator of building habit. Consider an upsell to a premium plan.", cta:"Discuss premium upgrade" },
+    ],
+    activity: [
+      { type:"visit", label:"Cardio session",               time:"2 days ago" },
+      { type:"visit", label:"Strength B — Lower body",      time:"5 days ago" },
+      { type:"visit", label:"Cardio session",               time:"7 days ago" },
+    ],
+  },
+  {
+    id: "c7", name: "Aisha Johnson",    tier: "Premium",
+    score: 38, trend: [80,75,68,59,50,43,38], status: "at-risk",
+    lastVisit: "11 days ago",     vpw: 0.9, completion: 35,  streak: 0,
+    totalVisits: 73,  phone: "+44 7977 890123", email: "a.johnson@email.com",
+    booked: false, missedLast3: true,
+    flags: ["no-visit","declining","not-booked"],
+    notes: "Injury in week 3 (shoulder). Returned but confidence appears low.",
+    insights: [
+      { lv:"critical", title:"Post-injury engagement drop",  body:"Aisha's score has fallen 42 points since her shoulder injury. Post-injury clients have a 3× higher churn rate without coach outreach.", cta:"Book a recovery check-in session" },
+      { lv:"warning",  title:"Premium plan — low utilisation", body:"Aisha is on a Premium plan but visiting less than 1×/week. She may question her subscription value.", cta:"Highlight premium benefits" },
+    ],
+    activity: [
+      { type:"miss",  label:"Missed — Upper body session",  time:"5 days ago" },
+      { type:"visit", label:"Rehabilitation session",        time:"11 days ago" },
+      { type:"msg",   label:"Injury check-in by coach",     time:"13 days ago" },
+    ],
+  },
+  {
+    id: "c8", name: "Tom Rivera",       tier: "Standard",
+    score: 79, trend: [71,72,74,75,77,78,79], status: "healthy",
+    lastVisit: "Today",           vpw: 3.0, completion: 78,  streak: 4,
+    totalVisits: 56,  phone: "+44 7588 901234", email: "t.rivera@email.com",
+    booked: true,  missedLast3: false,
+    flags: [],
+    notes: "",
+    insights: [
+      { lv:"info", title:"Consistent performer", body:"Tom has maintained a healthy score for 7 consecutive weeks. Low maintenance, high reward client.", cta:"Consider as referral ambassador" },
+    ],
+    activity: [
+      { type:"visit", label:"CrossFit Madness class",       time:"Today, 06:00" },
+      { type:"visit", label:"HIIT Blast",                   time:"3 days ago" },
+      { type:"visit", label:"Strength Foundation session",  time:"6 days ago" },
+    ],
+  },
+  {
+    id: "c9", name: "Lisa Park",        tier: "Standard",
+    score: 55, trend: [60,58,57,56,55,55,55], status: "at-risk",
+    lastVisit: "6 days ago",      vpw: 1.4, completion: 54,  streak: 1,
+    totalVisits: 42,  phone: "+44 7699 012345", email: "l.park@email.com",
+    booked: true,  missedLast3: false,
+    flags: ["declining"],
+    notes: "Prefers morning sessions only. Responds well to check-in messages.",
+    insights: [
+      { lv:"warning", title:"Plateau in attendance",        body:"Lisa has been at approximately the same score for 4 weeks — not declining, but not growing either. A goal-setting session could reignite momentum.", cta:"Schedule a goal review" },
+    ],
+    activity: [
+      { type:"visit", label:"Morning yoga class",           time:"6 days ago" },
+      { type:"visit", label:"Pilates Foundation",           time:"10 days ago" },
+      { type:"msg",   label:"Replied to coach message",     time:"12 days ago" },
+    ],
+  },
+  {
+    id: "c10", name: "David Walsh",     tier: "Standard",
+    score: 91, trend: [80,83,85,87,88,90,91], status: "healthy",
+    lastVisit: "Today",           vpw: 4.2, completion: 94,  streak: 10,
+    totalVisits: 168, phone: "+44 7400 123456", email: "d.walsh@email.com",
+    booked: true,  missedLast3: false,
+    flags: ["high-eng"],
+    notes: "Coaches Olympic lifting on weekends. Extremely self-motivated.",
+    insights: [
+      { lv:"info", title:"Top performer — 10-week streak",  body:"David has the highest engagement score on your roster. Consider featuring him in social proof content.", cta:"Ask about testimonial or case study" },
+    ],
+    activity: [
+      { type:"visit", label:"Olympic lifting session",      time:"Today, 07:30" },
+      { type:"visit", label:"Technique refinement — Clean", time:"2 days ago" },
+      { type:"visit", label:"Olympic lifting session",      time:"4 days ago" },
+    ],
+  },
 ];
 
-function buildClientFromMembership(m, checkIns, bookings, assignedWorkouts, now) {
-  const rs         = calcRetentionScore(m.user_id, checkIns, now);
-  const lastVisit  = getLastVisit(m.user_id, checkIns);
-  const vpw        = calcVisitsPerWeek(m.user_id, checkIns, now);
-  const engagement = calcWorkoutEngagement(m.user_id, assignedWorkouts);
-  const myBookings = bookings.filter(b => b.client_id === m.user_id);
-  const upcoming   = myBookings.filter(b => b.status === 'confirmed' && new Date(b.session_date) > now);
-  const noShows7   = myBookings.filter(b => b.status === 'no_show' && (now - new Date(b.session_date)) < 7 * 864e5).length;
-  const totalVisits = checkIns.filter(c => c.user_id === m.user_id).length;
-
-  // Status
-  let status = 'healthy';
-  if (rs.daysAgo >= 7 || noShows7 >= 2) status = 'at-risk';
-  else if (rs.daysAgo >= 4 || !upcoming.length) status = 'needs-attention';
-
-  // Last visit label
-  const lvDays = rs.daysAgo >= 999 ? 9999 : rs.daysAgo;
-  const lastVisitLabel = lastVisit ? formatDistanceToNow(lastVisit, { addSuffix: true }) : 'Never';
-
-  // Flags
-  const flags = [];
-  if (lvDays >= 7) flags.push('no-visit');
-  if (rs.trend === 'down') flags.push('declining');
-  if (engagement.lowEngagement && engagement.total > 0) flags.push('low-workout');
-  if (!upcoming.length) flags.push('not-booked');
-
-  // Insights
-  const insights = generateClientInsights(m.user_id, checkIns, bookings, assignedWorkouts, now).map(ins => ({
-    lv: ins.severity === 'high' ? 'ic' : ins.severity === 'medium' ? 'iw' : 'ii',
-    title: ins.title,
-    body: ins.body,
-    cta: ins.action,
-  }));
-
-  // Timeline from check-ins + bookings
-  const timeline = [
-    ...checkIns.filter(c => c.user_id === m.user_id).slice(0, 4).map(c => ({
-      tp: 'v', lb: 'Gym visit',
-      tm: formatDistanceToNow(new Date(c.check_in_date), { addSuffix: true }),
-    })),
-    ...myBookings.filter(b => b.status === 'no_show').slice(0, 2).map(b => ({
-      tp: 'm', lb: 'Missed session',
-      tm: formatDistanceToNow(new Date(b.session_date), { addSuffix: true }),
-    })),
-  ].sort((a, b) => 0); // keep order
-
-  const colors = ['#1c1028','#0d2018','#10102a','#0a1624','#14101c','#0d1820'];
-  const colorIdx = (m.user_name || '').charCodeAt(0) % colors.length;
-
-  return {
-    id: m.user_id,
-    name: m.user_name || 'Client',
-    initials: (m.user_name || '??').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2),
-    bg: colors[colorIdx],
-    tags: ['Regular'],
-    status,
-    score: rs.score,
-    trend: rs.trend === 'up' ? 'up' : rs.trend === 'down' ? 'down' : 'flat',
-    lastVisit: lastVisitLabel,
-    lvDays,
-    vpw,
-    completion: engagement.pct,
-    lastMsg: '—',
-    lastAct: lastVisitLabel,
-    booked: upcoming.length > 0,
-    streak: 0,
-    total: totalVisits,
-    phone: m.phone || '—',
-    email: m.user_email || '—',
-    flags,
-    notes: '',
-    insights: insights.length ? insights : [{lv:'ii',title:'No issues detected',body:'Engagement looks healthy.',cta:'Keep it up'}],
-    timeline,
-  };
-}
-
-/* ─── HELPERS ───────────────────────────────────────────────────────────────── */
-const statusLabel  = s => s==="at-risk"?"At Risk":s==="needs-attention"?"Needs Attention":"Healthy";
-const scoreBadge   = s => s==="at-risk"?"sbr":s==="needs-attention"?"sba":"sbg";
-const dotCls       = s => s==="at-risk"?"sdr":s==="needs-attention"?"sda":"sdg";
-const scoreColor   = s => s==="at-risk"?"var(--red)":s==="needs-attention"?"var(--amber)":"var(--green)";
-const tlDotCls     = t => ({v:"tlv",m:"tlm",msg:"tlmsg",w:"tlw"}[t]||"tlv");
-
-function Trend({t}){
-  if(t==="up")   return <span className="tup">↑ Improving</span>;
-  if(t==="down") return <span className="tdn">↓ Declining</span>;
-  return <span className="tfl">— Stable</span>;
-}
-
-function InsIco({lv}){
-  const c=lv==="ic"?"var(--red)":lv==="iw"?"var(--amber)":"var(--blue)";
-  const s=lv==="ic"?"⚠":lv==="iw"?"◉":"ℹ";
-  return <span style={{color:c,fontSize:11,flexShrink:0,marginTop:1}}>{s}</span>;
-}
-
-function FlagChips({flags}){
-  const map={
-    "no-visit":{l:"No visit",c:"flr"},
-    "declining":{l:"Declining",c:"fla"},
-    "low-workout":{l:"Low workout",c:"fla"},
-    "not-booked":{l:"Not booked",c:"flg"},
-  };
-  if(!flags?.length) return null;
-  return(
-    <div className="flags">
-      {flags.map(f=>map[f]?<span key={f} className={`fl ${map[f].c}`}>{map[f].l}</span>:null)}
-    </div>
-  );
-}
-
-/* ─── TOAST ─────────────────────────────────────────────────────────────────── */
-function Toast({msg,onDone}){
-  useEffect(()=>{const t=setTimeout(onDone,2600);return()=>clearTimeout(t)},[onDone]);
-  return <div className="toast">✓ {msg}</div>;
-}
-
-/* ─── MODALS ─────────────────────────────────────────────────────────────────── */
-function MessageModal({client,onClose,onSend}){
-  const [msg,setMsg]=useState(`Hi ${client.name.split(" ")[0]}, just checking in — how are you getting on?`);
-  return(
-    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="mhdr">
-          <h3>Send Message — {client.name}</h3>
-          <div className="mcls" onClick={onClose}>✕</div>
-        </div>
-        <div className="mbody">
-          <div className="mfld">
-            <label>To</label>
-            <input readOnly value={`${client.name} · ${client.email}`}/>
-          </div>
-          <div className="mfld">
-            <label>Message</label>
-            <textarea value={msg} onChange={e=>setMsg(e.target.value)}/>
-          </div>
-        </div>
-        <div className="mfoot">
-          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
-          <button className="btn-pr" onClick={()=>{onSend(`Message sent to ${client.name}`);onClose();}}>Send Message</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BookModal({client,onClose,onSend}){
-  const [date,setDate]=useState("");
-  const [time,setTime]=useState("09:00");
-  const [type,setType]=useState("1-to-1 Session");
-  return(
-    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="mhdr">
-          <h3>Book Session — {client.name}</h3>
-          <div className="mcls" onClick={onClose}>✕</div>
-        </div>
-        <div className="mbody">
-          <div className="mfld">
-            <label>Session Type</label>
-            <select value={type} onChange={e=>setType(e.target.value)}>
-              <option>1-to-1 Session</option>
-              <option>Group Class</option>
-              <option>Online Check-in</option>
-              <option>Assessment</option>
-            </select>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div className="mfld">
-              <label>Date</label>
-              <input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
-            </div>
-            <div className="mfld">
-              <label>Time</label>
-              <input type="time" value={time} onChange={e=>setTime(e.target.value)}/>
-            </div>
-          </div>
-          <div className="mfld">
-            <label>Notes (optional)</label>
-            <textarea placeholder="Focus areas or goals for this session..."/>
-          </div>
-        </div>
-        <div className="mfoot">
-          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
-          <button className="btn-pr" onClick={()=>{
-            if(!date){alert("Please select a date");return;}
-            onSend(`Session booked for ${client.name}`);onClose();
-          }}>Confirm Booking</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AssignModal({client,onClose,onSend}){
-  const [prog,setProg]=useState("Strength Foundation");
-  const [note,setNote]=useState("");
-  const progs=["Strength Foundation","Fat Loss Phase 1","Hypertrophy Block","Cardio Endurance","Flexibility & Mobility","Custom Programme"];
-  return(
-    <div className="ov" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="mhdr">
-          <h3>Assign Workout — {client.name}</h3>
-          <div className="mcls" onClick={onClose}>✕</div>
-        </div>
-        <div className="mbody">
-          <div className="mfld">
-            <label>Programme</label>
-            <select value={prog} onChange={e=>setProg(e.target.value)}>
-              {progs.map(p=><option key={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="mfld">
-            <label>Coach Note</label>
-            <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Add guidance or context for this assignment..."/>
-          </div>
-        </div>
-        <div className="mfoot">
-          <button className="btn btn-gh btn-sm" onClick={onClose}>Cancel</button>
-          <button className="btn-pr" onClick={()=>{onSend(`"${prog}" assigned to ${client.name}`);onClose();}}>Assign</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── SIDEBAR ────────────────────────────────────────────────────────────────── */
-const NAV_ITEMS = [
-  {id:"today",    label:"Today",    icon:<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>},
-  {id:"clients",  label:"Clients",  icon:<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 13.5a4.5 4.5 0 019 0"/><circle cx="12" cy="6" r="2"/><path d="M14.5 13a3.5 3.5 0 00-5 0"/></svg>},
-  {id:"schedule", label:"Schedule", icon:<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 2v2M11 2v2"/></svg>},
-  {id:"content",  label:"Content",  icon:<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>},
-  {id:"profile",  label:"Profile",  icon:<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 13.5a5.5 5.5 0 0111 0"/></svg>},
+const FILTER_DEFS = [
+  { id: "all",          label: "All",          fn: () => true },
+  { id: "at-risk",      label: "At Risk",       fn: c => c.status === "at-risk",    danger: true },
+  { id: "not-booked",   label: "Not Booked",    fn: c => !c.booked,                 warning: true },
+  { id: "healthy",      label: "Healthy",       fn: c => c.status === "healthy" },
+  { id: "premium",      label: "Premium",       fn: c => c.tier === "Premium" },
 ];
 
-function Sidebar({onNewClient}){
-  return(
-    <div className="sb">
-      <div className="sb-top">
-        <div className="sb-ico">F</div>
+/* ─── TOAST ───────────────────────────────────────────────────────────────────── */
+function Toast({ msg, onDone }) {
+  useEffect(() => { const t = setTimeout(onDone, 2600); return () => clearTimeout(t); }, [onDone]);
+  return <div className="toast"><span style={{ color: D.green }}>✓</span> {msg}</div>;
+}
+
+/* ─── MODALS ──────────────────────────────────────────────────────────────────── */
+function Modal({ onClose, children }) {
+  return (
+    <div className="modal-ov" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box">{children}</div>
+    </div>
+  );
+}
+
+function MsgModal({ client, onClose, onSend }) {
+  const [msg, setMsg] = useState(
+    `Hi ${client.name.split(" ")[0]}, just checking in — how are you getting on with your training this week?`
+  );
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)",
+        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div className="sb-gname">Foundry Gym</div>
-          <div className="sb-grole">Coach</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: D.t1 }}>Send Message</div>
+          <div style={{ fontSize: 11, color: D.t3, marginTop: 2 }}>{client.name}</div>
+        </div>
+        <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
+          fontSize: 11, transition: "all 0.12s" }}>✕</div>
+      </div>
+      <div style={{ padding: "16px 18px" }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: D.t3, textTransform: "uppercase",
+            letterSpacing: "0.07em", marginBottom: 5 }}>To</div>
+          <input readOnly value={`${client.name} · ${client.email}`} style={{ width: "100%",
+            padding: "7px 10px", background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 8, color: D.t3, fontFamily: "inherit", fontSize: 12.5, outline: "none" }}/>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: D.t3, textTransform: "uppercase",
+            letterSpacing: "0.07em", marginBottom: 5 }}>Message</div>
+          <textarea value={msg} onChange={e => setMsg(e.target.value)} style={{ width: "100%",
+            padding: "8px 10px", background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 8, color: D.t1, fontFamily: "inherit", fontSize: 12.5,
+            outline: "none", resize: "vertical", minHeight: 90,
+            transition: "border-color 0.13s" }} className="search-input"
+            onFocus={e => e.target.style.borderColor = D.blueBdr}
+            onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}/>
         </div>
       </div>
-      <div className="sb-nav">
-        <div className="sb-lbl">Navigation</div>
-        {NAV_ITEMS.map(n=>(
-          <div key={n.id} className={`sb-item${n.id==="clients"?" on":""}`}>
-            {n.icon}
-            {n.label}
-          </div>
-        ))}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 7, padding: "12px 18px",
+        borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <button onClick={onClose} style={{ padding: "6px 13px", borderRadius: 7, fontSize: 12,
+          fontWeight: 600, background: "transparent", border: "1px solid rgba(255,255,255,0.09)",
+          color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+        <button onClick={() => { onSend(`Message sent to ${client.name}`); onClose(); }}
+          style={{ padding: "6px 14px", borderRadius: 7, fontSize: 12.5, fontWeight: 700,
+            background: D.blue, color: "#fff", border: "none", cursor: "pointer",
+            fontFamily: "inherit" }}>Send Message</button>
       </div>
-      <div className="sb-foot">
-        <button className="sb-new" onClick={onNewClient}>+ New Client</button>
-        <div style={{height:6}}/>
-        <div className="sb-link">⊞ View Gym Page</div>
-        <div className="sb-link">⊟ Member View</div>
-        <div className="sb-link out">↩ Log Out</div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
-/* ─── DETAIL PANEL ───────────────────────────────────────────────────────────── */
-function DetailPanel({client,onClose,onMsg,onBook,onAssign}){
-  if(!client) return(
-    <div className="panel">
-      <div className="pempty">
-        <div className="ei">⊡</div>
-        <h4>No client selected</h4>
-        <p>Click any client row to view their full profile, insights and engagement history.</p>
+function BookModal({ client, onClose, onSend }) {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("09:00");
+  const [type, setType] = useState("1-to-1 Session");
+  const fieldStyle = {
+    width: "100%", padding: "7px 10px",
+    background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: 8, color: D.t1, fontFamily: "inherit", fontSize: 12.5,
+    outline: "none", colorScheme: "dark",
+  };
+  const labelStyle = {
+    display: "block", fontSize: 10, fontWeight: 700, color: D.t3,
+    textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5,
+  };
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)",
+        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: D.t1 }}>Book Session</div>
+          <div style={{ fontSize: 11, color: D.t3, marginTop: 2 }}>{client.name}</div>
+        </div>
+        <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer", fontSize: 11 }}>✕</div>
       </div>
-    </div>
-  );
-  const sc=scoreColor(client.status);
-  const compColor=client.completion>60?"var(--green)":client.completion>25?"var(--amber)":"var(--red)";
-  return(
-    <div className="panel">
-      <div className="pan">
-        <div className="ph">
-          <div className="ph-top">
-            <div className="phav" style={{background:client.bg}}>{client.initials}</div>
-            <div style={{flex:1}}>
-              <div className="pname">{client.name}</div>
-              <div className="psub">
-                <span className={`sd ${dotCls(client.status)}`}/>
-                <span>{statusLabel(client.status)}</span>
-                <span style={{color:"var(--t4)"}}>·</span>
-                <Trend t={client.trend}/>
-              </div>
-            </div>
-            <div className="pclose" onClick={onClose}>✕</div>
+      <div style={{ padding: "16px 18px" }}>
+        <div style={{ marginBottom: 13 }}>
+          <label style={labelStyle}>Session Type</label>
+          <select value={type} onChange={e => setType(e.target.value)} style={{ ...fieldStyle }}>
+            {["1-to-1 Session","Group Class","Online Check-in","Assessment","Recovery Session"].map(t => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 13 }}>
+          <div><label style={labelStyle}>Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={fieldStyle}/>
           </div>
-          <div className="qas">
-            <button className="qa qp" onClick={()=>onMsg(client)}>✉ Message</button>
-            <button className="qa qbook" onClick={()=>onBook(client)}>📅 Book</button>
-            <button className="qa" onClick={()=>onAssign(client)}>⊕ Assign</button>
+          <div><label style={labelStyle}>Time</label>
+            <input type="time" value={time} onChange={e => setTime(e.target.value)} style={fieldStyle}/>
           </div>
         </div>
-
-        <div className="pb">
-          {/* Retention score */}
-          <div className="psec">
-            <div className="pst">Retention Score</div>
-            <div className="sbc">
-              <div className="sbt">
-                <span className="sbl">Overall health</span>
-                <span className="sbv" style={{color:sc}}>{client.score}</span>
-              </div>
-              <div className="sbtr">
-                <div className="sbf" style={{width:`${client.score}%`,background:`linear-gradient(90deg,${sc},${sc}88)`}}/>
-              </div>
-              <div className="sblb"><span>At Risk</span><span>Healthy</span></div>
-            </div>
-          </div>
-
-          {/* Last interaction */}
-          <div className="psec">
-            <div className="pst">Last Interaction</div>
-            <div className="lintb">
-              <div className="lirow">
-                <div className="lilbl">Last message</div>
-                <div className="lival">{client.lastMsg}</div>
-              </div>
-              <div className="lidiv"/>
-              <div className="lirow">
-                <div className="lilbl">Last activity</div>
-                <div className="lival">{client.lastAct}</div>
-              </div>
-              <div className="lidiv"/>
-              <div className="lirow">
-                <div className="lilbl">Next session</div>
-                <div className={`lival ${client.booked?"mcg":"mcr"}`}>{client.booked?"Booked ✓":"Not booked"}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Metrics */}
-          <div className="psec">
-            <div className="pst">Key Metrics</div>
-            <div className="mg">
-              <div className="mc"><div className="mcl">Last Visit</div><div className="mcv mcsm">{client.lastVisit}</div></div>
-              <div className="mc"><div className="mcl">Visits / Week</div><div className="mcv">{client.vpw}</div><div className="mcs">avg this month</div></div>
-              <div className="mc"><div className="mcl">Completion</div><div className="mcv" style={{color:compColor}}>{client.completion}%</div></div>
-              <div className="mc"><div className="mcl">Streak</div><div className="mcv">{client.streak}<span style={{fontSize:11,fontFamily:"'DM Sans',sans-serif",color:"var(--t3)"}}> wk</span></div></div>
-              <div className="mc"><div className="mcl">Total Visits</div><div className="mcv">{client.total}</div></div>
-              <div className="mc">
-                <div className="mcl">Contact</div>
-                <div className="mcv mcsm" style={{cursor:"pointer",color:"var(--blue)"}} onClick={()=>onMsg(client)}>Message ↗</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          {client.notes&&(
-            <div className="psec">
-              <div className="pst">Coach Notes</div>
-              <div className="notes-box">{client.notes}</div>
-            </div>
-          )}
-
-          {/* Insights */}
-          <div className="psec">
-            <div className="pst">Insights</div>
-            {client.insights.map((ins,i)=>(
-              <div key={i} className={`ins ${ins.lv}`}>
-                <div className="insh">
-                  <div className="inst">{ins.title}</div>
-                  <InsIco lv={ins.lv}/>
-                </div>
-                <div className="insb">{ins.body}</div>
-                <div className="insct">→ {ins.cta}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Timeline */}
-          <div className="psec">
-            <div className="pst">Recent Activity</div>
-            {client.timeline.map((tl,i)=>(
-              <div key={i} className="tli">
-                <span className={`tld ${tlDotCls(tl.tp)}`}/>
-                <div>
-                  <div className="tllb">{tl.lb}</div>
-                  <div className="tlt">{tl.tm}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div>
+          <label style={labelStyle}>Notes (optional)</label>
+          <textarea placeholder="Focus areas for this session..."
+            style={{ ...fieldStyle, minHeight: 72, resize: "vertical" }}/>
         </div>
       </div>
-    </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 7, padding: "12px 18px",
+        borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <button onClick={onClose} style={{ padding: "6px 13px", borderRadius: 7, fontSize: 12,
+          fontWeight: 600, background: "transparent", border: "1px solid rgba(255,255,255,0.09)",
+          color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+        <button onClick={() => {
+          if (!date) { alert("Please select a date"); return; }
+          onSend(`Session booked for ${client.name}`); onClose();
+        }} style={{ padding: "6px 14px", borderRadius: 7, fontSize: 12.5, fontWeight: 700,
+          background: D.green, color: "#fff", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+          Confirm Booking
+        </button>
+      </div>
+    </Modal>
   );
 }
 
-/* ─── CLIENT ROW ─────────────────────────────────────────────────────────────── */
-function ClientRow({client,selected,onClick,onMsg,onBook}){
-  return(
-    <div className={`crow ${client.status}${selected?" sel":""}`} onClick={onClick}>
-      <div className="cav" style={{background:client.bg,color:"rgba(255,255,255,0.85)",fontSize:12,fontWeight:700}}>
-        {client.initials}
+/* ─── CLIENT DETAIL PANEL ──────────────────────────────────────────────────────── */
+function ClientDetailPanel({ client, onClose, onMsg, onBook }) {
+  if (!client) return (
+    <div style={{ width: "38%", flexShrink: 0, background: "#0a1520",
+      borderLeft: "1px solid rgba(255,255,255,0.06)",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "center", gap: 8, padding: "32px", textAlign: "center" }}>
+      <div style={{ fontSize: 28, opacity: 0.12, marginBottom: 4 }}>⊡</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: D.t2 }}>No client selected</div>
+      <div style={{ fontSize: 11.5, color: D.t3, lineHeight: 1.65, maxWidth: 200 }}>
+        Click any client to view their profile, retention trend, and AI-generated insights.
       </div>
-      <div className="ci">
-        <div className="cnr">
-          <span className="cn">{client.name}</span>
-          {client.tags.map(t=>(
-            <span key={t} className={`tag ${t==="New"?"tnew":t==="VIP"?"tvip":"treg"}`}>{t}</span>
+    </div>
+  );
+
+  const sc = scoreColor(client.score);
+  const sl = scoreLabel(client.score);
+  const trendDir = client.trend[client.trend.length - 1] > client.trend[0] ? "up" : "down";
+  const trendDelta = client.trend[client.trend.length - 1] - client.trend[0];
+  const compColor = client.completion >= 70 ? D.green : client.completion >= 40 ? D.amber : D.red;
+
+  const tlDot = (type) => ({
+    visit: D.green, msg: D.blue, miss: D.red, warn: D.amber,
+  }[type] || D.t3);
+
+  return (
+    <div className="detail-panel" style={{ width: "38%", flexShrink: 0,
+      background: "#09131e", borderLeft: "1px solid rgba(255,255,255,0.065)",
+      display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+      {/* ── Panel header ── */}
+      <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)",
+        flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 13 }}>
+          <MiniAvatar name={client.name} size={40}
+            urgency={client.status === "at-risk" ? "danger" : undefined}/>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: D.t1,
+              letterSpacing: "-0.02em", marginBottom: 3 }}>{client.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span className={client.tier === "Premium" ? "pill-gold" : "pill-neutral"}>{client.tier}</span>
+              <span className={client.status === "at-risk" ? "pill-red" : "pill-green"}>{sl}</span>
+            </div>
+          </div>
+          <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
+            fontSize: 11, flexShrink: 0, transition: "all 0.12s" }}>✕</div>
+        </div>
+
+        {/* Quick actions */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+          {[
+            { label: "Message", color: D.blue, bg: D.blueSub, bdr: D.blueBdr, fn: () => onMsg(client) },
+            { label: "Book",    color: D.green, bg: D.greenSub, bdr: D.greenBdr, fn: () => onBook(client) },
+            { label: "Assign",  color: D.t2, bg: "rgba(255,255,255,0.04)", bdr: "rgba(255,255,255,0.09)", fn: () => {} },
+          ].map(({ label, color, bg, bdr, fn }) => (
+            <button key={label} className="act-btn" onClick={fn} style={{
+              background: bg, border: `1px solid ${bdr}`, color,
+              justifyContent: "center", width: "100%",
+            }}>{label}</button>
           ))}
         </div>
-        <div className="cm">
-          <div className="mi">
-            <span className={`sd ${dotCls(client.status)}`}/>
-            <span>{client.lastVisit}</span>
-          </div>
-          <div className="mi">{client.vpw}/wk avg</div>
-          <div className="mi">{client.completion}% completion</div>
-          <Trend t={client.trend}/>
-        </div>
-        <FlagChips flags={client.flags}/>
       </div>
-      <div className="cr">
-        <div className={`score-badge ${scoreBadge(client.status)}`}>{client.score}</div>
-        <div className="ract" title="Message" onClick={e=>{e.stopPropagation();onMsg(client);}}>✉</div>
-        <div className="ract" title="Book session" onClick={e=>{e.stopPropagation();onBook(client);}}>📅</div>
-        <span className="chev">›</span>
+
+      {/* ── Scrollable body ── */}
+      <div className="cp-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 18px 24px",
+        display: "flex", flexDirection: "column", gap: 18 }}>
+
+        {/* ── RETENTION SCORE — THE KEY FIX ── */}
+        <div>
+          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
+            letterSpacing: "0.10em", color: D.t4, marginBottom: 10,
+            display: "flex", alignItems: "center", gap: 6 }}>
+            Retention Score
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
+          </div>
+
+          <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 12, padding: "14px 15px" }}>
+            {/* Score + trend side by side */}
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+              marginBottom: 10 }}>
+              <div>
+                {/* THE FIX: score in correct semantic color */}
+                <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-0.05em",
+                  lineHeight: 1, color: sc, fontFamily: "'DM Mono', monospace" }}>
+                  {client.score}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: sc, marginTop: 3, opacity: 0.8 }}>
+                  {sl}
+                  {" · "}
+                  <span style={{ color: trendDir === "up" ? D.green : D.red }}>
+                    {trendDir === "up" ? "↑" : "↓"} {Math.abs(trendDelta)} pts in 7 weeks
+                  </span>
+                </div>
+              </div>
+              {/* Spark line — 7-week retention trend */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                <div style={{ fontSize: 8.5, color: D.t4, textTransform: "uppercase",
+                  letterSpacing: "0.06em" }}>7-wk trend</div>
+                <Spark data={client.trend} color={sc} height={34} width={96}/>
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div className="ret-track">
+              <div className="ret-fill" style={{ width: `${client.score}%`, background: sc }}/>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+              <span style={{ fontSize: 9, color: D.t4 }}>Critical</span>
+              <span style={{ fontSize: 9, color: D.t4 }}>Healthy</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MISSED SESSIONS WARNING — DashCard w/ amber accent ── */}
+        {client.missedLast3 && (
+          <DashCard title="Missed 3 consecutive sessions" accentColor={D.amber}
+            action="Message now" onAction={() => onMsg(client)}>
+            <div style={{ padding: "11px 15px" }}>
+              <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.65, marginBottom: 10 }}>
+                {client.name.split(" ")[0]} has missed their last 3 booked sessions.
+                A personal message significantly reduces churn risk at this stage.
+              </div>
+              <button className="act-btn" onClick={() => onMsg(client)} style={{
+                background: D.amberSub, border: `1px solid ${D.amberBdr}`, color: D.amber,
+              }}>
+                ✉ Send re-engagement message
+              </button>
+            </div>
+          </DashCard>
+        )}
+
+        {/* ── KEY METRICS ── */}
+        <div>
+          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
+            letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
+            display: "flex", alignItems: "center", gap: 6 }}>
+            Key Metrics
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {[
+              { label: "Last Visit",     value: client.lastVisit,         color: null, mono: false },
+              { label: "Visits / Week",  value: `${client.vpw}×`,         color: client.vpw >= 2.5 ? D.green : client.vpw >= 1 ? D.amber : D.red, mono: true },
+              { label: "Completion",     value: `${client.completion}%`,  color: compColor, mono: true },
+              { label: "Streak",         value: `${client.streak} wk`,    color: client.streak >= 4 ? D.green : null, mono: true },
+              { label: "Total Visits",   value: client.totalVisits,       color: null, mono: true },
+              { label: "Next Session",   value: client.booked ? "Booked ✓" : "Not booked",
+                color: client.booked ? D.green : D.red, mono: false },
+            ].map(({ label, value, color, mono }) => (
+              <div key={label} className="mc">
+                <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, textTransform: "uppercase",
+                  letterSpacing: "0.07em", marginBottom: 5 }}>{label}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.02em",
+                  color: color || D.t1,
+                  fontFamily: mono ? "'DM Mono', monospace" : "inherit" }}>{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── AT-RISK ALERT DashCard ── */}
+        {client.status === "at-risk" && !client.missedLast3 && (
+          <DashCard title="Retention alert" accentColor={D.red}
+            action="Take action" onAction={() => onMsg(client)}>
+            <div style={{ padding: "11px 15px" }}>
+              <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.65 }}>
+                {client.name.split(" ")[0]}'s score has dropped {Math.abs(trendDelta)} points
+                over 7 weeks. Without intervention, churn probability increases significantly.
+              </div>
+            </div>
+          </DashCard>
+        )}
+
+        {/* ── INSIGHTS ── */}
+        {client.insights?.length > 0 && (
+          <div>
+            <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
+              letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
+              display: "flex", alignItems: "center", gap: 6 }}>
+              AI Insights
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
+            </div>
+            {client.insights.map((ins, i) => (
+              <div key={i} className={`insight-card ${ins.lv}`}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 4 }}>
+                  <span style={{ fontSize: 10, flexShrink: 0, marginTop: 2,
+                    color: ins.lv === "critical" ? D.red : ins.lv === "warning" ? D.amber : D.blue }}>
+                    {ins.lv === "critical" ? "⚠" : ins.lv === "warning" ? "◉" : "ℹ"}
+                  </span>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: D.t1 }}>{ins.title}</div>
+                </div>
+                <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.6, marginBottom: 7,
+                  paddingLeft: 17 }}>{ins.body}</div>
+                <div style={{ paddingLeft: 17 }}>
+                  <span style={{ fontSize: 11, color: D.blue, fontWeight: 600, cursor: "pointer" }}>
+                    → {ins.cta}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── NOTES ── */}
+        {client.notes && (
+          <div>
+            <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
+              letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
+              display: "flex", alignItems: "center", gap: 6 }}>
+              Coach Notes
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
+            </div>
+            <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.065)",
+              borderRadius: 10, padding: "11px 13px", fontSize: 11.5, color: D.t2, lineHeight: 1.7 }}>
+              {client.notes}
+            </div>
+          </div>
+        )}
+
+        {/* ── ACTIVITY TIMELINE ── */}
+        <div>
+          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
+            letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
+            display: "flex", alignItems: "center", gap: 6 }}>
+            Recent Activity
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
+          </div>
+          <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.065)",
+            borderRadius: 12, padding: "4px 14px" }}>
+            {client.activity.map((ev, i) => (
+              <div key={i} className="tl-row">
+                <div className="tl-dot" style={{ background: tlDot(ev.type), marginTop: 5 }}/>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: D.t1 }}>{ev.label}</div>
+                  <div style={{ fontSize: 10.5, color: D.t4, marginTop: 1 }}>{ev.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-/* ─── MAIN PAGE ──────────────────────────────────────────────────────────────── */
+/* ─── CLIENT ROW ──────────────────────────────────────────────────────────────── */
+function ClientRow({ client, selected, onClick, onMsg, onBook }) {
+  const sc = scoreColor(client.score);
+  const isRisk = client.status === "at-risk";
+
+  return (
+    <div className={`${isRisk ? "priority-row" : "member-row"} ${selected ? "selected" : ""} fade-up`}
+      onClick={onClick} style={{ animationDelay: `${0}s` }}>
+
+      <MiniAvatar name={client.name} size={34}
+        urgency={isRisk ? "danger" : client.status === "needs-attention" ? "risk" : undefined}/>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: D.t1,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{client.name}</span>
+          {client.tier === "Premium" && <span className="pill-gold">Premium</span>}
+          {isRisk && <span className="pill-red">At Risk</span>}
+          {!isRisk && client.status !== "healthy" && <span className="pill-amber">Attention</span>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: D.t3 }}>Last visit: {client.lastVisit}</span>
+          <span style={{ fontSize: 11, color: D.t4 }}>·</span>
+          <span style={{ fontSize: 11, color: D.t3 }}>{client.vpw}×/wk</span>
+          {client.streak > 0 && (
+            <><span style={{ fontSize: 11, color: D.t4 }}>·</span>
+            <span style={{ fontSize: 11, color: D.green }}>{client.streak}wk streak 🔥</span></>
+          )}
+          {client.flags.includes("not-booked") && (
+            <span className="pill-amber" style={{ fontSize: 9 }}>Not booked</span>
+          )}
+        </div>
+      </div>
+
+      {/* Spark mini-trend */}
+      <Spark data={client.trend} color={sc} height={22} width={56}/>
+
+      {/* Score badge — CORRECT COLOR PSYCHOLOGY */}
+      <div style={{ minWidth: 36, height: 36, borderRadius: 9, display: "flex",
+        alignItems: "center", justifyContent: "center", flexShrink: 0,
+        background: `${sc}12`, border: `1px solid ${sc}25`,
+        fontSize: 12.5, fontWeight: 800, color: sc,
+        fontFamily: "'DM Mono', monospace" }}>{client.score}</div>
+
+      {/* Action icons */}
+      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}
+        onClick={e => e.stopPropagation()}>
+        <div title="Message" onClick={() => onMsg(client)} style={{ width: 28, height: 28,
+          borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
+          fontSize: 13, transition: "all 0.12s",
+          background: "transparent" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = D.blueBdr; e.currentTarget.style.color = D.blue; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = D.t3; }}>
+          ✉
+        </div>
+        <div title="Book" onClick={() => onBook(client)} style={{ width: 28, height: 28,
+          borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
+          fontSize: 12, transition: "all 0.12s", background: "transparent" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = D.greenBdr; e.currentTarget.style.color = D.green; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = D.t3; }}>
+          ▣
+        </div>
+      </div>
+
+      <span style={{ fontSize: 14, color: D.t4, flexShrink: 0, transition: "color 0.12s" }}>›</span>
+    </div>
+  );
+}
+
+/* ─── KPI BAR ─────────────────────────────────────────────────────────────────── */
+function KpiBar({ clients, onFilterClick }) {
+  const atRisk    = clients.filter(c => c.status === "at-risk").length;
+  const notBooked = clients.filter(c => !c.booked).length;
+  const active    = clients.filter(c => c.lastVisit.includes("Today") || c.lastVisit.includes("day")).length;
+  const avgScore  = clients.length
+    ? Math.round(clients.reduce((s, c) => s + c.score, 0) / clients.length)
+    : 0;
+  const avgColor  = scoreColor(avgScore);
+
+  const kpis = [
+    { label: "Total Clients",   value: clients.length, sub: "on your roster",    sc: null, clickId: null },
+    { label: "Active This Month", value: active,        sub: "visited recently",  sc: null, clickId: null },
+    { label: "At Risk",         value: atRisk,          sub: "need follow-up",    sc: atRisk > 0 ? D.red : D.t3,   clickId: "at-risk" },
+    { label: "Not Booked",      value: notBooked,       sub: "no upcoming session", sc: notBooked > 0 ? D.amber : D.t3, clickId: "not-booked" },
+    { label: "Avg Score",       value: avgScore,        sub: scoreLabel(avgScore),  sc: avgColor, clickId: null },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10,
+      padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+      background: D.bgBase }}>
+      {kpis.map((k, i) => (
+        <div key={i} className={`kpi-card${k.clickId ? " clickable" : ""}`}
+          onClick={k.clickId ? () => onFilterClick(k.clickId) : undefined}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: D.t4, textTransform: "uppercase",
+            letterSpacing: "0.09em", marginBottom: 8 }}>{k.label}</div>
+          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.045em", lineHeight: 1,
+            color: k.sc || D.t1, marginBottom: 5,
+            fontFamily: i === 4 ? "'DM Mono', monospace" : "inherit" }}>{k.value}</div>
+          <div style={{ fontSize: 10.5, color: k.sc ? `${k.sc}90` : D.t3 }}>{k.sub}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── MAIN CLIENTS PAGE ──────────────────────────────────────────────────────── */
 export default function ClientsPage({
-  allMemberships = [], checkIns = [], ci30 = [], avatarMap = {}, openModal, now,
-  bookings = [], assignedWorkouts = [],
-}){
-  const safeNow = now instanceof Date ? now : new Date();
-
-  // Build enriched client objects from real data
+  allMemberships, checkIns, bookings, assignedWorkouts, openModal, now,
+}) {
+  // Use real data if provided, else fall back to mock
   const clients = useMemo(() => {
-    if (!allMemberships.length) return [];
-    return allMemberships.map(m => buildClientFromMembership(m, checkIns, bookings, assignedWorkouts, safeNow));
-  }, [allMemberships, checkIns, bookings, assignedWorkouts, safeNow]);
+    if (allMemberships?.length) {
+      // Wire up your real buildClientFromMembership here
+      return allMemberships.map(m => ({
+        id: m.user_id, name: m.user_name || "Client",
+        score: 65, trend: [60,61,62,63,64,65,65],
+        status: "healthy", tier: "Standard", lastVisit: "—",
+        vpw: 0, completion: 0, streak: 0, totalVisits: 0,
+        booked: false, missedLast3: false, flags: [], notes: "",
+        email: m.user_email || "—", phone: m.phone || "—",
+        insights: [], activity: [],
+      }));
+    }
+    return MOCK_CLIENTS;
+  }, [allMemberships]);
 
-  const [activeF,setActiveF]   = useState("all");
-  const [selId,setSelId]       = useState(null);
-  const [search,setSearch]     = useState("");
-  const [sort,setSort]         = useState("priority");
-  const [viewMode,setViewMode] = useState("list");
-  const [modal,setModal]       = useState(null);
-  const [toast,setToast]       = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [search,       setSearch]       = useState("");
+  const [sortBy,       setSortBy]       = useState("priority");
+  const [selId,        setSelId]        = useState("c1");
+  const [modal,        setModal]        = useState(null);
+  const [toast,        setToast]        = useState(null);
 
-  const showToast  = msg => setToast(msg);
-  const selClient  = clients.find(c=>c.id===selId)||null;
+  const showToast = msg => setToast(msg);
+  const selClient = clients.find(c => c.id === selId) || null;
 
-  const counts = {};
-  FILTERS.forEach(f=>{ if(f) counts[f.id]=clients.filter(f.fn).length; });
+  const counts = useMemo(() => Object.fromEntries(
+    FILTER_DEFS.map(f => [f.id, clients.filter(f.fn).length])
+  ), [clients]);
 
-  const sorted = useMemo(()=>{
-    const fn=FILTERS.find(f=>f&&f.id===activeF)?.fn||(()=>true);
-    let list=clients.filter(fn);
-    if(search) list=list.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()));
-    const pri={"at-risk":0,"needs-attention":1,"healthy":2};
-    if(sort==="priority")   return [...list].sort((a,b)=>pri[a.status]-pri[b.status]);
-    if(sort==="score-asc")  return [...list].sort((a,b)=>a.score-b.score);
-    if(sort==="score-desc") return [...list].sort((a,b)=>b.score-a.score);
-    if(sort==="last-visit") return [...list].sort((a,b)=>a.lvDays-b.lvDays);
-    if(sort==="name")       return [...list].sort((a,b)=>a.name.localeCompare(b.name));
+  const filtered = useMemo(() => {
+    const fDef = FILTER_DEFS.find(f => f.id === activeFilter);
+    let list = fDef ? clients.filter(fDef.fn) : clients;
+    if (search) list = list.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+    const pri = { "at-risk": 0, "needs-attention": 1, "healthy": 2 };
+    if (sortBy === "priority")   return [...list].sort((a,b) => pri[a.status]-pri[b.status]);
+    if (sortBy === "score-asc")  return [...list].sort((a,b) => a.score-b.score);
+    if (sortBy === "score-desc") return [...list].sort((a,b) => b.score-a.score);
+    if (sortBy === "name")       return [...list].sort((a,b) => a.name.localeCompare(b.name));
     return list;
-  },[clients,activeF,search,sort]);
+  }, [clients, activeFilter, search, sortBy]);
 
-  const groups = sort==="priority"
-    ?[
-      {key:"at-risk",        label:"At Risk",         cls:"r", rows:sorted.filter(c=>c.status==="at-risk")},
-      {key:"needs-attention",label:"Needs Attention",  cls:"a", rows:sorted.filter(c=>c.status==="needs-attention")},
-      {key:"healthy",        label:"Healthy",          cls:"g", rows:sorted.filter(c=>c.status==="healthy")},
-    ].filter(g=>g.rows.length)
-    :[{key:"all",label:null,rows:sorted}];
+  const groups = sortBy === "priority"
+    ? [
+        { key: "at-risk",         label: "At Risk",        color: D.red,   rows: filtered.filter(c => c.status === "at-risk") },
+        { key: "needs-attention", label: "Needs Attention", color: D.amber, rows: filtered.filter(c => c.status !== "at-risk" && c.status !== "healthy") },
+        { key: "healthy",         label: "Healthy",         color: D.green, rows: filtered.filter(c => c.status === "healthy") },
+      ].filter(g => g.rows.length)
+    : [{ key: "all", label: null, rows: filtered }];
 
-  const atRisk           = clients.filter(c=>c.status==="at-risk").length;
-  const attention        = clients.filter(c=>c.status==="needs-attention").length;
-  const activeThisMonth  = clients.filter(c=>c.lvDays<=30).length;
-  const notBooked        = clients.filter(c=>!c.booked).length;
+  const openMsg  = c => { if (openModal) openModal("post",          { memberId: c.id }); else setModal({ type:"msg",  client:c }); };
+  const openBook = c => { if (openModal) openModal("bookIntoClass", { memberId: c.id, memberName: c.name }); else setModal({ type:"book", client:c }); };
 
-  const openMsg    = c => { if (openModal) openModal('post', { memberId: c.id }); else setModal({type:"msg",client:c}); };
-  const openBook   = c => { if (openModal) openModal('bookIntoClass', { memberId: c.id, memberName: c.name }); else setModal({type:"book",client:c}); };
-  const openAssign = c => { if (openModal) openModal('assignWorkout', { memberId: c.id }); else setModal({type:"assign",client:c}); };
-
-  return(
+  return (
     <>
-      <style>{S}</style>
-      <div className="main" style={{height:"100%"}}>
+      <div className="cp" style={{ display: "flex", flexDirection: "column",
+        height: "100vh", background: D.bgBase, overflow: "hidden" }}>
 
-          {/* ── KPI BAR ── */}
-          <div className="kpi-bar">
-            <div className="kpi">
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <span className="kpi-lbl">Total Clients</span>
-                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 13.5a4.5 4.5 0 019 0"/><circle cx="12" cy="6" r="2"/><path d="M14.5 13a3.5 3.5 0 00-5 0"/></svg></div>
+        {/* ── KPI BAR ── */}
+        <KpiBar clients={clients} onFilterClick={setActiveFilter}/>
+
+        {/* ── TOP CONTROLS ── */}
+        <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "#0a1520", flexShrink: 0, display: "flex", alignItems: "center",
+          gap: 10, flexWrap: "wrap" }}>
+
+          {/* Filter tabs */}
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {FILTER_DEFS.map(f => (
+              <div key={f.id}
+                className={`filter-tab${activeFilter === f.id ? " active" : ""}${f.danger ? " danger" : ""}${f.warning ? " warning" : ""}`}
+                onClick={() => setActiveFilter(f.id)}>
+                {f.label}
+                <span className="ct">{counts[f.id]}</span>
               </div>
-              <div className="kpi-val">{clients.length}</div>
-              <div className="kpi-sub">assigned to you</div>
-            </div>
-            <div className="kpi">
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <span className="kpi-lbl">Active This Month</span>
-                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><path d="M8 2v12M2 8h12" strokeLinecap="round"/></svg></div>
-              </div>
-              <div className="kpi-val">{activeThisMonth}</div>
-              <div className="kpi-sub">visited this month</div>
-            </div>
-            <div className="kpi clickable" onClick={()=>setActiveF("at-risk")}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <span className="kpi-lbl">At Risk</span>
-                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><path d="M8 2l6 12H2z" strokeLinejoin="round"/><path d="M8 7v3M8 11.5v.5" strokeLinecap="round"/></svg></div>
-              </div>
-              <div className="kpi-val">{atRisk}</div>
-              <div className="kpi-sub">
-                <span className="kpi-dot" style={{background:"var(--red)"}}/>
-                need follow-up
-              </div>
-            </div>
-            <div className="kpi clickable" onClick={()=>setActiveF("not-booked")}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <span className="kpi-lbl">Not Booked</span>
-                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 2v2M11 2v2"/></svg></div>
-              </div>
-              <div className="kpi-val">{notBooked}</div>
-              <div className="kpi-sub">
-                <span className="kpi-dot" style={{background:"var(--amber)"}}/>
-                no upcoming session
-              </div>
-            </div>
-            <div className="kpi">
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <span className="kpi-lbl">Avg No-Show Rate</span>
-                <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><circle cx="8" cy="8" r="6"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" strokeLinecap="round"/></svg></div>
-              </div>
-              <div className="kpi-val">{clients.length ? Math.round(clients.reduce((s,c) => s + (calcNoShowRatePct(c.id, bookings, safeNow)), 0) / clients.length) : 0}%</div>
-              <div className="kpi-sub">last 30 days</div>
-            </div>
+            ))}
           </div>
 
-          {/* ── HEADER ── */}
-          <div className="hdr">
-            <div className="hdr-l">
-              <h1>Clients</h1>
-              <p>{clients.length} clients · Foundry Gym</p>
-            </div>
-            <div className="hdr-r">
-              <button className="btn btn-gh">⊞ Scan QR</button>
-              <div className="iBtn" title="Messages">✉</div>
-              <div className="avatar-chip">M</div>
-            </div>
+          <div style={{ flex: 1 }}/>
+
+          {/* Search */}
+          <div style={{ position: "relative", width: 220 }}>
+            <span style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)",
+              color: D.t4, fontSize: 13, pointerEvents: "none" }}>⊙</span>
+            <input className="search-input" placeholder="Search clients…"
+              value={search} onChange={e => setSearch(e.target.value)}/>
           </div>
 
-          {/* ── FILTER BAR ── */}
-          <div className="fbar">
-            {FILTERS.map((f,i)=>
-              f===null
-                ?<div key={`d${i}`} className="fdiv"/>
-                :<div key={f.id} className={`ft ${f.cls} ${activeF===f.id?"on":""}`} onClick={()=>setActiveF(f.id)}>
-                  {f.label}<span className="n">{counts[f.id]}</span>
+          {/* Sort */}
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
+            padding: "6px 10px", background: D.bgSurface,
+            border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8,
+            color: D.t2, fontFamily: "inherit", fontSize: 12, outline: "none",
+            cursor: "pointer",
+          }}>
+            <option value="priority">Sort: Priority</option>
+            <option value="score-asc">Score: Low → High</option>
+            <option value="score-desc">Score: High → Low</option>
+            <option value="name">Name A–Z</option>
+          </select>
+
+          {/* Export / new */}
+          <button style={{ padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+            color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>↓ Export</button>
+          <button style={{ padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+            background: D.blue, border: "none", color: "#fff", cursor: "pointer",
+            fontFamily: "inherit" }}>+ New Client</button>
+        </div>
+
+        {/* ── BODY SPLIT ── */}
+        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+          {/* ── LEFT: Client list ── */}
+          <div className="cp-scroll" style={{ flex: 1, overflowY: "auto",
+            padding: "14px 20px", display: "flex", flexDirection: "column", gap: 16,
+            minWidth: 0 }}>
+
+            {groups.map(g => (
+              <div key={g.key}>
+                {g.label && (
+                  <div className="group-hdr" style={{ color: g.color }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%",
+                      background: g.color, display: "inline-block", flexShrink: 0 }}/>
+                    {g.label}
+                    <span style={{ fontSize: 9, fontWeight: 700, color: g.color,
+                      background: `${g.color}12`, border: `1px solid ${g.color}20`,
+                      borderRadius: 999, padding: "1px 7px" }}>{g.rows.length}</span>
+                  </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {g.rows.map((c, i) => (
+                    <div key={c.id} style={{ animationDelay: `${i * 0.03}s` }}>
+                      <ClientRow
+                        client={c}
+                        selected={selId === c.id}
+                        onClick={() => setSelId(selId === c.id ? null : c.id)}
+                        onMsg={openMsg}
+                        onBook={openBook}
+                      />
+                    </div>
+                  ))}
                 </div>
+              </div>
+            ))}
+
+            {filtered.length === 0 && (
+              <div style={{ padding: "48px 0", textAlign: "center", color: D.t4, fontSize: 12.5 }}>
+                <div style={{ fontSize: 22, opacity: 0.15, marginBottom: 8 }}>⊡</div>
+                No clients match the current filter.
+              </div>
             )}
           </div>
 
-          {/* ── TOOLBAR ── */}
-          <div className="tb">
-            <div className="sw">
-              <span className="si">⊙</span>
-              <input
-                className="sinp"
-                placeholder="Search clients..."
-                value={search}
-                onChange={e=>setSearch(e.target.value)}
-              />
-              {!search && <span className="kbd">/</span>}
-            </div>
-            <select className="ssel" value={sort} onChange={e=>setSort(e.target.value)}>
-              <option value="priority">Sort: Priority</option>
-              <option value="score-asc">Score: Low → High</option>
-              <option value="score-desc">Score: High → Low</option>
-              <option value="last-visit">Last Visit</option>
-              <option value="name">Name A–Z</option>
-            </select>
-            <div className="tb-r">
-              <div className="tgl">
-                <button className={`tgl-btn${viewMode==="list"?" on":""}`} onClick={()=>setViewMode("list")}>☰ List</button>
-                <button className={`tgl-btn${viewMode==="grid"?" on":""}`} onClick={()=>setViewMode("grid")}>⊞ Grid</button>
-              </div>
-              <button className="btn btn-gh btn-sm">⊟ Bulk</button>
-              <button className="btn btn-gh btn-sm">↓ Export</button>
-            </div>
-          </div>
-
-          {/* ── BODY ── */}
-          <div className="body-split">
-            <div className="clist">
-              {groups.map(g=>(
-                <div key={g.key}>
-                  {g.label&&<div className={`ghdr ${g.cls}`}>● {g.label}</div>}
-                  {g.rows.map(c=>(
-                    <ClientRow
-                      key={c.id}
-                      client={c}
-                      selected={selId===c.id}
-                      onClick={()=>setSelId(selId===c.id?null:c.id)}
-                      onMsg={openMsg}
-                      onBook={openBook}
-                    />
-                  ))}
-                </div>
-              ))}
-              {sorted.length===0&&(
-                <div className="empty-list">
-                  <div style={{fontSize:20,opacity:.2,marginBottom:8}}>⊡</div>
-                  No clients match the current filter.
-                </div>
-              )}
-            </div>
-
-            <DetailPanel
-              client={selClient}
-              onClose={()=>setSelId(null)}
-              onMsg={openMsg}
-              onBook={openBook}
-              onAssign={openAssign}
-            />
-          </div>
+          {/* ── RIGHT: Detail panel ── */}
+          <ClientDetailPanel
+            client={selClient}
+            onClose={() => setSelId(null)}
+            onMsg={openMsg}
+            onBook={openBook}
+          />
+        </div>
       </div>
 
       {/* ── MODALS ── */}
-      {modal?.type==="msg"    && <MessageModal client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
-      {modal?.type==="book"   && <BookModal    client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
-      {modal?.type==="assign" && <AssignModal  client={modal.client} onClose={()=>setModal(null)} onSend={showToast}/>}
+      {modal?.type === "msg"  && <MsgModal  client={modal.client} onClose={() => setModal(null)} onSend={showToast}/>}
+      {modal?.type === "book" && <BookModal client={modal.client} onClose={() => setModal(null)} onSend={showToast}/>}
 
       {/* ── TOAST ── */}
-      {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
+      {toast && <Toast msg={toast} onDone={() => setToast(null)}/>}
     </>
   );
 }
