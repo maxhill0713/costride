@@ -5,7 +5,7 @@ import {
   CheckCircle, XCircle, TrendingDown, TrendingUp, Minus,
   ChevronRight, ChevronDown, ChevronUp, Activity, BarChart2,
   User, Phone, Mail, MapPin, ArrowUpRight, Target, Check,
-  BookOpen, RefreshCw,
+  BookOpen, RefreshCw, Edit2,
 } from 'lucide-react';
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
@@ -158,7 +158,7 @@ function ProgressBar({ pct }) {
 }
 
 /* ─── Component ─────────────────────────────────────────────── */
-export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, onAssign }) {
+export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, onAssign, onEditProfile }) {
   const [tlExpanded, setTlExpanded]   = useState(false);
   const [expandWork, setExpandWork]   = useState(null);
   const [toastMsg, setToastMsg]       = useState(null);
@@ -213,6 +213,10 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
             <Ic style={{ width: 12, height: 12 }} /> {label}
           </button>
         ))}
+        <button className="cp-btn" onClick={onEditProfile}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.05)', border: BORDER2, color: SUB }}>
+          <Edit2 style={{ width: 12, height: 12 }} /> Edit Profile
+        </button>
       </div>
 
       {/* ── HERO ──────────────────────────────────────────────── */}
@@ -273,6 +277,10 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
               <Ic style={{ width: 13, height: 13 }} /> {label}
             </button>
           ))}
+          <button className="cp-btn" onClick={onEditProfile}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 11, fontSize: 13, fontWeight: 800, background: 'rgba(255,255,255,0.05)', border: BORDER2, color: SUB }}>
+            <Edit2 style={{ width: 13, height: 13 }} /> Edit Profile
+          </button>
         </div>
       </div>
 
