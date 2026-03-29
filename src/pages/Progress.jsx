@@ -1079,21 +1079,30 @@ function TrainerTab({ currentUser }) {
   const btnBase = "px-2 py-1.5 rounded-2xl font-bold text-sm transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu flex-1";
   const btnInactive = "bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]";
 
+  // Fetch current user directly in this tab so it's not dependent on prop timing
+  const { data: me } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const user = me || currentUser;
+
   // Fetch pending coach invites for this member
   const { data: pendingInvites = [] } = useQuery({
-    queryKey: ['coachInvites', currentUser?.id],
-    queryFn: () => base44.entities.CoachInvite.filter({ member_id: currentUser.id, status: 'pending' }, '-created_date', 20),
-    enabled: !!currentUser,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    queryKey: ['coachInvitesPending', user?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'pending' }, '-created_date', 20),
+    enabled: !!user?.id,
+    staleTime: 0,
+    refetchInterval: 15 * 1000,
   });
 
   // Fetch accepted coach invites (my coaches)
   const { data: acceptedInvites = [] } = useQuery({
-    queryKey: ['coachInvitesAccepted', currentUser?.id],
-    queryFn: () => base44.entities.CoachInvite.filter({ member_id: currentUser.id, status: 'accepted' }, '-created_date', 10),
-    enabled: !!currentUser,
-    staleTime: 60 * 1000,
+    queryKey: ['coachInvitesAccepted', user?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'accepted' }, '-created_date', 10),
+    enabled: !!user?.id,
+    staleTime: 0,
+    refetchInterval: 30 * 1000,
   });
 
   const [processingId, setProcessingId] = useState(null);
@@ -1101,15 +1110,15 @@ function TrainerTab({ currentUser }) {
   const handleAccept = async (invite) => {
     setProcessingId(invite.id);
     await base44.entities.CoachInvite.update(invite.id, { status: 'accepted' });
-    queryClient.invalidateQueries({ queryKey: ['coachInvites', currentUser?.id] });
-    queryClient.invalidateQueries({ queryKey: ['coachInvitesAccepted', currentUser?.id] });
+    queryClient.invalidateQueries({ queryKey: ['coachInvitesPending'] });
+    queryClient.invalidateQueries({ queryKey: ['coachInvitesAccepted'] });
     setProcessingId(null);
   };
 
   const handleDecline = async (invite) => {
     setProcessingId(invite.id);
     await base44.entities.CoachInvite.update(invite.id, { status: 'declined' });
-    queryClient.invalidateQueries({ queryKey: ['coachInvites', currentUser?.id] });
+    queryClient.invalidateQueries({ queryKey: ['coachInvitesPending'] });
     setProcessingId(null);
   };
 
