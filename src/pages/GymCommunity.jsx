@@ -1421,14 +1421,15 @@ export default function GymCommunity() {
     enabled: !!gymId,
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev,
   });
+  // All gym data comes from the service-role backend function — new users see everything
   const checkIns = gymActivityData.checkIns || [];
   const gymWorkoutLogsFromFeed = gymActivityData.workoutLogs || [];
   const gymAchievementsFromFeed = gymActivityData.achievements || [];
-  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }, 'name', 100), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
-  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }, 'name', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }, '-created_date', 50), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
-  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date', 30), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
+  const events = gymActivityData.events || [];
+  const classes = gymActivityData.classes || [];
+  const rewards = gymActivityData.rewards || [];
+  const challenges = gymActivityData.challenges || [];
+  const polls = gymActivityData.polls || [];
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10*60*1000, gcTime: 30*60*1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
@@ -1440,21 +1441,8 @@ export default function GymCommunity() {
   const POSTS_PAGE_SIZE = 20;
   const [postsPage, setPostsPage] = React.useState(1);
 
-  const { data: gymPostsRaw = [] } = useQuery({
-    queryKey: ['gymPosts', gymId],
-    queryFn: async () => {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      return base44.entities.Post.filter(
-        { gym_id: gymId, created_date: { $gte: thirtyDaysAgo }, is_hidden: false },
-        '-created_date',
-        100
-      );
-    },
-    enabled: !!gymId && activeTab === 'activity',
-    staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
-  });
-
-  // Paginated slice — show first N posts with a Load More button.
+  // Posts come from the service-role function — no date filter, all historic posts visible to new users
+  const gymPostsRaw = gymActivityData.posts || [];
   const gymPosts = gymPostsRaw.slice(0, postsPage * POSTS_PAGE_SIZE);
   const hasMorePosts = gymPostsRaw.length > postsPage * POSTS_PAGE_SIZE;
 
