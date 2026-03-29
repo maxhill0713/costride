@@ -12,26 +12,9 @@ import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
    RESPONSIVE CSS  — Same grid contract as TabContent
 ───────────────────────────────────────────────────────────────── */
 const MOBILE_CSS = `
-  .tc-root { display: grid; grid-template-columns: minmax(0,1fr) clamp(280px,28%,320px); gap: 16px; }
-  .tc-left  { display: flex; flex-direction: column; height: 100%; overflow: hidden; min-height: 0; }
   .tc-tabs  { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 0; }
   .tc-tabs::-webkit-scrollbar { display: none; }
   .tc-tab-btn { padding: 8px 16px; font-size: 12px; font-family: inherit; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
-  .tc-feed  { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
-  .tc-feed::-webkit-scrollbar { width: 4px; }
-  .tc-feed::-webkit-scrollbar-track { background: transparent; }
-  .tc-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
-  .tc-feed::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
-  .tc-sidebar { display: flex; flex-direction: column; gap: 10px; min-width: 280px; overflow-y: auto; max-height: 100%; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
-  .tc-sidebar::-webkit-scrollbar { width: 4px; }
-  .tc-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
-  @media (max-width: 900px) {
-    .tc-root    { grid-template-columns: 1fr !important; }
-    .tc-left    { height: auto !important; overflow: visible !important; min-height: unset !important; }
-    .tc-feed    { overflow: visible !important; min-height: unset !important; flex: unset !important; }
-    .tc-sidebar { height: auto !important; overflow: visible !important; min-width: unset !important; max-height: unset !important; }
-    .tc-tab-btn { padding: 7px 12px !important; font-size: 11px !important; }
-  }
 `;
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -418,27 +401,9 @@ function ClientCard({ client, isSelected, onClick, onAction }) {
   const delta   = client.sessionsThisMonth - client.sessionsLastMonth;
   const TrendIc = trend.dir === 'up' ? TrendingUp : trend.dir === 'down' ? TrendingDown : Minus;
 
-  const cardExtra = {
-    cursor: 'pointer',
-    /* Red left-border accent reserved exclusively for churn-risk clients */
-    borderLeft: isRisk && !isSelected
-      ? `3px solid ${C.danger}`
-      : isSelected
-        ? undefined   /* highlight prop handles selected border */
-        : `3px solid transparent`,
-    transition: 'all 0.15s',
-  };
-
-  if (hov && !isSelected) cardExtra.borderColor = `${C.accent}30`;
-
   return (
-    <Card highlight={isSelected} style={cardExtra}>
-      <CardBody
-        style={{ padding: '13px 15px' }}
-        onMouseEnter={() => setHov(true)}
-        onMouseLeave={() => setHov(false)}
-        onClick={onClick}
-      >
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <CardBody style={{ padding: '13px 15px' }}>
         {/* ── Row 1: Avatar · Name · Pills · Score ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 10 }}>
           <Avatar name={client.name} size={38} />
@@ -549,36 +514,130 @@ function ClientCard({ client, isSelected, onClick, onAction }) {
           />
         )}
       </CardBody>
-    </Card>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   EMPTY DETAIL STATE
+   EXPANDED CLIENT DETAIL (inline, below the row)
 ═══════════════════════════════════════════════════════════════════ */
-function EmptyDetailState() {
+function ExpandedClientDetail({ client, openModal }) {
+  const score   = client.retentionScore;
+  const sColor  = retentionColor(score);
+  const rmeta   = retentionMeta(score);
+  const trend   = scoreTrend(client.retentionHistory);
+  const isRisk  = client.status === 'at_risk';
+  const isPaused = client.status === 'paused';
+  const delta   = client.sessionsThisMonth - client.sessionsLastMonth;
+  const hasMissed = client.consecutiveMissed >= 3;
+  const TrendIc = trend.dir === 'up' ? TrendingUp : trend.dir === 'down' ? TrendingDown : Minus;
+  const trendColor = trend.dir === 'up' ? C.success : trend.dir === 'down' ? C.danger : C.t3;
+
   return (
-    <div className="tc-sidebar" style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
-      <div style={{ textAlign: 'center', padding: '0 24px' }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: CARD_RADIUS,
-          background: `${C.accent}14`, border: `1px solid ${C.accent}24`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 14px',
-        }}>
-          <User style={{ width: 18, height: 18, color: C.accent, opacity: 0.6 }} />
+    <div style={{
+      background: C.surfaceEl,
+      borderBottom: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${C.accent}`,
+    }}>
+      {/* Stats strip */}
+      <div style={{
+        padding: '12px 16px',
+        borderBottom: `1px solid ${C.border}`,
+        display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
+      }}>
+        {[
+          { label: 'Retention Score', val: score, color: sColor },
+          { label: 'Sessions / Mo',   val: client.sessionsThisMonth, color: delta > 0 ? C.success : delta < 0 ? C.danger : C.t1 },
+          { label: 'Last Visit',      val: client.lastVisit === 0 ? 'Today' : client.lastVisit === 1 ? 'Yesterday' : `${client.lastVisit}d ago`, color: client.lastVisit > 14 ? C.danger : client.lastVisit > 7 ? C.warn : C.t1 },
+          { label: 'Monthly Spend',   val: `£${client.monthlySpend}`, color: C.t1 },
+          { label: 'Streak',          val: client.streak > 0 ? `${client.streak}d 🔥` : '—', color: C.t1 },
+        ].map((s, i) => (
+          <div key={i} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
+            <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', marginTop: 2, letterSpacing: '.06em' }}>{s.label}</div>
+          </div>
+        ))}
+
+        {/* Sparkline */}
+        <div style={{ marginLeft: 'auto' }}>
+          <Sparkline data={client.retentionHistory} color={sColor} width={100} height={32} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+            <span style={{ fontSize: 8, color: C.t3 }}>8 wks ago</span>
+            <span style={{ fontSize: 8, color: sColor, fontWeight: 700 }}>Now · {rmeta.label}</span>
+          </div>
         </div>
-        <p style={{ fontSize: 13, fontWeight: 700, color: C.t2, margin: '0 0 6px' }}>Select a client</p>
-        <p style={{ fontSize: 11, color: C.t3, margin: 0, lineHeight: 1.55 }}>
-          Click any row to view retention data, session history, and actionable insights.
-        </p>
+      </div>
+
+      {/* Insight nudge */}
+      {(() => {
+        const fn = client.name.split(' ')[0];
+        const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.border}` }}>{node}</div>;
+        if (isRisk && client.lastVisit > 14)
+          return wrap(<StatNudge positive={false} icon={AlertTriangle} stat={`${client.lastVisit} days since last visit.`} detail="Personal outreach now is the most effective way to prevent churn." action="Message" onAction={() => openModal?.('message', { memberId: client.id })} />);
+        if (hasMissed)
+          return wrap(<StatNudge positive={false} icon={Bell} stat={`${client.consecutiveMissed} sessions missed in a row.`} detail="A warm check-in keeps them accountable without pressure." action="Reach out" onAction={() => openModal?.('message', { memberId: client.id })} />);
+        if (isPaused)
+          return wrap(<StatNudge positive={false} icon={Clock} stat="Membership paused." detail={`Send ${fn} a personalised welcome-back message before they return.`} action="Message" onAction={() => openModal?.('message', { memberId: client.id })} />);
+        if (client.streak >= 21)
+          return wrap(<StatNudge positive icon={Zap} stat={`${client.streak}-day streak!`} detail="Acknowledge this milestone — recognition drives long-term loyalty." />);
+        if (client.tier === 'Standard' && score >= 70 && delta >= 0)
+          return wrap(<StatNudge positive icon={Star} stat="Upgrade candidate." detail="Strong engagement. A well-timed tier offer could convert." action="Suggest upgrade" onAction={() => openModal?.('message', { memberId: client.id })} />);
+        return null;
+      })()}
+
+      {/* Notes + contact + actions */}
+      <div style={{ padding: '12px 16px', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Notes */}
+        <div style={{ flex: '2 1 220px', minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>Coach Notes</div>
+          <p style={{ fontSize: 11, color: C.t2, lineHeight: 1.65, margin: 0 }}>{client.notes}</p>
+        </div>
+
+        {/* Contact */}
+        <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>Contact</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[{ icon: Mail, value: client.email }, { icon: Phone, value: client.phone }].map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <c.icon style={{ width: 10, height: 10, color: C.t3, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: C.t2 }}>{c.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div style={{ flex: '1 1 180px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 2 }}>Quick Actions</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {[
+              { icon: MessageCircle, label: 'Message', fn: () => openModal?.('message',       { memberId: client.id }) },
+              { icon: Calendar,      label: 'Book',    fn: () => openModal?.('bookIntoClass', { memberId: client.id }) },
+              { icon: Dumbbell,      label: 'Workout', fn: () => openModal?.('assignWorkout', { memberId: client.id }) },
+              { icon: Phone,         label: 'Call',    fn: () => {} },
+            ].map(({ icon: Icon, label, fn }, i) => (
+              <button key={i} onClick={e => { e.stopPropagation(); fn(); }} style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '6px 11px', borderRadius: 8,
+                background: C.surface, border: `1px solid ${C.border}`,
+                color: C.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'all 0.15s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = `${C.accent}40`; e.currentTarget.style.color = C.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.t2; }}>
+                <Icon style={{ width: 11, height: 11 }} />{label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CLIENT DETAIL SIDEBAR
+   CLIENT DETAIL SIDEBAR — replaced by ExpandedClientDetail above
+   Kept as a stub to avoid import errors if referenced elsewhere
 ═══════════════════════════════════════════════════════════════════ */
 function ClientDetailSidebar({ client, openModal }) {
   const score   = client.retentionScore;
@@ -1073,14 +1132,11 @@ export default function TabCoachMembers({ openModal = () => {} }) {
         </button>
       </div>
 
-      {/* ── Main grid ── */}
-      <div className="tc-root">
+      {/* ── Main content ── */}
+      <div>
 
-        {/* ── LEFT: filter tabs + client list ── */}
-        <div className="tc-left">
-
-          {/* Filter tabs */}
-          <div className="tc-tabs">
+        {/* Filter tabs */}
+        <div className="tc-tabs">
             <span style={{
               fontSize: 10.5, fontWeight: 700, color: C.t3,
               textTransform: 'uppercase', letterSpacing: '.13em',
@@ -1126,65 +1182,65 @@ export default function TabCoachMembers({ openModal = () => {} }) {
             })}
           </div>
 
-          {/* Column header */}
-          {visible.length > 0 && (
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              padding: '0 15px 8px', gap: 12, flexShrink: 0,
-            }}>
-              <div style={{ width: 38, flexShrink: 0 }} />
-              <span style={{ flex: 1, fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Client
-              </span>
-              <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, marginRight: 14 }}>
-                8-week trend · Score
-              </span>
-            </div>
-          )}
-
-          {/* Scrollable list */}
-          <div className="tc-feed">
-            {visible.length === 0 ? (
-              <div style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', padding: '56px 24px', gap: 12,
-                borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`,
-              }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: CARD_RADIUS,
-                  background: `${C.accent}14`, border: `1px solid ${C.accent}24`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Search style={{ width: 18, height: 18, color: C.accent, opacity: 0.6 }} />
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: C.t2, margin: 0 }}>No clients found</p>
-                <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>Try adjusting your search or filter</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 28, paddingRight: 4 }}>
-                {visible.map(c => (
-                  <ClientCard
-                    key={c.id}
-                    client={c}
-                    isSelected={selected?.id === c.id}
-                    onClick={() => setSelected(prev => prev?.id === c.id ? null : c)}
-                    onAction={handleAction}
-                  />
-                ))}
-                <p style={{ textAlign: 'center', fontSize: 10, color: C.t3, margin: 0 }}>
-                  Showing {visible.length} of {CLIENTS.length} clients
-                </p>
-              </div>
-            )}
+        {/* Column header */}
+        {visible.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', padding: '0 15px 8px', gap: 12 }}>
+            <div style={{ width: 38, flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Client</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, marginRight: 14 }}>8-week trend · Score</span>
           </div>
+        )}
 
-        </div>
+        {/* Client list with expand-in-place */}
+        {visible.length === 0 ? (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', padding: '56px 24px', gap: 12,
+            borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`,
+          }}>
+            <div style={{ width: 44, height: 44, borderRadius: CARD_RADIUS, background: `${C.accent}14`, border: `1px solid ${C.accent}24`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Search style={{ width: 18, height: 18, color: C.accent, opacity: 0.6 }} />
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: C.t2, margin: 0 }}>No clients found</p>
+            <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>Try adjusting your search or filter</p>
+          </div>
+        ) : (
+          <div style={{
+            borderRadius: CARD_RADIUS, background: C.surface,
+            border: `1px solid ${C.border}`, overflow: 'hidden',
+          }}>
+            {visible.map((c, idx) => {
+              const isExp = selected?.id === c.id;
+              return (
+                <div key={c.id}>
+                  <div
+                    onClick={() => setSelected(prev => prev?.id === c.id ? null : c)}
+                    style={{
+                      borderBottom: idx < visible.length - 1 || isExp ? `1px solid ${C.border}` : 'none',
+                      borderLeft: isExp ? `3px solid ${C.accent}` : '3px solid transparent',
+                      background: isExp ? C.surfaceEl : 'transparent',
+                      cursor: 'pointer', transition: 'background .1s, border-color .1s',
+                    }}
+                    onMouseEnter={e => { if (!isExp) e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; }}
+                    onMouseLeave={e => { if (!isExp) e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <ClientCard
+                      client={c}
+                      isSelected={isExp}
+                      onClick={() => {}}
+                      onAction={handleAction}
+                    />
+                  </div>
+                  {isExp && <ExpandedClientDetail client={c} openModal={openModal} />}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* ── SIDEBAR: detail panel or empty state ── */}
-        {selected
-          ? <ClientDetailSidebar client={selected} openModal={openModal} />
-          : <EmptyDetailState />
-        }
+        <p style={{ textAlign: 'center', fontSize: 10, color: C.t3, margin: '10px 0 0' }}>
+          Showing {visible.length} of {CLIENTS.length} clients
+        </p>
 
       </div>
     </>
