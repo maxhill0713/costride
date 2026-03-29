@@ -62,8 +62,8 @@ function Card({ children, style = {}, highlight = false }) {
   );
 }
 
-function CardBody({ children, style = {} }) {
-  return <div style={{ padding: 16, ...style }}>{children}</div>;
+function CardBody({ children, style = {}, onClick, onMouseEnter, onMouseLeave }) {
+  return <div style={{ padding: 16, ...style }} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{children}</div>;
 }
 
 /* Single unified accent pill — membership tier label */
