@@ -584,7 +584,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
     if (!digits) return '';
     const padded = digits.padStart(3, '0');
-    const mins = padded.slice(0, padded.length - 2);
+    const mins = parseInt(padded.slice(0, padded.length - 2), 10);
     const secs = padded.slice(-2);
     return `${parseInt(mins, 10)}:${secs}`;
   };
@@ -599,6 +599,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     { label: 'Set Active', text: 'To make this routine appear daily on your Today\'s Workout card, tap the Set Active button in the top right of this page and select this routine.' },
     { label: 'Delete Split', text: 'To delete this routine, press the three dots (⋮) on the right side of the screen and select "Delete Split".' },
     { label: 'Mirror Workouts', text: 'If two or more of your workouts in a week repeat the same session, give them the same name and a Mirror button will appear. Press it to sync exercises across both days — edit one and it updates the other automatically.' },
+    { label: 'Different Weights Per Set', text: 'To use different weights or reps for individual sets of the same exercise, add the same exercise multiple times with the exact same name and set each to 1 set — then choose the reps and weight you want for each. The heavier set will automatically be assigned as Set 1, and your Today\'s Workout card will display them correctly as separate sets.' },
   ];
 
   if (!isOpen) return null;
@@ -723,7 +724,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                         display: 'flex', alignItems: 'center',
                         transition: 'color 0.15s',
                       }}>
-                      <Info size={13} />
+                      <Info size={18} />
                     </motion.button>
                   </div>
 
@@ -904,22 +905,42 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
                             </div>
-                            {exs.map((ex, idx) => (
-                              <div key={idx} className="relative">
-                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                  <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Bench press" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                  <input type="text" inputMode="numeric" value={ex.sets ?? '3'} onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))} placeholder="3" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                  <input type="text" inputMode="numeric" value={ex.reps ?? '10'} onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))} placeholder="10" maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                  <div className="relative">
-                                    <input type="text" inputMode="decimal" value={ex.weight ?? ''} onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+                            {exs.map((ex, idx) => {
+                              // ── Check if this exercise name is a duplicate within this day ──
+                              const isDupe = (ex.exercise || '').trim() !== '' && exs.some(
+                                (other, otherIdx) =>
+                                  otherIdx !== idx &&
+                                  (other.exercise || '').trim().toLowerCase() === (ex.exercise || '').trim().toLowerCase()
+                              );
+
+                              return (
+                                <div key={idx} className="relative">
+                                  <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
+                                    <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Bench press" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+
+                                    {/* ── Sets: locked to "1" if duplicate name ── */}
+                                    {isDupe ? (
+                                      <div
+                                        className="w-full px-2 py-2 bg-slate-800/30 border border-slate-700/20 rounded-lg text-[13px] text-slate-500 text-center cursor-not-allowed select-none"
+                                        title="Each duplicate exercise is treated as 1 set">
+                                        1
+                                      </div>
+                                    ) : (
+                                      <input type="text" inputMode="numeric" value={ex.sets ?? '3'} onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))} placeholder="3" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                    )}
+
+                                    <input type="text" inputMode="numeric" value={ex.reps ?? '10'} onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))} placeholder="10" maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                    <div className="relative">
+                                      <input type="text" inputMode="decimal" value={ex.weight ?? ''} onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+                                    </div>
                                   </div>
+                                  <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
                                 </div>
-                                <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
 
