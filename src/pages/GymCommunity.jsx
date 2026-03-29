@@ -1431,7 +1431,6 @@ export default function GymCommunity() {
       const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
       if (userIds.length === 0) return [];
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      // Scope by user_id $in — avoids fetching workout logs from all gyms and client-filtering.
       const logs = await base44.entities.WorkoutLog.filter(
         { user_id: { $in: userIds }, completed_date: { $gte: sevenDaysAgo } },
         '-created_date',
@@ -1441,7 +1440,7 @@ export default function GymCommunity() {
       checkIns.forEach(c => { if (c.user_id && c.user_name) userNameMap[c.user_id] = c.user_name; });
       return logs.map(l => ({ ...l, user_name: l.user_name || userNameMap[l.user_id] || 'Member' }));
     },
-    enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
+    enabled: !!gymId && activeTab === 'activity',
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
   });
   const { data: gymChallengeParticipants = [] } = useQuery({ queryKey: ['gymChallengeParticipants', gymId], queryFn: async () => { const ids = challenges.map(c => c.id); if (!ids.length) return []; return base44.entities.ChallengeParticipant.filter({ challenge_id: ids[0] }, '-created_date', 100); }, enabled: !!gymId && activeTab === 'activity' && challenges.length > 0, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
@@ -1450,19 +1449,16 @@ export default function GymCommunity() {
   const [postsPage, setPostsPage] = React.useState(1);
 
   const { data: gymPostsRaw = [] } = useQuery({
-    queryKey: ['gymPosts', gymId, checkIns.map(c => c.user_id).join(',')],
+    queryKey: ['gymPosts', gymId],
     queryFn: async () => {
-      const userIds = [...new Set(checkIns.map(c => c.user_id))].slice(0, 50);
-      if (userIds.length === 0) return [];
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      // Scope by member_id $in — avoids fetching posts from all gyms and client-filtering.
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       return base44.entities.Post.filter(
-        { member_id: { $in: userIds }, created_date: { $gte: sevenDaysAgo }, is_hidden: false },
+        { gym_id: gymId, created_date: { $gte: thirtyDaysAgo }, is_hidden: false },
         '-created_date',
         100
       );
     },
-    enabled: !!gymId && activeTab === 'activity' && checkIns.length > 0,
+    enabled: !!gymId && activeTab === 'activity',
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev
   });
 
