@@ -650,7 +650,7 @@ function DropPanel({ client, onClose, openModal }) {
               {[
                 { l:'This Month', v:client.sessionsThisMonth, c:C.t1 },
                 { l:'Last Month', v:client.sessionsLastMonth, c:C.t2 },
-                { l:'Change',     v:`${delta>=0?'+':''}${delta}`, c: delta>=0?C.green:C.red },
+                { l:'Change',     v:`${client.sessionsThisMonth - client.sessionsLastMonth>=0?'+':''}${client.sessionsThisMonth - client.sessionsLastMonth}`, c: client.sessionsThisMonth - client.sessionsLastMonth>=0?C.green:C.red },
               ].map((s,i) => (
                 <div key={i} style={{ padding:'9px 10px', borderRadius:8, textAlign:'center',
                   background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}` }}>
@@ -1082,10 +1082,8 @@ export default function TabCoachMembers({ openModal = () => {} }) {
         </button>
       </div>
 
-      {/* Filter tabs */}
+      {/* Filter tabs — "Clients" label removed */}
       <div className="tcm-tabs" style={{ marginBottom:0 }}>
-        <span style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
-          letterSpacing:'.08em', padding:'9px 14px 9px 0', flexShrink:0 }}>Clients</span>
         {FILTERS.map(f => {
           const isAct = filter === f.id;
           const isUrg = f.urgent && f.count > 0;
@@ -1112,13 +1110,7 @@ export default function TabCoachMembers({ openModal = () => {} }) {
       {/* Main grid */}
       <div className="tcm-root" style={{ marginTop:14 }}>
         <div className="tcm-left">
-          {/* Col hint */}
-          {visible.length > 0 && (
-            <div style={{ display:'flex', padding:'0 14px 8px', justifyContent:'space-between' }}>
-              <span style={{ fontSize:9, fontWeight:700, color:C.t4, textTransform:'uppercase', letterSpacing:'.07em' }}>Client</span>
-              <span style={{ fontSize:9, fontWeight:700, color:C.t4, textTransform:'uppercase', letterSpacing:'.07em' }}>8-week · Score</span>
-            </div>
-          )}
+          {/* Column hint removed */}
 
           {/* List */}
           <div className="tcm-feed">
