@@ -290,32 +290,8 @@ export default function TodayDashboard() {
     <div className="td" style={{ background:D.bgBase, minHeight:"100vh", padding:"24px 28px",
       display:"flex", flexDirection:"column", gap:20 }}>
 
-      {/* ── HEADER ── */}
-      <div className="fade-up" style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
-        <div>
-          <div style={{ fontSize:10, fontWeight:600, color:D.t4, textTransform:"uppercase",
-            letterSpacing:"0.10em", marginBottom:6 }}>{dayStr}</div>
-          <h1 style={{ fontSize:26, fontWeight:800, color:D.t1, letterSpacing:"-0.04em",
-            margin:0, lineHeight:1.1 }}>
-            {greeting}, {SAMPLE.coach.name.split(" ")[0]}.
-          </h1>
-          <p style={{ fontSize:12, color:D.t3, margin:"5px 0 0", fontWeight:400 }}>
-            Your command center for today.
-          </p>
-        </div>
-        <div style={{ display:"flex", gap:8 }}>
-          <button className="td-btn" style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 14px",
-            borderRadius:9, background:"rgba(255,255,255,0.04)", border:`1px solid ${D.border}`,
-            color:D.t2, fontSize:11, fontWeight:700, fontFamily:"inherit" }}>
-            <QrCode style={{ width:13, height:13 }}/> Scan Check-in
-          </button>
-          <button className="td-btn" style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 14px",
-            borderRadius:9, background:D.blueSub, border:`1px solid ${D.blueBdr}`,
-            color:D.blue, fontSize:11, fontWeight:700, fontFamily:"inherit" }}>
-            <Plus style={{ width:13, height:13 }}/> Add Session
-          </button>
-        </div>
-      </div>
+     
+
 
       {/* ── KPI GRID ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
