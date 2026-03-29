@@ -260,32 +260,8 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
         )}
       </AnimatePresence>
 
-      {/* ── STICKY BAR ────────────────────────────────────────── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: `${BG}f2`, backdropFilter: 'blur(16px)', borderBottom: BORDER, padding: '9px 28px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: BORDER2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: SUB, flexShrink: 0 }}>
-          {ini(cl.name)}
-        </div>
-        <span style={{ fontSize: 13, fontWeight: 700, color: TEXT }}>{cl.name}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: st.dot, display: 'block', animation: cl.retention_status === 'at_risk' ? 'blink 1.8s ease-in-out infinite' : 'none' }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: st.color }}>{st.label}</span>
-        </div>
-        <div style={{ flex: 1 }} />
-        {[
-          { label: 'Message', key: 'message', icon: MessageSquare, primary: false },
-          { label: 'Book Session', key: 'book', icon: Calendar, primary: true },
-          { label: 'Assign Workout', key: 'assign', icon: Dumbbell, primary: false },
-        ].map(({ label, key, icon: Ic, primary }) => (
-          <button key={key} className="cp-btn" onClick={() => act(label, key)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 700, background: primary ? BLUE : 'rgba(255,255,255,0.05)', border: primary ? 'none' : BORDER2, color: primary ? '#fff' : SUB, boxShadow: primary ? '0 2px 12px rgba(37,99,235,0.32)' : 'none' }}>
-            <Ic style={{ width: 12, height: 12 }} /> {label}
-          </button>
-        ))}
-        <button className="cp-btn" onClick={openEditor}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.05)', border: BORDER2, color: SUB }}>
-          <Edit2 style={{ width: 12, height: 12 }} /> Edit Profile
-        </button>
-      </div>
+     
+
 
       {/* ── HERO ──────────────────────────────────────────────── */}
       <div style={{ position: 'relative' }}>
