@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { format, differenceInDays } from "date-fns";
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("td-css")) {
@@ -87,26 +88,11 @@ function CapBar({ pct, color = C.blue }) {
   );
 }
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const SESSIONS = [
-  { id: 1, name: "CrossFit Madness", time: "06:00 AM", booked: 18, cap: 20, duration: "60m", status: "done",     spark: [5,6,4,7,6,5,4] },
-  { id: 2, name: "HIIT Blast",       time: "09:30 AM", booked: 12, cap: 15, duration: "45m", status: "live",     spark: [3,4,5,4,6,5,6] },
-  { id: 3, name: "Yoga Flow",        time: "12:00 PM", booked:  8, cap: 12, duration: "60m", status: "upcoming", spark: [2,3,2,4,3,4,3] },
-  { id: 4, name: "Strength Lab",     time: "06:00 PM", booked: 14, cap: 20, duration: "75m", status: "upcoming", spark: [4,5,4,6,5,7,6] },
-];
-
-const AT_RISK = [
-  { id: 1, name: "Sarah Williams", initials: "SW", days: 18, reason: "No visit in 18 days",        level: "high" },
-  { id: 2, name: "James Okafor",   initials: "JO", days: 12, reason: "Visits down 60% vs last mo", level: "med"  },
-  { id: 3, name: "Priya Nair",     initials: "PN", days:  9, reason: "9 days since last visit",    level: "med"  },
-];
-
-const WEEK = { days: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], vals: [12,8,15,11,17,9,14] };
-
 // ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
 
-function Avatar({ initials, size = 30, level }) {
+function AvatarInitials({ name, size = 30, level }) {
   const c = level === "high" ? C.red : level === "med" ? C.amber : C.t3;
+  const initials = (name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
@@ -149,18 +135,43 @@ function CardHeader({ title, tag, action, onAction }) {
   );
 }
 
-// ─── KPI STRIP ────────────────────────────────────────────────────────────────
-function KpiStrip() {
+// ─── KPI STRIP (real data) ─────────────────────────────────────────────────────
+function KpiStrip({ todayCI, fillRate, atRisk, sessionCount, sessionsLive, sessionsDone }) {
   const kpis = [
-    { label: "Today's Check-ins", value: "34", sub: "+5 vs yesterday", subOk: true, spark: [20,25,22,28,24,29,34] },
-    { label: "Fill Rate",         value: "71%", sub: "Across 4 sessions", subOk: null, spark: [60,65,68,64,70,69,71] },
-    { label: "At-Risk Members",   value: "3",   sub: "Needs attention",   subOk: false, spark: [1,2,3,2,4,3,3] },
-    { label: "Sessions Today",    value: "4",   sub: "1 done · 1 live",   subOk: null, spark: [3,4,3,4,3,4,4] },
+    {
+      label: "Today's Check-ins",
+      value: String(todayCI),
+      sub: todayCI > 0 ? `Active today` : "No check-ins yet",
+      subOk: todayCI > 0 ? true : null,
+      spark: [0, 0, 0, 0, 0, 0, todayCI].map(v => v),
+    },
+    {
+      label: "Fill Rate",
+      value: `${fillRate}%`,
+      sub: `Across ${sessionCount} sessions`,
+      subOk: fillRate >= 60 ? true : fillRate < 40 ? false : null,
+      spark: [50, 55, 58, 60, 62, 65, fillRate],
+    },
+    {
+      label: "At-Risk Clients",
+      value: String(atRisk),
+      sub: atRisk > 0 ? "Needs attention" : "All clients active",
+      subOk: atRisk > 0 ? false : true,
+      spark: [0, 0, 0, 0, 0, 0, atRisk],
+    },
+    {
+      label: "Sessions Today",
+      value: String(sessionCount),
+      sub: `${sessionsDone} done · ${sessionsLive} live`,
+      subOk: null,
+      spark: [0, 0, 0, 0, 0, 0, sessionCount],
+    },
   ];
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
       {kpis.map((k, i) => {
-        const valColor = i === 2 ? C.red : C.t1;
+        const valColor = i === 2 && atRisk > 0 ? C.red : C.t1;
         const subColor = k.subOk === true ? C.green : k.subOk === false ? C.red : C.t3;
         return (
           <div key={i} className="fade-up" style={{ animationDelay: `${i * .05}s`,
@@ -171,7 +182,7 @@ function KpiStrip() {
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
               <span style={{ fontSize: 32, fontWeight: 800, color: valColor,
                 letterSpacing: "-.045em", lineHeight: 1 }}>{k.value}</span>
-              <Spark data={k.spark} color={i === 2 ? C.red : C.blue} h={28} w={60}/>
+              <Spark data={k.spark} color={i === 2 && atRisk > 0 ? C.red : C.blue} h={28} w={60}/>
             </div>
             <span style={{ fontSize: 10, color: subColor, fontWeight: 500 }}>{k.sub}</span>
           </div>
@@ -181,9 +192,9 @@ function KpiStrip() {
   );
 }
 
-// ─── SESSION ROW ─────────────────────────────────────────────────────────────
-function SessionRow({ s, expanded, onToggle }) {
-  const pct = Math.round((s.booked / s.cap) * 100);
+// ─── SESSION ROW (real data) ───────────────────────────────────────────────────
+function SessionRow({ s, expanded, onToggle, now }) {
+  const pct = s.cap > 0 ? Math.round((s.booked / s.cap) * 100) : 0;
   const isLive = s.status === "live";
   const isDone = s.status === "done";
 
@@ -192,25 +203,21 @@ function SessionRow({ s, expanded, onToggle }) {
 
   return (
     <div>
-      {/* Main row */}
       <div className="row-hover" onClick={onToggle} style={{
         display: "flex", alignItems: "center", gap: 14,
         padding: "16px 20px", cursor: "pointer",
         borderBottom: `1px solid ${C.border}`, background: "transparent",
         opacity: isDone ? .65 : 1,
       }}>
-        {/* Status indicator */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
           <div className={isLive ? "live-pulse" : ""} style={{
             width: 7, height: 7, borderRadius: "50%", background: statusColor,
           }}/>
         </div>
 
-        {/* Time */}
         <span style={{ fontSize: 11, fontWeight: 700, color: isDone ? C.t3 : C.t2,
           width: 62, flexShrink: 0, letterSpacing: "-.01em" }}>{s.time}</span>
 
-        {/* Name block */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: isDone ? C.t2 : C.t1,
@@ -229,43 +236,22 @@ function SessionRow({ s, expanded, onToggle }) {
           </div>
         </div>
 
-        {/* Sparkline */}
-        <Spark data={s.spark} color={isDone ? C.t4 : C.blue} h={24} w={56}/>
-
-        {/* Check-in button */}
-        <button className="btn-base" onClick={e => e.stopPropagation()} style={{
-          fontSize: 10, fontWeight: 700, color: isDone ? C.t3 : C.blue,
-          background: isDone ? "rgba(255,255,255,0.03)" : C.blueDim,
-          border: `1px solid ${isDone ? C.border : C.blueStr}`,
-          borderRadius: 7, padding: "5px 12px", letterSpacing: ".01em",
-          display: "flex", alignItems: "center", gap: 5,
-        }}>
-          <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/><circle cx="17.5" cy="17.5" r="2"/>
-          </svg>
-          Check-in
-        </button>
-
-        {/* Chevron */}
         <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={C.t4} strokeWidth={2.5}
           style={{ flexShrink: 0, transform: expanded ? "rotate(90deg)" : "none", transition: "transform .2s" }}>
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </div>
 
-      {/* Expanded */}
       {expanded && (
         <div className="expand-body" style={{
           padding: "14px 20px 16px", background: C.inset,
           borderBottom: `1px solid ${C.border}`,
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
             {[
-              { l: "Booked",   v: s.booked,                c: C.blue  },
-              { l: "Attended", v: Math.ceil(s.booked*.75),  c: C.green },
-              { l: "No-shows", v: Math.floor(s.booked*.25), c: C.red   },
-              { l: "Open",     v: s.cap - s.booked,         c: C.t2    },
+              { l: "Booked", v: s.booked, c: C.blue },
+              { l: "Capacity", v: s.cap, c: C.t2 },
+              { l: "Open", v: Math.max(0, s.cap - s.booked), c: C.t2 },
             ].map((stat, j) => (
               <div key={j} style={{
                 padding: "10px 12px", borderRadius: 8, textAlign: "center",
@@ -276,32 +262,148 @@ function SessionRow({ s, expanded, onToggle }) {
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {[
-              { label: "Send reminder", color: C.amber },
-              { label: "Message group", color: C.blue },
-              { label: "Mark complete", color: C.green },
-            ].map(({ label, color }, k) => (
-              <button key={k} className="btn-base" style={{
-                fontSize: 10, fontWeight: 700, color, padding: "5px 12px",
-                background: `${color}0f`, border: `1px solid ${color}28`,
-                borderRadius: 7,
-              }}>{label}</button>
-            ))}
-          </div>
         </div>
       )}
     </div>
   );
 }
 
+// ─── 7-DAY SPARK (real check-in data) ─────────────────────────────────────────
+function WeekPulse({ checkIns, now }) {
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const vals = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const dayOffset = 6 - i; // 0=today, 6=6 days ago
+      const target = new Date(now);
+      target.setDate(target.getDate() - dayOffset);
+      return checkIns.filter(c => {
+        const d = new Date(c.check_in_date);
+        return d.getFullYear() === target.getFullYear() &&
+               d.getMonth() === target.getMonth() &&
+               d.getDate() === target.getDate();
+      }).length;
+    });
+  }, [checkIns, now]);
+
+  const maxPulse = Math.max(...vals, 1);
+  const totalWeek = vals.reduce((a,b) => a+b, 0);
+  const avg = (totalWeek / 7).toFixed(1);
+
+  // Day labels: Mon through Sun but shifted so today is last
+  const todayDow = (now.getDay() + 6) % 7; // 0=Mon
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    return days[(todayDow - 6 + i + 7) % 7];
+  });
+
+  return (
+    <Card>
+      <CardHeader title="Check-in Activity"/>
+      <div style={{ padding: "14px 16px" }}>
+        <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 52, marginBottom: 10 }}>
+          {vals.map((v, i) => {
+            const h = Math.max(3, (v / maxPulse) * 48);
+            const isToday = i === 6;
+            return (
+              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column",
+                alignItems: "center", gap: 5 }}>
+                <div style={{ width: "100%", height: h, borderRadius: 3,
+                  background: isToday ? C.blue : "rgba(61,130,244,0.22)",
+                  transition: "height .5s ease" }}/>
+                <span style={{ fontSize: 8, color: isToday ? C.blue : C.t4,
+                  fontWeight: isToday ? 800 : 500 }}>{dayLabels[i]}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ paddingTop: 10, borderTop: `1px solid ${C.border}`,
+          display: "flex", justifyContent: "space-between" }}>
+          <StatPill label="Today" value={vals[6]} color={C.t1}/>
+          <StatPill label="Daily avg" value={avg} color={C.t2}/>
+          <StatPill label="This week" value={totalWeek} color={C.t2}/>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-export default function TodayDashboard() {
+export default function TodayDashboard({ allMemberships = [], checkIns = [], myClasses = [], currentUser, openModal, setTab, now = new Date() }) {
   const [expanded, setExpanded] = useState(null);
   const toggle = id => setExpanded(p => p === id ? null : id);
 
-  const maxPulse = Math.max(...WEEK.vals);
-  const liveSession = SESSIONS.find(s => s.status === "live");
+  // ── Derive today's sessions from myClasses ────────────────────────────────
+  const sessions = useMemo(() => {
+    const nowHour = now.getHours() + now.getMinutes() / 60;
+    return myClasses.map((cls, i) => {
+      // Parse schedule time if available
+      const schedStr = typeof cls.schedule === "string" ? cls.schedule :
+        (Array.isArray(cls.schedule) && cls.schedule[0]?.time ? cls.schedule[0].time : "");
+      let timeHour = null;
+      const m = schedStr.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+      if (m) {
+        timeHour = parseInt(m[1]);
+        if (m[3]?.toLowerCase() === "pm" && timeHour !== 12) timeHour += 12;
+        if (m[3]?.toLowerCase() === "am" && timeHour === 12) timeHour = 0;
+        if (m[2]) timeHour += parseInt(m[2]) / 60;
+      }
+
+      const cap = cls.max_capacity || cls.capacity || 20;
+      const bookings = (cls.bookings || []).length;
+      const durationMin = cls.duration_minutes || cls.duration || 60;
+
+      let status = "upcoming";
+      if (timeHour !== null) {
+        if (nowHour > timeHour + durationMin / 60) status = "done";
+        else if (nowHour >= timeHour && nowHour <= timeHour + durationMin / 60) status = "live";
+      }
+
+      const displayTime = schedStr || "—";
+
+      return {
+        id: cls.id || `cls-${i}`,
+        name: cls.name,
+        time: displayTime,
+        booked: bookings,
+        cap,
+        duration: `${durationMin}m`,
+        status,
+      };
+    }).sort((a, b) => {
+      const parseH = s => { const m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i); if (!m) return 99; let h = parseInt(m[1]); if (m[3]?.toLowerCase() === "pm" && h !== 12) h += 12; return h + (m[2] ? parseInt(m[2]) / 60 : 0); };
+      return parseH(a.time) - parseH(b.time);
+    });
+  }, [myClasses, now]);
+
+  // ── Derive KPIs from real data ────────────────────────────────────────────
+  const todayCI = useMemo(() => checkIns.filter(c => {
+    const d = new Date(c.check_in_date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }).length, [checkIns, now]);
+
+  const totalBooked = sessions.reduce((a, s) => a + s.booked, 0);
+  const totalCap    = sessions.reduce((a, s) => a + s.cap, 0);
+  const fillRate    = totalCap > 0 ? Math.round((totalBooked / totalCap) * 100) : 0;
+  const sessionsLive= sessions.filter(s => s.status === "live").length;
+  const sessionsDone= sessions.filter(s => s.status === "done").length;
+  const liveSession = sessions.find(s => s.status === "live");
+
+  // ── At-risk: members with no check-in in 14+ days ─────────────────────────
+  const atRiskMembers = useMemo(() => {
+    return allMemberships.map(m => {
+      const lastCI = checkIns.filter(c => c.user_id === m.user_id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
+      const daysAgo = lastCI ? differenceInDays(now, new Date(lastCI.check_in_date)) : 999;
+      return { ...m, daysAgo };
+    }).filter(m => m.daysAgo >= 14)
+      .sort((a, b) => b.daysAgo - a.daysAgo)
+      .slice(0, 5)
+      .map(m => ({
+        id: m.user_id,
+        name: m.user_name || "Client",
+        days: m.daysAgo,
+        reason: m.daysAgo >= 999 ? "Never checked in" : `No visit in ${m.daysAgo} days`,
+        level: m.daysAgo >= 21 ? "high" : "med",
+      }));
+  }, [allMemberships, checkIns, now]);
 
   return (
     <div className="td-root" style={{
@@ -309,7 +411,7 @@ export default function TodayDashboard() {
       display: "flex", flexDirection: "column", gap: 18,
     }}>
 
-      {/* ── HEADER — date line removed; just the title + live badge ── */}
+      {/* ── HEADER ── */}
       <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>
           Today's Overview
@@ -325,116 +427,121 @@ export default function TodayDashboard() {
       </div>
 
       {/* ── KPI STRIP ── */}
-      <KpiStrip/>
+      <KpiStrip
+        todayCI={todayCI}
+        fillRate={fillRate}
+        atRisk={atRiskMembers.length}
+        sessionCount={sessions.length}
+        sessionsLive={sessionsLive}
+        sessionsDone={sessionsDone}
+      />
 
       {/* ── MAIN LAYOUT ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
 
-        {/* ── SESSIONS (HERO) ── */}
+        {/* ── SESSIONS ── */}
         <Card>
-          <CardHeader title="Today's Sessions" action="+ Add Session" onAction={() => {}}/>
+          <CardHeader title="Today's Sessions" action="+ Add Session" onAction={() => openModal?.("classes")}/>
 
-          {/* Column headers */}
-          <div style={{ display: "grid", gridTemplateColumns: "20px 62px 1fr auto auto auto",
-            gap: 14, padding: "8px 20px",
-            borderBottom: `1px solid ${C.border}` }}>
-            {["", "Time", "Session", "", "Attendance", ""].map((h, i) => (
-              <span key={i} style={{ fontSize: 9, fontWeight: 700, color: C.t4,
-                textTransform: "uppercase", letterSpacing: ".07em" }}>{h}</span>
-            ))}
-          </div>
-
-          {SESSIONS.map(s => (
-            <SessionRow key={s.id} s={s} expanded={expanded === s.id} onToggle={() => toggle(s.id)}/>
-          ))}
-
-          {/* Footer summary */}
-          <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`,
-            display: "flex", alignItems: "center", gap: 24 }}>
-            {[
-              { label: "Total booked", value: SESSIONS.reduce((a, s) => a + s.booked, 0) },
-              { label: "Total capacity", value: SESSIONS.reduce((a, s) => a + s.cap, 0) },
-              { label: "Overall fill", value: `${Math.round(SESSIONS.reduce((a,s)=>a+s.booked,0)/SESSIONS.reduce((a,s)=>a+s.cap,0)*100)}%` },
-            ].map((stat, i) => (
-              <div key={i} style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>{stat.value}</span>
-                <span style={{ fontSize: 10, color: C.t3 }}>{stat.label}</span>
+          {sessions.length === 0 ? (
+            <div style={{ padding: "32px 20px", textAlign: "center" }}>
+              <p style={{ fontSize: 13, color: C.t2, fontWeight: 600, margin: "0 0 6px" }}>No classes today</p>
+              <p style={{ fontSize: 11, color: C.t3, margin: "0 0 16px" }}>Add your first class to start tracking attendance.</p>
+              <button className="btn-base" onClick={() => openModal?.("classes")} style={{
+                fontSize: 11, fontWeight: 700, color: C.blue, background: C.blueDim,
+                border: `1px solid ${C.blueStr}`, borderRadius: 8, padding: "7px 14px",
+              }}>+ Add Session</button>
+            </div>
+          ) : (
+            <>
+              {/* Column headers */}
+              <div style={{ display: "grid", gridTemplateColumns: "20px 62px 1fr auto",
+                gap: 14, padding: "8px 20px",
+                borderBottom: `1px solid ${C.border}` }}>
+                {["", "Time", "Session", ""].map((h, i) => (
+                  <span key={i} style={{ fontSize: 9, fontWeight: 700, color: C.t4,
+                    textTransform: "uppercase", letterSpacing: ".07em" }}>{h}</span>
+                ))}
               </div>
-            ))}
-          </div>
+
+              {sessions.map(s => (
+                <SessionRow key={s.id} s={s} expanded={expanded === s.id} onToggle={() => toggle(s.id)} now={now}/>
+              ))}
+
+              {/* Footer summary */}
+              <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`,
+                display: "flex", alignItems: "center", gap: 24 }}>
+                {[
+                  { label: "Total booked",   value: totalBooked },
+                  { label: "Total capacity", value: totalCap },
+                  { label: "Overall fill",   value: `${fillRate}%` },
+                ].map((stat, i) => (
+                  <div key={i} style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>{stat.value}</span>
+                    <span style={{ fontSize: 10, color: C.t3 }}>{stat.label}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </Card>
 
         {/* ── RIGHT SIDEBAR ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-          {/* Action Items */}
+          {/* At-Risk Clients */}
           <Card>
-            <CardHeader title="Action Items" tag={`${AT_RISK.length} pending`} action="View all" onAction={() => {}}/>
-            <div style={{ padding: "6px 0" }}>
-              {AT_RISK.map((m, i) => (
-                <div key={m.id} className="row-hover" style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  padding: "10px 16px", cursor: "pointer",
-                  borderLeft: `2px solid ${m.level === "high" ? C.red : C.amber}`,
-                  marginLeft: 0,
-                }}>
-                  <Avatar initials={m.initials} size={28} level={m.level}/>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: C.t1,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      marginBottom: 2 }}>{m.name}</div>
-                    <div style={{ fontSize: 9, color: C.t3 }}>{m.reason}</div>
+            <CardHeader
+              title="At-Risk Clients"
+              tag={atRiskMembers.length > 0 ? `${atRiskMembers.length} pending` : undefined}
+              action={atRiskMembers.length > 0 ? "View all" : undefined}
+              onAction={() => setTab?.("members")}
+            />
+            {atRiskMembers.length === 0 ? (
+              <div style={{ padding: "20px 16px", textAlign: "center" }}>
+                <div style={{ fontSize: 11, color: C.green, fontWeight: 700 }}>✓ All clients active</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 4 }}>No one inactive for 14+ days</div>
+              </div>
+            ) : (
+              <div style={{ padding: "6px 0" }}>
+                {atRiskMembers.map((m, i) => (
+                  <div key={m.id || i} className="row-hover" style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 16px", cursor: "pointer",
+                    borderLeft: `2px solid ${m.level === "high" ? C.red : C.amber}`,
+                  }}>
+                    <AvatarInitials name={m.name} size={28} level={m.level}/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.t1,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        marginBottom: 2 }}>{m.name}</div>
+                      <div style={{ fontSize: 9, color: C.t3 }}>{m.reason}</div>
+                    </div>
+                    <button className="btn-base" onClick={() => openModal?.("message")} style={{
+                      fontSize: 9, fontWeight: 700, color: C.amber,
+                      background: C.amberDim, border: `1px solid ${C.amberStr}`,
+                      borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap",
+                    }}>Message →</button>
                   </div>
-                  <button className="btn-base" style={{
-                    fontSize: 9, fontWeight: 700, color: C.amber,
-                    background: C.amberDim, border: `1px solid ${C.amberStr}`,
-                    borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap",
-                  }}>Message →</button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
 
-          {/* 7-Day Pulse */}
-          <Card>
-            <CardHeader title="Check-in Activity"/>
-            <div style={{ padding: "14px 16px" }}>
-              <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 52, marginBottom: 10 }}>
-                {WEEK.vals.map((v, i) => {
-                  const h = Math.max(3, (v / maxPulse) * 48);
-                  const isToday = i === 6;
-                  return (
-                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column",
-                      alignItems: "center", gap: 5 }}>
-                      <div style={{ width: "100%", height: h, borderRadius: 3,
-                        background: isToday ? C.blue : "rgba(61,130,244,0.22)",
-                        transition: "height .5s ease" }}/>
-                      <span style={{ fontSize: 8, color: isToday ? C.blue : C.t4,
-                        fontWeight: isToday ? 800 : 500 }}>{WEEK.days[i]}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ paddingTop: 10, borderTop: `1px solid ${C.border}`,
-                display: "flex", justifyContent: "space-between" }}>
-                <StatPill label="Today" value={WEEK.vals[6]} color={C.t1}/>
-                <StatPill label="Daily avg" value={(WEEK.vals.reduce((a,b)=>a+b)/7).toFixed(1)} color={C.t2}/>
-                <StatPill label="This week" value={WEEK.vals.reduce((a,b)=>a+b)} color={C.t2}/>
-              </div>
-            </div>
-          </Card>
+          {/* 7-Day Check-in Activity */}
+          <WeekPulse checkIns={checkIns} now={now} />
 
           {/* Quick Actions */}
           <Card>
             <CardHeader title="Quick Actions"/>
             <div style={{ padding: "8px 10px", display: "flex", flexDirection: "column", gap: 3 }}>
               {[
-                { label: "Scan check-in",  sub: "Open QR scanner" },
-                { label: "Send message",   sub: "Broadcast or 1:1" },
-                { label: "Book a client",  sub: "Schedule session" },
-                { label: "New session",    sub: "Add to today" },
-              ].map(({ label, sub }, i) => (
-                <button key={i} className="btn-base row-hover" style={{
+                { label: "Scan check-in",  sub: "Open QR scanner",    fn: () => openModal?.("qrScanner") },
+                { label: "Send message",   sub: "Broadcast or 1:1",   fn: () => openModal?.("post") },
+                { label: "Manage classes", sub: "Edit your timetable", fn: () => openModal?.("classes") },
+                { label: "View members",   sub: "Client overview",     fn: () => setTab?.("members") },
+              ].map(({ label, sub, fn }, i) => (
+                <button key={i} className="btn-base row-hover" onClick={fn} style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "9px 10px",
                   borderRadius: 8, background: "transparent",
                   border: `1px solid transparent`, textAlign: "left", width: "100%",
