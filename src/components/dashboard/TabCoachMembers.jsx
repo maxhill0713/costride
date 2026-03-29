@@ -966,8 +966,8 @@ function Sidebar({ clients, openClient }) {
       <SideCard>
         <SideHdr>Revenue Split</SideHdr>
         {['Elite','Premium','Standard'].map((tier,i,arr) => {
-          const val = CLIENTS.filter(c=>c.tier===tier).reduce((s,c)=>s+c.monthlySpend,0);
-          const total = CLIENTS.reduce((s,c)=>s+c.monthlySpend,0);
+          const val = clients.filter(c=>c.tier===tier).reduce((s,c)=>s+c.monthlySpend,0);
+          const total = clients.reduce((s,c)=>s+c.monthlySpend,0);
           const pct = total > 0 ? Math.round((val/total)*100) : 0;
           return (
             <div key={tier} style={{ marginBottom: i<arr.length-1 ? 9 : 0 }}>
@@ -1115,19 +1115,28 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
     },
   });
 
-  const atRiskCount = CLIENTS.filter(c => c.status === 'at_risk').length;
+  // Combine real accepted clients with mock CLIENTS (mock are for demo/placeholder)
+  const allClients = useMemo(() => {
+    // If we have real clients, show them. Always show CLIENTS as demo data too.
+    const combined = [...realClients, ...CLIENTS];
+    // Deduplicate by id just in case
+    const seen = new Set();
+    return combined.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
+  }, [realClients]);
+
+  const atRiskCount = allClients.filter(c => c.status === 'at_risk').length;
 
   const FILTERS = [
-    { id:'all',      label:'All Clients', count:CLIENTS.length + pendingInvites.length },
-    { id:'active',   label:'Active',      count:CLIENTS.filter(c=>c.status==='active').length },
+    { id:'all',      label:'All Clients', count:allClients.length + pendingInvites.length },
+    { id:'active',   label:'Active',      count:allClients.filter(c=>c.status==='active').length },
     { id:'at_risk',  label:'At Risk',     count:atRiskCount, urgent:true },
-    { id:'paused',   label:'Paused',      count:CLIENTS.filter(c=>c.status==='paused').length },
-    { id:'elite',    label:'Elite',       count:CLIENTS.filter(c=>c.tier==='Elite').length },
-    { id:'injuries', label:'Injured',     count:CLIENTS.filter(c=>(c.injuries||[]).some(i=>i.severity!=='Cleared')).length },
+    { id:'paused',   label:'Paused',      count:allClients.filter(c=>c.status==='paused').length },
+    { id:'elite',    label:'Elite',       count:allClients.filter(c=>c.tier==='Elite').length },
+    { id:'injuries', label:'Injured',     count:allClients.filter(c=>(c.injuries||[]).some(i=>i.severity!=='Cleared')).length },
   ];
 
   const visible = useMemo(() => {
-    let list = [...CLIENTS];
+    let list = [...allClients];
     if (filter === 'active')   list = list.filter(c=>c.status==='active');
     if (filter === 'at_risk')  list = list.filter(c=>c.status==='at_risk');
     if (filter === 'paused')   list = list.filter(c=>c.status==='paused');
@@ -1146,7 +1155,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
     if (sortBy==='lastVisit') list.sort((a,b)=>b.lastVisit-a.lastVisit);
     if (sortBy==='name')      list.sort((a,b)=>a.name.localeCompare(b.name));
     return list;
-  }, [filter, search, sortBy]);
+  }, [allClients, filter, search, sortBy]);
 
   // Show pending invites only on 'all' filter
   const showPending = filter === 'all';
@@ -1164,11 +1173,11 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         coach={coach}
-        existingClientIds={[]}
+        existingClientIds={acceptedMemberIds}
         pendingClientIds={pendingMemberIds}
       />
 
-      <SummaryStrip clients={CLIENTS}/>
+      <SummaryStrip clients={allClients}/>
 
       {/* Controls */}
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, flexWrap:'wrap' }}>
@@ -1278,7 +1287,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
           </div>
         </div>
 
-        <Sidebar clients={visible} openClient={openClient}/>
+        <Sidebar clients={visible.length > 0 ? visible : allClients} openClient={openClient}/>
       </div>
     </div>
   );
