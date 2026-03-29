@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   Search, X, Phone, Calendar, Dumbbell, TrendingUp, TrendingDown,
@@ -990,11 +990,13 @@ function Sidebar({ clients, openClient }) {
 }
 
 // ─── PENDING CLIENT ROW ───────────────────────────────────────────────────────
-function PendingClientRow({ invite }) {
+function PendingClientRow({ invite, onCancel }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10,
-      overflow: 'hidden', borderLeft: `2px solid ${C.blue}`, opacity: 0.85 }}>
+      overflow: 'hidden', borderLeft: `2px solid ${C.blue}`, opacity: 0.85, position: 'relative' }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px' }}>
         <div style={{ width:34, height:34, borderRadius:'50%', flexShrink:0,
           background:'rgba(61,130,244,0.10)', border:'1px solid rgba(61,130,244,0.20)',
@@ -1010,6 +1012,38 @@ function PendingClientRow({ invite }) {
           background:C.blueDim, border:`1px solid ${C.blueStr}`,
           borderRadius:99, padding:'3px 10px', textTransform:'uppercase', letterSpacing:'.05em',
           flexShrink:0 }}>Pending</span>
+
+        {/* 3-dots menu */}
+        <div style={{ position:'relative', flexShrink:0 }}>
+          <button
+            className="tcm-btn"
+            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
+            style={{ width:26, height:26, borderRadius:6, display:'flex', alignItems:'center',
+              justifyContent:'center', background:'transparent', border:`1px solid ${C.border}`,
+              color:C.t3, marginLeft:4 }}>
+            <span style={{ fontSize:14, lineHeight:1, letterSpacing:'1px' }}>···</span>
+          </button>
+          {menuOpen && (
+            <>
+              {/* click-away backdrop */}
+              <div onClick={() => setMenuOpen(false)}
+                style={{ position:'fixed', inset:0, zIndex:99 }} />
+              <div style={{ position:'absolute', right:0, top:'110%', zIndex:100,
+                background:'#0c1520', border:`1px solid ${C.borderMd}`,
+                borderRadius:9, overflow:'hidden', minWidth:130,
+                boxShadow:'0 8px 24px rgba(0,0,0,0.6)' }}>
+                <button
+                  className="tcm-btn"
+                  onClick={e => { e.stopPropagation(); setMenuOpen(false); onCancel(invite); }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:7,
+                    padding:'9px 13px', background:'transparent', border:'none',
+                    color:C.red, fontSize:11, fontWeight:700, textAlign:'left' }}>
+                  <X style={{ width:11, height:11 }}/> Cancel Invite
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1036,6 +1070,13 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
   });
 
   const pendingMemberIds = pendingInvites.map(i => i.member_id);
+
+  const cancelInviteMutation = useMutation({
+    mutationFn: (invite) => base44.entities.CoachInvite.delete(invite.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] });
+    },
+  });
 
   const atRiskCount = CLIENTS.filter(c => c.status === 'at_risk').length;
 
@@ -1171,7 +1212,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
           <div className="tcm-feed">
             {/* Pending invites at top (only on 'all' filter) */}
             {showPending && pendingInvites.map(invite => (
-              <PendingClientRow key={invite.id} invite={invite} />
+              <PendingClientRow key={invite.id} invite={invite} onCancel={cancelInviteMutation.mutate} />
             ))}
 
             {visible.length === 0 && (!showPending || pendingInvites.length === 0) ? (
