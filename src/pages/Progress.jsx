@@ -1124,36 +1124,6 @@ function TrainerTab({ currentUser }) {
 
   return (
     <div className="space-y-5">
-      {/* ── Pending coach invites ── */}
-      {pendingInvites.length > 0 && (
-        <div className="space-y-3">
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-            Coach Requests
-          </p>
-          {pendingInvites.map(invite => (
-            <CoachInviteBanner
-              key={invite.id}
-              invite={invite}
-              accepting={processingId === invite.id}
-              declining={processingId === invite.id}
-              onAccept={() => handleAccept(invite)}
-              onDecline={() => handleDecline(invite)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* ── My Personal Trainer ── */}
-      {acceptedInvites.length > 0 && (
-        <div className="space-y-3">
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-            Personal Trainer
-          </p>
-          {acceptedInvites.map(invite => (
-            <MyCoachBox key={invite.id} invite={invite} />
-          ))}
-        </div>
-      )}
 
       {/* ── Tab buttons ── */}
       <div className="grid grid-cols-2 gap-3">
@@ -1190,7 +1160,41 @@ function TrainerTab({ currentUser }) {
       )}
 
       {activeSection === 'coaches' && (
-        <CoachMessages currentUser={currentUser} />
+        <div className="space-y-4">
+          {/* ── Pending coach invites ── */}
+          {pendingInvites.length > 0 && (
+            <div className="space-y-3">
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                Coach Requests
+              </p>
+              {pendingInvites.map(invite => (
+                <CoachInviteBanner
+                  key={invite.id}
+                  invite={invite}
+                  accepting={processingId === invite.id}
+                  declining={processingId === invite.id}
+                  onAccept={() => handleAccept(invite)}
+                  onDecline={() => handleDecline(invite)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* ── My Personal Trainer ── */}
+          {acceptedInvites.length > 0 && (
+            <div className="space-y-3">
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                Personal Trainer
+              </p>
+              {acceptedInvites.map(invite => (
+                <MyCoachBox key={invite.id} invite={invite} />
+              ))}
+            </div>
+          )}
+
+          {/* ── Messages (replaces "No messages yet" when no invites) ── */}
+          <CoachMessages currentUser={user} />
+        </div>
       )}
     </div>
   );
