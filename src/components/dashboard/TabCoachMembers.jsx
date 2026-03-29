@@ -1057,19 +1057,56 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
   const [openId,       setOpenId]       = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const coachId = coach?.user_id || coach?.id;
+
   // Fetch pending invites sent by this coach
   const { data: pendingInvites = [] } = useQuery({
-    queryKey: ['coachInvitesForCoach', coach?.user_id || coach?.id],
-    queryFn: () => base44.entities.CoachInvite.filter({
-      coach_id: coach?.user_id || coach?.id,
-      status: 'pending',
-    }, '-created_date', 50),
-    enabled: !!(coach?.user_id || coach?.id),
+    queryKey: ['coachInvitesForCoach', coachId, 'pending'],
+    queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'pending' }, '-created_date', 50),
+    enabled: !!coachId,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  // Fetch accepted invites — these are real clients
+  const { data: acceptedInvites = [] } = useQuery({
+    queryKey: ['coachInvitesForCoach', coachId, 'accepted'],
+    queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'accepted' }, '-created_date', 100),
+    enabled: !!coachId,
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000,
   });
 
   const pendingMemberIds = pendingInvites.map(i => i.member_id);
+  const acceptedMemberIds = acceptedInvites.map(i => i.member_id);
+
+  // Build real client list from accepted invites, merged with mock CLIENTS for demo
+  const realClients = useMemo(() => {
+    return acceptedInvites.map(invite => ({
+      id: invite.member_id,
+      name: invite.member_name || 'Member',
+      email: invite.member_email || '',
+      phone: '',
+      tier: 'Standard',
+      status: 'active',
+      goal: 'General Fitness',
+      retentionScore: 70,
+      retentionHistory: [65, 67, 68, 70, 70, 70, 70, 70],
+      sessionsThisMonth: 0,
+      sessionsLastMonth: 0,
+      lastVisit: 0,
+      streak: 0,
+      consecutiveMissed: 0,
+      joinDate: new Date(invite.created_date || Date.now()).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+      membership: 'Personal Training',
+      monthlySpend: 0,
+      tags: [],
+      notes: '',
+      nextSession: null,
+      upcomingClasses: [],
+      injuries: [],
+    }));
+  }, [acceptedInvites]);
 
   const cancelInviteMutation = useMutation({
     mutationFn: (invite) => base44.entities.CoachInvite.delete(invite.id),
