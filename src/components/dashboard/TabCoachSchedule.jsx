@@ -794,7 +794,7 @@ function ActionCentre({ allMemberships, checkIns, myClasses, now, openModal }) {
         {section === 'fading' && (
           fading.length === 0 ? (
             <Signal color={C.success} icon={CheckCircle} title="Attendance looks healthy" detail="No members with broken consistency" last />
-          ) : fading.map((m, i) => itemCard(i, m.rs.color, (
+          ) : <>{fading.map((m, i) => itemCard(i, m.rs.color, (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -813,12 +813,13 @@ function ActionCentre({ allMemberships, checkIns, myClasses, now, openModal }) {
               </div>
             </>
           ))
+          )}</>
         )}
 
         {section === 'dropping' && (
           dropping.length === 0 ? (
             <Signal color={C.success} icon={CheckCircle} title="No declining attendance trends" detail="All members maintaining their visit frequency" last />
-          ) : dropping.map((m, i) => itemCard(i, C.danger, (
+          ) : <>{dropping.map((m, i) => itemCard(i, C.danger, (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -839,6 +840,7 @@ function ActionCentre({ allMemberships, checkIns, myClasses, now, openModal }) {
               </div>
             </>
           ))
+          )}</>
         )}
       </div>
     </CardShell>
