@@ -624,17 +624,26 @@ export default function GymOwnerDashboard() {
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
   const { data: polls      = [] } = useQuery({ queryKey: ['polls',      selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
 
-  // Coach-specific: bookings and assigned workouts for real client metrics
+  // Coach-specific: bookings — fetched after gym is loaded
   const { data: coachBookings = [] } = useQuery({
     queryKey: ['coachBookings', selectedGym?.id],
     queryFn: () => base44.entities.Booking.filter({ gym_id: selectedGym.id }, '-session_date', 300),
     enabled: on && isCoach,
     staleTime: 2 * 60 * 1000,
   });
+  // Assigned workouts — fetched after coaches list is loaded (coaches query above provides the ID)
   const { data: coachAssignedWorkouts = [] } = useQuery({
-    queryKey: ['coachAssignedWorkouts', selectedGym?.id, activeCoachRecord?.id],
-    queryFn: () => base44.entities.AssignedWorkout.filter({ coach_id: activeCoachRecord.id }, '-assigned_date', 300),
-    enabled: on && isCoach && !!activeCoachRecord?.id,
+    queryKey: ['coachAssignedWorkouts', selectedGym?.id, selectedCoachId],
+    queryFn: async () => {
+      // Find coach record inline to avoid dependency on activeCoachRecord useMemo
+      const coachList = await base44.entities.Coach.filter({ gym_id: selectedGym.id });
+      const me = coachList.find(c =>
+        selectedCoachId ? c.id === selectedCoachId : c.user_email === currentUser?.email
+      );
+      if (!me) return [];
+      return base44.entities.AssignedWorkout.filter({ coach_id: me.id }, '-assigned_date', 300);
+    },
+    enabled: on && isCoach,
     staleTime: 2 * 60 * 1000,
   });
 
