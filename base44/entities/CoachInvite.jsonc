@@ -1,0 +1,54 @@
+{
+  "name": "CoachInvite",
+  "type": "object",
+  "properties": {
+    "coach_id": {
+      "type": "string",
+      "description": "User ID of the coach"
+    },
+    "coach_name": {
+      "type": "string",
+      "description": "Coach's display name"
+    },
+    "coach_avatar": {
+      "type": "string",
+      "description": "Coach avatar URL"
+    },
+    "coach_gym_id": {
+      "type": "string",
+      "description": "Gym ID the coach belongs to"
+    },
+    "coach_gym_name": {
+      "type": "string",
+      "description": "Gym name"
+    },
+    "member_id": {
+      "type": "string",
+      "description": "User ID of the invited member"
+    },
+    "member_name": {
+      "type": "string",
+      "description": "Member's display name"
+    },
+    "member_email": {
+      "type": "string",
+      "description": "Member's email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Invite status"
+    }
+  },
+  "required": [
+    "coach_id",
+    "coach_name",
+    "member_id",
+    "member_name"
+  ]
+}

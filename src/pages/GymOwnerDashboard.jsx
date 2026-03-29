@@ -609,7 +609,7 @@ export default function GymOwnerDashboard() {
       content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach ?
-      <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} /> :
+      <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} coach={activeCoachRecord} /> :
       <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?

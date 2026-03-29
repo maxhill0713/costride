@@ -1,10 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import {
   Search, X, Phone, Calendar, Dumbbell, TrendingUp, TrendingDown,
   Minus, Activity, AlertTriangle, Zap, Star, CreditCard,
   Clock, MessageCircle, User, UserPlus, ChevronRight, Bell,
   Edit3, Send, CheckCircle, Plus, Trash2, ShieldAlert, ChevronDown,
 } from 'lucide-react';
+import AddClientModal from '../coach/AddClientModal';
 
 // ─── INJECT CSS ───────────────────────────────────────────────────────────────
 if (typeof document !== 'undefined' && !document.getElementById('tcm-css')) {
@@ -986,17 +989,58 @@ function Sidebar({ clients, openClient }) {
   );
 }
 
+// ─── PENDING CLIENT ROW ───────────────────────────────────────────────────────
+function PendingClientRow({ invite }) {
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10,
+      overflow: 'hidden', borderLeft: `2px solid ${C.blue}`, opacity: 0.85 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px' }}>
+        <div style={{ width:34, height:34, borderRadius:'50%', flexShrink:0,
+          background:'rgba(61,130,244,0.10)', border:'1px solid rgba(61,130,244,0.20)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:12, fontWeight:800, color:C.blue }}>
+          {ini(invite.member_name)}
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:C.t1, marginBottom:3 }}>{invite.member_name}</div>
+          <div style={{ fontSize:10, color:C.t3 }}>Invite sent · awaiting response</div>
+        </div>
+        <span style={{ fontSize:9, fontWeight:800, color:C.blue,
+          background:C.blueDim, border:`1px solid ${C.blueStr}`,
+          borderRadius:99, padding:'3px 10px', textTransform:'uppercase', letterSpacing:'.05em',
+          flexShrink:0 }}>Pending</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
-export default function TabCoachMembers({ openModal = () => {} }) {
-  const [filter,  setFilter]  = useState('all');
-  const [search,  setSearch]  = useState('');
-  const [sortBy,  setSortBy]  = useState('risk');
-  const [openId,  setOpenId]  = useState(null);
+export default function TabCoachMembers({ openModal = () => {}, coach = null }) {
+  const [filter,       setFilter]       = useState('all');
+  const [search,       setSearch]       = useState('');
+  const [sortBy,       setSortBy]       = useState('risk');
+  const [openId,       setOpenId]       = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Fetch pending invites sent by this coach
+  const { data: pendingInvites = [] } = useQuery({
+    queryKey: ['coachInvitesForCoach', coach?.user_id || coach?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({
+      coach_id: coach?.user_id || coach?.id,
+      status: 'pending',
+    }, '-created_date', 50),
+    enabled: !!(coach?.user_id || coach?.id),
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  const pendingMemberIds = pendingInvites.map(i => i.member_id);
 
   const atRiskCount = CLIENTS.filter(c => c.status === 'at_risk').length;
 
   const FILTERS = [
-    { id:'all',      label:'All Clients', count:CLIENTS.length },
+    { id:'all',      label:'All Clients', count:CLIENTS.length + pendingInvites.length },
     { id:'active',   label:'Active',      count:CLIENTS.filter(c=>c.status==='active').length },
     { id:'at_risk',  label:'At Risk',     count:atRiskCount, urgent:true },
     { id:'paused',   label:'Paused',      count:CLIENTS.filter(c=>c.status==='paused').length },
@@ -1026,6 +1070,9 @@ export default function TabCoachMembers({ openModal = () => {} }) {
     return list;
   }, [filter, search, sortBy]);
 
+  // Show pending invites only on 'all' filter
+  const showPending = filter === 'all';
+
   function openClient(c) {
     setOpenId(c.id);
     setTimeout(() => {
@@ -1035,6 +1082,14 @@ export default function TabCoachMembers({ openModal = () => {} }) {
 
   return (
     <div className="tcm" style={{ background:C.bg, minHeight:'100vh', padding:'20px' }}>
+      <AddClientModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        coach={coach}
+        existingClientIds={[]}
+        pendingClientIds={pendingMemberIds}
+      />
+
       <SummaryStrip clients={CLIENTS}/>
 
       {/* Controls */}
@@ -1073,7 +1128,7 @@ export default function TabCoachMembers({ openModal = () => {} }) {
           ))}
         </div>
 
-        <button className="tcm-btn" onClick={()=>openModal?.('addClient')} style={{
+        <button className="tcm-btn" onClick={() => setShowAddModal(true)} style={{
           display:'flex', alignItems:'center', gap:6, padding:'9px 14px', borderRadius:9,
           background:C.blue, border:`1px solid ${C.blueStr}`, color:'#fff',
           fontSize:11, fontWeight:700, flexShrink:0,
@@ -1114,7 +1169,12 @@ export default function TabCoachMembers({ openModal = () => {} }) {
 
           {/* List */}
           <div className="tcm-feed">
-            {visible.length === 0 ? (
+            {/* Pending invites at top (only on 'all' filter) */}
+            {showPending && pendingInvites.map(invite => (
+              <PendingClientRow key={invite.id} invite={invite} />
+            ))}
+
+            {visible.length === 0 && (!showPending || pendingInvites.length === 0) ? (
               <div style={{ padding:'40px', textAlign:'center', borderRadius:11,
                 background:C.surface, border:`1px solid ${C.border}` }}>
                 <p style={{ fontSize:13, color:C.t2, fontWeight:600, margin:'0 0 4px' }}>No clients found</p>
@@ -1133,7 +1193,7 @@ export default function TabCoachMembers({ openModal = () => {} }) {
                   </div>
                 ))}
                 <p style={{ textAlign:'center', fontSize:10, color:C.t3, margin:'8px 0 0', paddingBottom:16 }}>
-                  {visible.length} of {CLIENTS.length} clients
+                  {visible.length} clients{showPending && pendingInvites.length > 0 ? ` · ${pendingInvites.length} pending` : ''}
                 </p>
               </>
             )}

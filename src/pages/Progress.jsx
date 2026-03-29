@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 const animatedTabs = new Set();
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User, Send } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User, Send, X, BadgeCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
@@ -953,15 +953,199 @@ function CoachMessages({ currentUser }) {
   );
 }
 
+// ─── Coach invite banner ──────────────────────────────────────────────────────
+function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }) {
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(30,58,138,0.45) 0%, rgba(16,19,40,0.95) 100%)',
+      border: '1px solid rgba(59,130,246,0.35)',
+      borderBottom: '3px solid rgba(29,78,216,0.55)',
+      borderRadius: 18,
+      padding: '16px 16px',
+      boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        {/* Coach avatar */}
+        <div style={{ width: 52, height: 52, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+          background: invite.coach_avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
+          border: '2px solid rgba(59,130,246,0.5)', boxShadow: '0 0 14px rgba(59,130,246,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 18, fontWeight: 800, color: '#3b82f6' }}>
+          {invite.coach_avatar
+            ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : ini(invite.coach_name)
+          }
+        </div>
+
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', marginBottom: 3, letterSpacing: '-0.01em' }}>
+            {invite.coach_name}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>Coach</span>
+            <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+          </div>
+          <div style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+            Wants you as a personal training client
+            {invite.coach_gym_name ? ` · ${invite.coach_gym_name}` : ''}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={onAccept}
+            disabled={accepting || declining}
+            style={{
+              width: 42, height: 42, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'linear-gradient(to bottom, #22c55e, #16a34a, #15803d)',
+              border: '1px solid transparent', borderBottom: '3px solid #14532d',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(34,197,94,0.3)',
+              cursor: 'pointer', transition: 'all 0.1s',
+              opacity: accepting || declining ? 0.6 : 1,
+            }}
+          >
+            <CheckCircle style={{ width: 18, height: 18, color: '#fff' }} />
+          </button>
+          <button
+            onClick={onDecline}
+            disabled={accepting || declining}
+            style={{
+              width: 42, height: 42, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'linear-gradient(to bottom, #ef4444, #dc2626, #b91c1c)',
+              border: '1px solid transparent', borderBottom: '3px solid #7f1d1d',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(239,68,68,0.3)',
+              cursor: 'pointer', transition: 'all 0.1s',
+              opacity: accepting || declining ? 0.6 : 1,
+            }}
+          >
+            <X style={{ width: 18, height: 18, color: '#fff' }} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Accepted coach box ───────────────────────────────────────────────────────
+function MyCoachBox({ invite }) {
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(10,14,30,0.97) 0%, rgba(5,8,20,1) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      borderRadius: 20, padding: '18px 18px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+    }}>
+      {/* Top-left: coach name + "Coach" label + tick */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{ width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+          background: invite.coach_avatar ? 'transparent' : 'rgba(59,130,246,0.15)',
+          border: '2px solid rgba(59,130,246,0.5)', boxShadow: '0 0 12px rgba(59,130,246,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, fontWeight: 800, color: '#3b82f6' }}>
+          {invite.coach_avatar
+            ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : ini(invite.coach_name)
+          }
+        </div>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.01em' }}>{invite.coach_name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>Coach</span>
+            <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
+
+      {/* Placeholder content */}
+      <div style={{ fontSize: 12, color: '#334155', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
+        Your coach will add workouts &amp; programmes here soon.
+      </div>
+    </div>
+  );
+}
+
 // ─── Trainer tab ─────────────────────────────────────────────────────────────
 function TrainerTab({ currentUser }) {
-  const [activeSection, setActiveSection] = useState('classes');
+  const [activeSection, setActiveSection] = useState('coaches');
+  const queryClient = useQueryClient();
 
   const btnBase = "px-2 py-1.5 rounded-2xl font-bold text-sm transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu flex-1";
   const btnInactive = "bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]";
 
+  // Fetch pending coach invites for this member
+  const { data: pendingInvites = [] } = useQuery({
+    queryKey: ['coachInvites', currentUser?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: currentUser.id, status: 'pending' }, '-created_date', 20),
+    enabled: !!currentUser,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  // Fetch accepted coach invites (my coaches)
+  const { data: acceptedInvites = [] } = useQuery({
+    queryKey: ['coachInvitesAccepted', currentUser?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: currentUser.id, status: 'accepted' }, '-created_date', 10),
+    enabled: !!currentUser,
+    staleTime: 60 * 1000,
+  });
+
+  const [processingId, setProcessingId] = useState(null);
+
+  const handleAccept = async (invite) => {
+    setProcessingId(invite.id);
+    await base44.entities.CoachInvite.update(invite.id, { status: 'accepted' });
+    queryClient.invalidateQueries({ queryKey: ['coachInvites', currentUser?.id] });
+    queryClient.invalidateQueries({ queryKey: ['coachInvitesAccepted', currentUser?.id] });
+    setProcessingId(null);
+  };
+
+  const handleDecline = async (invite) => {
+    setProcessingId(invite.id);
+    await base44.entities.CoachInvite.update(invite.id, { status: 'declined' });
+    queryClient.invalidateQueries({ queryKey: ['coachInvites', currentUser?.id] });
+    setProcessingId(null);
+  };
+
   return (
     <div className="space-y-5">
+      {/* ── Pending coach invites ── */}
+      {pendingInvites.length > 0 && (
+        <div className="space-y-3">
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+            Coach Requests
+          </p>
+          {pendingInvites.map(invite => (
+            <CoachInviteBanner
+              key={invite.id}
+              invite={invite}
+              accepting={processingId === invite.id}
+              declining={processingId === invite.id}
+              onAccept={() => handleAccept(invite)}
+              onDecline={() => handleDecline(invite)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── My Personal Trainer ── */}
+      {acceptedInvites.length > 0 && (
+        <div className="space-y-3">
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+            Personal Trainer
+          </p>
+          {acceptedInvites.map(invite => (
+            <MyCoachBox key={invite.id} invite={invite} />
+          ))}
+        </div>
+      )}
+
       {/* ── Tab buttons ── */}
       <div className="grid grid-cols-2 gap-3">
         <button
