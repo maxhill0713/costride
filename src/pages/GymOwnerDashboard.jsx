@@ -970,10 +970,9 @@ export default function GymOwnerDashboard() {
           <div>
             
             {tab === 'members' &&
-            <div style={{ fontSize: 11, color: D.t3, marginTop: 2 }}>
-                <span style={{ color: D.blue, fontWeight: 700 }}>{isCoach ? coachMemberships.length : allMemberships.length}</span>
-                {' '}{isCoach ? 'clients' : 'members'} · {selectedGym?.name}
-              </div>
+<div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
+    {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+  </div>
             }
           </div>
 
