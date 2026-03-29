@@ -333,28 +333,29 @@ const isOwner = currentUser && currentUser.email === gym.owner_email && currentU
 return (
       <div className="group cursor-pointer">
         <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
-          {gym.image_url &&
-            <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-              <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="w-full px-4">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">View Community</Button>
-                </Link>
-              </div>
-              <div className="absolute top-3 left-3 flex gap-2">
-                {gym.verified && <Badge className="bg-green-500/90 text-white text-xs"><BadgeCheck className="w-3 h-3 mr-1" />Verified</Badge>}
-              </div>
-              <div className="absolute top-3 right-3 flex gap-2">
-                <button onClick={() => setEquipmentGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
-                  <Dumbbell className="w-4 h-4 text-slate-300" />
-                </button>
-                <button onClick={() => toggleSave(gym.id)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
-                  <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
-                </button>
-                {isOwner && <button onClick={() => setEditingGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"><Edit className="w-4 h-4 text-slate-300" /></button>}
-              </div>
+          <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+            {gym.image_url
+              ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              : <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-10 h-10 text-slate-600" /></div>
+            }
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+              <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="w-full px-4">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">View Community</Button>
+              </Link>
             </div>
-          }
+            <div className="absolute top-3 left-3 flex gap-2">
+              {gym.verified && <Badge className="bg-green-500/90 text-white text-xs"><BadgeCheck className="w-3 h-3 mr-1" />Verified</Badge>}
+            </div>
+            <div className="absolute top-3 right-3 flex gap-2">
+              <button onClick={() => setEquipmentGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
+                <Dumbbell className="w-4 h-4 text-slate-300" />
+              </button>
+              <button onClick={() => toggleSave(gym.id)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
+                <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+              </button>
+              {isOwner && <button onClick={() => setEditingGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"><Edit className="w-4 h-4 text-slate-300" /></button>}
+            </div>
+          </div>
           <div className="p-4 space-y-3">
             <div>
               <h3 className="text-lg font-bold text-slate-100 line-clamp-2">{gym.name}</h3>

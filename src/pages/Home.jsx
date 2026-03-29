@@ -526,10 +526,10 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
   useEffect(() => {
-    if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
-      navigate(createPageUrl('Onboarding'));
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'), { replace: true });
     }
-  }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
+  }, [currentUser?.onboarding_completed, navigate]);
 
   useEffect(() => {
     if (!showStreakCelebration) return;
