@@ -266,7 +266,7 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
       {/* ── HERO ──────────────────────────────────────────────── */}
       <div style={{ position: 'relative' }}>
         {/* Banner */}
-        <div style={{ height: 190, position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg,#0d1828 0%,#060a14 100%)' }}>
+        <div style={{ height: 100, position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg,#0d1828 0%,#060a14 100%)' }}>
           {cl.hero_url
             ? <img src={cl.hero_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
             : (
@@ -291,7 +291,7 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
       </div>
 
       {/* ── IDENTITY ──────────────────────────────────────────── */}
-      <div style={{ paddingTop: 60, paddingBottom: 28, textAlign: 'center' }}>
+      <div style={{ paddingTop: 54, paddingBottom: 20, textAlign: 'center' }}>
         <div style={{ fontSize: 23, fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 6 }}>{cl.name}</div>
         <div style={{ fontSize: 13, color: SUB, fontWeight: 500, marginBottom: 14 }}>{cl.goal}</div>
 
