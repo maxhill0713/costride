@@ -148,26 +148,17 @@ function SectionLabel({ children }) {
 
 /* ══════════════════════════════════════════════════════════════════
    ACTIVITY CHIP
-   BEFORE: 7 different color combinations — every row had a unique
-           colored pill competing for attention.
-   AFTER:  3-tier rule:
-           Danger states (absent/banned) → danger pill
-           Positive threshold (15+/mo)   → success pill
-           Everything else               → neutral chip (border only)
 ══════════════════════════════════════════════════════════════════ */
 function ActivityChip({ m }) {
   let label, color, bg, border;
 
   if (m.isBanned || m.daysSince >= 14) {
-    // Tier 1: Danger — requires action
     label  = m.isBanned ? 'Banned' : `${m.daysSince}d absent`;
     color  = C.danger; bg = C.dangerSub; border = C.dangerBrd;
   } else if (m.visits30 >= 15) {
-    // Tier 2: Positive threshold — earned success color
     label  = `${m.visits30}/mo · high`;
     color  = C.success; bg = C.successSub; border = C.successBrd;
   } else if (m.visits30 >= 8) {
-    // Tier 3: Blue — active, healthy
     label  = `${m.visits30}/mo · active`;
     color  = C.accent; bg = C.accentSub; border = C.accentBrd;
   } else if (m.visits30 >= 4) {
@@ -177,7 +168,6 @@ function ActivityChip({ m }) {
     label  = `${m.visits30}/mo · low`;
     color  = C.t2; bg = 'transparent'; border = C.border;
   } else if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 7) {
-    // New — not alarming, neutral
     label  = 'Just joined';
     color  = C.t2; bg = 'transparent'; border = C.border;
   } else {
@@ -205,16 +195,9 @@ function ActivityChip({ m }) {
 
 /* ══════════════════════════════════════════════════════════════════
    RISK BADGE
-   BEFORE: Low=green, Medium=amber, High=red — all always visible.
-           Even "Low" risk members had a green badge, adding noise.
-   AFTER:  Low → invisible (t4 ghost text, no background).
-           Medium → warn.
-           High → danger only.
-           The badge disappears when there's no urgency.
 ══════════════════════════════════════════════════════════════════ */
 function RiskBadge({ risk }) {
   if (risk === 'Low') {
-    // Low risk: no badge, just muted text — not worth visual space
     return (
       <span style={{ fontSize: 10, color: C.t4, fontWeight: 500 }}>Low</span>
     );
@@ -239,7 +222,7 @@ function RiskBadge({ risk }) {
 
 const HealthScore = FitnessScore;
 
-/* ── Milestone badge — amber only, used sparingly ─────────────────── */
+/* ── Milestone badge ─────────────────────────────────────────────── */
 function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
   let label = null;
   if      (visitsTotal === 1)                             label = '1st visit';
@@ -264,7 +247,7 @@ function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
   );
 }
 
-/* ── Frequency insight — semantic color at threshold only ──────────── */
+/* ── Frequency insight ───────────────────────────────────────────── */
 function FrequencyInsight({ m }) {
   const prev  = m.prevVisits30 || 0;
   const curr  = m.visits30;
@@ -273,7 +256,6 @@ function FrequencyInsight({ m }) {
   const dropped = hasComparison && pct <= -30;
   const surged  = hasComparison && pct >= 30;
 
-  // Value: danger if absent (threshold), success if visited today, t1 otherwise
   const valueColor = m.daysSince === 0 ? C.success : m.daysSince >= 14 ? C.danger : C.t1;
 
   return (
@@ -390,7 +372,7 @@ const PRESET_MESSAGES = [
   { id: 'welcome',   label: 'Welcome back',      sublabel: 'Week-1 follow-up', body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
 ];
 
-/* ── Mode toggle (Templates / Custom) ──────────────────────────── */
+/* ── Mode toggle ────────────────────────────────────────────────── */
 function ModeToggle({ mode, setMode }) {
   return (
     <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
@@ -480,8 +462,6 @@ function SendBtn({ onClick, disabled, sending, sent, label }) {
 
 /* ══════════════════════════════════════════════════════════════════
    STAT NUDGE
-   BEFORE: Colored background + colored border.
-   AFTER:  surfaceEl bg + neutral border + 2px left border only.
 ══════════════════════════════════════════════════════════════════ */
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
@@ -529,9 +509,6 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
 
 /* ══════════════════════════════════════════════════════════════════
    MEMBER PUSH PANEL
-   BEFORE: Blue-tinted background covering the whole panel.
-           Left border in blue.
-   AFTER:  surfaceEl background (neutral). Blue left border only.
 ══════════════════════════════════════════════════════════════════ */
 function MemberPushPanel({ member, gymName, gymId, onClose }) {
   const [preset,  setPreset]  = useState('miss');
@@ -620,8 +597,6 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
 
 /* ══════════════════════════════════════════════════════════════════
    BULK PUSH PANEL
-   BEFORE: Blue-tinted background.
-   AFTER:  surfaceEl + left border.
 ══════════════════════════════════════════════════════════════════ */
 function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSuccess }) {
   const [preset,  setPreset]  = useState('miss');
@@ -745,14 +720,6 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
 
 /* ══════════════════════════════════════════════════════════════════
    SEGMENT SUMMARY CARDS
-   BEFORE: 5 different colored gradient strips + colored values.
-           All 5 competed simultaneously.
-   AFTER:  No gradient strips. Values use semantic color only at
-           thresholds:
-           - At Risk count → danger
-           - Super Active count → success
-           - Active / Casual / New → t1 (neutral)
-           Selected card: accent border only (no bg tint).
 ══════════════════════════════════════════════════════════════════ */
 function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
   const segs = useMemo(() => {
@@ -773,8 +740,6 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
       {segs.map(s => {
-        const isActive = activeFilter === s.filter && s.id !== 'superActive' && s.id !== 'active' && s.id !== 'casual'
-          || activeFilter === s.filter;
         const selected = activeFilter === s.filter;
         return (
           <div
@@ -788,13 +753,11 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
               border:       `1px solid ${selected ? C.borderEl : C.border}`,
               boxShadow:    CARD_SHADOW,
               transition:   'all .15s',
-              // NO gradient strip. Border elevation is the only selected signal.
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderEl; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = selected ? C.borderEl : C.border; e.currentTarget.style.transform = ''; }}
           >
             <SectionLabel>{s.label}</SectionLabel>
-            {/* Value: semantic color only at thresholds */}
             <div style={{
               fontSize:      28,
               fontWeight:    700,
@@ -815,14 +778,6 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
 
 /* ══════════════════════════════════════════════════════════════════
    ALERTS PANEL
-   BEFORE: Red-tinted block for at-risk. Amber-tinted block for early
-           droppers. Amber-tinted block for frequency droppers.
-           Three colored surfaces stacked — eye can't prioritize.
-   AFTER:  All blocks are surfaceEl (neutral surface).
-           A 3px left border is the ONLY color signal per block.
-           Red border = at-risk (most urgent).
-           Amber border = early/frequency drop (caution).
-           Action buttons: neutral surface, not colored.
 ══════════════════════════════════════════════════════════════════ */
 function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilter, setMemberSort, openModal }) {
   const criticalMembers = memberRows.filter(m => m.risk === 'High').length > 0
@@ -859,7 +814,6 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
         </div>
       )}
 
-      {/* At-risk block — danger left border, neutral surface */}
       {criticalMembers.length > 0 && (
         <div style={{
           padding:      '10px 12px',
@@ -883,7 +837,6 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
             {atRisk > 3 && <div style={{ fontSize: 10, color: C.t3 }}>+{atRisk - 3} more</div>}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            {/* Action buttons: neutral surface, not colored */}
             <button
               onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
               style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${C.border}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
@@ -902,7 +855,6 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
         </div>
       )}
 
-      {/* Early droppers — warn left border */}
       {earlyDroppers.length > 0 && (
         <div style={{
           padding:      '10px 12px',
@@ -928,7 +880,6 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
         </div>
       )}
 
-      {/* Frequency droppers — warn left border */}
       {frequencyDroppers.length > 0 && (
         <div style={{
           padding:      '10px 12px',
@@ -962,9 +913,6 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
 
 /* ══════════════════════════════════════════════════════════════════
    DROP-OFF WIDGET
-   BEFORE: Each bar had its own color (red/amber/amber/t3).
-   AFTER:  Week 1 → danger bar. Others → accent at 35% opacity.
-           Only the most critical bucket stands out.
 ══════════════════════════════════════════════════════════════════ */
 function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
   const buckets = useMemo(() => {
@@ -973,10 +921,10 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
     const m2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 30   && m.joinedDaysAgo <= 90  && m.daysSince >= 14).length;
     const old = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 90   && m.daysSince >= 21).length;
     return [
-      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,               valueColor: w1 > 0 ? C.danger : C.t4 },
-      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`,        valueColor: w2 > 0 ? C.t2 : C.t4    },
-      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`,        valueColor: m2 > 0 ? C.t2 : C.t4    },
-      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`,        valueColor: old > 0 ? C.t3 : C.t4   },
+      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,        valueColor: w1 > 0 ? C.danger : C.t4 },
+      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`, valueColor: w2 > 0 ? C.t2 : C.t4    },
+      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`, valueColor: m2 > 0 ? C.t2 : C.t4    },
+      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`, valueColor: old > 0 ? C.t3 : C.t4   },
     ];
   }, [memberRows]);
   const total = buckets.reduce((a, b) => a + b.val, 0);
@@ -1013,7 +961,6 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 700, color: b.valueColor }}>{b.val}</span>
               </div>
-              {/* Bar: danger for week 1, accent for others */}
               <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
                 <div style={{
                   height:     '100%',
@@ -1055,9 +1002,6 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
 
 /* ══════════════════════════════════════════════════════════════════
    WEEK-ONE FOLLOW-UP
-   BEFORE: "Returned" cell green-tinted bg. "Didn't return" red-tinted bg.
-   AFTER:  Both cells surfaceEl. Numbers get semantic color at threshold.
-           Headline % gets semantic color (it's the key metric).
 ══════════════════════════════════════════════════════════════════ */
 function WeekOneFollowUp({ memberRows, setMemberFilter }) {
   const { returned, didnt, names } = useMemo(() => {
@@ -1082,7 +1026,6 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
           <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Week-1 Return Rate</div>
           <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>New members (joined 1–3 weeks ago) who returned</div>
         </div>
-        {/* Headline %: semantic color — it's the one key metric */}
         <div style={{ fontSize: 24, fontWeight: 700, color: pctColor, letterSpacing: '-0.04em', lineHeight: 1, flexShrink: 0 }}>
           {total === 0 ? '—' : `${pct}%`}
         </div>
@@ -1092,30 +1035,16 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
         <p style={{ fontSize: 12, color: C.t3, margin: '10px 0 0' }}>No members in this window yet.</p>
       ) : (
         <>
-          {/* Progress bar — accent */}
           <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden', margin: '12px 0' }}>
             <div style={{ height: '100%', width: `${pct}%`, background: pctColor === C.t1 ? C.accent : pctColor, borderRadius: 99, transition: 'width .7s ease' }} />
           </div>
 
-          {/* Cells: both neutral — numbers carry the color */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={{
-              padding:      '8px 10px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              textAlign:    'center',
-            }}>
+            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: returned > 0 ? C.success : C.t4, letterSpacing: '-0.03em' }}>{returned}</div>
               <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Returned</div>
             </div>
-            <div style={{
-              padding:      '8px 10px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              textAlign:    'center',
-            }}>
+            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: didnt > 0 ? C.danger : C.t4, letterSpacing: '-0.03em' }}>{didnt}</div>
               <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Didn't return</div>
             </div>
@@ -1165,10 +1094,6 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
 
 /* ══════════════════════════════════════════════════════════════════
    INVITE STAFF PANEL
-   BEFORE: Purple gradient strip, purple icon container, purple
-           role toggle buttons.
-   AFTER:  No gradient strip. Icon is plain glyph (t3).
-           Role toggles: neutral tab style (same as other toggles).
 ══════════════════════════════════════════════════════════════════ */
 function InviteStaffPanel({ gym }) {
   const [email,   setEmail]   = useState('');
@@ -1197,9 +1122,7 @@ function InviteStaffPanel({ gym }) {
 
   return (
     <Card style={{ padding: 18 }}>
-      {/* NO gradient strip */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        {/* Icon: plain glyph, no colored container */}
         <GraduationCap style={{ width: 13, height: 13, color: C.t3 }} />
         <div>
           <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Invite Staff</div>
@@ -1207,7 +1130,6 @@ function InviteStaffPanel({ gym }) {
         </div>
       </div>
 
-      {/* Role toggle: neutral tab style */}
       <div style={{ display: 'flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
         {[{ id: 'coach', label: 'Coach' }, { id: 'staff', label: 'Staff' }].map(r => (
           <button
@@ -1321,10 +1243,6 @@ function InviteStaffPanel({ gym }) {
 
 /* ══════════════════════════════════════════════════════════════════
    EXPANDED MEMBER DETAIL
-   BEFORE: Stats strip used 4 different colors per stat value
-           (blue, green, t2, engColor). Multiple colors competing.
-   AFTER:  All stat values are t1. Only the engagement score uses
-           semantic color (it's the one threshold metric on this strip).
 ══════════════════════════════════════════════════════════════════ */
 function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose }) {
   const recentPosts = (posts || []).filter(p => p.user_id === m.user_id && differenceInDays(now, new Date(p.created_at)) <= 30).length;
@@ -1333,7 +1251,6 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
 
   return (
     <>
-      {/* Stats strip — all values t1 except engagement score threshold */}
       <div style={{
         padding:     '10px 16px',
         background:  C.surfaceEl,
@@ -1344,11 +1261,10 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
         alignItems:  'center',
       }}>
         {[
-          { label: 'Total Visits', val: m.visitsTotal,         color: C.t1      },
-          { label: 'This Month',   val: m.visits30,            color: C.t1      },
-          { label: 'Last Month',   val: m.prevVisits30 ?? '—', color: C.t1      },
-          // Engagement score: the one metric that gets semantic color
-          { label: 'Eng. Score',   val: `${engScore}%`,        color: engColor  },
+          { label: 'Total Visits', val: m.visitsTotal,         color: C.t1     },
+          { label: 'This Month',   val: m.visits30,            color: C.t1     },
+          { label: 'Last Month',   val: m.prevVisits30 ?? '—', color: C.t1     },
+          { label: 'Eng. Score',   val: `${engScore}%`,        color: engColor },
         ].map((s, i) => (
           <div key={i} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
@@ -1357,7 +1273,6 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
         ))}
       </div>
 
-      {/* Email */}
       {m.user_email && (
         <div style={{ padding: '8px 16px', background: C.surfaceEl, borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.06em' }}>Email</span>
@@ -1367,7 +1282,6 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
         </div>
       )}
 
-      {/* Contextual nudge */}
       {(() => {
         const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.divider}` }}>{node}</div>;
         const fn = m.name.split(' ')[0];
@@ -1397,7 +1311,7 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
   atRisk, atRiskMembersList, retentionRate, totalMembers, activeThisWeek, newSignUps, weeklyChangePct,
-  avatarMap, posts,
+  avatarMap, nameMap = {}, posts,
   memberFilter, setMemberFilter, memberSearch, setMemberSearch, memberSort, setMemberSort,
   memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
   openModal, now,
@@ -1414,13 +1328,15 @@ export default function TabMembers({
 
   const gymName = selectedGym?.name || 'Your Gym';
 
+  // ── FIX: use nameMap (same source as ActivityFeed in TabOverview) ──
   const memberRows = useMemo(() => {
     const bannedSet = new Set(selectedGym?.banned_members || []);
     return allMemberships.map(m => {
       const lastVisit     = m.lastCheckIn || null;
       const daysSince     = m.daysSince != null ? m.daysSince : 999;
       const isBanned      = bannedSet.has(m.user_id);
-      const name          = m.user_name || 'Member';
+      // nameMap[user_id] is the resolved display name (same as Recent Activity feed)
+      const name          = nameMap[m.user_id] || m.user_name || 'Member';
       const joinDate      = m.join_date || m.created_date || m.created_at;
       const joinedDaysAgo = joinDate ? Math.floor((now - new Date(joinDate)) / 86400000) : null;
       let risk = 'Low';
@@ -1446,7 +1362,7 @@ export default function TabMembers({
         joinedDaysAgo, streak: m.streak || 0,
       };
     });
-  }, [allMemberships, selectedGym?.banned_members, avatarMap, now]);
+  }, [allMemberships, selectedGym?.banned_members, avatarMap, nameMap, now]);
 
   const filtered = useMemo(() => memberRows.filter(m => {
     if (memberFilter === 'active')   return m.daysSince < 7;
@@ -1538,7 +1454,6 @@ export default function TabMembers({
               <Plus style={{ width: 12, height: 12 }} /> Add Member
             </button>
 
-            {/* Filter tabs — neutral style, At Risk gets danger color text */}
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {[
                 { id: 'all',      label: 'All',      count: filterCounts.all      },
@@ -1559,9 +1474,7 @@ export default function TabMembers({
                       fontWeight:  on ? 600 : 400,
                       cursor:      'pointer',
                       fontFamily:  'inherit',
-                      // Active tab: neutral surfaceEl — no colored bg
                       background:  on ? C.surfaceEl : 'transparent',
-                      // Text: danger for At Risk tab only
                       color:       on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
                       border:      `1px solid ${on ? C.borderEl : 'transparent'}`,
                       transition:  'all .15s',
@@ -1636,7 +1549,7 @@ export default function TabMembers({
             </div>
           </div>
 
-          {/* Bulk selection bar — neutral surface, not blue-tinted */}
+          {/* Bulk selection bar */}
           {selectedRows.size > 0 && (
             <div style={{
               padding:      '9px 16px',
@@ -1674,7 +1587,6 @@ export default function TabMembers({
                   display:    'flex',
                   alignItems: 'center',
                   gap:        6,
-                  // Notify button: accent only on the action (not the bar)
                   background: showBulkPanel ? C.accentSub : 'transparent',
                   border:     `1px solid ${showBulkPanel ? C.accentBrd : C.border}`,
                   color:      showBulkPanel ? C.accent : C.t2,
@@ -1731,7 +1643,6 @@ export default function TabMembers({
                       gap:                  8,
                       padding:              isMobile ? '10px 12px' : '11px 16px',
                       borderBottom:         !isExp && idx < paginated.length - 1 ? `1px solid ${C.divider}` : 'none',
-                      // Expanded: accent left border. Selected: softer accent. Neither: transparent.
                       borderLeft:           isExp ? `3px solid ${C.accent}` : isSel ? `3px solid ${C.accent}40` : '3px solid transparent',
                       background:           isExp ? C.surfaceEl : isSel ? 'rgba(81,121,255,0.04)' : 'transparent',
                       cursor:               'pointer',
@@ -1753,11 +1664,9 @@ export default function TabMembers({
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginBottom: isMobile ? 8 : 0 }}>
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <Avatar name={m.name} size={32} src={m.avatar_url} />
-                        {/* Status dot — danger only for inactive */}
                         {m.daysSince >= 14 && (
                           <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: C.danger, border: `2px solid ${C.surface}` }} />
                         )}
-                        {/* Streak flame — accent/warm color */}
                         {m.streak >= 7 && (
                           <div style={{ position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: '50%', background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Flame style={{ width: 7, height: 7, color: C.warn }} />
@@ -1818,7 +1727,7 @@ export default function TabMembers({
             })}
           </div>
 
-          {/* Pagination — neutral tab style for page numbers */}
+          {/* Pagination */}
           <div style={{
             padding:    '10px 16px',
             borderTop:  `1px solid ${C.border}`,
@@ -1855,7 +1764,6 @@ export default function TabMembers({
               ))}
             </div>
 
-            {/* Page numbers — neutral tab style, no blue */}
             {!isMobile && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let page = i + 1;
               if (totalPages > 5) {
@@ -1875,7 +1783,6 @@ export default function TabMembers({
                     display:      'flex',
                     alignItems:   'center',
                     justifyContent: 'center',
-                    // Active: surfaceEl neutral, not blue
                     background:   isCurrent ? C.surfaceEl : 'transparent',
                     border:       `1px solid ${isCurrent ? C.borderEl : 'transparent'}`,
                     color:        isCurrent ? C.t1 : C.t3,
