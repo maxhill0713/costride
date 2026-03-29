@@ -24,7 +24,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
 
   // Get mirrored_pairs from the active saved split
   const activeSplitId = currentUser?.active_split_id;
-  const activeSplit = (currentUser?.saved_splits || []).find(s => s.id === activeSplitId);
+  const activeSplit = (currentUser?.saved_splits || []).find((s) => s.id === activeSplitId);
   const mirroredPairs = activeSplit?.mirrored_pairs || [];
 
   // Build set of day keys that are the "second" in a mirrored pair — hide those
@@ -453,14 +453,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   // ── Info bullet points ────────────────────────────────────────────────────
   const infoBullets = [
-    { label: 'Check in', text: "You must be physically at your gym for the check-in button to appear — tap it at the very start of your session to begin your timer and unlock workout logging." },
-    { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
-    { label: 'Switch workout', text: "Tap the workout name to swap to a different day's session." },
-    { label: 'Update weight/reps', text: 'Click the pencil icon next to any exercise, enter new values, then save.' },
-    { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer bar at the bottom of the screen.' },
-    { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
-    { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' },
-  ];
+  { label: 'Check in', text: "You must be physically at your gym for the check-in button to appear — tap it at the very start of your session to begin your timer and unlock workout logging." },
+  { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
+  { label: 'Switch workout', text: "Tap the workout name to swap to a different day's session." },
+  { label: 'Update weight/reps', text: 'Click the pencil icon next to any exercise, enter new values, then save.' },
+  { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer bar at the bottom of the screen.' },
+  { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
+  { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' }];
+
 
   return (
     <>
@@ -483,7 +483,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
               <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
               <motion.button
-                onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
+                onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
                 whileTap={{ scale: 0.78, y: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                 style={{
@@ -491,7 +491,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   cursor: 'pointer',
                   color: showInfo ? '#60a5fa' : '#475569',
                   display: 'flex', alignItems: 'center',
-                  transition: 'color 0.15s',
+                  transition: 'color 0.15s'
                 }}>
                 <Info size={13} />
               </motion.button>
@@ -512,46 +512,46 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
           {/* ── Info Box ── */}
           <AnimatePresence>
-            {showInfo && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-                style={{ overflow: 'hidden' }}
-                onClick={(e) => e.stopPropagation()}
-              >
+            {showInfo &&
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{ overflow: 'hidden' }}
+              onClick={(e) => e.stopPropagation()}>
+              
                 <div style={{
-                  position: 'relative',
-                  background: 'linear-gradient(135deg, rgba(96,165,250,0.07) 0%, rgba(52,211,153,0.04) 100%)',
-                  border: '1px solid rgba(96,165,250,0.16)',
-                  borderRadius: 10,
-                  padding: '10px 13px',
-                  overflow: 'hidden',
-                }}>
+                position: 'relative',
+                background: 'linear-gradient(135deg, rgba(96,165,250,0.07) 0%, rgba(52,211,153,0.04) 100%)',
+                border: '1px solid rgba(96,165,250,0.16)',
+                borderRadius: 10,
+                padding: '10px 13px',
+                overflow: 'hidden'
+              }}>
                   <div style={{
-                    position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
-                    background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)',
-                  }} />
+                  position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                  background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)'
+                }} />
                   <p style={{
-                    fontSize: 11, fontWeight: 700, color: '#93c5fd',
-                    margin: '0 0 7px', letterSpacing: '0.02em',
-                  }}>
+                  fontSize: 11, fontWeight: 700, color: '#93c5fd',
+                  margin: '0 0 7px', letterSpacing: '0.02em'
+                }}>
                     How to use
                   </p>
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {infoBullets.map(({ label, text }) => (
-                      <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+                    {infoBullets.map(({ label, text }) =>
+                  <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
                         <span style={{ color: '#475569', fontSize: 11, lineHeight: 1.55, flexShrink: 0 }}>•</span>
                         <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontWeight: 500 }}>
                           <span style={{ color: '#93c5fd', fontWeight: 700 }}>{label}:</span>{' '}{text}
                         </span>
                       </li>
-                    ))}
+                  )}
                   </ul>
                 </div>
               </motion.div>
-            )}
+            }
           </AnimatePresence>
         </div>
 
@@ -838,14 +838,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                   <>
                               <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-1" style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-5" style={{ width: '36px' }}>
                                 {c.rounds || '—'}
                               </div>
                               <div />
-                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-1">
+                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-3">
                                 {c.time ? formatTime(c.time) : '—'}
                               </div>
-                              <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-2" style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center " style={{ width: '36px' }}>
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
                               {!alreadyLoggedToday &&
@@ -954,6 +954,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
+
+
+
+
+                        
+
+
+
+
+                        
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
