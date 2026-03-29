@@ -57,7 +57,6 @@ function TabLoader() {
       <style>{`@keyframes _tab-spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: '_tab-spin 0.7s linear infinite' }} />
     </div>);
-
 }
 
 const D = {
@@ -234,7 +233,6 @@ const Spark = ({ data = [], color = D.blue, height = 32 }) => {
       strokeLinecap="round" strokeLinejoin="round" />
       <polygon points={area} fill={`url(#${id})`} />
     </svg>);
-
 };
 
 const Delta = ({ val }) => {
@@ -252,7 +250,6 @@ const Delta = ({ val }) => {
     }}>
       {flat ? '—' : up ? '+' : ''}{val}%
     </span>);
-
 };
 
 function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, footerColor, trend }) {
@@ -284,7 +281,6 @@ function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBa
         </div>
       }
     </div>);
-
 }
 
 function CoachKpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, trend }) {
@@ -309,7 +305,6 @@ function DashCard({ children, style = {}, accentColor, title, action, onAction }
       }
       {children}
     </div>);
-
 }
 
 const CoachCard = DashCard;
@@ -319,7 +314,6 @@ function MiniAvatar({ name, src, size = 30 }) {
     <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: src ? 'transparent' : 'rgba(255,255,255,0.08)', border: `1.5px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, color: D.t2, overflow: 'hidden' }}>
       {src ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (name || '?').charAt(0).toUpperCase()}
     </div>);
-
 }
 
 const CLASS_TYPE_COLORS = { hiit: D.red, yoga: D.green, strength: D.blue, spin: D.blue, boxing: D.red, cardio: D.amber, pilates: D.green, default: D.blue };
@@ -360,7 +354,6 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
         </React.Fragment>
       )}
     </div>);
-
 }
 
 export default function GymOwnerDashboard() {
@@ -643,7 +636,6 @@ export default function GymOwnerDashboard() {
       </div>
     </div>;
 
-
   if (gymsError) return (
     <Splash>
       <X style={{ width: 26, height: 26, color: D.red, margin: '0 auto 12px' }} />
@@ -651,7 +643,6 @@ export default function GymOwnerDashboard() {
       <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>{gymsError.message}</p>
       <button onClick={() => window.location.reload()} style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
     </Splash>);
-
 
   if (approvedGyms.length === 0 && pendingGyms.length > 0) return (
     <Splash>
@@ -661,7 +652,6 @@ export default function GymOwnerDashboard() {
       <Link to={createPageUrl('Home')}><button style={{ background: 'rgba(255,255,255,0.06)', color: D.t1, border: `1px solid ${D.border}`, borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Home</button></Link>
     </Splash>);
 
-
   if (myGyms.length === 0 && !isCoach) return (
     <Splash>
       <Dumbbell style={{ width: 26, height: 26, color: D.blue, margin: '0 auto 12px' }} />
@@ -669,7 +659,6 @@ export default function GymOwnerDashboard() {
       <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Register your gym to get started with the dashboard.</p>
       <Link to={createPageUrl('GymSignup')}><button style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Register Your Gym</button></Link>
     </Splash>);
-
 
   const sharedModals =
   <>
@@ -732,7 +721,6 @@ export default function GymOwnerDashboard() {
       <MemberChatPanel open={showChat} onClose={() => setShowChat(false)} allMemberships={allMemberships} currentUser={currentUser} avatarMap={memberAvatarMapResolved} />
     </>;
 
-
   // ── MOBILE ────────────────────────────────────────────────────────────────
   if (isMobile) return (
     <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: D.bgBase, overflow: 'hidden' }}>
@@ -783,20 +771,12 @@ export default function GymOwnerDashboard() {
               <item.icon style={{ width: 18, height: 18 }} />
               <span style={{ fontSize: 9, fontWeight: active ? 700 : 500, letterSpacing: '0.03em' }}>{item.label}</span>
             </button>);
-
         })}
       </nav>
       {sharedModals}
     </div>);
 
-
   // ── DESKTOP ───────────────────────────────────────────────────────────────
-  const tabTitle = {
-    members: isCoach ? 'Clients' : 'Members',
-    content: 'Content', analytics: 'Analytics', gym: 'Settings',
-    schedule: 'Schedule', today: 'Today', engagement: 'Automations', overview: selectedGym?.name || 'Overview'
-  }[tab] || selectedGym?.name || 'Dashboard';
-
   return (
     <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: D.bgBase }}>
 
@@ -808,33 +788,24 @@ export default function GymOwnerDashboard() {
         transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)'
       }}>
 
-        {/* Sidebar header: gym info + hamburger toggle */}
         <div style={{ padding: collapsed ? '13px 0' : '13px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
-
           {collapsed ?
-          // Collapsed: just the hamburger, centred, no box
           <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button
               onClick={() => setCollapsed(false)}
               style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
               onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
               onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
-              
                 <Menu style={{ width: 16, height: 16 }} />
               </button>
             </div> :
-
-          // Expanded: logo + name/role + hamburger on far right
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Gym avatar */}
               <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: D.bgSurface, border: `2px solid ${D.blue}`, boxShadow: '0 0 8px rgba(59,130,246,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                 {selectedGym?.logo_url || selectedGym?.image_url ?
               <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
               <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
               }
               </div>
-
-              {/* Gym name + role label */}
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: D.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>
                   {selectedGym?.name || 'Dashboard'}
@@ -843,20 +814,16 @@ export default function GymOwnerDashboard() {
                   {roleLabel}
                 </div>
               </div>
-
-              {/* Collapse toggle — no box, no border, just the icon */}
               <button
               onClick={() => setCollapsed(true)}
               style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
               onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
               onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
-              
                 <Menu style={{ width: 14, height: 14 }} />
               </button>
             </div>
           }
 
-          {/* Gym switcher */}
           {!collapsed && approvedGyms.length > 1 &&
           <div style={{ position: 'relative', marginTop: 10 }}>
               <button onClick={() => setGymOpen((o) => !o)}
@@ -894,7 +861,6 @@ export default function GymOwnerDashboard() {
                 <item.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
                 {!collapsed && <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>}
               </button>);
-
           })}
         </nav>
 
@@ -965,17 +931,15 @@ export default function GymOwnerDashboard() {
       {/* ── MAIN ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
-        {/* Top bar — tab title only, no gym name, no collapse toggle */}
+        {/* ── TOP BAR — date on the left, actions on the right ── */}
         <header style={{ height: 54, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: D.bgSidebar, borderBottom: `1px solid ${D.border}` }}>
-          <div>
-            
-            {tab === 'members' &&
-<div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
-    {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-  </div>
-            }
+
+          {/* LEFT: live date, shown on every tab */}
+          <div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
+            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
 
+          {/* RIGHT: action buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isGymOwner && selectedGym?.join_code &&
             <button onClick={() => setShowPoster(true)}
@@ -1015,7 +979,6 @@ export default function GymOwnerDashboard() {
               style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showChat ? D.blueDim : 'rgba(255,255,255,0.03)', border: `1px solid ${showChat ? D.blueBrd : D.border}`, color: showChat ? D.blue : D.t3, cursor: 'pointer', position: 'relative', transition: 'all 0.12s', fontFamily: 'inherit' }}
               onMouseEnter={(e) => {if (!showChat) {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}}
               onMouseLeave={(e) => {if (!showChat) {e.currentTarget.style.color = D.t3;e.currentTarget.style.borderColor = D.border;}}}>
-              
               <MessageCircle style={{ width: 13, height: 13 }} />
             </button>
           </div>
@@ -1034,5 +997,4 @@ export default function GymOwnerDashboard() {
 
       {sharedModals}
     </div>);
-
 }
