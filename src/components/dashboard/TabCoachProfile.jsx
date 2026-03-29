@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare, Calendar, Dumbbell, AlertTriangle, AlertCircle,
@@ -6,7 +8,13 @@ import {
   ChevronRight, ChevronDown, ChevronUp, Activity, BarChart2,
   User, Phone, Mail, MapPin, ArrowUpRight, Target, Check,
   BookOpen, RefreshCw, Edit2,
+  Star, Plus, X, GraduationCap, Award,
+  Loader2, Eye, Camera, Save, Clock,
+  Trophy, Shield, BadgeCheck, ScanFace, ClipboardCheck,
+  AlertCircle as AlertCircleIcon, Package, Image, Trash2, Info, Languages,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import CoachProfileModal from '@/components/gym/CoachProfileModal';
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
 const BG      = '#080c14';
@@ -158,10 +166,70 @@ function ProgressBar({ pct }) {
 }
 
 /* ─── Component ─────────────────────────────────────────────── */
-export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, onAssign, onEditProfile }) {
+export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, onAssign, selectedGym, currentUser }) {
   const [tlExpanded, setTlExpanded]   = useState(false);
   const [expandWork, setExpandWork]   = useState(null);
   const [toastMsg, setToastMsg]       = useState(null);
+  const [editorOpen, setEditorOpen]   = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [draft, setDraft]             = useState(null);
+  const [dirty, setDirty]             = useState(false);
+  const [uploading, setUploading]     = useState(false);
+  const [heroUploading, setHeroUploading] = useState(false);
+  const sectionRefs = useRef({});
+  const queryClient = useQueryClient();
+
+  const { data: coachRecords = [] } = useQuery({
+    queryKey: ['myCoachProfile', currentUser?.email, selectedGym?.id],
+    queryFn: async () => {
+      let results = [];
+      try { results = await base44.entities.Coach.filter({ user_email: currentUser.email, gym_id: selectedGym.id }); } catch {}
+      if (!results.length) {
+        try {
+          const all = await base44.entities.Coach.filter({ gym_id: selectedGym.id });
+          results = all.filter(c => c.user_email === currentUser?.email || c.user_id === currentUser?.id || c.name === currentUser?.full_name);
+        } catch {}
+      }
+      return results;
+    },
+    enabled: !!currentUser?.email && !!selectedGym?.id,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const coach = coachRecords[0] || null;
+
+  useEffect(() => { if (coach && !dirty) setDraft({ ...coach }); }, [coach]);
+
+  const updateMutation = useMutation({
+    mutationFn: data => base44.entities.Coach.update(data.id, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['myCoachProfile'] }); toast.success('Profile saved ✓'); setDirty(false); },
+    onError: () => toast.error('Failed to save'),
+  });
+  const createMutation = useMutation({
+    mutationFn: data => base44.entities.Coach.create(data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['myCoachProfile'] }); toast.success('Profile created ✓'); setDirty(false); },
+    onError: () => toast.error('Failed to create profile'),
+  });
+
+  const patch = (field, value) => { setDraft(d => ({ ...d, [field]: value })); setDirty(true); };
+  const handleSave = () => {
+    if (draft?.id) updateMutation.mutate(draft);
+    else createMutation.mutate({ ...draft, gym_id: selectedGym?.id, user_email: currentUser?.email, user_id: currentUser?.id, name: draft?.name || currentUser?.full_name });
+  };
+  const handleDiscard = () => { setDraft(coach ? { ...coach } : null); setDirty(false); };
+  const handleAvatarUpload = async e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true); const { file_url } = await base44.integrations.Core.UploadFile({ file }); patch('avatar_url', file_url); setUploading(false);
+  };
+  const handleHeroUpload = async e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setHeroUploading(true); const { file_url } = await base44.integrations.Core.UploadFile({ file }); patch('image_url', file_url); setHeroUploading(false);
+  };
+
+  const openEditor = () => {
+    if (!draft && coach) setDraft({ ...coach });
+    setEditorOpen(true);
+  };
 
   const st  = STATUS_MAP[cl.retention_status] || STATUS_MAP.healthy;
   const tr  = TREND_MAP[cl.trend] || TREND_MAP.stable;
@@ -213,7 +281,7 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
             <Ic style={{ width: 12, height: 12 }} /> {label}
           </button>
         ))}
-        <button className="cp-btn" onClick={onEditProfile}
+        <button className="cp-btn" onClick={openEditor}
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.05)', border: BORDER2, color: SUB }}>
           <Edit2 style={{ width: 12, height: 12 }} /> Edit Profile
         </button>
@@ -277,7 +345,7 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
               <Ic style={{ width: 13, height: 13 }} /> {label}
             </button>
           ))}
-          <button className="cp-btn" onClick={onEditProfile}
+          <button className="cp-btn" onClick={openEditor}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 11, fontSize: 13, fontWeight: 800, background: 'rgba(255,255,255,0.05)', border: BORDER2, color: SUB }}>
             <Edit2 style={{ width: 13, height: 13 }} /> Edit Profile
           </button>
@@ -597,6 +665,448 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
 
         </div>
       </div>
+
+      {/* ── COACH PROFILE EDITOR OVERLAY ──────────────────────── */}
+      {editorOpen && draft && (
+        <ProfileEditorOverlay
+          selectedGym={selectedGym}
+          currentUser={currentUser}
+          onClose={() => setEditorOpen(false)}
+          draft={draft}
+          dirty={dirty}
+          setDirty={setDirty}
+          handleSave={handleSave}
+          handleDiscard={handleDiscard}
+          uploading={uploading}
+          heroUploading={heroUploading}
+          handleAvatarUpload={handleAvatarUpload}
+          handleHeroUpload={handleHeroUpload}
+          updateMutation={updateMutation}
+          createMutation={createMutation}
+          showPreviewModal={showPreviewModal}
+          setShowPreviewModal={setShowPreviewModal}
+          sectionRefs={sectionRefs}
+          patch={patch}
+        />
+      )}
+      <CoachProfileModal coach={draft} open={showPreviewModal} onClose={() => setShowPreviewModal(false)} />
+    </div>
+  );
+}
+
+/* ─── Coach Profile Editor Overlay (from old TabCoachProfile) ── */
+const BLUE_ED   = '#2563eb';
+const BLUE_LT_ED = '#60a5fa';
+const BG_ED     = '#060810';
+const SURFACE_ED = '#0c1128';
+const MUTE_ED   = 'rgba(255,255,255,0.25)';
+const SUB_ED    = 'rgba(255,255,255,0.45)';
+const LABEL_ED  = 'rgba(255,255,255,0.28)';
+
+const SPECIALTIES_OPTIONS = ['Strength Training','Weight Loss','Muscle Gain','Cardio','HIIT','Yoga','Boxing','Rehabilitation','Nutrition','Powerlifting','CrossFit','Flexibility','Sports Performance','Senior Fitness','Pre/Post Natal','Body Recomposition','Mobility','Mindfulness'];
+const CERT_SUGGESTIONS    = ['NASM CPT','ACE CPT','ISSA CPT','REPS Level 3','CrossFit L1','Precision Nutrition L1','Precision Nutrition L2','First Aid / CPR','Sports Massage','Kettlebell Specialist','FMS Specialist','ISSA Strength & Conditioning'];
+const LANGUAGES_OPTIONS   = ['English','Spanish','French','German','Portuguese','Mandarin','Arabic','Hindi'];
+const DAYS_ED      = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+const TIME_SLOTS_ED = ['6:00 AM','7:00 AM','7:30 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM'];
+const iniEd = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+const ED_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap');
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes cpm-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.tcp-root{font-family:'Figtree',system-ui,sans-serif;color:#f0f4f8}
+.tcp-btn{border:none;outline:none;cursor:pointer;transition:all .15s}
+.tcp-btn:active{transform:scale(0.95)!important}
+.tcp-input{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 13px;font-size:13px;color:#f0f4f8;outline:none;font-family:inherit;width:100%;box-sizing:border-box;transition:border-color .15s}
+.tcp-input:focus{border-color:#2563eb88}
+.tcp-input::placeholder{color:rgba(255,255,255,0.25)}
+.tcp-textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 13px;font-size:13px;color:#f0f4f8;outline:none;font-family:inherit;width:100%;box-sizing:border-box;resize:none;transition:border-color .15s;line-height:1.65}
+.tcp-textarea:focus{border-color:#2563eb88}
+.avatar-wrap:hover .avatar-overlay{opacity:1!important}
+.tcp-toggle{transition:background .2s}
+`;
+
+function EdSLabel({ children, hint }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+      <span style={{ fontSize: 10.5, fontWeight: 800, color: LABEL_ED, textTransform: 'uppercase', letterSpacing: '.13em' }}>{children}</span>
+      {hint && <span title={hint} style={{ cursor: 'help' }}><Info style={{ width: 11, height: 11, color: MUTE_ED }} /></span>}
+    </div>
+  );
+}
+
+function EdField({ label, value, onChange, multiline, type = 'text', placeholder, hint, rows = 3 }) {
+  return (
+    <div>
+      <EdSLabel hint={hint}>{label}</EdSLabel>
+      {multiline
+        ? <textarea className="tcp-textarea" value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} />
+        : <input className="tcp-input" type={type} value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      }
+    </div>
+  );
+}
+
+function EdToggle({ label, sub, value, onChange }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{label}</div>
+        {sub && <div style={{ fontSize: 11, color: SUB_ED, marginTop: 2 }}>{sub}</div>}
+      </div>
+      <div onClick={() => onChange(!value)} className="tcp-toggle"
+        style={{ width: 44, height: 26, borderRadius: 13, background: value ? BLUE_ED : 'rgba(255,255,255,0.12)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
+        <div style={{ position: 'absolute', top: 3, left: value ? 21 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left .22s cubic-bezier(0.34,1.4,0.64,1)', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+      </div>
+    </div>
+  );
+}
+
+function EdTagPicker({ label, items = [], suggestions = [], onAdd, onRemove, color = '#a78bfa', hint }) {
+  const [adding, setAdding] = useState(false);
+  const [val, setVal] = useState('');
+  const add = v => { const t = v.trim(); if (t && !items.includes(t)) onAdd(t); setVal(''); setAdding(false); };
+  const remaining = suggestions.filter(s => !items.includes(s));
+  return (
+    <div>
+      <EdSLabel hint={hint}>{label}</EdSLabel>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {items.map(item => (
+          <span key={item} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: `${color}14`, border: `1px solid ${color}30`, color }}>
+            {item}
+            <button onClick={() => onRemove(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color, opacity: 0.6, lineHeight: 1, display: 'flex' }}><X style={{ width: 10, height: 10 }} /></button>
+          </span>
+        ))}
+        {adding ? (
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+            <input value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add(val); if (e.key === 'Escape') { setAdding(false); setVal(''); } }} autoFocus placeholder="Type & Enter"
+              style={{ fontSize: 12, background: 'rgba(255,255,255,0.06)', border: `1px solid ${color}40`, borderRadius: 99, padding: '5px 12px', color: '#f0f4f8', outline: 'none', width: 130, fontFamily: 'inherit' }} />
+            <button onClick={() => add(val)} className="tcp-btn" style={{ fontSize: 11, fontWeight: 800, color, background: `${color}14`, border: `1px solid ${color}28`, borderRadius: 99, padding: '5px 12px' }}>Add</button>
+            <button onClick={() => setAdding(false)} className="tcp-btn" style={{ fontSize: 11, color: MUTE_ED, background: 'none', border: 'none', padding: '5px 6px' }}>✕</button>
+          </div>
+        ) : (
+          <button onClick={() => setAdding(true)} className="tcp-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '5px 12px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)', color: MUTE_ED }}>
+            <Plus style={{ width: 10, height: 10 }} /> Add
+          </button>
+        )}
+      </div>
+      {adding && remaining.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 9 }}>
+          {remaining.slice(0, 10).map(s => (
+            <button key={s} onClick={() => add(s)} className="tcp-btn" style={{ fontSize: 11, fontWeight: 600, color: SUB_ED, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 99, padding: '4px 10px' }}>{s}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EdSectionCard({ title, icon: Icon, iconColor = BLUE_LT_ED, children }) {
+  return (
+    <div style={{ borderRadius: 16, background: SURFACE_ED, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ width: 30, height: 30, borderRadius: 9, background: `${iconColor}18`, border: `1px solid ${iconColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon style={{ width: 14, height: 14, color: iconColor }} />
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{title}</span>
+      </div>
+      <div style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: 14 }}>{children}</div>
+    </div>
+  );
+}
+
+function AchievementAdder({ onAdd }) {
+  const [val, setVal] = useState('');
+  return (
+    <div style={{ display: 'flex', gap: 7 }}>
+      <input className="tcp-input" value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && val.trim()) { onAdd(val.trim()); setVal(''); } }} placeholder="e.g. Helped 120+ clients lose 10 kg+" style={{ flex: 1 }} />
+      <button onClick={() => { if (val.trim()) { onAdd(val.trim()); setVal(''); } }} className="tcp-btn"
+        style={{ padding: '0 14px', borderRadius: 10, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24', fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap' }}>+ Add</button>
+    </div>
+  );
+}
+
+function SlotAdder({ onAdd }) {
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('7:00 AM');
+  const [spots, setSpots] = useState('5');
+  return (
+    <div style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
+      <div style={{ flex: 2 }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>Date</div>
+        <input className="tcp-input" value={date} onChange={e => setDate(e.target.value)} placeholder="e.g. Tomorrow" style={{ padding: '8px 10px', fontSize: 12 }} />
+      </div>
+      <div style={{ flex: 2 }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>Time</div>
+        <select value={time} onChange={e => setTime(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', color: '#f0f4f8', fontSize: 12, outline: 'none', fontFamily: 'inherit' }}>
+          {TIME_SLOTS_ED.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>Spots</div>
+        <input className="tcp-input" type="number" value={spots} onChange={e => setSpots(e.target.value)} style={{ padding: '8px 10px', fontSize: 12 }} />
+      </div>
+      <button onClick={() => { if (date) { onAdd({ date, time, spots: parseInt(spots) || 1, day: '' }); setDate(''); setSpots('5'); } }} className="tcp-btn"
+        style={{ height: 36, padding: '0 14px', borderRadius: 10, background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.3)', color: BLUE_LT_ED, fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 }}>+ Add</button>
+    </div>
+  );
+}
+
+function ProfileEditorOverlay({ selectedGym, currentUser, onClose, draft, dirty, setDirty, handleSave, handleDiscard, uploading, heroUploading, handleAvatarUpload, handleHeroUpload, updateMutation, createMutation, showPreviewModal, setShowPreviewModal, sectionRefs, patch }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: BG_ED, overflowY: 'auto', fontFamily: 'Figtree,system-ui,sans-serif' }}>
+      <style>{ED_CSS}</style>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
+
+        {/* Sticky header */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: BG_ED, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 0', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={onClose} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: MUTE_ED, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>
+            <X style={{ width: 13, height: 13 }} /> Close
+          </button>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+            {draft?.avatar_url
+              ? <img src={draft.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(59,130,246,0.4)' }} />
+              : <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(37,99,235,0.6),rgba(37,99,235,0.3))', border: '1.5px solid rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: BLUE_LT_ED }}>{iniEd(draft?.name)}</div>
+            }
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{draft?.name || 'Coach Profile'}</div>
+              <div style={{ fontSize: 11, color: SUB_ED }}>{selectedGym?.name}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {dirty && <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24' }} /> Unsaved</span>}
+            {dirty && <button onClick={handleDiscard} className="tcp-btn" style={{ fontSize: 12, fontWeight: 700, color: MUTE_ED, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '8px 14px' }}>Discard</button>}
+            <button onClick={() => setShowPreviewModal(true)} className="tcp-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: BLUE_LT_ED, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, padding: '8px 14px' }}>
+              <Eye style={{ width: 13, height: 13 }} /> Preview
+            </button>
+            <button onClick={handleSave} disabled={!dirty || updateMutation.isPending || createMutation.isPending} className="tcp-btn"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fff', background: dirty ? `linear-gradient(135deg,${BLUE_ED},#1d4ed8)` : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '8px 18px', opacity: dirty ? 1 : 0.4, boxShadow: dirty ? '0 4px 16px rgba(37,99,235,0.4)' : 'none', cursor: dirty ? 'pointer' : 'default' }}>
+              {(updateMutation.isPending || createMutation.isPending) ? <Loader2 style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <Save style={{ width: 13, height: 13 }} />}
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+          <div className="tcp-root" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            <EdSectionCard title="Identity" icon={Camera} iconColor="#38bdf8">
+              <div>
+                <EdSLabel>Hero / Cover Photo</EdSLabel>
+                <div style={{ position: 'relative', height: 120, borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)', cursor: 'pointer' }}>
+                  {draft.image_url && <img src={draft.image_url} alt="hero" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />}
+                  <label style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', background: draft.image_url ? 'rgba(0,0,0,0.45)' : 'transparent' }}>
+                    {heroUploading ? <Loader2 style={{ width: 22, height: 22, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <><Image style={{ width: 20, height: 20, color: '#fff', opacity: 0.7 }} /><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{draft.image_url ? 'Change photo' : 'Upload cover photo'}</span></>}
+                    <input type="file" accept="image/*" onChange={handleHeroUpload} style={{ display: 'none' }} />
+                  </label>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{ flexShrink: 0, position: 'relative' }}>
+                  <label className="avatar-wrap" style={{ cursor: 'pointer', display: 'block' }}>
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(135deg,rgba(37,99,235,0.7),rgba(37,99,235,0.4))', border: '2.5px solid rgba(59,130,246,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: BLUE_LT_ED, position: 'relative' }}>
+                      {draft.avatar_url ? <img src={draft.avatar_url} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : iniEd(draft.name)}
+                      <div className="avatar-overlay" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity .15s' }}>
+                        {uploading ? <Loader2 style={{ width: 18, height: 18, color: '#fff', animation: 'spin 1s linear infinite' }} /> : <Camera style={{ width: 18, height: 18, color: '#fff' }} />}
+                      </div>
+                    </div>
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                  </label>
+                  <div style={{ position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: '#22c55e', border: '2px solid #060810' }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <EdField label="Display Name" value={draft.name} onChange={v => patch('name', v)} placeholder="Your full name" />
+                  <EdField label="Professional Title" value={draft.title} onChange={v => patch('title', v)} placeholder="e.g. Elite Performance Coach" />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <EdField label="Location" value={draft.location} onChange={v => patch('location', v)} placeholder="City, Country" />
+                <EdField label="Member Since" value={draft.member_since} onChange={v => patch('member_since', v)} placeholder="2020" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <EdField label="Years Experience" value={draft.experience_years?.toString()} onChange={v => patch('experience_years', parseInt(v) || 0)} type="number" placeholder="e.g. 11" />
+                <EdField label="Total Clients" value={draft.total_clients?.toString()} onChange={v => patch('total_clients', parseInt(v) || 0)} type="number" placeholder="e.g. 840" />
+                <EdField label="Rating (out of 5)" value={draft.rating?.toString()} onChange={v => patch('rating', parseFloat(v) || null)} type="number" placeholder="e.g. 4.9" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <EdField label="Next Available" value={draft.next_available} onChange={v => patch('next_available', v)} placeholder="Tomorrow · 7:00 AM" />
+                <EdField label="Response Time" value={draft.response_time} onChange={v => patch('response_time', v)} placeholder="< 1 hr" />
+              </div>
+              <EdTagPicker label="Languages" items={draft.languages || []} suggestions={LANGUAGES_OPTIONS} color="#34d399"
+                onAdd={v => patch('languages', [...(draft.languages || []), v])}
+                onRemove={v => patch('languages', (draft.languages || []).filter(l => l !== v))} />
+            </EdSectionCard>
+
+            <EdSectionCard title="Bio & Philosophy" icon={Edit2} iconColor="#818cf8">
+              <EdField label="Bio" value={draft.bio} onChange={v => patch('bio', v)} multiline rows={3} placeholder="Tell members who you are and what you do…" />
+              <EdField label="Training Philosophy" value={draft.philosophy} onChange={v => patch('philosophy', v)} multiline rows={4} placeholder="Describe your coaching philosophy…" />
+              <EdTagPicker label="Specialties" items={draft.specialties || []} suggestions={SPECIALTIES_OPTIONS} color="#a78bfa"
+                onAdd={v => patch('specialties', [...(draft.specialties || []), v])}
+                onRemove={v => patch('specialties', (draft.specialties || []).filter(s => s !== v))} />
+            </EdSectionCard>
+
+            <EdSectionCard title="Credentials & Certifications" icon={Award} iconColor="#fbbf24">
+              <EdTagPicker label="Certifications" items={draft.certifications || []} suggestions={CERT_SUGGESTIONS} color="#38bdf8"
+                onAdd={v => patch('certifications', [...(draft.certifications || []), v])}
+                onRemove={v => patch('certifications', (draft.certifications || []).filter(c => c !== v))} />
+              <div>
+                <EdSLabel hint="Trophy items shown on your about tab">Client Achievements</EdSLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {(draft.achievements || []).map((a, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <Trophy style={{ width: 13, height: 13, color: '#fbbf24', flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{a}</span>
+                      <button onClick={() => patch('achievements', (draft.achievements || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE_ED, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
+                    </div>
+                  ))}
+                  <AchievementAdder onAdd={v => patch('achievements', [...(draft.achievements || []), v])} />
+                </div>
+              </div>
+            </EdSectionCard>
+
+            <EdSectionCard title="Trust & Verification" icon={BadgeCheck} iconColor="#34d399">
+              <div>
+                <EdSLabel>Verification Status</EdSLabel>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{ key: 'id', icon: ScanFace, label: 'ID Verified' }, { key: 'certifications', icon: BadgeCheck, label: 'Certs Verified' }, { key: 'background', icon: ClipboardCheck, label: 'Background Checked' }].map(({ key, icon: Ic, label }) => {
+                    const on = (draft.verification || {})[key];
+                    return (
+                      <button key={key} onClick={() => patch('verification', { ...(draft.verification || {}), [key]: !on })} className="tcp-btn"
+                        style={{ flex: 1, padding: '10px 6px', borderRadius: 12, background: on ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                        <Ic style={{ width: 16, height: 16, color: on ? '#34d399' : MUTE_ED }} />
+                        <span style={{ fontSize: 9.5, fontWeight: 800, color: on ? '#34d399' : MUTE_ED, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: on ? '#34d399' : MUTE_ED, opacity: 0.7 }}>{on ? '✓ Active' : '✗ Off'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </EdSectionCard>
+
+            <EdSectionCard title="Availability" icon={Calendar} iconColor="#38bdf8">
+              <div>
+                <EdSLabel hint="Show members when you're available each week">Weekly Schedule</EdSLabel>
+                <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  {DAYS_ED.map((day, di) => {
+                    const existing = draft.weekly_schedule || [];
+                    const entry = existing.find(d => d.day === day) || { day, slots: [] };
+                    const slots = entry.slots || [];
+                    const toggle = slot => {
+                      const newSlots = slots.includes(slot) ? slots.filter(s => s !== slot) : [...slots, slot];
+                      patch('weekly_schedule', [...existing.filter(d => d.day !== day), { day, slots: newSlots }]);
+                    };
+                    return (
+                      <div key={day} style={{ padding: '10px 14px', borderBottom: di < DAYS_ED.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: slots.length ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ width: 32, fontSize: 10, fontWeight: 800, color: slots.length ? BLUE_LT_ED : MUTE_ED, letterSpacing: '.08em', flexShrink: 0 }}>{day}</span>
+                          <div style={{ display: 'flex', gap: 5, overflowX: 'auto', flex: 1 }}>
+                            {TIME_SLOTS_ED.map(slot => (
+                              <button key={slot} onClick={() => toggle(slot)} className="tcp-btn"
+                                style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, padding: '4px 9px', borderRadius: 99, border: `1px solid ${slots.includes(slot) ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.08)'}`, background: slots.includes(slot) ? 'rgba(37,99,235,0.18)' : 'rgba(255,255,255,0.03)', color: slots.includes(slot) ? BLUE_LT_ED : MUTE_ED }}>
+                                {slot}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {slots.length === 0 && <span style={{ fontSize: 10, color: MUTE_ED, fontStyle: 'italic', paddingLeft: 42 }}>Rest day</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <EdSLabel>Next Available Slots</EdSLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {(draft.availability_slots || []).map((sl, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <Clock style={{ width: 13, height: 13, color: '#38bdf8', flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', flex: 1 }}>{sl.date} · {sl.time}</span>
+                      <span style={{ fontSize: 11, color: '#34d399', fontWeight: 700 }}>{sl.spots} spots</span>
+                      <button onClick={() => patch('availability_slots', (draft.availability_slots || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE_ED, background: 'none', border: 'none', padding: 2 }}><X style={{ width: 13, height: 13 }} /></button>
+                    </div>
+                  ))}
+                  <SlotAdder onAdd={sl => patch('availability_slots', [...(draft.availability_slots || []), sl])} />
+                </div>
+              </div>
+            </EdSectionCard>
+
+            <EdSectionCard title="Session Packages" icon={Package} iconColor="#fbbf24">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(draft.packages || []).map((pkg, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 14px', borderRadius: 14, background: pkg.popular ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pkg.popular ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.07)'}` }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '60px 80px 1fr auto', gap: 8, flex: 1, alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Sessions</div>
+                        <input className="tcp-input" type="number" value={pkg.sessions} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], sessions: parseInt(e.target.value) || 1 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Price £</div>
+                        <input className="tcp-input" type="number" value={pkg.price} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], price: parseInt(e.target.value) || 0 }; patch('packages', p); }} style={{ padding: '6px 9px', fontSize: 13 }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 3 }}>Discount</div>
+                        <input className="tcp-input" value={pkg.discount || ''} onChange={e => { const p = [...draft.packages]; p[i] = { ...p[i], discount: e.target.value }; patch('packages', p); }} placeholder="e.g. Save 10%" style={{ padding: '6px 9px', fontSize: 13 }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: MUTE_ED, textTransform: 'uppercase', letterSpacing: '.08em' }}>Popular</div>
+                        <div onClick={() => { const p = draft.packages.map((x, j) => ({ ...x, popular: j === i ? !x.popular : false })); patch('packages', p); }}
+                          className="tcp-toggle" style={{ width: 36, height: 20, borderRadius: 10, background: pkg.popular ? BLUE_ED : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer' }}>
+                          <div style={{ position: 'absolute', top: 2, left: pkg.popular ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => patch('packages', (draft.packages || []).filter((_, j) => j !== i))} className="tcp-btn" style={{ color: MUTE_ED, background: 'none', border: 'none', padding: 4, flexShrink: 0 }}><Trash2 style={{ width: 14, height: 14 }} /></button>
+                  </div>
+                ))}
+                <button onClick={() => patch('packages', [...(draft.packages || []), { sessions: 5, price: 400, popular: false, discount: '' }])} className="tcp-btn"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.02)', color: MUTE_ED, fontSize: 12, fontWeight: 700 }}>
+                  <Plus style={{ width: 13, height: 13 }} /> Add Package
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <EdField label="Single Session Price (£)" value={draft.price_per_session?.toString()} onChange={v => patch('price_per_session', parseInt(v) || null)} type="number" placeholder="85" />
+                <EdField label="Sessions Completed" value={draft.sessions_completed?.toString()} onChange={v => patch('sessions_completed', parseInt(v) || 0)} type="number" placeholder="3200" />
+              </div>
+            </EdSectionCard>
+
+            <EdSectionCard title="Settings & Visibility" icon={Shield} iconColor="#c084fc">
+              <EdToggle label="Offer Free Consultation" sub="Show a 'Free Consult' CTA button on your profile" value={!!draft.free_consultation} onChange={v => patch('free_consultation', v)} />
+              <EdToggle label="Show Coach Match Score" sub="Display personalised % match badge on your card" value={!!draft.match_score} onChange={v => { if (!v) patch('match_score', null); }} />
+              <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <AlertCircleIcon style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 3 }}>Booking Policy</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Cancellation and refund policies are set by the gym owner. Contact <span style={{ color: BLUE_LT_ED }}>{selectedGym?.name}</span> to update these.</div>
+                </div>
+              </div>
+            </EdSectionCard>
+
+            <div style={{ height: 40 }} />
+          </div>
+
+          {/* Live preview sidebar */}
+          <div style={{ position: 'sticky', top: 80, borderRadius: 14, background: SURFACE_ED, border: '1px solid rgba(255,255,255,0.07)', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: LABEL_ED, textTransform: 'uppercase', letterSpacing: '.13em' }}>Profile Preview</div>
+            <div style={{ fontSize: 12, color: SUB_ED, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 700, color: '#fff', marginBottom: 4 }}>{draft.name || 'Your Name'}</div>
+              <div style={{ color: BLUE_LT_ED, fontSize: 11, marginBottom: 8 }}>{draft.title || 'Personal Coach'}</div>
+              {draft.bio && <div style={{ fontSize: 11, color: SUB_ED, marginBottom: 8 }}>{draft.bio.slice(0, 100)}{draft.bio.length > 100 ? '…' : ''}</div>}
+              {(draft.specialties || []).length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {draft.specialties.slice(0, 4).map((s, i) => (
+                    <span key={i} style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: i === 0 ? BLUE_ED : 'rgba(255,255,255,0.05)', color: i === 0 ? '#fff' : SUB_ED }}>{s}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={() => setShowPreviewModal(true)} className="tcp-btn"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', color: BLUE_LT_ED, fontSize: 12, fontWeight: 700 }}>
+              <Eye style={{ width: 12, height: 12 }} /> View Full Preview
+            </button>
+          </div>
+        </div>
+      </div>
+      <CoachProfileModal coach={draft} open={showPreviewModal} onClose={() => setShowPreviewModal(false)} />
     </div>
   );
 }
