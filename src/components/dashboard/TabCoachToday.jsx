@@ -305,18 +305,14 @@ export default function TodayDashboard() {
 
   return (
     <div className="td-root" style={{
-      background: C.bg, minHeight: "100vh", padding: "24px",
+      background: C.bg, minHeight: "100vh", padding: "16px 24px 24px",
       display: "flex", flexDirection: "column", gap: 18,
     }}>
 
-      {/* ── HEADER ── */}
+      {/* ── HEADER — date line removed; just the title + live badge ── */}
       <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontSize: 11, color: C.t3, textTransform: "uppercase", letterSpacing: ".08em",
-            fontWeight: 700, marginBottom: 4 }}>
-            {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>Today's Overview</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>
+          Today's Overview
         </div>
         {liveSession && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px",
