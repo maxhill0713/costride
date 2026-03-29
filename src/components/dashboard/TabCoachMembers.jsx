@@ -1,1173 +1,936 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import {
+  MessageCircle, ChevronRight, Search, X, Phone, Calendar,
+  Dumbbell, TrendingUp, TrendingDown, Minus, Bell,
+  Activity, User, Mail, CheckCircle, AlertTriangle, Zap,
+  Star, CreditCard, Target, Clock, Send, Edit3,
+  UserPlus, Filter, ArrowUpRight, ArrowDownRight,
+} from 'lucide-react';
 
-/* ─── CSS INJECTION ──────────────────────────────────────────────────────────── */
-if (typeof document !== "undefined" && !document.getElementById("cp-v4-css")) {
-  const s = document.createElement("style");
-  s.id = "cp-v4-css";
-  s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap');
-
-    *, *::before, *::after { box-sizing: border-box; }
-
-    .cp { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
-
-    /* ── Animations ── */
-    @keyframes cpFadeUp   { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
-    @keyframes cpSlideR   { from { opacity:0; transform:translateX(14px) } to { opacity:1; transform:translateX(0) } }
-    @keyframes cpScale    { from { opacity:0; transform:scale(0.97) } to { opacity:1; transform:scale(1) } }
-    @keyframes cpPulse    { 0%,100%{opacity:1} 50%{opacity:0.45} }
-    @keyframes cpShimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-    .fade-up  { animation: cpFadeUp  0.28s cubic-bezier(0.22,1,0.36,1) both; }
-    .slide-r  { animation: cpSlideR  0.22s cubic-bezier(0.22,1,0.36,1) both; }
-    .scale-in { animation: cpScale   0.22s cubic-bezier(0.22,1,0.36,1) both; }
-
-    /* ── Filter tabs ── */
-    .filter-tab {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 12px; border-radius: 999px; cursor: pointer;
-      font-size: 12px; font-weight: 600; border: 1px solid transparent;
-      color: rgba(255,255,255,0.35); transition: all 0.13s; white-space: nowrap;
-      user-select: none;
-    }
-    .filter-tab:hover { color: rgba(255,255,255,0.65); border-color: rgba(255,255,255,0.08); }
-    .filter-tab.active {
-      color: #f1f3f5; background: rgba(59,130,246,0.10);
-      border-color: rgba(59,130,246,0.28);
-    }
-    .filter-tab .ct {
-      font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 999px;
-      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4);
-      font-family: 'DM Mono', monospace;
-    }
-    .filter-tab.active .ct { background: rgba(59,130,246,0.18); color: #3b82f6; }
-    .filter-tab.danger  .ct { background: rgba(239,68,68,0.12); color: #ef4444; }
-    .filter-tab.warning .ct { background: rgba(245,158,11,0.12); color: #f59e0b; }
-
-    /* ── Pill badges ── */
-    .pill-blue    { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(59,130,246,0.11);border:1px solid rgba(59,130,246,0.24);color:#60a5fa; }
-    .pill-green   { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.22);color:#4ade80; }
-    .pill-red     { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.22);color:#f87171; }
-    .pill-amber   { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.22);color:#fbbf24; }
-    .pill-neutral { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35); }
-    .pill-gold    { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;background:rgba(234,179,8,0.10);border:1px solid rgba(234,179,8,0.22);color:#fde047; }
-
-    /* ── Member rows ── */
-    .member-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 18px;
-      background: #0c1422;
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      cursor: pointer; transition: border-color 0.14s, background 0.14s;
-      position: relative;
-    }
-    .member-row:hover {
-      border-color: rgba(255,255,255,0.12);
-      background: #0f1928;
-    }
-    .member-row.selected {
-      border-color: rgba(59,130,246,0.38);
-      background: rgba(59,130,246,0.055);
-    }
-
-    /* ── Priority rows (at-risk: red left accent on hover) ── */
-    .priority-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 18px;
-      background: #0c1422;
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      cursor: pointer; transition: all 0.14s;
-      position: relative; overflow: hidden;
-    }
-    .priority-row::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: transparent; border-radius: 12px 0 0 12px;
-      transition: background 0.15s;
-    }
-    .priority-row:hover { border-color: rgba(239,68,68,0.28); background: rgba(239,68,68,0.025); }
-    .priority-row:hover::before { background: #ef4444; }
-    .priority-row.selected {
-      border-color: rgba(239,68,68,0.40);
-      background: rgba(239,68,68,0.045);
-    }
-    .priority-row.selected::before { background: #ef4444; }
-
-    /* ── Group headers ── */
-    .group-hdr {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 2px 6px;
-      font-size: 9.5px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.10em;
-    }
-    .group-hdr::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.055); }
-
-    /* ── Score ring colors (CORRECT psychology) ── */
-    .score-healthy { color: #4ade80; }
-    .score-warning { color: #fbbf24; }
-    .score-danger  { color: #f87171; }
-
-    /* ── Detail panel ── */
-    .detail-panel {
-      animation: cpSlideR 0.2s cubic-bezier(0.22,1,0.36,1) both;
-    }
-
-    /* ── Metric mini-cards ── */
-    .mc {
-      background: #101f30; border: 1px solid rgba(255,255,255,0.065);
-      border-radius: 10px; padding: 11px 13px; transition: border-color 0.13s;
-    }
-    .mc:hover { border-color: rgba(255,255,255,0.11); }
-
-    /* ── Insight cards ── */
-    .insight-card {
-      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 10px; padding: 12px 14px;
-      border-left: 2px solid transparent; margin-bottom: 6px;
-    }
-    .insight-card.critical { border-left-color: #ef4444; }
-    .insight-card.warning  { border-left-color: #f59e0b; }
-    .insight-card.info     { border-left-color: #3b82f6; }
-
-    /* ── Timeline ── */
-    .tl-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.042); }
-    .tl-row:last-child { border-bottom: none; }
-    .tl-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-
-    /* ── Scrollbar ── */
-    .cp-scroll::-webkit-scrollbar { width: 3px; }
-    .cp-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
-
-    /* ── Action button ── */
-    .act-btn {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 6px 13px; border-radius: 8px; cursor: pointer;
-      font-size: 11.5px; font-weight: 700; border: none;
-      transition: all 0.12s; font-family: 'DM Sans', sans-serif;
-    }
-    .act-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .act-btn:active { transform: translateY(0); }
-
-    /* ── Search input ── */
-    .search-input {
-      width: 100%; padding: 7px 10px 7px 32px;
-      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 9px; color: #edf2f7;
-      font-family: 'DM Sans', sans-serif; font-size: 12.5px;
-      outline: none; transition: border-color 0.13s;
-    }
-    .search-input::placeholder { color: rgba(255,255,255,0.22); }
-    .search-input:focus { border-color: rgba(59,130,246,0.35); }
-
-    /* ── Retention bar ── */
-    .ret-track {
-      height: 3px; border-radius: 999px; background: rgba(255,255,255,0.05); overflow: hidden;
-    }
-    .ret-fill { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
-
-    /* ── Modal overlay ── */
-    @keyframes cpMod { from{opacity:0;transform:scale(0.97)translateY(6px)} to{opacity:1;transform:none} }
-    .modal-ov { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px; }
-    .modal-box { background:#0c1422;border:1px solid rgba(255,255,255,0.12);border-radius:14px;width:100%;max-width:420px;animation:cpMod .18s ease;overflow:hidden; }
-
-    /* ── Toast ── */
-    @keyframes cpToast { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-    .toast {
-      position: fixed; bottom: 22px; right: 22px; z-index: 300;
-      background: #101f30; border: 1px solid rgba(255,255,255,0.10);
-      border-left: 2px solid #22c55e;
-      border-radius: 10px; padding: 10px 16px;
-      font-size: 12.5px; font-weight: 500; color: #edf2f7;
-      display: flex; align-items: center; gap: 8px;
-      animation: cpToast 0.18s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    }
-
-    /* ── KPI cards ── */
-    .kpi-card {
-      background: #0c1422; border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px; padding: 16px 18px 14px;
-      transition: border-color 0.14s;
-    }
-    .kpi-card.clickable { cursor: pointer; }
-    .kpi-card.clickable:hover { border-color: rgba(255,255,255,0.12); }
-  `;
-  document.head.appendChild(s);
-}
-
-/* ─── DESIGN TOKENS ───────────────────────────────────────────────────────────── */
+// ─── Design Tokens ────────────────────────────────────────────────────────────
 const D = {
-  bgBase:    "#070e19",
-  bgSurface: "#0c1422",
-  bgCard:    "#101f30",
-  t1: "#edf2f7",
-  t2: "#8a9bb0",
-  t3: "#4a5d72",
-  t4: "#2a3a4d",
-  blue:      "#3b82f6",
-  blueSub:   "rgba(59,130,246,0.10)",
-  blueBdr:   "rgba(59,130,246,0.28)",
-  red:       "#ef4444",
-  redSub:    "rgba(239,68,68,0.10)",
-  redBdr:    "rgba(239,68,68,0.28)",
-  amber:     "#f59e0b",
-  amberSub:  "rgba(245,158,11,0.10)",
-  amberBdr:  "rgba(245,158,11,0.28)",
-  green:     "#22c55e",
-  greenSub:  "rgba(34,197,94,0.10)",
-  greenBdr:  "rgba(34,197,94,0.28)",
+  bgBase:    '#06101c',
+  bgSurface: '#0b1524',
+  bgCard:    '#0e1d30',
+  bgHover:   '#111f35',
+  border:    'rgba(255,255,255,0.07)',
+  borderHi:  'rgba(255,255,255,0.13)',
+  divider:   'rgba(255,255,255,0.045)',
+  purple:    '#8b5cf6',
+  purpleDim: 'rgba(139,92,246,0.10)',
+  purpleBrd: 'rgba(139,92,246,0.25)',
+  green:     '#10b981',
+  greenDim:  'rgba(16,185,129,0.09)',
+  greenBrd:  'rgba(16,185,129,0.22)',
+  red:       '#ef4444',
+  redDim:    'rgba(239,68,68,0.08)',
+  redBrd:    'rgba(239,68,68,0.22)',
+  amber:     '#f59e0b',
+  amberDim:  'rgba(245,158,11,0.09)',
+  amberBrd:  'rgba(245,158,11,0.22)',
+  blue:      '#38bdf8',
+  blueDim:   'rgba(56,189,248,0.09)',
+  blueBrd:   'rgba(56,189,248,0.22)',
+  t1: '#f1f5f9', t2: '#94a3b8', t3: '#475569', t4: '#2d3f55',
 };
 
-/* ─── SCORE COLOR HELPER — correct psychology ─────────────────────────────────── */
-function scoreColor(score) {
-  if (score >= 70) return D.green;
-  if (score >= 40) return D.amber;
-  return D.red;
-}
-function scoreLabel(score) {
-  if (score >= 70) return "Healthy";
-  if (score >= 40) return "At Risk";
-  return "Critical";
-}
-function scoreClass(score) {
-  if (score >= 70) return "score-healthy";
-  if (score >= 40) return "score-warning";
-  return "score-danger";
+// ─── Realistic Mock Data ──────────────────────────────────────────────────────
+const CLIENTS = [
+  {
+    id: 1, name: 'Sarah Mitchell', email: 'sarah.m@example.com',
+    phone: '+44 7911 123 456', initials: 'SM', color: '#8b5cf6',
+    tier: 'Premium', status: 'active', goal: 'Weight Loss',
+    retentionScore: 88,
+    retentionHistory: [68, 72, 74, 78, 80, 83, 86, 88],
+    sessionsThisMonth: 9, sessionsLastMonth: 7,
+    attendanceHistory: [2, 3, 2, 3, 2, 3, 3, 3],
+    lastVisit: 1, streak: 14, consecutiveMissed: 0,
+    joinDate: 'Sep 2023', membership: 'Unlimited Monthly', monthlySpend: 149,
+    tags: ['HIIT', 'Yoga'],
+    notes: 'Responds exceptionally well to HIIT circuits. Has a minor left-knee sensitivity — avoid high-impact lunges. Prefers early morning slots and positive reinforcement over critique.',
+    nextSession: 'Tomorrow, 7:00 AM',
+    upcomingClasses: ['HIIT Thursday', 'Yoga Sunday'],
+    avatar: null,
+  },
+  {
+    id: 2, name: 'James Chen', email: 'j.chen@example.com',
+    phone: '+44 7700 234 567', initials: 'JC', color: '#38bdf8',
+    tier: 'Standard', status: 'active', goal: 'Muscle Gain',
+    retentionScore: 73,
+    retentionHistory: [78, 77, 76, 75, 74, 74, 73, 73],
+    sessionsThisMonth: 5, sessionsLastMonth: 7,
+    attendanceHistory: [3, 2, 2, 2, 1, 2, 1, 2],
+    lastVisit: 4, streak: 2, consecutiveMissed: 0,
+    joinDate: 'Feb 2024', membership: '3x Week', monthlySpend: 89,
+    tags: ['Strength', 'CrossFit'],
+    notes: 'Highly competitive — responds extremely well to performance benchmarks and PRs. Interested in adding a nutrition coaching add-on. Missed 2 sessions this month without notice.',
+    nextSession: 'Friday, 6:30 PM',
+    upcomingClasses: ['Strength Friday'],
+    avatar: null,
+  },
+  {
+    id: 3, name: 'Olivia Hartley', email: 'olivia.h@example.com',
+    phone: '+44 7733 345 678', initials: 'OH', color: '#ef4444',
+    tier: 'Premium', status: 'at_risk', goal: 'Stress Relief',
+    retentionScore: 38,
+    retentionHistory: [82, 79, 70, 61, 53, 46, 41, 38],
+    sessionsThisMonth: 1, sessionsLastMonth: 5,
+    attendanceHistory: [3, 2, 2, 1, 1, 0, 1, 0],
+    lastVisit: 18, streak: 0, consecutiveMissed: 3,
+    joinDate: 'Jan 2023', membership: 'Unlimited Monthly', monthlySpend: 149,
+    tags: ['Yoga', 'Pilates'],
+    notes: 'Was one of the most consistent members in the gym. Significant engagement drop over the last 6 weeks. Mentioned work stress in her last session. A warm, personal check-in is strongly recommended — not a sales call.',
+    nextSession: null,
+    upcomingClasses: [],
+    avatar: null,
+  },
+  {
+    id: 4, name: 'Marcus Williams', email: 'marcus.w@example.com',
+    phone: '+44 7808 456 789', initials: 'MW', color: '#10b981',
+    tier: 'Elite', status: 'active', goal: 'Athletic Performance',
+    retentionScore: 96,
+    retentionHistory: [88, 89, 91, 92, 93, 94, 95, 96],
+    sessionsThisMonth: 12, sessionsLastMonth: 11,
+    attendanceHistory: [3, 3, 3, 3, 2, 3, 3, 3],
+    lastVisit: 0, streak: 28, consecutiveMissed: 0,
+    joinDate: 'Mar 2022', membership: 'Unlimited + PT', monthlySpend: 299,
+    tags: ['Strength', 'HIIT', 'Boxing'],
+    notes: 'Star client. Exceptional discipline — never misses a session. Ask about marathon prep plans; may want to shift programming toward endurance in Q3. Could be a great brand ambassador.',
+    nextSession: 'Today, 5:30 PM',
+    upcomingClasses: ['Boxing Today', 'HIIT Wednesday', 'Strength Friday'],
+    avatar: null,
+  },
+  {
+    id: 5, name: 'Priya Sharma', email: 'p.sharma@example.com',
+    phone: '+44 7912 567 890', initials: 'PS', color: '#f59e0b',
+    tier: 'Standard', status: 'paused', goal: 'General Fitness',
+    retentionScore: 54,
+    retentionHistory: [65, 63, 60, 57, 54, 51, 53, 54],
+    sessionsThisMonth: 2, sessionsLastMonth: 4,
+    attendanceHistory: [2, 2, 1, 1, 1, 0, 1, 1],
+    lastVisit: 9, streak: 1, consecutiveMissed: 2,
+    joinDate: 'Nov 2023', membership: 'Pay as You Go', monthlySpend: 55,
+    tags: ['Cardio', 'Pilates'],
+    notes: 'Membership paused due to travel — returns mid-month. Re-engagement plan needed. She responds well to class recommendations and milestone tracking. Send a welcome-back message.',
+    nextSession: 'Returns 15th',
+    upcomingClasses: [],
+    avatar: null,
+  },
+  {
+    id: 6, name: 'Tom Gallagher', email: 't.gallagher@example.com',
+    phone: '+44 7765 678 901', initials: 'TG', color: '#38bdf8',
+    tier: 'Standard', status: 'active', goal: 'Weight Loss',
+    retentionScore: 67,
+    retentionHistory: [55, 57, 60, 62, 64, 65, 66, 67],
+    sessionsThisMonth: 4, sessionsLastMonth: 3,
+    attendanceHistory: [1, 1, 2, 1, 2, 2, 1, 2],
+    lastVisit: 3, streak: 3, consecutiveMissed: 0,
+    joinDate: 'Apr 2024', membership: '2x Week', monthlySpend: 69,
+    tags: ['Cardio', 'Functional'],
+    notes: 'Newer member showing solid upward progress. Could benefit from an upgrade to 3x per week — suggest a trial offer next month. Enjoys friendly competition.',
+    nextSession: 'Wednesday, 12:00 PM',
+    upcomingClasses: ['Functional Wednesday'],
+    avatar: null,
+  },
+  {
+    id: 7, name: 'Aisha Okonkwo', email: 'a.okonkwo@example.com',
+    phone: '+44 7890 789 012', initials: 'AO', color: '#8b5cf6',
+    tier: 'Elite', status: 'active', goal: 'Endurance & Toning',
+    retentionScore: 91,
+    retentionHistory: [84, 85, 87, 88, 89, 90, 90, 91],
+    sessionsThisMonth: 10, sessionsLastMonth: 10,
+    attendanceHistory: [3, 2, 3, 3, 2, 3, 2, 3],
+    lastVisit: 1, streak: 21, consecutiveMissed: 0,
+    joinDate: 'Jul 2022', membership: 'Unlimited + PT', monthlySpend: 299,
+    tags: ['Spin', 'Yoga', 'Pilates'],
+    notes: 'Always asks thoughtful questions about form and technique — hugely engaged. Excellent candidate for the upcoming 8-week challenge. Has referred two friends this quarter.',
+    nextSession: 'Tomorrow, 9:30 AM',
+    upcomingClasses: ['Spin Tuesday', 'Yoga Thursday', 'Pilates Saturday'],
+    avatar: null,
+  },
+  {
+    id: 8, name: 'Daniel Foster', email: 'd.foster@example.com',
+    phone: '+44 7700 890 123', initials: 'DF', color: '#ef4444',
+    tier: 'Standard', status: 'at_risk', goal: 'Strength Building',
+    retentionScore: 27,
+    retentionHistory: [74, 66, 57, 47, 39, 34, 30, 27],
+    sessionsThisMonth: 0, sessionsLastMonth: 3,
+    attendanceHistory: [2, 2, 1, 1, 0, 0, 0, 0],
+    lastVisit: 31, streak: 0, consecutiveMissed: 5,
+    joinDate: 'Aug 2023', membership: '3x Week', monthlySpend: 89,
+    tags: ['Strength'],
+    notes: 'Has not attended in over a month. Last two messages went unanswered. Risk of churn is very high. Strongly consider a personal phone call rather than a text or push notification.',
+    nextSession: null,
+    upcomingClasses: [],
+    avatar: null,
+  },
+];
+
+// ─── Color Psychology Helpers — THE FIX ──────────────────────────────────────
+// Rule: High scores MUST be green/blue. Low scores MUST be red.
+// NEVER render a healthy score (80+) in red. That is a critical UX failure.
+function retentionColor(score) {
+  if (score >= 80) return D.green;   // Healthy  — reward with green
+  if (score >= 60) return D.blue;    // Stable   — calm informational blue
+  if (score >= 40) return D.amber;   // Caution  — amber warning
+  return D.red;                       // Critical — red ONLY when earned
 }
 
-/* ─── PRIMITIVES ──────────────────────────────────────────────────────────────── */
+function retentionMeta(score) {
+  if (score >= 80) return { label: 'Healthy',         variant: 'green' };
+  if (score >= 60) return { label: 'Stable',          variant: 'blue'  };
+  if (score >= 40) return { label: 'Needs Attention', variant: 'amber' };
+  return                  { label: 'At Risk',         variant: 'red'   };
+}
 
-export function MiniAvatar({ name = "?", src, size = 32, urgency }) {
-  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const hue = name.split("").reduce((h, c) => h + c.charCodeAt(0), 0) % 360;
-  const bg = urgency === "danger"
-    ? "rgba(239,68,68,0.15)"
-    : urgency === "risk"
-    ? "rgba(245,158,11,0.12)"
-    : `hsla(${hue},28%,18%,1)`;
-  const bdr = urgency === "danger"
-    ? "rgba(239,68,68,0.3)"
-    : urgency === "risk"
-    ? "rgba(245,158,11,0.25)"
-    : "rgba(255,255,255,0.08)";
-  const color = urgency === "danger" ? "#f87171" : urgency === "risk" ? "#fbbf24" : `hsl(${hue},55%,70%)`;
+function scoreTrend(history) {
+  if (!history || history.length < 4) return { dir: 'flat', delta: 0, color: D.t3 };
+  const delta = history[history.length - 1] - history[history.length - 4];
+  if (delta >  4) return { dir: 'up',   delta, color: D.green };
+  if (delta < -4) return { dir: 'down', delta, color: D.red   };
+  return               { dir: 'flat', delta: 0, color: D.t3  };
+}
 
-  return src ? (
-    <img src={src} alt={name} style={{ width: size, height: size, borderRadius: "50%",
-      objectFit: "cover", border: `1.5px solid ${bdr}`, flexShrink: 0 }}/>
-  ) : (
-    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      background: bg, border: `1.5px solid ${bdr}`,
-      fontSize: Math.round(size * 0.36), fontWeight: 800, color,
-      letterSpacing: "-0.01em" }}>
+function tierVariant(tier) {
+  if (tier === 'Elite')   return 'purple';
+  if (tier === 'Premium') return 'blue';
+  return 'neutral';
+}
+
+// ─── Spark SVG Sparkline ─────────────────────────────────────────────────────
+function Spark({ data = [], color = D.green, height = 28, width = 72 }) {
+  const idRef = useRef(`sp${Math.random().toString(36).slice(2)}`);
+  if (!data || data.length < 2) return null;
+  const min  = Math.min(...data);
+  const max  = Math.max(...data);
+  const rng  = (max - min) || 1;
+  const px   = 2, py = 3;
+  const pts  = data.map((v, i) => [
+    px + (i / (data.length - 1)) * (width - px * 2),
+    py + (1 - (v - min) / rng)   * (height - py * 2),
+  ]);
+  const poly = pts.map(p => p.join(',')).join(' ');
+  const [lx, ly] = pts[pts.length - 1];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none" style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={idRef.current} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={color} stopOpacity="0.28"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points={`${px},${height} ${poly} ${width - px},${height}`} fill={`url(#${idRef.current})`}/>
+      <polyline points={poly} stroke={color} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx={lx} cy={ly} r="2.5" fill={color}/>
+    </svg>
+  );
+}
+
+// ─── MiniAvatar ───────────────────────────────────────────────────────────────
+function MiniAvatar({ name = '', src, size = 36, color = D.purple }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  if (src) return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}/>;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `${color}1e`, border: `1.5px solid ${color}3c`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.36, fontWeight: 800, color, flexShrink: 0,
+      letterSpacing: '-0.01em', userSelect: 'none', lineHeight: 1,
+    }}>
       {initials}
     </div>
   );
 }
 
-export function Spark({ data = [], color = D.blue, height = 30, width = 88 }) {
-  if (!data || data.length < 2) return null;
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data, 0);
-  const range = max - min || 1;
-  const pad = 3;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * (width - pad * 2) + pad;
-    const y = height - pad - ((v - min) / range) * (height - pad * 2);
-    return `${x},${y}`;
-  }).join(" ");
-  const lastV = data[data.length - 1];
-  const lx = width - pad;
-  const ly = height - pad - ((lastV - min) / range) * (height - pad * 2);
+// ─── Pill ─────────────────────────────────────────────────────────────────────
+const PILL_V = {
+  green:   { color: D.green,  bg: D.greenDim,  border: D.greenBrd  },
+  blue:    { color: D.blue,   bg: D.blueDim,   border: D.blueBrd   },
+  red:     { color: D.red,    bg: D.redDim,    border: D.redBrd    },
+  amber:   { color: D.amber,  bg: D.amberDim,  border: D.amberBrd  },
+  purple:  { color: D.purple, bg: D.purpleDim, border: D.purpleBrd },
+  neutral: { color: D.t3,     bg: 'rgba(255,255,255,0.04)', border: D.border },
+};
+function Pill({ label, variant = 'neutral', size = 'sm' }) {
+  const v = PILL_V[variant] || PILL_V.neutral;
   return (
-    <svg width={width} height={height} style={{ overflow: "visible", flexShrink: 0 }}>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5}
-        strokeLinejoin="round" strokeLinecap="round" opacity={0.85}/>
-      <circle cx={lx} cy={ly} r={2.5} fill={color}/>
-    </svg>
+    <span style={{
+      fontSize: size === 'xs' ? 8 : 9, fontWeight: 800, color: v.color,
+      background: v.bg, border: `1px solid ${v.border}`, borderRadius: 6,
+      padding: size === 'xs' ? '1px 5px' : '2px 8px',
+      whiteSpace: 'nowrap', lineHeight: 1.35, letterSpacing: '0.025em', display: 'inline-block',
+    }}>
+      {label}
+    </span>
   );
 }
 
-export function DashCard({ title, icon: Icon, action, onAction, accentColor, children }) {
-  const ac = accentColor || null;
+// ─── DashCard ─────────────────────────────────────────────────────────────────
+function DashCard({ title, children, accentColor, action, onAction }) {
+  const accent = accentColor || null;
   return (
-    <div style={{ background: D.bgSurface, border: `1px solid ${ac ? `${ac}30` : "rgba(255,255,255,0.07)"}`,
-      borderRadius: 12, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px",
-        borderBottom: "1px solid rgba(255,255,255,0.042)",
-        background: ac ? `${ac}06` : "transparent" }}>
-        {ac && <div style={{ width: 3, height: 14, borderRadius: 99, background: ac, flexShrink: 0 }}/>}
-        {Icon && <Icon style={{ width: 12, height: 12, color: ac || D.t3, flexShrink: 0 }}/>}
-        <span style={{ flex: 1, fontSize: 11.5, fontWeight: 800, color: D.t1, letterSpacing: "-0.01em" }}>{title}</span>
-        {action && (
-          <button onClick={onAction} style={{ fontSize: 10.5, fontWeight: 700, color: ac || D.blue,
-            background: `${ac || D.blue}12`, border: `1px solid ${ac || D.blue}28`,
-            borderRadius: 6, padding: "3px 9px", cursor: "pointer", fontFamily: "inherit",
-            transition: "all 0.12s" }}>
-            {action}
-          </button>
-        )}
-      </div>
-      {children}
+    <div style={{
+      borderRadius: 12, background: D.bgCard,
+      border: `1px solid ${D.border}`,
+      borderLeft: accent ? `3px solid ${accent}` : `1px solid ${D.border}`,
+      overflow: 'hidden', flexShrink: 0,
+    }}>
+      {title && (
+        <div style={{ padding: '10px 14px', borderBottom: `1px solid ${D.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: D.t3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{title}</span>
+          {action && (
+            <button onClick={onAction} style={{ fontSize: 9, fontWeight: 700, color: accent || D.t2, background: accent ? `${accent}14` : 'rgba(255,255,255,0.05)', border: `1px solid ${accent ? `${accent}30` : D.border}`, borderRadius: 6, padding: '3px 9px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              {action}
+            </button>
+          )}
+        </div>
+      )}
+      <div style={{ padding: '12px 14px' }}>{children}</div>
     </div>
   );
 }
 
-/* ─── REALISTIC MOCK DATA ─────────────────────────────────────────────────────── */
-const MOCK_CLIENTS = [
-  {
-    id: "c1", name: "Sarah Mitchell",   tier: "Premium",
-    score: 88, trend: [62,68,72,75,80,85,88], status: "healthy",
-    lastVisit: "Today",           vpw: 3.8, completion: 91,  streak: 7,
-    totalVisits: 124, phone: "+44 7711 234567", email: "s.mitchell@email.com",
-    booked: true,  missedLast3: false,
-    flags: ["high-eng"],
-    notes: "Responds well to progressive overload. Goals: half-marathon prep.",
-    insights: [
-      { lv:"info",    title:"Consistency milestone",   body:"Sarah has visited 4+ times per week for 7 consecutive weeks — her best streak yet.", cta:"Send a congratulations message" },
-      { lv:"info",    title:"Programme due for review", body:"Current strength block ends in 8 days. Suggest transitioning to endurance phase.", cta:"Schedule programme review" },
-    ],
-    activity: [
-      { type:"visit", label:"Gym session — Strength A", time:"Today, 08:14" },
-      { type:"visit", label:"Gym session — HIIT",       time:"2 days ago" },
-      { type:"msg",   label:"Message sent by coach",    time:"4 days ago" },
-      { type:"visit", label:"Gym session — Rest day workout", time:"5 days ago" },
-    ],
-  },
-  {
-    id: "c2", name: "James Chen",       tier: "Standard",
-    score: 24, trend: [72,68,61,54,42,33,24], status: "at-risk",
-    lastVisit: "18 days ago",     vpw: 0.4, completion: 22,  streak: 0,
-    totalVisits: 31,  phone: "+44 7822 345678", email: "j.chen@email.com",
-    booked: false, missedLast3: true,
-    flags: ["no-visit","declining","not-booked"],
-    notes: "Joined for weight loss. Strong start but attendance dropped after work schedule change.",
-    insights: [
-      { lv:"critical", title:"High churn risk — 18 days inactive", body:"James's score has declined 48 points over 7 weeks. Last 3 booked sessions were missed. Immediate outreach strongly recommended.", cta:"Send re-engagement message now" },
-      { lv:"warning",  title:"No upcoming session booked",          body:"James has no sessions on the calendar. Offering a complimentary check-in call can improve retention.", cta:"Book a free check-in session" },
-    ],
-    activity: [
-      { type:"miss",  label:"Missed booked session",     time:"3 days ago" },
-      { type:"miss",  label:"Missed booked session",     time:"10 days ago" },
-      { type:"miss",  label:"Missed booked session",     time:"17 days ago" },
-      { type:"visit", label:"Gym session — Induction",   time:"18 days ago" },
-    ],
-  },
-  {
-    id: "c3", name: "Emma Hartley",     tier: "Standard",
-    score: 51, trend: [65,63,60,58,54,52,51], status: "at-risk",
-    lastVisit: "9 days ago",      vpw: 1.1, completion: 48,  streak: 0,
-    totalVisits: 58,  phone: "+44 7933 456789", email: "e.hartley@email.com",
-    booked: true,  missedLast3: false,
-    flags: ["declining","low-workout"],
-    notes: "Intermediate level. Likes group classes more than solo sessions.",
-    insights: [
-      { lv:"warning", title:"Declining engagement trend",  body:"Visits have dropped from 3×/week to just over 1×/week in the last month. Hasn't completed a workout programme in 3 weeks.", cta:"Check in and review her goals" },
-      { lv:"info",    title:"Group class suggestion",       body:"Emma's last 4 visits were all group classes. Consider recommending a new class tier to re-spark interest.", cta:"Browse available group sessions" },
-    ],
-    activity: [
-      { type:"visit", label:"Yoga Flow class",              time:"9 days ago" },
-      { type:"msg",   label:"Checked in by coach",          time:"11 days ago" },
-      { type:"visit", label:"HIIT Blast class",             time:"15 days ago" },
-      { type:"miss",  label:"Missed — Strength session",    time:"19 days ago" },
-    ],
-  },
-  {
-    id: "c4", name: "Marcus Thompson",  tier: "Premium",
-    score: 82, trend: [74,76,78,79,80,81,82], status: "healthy",
-    lastVisit: "Yesterday",       vpw: 3.2, completion: 84,  streak: 5,
-    totalVisits: 201, phone: "+44 7644 567890", email: "m.thompson@email.com",
-    booked: true,  missedLast3: false,
-    flags: ["high-eng"],
-    notes: "Long-term client (2 yrs). Competes in amateur powerlifting.",
-    insights: [
-      { lv:"info", title:"Approaching 200-visit milestone", body:"Marcus is at 201 total visits — a milestone worth acknowledging. A personal note will resonate well.", cta:"Send a milestone message" },
-    ],
-    activity: [
-      { type:"visit", label:"Powerlifting session",         time:"Yesterday" },
-      { type:"visit", label:"Accessory work — Upper",       time:"3 days ago" },
-      { type:"visit", label:"Powerlifting session",         time:"5 days ago" },
-    ],
-  },
-  {
-    id: "c5", name: "Priya Sharma",     tier: "Standard",
-    score: 31, trend: [55,50,48,44,40,35,31], status: "at-risk",
-    lastVisit: "14 days ago",     vpw: 0.7, completion: 29,  streak: 0,
-    totalVisits: 19,  phone: "+44 7755 678901", email: "p.sharma@email.com",
-    booked: false, missedLast3: true,
-    flags: ["no-visit","not-booked","declining"],
-    notes: "New member (6 weeks). Has expressed uncertainty about her programme.",
-    insights: [
-      { lv:"critical", title:"New member disengaging early", body:"Priya is only 6 weeks in with 19 visits, but engagement is falling sharply. Early churn is most preventable with a personal touchpoint.", cta:"Call or message Priya today" },
-      { lv:"warning",  title:"No session booked",            body:"No upcoming sessions. A guided booking from you can remove the friction she may be feeling.", cta:"Book her next session" },
-    ],
-    activity: [
-      { type:"miss",  label:"Missed — Intro to Strength",  time:"4 days ago" },
-      { type:"visit", label:"Gym induction session",        time:"14 days ago" },
-      { type:"msg",   label:"Welcome message sent",         time:"6 weeks ago" },
-    ],
-  },
-  {
-    id: "c6", name: "Oliver Bennett",   tier: "Standard",
-    score: 74, trend: [60,63,65,68,70,72,74], status: "healthy",
-    lastVisit: "2 days ago",      vpw: 2.5, completion: 72,  streak: 3,
-    totalVisits: 88,  phone: "+44 7866 789012", email: "o.bennett@email.com",
-    booked: true,  missedLast3: false,
-    flags: [],
-    notes: "",
-    insights: [
-      { lv:"info", title:"Steady upward trend", body:"Oliver's score has risen 14 points over 7 weeks — strong indicator of building habit. Consider an upsell to a premium plan.", cta:"Discuss premium upgrade" },
-    ],
-    activity: [
-      { type:"visit", label:"Cardio session",               time:"2 days ago" },
-      { type:"visit", label:"Strength B — Lower body",      time:"5 days ago" },
-      { type:"visit", label:"Cardio session",               time:"7 days ago" },
-    ],
-  },
-  {
-    id: "c7", name: "Aisha Johnson",    tier: "Premium",
-    score: 38, trend: [80,75,68,59,50,43,38], status: "at-risk",
-    lastVisit: "11 days ago",     vpw: 0.9, completion: 35,  streak: 0,
-    totalVisits: 73,  phone: "+44 7977 890123", email: "a.johnson@email.com",
-    booked: false, missedLast3: true,
-    flags: ["no-visit","declining","not-booked"],
-    notes: "Injury in week 3 (shoulder). Returned but confidence appears low.",
-    insights: [
-      { lv:"critical", title:"Post-injury engagement drop",  body:"Aisha's score has fallen 42 points since her shoulder injury. Post-injury clients have a 3× higher churn rate without coach outreach.", cta:"Book a recovery check-in session" },
-      { lv:"warning",  title:"Premium plan — low utilisation", body:"Aisha is on a Premium plan but visiting less than 1×/week. She may question her subscription value.", cta:"Highlight premium benefits" },
-    ],
-    activity: [
-      { type:"miss",  label:"Missed — Upper body session",  time:"5 days ago" },
-      { type:"visit", label:"Rehabilitation session",        time:"11 days ago" },
-      { type:"msg",   label:"Injury check-in by coach",     time:"13 days ago" },
-    ],
-  },
-  {
-    id: "c8", name: "Tom Rivera",       tier: "Standard",
-    score: 79, trend: [71,72,74,75,77,78,79], status: "healthy",
-    lastVisit: "Today",           vpw: 3.0, completion: 78,  streak: 4,
-    totalVisits: 56,  phone: "+44 7588 901234", email: "t.rivera@email.com",
-    booked: true,  missedLast3: false,
-    flags: [],
-    notes: "",
-    insights: [
-      { lv:"info", title:"Consistent performer", body:"Tom has maintained a healthy score for 7 consecutive weeks. Low maintenance, high reward client.", cta:"Consider as referral ambassador" },
-    ],
-    activity: [
-      { type:"visit", label:"CrossFit Madness class",       time:"Today, 06:00" },
-      { type:"visit", label:"HIIT Blast",                   time:"3 days ago" },
-      { type:"visit", label:"Strength Foundation session",  time:"6 days ago" },
-    ],
-  },
-  {
-    id: "c9", name: "Lisa Park",        tier: "Standard",
-    score: 55, trend: [60,58,57,56,55,55,55], status: "at-risk",
-    lastVisit: "6 days ago",      vpw: 1.4, completion: 54,  streak: 1,
-    totalVisits: 42,  phone: "+44 7699 012345", email: "l.park@email.com",
-    booked: true,  missedLast3: false,
-    flags: ["declining"],
-    notes: "Prefers morning sessions only. Responds well to check-in messages.",
-    insights: [
-      { lv:"warning", title:"Plateau in attendance",        body:"Lisa has been at approximately the same score for 4 weeks — not declining, but not growing either. A goal-setting session could reignite momentum.", cta:"Schedule a goal review" },
-    ],
-    activity: [
-      { type:"visit", label:"Morning yoga class",           time:"6 days ago" },
-      { type:"visit", label:"Pilates Foundation",           time:"10 days ago" },
-      { type:"msg",   label:"Replied to coach message",     time:"12 days ago" },
-    ],
-  },
-  {
-    id: "c10", name: "David Walsh",     tier: "Standard",
-    score: 91, trend: [80,83,85,87,88,90,91], status: "healthy",
-    lastVisit: "Today",           vpw: 4.2, completion: 94,  streak: 10,
-    totalVisits: 168, phone: "+44 7400 123456", email: "d.walsh@email.com",
-    booked: true,  missedLast3: false,
-    flags: ["high-eng"],
-    notes: "Coaches Olympic lifting on weekends. Extremely self-motivated.",
-    insights: [
-      { lv:"info", title:"Top performer — 10-week streak",  body:"David has the highest engagement score on your roster. Consider featuring him in social proof content.", cta:"Ask about testimonial or case study" },
-    ],
-    activity: [
-      { type:"visit", label:"Olympic lifting session",      time:"Today, 07:30" },
-      { type:"visit", label:"Technique refinement — Clean", time:"2 days ago" },
-      { type:"visit", label:"Olympic lifting session",      time:"4 days ago" },
-    ],
-  },
-];
-
-const FILTER_DEFS = [
-  { id: "all",          label: "All",          fn: () => true },
-  { id: "at-risk",      label: "At Risk",       fn: c => c.status === "at-risk",    danger: true },
-  { id: "not-booked",   label: "Not Booked",    fn: c => !c.booked,                 warning: true },
-  { id: "healthy",      label: "Healthy",       fn: c => c.status === "healthy" },
-  { id: "premium",      label: "Premium",       fn: c => c.tier === "Premium" },
-];
-
-/* ─── TOAST ───────────────────────────────────────────────────────────────────── */
-function Toast({ msg, onDone }) {
-  useEffect(() => { const t = setTimeout(onDone, 2600); return () => clearTimeout(t); }, [onDone]);
-  return <div className="toast"><span style={{ color: D.green }}>✓</span> {msg}</div>;
-}
-
-/* ─── MODALS ──────────────────────────────────────────────────────────────────── */
-function Modal({ onClose, children }) {
+// ─── ActionBtn ────────────────────────────────────────────────────────────────
+function ActionBtn({ icon: Ic, label, color, onClick, size = 'sm' }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div className="modal-ov" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box">{children}</div>
-    </div>
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: size === 'xs' ? '4px 8px' : '6px 12px',
+        borderRadius: 8, background: hov ? `${color}1e` : `${color}0d`,
+        border: `1px solid ${color}${hov ? '40' : '22'}`, color,
+        fontSize: size === 'xs' ? 9 : 10, fontWeight: 700, cursor: 'pointer',
+        whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'all 0.12s', flexShrink: 0,
+      }}>
+      {Ic && <Ic style={{ width: size === 'xs' ? 9 : 11, height: size === 'xs' ? 9 : 11 }}/>}
+      {label}
+    </button>
   );
 }
 
-function MsgModal({ client, onClose, onSend }) {
-  const [msg, setMsg] = useState(
-    `Hi ${client.name.split(" ")[0]}, just checking in — how are you getting on with your training this week?`
-  );
-  return (
-    <Modal onClose={onClose}>
-      <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: D.t1 }}>Send Message</div>
-          <div style={{ fontSize: 11, color: D.t3, marginTop: 2 }}>{client.name}</div>
-        </div>
-        <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
-          fontSize: 11, transition: "all 0.12s" }}>✕</div>
-      </div>
-      <div style={{ padding: "16px 18px" }}>
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: D.t3, textTransform: "uppercase",
-            letterSpacing: "0.07em", marginBottom: 5 }}>To</div>
-          <input readOnly value={`${client.name} · ${client.email}`} style={{ width: "100%",
-            padding: "7px 10px", background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 8, color: D.t3, fontFamily: "inherit", fontSize: 12.5, outline: "none" }}/>
-        </div>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: D.t3, textTransform: "uppercase",
-            letterSpacing: "0.07em", marginBottom: 5 }}>Message</div>
-          <textarea value={msg} onChange={e => setMsg(e.target.value)} style={{ width: "100%",
-            padding: "8px 10px", background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 8, color: D.t1, fontFamily: "inherit", fontSize: 12.5,
-            outline: "none", resize: "vertical", minHeight: 90,
-            transition: "border-color 0.13s" }} className="search-input"
-            onFocus={e => e.target.style.borderColor = D.blueBdr}
-            onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}/>
-        </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 7, padding: "12px 18px",
-        borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <button onClick={onClose} style={{ padding: "6px 13px", borderRadius: 7, fontSize: 12,
-          fontWeight: 600, background: "transparent", border: "1px solid rgba(255,255,255,0.09)",
-          color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-        <button onClick={() => { onSend(`Message sent to ${client.name}`); onClose(); }}
-          style={{ padding: "6px 14px", borderRadius: 7, fontSize: 12.5, fontWeight: 700,
-            background: D.blue, color: "#fff", border: "none", cursor: "pointer",
-            fontFamily: "inherit" }}>Send Message</button>
-      </div>
-    </Modal>
-  );
-}
-
-function BookModal({ client, onClose, onSend }) {
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("09:00");
-  const [type, setType] = useState("1-to-1 Session");
-  const fieldStyle = {
-    width: "100%", padding: "7px 10px",
-    background: "#0c1422", border: "1px solid rgba(255,255,255,0.07)",
-    borderRadius: 8, color: D.t1, fontFamily: "inherit", fontSize: 12.5,
-    outline: "none", colorScheme: "dark",
-  };
-  const labelStyle = {
-    display: "block", fontSize: 10, fontWeight: 700, color: D.t3,
-    textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5,
-  };
-  return (
-    <Modal onClose={onClose}>
-      <div style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: D.t1 }}>Book Session</div>
-          <div style={{ fontSize: 11, color: D.t3, marginTop: 2 }}>{client.name}</div>
-        </div>
-        <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer", fontSize: 11 }}>✕</div>
-      </div>
-      <div style={{ padding: "16px 18px" }}>
-        <div style={{ marginBottom: 13 }}>
-          <label style={labelStyle}>Session Type</label>
-          <select value={type} onChange={e => setType(e.target.value)} style={{ ...fieldStyle }}>
-            {["1-to-1 Session","Group Class","Online Check-in","Assessment","Recovery Session"].map(t => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 13 }}>
-          <div><label style={labelStyle}>Date</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={fieldStyle}/>
-          </div>
-          <div><label style={labelStyle}>Time</label>
-            <input type="time" value={time} onChange={e => setTime(e.target.value)} style={fieldStyle}/>
-          </div>
-        </div>
-        <div>
-          <label style={labelStyle}>Notes (optional)</label>
-          <textarea placeholder="Focus areas for this session..."
-            style={{ ...fieldStyle, minHeight: 72, resize: "vertical" }}/>
-        </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 7, padding: "12px 18px",
-        borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <button onClick={onClose} style={{ padding: "6px 13px", borderRadius: 7, fontSize: 12,
-          fontWeight: 600, background: "transparent", border: "1px solid rgba(255,255,255,0.09)",
-          color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-        <button onClick={() => {
-          if (!date) { alert("Please select a date"); return; }
-          onSend(`Session booked for ${client.name}`); onClose();
-        }} style={{ padding: "6px 14px", borderRadius: 7, fontSize: 12.5, fontWeight: 700,
-          background: D.green, color: "#fff", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-          Confirm Booking
-        </button>
-      </div>
-    </Modal>
-  );
-}
-
-/* ─── CLIENT DETAIL PANEL ──────────────────────────────────────────────────────── */
-function ClientDetailPanel({ client, onClose, onMsg, onBook }) {
-  if (!client) return (
-    <div style={{ width: "38%", flexShrink: 0, background: "#0a1520",
-      borderLeft: "1px solid rgba(255,255,255,0.06)",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", gap: 8, padding: "32px", textAlign: "center" }}>
-      <div style={{ fontSize: 28, opacity: 0.12, marginBottom: 4 }}>⊡</div>
-      <div style={{ fontSize: 13, fontWeight: 700, color: D.t2 }}>No client selected</div>
-      <div style={{ fontSize: 11.5, color: D.t3, lineHeight: 1.65, maxWidth: 200 }}>
-        Click any client to view their profile, retention trend, and AI-generated insights.
-      </div>
-    </div>
-  );
-
-  const sc = scoreColor(client.score);
-  const sl = scoreLabel(client.score);
-  const trendDir = client.trend[client.trend.length - 1] > client.trend[0] ? "up" : "down";
-  const trendDelta = client.trend[client.trend.length - 1] - client.trend[0];
-  const compColor = client.completion >= 70 ? D.green : client.completion >= 40 ? D.amber : D.red;
-
-  const tlDot = (type) => ({
-    visit: D.green, msg: D.blue, miss: D.red, warn: D.amber,
-  }[type] || D.t3);
+// ─── Client Row ───────────────────────────────────────────────────────────────
+function ClientRow({ client, isSelected, onClick }) {
+  const [hov, setHov] = useState(false);
+  const score    = client.retentionScore;
+  const sColor   = retentionColor(score);  // ← FIXED: color comes from score value
+  const trend    = scoreTrend(client.retentionHistory);
+  const isAtRisk = client.status === 'at_risk';
+  const isPaused = client.status === 'paused';
+  const delta    = client.sessionsThisMonth - client.sessionsLastMonth;
+  const TrendIc  = trend.dir === 'up' ? ArrowUpRight : trend.dir === 'down' ? ArrowDownRight : Minus;
 
   return (
-    <div className="detail-panel" style={{ width: "38%", flexShrink: 0,
-      background: "#09131e", borderLeft: "1px solid rgba(255,255,255,0.065)",
-      display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        borderRadius: 12,
+        background: isSelected ? `${D.purple}09` : hov ? D.bgHover : D.bgSurface,
+        border: `1px solid ${isSelected ? D.purpleBrd : hov ? D.borderHi : D.border}`,
+        // .priority-row equivalent: red left accent for at-risk clients
+        borderLeft: isAtRisk
+          ? `3px solid ${D.red}`
+          : isSelected ? `3px solid ${D.purple}` : `3px solid transparent`,
+        padding: '13px 15px',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        display: 'flex', alignItems: 'center', gap: 12,
+        boxShadow: isSelected
+          ? `0 0 0 1px ${D.purpleBrd}, 0 6px 24px ${D.purple}10`
+          : hov ? '0 4px 16px rgba(0,0,0,0.25)' : 'none',
+      }}>
 
-      {/* ── Panel header ── */}
-      <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-        flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 13 }}>
-          <MiniAvatar name={client.name} size={40}
-            urgency={client.status === "at-risk" ? "danger" : undefined}/>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 800, color: D.t1,
-              letterSpacing: "-0.02em", marginBottom: 3 }}>{client.name}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span className={client.tier === "Premium" ? "pill-gold" : "pill-neutral"}>{client.tier}</span>
-              <span className={client.status === "at-risk" ? "pill-red" : "pill-green"}>{sl}</span>
-            </div>
-          </div>
-          <div onClick={onClose} style={{ width: 26, height: 26, borderRadius: 7,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
-            fontSize: 11, flexShrink: 0, transition: "all 0.12s" }}>✕</div>
-        </div>
+      <MiniAvatar name={client.name} size={40} color={client.color}/>
 
-        {/* Quick actions */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
-          {[
-            { label: "Message", color: D.blue, bg: D.blueSub, bdr: D.blueBdr, fn: () => onMsg(client) },
-            { label: "Book",    color: D.green, bg: D.greenSub, bdr: D.greenBdr, fn: () => onBook(client) },
-            { label: "Assign",  color: D.t2, bg: "rgba(255,255,255,0.04)", bdr: "rgba(255,255,255,0.09)", fn: () => {} },
-          ].map(({ label, color, bg, bdr, fn }) => (
-            <button key={label} className="act-btn" onClick={fn} style={{
-              background: bg, border: `1px solid ${bdr}`, color,
-              justifyContent: "center", width: "100%",
-            }}>{label}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Scrollable body ── */}
-      <div className="cp-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 18px 24px",
-        display: "flex", flexDirection: "column", gap: 18 }}>
-
-        {/* ── RETENTION SCORE — THE KEY FIX ── */}
-        <div>
-          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
-            letterSpacing: "0.10em", color: D.t4, marginBottom: 10,
-            display: "flex", alignItems: "center", gap: 6 }}>
-            Retention Score
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
-          </div>
-
-          <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 12, padding: "14px 15px" }}>
-            {/* Score + trend side by side */}
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between",
-              marginBottom: 10 }}>
-              <div>
-                {/* THE FIX: score in correct semantic color */}
-                <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-0.05em",
-                  lineHeight: 1, color: sc, fontFamily: "'DM Mono', monospace" }}>
-                  {client.score}
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: sc, marginTop: 3, opacity: 0.8 }}>
-                  {sl}
-                  {" · "}
-                  <span style={{ color: trendDir === "up" ? D.green : D.red }}>
-                    {trendDir === "up" ? "↑" : "↓"} {Math.abs(trendDelta)} pts in 7 weeks
-                  </span>
-                </div>
-              </div>
-              {/* Spark line — 7-week retention trend */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                <div style={{ fontSize: 8.5, color: D.t4, textTransform: "uppercase",
-                  letterSpacing: "0.06em" }}>7-wk trend</div>
-                <Spark data={client.trend} color={sc} height={34} width={96}/>
-              </div>
-            </div>
-            {/* Progress bar */}
-            <div className="ret-track">
-              <div className="ret-fill" style={{ width: `${client.score}%`, background: sc }}/>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-              <span style={{ fontSize: 9, color: D.t4 }}>Critical</span>
-              <span style={{ fontSize: 9, color: D.t4 }}>Healthy</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── MISSED SESSIONS WARNING — DashCard w/ amber accent ── */}
-        {client.missedLast3 && (
-          <DashCard title="Missed 3 consecutive sessions" accentColor={D.amber}
-            action="Message now" onAction={() => onMsg(client)}>
-            <div style={{ padding: "11px 15px" }}>
-              <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.65, marginBottom: 10 }}>
-                {client.name.split(" ")[0]} has missed their last 3 booked sessions.
-                A personal message significantly reduces churn risk at this stage.
-              </div>
-              <button className="act-btn" onClick={() => onMsg(client)} style={{
-                background: D.amberSub, border: `1px solid ${D.amberBdr}`, color: D.amber,
-              }}>
-                ✉ Send re-engagement message
-              </button>
-            </div>
-          </DashCard>
-        )}
-
-        {/* ── KEY METRICS ── */}
-        <div>
-          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
-            letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
-            display: "flex", alignItems: "center", gap: 6 }}>
-            Key Metrics
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            {[
-              { label: "Last Visit",     value: client.lastVisit,         color: null, mono: false },
-              { label: "Visits / Week",  value: `${client.vpw}×`,         color: client.vpw >= 2.5 ? D.green : client.vpw >= 1 ? D.amber : D.red, mono: true },
-              { label: "Completion",     value: `${client.completion}%`,  color: compColor, mono: true },
-              { label: "Streak",         value: `${client.streak} wk`,    color: client.streak >= 4 ? D.green : null, mono: true },
-              { label: "Total Visits",   value: client.totalVisits,       color: null, mono: true },
-              { label: "Next Session",   value: client.booked ? "Booked ✓" : "Not booked",
-                color: client.booked ? D.green : D.red, mono: false },
-            ].map(({ label, value, color, mono }) => (
-              <div key={label} className="mc">
-                <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, textTransform: "uppercase",
-                  letterSpacing: "0.07em", marginBottom: 5 }}>{label}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.02em",
-                  color: color || D.t1,
-                  fontFamily: mono ? "'DM Mono', monospace" : "inherit" }}>{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── AT-RISK ALERT DashCard ── */}
-        {client.status === "at-risk" && !client.missedLast3 && (
-          <DashCard title="Retention alert" accentColor={D.red}
-            action="Take action" onAction={() => onMsg(client)}>
-            <div style={{ padding: "11px 15px" }}>
-              <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.65 }}>
-                {client.name.split(" ")[0]}'s score has dropped {Math.abs(trendDelta)} points
-                over 7 weeks. Without intervention, churn probability increases significantly.
-              </div>
-            </div>
-          </DashCard>
-        )}
-
-        {/* ── INSIGHTS ── */}
-        {client.insights?.length > 0 && (
-          <div>
-            <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
-              letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
-              display: "flex", alignItems: "center", gap: 6 }}>
-              AI Insights
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
-            </div>
-            {client.insights.map((ins, i) => (
-              <div key={i} className={`insight-card ${ins.lv}`}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 4 }}>
-                  <span style={{ fontSize: 10, flexShrink: 0, marginTop: 2,
-                    color: ins.lv === "critical" ? D.red : ins.lv === "warning" ? D.amber : D.blue }}>
-                    {ins.lv === "critical" ? "⚠" : ins.lv === "warning" ? "◉" : "ℹ"}
-                  </span>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: D.t1 }}>{ins.title}</div>
-                </div>
-                <div style={{ fontSize: 11.5, color: D.t2, lineHeight: 1.6, marginBottom: 7,
-                  paddingLeft: 17 }}>{ins.body}</div>
-                <div style={{ paddingLeft: 17 }}>
-                  <span style={{ fontSize: 11, color: D.blue, fontWeight: 600, cursor: "pointer" }}>
-                    → {ins.cta}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ── NOTES ── */}
-        {client.notes && (
-          <div>
-            <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
-              letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
-              display: "flex", alignItems: "center", gap: 6 }}>
-              Coach Notes
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
-            </div>
-            <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.065)",
-              borderRadius: 10, padding: "11px 13px", fontSize: 11.5, color: D.t2, lineHeight: 1.7 }}>
-              {client.notes}
-            </div>
-          </div>
-        )}
-
-        {/* ── ACTIVITY TIMELINE ── */}
-        <div>
-          <div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase",
-            letterSpacing: "0.10em", color: D.t4, marginBottom: 8,
-            display: "flex", alignItems: "center", gap: 6 }}>
-            Recent Activity
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.042)" }}/>
-          </div>
-          <div style={{ background: D.bgSurface, border: "1px solid rgba(255,255,255,0.065)",
-            borderRadius: 12, padding: "4px 14px" }}>
-            {client.activity.map((ev, i) => (
-              <div key={i} className="tl-row">
-                <div className="tl-dot" style={{ background: tlDot(ev.type), marginTop: 5 }}/>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: D.t1 }}>{ev.label}</div>
-                  <div style={{ fontSize: 10.5, color: D.t4, marginTop: 1 }}>{ev.time}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-/* ─── CLIENT ROW ──────────────────────────────────────────────────────────────── */
-function ClientRow({ client, selected, onClick, onMsg, onBook }) {
-  const sc = scoreColor(client.score);
-  const isRisk = client.status === "at-risk";
-
-  return (
-    <div className={`${isRisk ? "priority-row" : "member-row"} ${selected ? "selected" : ""} fade-up`}
-      onClick={onClick} style={{ animationDelay: `${0}s` }}>
-
-      <MiniAvatar name={client.name} size={34}
-        urgency={isRisk ? "danger" : client.status === "needs-attention" ? "risk" : undefined}/>
-
+      {/* Main info block */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: D.t1,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{client.name}</span>
-          {client.tier === "Premium" && <span className="pill-gold">Premium</span>}
-          {isRisk && <span className="pill-red">At Risk</span>}
-          {!isRisk && client.status !== "healthy" && <span className="pill-amber">Attention</span>}
+        {/* Name + pill row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: D.t1, letterSpacing: '-0.015em' }}>{client.name}</span>
+          <Pill label={client.tier} variant={tierVariant(client.tier)} size="xs"/>
+          {isAtRisk  && <Pill label="At Risk" variant="red"   size="xs"/>}
+          {isPaused  && <Pill label="Paused"  variant="amber" size="xs"/>}
+          {client.streak >= 14 && <Pill label={`🔥 ${client.streak}d`} variant="green" size="xs"/>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, color: D.t3 }}>Last visit: {client.lastVisit}</span>
-          <span style={{ fontSize: 11, color: D.t4 }}>·</span>
-          <span style={{ fontSize: 11, color: D.t3 }}>{client.vpw}×/wk</span>
-          {client.streak > 0 && (
-            <><span style={{ fontSize: 11, color: D.t4 }}>·</span>
-            <span style={{ fontSize: 11, color: D.green }}>{client.streak}wk streak 🔥</span></>
-          )}
-          {client.flags.includes("not-booked") && (
-            <span className="pill-amber" style={{ fontSize: 9 }}>Not booked</span>
-          )}
-        </div>
-      </div>
-
-      {/* Spark mini-trend */}
-      <Spark data={client.trend} color={sc} height={22} width={56}/>
-
-      {/* Score badge — CORRECT COLOR PSYCHOLOGY */}
-      <div style={{ minWidth: 36, height: 36, borderRadius: 9, display: "flex",
-        alignItems: "center", justifyContent: "center", flexShrink: 0,
-        background: `${sc}12`, border: `1px solid ${sc}25`,
-        fontSize: 12.5, fontWeight: 800, color: sc,
-        fontFamily: "'DM Mono', monospace" }}>{client.score}</div>
-
-      {/* Action icons */}
-      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}
-        onClick={e => e.stopPropagation()}>
-        <div title="Message" onClick={() => onMsg(client)} style={{ width: 28, height: 28,
-          borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
-          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
-          fontSize: 13, transition: "all 0.12s",
-          background: "transparent" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = D.blueBdr; e.currentTarget.style.color = D.blue; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = D.t3; }}>
-          ✉
-        </div>
-        <div title="Book" onClick={() => onBook(client)} style={{ width: 28, height: 28,
-          borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
-          border: "1px solid rgba(255,255,255,0.07)", color: D.t3, cursor: "pointer",
-          fontSize: 12, transition: "all 0.12s", background: "transparent" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = D.greenBdr; e.currentTarget.style.color = D.green; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = D.t3; }}>
-          ▣
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10, color: D.t3 }}>{client.goal}</span>
+          <span style={{ fontSize: 10, color: D.t4 }}>·</span>
+          <span style={{ fontSize: 10, color: D.t3 }}>
+            {client.sessionsThisMonth} sessions
+            {delta !== 0 && (
+              <span style={{ color: delta > 0 ? D.green : D.red, fontWeight: 700, marginLeft: 3 }}>
+                ({delta > 0 ? '+' : ''}{delta})
+              </span>
+            )}
+          </span>
+          <span style={{ fontSize: 10, color: D.t4 }}>·</span>
+          <span style={{
+            fontSize: 10, fontWeight: 600,
+            color: client.lastVisit === 0 ? D.green
+                  : client.lastVisit > 14 ? D.red
+                  : client.lastVisit > 7  ? D.amber : D.t3,
+          }}>
+            {client.lastVisit === 0 ? 'Today' : client.lastVisit === 1 ? 'Yesterday' : `${client.lastVisit}d ago`}
+          </span>
         </div>
       </div>
 
-      <span style={{ fontSize: 14, color: D.t4, flexShrink: 0, transition: "color 0.12s" }}>›</span>
+      {/* Right side: sparkline + score */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <div style={{ opacity: hov || isSelected ? 1 : 0.65, transition: 'opacity 0.15s' }}>
+          <Spark data={client.retentionHistory} color={sColor} height={22} width={54}/>
+        </div>
+        <div style={{ textAlign: 'right', minWidth: 34 }}>
+          {/* ▼ THE COLOR FIX: retentionColor() maps HIGH→green, LOW→red */}
+          <div style={{ fontSize: 20, fontWeight: 900, color: sColor, lineHeight: 1, letterSpacing: '-0.04em' }}>
+            {score}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, marginTop: 2 }}>
+            <TrendIc style={{ width: 9, height: 9, color: trend.color }}/>
+            <span style={{ fontSize: 7.5, fontWeight: 700, color: trend.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              {trend.dir === 'up' ? 'Up' : trend.dir === 'down' ? 'Down' : 'Flat'}
+            </span>
+          </div>
+        </div>
+        <ChevronRight style={{ width: 13, height: 13, color: isSelected ? D.purple : hov ? D.t2 : D.t4, transition: 'color 0.15s', flexShrink: 0 }}/>
+      </div>
     </div>
   );
 }
 
-/* ─── KPI BAR ─────────────────────────────────────────────────────────────────── */
-function KpiBar({ clients, onFilterClick }) {
-  const atRisk    = clients.filter(c => c.status === "at-risk").length;
-  const notBooked = clients.filter(c => !c.booked).length;
-  const active    = clients.filter(c => c.lastVisit.includes("Today") || c.lastVisit.includes("day")).length;
-  const avgScore  = clients.length
-    ? Math.round(clients.reduce((s, c) => s + c.score, 0) / clients.length)
-    : 0;
-  const avgColor  = scoreColor(avgScore);
+// ─── Client Detail Panel ──────────────────────────────────────────────────────
+function ClientDetailPanel({ client, onClose, openModal }) {
+  const [tab, setTab]       = useState('overview');
+  const [noteVal, setNoteVal] = useState(client.notes);
+  const score    = client.retentionScore;
+  const sColor   = retentionColor(score);
+  const rmeta    = retentionMeta(score);
+  const trend    = scoreTrend(client.retentionHistory);
+  const isAtRisk = client.status === 'at_risk';
+  const isPaused = client.status === 'paused';
+  const delta    = client.sessionsThisMonth - client.sessionsLastMonth;
+  const hasMissed3 = client.consecutiveMissed >= 3;
+  const TrendIc  = trend.dir === 'up' ? TrendingUp : trend.dir === 'down' ? TrendingDown : Minus;
 
-  const kpis = [
-    { label: "Total Clients",   value: clients.length, sub: "on your roster",    sc: null, clickId: null },
-    { label: "Active This Month", value: active,        sub: "visited recently",  sc: null, clickId: null },
-    { label: "At Risk",         value: atRisk,          sub: "need follow-up",    sc: atRisk > 0 ? D.red : D.t3,   clickId: "at-risk" },
-    { label: "Not Booked",      value: notBooked,       sub: "no upcoming session", sc: notBooked > 0 ? D.amber : D.t3, clickId: "not-booked" },
-    { label: "Avg Score",       value: avgScore,        sub: scoreLabel(avgScore),  sc: avgColor, clickId: null },
-  ];
+  useEffect(() => { setTab('overview'); setNoteVal(client.notes); }, [client.id]);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10,
-      padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-      background: D.bgBase }}>
-      {kpis.map((k, i) => (
-        <div key={i} className={`kpi-card${k.clickId ? " clickable" : ""}`}
-          onClick={k.clickId ? () => onFilterClick(k.clickId) : undefined}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, color: D.t4, textTransform: "uppercase",
-            letterSpacing: "0.09em", marginBottom: 8 }}>{k.label}</div>
-          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.045em", lineHeight: 1,
-            color: k.sc || D.t1, marginBottom: 5,
-            fontFamily: i === 4 ? "'DM Mono', monospace" : "inherit" }}>{k.value}</div>
-          <div style={{ fontSize: 10.5, color: k.sc ? `${k.sc}90` : D.t3 }}>{k.sub}</div>
+    <div style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, width: 410, zIndex: 9000,
+      background: '#070f1e',
+      borderLeft: `1px solid ${isAtRisk ? D.redBrd : D.border}`,
+      display: 'flex', flexDirection: 'column',
+      boxShadow: '-32px 0 80px rgba(0,0,0,0.55)',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+    }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        padding: '20px 22px 16px', flexShrink: 0,
+        background: `linear-gradient(145deg, ${client.color}0b 0%, transparent 60%)`,
+        borderBottom: `1px solid ${D.divider}`,
+      }}>
+        {/* Top row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13, marginBottom: 14 }}>
+          <div style={{ position: 'relative' }}>
+            <MiniAvatar name={client.name} size={50} color={client.color}/>
+            {client.lastVisit === 0 && (
+              <div style={{ position: 'absolute', bottom: 2, right: 2, width: 10, height: 10, borderRadius: '50%', background: D.green, border: `2px solid #070f1e`, boxShadow: `0 0 6px ${D.green}` }}/>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: D.t1, letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+              {client.name}
+            </div>
+            <div style={{ fontSize: 10, color: D.t3, marginTop: 5, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <span>{client.membership}</span>
+              <span style={{ color: D.t4 }}>·</span>
+              <span>Since {client.joinDate}</span>
+              <span style={{ color: D.t4 }}>·</span>
+              <span style={{ color: D.green, fontWeight: 700 }}>£{client.monthlySpend}/mo</span>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <X style={{ width: 13, height: 13 }}/>
+          </button>
+        </div>
+
+        {/* Status pills */}
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
+          <Pill label={client.tier} variant={tierVariant(client.tier)}/>
+          <Pill label={rmeta.label} variant={rmeta.variant}/>
+          {isAtRisk && <Pill label="🔴 Churn Risk" variant="red"/>}
+          {isPaused && <Pill label="⏸ Paused" variant="amber"/>}
+          {client.streak >= 7 && <Pill label={`🔥 ${client.streak}-day streak`} variant="green"/>}
+          {client.tags.map((t, i) => <Pill key={i} label={t} variant="neutral"/>)}
+        </div>
+
+        {/* ── Retention Score Hero — FIXED COLOR PSYCHOLOGY ── */}
+        {/*
+          THE FIX IS HERE:
+          - Score 96 (Marcus) → sColor = D.green  → rendered in GREEN ✓
+          - Score 88 (Sarah)  → sColor = D.green  → rendered in GREEN ✓
+          - Score 38 (Olivia) → sColor = D.red    → rendered in RED   ✓
+          - Score 27 (Daniel) → sColor = D.red    → rendered in RED   ✓
+          Never confuse high=green with low=red.
+        */}
+        <div style={{
+          display: 'flex', alignItems: 'stretch', gap: 0,
+          borderRadius: 12, background: `${sColor}08`, border: `1px solid ${sColor}20`, overflow: 'hidden',
+        }}>
+          {/* Large score number — color determined by value, not hardcoded */}
+          <div style={{ padding: '14px 18px', textAlign: 'center', flexShrink: 0, borderRight: `1px solid ${sColor}1a` }}>
+            <div style={{ fontSize: 44, fontWeight: 900, color: sColor, lineHeight: 1, letterSpacing: '-0.05em' }}>
+              {score}
+            </div>
+            <div style={{ fontSize: 8, fontWeight: 700, color: D.t4, textTransform: 'uppercase', letterSpacing: '0.09em', marginTop: 4 }}>
+              Retention Score
+            </div>
+          </div>
+
+          {/* Trend label + sparkline showing the 8-week journey */}
+          <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <TrendIc style={{ width: 12, height: 12, color: trend.color, flexShrink: 0 }}/>
+              <span style={{ fontSize: 10, fontWeight: 700, color: trend.color }}>
+                {trend.dir === 'up'   ? `+${trend.delta} pts — Improving`
+                : trend.dir === 'down' ? `${trend.delta} pts — Declining`
+                : 'Stable — holding steady'}
+              </span>
+            </div>
+            {/* Spark shows context: is that 85 rising from 60 or falling from 95? */}
+            <div>
+              <Spark data={client.retentionHistory} color={sColor} height={38} width={185}/>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                <span style={{ fontSize: 8, color: D.t4 }}>8 weeks ago</span>
+                <span style={{ fontSize: 8, color: sColor, fontWeight: 700 }}>Now</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabs ── */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${D.divider}`, flexShrink: 0, background: D.bgBase }}>
+        {[{ id: 'overview', label: 'Overview' }, { id: 'sessions', label: 'Sessions' }, { id: 'notes', label: 'Notes' }].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{
+              flex: 1, padding: '11px 8px', background: 'none', border: 'none',
+              borderBottom: `2px solid ${tab === t.id ? client.color : 'transparent'}`,
+              color: tab === t.id ? client.color : D.t3,
+              fontSize: 10, fontWeight: tab === t.id ? 800 : 600,
+              cursor: 'pointer', transition: 'all 0.12s', fontFamily: 'inherit', letterSpacing: '0.015em',
+            }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 11 }}>
+
+        {/* ═════ OVERVIEW ═════ */}
+        {tab === 'overview' && (
+          <>
+            {/* DashCard with accentColor={D.amber} when 3+ consecutive missed */}
+            {hasMissed3 && (
+              <DashCard accentColor={D.amber} title="⚠  Needs Attention" action="Message Now" onAction={() => openModal?.('post', { memberId: client.id })}>
+                <p style={{ fontSize: 11, color: D.t2, margin: 0, lineHeight: 1.65 }}>
+                  {client.name.split(' ')[0]} has missed{' '}
+                  <strong style={{ color: D.amber }}>{client.consecutiveMissed} consecutive sessions</strong>.
+                  A personal check-in now can prevent churn before it happens.
+                </p>
+              </DashCard>
+            )}
+
+            {/* DashCard with accentColor={D.red} for at-risk clients */}
+            {isAtRisk && !hasMissed3 && (
+              <DashCard accentColor={D.red} title="🔴 High Churn Risk" action="Book Session" onAction={() => openModal?.('bookIntoClass', { memberId: client.id })}>
+                <p style={{ fontSize: 11, color: D.t2, margin: 0, lineHeight: 1.65 }}>
+                  Last visit was <strong style={{ color: D.red }}>{client.lastVisit} days ago</strong>.
+                  Retention score has dropped to a critical level. Prioritise direct outreach immediately.
+                </p>
+              </DashCard>
+            )}
+
+            {/* KPI grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[
+                {
+                  label: 'Sessions / Month', icon: Dumbbell,
+                  value: client.sessionsThisMonth,
+                  sub: delta !== 0 ? `${delta > 0 ? '+' : ''}${delta} vs last month` : 'Same as last month',
+                  color: delta >= 0 ? D.green : D.red,
+                },
+                {
+                  label: 'Last Visit', icon: Clock,
+                  value: client.lastVisit === 0 ? 'Today' : client.lastVisit === 1 ? 'Yesterday' : `${client.lastVisit}d ago`,
+                  sub: client.streak > 0 ? `🔥 ${client.streak}-day streak` : 'Streak broken',
+                  color: client.lastVisit > 14 ? D.red : client.lastVisit > 7 ? D.amber : D.green,
+                },
+                {
+                  label: 'Monthly Spend', icon: CreditCard,
+                  value: `£${client.monthlySpend}`,
+                  sub: client.membership, color: D.blue,
+                },
+                {
+                  label: 'Goal', icon: Target,
+                  value: client.goal,
+                  sub: client.tags.join(' · '), color: D.purple,
+                },
+              ].map((s, i) => (
+                <div key={i} style={{ padding: '12px 13px', borderRadius: 11, background: D.bgCard, border: `1px solid ${D.border}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 7 }}>
+                    <s.icon style={{ width: 10, height: 10, color: D.t4, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 9, color: D.t4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{s.label}</span>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: s.color, letterSpacing: '-0.025em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                  <div style={{ fontSize: 9, color: D.t4, lineHeight: 1.4 }}>{s.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Attendance sparkline with visual trend context */}
+            <DashCard title="Attendance Pattern — 8 weeks">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Spark data={client.attendanceHistory} color={delta >= 0 ? D.green : D.amber} height={44} width={178}/>
+                <div>
+                  <div style={{ fontSize: 10, color: D.t3, lineHeight: 1.7 }}>
+                    <strong style={{ color: D.t1 }}>{client.sessionsThisMonth}</strong> this month
+                  </div>
+                  <div style={{ fontSize: 10, color: D.t3, lineHeight: 1.7 }}>
+                    <strong style={{ color: D.t2 }}>{client.sessionsLastMonth}</strong> last month
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 800, marginTop: 3, color: delta > 0 ? D.green : delta < 0 ? D.red : D.t3 }}>
+                    {delta > 0 ? `+${delta}` : delta === 0 ? 'No change' : `${delta}`} sessions
+                  </div>
+                </div>
+              </div>
+            </DashCard>
+
+            {/* Contact */}
+            <DashCard title="Contact">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[{ icon: Mail, value: client.email }, { icon: Phone, value: client.phone }].map((c, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                    <c.icon style={{ width: 11, height: 11, color: D.t4, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 11, color: D.t2 }}>{c.value}</span>
+                  </div>
+                ))}
+              </div>
+            </DashCard>
+
+            {/* Upcoming */}
+            {client.nextSession && (
+              <DashCard title="Upcoming">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: client.upcomingClasses.length ? 10 : 0 }}>
+                  <Calendar style={{ width: 12, height: 12, color: D.blue, flexShrink: 0 }}/>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: D.t1 }}>{client.nextSession}</span>
+                </div>
+                {client.upcomingClasses.map((cls, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderTop: `1px solid ${D.divider}` }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: client.color, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 10, color: D.t2 }}>{cls}</span>
+                  </div>
+                ))}
+              </DashCard>
+            )}
+          </>
+        )}
+
+        {/* ═════ SESSIONS ═════ */}
+        {tab === 'sessions' && (
+          <>
+            <div style={{ display: 'flex', gap: 0, borderRadius: 12, background: D.bgCard, border: `1px solid ${D.border}`, overflow: 'hidden' }}>
+              {[
+                { label: 'This Month', value: client.sessionsThisMonth, color: D.t1 },
+                { label: 'Last Month', value: client.sessionsLastMonth, color: D.t2 },
+                { label: 'Change',     value: `${delta >= 0 ? '+' : ''}${delta}`,   color: delta >= 0 ? D.green : D.red },
+              ].map((s, i, arr) => (
+                <div key={i} style={{ flex: 1, padding: '12px 13px', borderRight: i < arr.length - 1 ? `1px solid ${D.divider}` : 'none', textAlign: 'center' }}>
+                  <div style={{ fontSize: 21, fontWeight: 900, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</div>
+                  <div style={{ fontSize: 9, color: D.t4, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <DashCard title="8-Week Attendance">
+              <Spark data={client.attendanceHistory} color={D.purple} height={52} width={340}/>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                <span style={{ fontSize: 8, color: D.t4 }}>8 weeks ago</span>
+                <span style={{ fontSize: 8, color: D.purple, fontWeight: 700 }}>This week</span>
+              </div>
+            </DashCard>
+
+            {client.upcomingClasses.length > 0 ? (
+              <DashCard title="Booked Classes">
+                {client.upcomingClasses.map((cls, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: i < client.upcomingClasses.length - 1 ? `1px solid ${D.divider}` : 'none' }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: client.color, boxShadow: `0 0 5px ${client.color}`, flexShrink: 0 }}/>
+                    <span style={{ fontSize: 11, color: D.t1, flex: 1, fontWeight: 600 }}>{cls}</span>
+                    <Pill label="Booked" variant="green" size="xs"/>
+                  </div>
+                ))}
+              </DashCard>
+            ) : (
+              <div style={{ padding: '28px 16px', textAlign: 'center', borderRadius: 12, background: D.bgCard, border: `1px solid ${D.border}` }}>
+                <Calendar style={{ width: 20, height: 20, color: D.t4, margin: '0 auto 10px' }}/>
+                <p style={{ fontSize: 12, color: D.t2, margin: '0 0 4px', fontWeight: 700 }}>No upcoming sessions</p>
+                <p style={{ fontSize: 10, color: D.t3, margin: '0 0 14px' }}>
+                  {isPaused ? 'Membership is currently paused.' : 'No classes booked yet.'}
+                </p>
+                <button onClick={() => openModal?.('bookIntoClass', { memberId: client.id })}
+                  style={{ fontSize: 10, fontWeight: 700, color: D.purple, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, borderRadius: 8, padding: '7px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Book a Session
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ═════ NOTES ═════ */}
+        {tab === 'notes' && (
+          <>
+            <DashCard title="Coach Notes — Private">
+              <textarea
+                value={noteVal}
+                onChange={e => setNoteVal(e.target.value)}
+                style={{
+                  width: '100%', minHeight: 140, padding: '10px 12px',
+                  borderRadius: 8, background: 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${D.border}`, color: D.t2,
+                  fontSize: 11, resize: 'vertical', outline: 'none',
+                  fontFamily: 'inherit', lineHeight: 1.7, boxSizing: 'border-box',
+                  transition: 'border-color 0.15s',
+                }}
+                placeholder="Add coaching notes, observations, preferences…"
+                onFocus={e => e.target.style.borderColor = D.purpleBrd}
+                onBlur={e  => e.target.style.borderColor = D.border}
+              />
+              <button style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 8, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, color: D.purple, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <CheckCircle style={{ width: 10, height: 10 }}/> Save Notes
+              </button>
+            </DashCard>
+
+            <DashCard title="Quick Reference">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {[
+                  { label: 'Membership', value: client.membership },
+                  { label: 'Join Date',  value: client.joinDate   },
+                  { label: 'Goal',       value: client.goal       },
+                  { label: 'Classes',    value: client.tags.join(', ') },
+                  { label: 'Spend',      value: `£${client.monthlySpend}/month` },
+                ].map((r, i, arr) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < arr.length - 1 ? `1px solid ${D.divider}` : 'none' }}>
+                    <span style={{ fontSize: 10, color: D.t3 }}>{r.label}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: D.t1 }}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+            </DashCard>
+          </>
+        )}
+      </div>
+
+      {/* ── Footer Actions ── */}
+      <div style={{ padding: '12px 18px', borderTop: `1px solid ${D.divider}`, background: `${client.color}04`, display: 'flex', gap: 7, flexShrink: 0, flexWrap: 'wrap' }}>
+        <ActionBtn icon={MessageCircle} label="Message" color={D.blue}   onClick={() => openModal?.('post',          { memberId: client.id })}/>
+        <ActionBtn icon={Calendar}      label="Book"    color={D.purple} onClick={() => openModal?.('bookIntoClass', { memberId: client.id })}/>
+        <ActionBtn icon={Dumbbell}      label="Workout" color={D.green}  onClick={() => openModal?.('assignWorkout', { memberId: client.id })}/>
+        <ActionBtn icon={Phone}         label="Call"    color={D.amber}  onClick={() => {}}/>
+      </div>
+    </div>
+  );
+}
+
+// ─── Summary KPI Bar ──────────────────────────────────────────────────────────
+function SummaryBar({ clients }) {
+  const avgScore = Math.round(clients.reduce((s, c) => s + c.retentionScore, 0) / (clients.length || 1));
+  const revenue  = clients.reduce((s, c) => s + c.monthlySpend, 0);
+  const atRisk   = clients.filter(c => c.status === 'at_risk').length;
+  const active   = clients.filter(c => c.status === 'active').length;
+
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+      {[
+        { label: 'MRR',           value: `£${revenue.toLocaleString()}`, sub: 'this month',               color: D.green  },
+        { label: 'Avg Retention', value: avgScore,                        sub: retentionMeta(avgScore).label, color: retentionColor(avgScore) },
+        { label: 'Active',        value: active,                          sub: 'clients',                  color: D.blue   },
+        { label: 'Need Outreach', value: atRisk,                          sub: 'at risk',                  color: atRisk > 0 ? D.red : D.t3 },
+      ].map((s, i) => (
+        <div key={i} style={{ padding: '10px 15px', borderRadius: 11, background: D.bgSurface, border: `1px solid ${D.border}`, flex: '1 1 auto' }}>
+          <div style={{ fontSize: 8, color: D.t4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{s.label}</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: s.color, lineHeight: 1, letterSpacing: '-0.03em' }}>{s.value}</div>
+          <div style={{ fontSize: 9, color: D.t4, marginTop: 4 }}>{s.sub}</div>
         </div>
       ))}
     </div>
   );
 }
 
-/* ─── MAIN CLIENTS PAGE ──────────────────────────────────────────────────────── */
-export default function ClientsPage({
-  allMemberships, checkIns, bookings, assignedWorkouts, openModal, now,
-}) {
-  // Use real data if provided, else fall back to mock
-  const clients = useMemo(() => {
-    if (allMemberships?.length) {
-      // Wire up your real buildClientFromMembership here
-      return allMemberships.map(m => ({
-        id: m.user_id, name: m.user_name || "Client",
-        score: 65, trend: [60,61,62,63,64,65,65],
-        status: "healthy", tier: "Standard", lastVisit: "—",
-        vpw: 0, completion: 0, streak: 0, totalVisits: 0,
-        booked: false, missedLast3: false, flags: [], notes: "",
-        email: m.user_email || "—", phone: m.phone || "—",
-        insights: [], activity: [],
-      }));
+// ─── Main ClientsPage ─────────────────────────────────────────────────────────
+export default function ClientsPage({ openModal }) {
+  const [search,   setSearch]   = useState('');
+  const [filter,   setFilter]   = useState('all');
+  const [sortBy,   setSortBy]   = useState('name');
+  const [selected, setSelected] = useState(null);
+
+  const FILTERS = [
+    { id: 'all',     label: 'All',        count: CLIENTS.length },
+    { id: 'active',  label: 'Active',     count: CLIENTS.filter(c => c.status === 'active').length },
+    { id: 'at_risk', label: 'At Risk',    count: CLIENTS.filter(c => c.status === 'at_risk').length },
+    { id: 'paused',  label: 'Paused',     count: CLIENTS.filter(c => c.status === 'paused').length },
+    { id: 'elite',   label: 'Elite Only', count: CLIENTS.filter(c => c.tier === 'Elite').length },
+  ];
+
+  const visible = useMemo(() => {
+    let list = [...CLIENTS];
+    if (filter === 'active')  list = list.filter(c => c.status === 'active');
+    if (filter === 'at_risk') list = list.filter(c => c.status === 'at_risk');
+    if (filter === 'paused')  list = list.filter(c => c.status === 'paused');
+    if (filter === 'elite')   list = list.filter(c => c.tier === 'Elite');
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.goal.toLowerCase().includes(q) ||
+        c.tags.some(t => t.toLowerCase().includes(q))
+      );
     }
-    return MOCK_CLIENTS;
-  }, [allMemberships]);
-
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [search,       setSearch]       = useState("");
-  const [sortBy,       setSortBy]       = useState("priority");
-  const [selId,        setSelId]        = useState("c1");
-  const [modal,        setModal]        = useState(null);
-  const [toast,        setToast]        = useState(null);
-
-  const showToast = msg => setToast(msg);
-  const selClient = clients.find(c => c.id === selId) || null;
-
-  const counts = useMemo(() => Object.fromEntries(
-    FILTER_DEFS.map(f => [f.id, clients.filter(f.fn).length])
-  ), [clients]);
-
-  const filtered = useMemo(() => {
-    const fDef = FILTER_DEFS.find(f => f.id === activeFilter);
-    let list = fDef ? clients.filter(fDef.fn) : clients;
-    if (search) list = list.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
-    const pri = { "at-risk": 0, "needs-attention": 1, "healthy": 2 };
-    if (sortBy === "priority")   return [...list].sort((a,b) => pri[a.status]-pri[b.status]);
-    if (sortBy === "score-asc")  return [...list].sort((a,b) => a.score-b.score);
-    if (sortBy === "score-desc") return [...list].sort((a,b) => b.score-a.score);
-    if (sortBy === "name")       return [...list].sort((a,b) => a.name.localeCompare(b.name));
+    if (sortBy === 'score')     list.sort((a, b) => b.retentionScore - a.retentionScore);
+    if (sortBy === 'lastVisit') list.sort((a, b) => a.lastVisit - b.lastVisit);
+    if (sortBy === 'name')      list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [clients, activeFilter, search, sortBy]);
-
-  const groups = sortBy === "priority"
-    ? [
-        { key: "at-risk",         label: "At Risk",        color: D.red,   rows: filtered.filter(c => c.status === "at-risk") },
-        { key: "needs-attention", label: "Needs Attention", color: D.amber, rows: filtered.filter(c => c.status !== "at-risk" && c.status !== "healthy") },
-        { key: "healthy",         label: "Healthy",         color: D.green, rows: filtered.filter(c => c.status === "healthy") },
-      ].filter(g => g.rows.length)
-    : [{ key: "all", label: null, rows: filtered }];
-
-  const openMsg  = c => { if (openModal) openModal("post",          { memberId: c.id }); else setModal({ type:"msg",  client:c }); };
-  const openBook = c => { if (openModal) openModal("bookIntoClass", { memberId: c.id, memberName: c.name }); else setModal({ type:"book", client:c }); };
+  }, [filter, search, sortBy]);
 
   return (
-    <>
-      <div className="cp" style={{ display: "flex", flexDirection: "column",
-        height: "100vh", background: D.bgBase, overflow: "hidden" }}>
+    <div style={{
+      background: D.bgBase, minHeight: '100vh',
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      paddingRight: selected ? 426 : 0,
+      transition: 'padding-right 0.3s cubic-bezier(0.22,1,0.36,1)',
+    }}>
+      <div style={{ padding: '24px 28px', maxWidth: 860, margin: '0 auto' }}>
 
-        {/* ── KPI BAR ── */}
-        <KpiBar clients={clients} onFilterClick={setActiveFilter}/>
-
-        {/* ── TOP CONTROLS ── */}
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "#0a1520", flexShrink: 0, display: "flex", alignItems: "center",
-          gap: 10, flexWrap: "wrap" }}>
-
-          {/* Filter tabs */}
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-            {FILTER_DEFS.map(f => (
-              <div key={f.id}
-                className={`filter-tab${activeFilter === f.id ? " active" : ""}${f.danger ? " danger" : ""}${f.warning ? " warning" : ""}`}
-                onClick={() => setActiveFilter(f.id)}>
-                {f.label}
-                <span className="ct">{counts[f.id]}</span>
-              </div>
-            ))}
+        {/* Page Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
+          <div>
+            <h1 style={{ fontSize: 23, fontWeight: 900, color: D.t1, margin: 0, letterSpacing: '-0.035em' }}>Clients</h1>
+            <p style={{ fontSize: 11, color: D.t3, margin: '5px 0 0', fontWeight: 500 }}>
+              {CLIENTS.length} total &nbsp;·&nbsp;
+              <span style={{ color: CLIENTS.filter(c => c.status === 'at_risk').length > 0 ? D.red : D.t3 }}>
+                {CLIENTS.filter(c => c.status === 'at_risk').length} need outreach
+              </span>
+            </p>
           </div>
-
-          <div style={{ flex: 1 }}/>
-
-          {/* Search */}
-          <div style={{ position: "relative", width: 220 }}>
-            <span style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)",
-              color: D.t4, fontSize: 13, pointerEvents: "none" }}>⊙</span>
-            <input className="search-input" placeholder="Search clients…"
-              value={search} onChange={e => setSearch(e.target.value)}/>
-          </div>
-
-          {/* Sort */}
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
-            padding: "6px 10px", background: D.bgSurface,
-            border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8,
-            color: D.t2, fontFamily: "inherit", fontSize: 12, outline: "none",
-            cursor: "pointer",
-          }}>
-            <option value="priority">Sort: Priority</option>
-            <option value="score-asc">Score: Low → High</option>
-            <option value="score-desc">Score: High → Low</option>
-            <option value="name">Name A–Z</option>
-          </select>
-
-          {/* Export / new */}
-          <button style={{ padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
-            color: D.t2, cursor: "pointer", fontFamily: "inherit" }}>↓ Export</button>
-          <button style={{ padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-            background: D.blue, border: "none", color: "#fff", cursor: "pointer",
-            fontFamily: "inherit" }}>+ New Client</button>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 10, background: D.purpleDim, border: `1px solid ${D.purpleBrd}`, color: D.purple, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <UserPlus style={{ width: 14, height: 14 }}/> Add Client
+          </button>
         </div>
 
-        {/* ── BODY SPLIT ── */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <SummaryBar clients={CLIENTS}/>
 
-          {/* ── LEFT: Client list ── */}
-          <div className="cp-scroll" style={{ flex: 1, overflowY: "auto",
-            padding: "14px 20px", display: "flex", flexDirection: "column", gap: 16,
-            minWidth: 0 }}>
-
-            {groups.map(g => (
-              <div key={g.key}>
-                {g.label && (
-                  <div className="group-hdr" style={{ color: g.color }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%",
-                      background: g.color, display: "inline-block", flexShrink: 0 }}/>
-                    {g.label}
-                    <span style={{ fontSize: 9, fontWeight: 700, color: g.color,
-                      background: `${g.color}12`, border: `1px solid ${g.color}20`,
-                      borderRadius: 999, padding: "1px 7px" }}>{g.rows.length}</span>
-                  </div>
-                )}
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {g.rows.map((c, i) => (
-                    <div key={c.id} style={{ animationDelay: `${i * 0.03}s` }}>
-                      <ClientRow
-                        client={c}
-                        selected={selId === c.id}
-                        onClick={() => setSelId(selId === c.id ? null : c.id)}
-                        onMsg={openMsg}
-                        onBook={openBook}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {filtered.length === 0 && (
-              <div style={{ padding: "48px 0", textAlign: "center", color: D.t4, fontSize: 12.5 }}>
-                <div style={{ fontSize: 22, opacity: 0.15, marginBottom: 8 }}>⊡</div>
-                No clients match the current filter.
-              </div>
+        {/* Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: D.t4, pointerEvents: 'none' }}/>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name, email or goal…"
+              style={{ width: '100%', padding: '9px 34px', borderRadius: 10, background: D.bgSurface, border: `1px solid ${D.border}`, color: D.t1, fontSize: 11, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+              onFocus={e => e.target.style.borderColor = D.purpleBrd}
+              onBlur={e  => e.target.style.borderColor = D.border}
+            />
+            {search && (
+              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: D.t4, display: 'flex', padding: 0 }}>
+                <X style={{ width: 12, height: 12 }}/>
+              </button>
             )}
           </div>
-
-          {/* ── RIGHT: Detail panel ── */}
-          <ClientDetailPanel
-            client={selClient}
-            onClose={() => setSelId(null)}
-            onMsg={openMsg}
-            onBook={openBook}
-          />
+          {/* Sort tabs */}
+          <div style={{ display: 'flex', gap: 3, padding: '3px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${D.border}`, borderRadius: 9 }}>
+            {[{ id: 'name', label: 'Name' }, { id: 'score', label: 'Score' }, { id: 'lastVisit', label: 'Last Seen' }].map(s => (
+              <button key={s.id} onClick={() => setSortBy(s.id)}
+                style={{ padding: '5px 10px', borderRadius: 6, fontSize: 10, fontWeight: sortBy === s.id ? 700 : 500, background: sortBy === s.id ? D.purpleDim : 'transparent', border: `1px solid ${sortBy === s.id ? D.purpleBrd : 'transparent'}`, color: sortBy === s.id ? D.purple : D.t3, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Filter Tabs */}
+        <div style={{ display: 'flex', gap: 5, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
+          {FILTERS.map(f => {
+            const active = filter === f.id;
+            const isRisk = f.id === 'at_risk' && f.count > 0;
+            const fc = isRisk ? D.red : D.purple;
+            return (
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9,
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                  border: `1px solid ${active ? (isRisk ? D.redBrd : D.purpleBrd) : D.border}`,
+                  background: active ? (isRisk ? D.redDim : D.purpleDim) : 'transparent',
+                  color: active ? fc : D.t3, fontSize: 11, fontWeight: active ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 0.13s', fontFamily: 'inherit',
+                }}>
+                {f.label}
+                <span style={{ fontSize: 9, fontWeight: 800, background: active ? `${fc}20` : 'rgba(255,255,255,0.05)', color: active ? fc : D.t4, padding: '1px 6px', borderRadius: 99 }}>
+                  {f.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Column label */}
+        {visible.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px 6px', gap: 12 }}>
+            <div style={{ width: 40, flexShrink: 0 }}/>
+            <span style={{ flex: 1, fontSize: 9, fontWeight: 700, color: D.t4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Client</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: D.t4, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, marginRight: 28 }}>8-week trend · Score</span>
+          </div>
+        )}
+
+        {/* Client List */}
+        {visible.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '56px 24px', borderRadius: 14, background: D.bgSurface, border: `1px solid ${D.border}` }}>
+            <Search style={{ width: 26, height: 26, color: D.t4, margin: '0 auto 14px' }}/>
+            <p style={{ fontSize: 14, color: D.t2, fontWeight: 700, margin: '0 0 5px' }}>No clients found</p>
+            <p style={{ fontSize: 11, color: D.t3, margin: 0 }}>Try adjusting your search or filter</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {visible.map(c => (
+              <ClientRow
+                key={c.id} client={c}
+                isSelected={selected?.id === c.id}
+                onClick={() => setSelected(prev => prev?.id === c.id ? null : c)}
+              />
+            ))}
+            <p style={{ textAlign: 'center', fontSize: 10, color: D.t4, marginTop: 4 }}>
+              Showing {visible.length} of {CLIENTS.length} clients
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* ── MODALS ── */}
-      {modal?.type === "msg"  && <MsgModal  client={modal.client} onClose={() => setModal(null)} onSend={showToast}/>}
-      {modal?.type === "book" && <BookModal client={modal.client} onClose={() => setModal(null)} onSend={showToast}/>}
-
-      {/* ── TOAST ── */}
-      {toast && <Toast msg={toast} onDone={() => setToast(null)}/>}
-    </>
+      {/* Detail Panel */}
+      {selected && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 8999, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)' }} onClick={() => setSelected(null)}/>
+          <ClientDetailPanel client={selected} onClose={() => setSelected(null)} openModal={openModal}/>
+        </>
+      )}
+    </div>
   );
 }
