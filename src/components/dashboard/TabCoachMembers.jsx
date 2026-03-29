@@ -596,110 +596,101 @@ input[type="date"],input[type="time"]{ color-scheme:dark; }
 }
 `;
 
-/* ─── DATA ──────────────────────────────────────────────────────────────────── */
-const INIT_CLIENTS = [
-  {
-    id:1, name:"Max Hill", initials:"MH", bg:"#1c1028",
-    tags:["Regular"],
-    status:"at-risk", score:24, trend:"down",
-    lastVisit:"8d ago", lvDays:8, vpw:0.8, completion:0,
-    lastMsg:"12d ago", lastAct:"8 days ago",
-    booked:false, streak:0, total:6,
-    phone:"+44 7700 900001", email:"max.hill@example.com",
-    flags:["no-visit","declining","low-workout"],
-    notes:"Showed strong commitment in first 6 weeks. Drop-off coincides with job change.",
-    insights:[
-      {lv:"ic",title:"No visit in 8 days",body:"Longest gap in 3 months — serious lapse risk.",cta:"Book a session now"},
-      {lv:"ic",title:"Workout completion 0%",body:"Last 3 assigned workouts uncompleted.",cta:"Simplify programme"},
-      {lv:"iw",title:"No contact in 12 days",body:"Client may feel neglected without recent outreach.",cta:"Send check-in message"},
-    ],
-    timeline:[
-      {tp:"m",lb:"Missed booked session",tm:"2 days ago"},
-      {tp:"m",lb:"Missed booked session",tm:"5 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"8 days ago"},
-      {tp:"w",lb:"Workout not completed",tm:"9 days ago"},
-      {tp:"msg",lb:"Coach sent message",tm:"12 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"15 days ago"},
-    ],
-  },
-  {
-    id:2, name:"Priya Sharma", initials:"PS", bg:"#0d2018",
-    tags:["Regular","New"],
-    status:"needs-attention", score:50, trend:"flat",
-    lastVisit:"4d ago", lvDays:4, vpw:1.0, completion:40,
-    lastMsg:"5d ago", lastAct:"4 days ago",
-    booked:false, streak:1, total:8,
-    phone:"+44 7700 900002", email:"priya.sharma@example.com",
-    flags:["not-booked"],
-    notes:"Joined referral from Emma. Interested in weight management programme.",
-    insights:[
-      {lv:"iw",title:"No session booked this week",body:"No upcoming sessions in the schedule.",cta:"Suggest available slots"},
-      {lv:"iw",title:"Visit frequency below target",body:"Averaging 1.0/wk vs 2.0/wk goal.",cta:"Review schedule barriers"},
-    ],
-    timeline:[
-      {tp:"v",lb:"Gym visit",tm:"4 days ago"},
-      {tp:"w",lb:"Workout partially completed",tm:"4 days ago"},
-      {tp:"msg",lb:"Client sent message",tm:"5 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"11 days ago"},
-    ],
-  },
-  {
-    id:3, name:"Jordan Blake", initials:"JB", bg:"#10102a",
-    tags:["Regular","New"],
-    status:"needs-attention", score:61, trend:"down",
-    lastVisit:"4d ago", lvDays:4, vpw:3.8, completion:0,
-    lastMsg:"3d ago", lastAct:"3 days ago",
-    booked:true, streak:4, total:22,
-    phone:"+44 7700 900003", email:"jordan.blake@example.com",
-    flags:["low-workout"],
-    notes:"High attendance but not engaging with assigned workouts. May need in-person guidance.",
-    insights:[
-      {lv:"iw",title:"Workouts not being completed",body:"High attendance but 0% workout completion.",cta:"Check workout difficulty"},
-      {lv:"ii",title:"Attendance is above average",body:"3.8 visits/wk — capitalise with a progressive plan.",cta:"Assign new programme"},
-    ],
-    timeline:[
-      {tp:"v",lb:"Gym visit",tm:"4 days ago"},
-      {tp:"w",lb:"Workout not completed",tm:"4 days ago"},
-      {tp:"msg",lb:"Coach sent message",tm:"3 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"5 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"6 days ago"},
-    ],
-  },
-  {
-    id:4, name:"Matthew Mottershead", initials:"MM", bg:"#0a1624",
-    tags:["Regular"],
-    status:"healthy", score:83, trend:"up",
-    lastVisit:"3d ago", lvDays:3, vpw:1.3, completion:75,
-    lastMsg:"1d ago", lastAct:"1 day ago",
-    booked:true, streak:3, total:18,
-    phone:"+44 7700 900004", email:"m.mottershead@example.com",
-    flags:[],
-    notes:"Consistent and self-motivated. Approaching target weight — discuss next phase.",
-    insights:[
-      {lv:"ii",title:"Consistent engagement",body:"Steady visits and strong completion rate.",cta:"Plan next progression phase"},
-    ],
-    timeline:[
-      {tp:"msg",lb:"Client replied",tm:"1 day ago"},
-      {tp:"v",lb:"Gym visit",tm:"3 days ago"},
-      {tp:"w",lb:"Workout completed",tm:"3 days ago"},
-      {tp:"msg",lb:"Coach sent message",tm:"2 days ago"},
-      {tp:"v",lb:"Gym visit",tm:"7 days ago"},
-    ],
-  },
-];
+/* ─── DATA HELPERS ───────────────────────────────────────────────────────────── */
+import { calcRetentionScore, calcVisitsPerWeek, getLastVisit, calcWorkoutEngagement, generateClientInsights } from '@/services/coachDashboard.service';
+import { format, formatDistanceToNow } from 'date-fns';
+
+function calcNoShowRatePct(userId, bookings, now) {
+  const recent = bookings.filter(b => b.client_id === userId && (now - new Date(b.session_date)) < 30 * 864e5);
+  if (!recent.length) return 0;
+  return Math.round((recent.filter(b => b.status === 'no_show').length / recent.length) * 100);
+}
 
 const FILTERS = [
-  {id:"all",      label:"All Clients",      cls:"",   fn:()=>true},
-  {id:"at-risk",  label:"At Risk",          cls:"rt", fn:c=>c.status==="at-risk"},
-  {id:"not-booked",label:"Not Booked",      cls:"at", fn:c=>!c.booked},
-  {id:"low-eng",  label:"Low Engagement",   cls:"at", fn:c=>c.completion<50},
-  {id:"inactive", label:"Recently Inactive",cls:"",   fn:c=>c.lvDays>=5},
+  {id:"all",        label:"All Clients",       cls:"",   fn:()=>true},
+  {id:"at-risk",    label:"At Risk",           cls:"rt", fn:c=>c.status==="at-risk"},
+  {id:"not-booked", label:"Not Booked",        cls:"at", fn:c=>!c.booked},
+  {id:"low-eng",    label:"Low Engagement",    cls:"at", fn:c=>c.completion<50},
+  {id:"inactive",   label:"Recently Inactive", cls:"",   fn:c=>c.lvDays>=5},
   null,
-  {id:"new",    label:"New",    cls:"", fn:c=>c.tags.includes("New")},
-  {id:"vip",    label:"VIP",    cls:"", fn:c=>c.tags.includes("VIP")},
   {id:"active", label:"Active", cls:"", fn:c=>c.status==="healthy"},
-  {id:"lapsed", label:"Lapsed", cls:"", fn:c=>c.tags.includes("Lapsed")},
 ];
+
+function buildClientFromMembership(m, checkIns, bookings, assignedWorkouts, now) {
+  const rs         = calcRetentionScore(m.user_id, checkIns, now);
+  const lastVisit  = getLastVisit(m.user_id, checkIns);
+  const vpw        = calcVisitsPerWeek(m.user_id, checkIns, now);
+  const engagement = calcWorkoutEngagement(m.user_id, assignedWorkouts);
+  const myBookings = bookings.filter(b => b.client_id === m.user_id);
+  const upcoming   = myBookings.filter(b => b.status === 'confirmed' && new Date(b.session_date) > now);
+  const noShows7   = myBookings.filter(b => b.status === 'no_show' && (now - new Date(b.session_date)) < 7 * 864e5).length;
+  const totalVisits = checkIns.filter(c => c.user_id === m.user_id).length;
+
+  // Status
+  let status = 'healthy';
+  if (rs.daysAgo >= 7 || noShows7 >= 2) status = 'at-risk';
+  else if (rs.daysAgo >= 4 || !upcoming.length) status = 'needs-attention';
+
+  // Last visit label
+  const lvDays = rs.daysAgo >= 999 ? 9999 : rs.daysAgo;
+  const lastVisitLabel = lastVisit ? formatDistanceToNow(lastVisit, { addSuffix: true }) : 'Never';
+
+  // Flags
+  const flags = [];
+  if (lvDays >= 7) flags.push('no-visit');
+  if (rs.trend === 'down') flags.push('declining');
+  if (engagement.lowEngagement && engagement.total > 0) flags.push('low-workout');
+  if (!upcoming.length) flags.push('not-booked');
+
+  // Insights
+  const insights = generateClientInsights(m.user_id, checkIns, bookings, assignedWorkouts, now).map(ins => ({
+    lv: ins.severity === 'high' ? 'ic' : ins.severity === 'medium' ? 'iw' : 'ii',
+    title: ins.title,
+    body: ins.body,
+    cta: ins.action,
+  }));
+
+  // Timeline from check-ins + bookings
+  const timeline = [
+    ...checkIns.filter(c => c.user_id === m.user_id).slice(0, 4).map(c => ({
+      tp: 'v', lb: 'Gym visit',
+      tm: formatDistanceToNow(new Date(c.check_in_date), { addSuffix: true }),
+    })),
+    ...myBookings.filter(b => b.status === 'no_show').slice(0, 2).map(b => ({
+      tp: 'm', lb: 'Missed session',
+      tm: formatDistanceToNow(new Date(b.session_date), { addSuffix: true }),
+    })),
+  ].sort((a, b) => 0); // keep order
+
+  const colors = ['#1c1028','#0d2018','#10102a','#0a1624','#14101c','#0d1820'];
+  const colorIdx = (m.user_name || '').charCodeAt(0) % colors.length;
+
+  return {
+    id: m.user_id,
+    name: m.user_name || 'Client',
+    initials: (m.user_name || '??').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2),
+    bg: colors[colorIdx],
+    tags: ['Regular'],
+    status,
+    score: rs.score,
+    trend: rs.trend === 'up' ? 'up' : rs.trend === 'down' ? 'down' : 'flat',
+    lastVisit: lastVisitLabel,
+    lvDays,
+    vpw,
+    completion: engagement.pct,
+    lastMsg: '—',
+    lastAct: lastVisitLabel,
+    booked: upcoming.length > 0,
+    streak: 0,
+    total: totalVisits,
+    phone: m.phone || '—',
+    email: m.user_email || '—',
+    flags,
+    notes: '',
+    insights: insights.length ? insights : [{lv:'ii',title:'No issues detected',body:'Engagement looks healthy.',cta:'Keep it up'}],
+    timeline,
+  };
+}
 
 /* ─── HELPERS ───────────────────────────────────────────────────────────────── */
 const statusLabel  = s => s==="at-risk"?"At Risk":s==="needs-attention"?"Needs Attention":"Healthy";
@@ -1057,15 +1048,25 @@ function ClientRow({client,selected,onClick,onMsg,onBook}){
 }
 
 /* ─── MAIN PAGE ──────────────────────────────────────────────────────────────── */
-export default function ClientsPage(){
-  const [clients]                  = useState(INIT_CLIENTS);
-  const [activeF,setActiveF]       = useState("all");
-  const [selId,setSelId]           = useState(null);
-  const [search,setSearch]         = useState("");
-  const [sort,setSort]             = useState("priority");
-  const [viewMode,setViewMode]     = useState("list");
-  const [modal,setModal]           = useState(null);
-  const [toast,setToast]           = useState(null);
+export default function ClientsPage({
+  allMemberships = [], checkIns = [], ci30 = [], avatarMap = {}, openModal, now,
+  bookings = [], assignedWorkouts = [],
+}){
+  const safeNow = now instanceof Date ? now : new Date();
+
+  // Build enriched client objects from real data
+  const clients = useMemo(() => {
+    if (!allMemberships.length) return [];
+    return allMemberships.map(m => buildClientFromMembership(m, checkIns, bookings, assignedWorkouts, safeNow));
+  }, [allMemberships, checkIns, bookings, assignedWorkouts, safeNow]);
+
+  const [activeF,setActiveF]   = useState("all");
+  const [selId,setSelId]       = useState(null);
+  const [search,setSearch]     = useState("");
+  const [sort,setSort]         = useState("priority");
+  const [viewMode,setViewMode] = useState("list");
+  const [modal,setModal]       = useState(null);
+  const [toast,setToast]       = useState(null);
 
   const showToast  = msg => setToast(msg);
   const selClient  = clients.find(c=>c.id===selId)||null;
@@ -1099,9 +1100,9 @@ export default function ClientsPage(){
   const activeThisMonth  = clients.filter(c=>c.lvDays<=30).length;
   const notBooked        = clients.filter(c=>!c.booked).length;
 
-  const openMsg    = c => setModal({type:"msg",client:c});
-  const openBook   = c => setModal({type:"book",client:c});
-  const openAssign = c => setModal({type:"assign",client:c});
+  const openMsg    = c => { if (openModal) openModal('post', { memberId: c.id }); else setModal({type:"msg",client:c}); };
+  const openBook   = c => { if (openModal) openModal('bookIntoClass', { memberId: c.id, memberName: c.name }); else setModal({type:"book",client:c}); };
+  const openAssign = c => { if (openModal) openModal('assignWorkout', { memberId: c.id }); else setModal({type:"assign",client:c}); };
 
   return(
     <>
@@ -1153,7 +1154,7 @@ export default function ClientsPage(){
                 <span className="kpi-lbl">Avg No-Show Rate</span>
                 <div className="kpi-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" strokeWidth="1.5"><circle cx="8" cy="8" r="6"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" strokeLinecap="round"/></svg></div>
               </div>
-              <div className="kpi-val">0%</div>
+              <div className="kpi-val">{clients.length ? Math.round(clients.reduce((s,c) => s + (calcNoShowRatePct(c.id, bookings, safeNow)), 0) / clients.length) : 0}%</div>
               <div className="kpi-sub">last 30 days</div>
             </div>
           </div>

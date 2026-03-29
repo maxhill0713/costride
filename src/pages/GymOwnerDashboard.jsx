@@ -624,6 +624,20 @@ export default function GymOwnerDashboard() {
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
   const { data: polls      = [] } = useQuery({ queryKey: ['polls',      selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
 
+  // Coach-specific: bookings and assigned workouts for real client metrics
+  const { data: coachBookings = [] } = useQuery({
+    queryKey: ['coachBookings', selectedGym?.id],
+    queryFn: () => base44.entities.Booking.filter({ gym_id: selectedGym.id }, '-session_date', 300),
+    enabled: on && isCoach,
+    staleTime: 2 * 60 * 1000,
+  });
+  const { data: coachAssignedWorkouts = [] } = useQuery({
+    queryKey: ['coachAssignedWorkouts', selectedGym?.id, activeCoachRecord?.id],
+    queryFn: () => base44.entities.AssignedWorkout.filter({ coach_id: activeCoachRecord.id }, '-assigned_date', 300),
+    enabled: on && isCoach && !!activeCoachRecord?.id,
+    staleTime: 2 * 60 * 1000,
+  });
+
   const { data: stats = {} } = useQuery({
     queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
     queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then(r => r.data),
@@ -842,7 +856,7 @@ export default function GymOwnerDashboard() {
       content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach
-        ? <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} />
+        ? <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} />
         : <TabMembersComponent
             allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30}
             memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym}
@@ -860,7 +874,7 @@ export default function GymOwnerDashboard() {
           />;
     } else if (item.id === 'content') {
       content = isCoach
-        ? <TabCoachContent events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />
+        ? <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />
         : <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={id => deletePostM.mutate(id)} onDeleteEvent={id => deleteEventM.mutate(id)} onDeleteChallenge={id => deleteChallengeM.mutate(id)} onDeleteClass={id => deleteClassM.mutate(id)} onDeletePoll={id => deletePollM.mutate(id)} />;
     } else if (item.id === 'analytics') {
       content = isCoach
