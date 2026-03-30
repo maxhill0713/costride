@@ -10,13 +10,12 @@ export default defineConfig({
       pwa: {
         workbox: {
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         },
-        selfDestroying: false,
       },
     }),
   ],
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -32,11 +31,25 @@ export default defineConfig({
             if (id.includes('lodash')) return 'lodash';
             if (id.includes('three')) return 'three';
             if (id.includes('stripe')) return 'stripe';
+            if (id.includes('leaflet')) return 'leaflet';
+            if (id.includes('html2canvas') || id.includes('jspdf')) return 'pdf';
+            if (id.includes('@hello-pangea') || id.includes('dnd')) return 'dnd';
+            if (id.includes('react-quill') || id.includes('quill')) return 'quill';
             return 'vendor';
           }
-          // Split dashboard pages into their own chunk
-          if (id.includes('pages/GymOwnerDashboard') || id.includes('components/dashboard')) return 'dashboard';
-          if (id.includes('pages/Onboarding') || id.includes('pages/GymSignup') || id.includes('pages/MemberSignup')) return 'onboarding';
+          // App code chunks
+          if (id.includes('pages/GymOwnerDashboard')) return 'page-gym-dashboard';
+          if (id.includes('components/dashboard')) return 'dashboard';
+          if (id.includes('pages/Onboarding')) return 'page-onboarding';
+          if (id.includes('pages/GymSignup') || id.includes('pages/MemberSignup')) return 'page-signup';
+          if (id.includes('pages/Progress')) return 'page-progress';
+          if (id.includes('pages/Gyms')) return 'page-gyms';
+          if (id.includes('pages/GymCommunity')) return 'page-community';
+          if (id.includes('pages/Leaderboard')) return 'page-leaderboard';
+          if (id.includes('pages/Profile')) return 'page-profile';
+          if (id.includes('components/challenges')) return 'challenges';
+          if (id.includes('components/gym')) return 'gym-components';
+          if (id.includes('components/feed')) return 'feed';
         },
       },
     },

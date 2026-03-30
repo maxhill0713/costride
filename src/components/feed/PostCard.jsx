@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plu
 import { format } from 'date-fns';
 import CommentModal from './CommentModal';
 import ShareModal from './ShareModal';
+import WorkoutShareModal from './WorkoutShareModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -245,6 +246,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showWorkoutShare, setShowWorkoutShare] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
@@ -529,18 +531,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       return kept.join('\n').trim() || null;
     })();
 
-    const handleWorkoutShare = async () => {
-      const text = [
-        `💪 ${post.workout_name}`,
-        post.workout_duration ? `⏱ ${post.workout_duration}` : null,
-        exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
-        post.workout_volume ? `⚡ ${post.workout_volume}` : null,
-        userComment ? `\n"${userComment}"` : null,
-        `\n— shared from my workout app`,
-      ].filter(Boolean).join('\n');
-      if (navigator.share) { try { await navigator.share({ title: post.workout_name || 'My Workout', text }); return; } catch (e) { if (e.name === 'AbortError') return; } }
-      try { await navigator.clipboard.writeText(text); toast.success('Workout copied to clipboard!'); } catch { toast.error('Could not share'); }
-    };
+    const handleWorkoutShare = () => setShowWorkoutShare(true);
 
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
@@ -684,6 +675,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} isPending={updatePostMutation.isPending} />
         <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
+        <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />
       </>
     );
   }
