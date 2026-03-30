@@ -710,7 +710,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               {/* ── Split Name ── */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  {/* Label + info icon */}
+                  {/* Label + info icon — 10% smaller: original was size={18}, now size≈16 */}
                   <div className="flex items-center gap-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
                     <motion.button
@@ -724,7 +724,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                         display: 'flex', alignItems: 'center',
                         transition: 'color 0.15s',
                       }}>
-                      <Info size={18} />
+                      <Info size={16} />
                     </motion.button>
                   </div>
 
