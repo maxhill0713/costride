@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,6 @@ import { Card } from '@/components/ui/card';
 import { Users, UserX, Search, Shield } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
-const ITEM_HEIGHT = 72;
 
 function MemberRow({ member, isBanned, onBan, onUnban }) {
   return (
@@ -54,35 +52,7 @@ function MemberRow({ member, isBanned, onBan, onUnban }) {
   );
 }
 
-function VirtualMemberList({ members, bannedIds, onBan, onUnban, height }) {
-  const parentRef = useRef(null);
 
-  const virtualizer = useVirtualizer({
-    count: members.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => ITEM_HEIGHT,
-    overscan: 5,
-  });
-
-  return (
-    <div ref={parentRef} style={{ height, overflowY: 'auto' }}>
-      <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-        {virtualizer.getVirtualItems().map(vItem => {
-          const member = members[vItem.index];
-          const isBanned = bannedIds.includes(member.user_id);
-          return (
-            <div
-              key={vItem.key}
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vItem.start}px)`, paddingBottom: 8 }}
-            >
-              <MemberRow member={member} isBanned={isBanned} onBan={onBan} onUnban={onUnban} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export default function ManageMembersModal({ open, onClose, gym, onBanMember, onUnbanMember }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,9 +86,6 @@ export default function ManageMembersModal({ open, onClose, gym, onBanMember, on
 
   const activeMembers = filteredMembers.filter(m => !bannedMembers.includes(m.user_id));
   const banned = filteredMembers.filter(m => bannedMembers.includes(m.user_id));
-
-  // Show virtual list when more than 20 members, plain list below that
-  const useVirtual = activeMembers.length > 20;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -161,16 +128,8 @@ export default function ManageMembersModal({ open, onClose, gym, onBanMember, on
               <Card className="p-6 text-center">
                 <p className="text-gray-500 text-sm">No active members found</p>
               </Card>
-            ) : useVirtual ? (
-              <VirtualMemberList
-                members={activeMembers}
-                bannedIds={bannedMembers}
-                onBan={onBanMember}
-                onUnban={onUnbanMember}
-                height={Math.min(activeMembers.length * ITEM_HEIGHT, 320)}
-              />
             ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
+              <div className="space-y-2 max-h-72 overflow-y-auto">
                 {activeMembers.map((member) => (
                   <MemberRow key={member.user_id} member={member} isBanned={false} onBan={onBanMember} onUnban={onUnbanMember} />
                 ))}
