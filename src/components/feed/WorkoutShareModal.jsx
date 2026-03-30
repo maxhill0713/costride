@@ -148,7 +148,17 @@ function BreakdownOverlay({ post }) {
 
 // ── Main Modal ───────────────────────────────────────────────────────────────
 export default function WorkoutShareModal({ open, onClose, post }) {
+  const [slide, setSlide] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) setSlide(dx < 0 ? 1 : 0);
+    touchStartX.current = null;
+  };
 
   const handleShare = useCallback(async (platform) => {
     if (isSharing) return;
@@ -216,6 +226,40 @@ export default function WorkoutShareModal({ open, onClose, post }) {
             gap: 20,
           }}
         >
+          {/* Swipeable Image Preview */}
+          {post.image_url && (
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                width: '100%',
+                height: '200px',
+                borderRadius: 16,
+                overflow: 'hidden',
+                background: '#0d1117',
+                position: 'relative',
+              }}
+            >
+              <img src={post.image_url} alt="workout" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              
+              {/* Swipe Hint */}
+              {slide === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: 'absolute', bottom: 8, right: 12,
+                    color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600,
+                    background: 'rgba(0,0,0,0.4)', padding: '4px 8px', borderRadius: 4,
+                  }}
+                >
+                  ← Swipe
+                </motion.div>
+              )}
+            </div>
+          )}
+
           {/* Stats Section */}
           <div style={{ textAlign: 'center', paddingTop: 8 }}>
             <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>
