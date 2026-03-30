@@ -29,8 +29,8 @@ export default function PostShareModal({ open, onClose, post }) {
   if (!open || !post) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
+    <AnimatePresence mode="wait">
+      {open && <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -144,7 +144,7 @@ export default function PostShareModal({ open, onClose, post }) {
             Close
           </button>
         </motion.div>
-      </motion.div>
+      </motion.div>}
     </AnimatePresence>
   );
 }

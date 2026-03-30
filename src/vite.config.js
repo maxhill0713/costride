@@ -95,7 +95,7 @@ export default defineConfig({
   },
   pwa: {
     workbox: {
-      maximumFileSizeToCacheInBytes: 9 * 1024 * 1024, // 9 MB
+      maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
     },
   },
 });
