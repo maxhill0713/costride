@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import CommentModal from './CommentModal';
 import ShareModal from './ShareModal';
 import WorkoutShareModal from './WorkoutShareModal';
+import PostShareModal from './PostShareModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -247,6 +248,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showWorkoutShare, setShowWorkoutShare] = useState(false);
+  const [showPostShare, setShowPostShare] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
@@ -689,9 +691,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       setShowWorkoutShare(true);
       return;
     }
-    const text = [post.content || '', `\n— shared from my workout app`].filter(Boolean).join('\n');
-    if (navigator.share) { try { await navigator.share({ title: 'Post', text }); return; } catch (e) { if (e.name === 'AbortError') return; } }
-    try { await navigator.clipboard.writeText(text); toast.success('Copied to clipboard!'); } catch { toast.error('Could not share'); }
+    setShowPostShare(true);
   };
 
   const standardOwnerExtras = (
@@ -785,6 +785,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
         <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
         <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />
+        <PostShareModal open={showPostShare} onClose={() => setShowPostShare(false)} post={post} />
       </motion.div>
 
       <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} />
