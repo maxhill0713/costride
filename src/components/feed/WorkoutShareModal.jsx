@@ -148,36 +148,13 @@ function BreakdownOverlay({ post }) {
 
 // ── Main Modal ───────────────────────────────────────────────────────────────
 export default function WorkoutShareModal({ open, onClose, post }) {
-  const [slide, setSlide] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
-  const cardRef = useRef(null);
-  const touchStartX = useRef(null);
 
-  const SLIDES = 2;
-
-  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 40) setSlide(dx < 0 ? Math.min(slide + 1, SLIDES - 1) : Math.max(slide - 1, 0));
-    touchStartX.current = null;
-  };
-
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(async (platform) => {
     if (isSharing) return;
     setIsSharing(true);
 
     try {
-      // Try to capture the card as an image using html2canvas if available
-      let imageBlob = null;
-      if (cardRef.current && window.html2canvas) {
-        const canvas = await window.html2canvas(cardRef.current, {
-          useCORS: true, allowTaint: true, scale: 2,
-          backgroundColor: null,
-        });
-        imageBlob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
-      }
-
       const workoutText = [
         `💪 ${post.workout_name || 'Workout'}`,
         post.workout_duration ? `⏱ ${post.workout_duration}` : null,
@@ -185,13 +162,19 @@ export default function WorkoutShareModal({ open, onClose, post }) {
         `\nLogged on CoStride`,
       ].filter(Boolean).join('\n');
 
-      if (navigator.share) {
-        const shareData = { title: post.workout_name || 'My Workout', text: workoutText };
-        if (imageBlob) shareData.files = [new File([imageBlob], 'workout.jpg', { type: 'image/jpeg' })];
-        await navigator.share(shareData);
-      } else {
+      if (platform === 'share') {
+        if (navigator.share) {
+          await navigator.share({ title: post.workout_name || 'My Workout', text: workoutText });
+        } else {
+          await navigator.clipboard.writeText(workoutText);
+          toast.success('Copied to clipboard!');
+        }
+      } else if (platform === 'copy') {
         await navigator.clipboard.writeText(workoutText);
         toast.success('Copied to clipboard!');
+      } else if (platform === 'instagram') {
+        toast.info('Copy the text and share to Instagram');
+        await navigator.clipboard.writeText(workoutText);
       }
     } catch (e) {
       if (e.name !== 'AbortError') toast.error('Could not share');
@@ -202,9 +185,6 @@ export default function WorkoutShareModal({ open, onClose, post }) {
 
   if (!open || !post) return null;
 
-  const bgImage = post.image_url;
-  const overlayLabels = ['Stats', 'Breakdown'];
-
   return (
     <AnimatePresence>
       <motion.div
@@ -214,107 +194,181 @@ export default function WorkoutShareModal({ open, onClose, post }) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 10010,
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          padding: '20px 16px 32px',
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end',
+          padding: '0',
         }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 16 }}
+          initial={{ opacity: 0, y: 400 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 400 }}
           transition={{ duration: 0.28, ease: [0.34, 1.2, 0.64, 1] }}
           onClick={e => e.stopPropagation()}
-          style={{ width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%)',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            padding: '24px 16px 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+          }}
         >
-          {/* Close */}
-          <button onClick={onClose} style={{ alignSelf: 'flex-end', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <X size={18} />
-          </button>
-
-          {/* Share Card */}
-          <div
-            ref={cardRef}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              width: '100%',
-              aspectRatio: '4/5',
-              borderRadius: 20,
-              overflow: 'hidden',
-              position: 'relative',
-              background: '#0d1117',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
-            }}
-          >
-            {/* Background photo */}
-            {bgImage ? (
-              <img src={bgImage} alt="workout" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
-            ) : (
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)' }} />
-            )}
-
-            {/* Overlay — animated slide */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={slide}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0 }}
-              >
-                {slide === 0 ? <StatsOverlay post={post} /> : <BreakdownOverlay post={post} />}
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Swipe hint arrows */}
-            {slide < SLIDES - 1 && (
-              <button onClick={() => setSlide(s => Math.min(s + 1, SLIDES - 1))} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
-                <ChevronRight size={18} />
-              </button>
-            )}
-            {slide > 0 && (
-              <button onClick={() => setSlide(s => Math.max(s - 1, 0))} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
-                <ChevronLeft size={18} />
-              </button>
-            )}
+          {/* Stats Section */}
+          <div style={{ textAlign: 'center', paddingTop: 8 }}>
+            <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>
+              {post.workout_name || 'Workout'}
+            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+              <div>
+                <p style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{post.workout_duration || '—'}</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Duration</p>
+              </div>
+              <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.1)' }} />
+              <div>
+                <p style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{post.workout_volume || '—'}</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Volume</p>
+              </div>
+              <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.1)' }} />
+              <div>
+                <p style={{ color: '#60a5fa', fontSize: 20, fontWeight: 900 }}>
+                  {post.workout_exercises?.length || '—'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Exercises</p>
+              </div>
+            </div>
           </div>
 
-          {/* Slide dots + labels */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {overlayLabels.map((label, i) => (
-              <button key={i} onClick={() => setSlide(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
-                <div style={{ width: slide === i ? 24 : 8, height: 8, borderRadius: 4, background: slide === i ? '#3b82f6' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s ease' }} />
-                <span style={{ color: slide === i ? '#93c5fd' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</span>
-              </button>
-            ))}
+          {/* Share To Label */}
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
+            Share to
+          </p>
+
+          {/* Platform Icons */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
+            <button
+              onClick={() => handleShare('instagram')}
+              style={{
+                background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                border: 'none',
+                borderRadius: '50%',
+                width: 50,
+                height: 50,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: 24,
+              }}
+              title="Instagram"
+            >
+              📷
+            </button>
+            <button
+              onClick={() => handleShare('share')}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '50%',
+                width: 50,
+                height: 50,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: 20,
+                color: '#fff',
+              }}
+              title="More options"
+            >
+              ⋯
+            </button>
           </div>
 
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            disabled={isSharing}
-            style={{
-              width: '100%',
-              padding: '14px 0',
-              borderRadius: 16,
-              background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
-              border: 'none',
-              borderBottom: '3px solid #1e40af',
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 800,
-              cursor: isSharing ? 'wait' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              opacity: isSharing ? 0.7 : 1,
-              boxShadow: '0 4px 20px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-              transition: 'opacity 0.15s',
-            }}
-          >
-            <Share2 size={18} />
-            {isSharing ? 'Sharing…' : 'Share Workout'}
-          </button>
+          {/* Action Buttons */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+            <button
+              onClick={() => handleShare('copy')}
+              disabled={isSharing}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10,
+                padding: '8px 0',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+            >
+              Copy link
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10,
+                padding: '8px 0',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+            >
+              Save
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10,
+                padding: '8px 0',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+            >
+              View link
+            </button>
+            <button
+              onClick={() => handleShare('share')}
+              disabled={isSharing}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10,
+                padding: '8px 0',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+            >
+              Share
+            </button>
+          </div>
+
+          {/* Close hint */}
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center', marginTop: 8 }}>
+            Tap outside to close
+          </p>
         </motion.div>
       </motion.div>
     </AnimatePresence>

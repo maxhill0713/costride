@@ -7,6 +7,15 @@ export default defineConfig({
   plugins: [
     react(),
     base44Plugin(),
+    // Strip "use client" directives that cause bundling errors
+    {
+      name: 'strip-use-client',
+      transform(code) {
+        if (code.includes("'use client'") || code.includes('"use client"')) {
+          return code.replace(/^\s*['"]use client['"];?\s*\n?/m, '');
+        }
+      },
+    },
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -18,8 +27,9 @@ export default defineConfig({
             if (id.includes('@tanstack/react-query')) return 'query';
             if (id.includes('@radix-ui')) return 'radix';
             if (id.includes('react-dom')) return 'react-dom';
-            if (id.includes('react-router-dom') || id.includes('react-router')) return 'router';
-            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('recharts')) return 'charts';
+            if (id.includes('d3-')) return 'charts';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('date-fns')) return 'date-fns';
             if (id.includes('lodash')) return 'lodash';
@@ -27,11 +37,13 @@ export default defineConfig({
             if (id.includes('leaflet')) return 'leaflet';
             if (id.includes('html2canvas') || id.includes('jspdf')) return 'pdf';
             if (id.includes('@hello-pangea') || id.includes('dnd')) return 'dnd';
-            if (id.includes('react-quill') || id.includes('quill')) return 'quill';
+            if (id.includes('react-quill')) return 'quill';
+            if (id.includes('sonner')) return 'toast';
+            if (id.includes('vaul')) return 'drawer';
             return 'vendor';
           }
+          // Page-level splits
           if (id.includes('pages/GymOwnerDashboard')) return 'page-gym-dashboard';
-          if (id.includes('components/dashboard')) return 'dashboard';
           if (id.includes('pages/Onboarding')) return 'page-onboarding';
           if (id.includes('pages/GymSignup') || id.includes('pages/MemberSignup')) return 'page-signup';
           if (id.includes('pages/Progress')) return 'page-progress';
@@ -39,12 +51,19 @@ export default defineConfig({
           if (id.includes('pages/GymCommunity')) return 'page-community';
           if (id.includes('pages/Leaderboard')) return 'page-leaderboard';
           if (id.includes('pages/Profile')) return 'page-profile';
+          if (id.includes('pages/Home')) return 'page-home';
+          
+          // Component-level splits
+          if (id.includes('components/dashboard')) return 'dashboard';
           if (id.includes('components/challenges')) return 'challenges';
           if (id.includes('components/gym')) return 'gym-components';
           if (id.includes('components/feed')) return 'feed';
           if (id.includes('components/profile')) return 'profile-components';
           if (id.includes('components/home')) return 'home-components';
           if (id.includes('components/settings')) return 'settings-components';
+          if (id.includes('components/coach')) return 'coach-components';
+          if (id.includes('components/leaderboard')) return 'leaderboard-components';
+          if (id.includes('components/events')) return 'events-components';
         },
       },
     },
