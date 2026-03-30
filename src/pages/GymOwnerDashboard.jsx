@@ -557,7 +557,11 @@ export default function GymOwnerDashboard() {
   } = stats;
 
   const ci30 = [];
-  const avatarMapFull = useMemo(() => avatarMap, [stats]);
+  // Use the resolved avatar map (fetched from User entity) as the primary source
+  // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
+  const avatarMapFull = useMemo(() => {
+    return { ...avatarMap, ...memberAvatarMapResolved };
+  }, [avatarMap, memberAvatarMapResolved]);
 
   const activeCoachRecord = useMemo(() => {
     if (!isCoach) return null;

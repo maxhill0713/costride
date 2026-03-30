@@ -411,11 +411,21 @@ Deno.serve(async (req) => {
       action: 'checked in', time: c.check_in_date, color: '#10b981',
     }));
 
-    // Avatar map — built from membership data only, no User.list() needed
+    // Avatar map — fetch real profile pictures from User entity
     const avatarMap = {};
     allMemberships.forEach(m => {
       if (m.user_id && m.avatar_url) avatarMap[m.user_id] = m.avatar_url;
     });
+    // Enrich with real User records (profile pictures uploaded by users)
+    try {
+      const userIds = allMemberships.map(m => m.user_id).filter(Boolean).slice(0, 100);
+      if (userIds.length > 0) {
+        const userRecords = await base44.asServiceRole.entities.User.filter({ id: { $in: userIds } });
+        userRecords.forEach(u => {
+          if (u.id && u.avatar_url) avatarMap[u.id] = u.avatar_url;
+        });
+      }
+    } catch (_) { /* non-critical — fall back to membership avatars */ }
 
     // Lightweight recent check-ins for UI (last 50, no internal id)
     const recentCheckIns = checkIns.slice(0, 50).map(c => ({
