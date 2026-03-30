@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { format, differenceInDays } from "date-fns";
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
