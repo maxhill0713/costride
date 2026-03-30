@@ -251,10 +251,10 @@ function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
 function FrequencyInsight({ m }) {
   const prev  = m.prevVisits30 || 0;
   const curr  = m.visits30;
-  const hasComparison = prev > 0;
+  const hasComparison = prev >= 3; // only compare if prev month had meaningful data
   const pct   = hasComparison ? Math.round(((curr - prev) / prev) * 100) : 0;
   const dropped = hasComparison && pct <= -30;
-  const surged  = hasComparison && pct >= 30;
+  const surged  = hasComparison && pct >= 30 && pct <= 300; // cap to avoid absurd %
 
   const valueColor = m.daysSince === 0 ? C.success : m.daysSince >= 14 ? C.danger : C.t1;
 
