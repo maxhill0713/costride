@@ -311,7 +311,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
               📷
             </button>
             <button
-              onClick={() => handleShare('share')}
+              onClick={() => handleShare('copy')}
               style={{
                 background: 'rgba(255,255,255,0.1)',
                 border: '1px solid rgba(255,255,255,0.2)',
@@ -325,7 +325,8 @@ export default function WorkoutShareModal({ open, onClose, post }) {
                 fontSize: 20,
                 color: '#fff',
               }}
-              title="More options"
+              title="Copy to clipboard"
+              disabled={isSharing}
             >
               ⋯
             </button>
