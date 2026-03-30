@@ -167,12 +167,8 @@ export default function WorkoutShareModal({ open, onClose, post }) {
         toast.success('Link copied!');
         onClose();
       } else if (platform === 'instagram') {
-        if (navigator.share) {
-          await navigator.share({ title: post.workout_name || 'My Workout', text: workoutText });
-        } else {
-          await navigator.clipboard.writeText(workoutText);
-          toast.info('Copy the text and share to Instagram');
-        }
+        await navigator.clipboard.writeText(workoutText);
+        toast.success('Copied to clipboard!');
         onClose();
       }
     } catch (e) {
