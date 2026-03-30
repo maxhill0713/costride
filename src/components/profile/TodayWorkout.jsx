@@ -864,28 +864,28 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 {group.name}
                               </div>
                               {/* Set label pill */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '44px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-5" style={{ width: '44px' }}>
                                 {setLabel}
                               </div>
                               {/* Reps */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-4" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               {/* Weight + progress + edit */}
                               <div className="flex items-center gap-1 ml-1 flex-1">
-                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-1">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                                 {!alreadyLoggedToday &&
-                                  <motion.button
-                                    onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                                    whileTap={{ scale: 0.78, y: 1 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
+                            <motion.button
+                              onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                              whileTap={{ scale: 0.78, y: 1 }}
+                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                              className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </motion.button>
-                                }
+                            }
                               </div>
                             </div>);
 
@@ -1085,6 +1085,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
+
+
+
+
+                        
+
+
+
+
+                        
 
 
 
