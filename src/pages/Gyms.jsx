@@ -335,7 +335,7 @@ return (
         <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
           <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
             {gym.image_url
-              ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               : <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-10 h-10 text-slate-600" /></div>
             }
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
@@ -430,7 +430,7 @@ return (
                         />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                           {gym.image_url
-                            ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                             : <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-12 h-12 text-slate-600" /></div>
                           }}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -554,7 +554,7 @@ return (
                       <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
                         <div className="flex items-stretch gap-0">
                           <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
-                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
+                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> :<div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
                           </div>
                           <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
                             <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
@@ -591,7 +591,7 @@ return (
                         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                          {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                          {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                             <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
@@ -714,7 +714,7 @@ return (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {galleryGym.gallery.map((imageUrl, idx) =>
                   <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50">
-                    <img src={imageUrl} alt={`${galleryGym.name} photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
+                    <img src={imageUrl} alt={`${galleryGym.name} photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" />
                   </div>
                 )}
               </div> :

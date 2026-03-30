@@ -98,8 +98,8 @@ export default function Friends() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date', 20),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 20),
+    enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -646,7 +646,7 @@ export default function Friends() {
                     className="p-3 rounded-xl flex items-center gap-3 relative bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600/40 to-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-blue-500/30">
                       {pending.avatar_url
-                        ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" />
+                        ? <img src={pending.avatar_url} alt={pending.full_name} className="w-full h-full object-cover" loading="lazy" />
                         : <span className="text-xs font-bold text-blue-300">{pending.full_name?.charAt(0)?.toUpperCase()}</span>
                       }
                     </div>
@@ -719,7 +719,7 @@ export default function Friends() {
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-blue-500/40">
                             {avatarUrl ? (
-                              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <span className="text-sm font-bold text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
                             )}
@@ -788,7 +788,7 @@ export default function Friends() {
                               {(() => {
                                 const fu = allUsers.find((u) => u.id === friend.friend_id);
                                 return fu?.avatar_url ? (
-                                  <img src={fu.avatar_url} alt={currentName} className="w-full h-full object-cover" />
+                                  <img src={fu.avatar_url} alt={currentName} className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                   <span className="text-xs font-semibold text-white">
                                     {currentName?.charAt(0)?.toUpperCase()}
@@ -862,7 +862,7 @@ export default function Friends() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" />
+                              <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" loading="lazy" />
                             ) : (
                               <span className="text-sm font-semibold text-white">
                                 {user.full_name?.charAt(0)?.toUpperCase()}

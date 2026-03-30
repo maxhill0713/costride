@@ -44,7 +44,7 @@ function LeaderboardCard({ rank, member, lift }) {
       <div className="relative">
         <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center overflow-hidden shadow-md">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" loading="lazy" />
           ) : (
             <span className="text-xl font-bold text-white">
               {name?.charAt(0)?.toUpperCase()}

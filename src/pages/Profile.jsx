@@ -426,7 +426,7 @@ export default function Profile() {
                   onClick={() => setSelectedGridPost(post)}>
                   {post.video_url
                     ? <video src={post.video_url} className="w-full h-full object-cover" />
-                    : <img src={post.image_url} alt="" className="w-full h-full object-cover" />}
+                    : <img src={post.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />}
                   {post.is_favourite && (
                     <div className="absolute top-1.5 right-1.5">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow" />

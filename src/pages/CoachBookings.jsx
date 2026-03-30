@@ -26,7 +26,7 @@ export default function CoachBookings() {
     queryKey: ['coachBookings', coach?.[0]?.id],
     queryFn: () => base44.entities.GymClass.filter({ instructor: coach?.[0]?.name }),
     enabled: !!coach?.[0]?.name,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Update booking status

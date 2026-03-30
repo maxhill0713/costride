@@ -848,7 +848,7 @@ export default function Home() {
                         {displayedUsers.map((user) => (
                           <div key={user.id} className="relative group">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
+                              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" loading="lazy" />
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
                                 {user.full_name?.[0] || 'U'}
@@ -920,7 +920,7 @@ export default function Home() {
                           {checkInUsers.slice(0, 2).map((user) => (
                             <div key={user.id} className="relative">
                               {user.avatar_url ? (
-                                <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
+                                <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
                                   {user.full_name?.[0] || 'U'}

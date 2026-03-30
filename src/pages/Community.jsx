@@ -366,7 +366,7 @@ export default function Community() {
   const [lbOpen,     setLbOpen]     = useState(false)
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 })
-  const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }), enabled: !!currentUser, staleTime: 5 * 60 * 1000 })
+  const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }), enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000 })
   const gymId = gymMemberships[0]?.gym_id
 
   const { data: workoutLogs = [], isLoading } = useQuery({
