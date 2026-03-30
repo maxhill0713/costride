@@ -308,7 +308,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           updatedWorkoutTypes[dayKey] = {
             ...workout,
             exercises: workout.exercises.map((ex, i) =>
-              i === index ? { ...ex, weight, setsReps, sets: '1', reps } : ex
+            i === index ? { ...ex, weight, setsReps, sets: '1', reps } : ex
             )
           };
         }
@@ -534,9 +534,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   // Normal cols: 1fr | 44px | 12px | 44px | auto [| auto]
   // For grouped rows we skip the "1fr" name col (name is above) and the "×" divider.
   // Layout: set-label(~72px) | gap(12px) | reps(44px) | weight(auto) [| edit]
-  const groupedRowCols = alreadyLoggedToday
-    ? '72px 12px 44px 1fr'
-    : '72px 12px 44px 1fr auto';
+  const groupedRowCols = alreadyLoggedToday ?
+  '72px 12px 44px 1fr' :
+  '72px 12px 44px 1fr auto';
 
   return (
     <>
@@ -684,21 +684,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                   {/* ── Render exercise groups ── */}
                   {buildExerciseGroups(todayWorkout.exercises).map((group) => {
-                    const isGrouped = group.items.length > 1;
+                const isGrouped = group.items.length > 1;
 
-                    // ── NORMAL (single) exercise card ──────────────────────
-                    if (!isGrouped) {
-                      const { exercise, index } = group.items[0];
-                      const isEditing = editingIndex === index;
-                      return (
-                        <motion.div
-                          key={group.key}
-                          initial={false}
-                          animate={{}}
-                          className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
-                          style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
-                          {isEditing ? (
-                            <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                // ── NORMAL (single) exercise card ──────────────────────
+                if (!isGrouped) {
+                  const { exercise, index } = group.items[0];
+                  const isEditing = editingIndex === index;
+                  return (
+                    <motion.div
+                      key={group.key}
+                      initial={false}
+                      animate={{}}
+                      className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
+                      style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
+                          {isEditing ?
+                      <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                   <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors" />
@@ -706,8 +706,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 </div>
                               </div>
 
-                              {isDefaultSplit() ? (
-                                <div className="space-y-2.5">
+                              {isDefaultSplit() ?
+                        <div className="space-y-2.5">
                                   <div className="flex gap-2">
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">SETS</label>
@@ -719,12 +719,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                     </div>
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">WEIGHT</label>
-                                      <Input type="text" inputMode="decimal" placeholder="kg" maxLength={6} value={editWeight} onChange={(e) => { const v = e.target.value.replace(/[^\d.]/g, ''); const parts = v.split('.'); const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v; setEditWeight(sanitised.slice(0, 6)); }} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                      <Input type="text" inputMode="decimal" placeholder="kg" maxLength={6} value={editWeight} onChange={(e) => {const v = e.target.value.replace(/[^\d.]/g, '');const parts = v.split('.');const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;setEditWeight(sanitised.slice(0, 6));}} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                     </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className="space-y-2.5">
+                                </div> :
+
+                        <div className="space-y-2.5">
                                   <div className="flex gap-2">
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
@@ -736,11 +736,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                     </div>
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
-                                      <Input type="text" inputMode="decimal" placeholder="kg" maxLength={6} value={editWeight} onChange={(e) => { const v = e.target.value.replace(/[^\d.]/g, ''); const parts = v.split('.'); const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v; setEditWeight(sanitised.slice(0, 6)); }} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                      <Input type="text" inputMode="decimal" placeholder="kg" maxLength={6} value={editWeight} onChange={(e) => {const v = e.target.value.replace(/[^\d.]/g, '');const parts = v.split('.');const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;setEditWeight(sanitised.slice(0, 6));}} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                     </div>
                                   </div>
                                 </div>
-                              )}
+                        }
 
                               <div className="flex gap-1 mt-3">
                                 <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
@@ -750,9 +750,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <X className="w-3 h-3" />
                                 </Button>
                               </div>
-                            </div>
-                          ) : (
-                            <>
+                            </div> :
+
+                      <>
                               <div className="">
                                 <div className="text-sm font-bold text-white leading-tight ml-1">{exercise.exercise || '-'}</div>
                               </div>
@@ -771,33 +771,33 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                                 </div>
                                 {!alreadyLoggedToday &&
-                                  <motion.button
-                                    onClick={() => handleEdit(index, exercise)}
-                                    whileTap={{ scale: 0.78, y: 1 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+                          <motion.button
+                            onClick={() => handleEdit(index, exercise)}
+                            whileTap={{ scale: 0.78, y: 1 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                            className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </motion.button>
-                                }
+                          }
                               </div>
                             </>
-                          )}
-                        </motion.div>
-                      );
-                    }
+                      }
+                        </motion.div>);
 
-                    // ── GROUPED (multi-set) card ───────────────────────────
-                    // Sort heaviest weight first → Set 1
-                    const sorted = [...group.items].sort(
-                      (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
-                    );
+                }
 
-                    return (
-                      <motion.div
-                        key={group.key}
-                        initial={false}
-                        animate={{}}
-                        className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
+                // ── GROUPED (multi-set) card ───────────────────────────
+                // Sort heaviest weight first → Set 1
+                const sorted = [...group.items].sort(
+                  (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
+                );
+
+                return (
+                  <motion.div
+                    key={group.key}
+                    initial={false}
+                    animate={{}}
+                    className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
                         {/* Exercise name spanning full width */}
                         <div className="text-sm font-bold text-white leading-tight ml-1 mb-2 pr-2">
@@ -806,12 +806,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                         {/* ── Grouped rows — NO column headers ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
-                          const setLabel = `Set ${setIdx + 1}`;
-                          const isEditingThis = editingGroupedSet?.index === index;
+                      const setLabel = `Set ${setIdx + 1}`;
+                      const isEditingThis = editingGroupedSet?.index === index;
 
-                          if (isEditingThis) {
-                            return (
-                              <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      if (isEditingThis) {
+                        return (
+                          <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 {/* Set label replaces the "Sets" field */}
                                 <div className="inline-flex items-center justify-center px-3 py-1 mb-3 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
                                   {setLabel}
@@ -820,91 +820,91 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <div className="flex-1">
                                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
                                     <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="10"
-                                      maxLength={3}
-                                      value={editReps}
-                                      onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                      style={{ fontSize: '16px' }}
-                                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                    />
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="10"
+                                  maxLength={3}
+                                  value={editReps}
+                                  onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                  style={{ fontSize: '16px' }}
+                                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                
                                   </div>
                                   <div className="flex-1">
                                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
                                     <Input
-                                      type="text"
-                                      inputMode="decimal"
-                                      placeholder="kg"
-                                      maxLength={6}
-                                      value={editWeight}
-                                      onChange={(e) => {
-                                        const v = e.target.value.replace(/[^\d.]/g, '');
-                                        const parts = v.split('.');
-                                        const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
-                                        setEditWeight(sanitised.slice(0, 6));
-                                      }}
-                                      style={{ fontSize: '16px' }}
-                                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full"
-                                    />
+                                  type="text"
+                                  inputMode="decimal"
+                                  placeholder="kg"
+                                  maxLength={6}
+                                  value={editWeight}
+                                  onChange={(e) => {
+                                    const v = e.target.value.replace(/[^\d.]/g, '');
+                                    const parts = v.split('.');
+                                    const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
+                                    setEditWeight(sanitised.slice(0, 6));
+                                  }}
+                                  style={{ fontSize: '16px' }}
+                                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                                
                                   </div>
                                 </div>
                                 <div className="flex gap-1 mt-3">
                                   <Button
-                                    onClick={handleSaveGroupedSet}
-                                    size="sm"
-                                    className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                onClick={handleSaveGroupedSet}
+                                size="sm"
+                                className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                                     <Check className="w-3 h-3" />
                                   </Button>
                                   <Button
-                                    onClick={() => setEditingGroupedSet(null)}
-                                    size="sm"
-                                    variant="ghost"
-                                    className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                onClick={() => setEditingGroupedSet(null)}
+                                size="sm"
+                                variant="ghost"
+                                className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                                     <X className="w-3 h-3" />
                                   </Button>
                                 </div>
-                              </div>
-                            );
-                          }
+                              </div>);
 
-                          return (
-                            <div
-                              key={index}
-                              className="grid gap-1 items-center mb-1.5 pr-2"
-                              style={{ gridTemplateColumns: groupedRowCols }}>
+                      }
+
+                      return (
+                        <div
+                          key={index}
+                          className="grid gap-1 items-center mb-1.5 pr-2"
+                          style={{ gridTemplateColumns: groupedRowCols }}>
                               {/* Set label pill — left column */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ minWidth: '60px', maxWidth: '72px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center ml-20" style={{ minWidth: '60px', maxWidth: '72px' }}>
                                 {setLabel}
                               </div>
                               {/* Spacer — aligns with the "×" column */}
                               <div />
                               {/* Reps — aligns with normal reps column */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '44px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-16" style={{ width: '44px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               {/* Weight + progress + edit — aligns with normal weight column */}
                               <div className="flex items-center gap-2 ml-1">
-                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-16">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                                {!alreadyLoggedToday && (
-                                  <motion.button
-                                    onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                                    whileTap={{ scale: 0.78, y: 1 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
+                                {!alreadyLoggedToday &&
+                            <motion.button
+                              onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                              whileTap={{ scale: 0.78, y: 1 }}
+                              transition={{ type: 'spring', stiffness: 500, damping: 22 }} className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ">
+                              
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </motion.button>
-                                )}
+                            }
                               </div>
-                            </div>
-                          );
-                        })}
-                      </motion.div>
-                    );
-                  })}
+                            </div>);
+
+                    })}
+                      </motion.div>);
+
+              })}
 
                   {/* ── Cardio Rows ─────────────────────────────────────────── */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
@@ -1097,6 +1097,26 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
+
+
+
+
+                        
+
+
+
+
+                        
+
+
+
+
+                        
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
