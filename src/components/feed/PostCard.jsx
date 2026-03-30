@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2, Flag, ChevronRight, Check } from 'lucide-react';
 import { format } from 'date-fns';
@@ -782,10 +783,15 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           )}
         </div>
 
-        <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
-        <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
-        <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />
-        <PostShareModal open={showPostShare} onClose={() => setShowPostShare(false)} post={post} />
+        {typeof document !== 'undefined' && ReactDOM.createPortal(
+          <>
+            <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
+            <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
+            <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />
+            <PostShareModal open={showPostShare} onClose={() => setShowPostShare(false)} post={post} />
+          </>,
+          document.body
+        )}
       </motion.div>
 
       <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} />
