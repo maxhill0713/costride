@@ -481,7 +481,7 @@ export default function TabEngagement({ selectedGym, allMemberships, atRisk, tot
           { label:'Total members',   value: totalMembers || 0,  sub:'enrolled'            },
           { label:'At-risk members', value: atRisk || 0,        sub:'need attention',  risk:true },
           { label:'Active rules',    value: enabledCount,       sub:'running now'         },
-          { label:'Avg. open rate',  value:'68%',               sub:'push notifications'  },
+          { label:'Paused rules',    value: pausedRules.length, sub:'ready to enable'     },
         ].map((s,i) => (
           <Card key={i} style={{ padding:'16px 18px' }}>
             <div style={{ fontSize:26, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, marginBottom:5,
