@@ -12,9 +12,9 @@ const fmtTime = (raw) => {
 function parseEx(ex) {
   const setsRepsStr = String(ex.setsReps || ex.sets_reps || '');
   const srParts = /[xX×]/.test(setsRepsStr) ? setsRepsStr.split(/[xX×]/).map(s => s.trim()) : [];
-  const sets = String(ex.sets ?? srParts[0] ?? '') || '-';
-  const reps = String(ex.reps ?? srParts[1] ?? '') || '-';
-  const weight = String(ex.weight ?? '') || '-';
+  const sets = String(ex.sets || srParts[0] || '') || '-';
+  const reps = String(ex.reps || srParts[1] || '') || '-';
+  const weight = String(ex.weight || '') || '-';
   return { sets, reps, weight };
 }
 
@@ -157,27 +157,23 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
                     );
                   }
 
-                  // ── Grouped (multi-set) card — same as TodayWorkout ──
+                  // ── Grouped (multi-set) card ──
                   const sorted = [...group.items].sort((a, b) => (parseFloat(b.ex.weight) || 0) - (parseFloat(a.ex.weight) || 0));
                   return (
                     <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10">
+                      <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
                       {sorted.map(({ ex, index }, setIdx) => {
                         const { reps, weight } = parseEx(ex);
                         return (
-                          <div key={index} className="flex items-center gap-1 mb-1 pr-2">
-                            <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
-                              {group.name}
-                            </div>
-                            <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-5" style={{ width: '44px' }}>
+                          <div key={index} className="flex items-center gap-2 mb-1 pr-2 ml-1">
+                            <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '44px' }}>
                               Set {setIdx + 1}
                             </div>
-                            <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-4" style={{ width: '36px' }}>
+                            <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
                               {reps}
                             </div>
-                            <div className="flex items-center gap-1 ml-1 flex-1">
-                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-1">
-                                {weight}<span className="text-[10px] font-bold">kg</span>
-                              </div>
+                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                              {weight}<span className="text-[10px] font-bold">kg</span>
                             </div>
                           </div>
                         );

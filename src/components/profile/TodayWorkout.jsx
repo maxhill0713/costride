@@ -806,7 +806,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{}}
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {/* ── Grouped rows — exercise name inline with first set row ── */}
+                        {/* ── Exercise name header (always shown when logged, hidden per-row otherwise) ── */}
+                        {alreadyLoggedToday && (
+                          <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
+                        )}
+                        {/* ── Grouped rows ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
                       const isEditingThis = editingGroupedSet?.index === index;
@@ -873,22 +877,24 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       return (
                         <div
                           key={index}
-                          className="flex items-center gap-1 mb-1 pr-2">
-                              {/* Exercise name — only shown on first row, invisible placeholder on others */}
-                              <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
-                                {group.name}
-                              </div>
+                          className={`flex items-center gap-2 mb-1 pr-2 ${alreadyLoggedToday ? 'ml-1' : ''}`}>
+                              {/* Exercise name — only shown on first row, invisible placeholder on others (only when edit button present) */}
+                              {!alreadyLoggedToday && (
+                                <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
+                                  {group.name}
+                                </div>
+                              )}
                               {/* Set label pill */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-5" style={{ width: '44px' }}>
+                              <div className={`bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ${!alreadyLoggedToday ? 'ml-5' : ''}`} style={{ width: '44px' }}>
                                 {setLabel}
                               </div>
                               {/* Reps */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-4" style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               {/* Weight + progress + edit */}
-                              <div className="flex items-center gap-1 ml-1 flex-1">
-                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-1">
+                              <div className="flex items-center gap-1 flex-1">
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
