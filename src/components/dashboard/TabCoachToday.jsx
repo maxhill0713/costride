@@ -413,9 +413,7 @@ export default function TodayDashboard({ allMemberships = [], checkIns = [], myC
 
       {/* ── HEADER ── */}
       <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: "-.03em" }}>
-          Today's Overview
-        </div>
+
         {liveSession && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px",
             background: C.greenDim, border: `1px solid rgba(33,163,111,0.22)`,
