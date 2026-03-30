@@ -18,6 +18,12 @@ const proFeatures = [
   { icon: TrendingUp, title: 'Growth Insights' }
 ];
 
+// Stripe price IDs — update here if plans change
+const STRIPE_PRICE_IDS = {
+  yearly:  'price_1SsCqKBzxbKKg1zZ5INp9GWN',
+  monthly: 'price_1SsCKCBzxbKKg1zZmWxN4zTI',
+};
+
 const basicFeatures = [
   'Member check-in tracking',
   'Basic attendance reports',
@@ -57,9 +63,7 @@ export default function Plus() {
   const handleSubscribeDirectPayment = async () => {
     setIsLoading(true);
     try {
-      const priceId = billingCycle === 'yearly' 
-        ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN'
-        : 'price_1SsCKCBzxbKKg1zZmWxN4zTI';
+      const priceId = STRIPE_PRICE_IDS[billingCycle];
 
       const response = await base44.functions.invoke('createDirectPayment', {
         priceId,
@@ -74,7 +78,6 @@ export default function Plus() {
         toast.error('Failed to create payment');
       }
     } catch (error) {
-      console.error('Payment error:', error);
       toast.error('Failed to start payment');
     } finally {
       setIsLoading(false);
@@ -92,9 +95,7 @@ export default function Plus() {
 
     setIsLoading(true);
     try {
-      const priceId = billingCycle === 'yearly' 
-        ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN'
-        : 'price_1SsCKCBzxbKKg1zZmWxN4zTI';
+      const priceId = STRIPE_PRICE_IDS[billingCycle];
 
       const response = await base44.functions.invoke('createSubscriptionCheckout', {
         priceId,
@@ -107,7 +108,6 @@ export default function Plus() {
         toast.error('Failed to create checkout session');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
       toast.error('Failed to start checkout');
     } finally {
       setIsLoading(false);

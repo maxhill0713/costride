@@ -40,8 +40,7 @@ export default function Premium() {
         window.location.href = data.url;
       }
     },
-    onError: (error) => {
-      console.error('Checkout error:', error);
+    onError: () => {
       toast.error('Failed to start checkout. Please try again.');
     }
   });

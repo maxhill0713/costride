@@ -14,8 +14,7 @@ export const gymService = {
     const coachRecords = await base44.entities.Coach.filter({ user_email: coachEmail });
     if (!coachRecords.length) return [];
     const gymIds = [...new Set(coachRecords.map(c => c.gym_id))];
-    const results = await Promise.allSettled(gymIds.map(id => base44.entities.Gym.filter({ id })));
-    return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    return base44.entities.Gym.filter({ id: { $in: gymIds } });
   },
 
   update: (gymId, data) => base44.entities.Gym.update(gymId, data),

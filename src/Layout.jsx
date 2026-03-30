@@ -13,8 +13,8 @@ import { TimerProvider, useTimer } from './components/TimerContext';
 // ── Inner layout that can access TimerContext ─────────────────────────────────
 function LayoutInner({ children, currentPageName, currentUser, notifications, gymMemberships, isDashboardUser, hideNavigation }) {
   const location = useLocation();
-  const [tabHistory, setTabHistory] = useState({});
-  const [lastTabPage, setLastTabPage] = useState({});
+  const tabHistoryRef = React.useRef({});
+  const lastTabPageRef = React.useRef({});
   const { restTimer, isTimerActive, initialRestTime, setIsTimerActive, setRestTimer } = useTimer();
 
   const unreadCount = notifications.length;
@@ -34,12 +34,12 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   useEffect(() => {
     const currentTab = navItems.find((item) => item.page === currentPageName);
     if (currentTab) {
-      setTabHistory((prev) => ({ ...prev, [currentTab.page]: location.pathname + location.search }));
-      setLastTabPage((prev) => ({ ...prev, [currentTab.page]: currentPageName }));
+      tabHistoryRef.current[currentTab.page] = location.pathname + location.search;
+      lastTabPageRef.current[currentTab.page] = currentPageName;
     }
   }, [currentPageName, location]);
 
-  const getTabLink = (item) => tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
+  const getTabLink = (item) => tabHistoryRef.current[item.page] || createPageUrl(item.page) + (item.params || '');
 
   const handleTabClick = (item, e) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

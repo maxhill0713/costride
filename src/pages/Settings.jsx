@@ -202,8 +202,7 @@ export default function Settings() {
     try {
       await base44.functions.invoke('deleteUserAccount');
       base44.auth.logout();
-    } catch (error) {
-      console.error('Failed to delete account:', error);
+    } catch {
       setDeletePending(false);
     }
   };

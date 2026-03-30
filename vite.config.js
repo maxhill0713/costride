@@ -18,12 +18,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react':  ['react', 'react-dom', 'react-router-dom'],
-          'vendor-query':  ['@tanstack/react-query'],
-          'vendor-ui':     ['framer-motion', 'lucide-react', 'date-fns'],
-          'vendor-charts': ['recharts'],
-          'vendor-3d':     ['three'],
-          'vendor-forms':  ['react-hook-form', 'zod', '@hookform/resolvers'],
+          'vendor-react':   ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query':   ['@tanstack/react-query'],
+          'vendor-ui':      ['framer-motion', 'lucide-react', 'date-fns'],
+          'vendor-charts':  ['recharts'],
+          'vendor-forms':   ['react-hook-form', 'zod', '@hookform/resolvers'],
+          'vendor-pdf':     ['html2canvas', 'jspdf'],
+          'vendor-map':     ['react-leaflet'],
+          'vendor-stripe':  ['@stripe/react-stripe-js', '@stripe/stripe-js'],
+          'vendor-dnd':     ['@hello-pangea/dnd'],
+          'vendor-editor':  ['react-quill'],
         },
       },
     },
