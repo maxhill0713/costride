@@ -291,7 +291,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 20),
-    enabled: !!currentUser && isOwnProfile,
+    enabled: !!currentUser?.id && isOwnProfile,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -384,8 +384,8 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       setLocalReacted(isReacting);
       setLocalReactions(prev => {
         const updated = { ...prev };
-        if (isReacting) updated[currentUser.id] = userStreakVariant;
-        else delete updated[currentUser.id];
+        if (isReacting) updated[currentUser?.id] = userStreakVariant;
+        else if (currentUser?.id) delete updated[currentUser.id];
         return updated;
       });
       const applyUpdate = (old) => {
@@ -393,8 +393,8 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         return old.map((p) => {
           if (p.id !== post.id) return p;
           const updatedReactions = { ...(p.reactions || {}) };
-          if (isReacting) updatedReactions[currentUser.id] = userStreakVariant;
-          else delete updatedReactions[currentUser.id];
+          if (isReacting) updatedReactions[currentUser?.id] = userStreakVariant;
+          else if (currentUser?.id) delete updatedReactions[currentUser.id];
           return { ...p, reactions: updatedReactions };
         });
       };
@@ -429,6 +429,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const nudgeMutation = useMutation({
     mutationFn: async () => {
+      if (!currentUser?.id) return;
       const friends = await base44.entities.Friend.filter({ user_id: currentUser.id, status: 'accepted' });
       const todayDate = new Date().toISOString().split('T')[0];
       const dayOfWeek = new Date().getDay();

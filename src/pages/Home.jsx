@@ -366,8 +366,8 @@ export default function Home() {
   });
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
@@ -416,7 +416,7 @@ export default function Home() {
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
     queryFn: () => {
-      const authorIds = [...friendIdList, currentUser.id];
+      const authorIds = [...friendIdList, currentUser?.id].filter(Boolean);
       return base44.entities.Post.filter(
         { member_id: { $in: authorIds }, is_system_generated: false },
         '-created_date',
@@ -430,14 +430,14 @@ export default function Home() {
   });
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser.id, status: 'pending' }, '-created_date', 50),
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
   const { data: sentFriendRequests = [] } = useQuery({
     queryKey: ['sentFriendRequests', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, status: 'pending' }, '-created_date', 50),
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -517,7 +517,7 @@ export default function Home() {
     queryFn: () => {
       const monday = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
       return base44.entities.WorkoutLog.filter(
-        { user_id: currentUser.id, completed_date: { $gte: monday } }
+        { user_id: currentUser?.id, completed_date: { $gte: monday } }
       );
     },
     enabled: !!currentUser?.id,

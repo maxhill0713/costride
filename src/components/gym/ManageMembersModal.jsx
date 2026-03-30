@@ -16,7 +16,7 @@ export default function ManageMembersModal({ open, onClose, gym, onBanMember, on
     queryKey: ['checkIns', gym?.id],
     queryFn: async () => {
       const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.gym_id === gym.id);
+      return allCheckIns.filter(c => c.gym_id === gym?.id);
     },
     enabled: !!gym && open
   });

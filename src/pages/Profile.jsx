@@ -108,8 +108,8 @@ export default function Profile() {
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 50),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }, '-created_date', 50),
+    enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
@@ -117,8 +117,8 @@ export default function Profile() {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 200),
+    enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
@@ -126,8 +126,8 @@ export default function Profile() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev
@@ -149,8 +149,8 @@ export default function Profile() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friendship.filter({ user_id: currentUser.id, status: 'accepted' }),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.Friendship.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev
@@ -365,7 +365,7 @@ export default function Profile() {
         <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
           {currentUser?.equipped_badges?.length > 0 ? (
             <>
-              {currentUser.equipped_badges.map((badgeId) => {
+              {currentUser?.equipped_badges?.map((badgeId) => {
                 const badge = badgeDefs.find((b) => b.id === badgeId);
                 if (!badge) return null;
                 return (
