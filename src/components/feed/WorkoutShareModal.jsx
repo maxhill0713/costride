@@ -148,17 +148,7 @@ function BreakdownOverlay({ post }) {
 
 // ── Main Modal ───────────────────────────────────────────────────────────────
 export default function WorkoutShareModal({ open, onClose, post }) {
-  const [slide, setSlide] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
-  const touchStartX = useRef(null);
-
-  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 40) setSlide(dx < 0 ? 1 : 0);
-    touchStartX.current = null;
-  };
 
   const handleShare = useCallback(async (platform) => {
     if (isSharing) return;
@@ -172,26 +162,25 @@ export default function WorkoutShareModal({ open, onClose, post }) {
         `\nLogged on CoStride`,
       ].filter(Boolean).join('\n');
 
-      if (platform === 'share') {
+      if (platform === 'copy') {
+        await navigator.clipboard.writeText(workoutText);
+        toast.success('Link copied!');
+        onClose();
+      } else if (platform === 'instagram') {
         if (navigator.share) {
           await navigator.share({ title: post.workout_name || 'My Workout', text: workoutText });
         } else {
           await navigator.clipboard.writeText(workoutText);
-          toast.success('Copied to clipboard!');
+          toast.info('Copy the text and share to Instagram');
         }
-      } else if (platform === 'copy') {
-        await navigator.clipboard.writeText(workoutText);
-        toast.success('Copied to clipboard!');
-      } else if (platform === 'instagram') {
-        toast.info('Copy the text and share to Instagram');
-        await navigator.clipboard.writeText(workoutText);
+        onClose();
       }
     } catch (e) {
       if (e.name !== 'AbortError') toast.error('Could not share');
     } finally {
       setIsSharing(false);
     }
-  }, [post, isSharing]);
+  }, [post, isSharing, onClose]);
 
   if (!open || !post) return null;
 
@@ -204,197 +193,123 @@ export default function WorkoutShareModal({ open, onClose, post }) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 10010,
-          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-          display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end',
-          padding: '0',
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
         }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 400 }}
+          initial={{ opacity: 0, y: 300 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 400 }}
-          transition={{ duration: 0.28, ease: [0.34, 1.2, 0.64, 1] }}
+          exit={{ opacity: 0, y: 300 }}
+          transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
           onClick={e => e.stopPropagation()}
           style={{
             width: '100%',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%)',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            padding: '24px 16px 32px',
+            maxWidth: '100%',
+            background: '#1a1a1a',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: '0',
             display: 'flex',
             flexDirection: 'column',
-            gap: 20,
+            paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
           }}
         >
-          {/* Swipeable Image Preview */}
-          {post.image_url && (
-            <div
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              style={{
-                width: '100%',
-                height: '200px',
-                borderRadius: 16,
-                overflow: 'hidden',
-                background: '#0d1117',
-                position: 'relative',
-              }}
-            >
-              <img src={post.image_url} alt="workout" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              
-              {/* Swipe Hint */}
-              {slide === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  style={{
-                    position: 'absolute', bottom: 8, right: 12,
-                    color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600,
-                    background: 'rgba(0,0,0,0.4)', padding: '4px 8px', borderRadius: 4,
-                  }}
-                >
-                  ← Swipe
-                </motion.div>
-              )}
-            </div>
-          )}
+          {/* Handle indicator */}
+          <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2, margin: '12px auto 0' }} />
 
-          {/* Stats Section */}
-          <div style={{ textAlign: 'center', paddingTop: 8 }}>
-            <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 900, marginBottom: 16 }}>
+          {/* Workout Card */}
+          <div style={{ padding: '24px 16px', textAlign: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)' }}>
+            {post.image_url && (
+              <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', height: 180 }}>
+                <img src={post.image_url} alt="workout" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+            
+            <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 16, letterSpacing: '-0.02em' }}>
               {post.workout_name || 'Workout'}
-            </h3>
-            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+            </h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
               <div>
-                <p style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{post.workout_duration || '—'}</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Duration</p>
+                <p style={{ color: '#fff', fontSize: 18, fontWeight: 900 }}>{post.workout_duration || '—'}</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</p>
               </div>
-              <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.1)' }} />
               <div>
-                <p style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{post.workout_volume || '—'}</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Volume</p>
+                <p style={{ color: '#fff', fontSize: 18, fontWeight: 900 }}>{post.workout_volume || '—'}</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Volume</p>
               </div>
-              <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.1)' }} />
               <div>
-                <p style={{ color: '#60a5fa', fontSize: 20, fontWeight: 900 }}>
+                <p style={{ color: '#60a5fa', fontSize: 18, fontWeight: 900 }}>
                   {post.workout_exercises?.length || '—'}
                 </p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, marginTop: 4 }}>Exercises</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Exercises</p>
               </div>
             </div>
           </div>
 
-          {/* Share To Label */}
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
-            Share to
-          </p>
+          {/* Share Options Grid */}
+          <div style={{ padding: '16px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textAlign: 'center', marginBottom: 16 }}>
+              SHARE TO
+            </p>
 
-          {/* Platform Icons */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
-            <button
-              onClick={() => handleShare('instagram')}
-              style={{
-                background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-                border: 'none',
-                borderRadius: '50%',
-                width: 50,
-                height: 50,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: 24,
-              }}
-              title="Instagram"
-            >
-              📷
-            </button>
-            <button
-              onClick={() => handleShare('copy')}
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '50%',
-                width: 50,
-                height: 50,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: 20,
-                color: '#fff',
-              }}
-              title="Copy to clipboard"
-              disabled={isSharing}
-            >
-              ⋯
-            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
+              {[
+                { icon: '📷', label: 'Instagram', action: 'instagram' },
+                { icon: '📋', label: 'Copy Link', action: 'copy' },
+                { icon: '📧', label: 'Mail', action: 'mail' },
+                { icon: 'ℹ️', label: 'More', action: 'more' }
+              ].map((item) => (
+                <button
+                  key={item.action}
+                  onClick={() => {
+                    if (item.action === 'copy') handleShare('copy');
+                    else if (item.action === 'instagram') handleShare('instagram');
+                  }}
+                  disabled={isSharing}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 14,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                >
+                  <span style={{ fontSize: 24 }}>{item.icon}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-            <button
-              onClick={() => handleShare('copy')}
-              disabled={isSharing}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10,
-                padding: '8px 0',
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
-            >
-              Copy Text
-            </button>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10,
-                padding: '8px 0',
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
-            >
-              Instagram
-            </button>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10,
-                padding: '8px 0',
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
-            >
-              Close
-            </button>
-          </div>
-
-          {/* Close hint */}
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center', marginTop: 8 }}>
-            Tap outside to close
-          </p>
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            style={{
+              margin: '0 16px 8px',
+              padding: '12px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 14,
+              color: 'rgba(255,255,255,0.8)',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+          >
+            Close
+          </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
