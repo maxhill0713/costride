@@ -333,7 +333,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             <button
               onClick={() => handleShare('copy')}
               disabled={isSharing}
@@ -351,7 +351,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
               onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
               onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
             >
-              Copy link
+              Copy Text
             </button>
             <button
               onClick={onClose}
@@ -369,7 +369,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
               onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
               onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
             >
-              Save
+              Instagram
             </button>
             <button
               onClick={onClose}
@@ -387,26 +387,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
               onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
               onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
             >
-              View link
-            </button>
-            <button
-              onClick={() => handleShare('share')}
-              disabled={isSharing}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10,
-                padding: '8px 0',
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
-            >
-              Share
+              Close
             </button>
           </div>
 

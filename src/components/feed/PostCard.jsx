@@ -637,7 +637,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               }}>
                 {/* Photo — 2.5% of track = 5% of card margin each side, 45% of track = 90% of card wide → centred */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '2.5%', width: '45%', borderRadius: '8px', overflow: 'hidden' }}>
-                  <img src={post.image_url} alt="workout" decoding="async" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
+                  <img src={post.image_url} alt="workout" loading="lazy" decoding="async" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
                 </div>
                 {/* Summary — starts at 48.5% of track (= just after photo right edge + 1% gap), same width */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '48.5%', width: '45%', overflow: 'hidden' }}>
@@ -749,7 +749,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="relative w-full overflow-hidden" style={{ height: 'min(92.3vw, 410px)' }}>
             {post.video_url
               ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
-              : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" decoding="async" style={{ objectPosition: 'center center' }} />}
+              : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" loading="lazy" decoding="async" style={{ objectPosition: 'center center' }} />}
           </div>
         )}
 

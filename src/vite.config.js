@@ -6,11 +6,6 @@ import base44Plugin from '@base44/vite-plugin';
 export default defineConfig({
   plugins: [
     react(),
-    base44Plugin({
-      workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB to allow larger bundles
-      },
-    }),
     // Strip "use client" directives that cause bundling errors
     {
       name: 'strip-use-client',
@@ -23,6 +18,7 @@ export default defineConfig({
         }
       },
     },
+    base44Plugin(),
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -95,6 +91,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  pwa: {
+    workbox: {
+      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
     },
   },
 });
