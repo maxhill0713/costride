@@ -232,7 +232,7 @@ export default function Profile() {
       return { previous };
     },
     onError: (err, data, context) => { queryClient.setQueryData(['userPosts', currentUser?.id], context.previous); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts'] }); }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts', currentUser?.id] }); }
   });
 
   if (!currentUser) {

@@ -488,15 +488,18 @@ export default function Home() {
   });
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
-    onSuccess: () => { queryClient.invalidateQueries(['friendRequests']); queryClient.invalidateQueries(['friends']); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
+    },
   });
   const rejectFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
-    onSuccess: () => queryClient.invalidateQueries(['friendRequests']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] }),
   });
   const removeFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
-    onSuccess: () => queryClient.invalidateQueries(['friends']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] }),
   });
   const cancelFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),

@@ -628,8 +628,8 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
-    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
-    enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id }),
+    enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
 
   const createGoalMutation = useMutation({
@@ -641,7 +641,7 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
       return { previous };
     },
     onError: (err, data, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); setShowAddGoal(false); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals', currentUser?.id] }); setShowAddGoal(false); },
   });
 
   const updateGoalMutation = useMutation({
@@ -653,7 +653,7 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
       return { prev };
     },
     onError: (err, v, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.prev); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals', currentUser?.id] }); },
   });
 
   const deleteGoalMutation = useMutation({
@@ -665,7 +665,7 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
       return { previous };
     },
     onError: (err, id, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals', currentUser?.id] }); },
   });
 
   const activeGoals    = goals.filter((g) => g.status === 'active');

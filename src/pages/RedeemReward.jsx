@@ -162,7 +162,7 @@ export default function RedeemReward() {
       const previous = queryClient.getQueryData(['claimedBonuses', currentUser?.id]);
       queryClient.setQueryData(['claimedBonuses', currentUser?.id], (old = []) => [
       ...old,
-      { id: `temp-${rewardData.id}`, user_id: currentUser.id, reward_id: rewardData.id }]
+      { id: `temp-${rewardData.id}`, user_id: currentUser?.id, reward_id: rewardData.id }]
       );
       return { previous };
     },
@@ -171,7 +171,7 @@ export default function RedeemReward() {
     },
     onSuccess: () => {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-      queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
+      queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id] });
 
     }
   });
