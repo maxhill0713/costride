@@ -10,7 +10,9 @@ export default defineConfig({
       pwa: {
         workbox: {
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         },
+        selfDestroying: false,
       },
     }),
   ],
@@ -29,8 +31,12 @@ export default defineConfig({
             if (id.includes('date-fns')) return 'date-fns';
             if (id.includes('lodash')) return 'lodash';
             if (id.includes('three')) return 'three';
+            if (id.includes('stripe')) return 'stripe';
             return 'vendor';
           }
+          // Split dashboard pages into their own chunk
+          if (id.includes('pages/GymOwnerDashboard') || id.includes('components/dashboard')) return 'dashboard';
+          if (id.includes('pages/Onboarding') || id.includes('pages/GymSignup') || id.includes('pages/MemberSignup')) return 'onboarding';
         },
       },
     },

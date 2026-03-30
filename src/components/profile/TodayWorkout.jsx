@@ -388,13 +388,22 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
       const durationMins = durationSecs > 0 ? Math.round(durationSecs / 60) : undefined;
 
+      // Normalise exercises so sets + reps are always stored as top-level fields
+      const normalisedExercises = (todayWorkout.exercises || []).map(ex => {
+        const setsRepsStr = String(ex.setsReps || '');
+        const srParts = /[xX×]/.test(setsRepsStr) ? setsRepsStr.split(/[xX×]/) : [];
+        const sets = String(ex.sets || srParts[0] || '');
+        const reps = String(ex.reps || srParts[1] || '');
+        return { ...ex, sets, reps, setsReps: sets && reps ? `${sets}x${reps}` : (ex.setsReps || null) };
+      });
+
       await base44.entities.WorkoutLog.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name || currentUser.username || 'User',
         workout_name: todayWorkout.name,
         workout_type: todayWorkout.name,
         day_of_week: activeDayKey,
-        exercises: todayWorkout.exercises,
+        exercises: normalisedExercises,
         cardio: todayWorkout.cardio || [],
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
