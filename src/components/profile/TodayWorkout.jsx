@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -374,6 +374,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const user = await base44.auth.me();
       const workout_notes = user?.workout_notes || {};
       const workoutNotes = workout_notes[todayWorkout.name] || '';
+
+      // Compute total volume: sum of sets × reps × weight for all exercises
+      const totalVolume = (todayWorkout.exercises || []).reduce((sum, ex) => {
+        const sets = parseFloat(ex.sets || ex.setsReps?.split('x')?.[0]) || 0;
+        const reps = parseFloat(ex.reps || ex.setsReps?.split('x')?.[1]) || 0;
+        const weight = parseFloat(ex.weight) || 0;
+        return sum + (sets * reps * weight);
+      }, 0);
+
+      // Duration: use frozenDurationRef (seconds) captured at button press time
+      const durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
+      const durationMins = durationSecs > 0 ? Math.round(durationSecs / 60) : undefined;
+
       await base44.entities.WorkoutLog.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name || currentUser.username || 'User',
@@ -384,7 +397,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         cardio: todayWorkout.cardio || [],
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
-        duration_minutes: frozenDuration > 0 ? Math.round(frozenDuration / 60) : workoutDuration > 0 ? Math.round(workoutDuration / 60) : undefined
+        duration_minutes: durationMins,
+        total_volume: totalVolume > 0 ? Math.round(totalVolume) : undefined,
       });
 
       const newStreak = (currentUser.current_streak || 0) + 1;
@@ -1208,64 +1222,137 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 </div>
             }
 
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                {[
-              { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
-              { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
-              { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' }].
-              map((stat) =>
-              <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
-                    <p className="text-sm font-black text-blue-300">{stat.value}</p>
-                    <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
+              {(() => {
+                // Compute duration and volume from saved log data
+                const computedDuration = summaryLog.duration_minutes
+                  ? `${summaryLog.duration_minutes}m`
+                  : '—';
+                const computedVolume = summaryLog.total_volume
+                  ? `${summaryLog.total_volume.toLocaleString()}kg`
+                  : (() => {
+                      const v = (summaryLog.exercises || []).reduce((sum, ex) => {
+                        const setsRepsStr = String(ex.setsReps || '');
+                        const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                        const s = parseFloat(ex.sets || srParts[0]) || 0;
+                        const r = parseFloat(ex.reps || srParts[1]) || 0;
+                        const w = parseFloat(ex.weight) || 0;
+                        return sum + s * r * w;
+                      }, 0);
+                      return v > 0 ? `${Math.round(v).toLocaleString()}kg` : '—';
+                    })();
+                const exerciseCount = (() => {
+                  const names = new Set((summaryLog.exercises || []).map(e => (e.exercise || '').trim().toLowerCase()).filter(Boolean));
+                  return names.size || (summaryLog.exercises?.length ?? summaryLog.exercise_count ?? '—');
+                })();
+                return (
+                  <div className="grid grid-cols-3 gap-2 mb-5">
+                    {[
+                      { label: 'Duration', value: computedDuration },
+                      { label: 'Exercises', value: exerciseCount },
+                      { label: 'Volume', value: computedVolume },
+                    ].map((stat) => (
+                      <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
+                        <p className="text-sm font-black text-blue-300">{stat.value}</p>
+                        <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
+                      </div>
+                    ))}
                   </div>
-              )}
-              </div>
+                );
+              })()}
 
-              {summaryLog.exercises?.length > 0 &&
-            <div className="space-y-2 mb-4">
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
-                  <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
-                    <div />
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
-                  </div>
-                  <div className="space-y-2 -mx-2">
-                    {summaryLog.exercises.map((ex, idx) => {
-                  const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                  const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
-                  const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map((s) => s.trim()) : [];
-                  const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
-                  const sets = rawSets !== undefined && rawSets !== null && String(rawSets) !== '' ?
-                  String(rawSets) :
-                  ex.logged_sets?.length ? String(ex.logged_sets.length) :
-                  ex.sets_data?.length ? String(ex.sets_data.length) :
-                  srParts[0] || '-';
-                  const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
-                  const reps = rawReps !== undefined && rawReps !== null && String(rawReps) !== '' ?
-                  String(rawReps) :
-                  ex.logged_sets?.[0]?.reps ? String(ex.logged_sets[0].reps) :
-                  ex.sets_data?.[0]?.reps ? String(ex.sets_data[0].reps) :
-                  srParts[1] || '-';
-                  const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight;
-                  const weight = rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '' ? String(rawWeight) : '-';
-                  return (
-                    <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
-                          <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{sets}</div>
-                          <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
-                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
-                          <div className="ml-3 pr-3">
-                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-                              {weight}<span className="text-[10px] font-bold">kg</span>
+              {summaryLog.exercises?.length > 0 && (() => {
+                // Group exercises the same way TodayWorkout does
+                const groups = [];
+                const nameToIdx = {};
+                summaryLog.exercises.forEach((ex, index) => {
+                  const key = (ex.exercise || '').trim().toLowerCase();
+                  if (!key) { groups.push({ key: `__${index}`, name: ex.exercise || '', items: [{ ex, index }] }); return; }
+                  if (nameToIdx[key] === undefined) { nameToIdx[key] = groups.length; groups.push({ key, name: ex.exercise, items: [{ ex, index }] }); }
+                  else groups[nameToIdx[key]].items.push({ ex, index });
+                });
+                return (
+                  <div className="space-y-2 mb-4">
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
+                    <div className="space-y-2 -mx-2">
+                      {groups.map((group) => {
+                        const isGrouped = group.items.length > 1;
+                        if (!isGrouped) {
+                          const { ex, index } = group.items[0];
+                          const exName = ex.exercise || ex.name || `Exercise ${index + 1}`;
+                          const setsRepsStr = String(ex.setsReps || '');
+                          const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                          const sets = String(ex.sets ?? srParts[0] ?? '-') || '-';
+                          const reps = String(ex.reps ?? srParts[1] ?? '-') || '-';
+                          const weight = String(ex.weight ?? '-');
+                          return (
+                            <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+                              <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>{sets}</div>
+                              <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
+                              <div className="ml-3 pr-3">
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                  {weight}<span className="text-[10px] font-bold">kg</span>
+                                </div>
+                              </div>
                             </div>
+                          );
+                        }
+                        // Grouped: show Set 1, Set 2, etc. — same layout as TodayWorkout
+                        const sorted = [...group.items].sort((a, b) => (parseFloat(b.ex.weight) || 0) - (parseFloat(a.ex.weight) || 0));
+                        return (
+                          <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10">
+                            {sorted.map(({ ex, index }, setIdx) => {
+                              const setsRepsStr = String(ex.setsReps || '');
+                              const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                              const reps = String(ex.reps ?? srParts[1] ?? '-') || '-';
+                              const weight = String(ex.weight ?? '-');
+                              return (
+                                <div key={index} className="flex items-center gap-1 mb-1 pr-2">
+                                  <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
+                                    {group.name}
+                                  </div>
+                                  <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-5" style={{ width: '44px' }}>
+                                    Set {setIdx + 1}
+                                  </div>
+                                  <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-4" style={{ width: '36px' }}>
+                                    {reps}
+                                  </div>
+                                  <div className="flex items-center gap-1 ml-1 flex-1">
+                                    <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-1">
+                                      {weight}<span className="text-[10px] font-bold">kg</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        </div>);
-                })}
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {summaryLog.cardio?.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Cardio</p>
+                  <div className="space-y-2 -mx-2">
+                    {summaryLog.cardio.map((c, idx) => {
+                      const fmtTime = (raw) => { const d = (raw || '').replace(/\D/g, '').slice(0, 4); if (!d) return '—'; const p = d.padStart(3, '0'); return `${parseInt(p.slice(0, p.length - 2), 10)}:${p.slice(-2)}`; };
+                      return (
+                        <div key={idx} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl border border-white/10 grid items-center" style={{ gridTemplateColumns: '1fr 44px 12px 44px 44px', gap: '4px' }}>
+                          <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-5" style={{ width: '36px' }}>{c.rounds || '—'}</div>
+                          <div />
+                          <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-3">{c.time ? fmtTime(c.time) : '—'}</div>
+                          <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{parseInt(c.rounds) > 1 && c.rest ? fmtTime(c.rest) : '—'}</div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-            }
+              )}
 
               {summaryLog.notes &&
             <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
