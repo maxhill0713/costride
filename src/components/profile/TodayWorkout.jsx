@@ -528,6 +528,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return groups;
   };
 
+  // ── Grouped card grid: Set-label | Reps | Weight [| Edit]
+  // We want Set label on left, then gap, then reps aligned with normal reps col,
+  // then weight aligned with normal weight col.
+  // Normal cols: 1fr | 44px | 12px | 44px | auto [| auto]
+  // For grouped rows we skip the "1fr" name col (name is above) and the "×" divider.
+  // Layout: set-label(~72px) | gap(12px) | reps(44px) | weight(auto) [| edit]
+  const groupedRowCols = alreadyLoggedToday
+    ? '72px 12px 44px 1fr'
+    : '72px 12px 44px 1fr auto';
+
   return (
     <>
       <Card
@@ -548,6 +558,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
               <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+              {/* Info button — 15% larger than original size={13} → size≈15 */}
               <motion.button
                 onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
                 whileTap={{ scale: 0.78, y: 1 }}
@@ -559,7 +570,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   display: 'flex', alignItems: 'center',
                   transition: 'color 0.15s'
                 }}>
-                <Info size={13} />
+                <Info size={15} />
               </motion.button>
             </div>
 
@@ -656,7 +667,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
 
-                  {/* Column headers — only shown when not all groups are multi-set */}
+                  {/* Column headers for normal exercises */}
                   <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -793,14 +804,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           {group.name}
                         </div>
 
-                        {/* Column headers for grouped card */}
-                        <div className="grid gap-1 mb-1.5 items-end pr-2" style={{ gridTemplateColumns: alreadyLoggedToday ? '64px 44px auto' : '64px 44px auto auto' }}>
-                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Set</div>
-                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
-                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2">Weight</div>
-                          {!alreadyLoggedToday && <div className="w-6" />}
-                        </div>
-
+                        {/* ── Grouped rows — NO column headers ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                           const setLabel = `Set ${setIdx + 1}`;
                           const isEditingThis = editingGroupedSet?.index === index;
@@ -868,32 +872,33 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                             <div
                               key={index}
                               className="grid gap-1 items-center mb-1.5 pr-2"
-                              style={{ gridTemplateColumns: alreadyLoggedToday ? '64px 44px auto' : '64px 44px auto auto' }}>
-                              {/* Set label pill */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ minWidth: '56px' }}>
+                              style={{ gridTemplateColumns: groupedRowCols }}>
+                              {/* Set label pill — left column */}
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ minWidth: '60px', maxWidth: '72px' }}>
                                 {setLabel}
                               </div>
-                              {/* Reps */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                              {/* Spacer — aligns with the "×" column */}
+                              <div />
+                              {/* Reps — aligns with normal reps column */}
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '44px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
-                              {/* Weight + progress */}
+                              {/* Weight + progress + edit — aligns with normal weight column */}
                               <div className="flex items-center gap-2 ml-1">
                                 <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
+                                {!alreadyLoggedToday && (
+                                  <motion.button
+                                    onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                                    whileTap={{ scale: 0.78, y: 1 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </motion.button>
+                                )}
                               </div>
-                              {/* Per-row pencil */}
-                              {!alreadyLoggedToday && (
-                                <motion.button
-                                  onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                                  whileTap={{ scale: 0.78, y: 1 }}
-                                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                                  className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1">
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </motion.button>
-                              )}
                             </div>
                           );
                         })}
