@@ -48,6 +48,7 @@ export default function WorkoutShareModal({ open, onClose, post }) {
           position: 'fixed', inset: 0, zIndex: 10010,
           background: '#000', backdropFilter: 'blur(0px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
+          top: 0, left: 0, right: 0, bottom: 0,
         }}
       >
         {/* Header */}

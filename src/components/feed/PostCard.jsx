@@ -533,7 +533,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       return kept.join('\n').trim() || null;
     })();
 
-    const handleWorkoutShare = async () => {
+    const handleWorkoutShare = () => {
       setShowWorkoutShare(true);
     };
 
