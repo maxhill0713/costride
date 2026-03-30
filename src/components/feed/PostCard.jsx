@@ -762,7 +762,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                   : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
               </motion.button>
             )}
-            <motion.button onClick={handleShare} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
+            <motion.button onClick={(e) => { e.stopPropagation(); handleShare(); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
               <Send className="w-5 h-5" />
             </motion.button>
           </div>
