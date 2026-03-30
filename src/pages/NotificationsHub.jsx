@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { ChevronLeft, AlertTriangle, Trophy, Users, Check, X, Eye, MessageCircle, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -128,6 +129,7 @@ export default function NotificationsHub() {
           title: `${member.name || 'Member'} at Risk`,
           message: daysAgo ? `No check-in for ${daysAgo} days` : 'Has not checked in recently',
           timestamp: lastCheckIn?.check_in_date || member.created_date,
+          user_id: member.user_id,
           actions: [
             { id: 'message', label: 'Send Message', icon: 'message', color: 'rgba(59,130,246,0.2)' },
             { id: 'dismiss', label: 'Dismiss', icon: 'x' },
@@ -197,7 +199,9 @@ export default function NotificationsHub() {
     if (actionId === 'dismiss') {
       handleDismiss(notificationId);
     } else if (actionId === 'message') {
-      // TODO: navigate to messages page or open compose modal
+      if (notif.user_id) {
+        navigate(createPageUrl('Messages') + '?userId=' + notif.user_id);
+      }
     } else if (actionId === 'celebrate') {
       handleDismiss(notificationId);
     }

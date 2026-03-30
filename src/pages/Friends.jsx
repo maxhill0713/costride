@@ -39,10 +39,10 @@ export default function Friends() {
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({
-      user_id: currentUser.id,
+      user_id: currentUser?.id,
       status: 'accepted'
     }),
-    enabled: !!currentUser,
+    enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
@@ -50,10 +50,10 @@ export default function Friends() {
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({
-      friend_id: currentUser.id,
+      friend_id: currentUser?.id,
       status: 'pending'
     }),
-    enabled: !!currentUser,
+    enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -90,8 +90,8 @@ export default function Friends() {
 
   const { data: currentUserCheckIns = [] } = useQuery({
     queryKey: ['userCheckIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 100),
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
+    enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -109,7 +109,7 @@ export default function Friends() {
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id, friendIdsForFeed.join(',')],
     queryFn: () => {
-      const authorIds = [...friendIdsForFeed, currentUser.id];
+      const authorIds = [...friendIdsForFeed, currentUser?.id].filter(Boolean);
       return base44.entities.Post.filter(
         { member_id: { $in: authorIds }, is_system_generated: false },
         '-created_date',
@@ -181,7 +181,7 @@ export default function Friends() {
       action: 'accept'
     }),
     onMutate: async (friendId) => {
-      await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
+      await queryClient.cancelQueries({ queryKey: ['friendRequests', currentUser?.id] });
       const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
       queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
         old.filter((r) => r.user_id !== friendId)
@@ -192,8 +192,8 @@ export default function Friends() {
       queryClient.setQueryData(['friendRequests', currentUser?.id], context.previous);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendRequests']);
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
       toast.success('Friend request accepted!');
     }
   });
@@ -204,7 +204,7 @@ export default function Friends() {
       action: 'reject'
     }),
     onMutate: async (friendId) => {
-      await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
+      await queryClient.cancelQueries({ queryKey: ['friendRequests', currentUser?.id] });
       const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
       queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
         old.filter((r) => r.user_id !== friendId)
@@ -215,7 +215,7 @@ export default function Friends() {
       queryClient.setQueryData(['friendRequests', currentUser?.id], context.previous);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
       toast.success('Friend request declined');
     }
   });
@@ -226,7 +226,7 @@ export default function Friends() {
       action: 'remove'
     }),
     onMutate: async (friendId) => {
-      await queryClient.cancelQueries(['friends', currentUser?.id]);
+      await queryClient.cancelQueries({ queryKey: ['friends', currentUser?.id] });
       const previous = queryClient.getQueryData(['friends', currentUser?.id]);
       queryClient.setQueryData(['friends', currentUser?.id], (old = []) =>
         old.filter((f) => f.friend_id !== friendId)
@@ -237,7 +237,7 @@ export default function Friends() {
       queryClient.setQueryData(['friends', currentUser?.id], context.previous);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
       toast.success('Friend removed');
     }
   });
