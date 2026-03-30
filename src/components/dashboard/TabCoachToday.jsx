@@ -90,7 +90,8 @@ function CapBar({ pct, color = C.blue }) {
 
 // ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
 
-function AvatarInitials({ name, size = 30, level }) {
+function AvatarInitials({ name, size = 30, level, src = null }) {
+  const [imgFailed, setImgFailed] = React.useState(false);
   const c = level === "high" ? C.red : level === "med" ? C.amber : C.t3;
   const initials = (name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   return (
@@ -99,7 +100,12 @@ function AvatarInitials({ name, size = 30, level }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       background: `${c}14`, border: `1px solid ${c}30`,
       fontSize: size * .33, fontWeight: 800, color: c, letterSpacing: "-.01em",
-    }}>{initials}</div>
+      overflow: "hidden",
+    }}>
+      {src && !imgFailed
+        ? <img src={src} alt={name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={() => setImgFailed(true)} />
+        : initials}
+    </div>
   );
 }
 
@@ -402,6 +408,7 @@ export default function TodayDashboard({ allMemberships = [], checkIns = [], myC
         days: m.daysAgo,
         reason: m.daysAgo >= 999 ? "Never checked in" : `No visit in ${m.daysAgo} days`,
         level: m.daysAgo >= 21 ? "high" : "med",
+        avatar: m.avatar_url || m.user_avatar || m.profile_picture || null,
       }));
   }, [allMemberships, checkIns, now]);
 
@@ -508,7 +515,7 @@ export default function TodayDashboard({ allMemberships = [], checkIns = [], myC
                     padding: "10px 16px", cursor: "pointer",
                     borderLeft: `2px solid ${m.level === "high" ? C.red : C.amber}`,
                   }}>
-                    <AvatarInitials name={m.name} size={28} level={m.level}/>
+                    <AvatarInitials name={m.name} size={28} level={m.level} src={m.avatar}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: C.t1,
                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",

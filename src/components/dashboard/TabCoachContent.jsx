@@ -347,8 +347,10 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, onE
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {assignedClients.map((m, i) => (
                 <div key={m.user_id || i} className="wo-client-row" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.1s' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${m.engColor}14`, border: `1.5px solid ${m.engColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: m.engColor, flexShrink: 0 }}>
-                    {(m.user_name || '?').charAt(0).toUpperCase()}
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${m.engColor}14`, border: `1.5px solid ${m.engColor}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: m.engColor, flexShrink: 0, overflow: 'hidden' }}>
+                    {avatarMap?.[m.user_id]
+                      ? <img src={avatarMap[m.user_id]} alt={m.user_name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }}/>
+                      : (m.user_name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user_name || 'Client'}</div>
@@ -416,8 +418,10 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, onE
                   const r30 = checkIns.filter(c => c.user_id === m.user_id && (now - new Date(c.check_in_date)) < 30 * 864e5).length;
                   return (
                     <div key={m.user_id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1.5px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#10b981', flexShrink: 0 }}>
-                        {(m.user_name || '?').charAt(0).toUpperCase()}
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1.5px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#10b981', flexShrink: 0, overflow: 'hidden' }}>
+                        {avatarMap?.[m.user_id]
+                          ? <img src={avatarMap[m.user_id]} alt={m.user_name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }}/>
+                          : (m.user_name || '?').charAt(0).toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4f8' }}>{m.user_name || 'Client'}</div>

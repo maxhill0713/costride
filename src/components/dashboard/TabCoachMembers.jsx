@@ -78,7 +78,8 @@ const C = {
 };
 
 // ─── PRIMITIVES ───────────────────────────────────────────────────────────────
-function Avatar({ name = '?', size = 32 }) {
+function Avatar({ name = '?', size = 32, src = null }) {
+  const [imgFailed, setImgFailed] = React.useState(false);
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <div style={{
@@ -86,7 +87,12 @@ function Avatar({ name = '?', size = 32 }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'rgba(61,130,244,0.10)', border: '1px solid rgba(61,130,244,0.20)',
       fontSize: size * .33, fontWeight: 800, color: C.blue, letterSpacing: '-.01em',
-    }}>{initials}</div>
+      overflow: 'hidden',
+    }}>
+      {src && !imgFailed
+        ? <img src={src} alt={name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgFailed(true)} />
+        : initials}
+    </div>
   );
 }
 
@@ -325,7 +331,7 @@ function DropPanel({ client, onClose, openModal }) {
       <div style={{ padding:'11px 14px', background: C.inset,
         borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-          <Avatar name={client.name} size={22}/>
+          <Avatar name={client.name} src={client.avatar} size={22}/>
           <div>
             <span style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{client.name}</span>
             <span style={{ fontSize:10, color:C.t3, marginLeft:8 }}>{client.membership} · Since {client.joinDate}</span>
@@ -742,7 +748,7 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
         background:'transparent',
       }}>
         {/* Avatar */}
-        <Avatar name={client.name} size={34}/>
+        <Avatar name={client.name} src={client.avatar} size={34}/>
 
         {/* Name + meta */}
         <div style={{ flex:1, minWidth:0 }}>
@@ -865,7 +871,7 @@ function Sidebar({ clients, openClient }) {
             }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.redStr}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-              <Avatar name={c.name} size={26}/>
+              <Avatar name={c.name} src={c.avatar} size={26}/>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:C.t1,
                   overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.name}</div>
@@ -904,7 +910,7 @@ function Sidebar({ clients, openClient }) {
           <SideHdr>Top Performer</SideHdr>
           <div onClick={() => openClient(topClient)} style={{ cursor:'pointer' }}>
             <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:10 }}>
-              <Avatar name={topClient.name} size={32}/>
+              <Avatar name={topClient.name} src={topClient.avatar} size={32}/>
               <div>
                 <div style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{topClient.name}</div>
                 <div style={{ fontSize:10, color:C.t3 }}>{topClient.sessionsThisMonth} sessions this month</div>
@@ -1033,7 +1039,7 @@ function PendingClientRow({ invite, onCancel }) {
 }
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
-export default function TabCoachMembers({ openModal = () => {}, coach = null, bookings = [], checkIns = [], now = new Date() }) {
+export default function TabCoachMembers({ openModal = () => {}, coach = null, bookings = [], checkIns = [], avatarMap = {}, now = new Date() }) {
   const [filter,       setFilter]       = useState('all');
   const [search,       setSearch]       = useState('');
   const [sortBy,       setSortBy]       = useState('risk');
@@ -1067,10 +1073,11 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
       byClient[b.client_id].bookings.push(b);
     });
 
-    return Object.entries(byClient).map(([userId, { name, bookings: clientBookings }]) =>
-      buildClientFromBookings(userId, name, clientBookings, checkIns, now)
-    );
-  }, [bookings, checkIns, now]);
+    return Object.entries(byClient).map(([userId, { name, bookings: clientBookings }]) => ({
+      ...buildClientFromBookings(userId, name, clientBookings, checkIns, now),
+      avatar: avatarMap?.[userId] || null,
+    }));
+  }, [bookings, checkIns, avatarMap, now]);
 
   const acceptedMemberIds = allClients.map(c => c.id);
   const pendingMemberIds  = pendingInvites.map(i => i.member_id);

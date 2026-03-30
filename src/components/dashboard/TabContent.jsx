@@ -250,7 +250,7 @@ function FeedCard({ post, onDelete, isTopPerformer, totalMembers }) {
       )}
       <CardBody style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Avatar name={post.author_name || post.gym_name || 'G'} size={26} />
+          <Avatar name={post.author_name || post.gym_name || 'G'} size={26} src={post.member_avatar || post.author_avatar || post.gym_logo || null} />
           <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: C.t2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {post.author_name || post.gym_name || 'Gym Post'}
           </span>
