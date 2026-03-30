@@ -153,7 +153,7 @@ function ActivityChip({ m }) {
   let label, color, bg, border;
 
   if (m.isBanned || m.daysSince >= 14) {
-    label  = m.isBanned ? 'Banned' : `${m.daysSince}d absent`;
+    label  = m.isBanned ? 'Banned' : m.daysSince >= 999 ? 'No visits' : `${m.daysSince}d absent`;
     color  = C.danger; bg = C.dangerSub; border = C.dangerBrd;
   } else if (m.visits30 >= 15) {
     label  = `${m.visits30}/mo · high`;
