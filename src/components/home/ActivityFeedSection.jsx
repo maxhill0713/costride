@@ -71,7 +71,7 @@ function ActivityFeedSection({
                   <div className="flex items-center gap-3">
                     <Link to={createPageUrl('UserProfile') + `?id=${activity.friendId}`} className="flex-shrink-0">
                       {activity.friendAvatar
-                        ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
+                        ? <img src={activity.friendAvatar} alt={activity.friendName} className="w-10 h-10 rounded-full object-cover" decoding="async" />
                         : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center"><span className="text-white font-bold text-sm">{activity.friendName?.charAt(0)?.toUpperCase()||'U'}</span></div>}
                     </Link>
                     <div className="flex-1 min-w-0">

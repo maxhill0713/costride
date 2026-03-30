@@ -496,7 +496,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2">
           <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-            {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" loading="lazy" /> : <span className="text-xs font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase()}</span>}
+            {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-xs font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase()}</span>}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-white text-xs truncate">{resolvedMemberName}</p>
@@ -577,7 +577,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <div className="flex items-center justify-between mb-4">
               <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                  {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
+                  {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
@@ -631,7 +631,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               }}>
                 {/* Photo — 2.5% of track = 5% of card margin each side, 45% of track = 90% of card wide → centred */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '2.5%', width: '45%', borderRadius: '8px', overflow: 'hidden' }}>
-                  <img src={post.image_url} alt="workout" loading="lazy" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
+                  <img src={post.image_url} alt="workout" decoding="async" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
                 </div>
                 {/* Summary — starts at 48.5% of track (= just after photo right edge + 1% gap), same width */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '48.5%', width: '45%', overflow: 'hidden' }}>
@@ -718,7 +718,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="flex items-center justify-between">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
+                {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
@@ -743,7 +743,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="relative w-full overflow-hidden" style={{ height: 'min(92.3vw, 410px)' }}>
             {post.video_url
               ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
-              : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" loading="lazy" style={{ objectPosition: 'center center' }} />}
+              : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" decoding="async" style={{ objectPosition: 'center center' }} />}
           </div>
         )}
 
