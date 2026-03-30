@@ -318,6 +318,14 @@ export default function Home() {
   }, [queryClient]);
   useEffect(() => {
     injectStreakStyles();
+    if (!currentUser) return;
+    const todayDow = new Date().getDay();
+    const todayAdjustedDay = todayDow === 0 ? 7 : todayDow;
+    // Don't show freeze/streak loss popups on rest days — rest days have no impact on streak
+    const trainingDaysForCheck = currentUser?.training_days || [];
+    const isTodayRestDay = trainingDaysForCheck.length > 0 && !trainingDaysForCheck.includes(todayAdjustedDay);
+    if (isTodayRestDay) return;
+
     const checkMissedWorkouts = async () => {
       try {
         const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
@@ -347,7 +355,7 @@ export default function Home() {
     };
     checkMissedWorkouts();
     checkStreakLoss();
-  }, []);
+  }, [currentUser?.id]);
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
