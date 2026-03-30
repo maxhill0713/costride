@@ -532,21 +532,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     })();
 
     const handleWorkoutShare = async () => {
-      const text = [
-        `💪 ${post.workout_name || 'Workout'}`,
-        post.workout_duration ? `⏱ ${post.workout_duration}` : null,
-        post.workout_volume ? `⚡ Total volume: ${post.workout_volume}` : null,
-        (post.workout_exercises || []).length > 0
-          ? `\n${(post.workout_exercises || []).slice(0, 5).map(e => `• ${e.exercise || e.name || ''} ${e.sets || ''}x${e.reps || ''} @ ${e.weight || '?'}kg`).join('\n')}`
-          : null,
-        `\nLogged on CoStride 🏋️`,
-      ].filter(Boolean).join('\n');
-
-      if (navigator.share) {
-        try { await navigator.share({ title: post.workout_name || 'My Workout', text }); } catch (e) { if (e.name !== 'AbortError') toast.error('Could not share'); }
-      } else {
-        try { await navigator.clipboard.writeText(text); toast.success('Copied to clipboard!'); } catch { toast.error('Could not share'); }
-      }
+      setShowWorkoutShare(true);
     };
 
     const exerciseSummaryJSX = (
