@@ -1,0 +1,21 @@
+{
+  "name": "CoStride",
+  "short_name": "CoStride",
+  "description": "Train together. Track progress. Compete with friends.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#02040a",
+  "theme_color": "#0d2360",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["fitness", "health", "sports"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

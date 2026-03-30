@@ -272,7 +272,7 @@ function CommunityLiftCard({ currentUser }) {
   const [timeFilter, setTimeFilter] = useState('week');
   const [lbOpen, setLbOpen] = useState(false);
 
-  const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }), enabled: !!currentUser, staleTime: 5 * 60 * 1000 });
+  const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }), enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000 });
 
   const gymId = gymMemberships[0]?.gym_id;
 

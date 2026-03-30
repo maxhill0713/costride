@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown, ChevronUp } from 'lucide-react';
@@ -324,7 +325,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             fontSize: 13, fontWeight: 800, color: col.color,
             boxShadow: isPR ? '0 0 12px rgba(234,179,8,0.35)' : '0 2px 8px rgba(0,0,0,0.35)' }}>
             {avatar
-              ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ? <img src={avatar} alt={item.userName} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : ini(item.userName)}
           </div>
           <div style={{ position: 'absolute', bottom: -2, right: -2,
@@ -489,6 +490,16 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
       .slice(0, 60);
   }, [checkIns, workoutLogs, challengeParticipants, challenges, achievements, posts]);
 
+  const scrollRef = useRef(null);
+
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 72,
+    overscan: 5,
+    measureElement: el => el?.getBoundingClientRect().height ?? 72,
+  });
+
   if (items.length === 0) return null;
 
   return (
@@ -502,10 +513,22 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
         </div>
         <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} activities</span>
       </div>
-      <div style={{ maxHeight: 400, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
-        {items.map((item, i) => (
-          <FeedCard key={item.id} item={item} memberAvatarMap={memberAvatarMap} liked={likedIds.has(item.id)} onLike={toggleLike} index={i} />
-        ))}
+      <div
+        ref={scrollRef}
+        style={{ maxHeight: 400, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', position: 'relative' }}
+      >
+        <div style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+          {virtualizer.getVirtualItems().map(vItem => (
+            <div
+              key={vItem.key}
+              data-index={vItem.index}
+              ref={virtualizer.measureElement}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vItem.start}px)` }}
+            >
+              <FeedCard item={items[vItem.index]} memberAvatarMap={memberAvatarMap} liked={likedIds.has(items[vItem.index].id)} onLike={toggleLike} index={vItem.index} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
