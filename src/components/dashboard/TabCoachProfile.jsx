@@ -26,11 +26,11 @@ import {
   MessageSquare, Calendar, Dumbbell, AlertTriangle, AlertCircle,
   CheckCircle, XCircle, TrendingDown, TrendingUp, Minus,
   ChevronRight, ChevronDown, ChevronUp, Activity, BarChart2,
-  User, Phone, Mail, MapPin, ArrowUpRight, Target, Check,
-  BookOpen, RefreshCw, Edit2, Star, Plus, X, GraduationCap, Award,
+  User, Phone, Mail, MapPin, Target, Check,
+  Edit2, Plus, X, Award,
   Loader2, Eye, Camera, Save, Clock, Trophy, Shield, BadgeCheck,
   ScanFace, ClipboardCheck, AlertCircle as AlertCircleIcon,
-  Package, Image, Trash2, Info, Languages,
+  Package, Image, Trash2, Info, Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CoachProfileModal from '@/components/gym/CoachProfileModal';
@@ -222,7 +222,7 @@ function Avatar({ name, src, size = 36, color = C.accent }) {
   return src ? (
     <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   ) : (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: `${color}18`, border: `1.5px solid ${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.33, fontWeight: 700, color, flexShrink: 0, letterSpacing: '-.02em', flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `${color}18`, border: `1.5px solid ${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.33, fontWeight: 700, color, flexShrink: 0, letterSpacing: '-.02em' }}>
       {initials}
     </div>
   );
@@ -751,12 +751,6 @@ export default function ClientProfile({ client: cl = EMPTY_CLIENT, onMessage, on
                 const riskScore = cl.retention_status === 'at_risk' ? 78 : cl.retention_status === 'needs_attention' ? 45 : 20;
                 const riskLabel = riskScore >= 70 ? 'High Risk Score' : riskScore >= 40 ? 'Moderate Risk' : 'Low Risk';
                 const riskColor = riskScore >= 70 ? C.danger : riskScore >= 40 ? C.warn : C.success;
-                const riskFactors = [
-                  cl.retention_status === 'at_risk' && { label: 'Attendance concern', sev: 'high' },
-                  cl.completion_pct < 50 && { label: 'Low completion', sev: 'high' },
-                  !cl.next_session && { label: 'No upcoming session', sev: 'med' },
-                  cl.visits_per_week < 2 && { label: 'Low visit frequency', sev: 'med' },
-                ].filter(Boolean);
                 return (
                   <>
                     <div style={{ textAlign: 'center', marginBottom: 16 }}>
@@ -843,9 +837,6 @@ export default function ClientProfile({ client: cl = EMPTY_CLIENT, onMessage, on
     </div>
   );
 }
-
-// ─── Missing Zap import shim (used in Quick Actions) ─────────────────────────
-function Zap({ style }) { return <Activity style={style} />; }
 
 // ─── Coach Profile Editor Overlay ─────────────────────────────────────────────
 const SPECIALTIES_OPTIONS = ['Strength Training','Weight Loss','Muscle Gain','Cardio','HIIT','Yoga','Boxing','Rehabilitation','Nutrition','Powerlifting','CrossFit','Flexibility','Sports Performance','Senior Fitness','Pre/Post Natal','Body Recomposition','Mobility','Mindfulness'];
