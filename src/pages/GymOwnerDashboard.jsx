@@ -572,11 +572,19 @@ export default function GymOwnerDashboard() {
   }, [classes, currentUser, isCoach, activeCoachRecord]);
 
   const coachMemberships = useMemo(() => {
-    if (!isCoach || !activeCoachRecord) return allMemberships;
-    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
-    if (clientIds && clientIds.length > 0) return allMemberships.filter((m) => clientIds.includes(m.user_id));
+    if (!isCoach) return allMemberships;
+    // Include members who have a booking with this coach
+    const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
+    if (bookedClientIds.size > 0) {
+      return allMemberships.filter(m => bookedClientIds.has(m.user_id));
+    }
+    // Fallback: filter by client_notes if available
+    if (activeCoachRecord?.client_notes) {
+      const ids = Object.keys(activeCoachRecord.client_notes);
+      if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
+    }
     return allMemberships;
-  }, [isCoach, activeCoachRecord, allMemberships]);
+  }, [isCoach, activeCoachRecord, allMemberships, coachBookings]);
 
   const coachCheckIns = useMemo(() => {
     if (!isCoach || !activeCoachRecord) return checkIns;
@@ -609,7 +617,7 @@ export default function GymOwnerDashboard() {
       content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach ?
-      <TabCoachMembers allMemberships={coachMemberships} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} openModal={openModal} now={now} bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} coach={activeCoachRecord} /> :
+      <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} now={now} /> :
       <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?

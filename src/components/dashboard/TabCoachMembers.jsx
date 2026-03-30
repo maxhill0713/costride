@@ -184,96 +184,81 @@ const SEV = {
   Cleared: { color: C.green, dim: C.greenDim, str: 'rgba(33,163,111,0.2)' },
 };
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const CLIENTS = [
-  {
-    id: 1, name: 'Sarah Mitchell', email: 'sarah.m@example.com', phone: '+44 7911 123 456',
-    tier: 'Premium', status: 'active', goal: 'Weight Loss',
-    retentionScore: 88, retentionHistory: [68,72,74,78,80,83,86,88],
-    sessionsThisMonth: 9, sessionsLastMonth: 7, lastVisit: 1, streak: 14,
-    consecutiveMissed: 0, joinDate: 'Sep 2023', membership: 'Unlimited Monthly',
-    monthlySpend: 149, tags: ['HIIT','Yoga'],
-    notes: 'Responds exceptionally well to HIIT circuits. Prefers early morning slots and positive reinforcement. Strong candidate for a challenge feature testimonial.',
-    nextSession: 'Tomorrow, 7:00 AM', upcomingClasses: ['HIIT Thursday','Yoga Sunday'],
-    injuries: [{ id:1, area:'Left Knee', severity:'Monitor', note:'Post-ACL sensitivity. Avoid high-impact lunges and deep single-leg squats.', logged:'Mar 2024' }],
-  },
-  {
-    id: 2, name: 'James Chen', email: 'j.chen@example.com', phone: '+44 7700 234 567',
-    tier: 'Standard', status: 'active', goal: 'Muscle Gain',
-    retentionScore: 73, retentionHistory: [78,77,76,75,74,74,73,73],
-    sessionsThisMonth: 5, sessionsLastMonth: 7, lastVisit: 4, streak: 2,
-    consecutiveMissed: 0, joinDate: 'Feb 2024', membership: '3× Week',
-    monthlySpend: 89, tags: ['Strength','CrossFit'], notes: 'Highly competitive — responds well to benchmarks. Missed 2 sessions this month without notice.',
-    nextSession: 'Friday, 6:30 PM', upcomingClasses: ['Strength Friday'], injuries: [],
-  },
-  {
-    id: 3, name: 'Olivia Hartley', email: 'olivia.h@example.com', phone: '+44 7733 345 678',
-    tier: 'Premium', status: 'at_risk', goal: 'Stress Relief',
-    retentionScore: 38, retentionHistory: [82,79,70,61,53,46,41,38],
-    sessionsThisMonth: 1, sessionsLastMonth: 5, lastVisit: 18, streak: 0,
-    consecutiveMissed: 3, joinDate: 'Jan 2023', membership: 'Unlimited Monthly',
-    monthlySpend: 149, tags: ['Yoga','Pilates'],
-    notes: 'Significant engagement drop over 6 weeks. Mentioned work stress in last session. A warm personal check-in is strongly recommended.',
-    nextSession: null, upcomingClasses: [],
-    injuries: [{ id:1, area:'Right Shoulder', severity:'Mild', note:'Mild impingement. Avoid overhead pressing until cleared.', logged:'Jan 2024' }],
-  },
-  {
-    id: 4, name: 'Marcus Williams', email: 'marcus.w@example.com', phone: '+44 7808 456 789',
-    tier: 'Elite', status: 'active', goal: 'Athletic Performance',
-    retentionScore: 96, retentionHistory: [88,89,91,92,93,94,95,96],
-    sessionsThisMonth: 12, sessionsLastMonth: 11, lastVisit: 0, streak: 28,
-    consecutiveMissed: 0, joinDate: 'Mar 2022', membership: 'Unlimited + PT',
-    monthlySpend: 299, tags: ['Strength','HIIT','Boxing'],
-    notes: 'Star client. Never misses a session. Ask about marathon prep plans in Q3. Great brand ambassador candidate.',
-    nextSession: 'Today, 5:30 PM', upcomingClasses: ['Boxing Today','HIIT Wednesday','Strength Friday'], injuries: [],
-  },
-  {
-    id: 5, name: 'Priya Sharma', email: 'p.sharma@example.com', phone: '+44 7912 567 890',
-    tier: 'Standard', status: 'paused', goal: 'General Fitness',
-    retentionScore: 54, retentionHistory: [65,63,60,57,54,51,53,54],
-    sessionsThisMonth: 2, sessionsLastMonth: 4, lastVisit: 9, streak: 1,
-    consecutiveMissed: 2, joinDate: 'Nov 2023', membership: 'Pay As You Go',
-    monthlySpend: 55, tags: ['Cardio','Pilates'],
-    notes: 'Membership paused due to travel — returns mid-month. Send a personalised welcome-back message.',
-    nextSession: 'Returns 15th', upcomingClasses: [],
-    injuries: [{ id:1, area:'Lower Back', severity:'Monitor', note:'Recurring tightness after long flights. Prioritise mobility work on return.', logged:'Feb 2024' }],
-  },
-  {
-    id: 6, name: 'Tom Gallagher', email: 't.gallagher@example.com', phone: '+44 7765 678 901',
-    tier: 'Standard', status: 'active', goal: 'Weight Loss',
-    retentionScore: 67, retentionHistory: [55,57,60,62,64,65,66,67],
-    sessionsThisMonth: 4, sessionsLastMonth: 3, lastVisit: 3, streak: 3,
-    consecutiveMissed: 0, joinDate: 'Apr 2024', membership: '2× Week',
-    monthlySpend: 69, tags: ['Cardio','Functional'],
-    notes: 'Newer member with solid upward progress. Consider suggesting a trial upgrade to 3× per week.',
-    nextSession: 'Wednesday, 12:00 PM', upcomingClasses: ['Functional Wednesday'], injuries: [],
-  },
-  {
-    id: 7, name: 'Aisha Okonkwo', email: 'a.okonkwo@example.com', phone: '+44 7890 789 012',
-    tier: 'Elite', status: 'active', goal: 'Endurance & Toning',
-    retentionScore: 91, retentionHistory: [84,85,87,88,89,90,90,91],
-    sessionsThisMonth: 10, sessionsLastMonth: 10, lastVisit: 1, streak: 21,
-    consecutiveMissed: 0, joinDate: 'Jul 2022', membership: 'Unlimited + PT',
-    monthlySpend: 299, tags: ['Spin','Yoga','Pilates'],
-    notes: 'Excellent form awareness. Strong candidate for the 8-week challenge. Has referred two friends this quarter.',
-    nextSession: 'Tomorrow, 9:30 AM', upcomingClasses: ['Spin Tuesday','Yoga Thursday'],
-    injuries: [{ id:1, area:'Left Hip Flexor', severity:'Cleared', note:'Fully recovered. No restrictions.', logged:'Dec 2023' }],
-  },
-  {
-    id: 8, name: 'Daniel Foster', email: 'd.foster@example.com', phone: '+44 7700 890 123',
-    tier: 'Standard', status: 'at_risk', goal: 'Strength Building',
-    retentionScore: 27, retentionHistory: [74,66,57,47,39,34,30,27],
-    sessionsThisMonth: 0, sessionsLastMonth: 3, lastVisit: 31, streak: 0,
-    consecutiveMissed: 5, joinDate: 'Aug 2023', membership: '3× Week',
-    monthlySpend: 89, tags: ['Strength'],
-    notes: 'Has not attended in over a month. Last two messages went unanswered. Consider a personal phone call.',
-    nextSession: null, upcomingClasses: [],
-    injuries: [
-      { id:1, area:'Right Wrist',   severity:'Active',  note:'Sprain from October. Barbell pressing restricted until physio clearance.', logged:'Oct 2023' },
-      { id:2, area:'Left Shoulder', severity:'Monitor', note:'General instability. Recommend band work before loading overhead movements.', logged:'Jan 2024' },
-    ],
-  },
-];
+// ─── helpers ──────────────────────────────────────────────────────────────────
+function buildClientFromBookings(userId, clientName, clientBookings, checkIns, now) {
+  const now_ = now ? now.getTime() : Date.now();
+  const msDay = 86400000;
+  const msMonth = 30 * msDay;
+
+  const attended = clientBookings.filter(b => b.status === 'attended');
+  const noShows  = clientBookings.filter(b => b.status === 'no_show');
+  const confirmed = clientBookings.filter(b => b.status === 'confirmed');
+  const sessionsThisMonth  = clientBookings.filter(b => b.session_date && (now_ - new Date(b.session_date)) < msMonth).length;
+  const sessionsLastMonth  = clientBookings.filter(b => { const d = b.session_date ? now_ - new Date(b.session_date) : null; return d !== null && d >= msMonth && d < 2 * msMonth; }).length;
+  const noShowRate = clientBookings.length > 0 ? Math.round((noShows.length / clientBookings.length) * 100) : 0;
+
+  // Last visit from check-ins
+  const userCI = checkIns.filter(c => c.user_id === userId).sort((a,b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+  const lastCIDate = userCI[0] ? new Date(userCI[0].check_in_date) : null;
+  const lastVisitDays = lastCIDate ? Math.floor((now_ - lastCIDate.getTime()) / msDay) : 999;
+
+  // Streak
+  let streak = 0;
+  for (let i = 0; i < userCI.length; i++) {
+    const daysDiff = Math.floor((now_ - new Date(userCI[i].check_in_date).getTime()) / msDay);
+    if (daysDiff <= streak + 2) streak = daysDiff + 1;
+    else break;
+  }
+
+  // Retention score (0-100 based on activity)
+  let score = 70;
+  if (lastVisitDays === 999) score -= 40;
+  else if (lastVisitDays > 21) score -= 30;
+  else if (lastVisitDays > 14) score -= 20;
+  else if (lastVisitDays > 7)  score -= 10;
+  if (sessionsThisMonth === 0 && sessionsLastMonth === 0) score -= 20;
+  else if (sessionsThisMonth > sessionsLastMonth) score += 10;
+  else if (sessionsThisMonth < sessionsLastMonth) score -= 10;
+  score = Math.max(5, Math.min(98, score));
+
+  // Retention history (last 8 weeks — simplified)
+  const retentionHistory = Array.from({length: 8}, (_, i) => {
+    const weekStart = now_ - (7-i) * 7 * msDay;
+    const weekEnd   = weekStart + 7 * msDay;
+    const cnt = userCI.filter(c => { const t = new Date(c.check_in_date).getTime(); return t >= weekStart && t < weekEnd; }).length;
+    return Math.min(100, 40 + cnt * 15);
+  });
+
+  const status = score >= 65 ? 'active' : score >= 35 ? 'paused' : 'at_risk';
+  const nextBooking = confirmed.filter(b => b.session_date && new Date(b.session_date) > now).sort((a,b) => new Date(a.session_date) - new Date(b.session_date))[0];
+
+  const firstBooking = [...clientBookings].sort((a,b) => new Date(a.session_date || a.created_date) - new Date(b.session_date || b.created_date))[0];
+
+  return {
+    id: userId,
+    name: clientName || 'Client',
+    email: '',
+    phone: '',
+    tier: 'Standard',
+    status,
+    goal: 'General Fitness',
+    retentionScore: score,
+    retentionHistory,
+    sessionsThisMonth,
+    sessionsLastMonth,
+    lastVisit: lastVisitDays === 999 ? 999 : lastVisitDays,
+    streak,
+    consecutiveMissed: noShows.length,
+    joinDate: firstBooking ? new Date(firstBooking.session_date || firstBooking.created_date).toLocaleDateString('en-GB', {month:'short', year:'numeric'}) : '—',
+    membership: 'Class Booking',
+    monthlySpend: 0,
+    tags: [],
+    notes: '',
+    nextSession: nextBooking ? new Date(nextBooking.session_date).toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}) : null,
+    upcomingClasses: confirmed.filter(b => b.session_date && new Date(b.session_date) > now).slice(0,3).map(b => b.session_name || 'Class'),
+    injuries: [],
+  };
+}
 
 // ─── PRESETS ──────────────────────────────────────────────────────────────────
 const PRESETS = [
@@ -502,12 +487,11 @@ function DropPanel({ client, onClose, openModal }) {
               <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
                 letterSpacing:'.08em', marginBottom:8 }}>Quick Reference</div>
               {[
-                { l:'Membership', v:client.membership },
-                { l:'Since',      v:client.joinDate   },
-                { l:'Goal',       v:client.goal       },
-                { l:'Classes',    v:client.tags.join(', ') || '—' },
-                { l:'Email',      v:client.email      },
-                { l:'Phone',      v:client.phone      },
+                { l:'Since',         v:client.joinDate            },
+                { l:'Sessions/mo',   v:client.sessionsThisMonth   },
+                { l:'Last Visit',    v:client.lastVisit >= 999 ? 'Never' : client.lastVisit === 0 ? 'Today' : `${client.lastVisit}d ago` },
+                { l:'Streak',        v:client.streak > 0 ? `${client.streak}d` : '—' },
+                { l:'No-show Rate',  v:`${client.consecutiveMissed > 0 ? Math.round((client.consecutiveMissed / Math.max(client.sessionsThisMonth + client.sessionsLastMonth, 1)) * 100) : 0}%` },
               ].map((r,i,arr) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between',
                   alignItems:'center', padding:'6px 0',
@@ -788,8 +772,8 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
             <span style={{ fontSize:10, color:C.t3 }}>{client.goal}</span>
             <span style={{ fontSize:10, color:C.t4 }}>·</span>
             <span style={{ fontSize:10, fontWeight:600,
-              color: client.lastVisit===0 ? C.green : client.lastVisit>14 ? C.red : client.lastVisit>7 ? C.amber : C.t3 }}>
-              {client.lastVisit===0 ? 'Today' : client.lastVisit===1 ? 'Yesterday' : `${client.lastVisit}d ago`}
+              color: client.lastVisit===0 ? C.green : client.lastVisit > 999 ? C.t3 : client.lastVisit>14 ? C.red : client.lastVisit>7 ? C.amber : C.t3 }}>
+              {client.lastVisit===0 ? 'Today' : client.lastVisit===1 ? 'Yesterday' : client.lastVisit >= 999 ? 'Never' : `${client.lastVisit}d ago`}
             </span>
             <span style={{ fontSize:10, color:C.t4 }}>·</span>
             <span style={{ fontSize:10, color:C.t3 }}>
@@ -830,18 +814,18 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
 
 // ─── SUMMARY STRIP ────────────────────────────────────────────────────────────
 function SummaryStrip({ clients }) {
-  const mrr      = clients.reduce((s,c) => s + c.monthlySpend, 0);
-  const avgScore = Math.round(clients.reduce((s,c) => s + c.retentionScore, 0) / (clients.length || 1));
-  const active   = clients.filter(c => c.status === 'active').length;
-  const atRisk   = clients.filter(c => c.status === 'at_risk').length;
-  const ameta    = scoreMeta(avgScore);
+  const avgScore     = Math.round(clients.reduce((s,c) => s + c.retentionScore, 0) / (clients.length || 1));
+  const active       = clients.filter(c => c.status === 'active').length;
+  const atRisk       = clients.filter(c => c.status === 'at_risk').length;
+  const totalSessions = clients.reduce((s,c) => s + c.sessionsThisMonth, 0);
+  const ameta        = scoreMeta(avgScore);
   return (
     <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
       {[
-        { label:'Monthly Revenue', value:`£${mrr.toLocaleString()}`, sub:'total MRR',           color:C.green },
-        { label:'Avg Retention',   value:avgScore,                   sub:ameta.label,            color:ameta.color },
-        { label:'Active Clients',  value:active,                     sub:'regularly attending',  color:C.blue  },
-        { label:'Need Outreach',   value:atRisk,                     sub:'at churn risk',        color:atRisk>0?C.red:C.t3 },
+        { label:'Total Clients',   value:clients.length,  sub:'from class bookings',  color:C.blue  },
+        { label:'Avg Retention',   value:avgScore || '—', sub:ameta.label,            color:ameta.color },
+        { label:'Active',          value:active,          sub:'regularly attending',  color:C.green },
+        { label:'Need Outreach',   value:atRisk,          sub:'at churn risk',        color:atRisk>0?C.red:C.t3 },
       ].map((s,i) => (
         <div key={i} style={{ padding:'13px 16px', borderRadius:11,
           background:C.surface, border:`1px solid ${C.border}` }}>
@@ -885,7 +869,7 @@ function Sidebar({ clients, openClient }) {
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:C.t1,
                   overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.name}</div>
-                <div style={{ fontSize:9, color:C.t3 }}>{c.lastVisit}d since last visit</div>
+                <div style={{ fontSize:9, color:C.t3 }}>{c.lastVisit >= 999 ? 'Never visited' : `${c.lastVisit}d since last visit`}</div>
               </div>
               <span style={{ fontSize:15, fontWeight:800, color:scoreColor(c.retentionScore),
                 letterSpacing:'-.03em' }}>{c.retentionScore}</span>
@@ -923,7 +907,7 @@ function Sidebar({ clients, openClient }) {
               <Avatar name={topClient.name} size={32}/>
               <div>
                 <div style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{topClient.name}</div>
-                <div style={{ fontSize:10, color:C.t3 }}>{topClient.membership}</div>
+                <div style={{ fontSize:10, color:C.t3 }}>{topClient.sessionsThisMonth} sessions this month</div>
               </div>
             </div>
             <div style={{ padding:'8px 10px', borderRadius:8, background:C.greenDim,
@@ -962,24 +946,23 @@ function Sidebar({ clients, openClient }) {
         </SideCard>
       )}
 
-      {/* Revenue split */}
+      {/* Session activity split */}
       <SideCard>
-        <SideHdr>Revenue Split</SideHdr>
-        {['Elite','Premium','Standard'].map((tier,i,arr) => {
-          const val = clients.filter(c=>c.tier===tier).reduce((s,c)=>s+c.monthlySpend,0);
-          const total = clients.reduce((s,c)=>s+c.monthlySpend,0);
-          const pct = total > 0 ? Math.round((val/total)*100) : 0;
+        <SideHdr>Session Activity</SideHdr>
+        {[
+          { label: 'Active (65+)',    count: clients.filter(c => c.retentionScore >= 65).length,                   color: C.green },
+          { label: 'Caution (35–64)',count: clients.filter(c => c.retentionScore >= 35 && c.retentionScore < 65).length, color: C.amber },
+          { label: 'At Risk (<35)',   count: clients.filter(c => c.retentionScore < 35).length,                    color: C.red   },
+        ].map(({ label, count, color }, i, arr) => {
+          const pct = clients.length > 0 ? Math.round((count / clients.length) * 100) : 0;
           return (
-            <div key={tier} style={{ marginBottom: i<arr.length-1 ? 9 : 0 }}>
+            <div key={label} style={{ marginBottom: i < arr.length-1 ? 9 : 0 }}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                <span style={{ fontSize:10, color:C.t2 }}>{tier}</span>
-                <span style={{ fontSize:10, fontWeight:700, color:C.t1 }}>
-                  £{val} <span style={{ color:C.t3, fontWeight:400 }}>({pct}%)</span>
-                </span>
+                <span style={{ fontSize:10, color:C.t2 }}>{label}</span>
+                <span style={{ fontSize:10, fontWeight:700, color }}>{count} <span style={{ color:C.t3, fontWeight:400 }}>({pct}%)</span></span>
               </div>
               <div style={{ height:2, borderRadius:99, background:'rgba(255,255,255,.05)', overflow:'hidden' }}>
-                <div style={{ height:'100%', width:`${pct}%`, borderRadius:99, background:C.blue,
-                  opacity: .4 + i * .2 }}/>
+                <div style={{ height:'100%', width:`${pct}%`, borderRadius:99, background:color }}/>
               </div>
             </div>
           );
@@ -1050,14 +1033,15 @@ function PendingClientRow({ invite, onCancel }) {
 }
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
-export default function TabCoachMembers({ openModal = () => {}, coach = null }) {
+export default function TabCoachMembers({ openModal = () => {}, coach = null, bookings = [], checkIns = [], now = new Date() }) {
   const [filter,       setFilter]       = useState('all');
   const [search,       setSearch]       = useState('');
   const [sortBy,       setSortBy]       = useState('risk');
   const [openId,       setOpenId]       = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const coachId = coach?.user_id || coach?.id;
+  const coachId = coach?.id || coach?.user_id;
+  const queryClient = useQueryClient();
 
   // Fetch pending invites sent by this coach
   const { data: pendingInvites = [] } = useQuery({
@@ -1068,80 +1052,43 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
     refetchInterval: 30 * 1000,
   });
 
-  // Fetch accepted invites — these are real clients
-  const { data: acceptedInvites = [] } = useQuery({
-    queryKey: ['coachInvitesForCoach', coachId, 'accepted'],
-    queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'accepted' }, '-created_date', 100),
-    enabled: !!coachId,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
-  });
-
-  const pendingMemberIds = pendingInvites.map(i => i.member_id);
-  const acceptedMemberIds = acceptedInvites.map(i => i.member_id);
-
-  // Build real client list from accepted invites, merged with mock CLIENTS for demo
-  const realClients = useMemo(() => {
-    return acceptedInvites.map(invite => ({
-      id: invite.member_id,
-      name: invite.member_name || 'Member',
-      email: invite.member_email || '',
-      phone: '',
-      tier: 'Standard',
-      status: 'active',
-      goal: 'General Fitness',
-      retentionScore: 70,
-      retentionHistory: [65, 67, 68, 70, 70, 70, 70, 70],
-      sessionsThisMonth: 0,
-      sessionsLastMonth: 0,
-      lastVisit: 0,
-      streak: 0,
-      consecutiveMissed: 0,
-      joinDate: new Date(invite.created_date || Date.now()).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
-      membership: 'Personal Training',
-      monthlySpend: 0,
-      tags: [],
-      notes: '',
-      nextSession: null,
-      upcomingClasses: [],
-      injuries: [],
-    }));
-  }, [acceptedInvites]);
-
   const cancelInviteMutation = useMutation({
     mutationFn: (invite) => base44.entities.CoachInvite.delete(invite.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] }),
   });
 
-  // Combine real accepted clients with mock CLIENTS (mock are for demo/placeholder)
+  // Build real clients from bookings: unique clients who booked a class with this coach
   const allClients = useMemo(() => {
-    // If we have real clients, show them. Always show CLIENTS as demo data too.
-    const combined = [...realClients, ...CLIENTS];
-    // Deduplicate by id just in case
-    const seen = new Set();
-    return combined.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
-  }, [realClients]);
+    // Group bookings by client
+    const byClient = {};
+    bookings.forEach(b => {
+      if (!b.client_id) return;
+      if (!byClient[b.client_id]) byClient[b.client_id] = { name: b.client_name || 'Client', bookings: [] };
+      byClient[b.client_id].bookings.push(b);
+    });
+
+    return Object.entries(byClient).map(([userId, { name, bookings: clientBookings }]) =>
+      buildClientFromBookings(userId, name, clientBookings, checkIns, now)
+    );
+  }, [bookings, checkIns, now]);
+
+  const acceptedMemberIds = allClients.map(c => c.id);
+  const pendingMemberIds  = pendingInvites.map(i => i.member_id);
 
   const atRiskCount = allClients.filter(c => c.status === 'at_risk').length;
 
   const FILTERS = [
-    { id:'all',      label:'All Clients', count:allClients.length + pendingInvites.length },
-    { id:'active',   label:'Active',      count:allClients.filter(c=>c.status==='active').length },
-    { id:'at_risk',  label:'At Risk',     count:atRiskCount, urgent:true },
-    { id:'paused',   label:'Paused',      count:allClients.filter(c=>c.status==='paused').length },
-    { id:'elite',    label:'Elite',       count:allClients.filter(c=>c.tier==='Elite').length },
-    { id:'injuries', label:'Injured',     count:allClients.filter(c=>(c.injuries||[]).some(i=>i.severity!=='Cleared')).length },
+    { id:'all',     label:'All Clients', count:allClients.length + pendingInvites.length },
+    { id:'active',  label:'Active',      count:allClients.filter(c=>c.status==='active').length },
+    { id:'at_risk', label:'At Risk',     count:atRiskCount, urgent:true },
+    { id:'paused',  label:'Paused',      count:allClients.filter(c=>c.status==='paused').length },
   ];
 
   const visible = useMemo(() => {
     let list = [...allClients];
-    if (filter === 'active')   list = list.filter(c=>c.status==='active');
-    if (filter === 'at_risk')  list = list.filter(c=>c.status==='at_risk');
-    if (filter === 'paused')   list = list.filter(c=>c.status==='paused');
-    if (filter === 'elite')    list = list.filter(c=>c.tier==='Elite');
-    if (filter === 'injuries') list = list.filter(c=>(c.injuries||[]).some(i=>i.severity!=='Cleared'));
+    if (filter === 'active')  list = list.filter(c=>c.status==='active');
+    if (filter === 'at_risk') list = list.filter(c=>c.status==='at_risk');
+    if (filter === 'paused')  list = list.filter(c=>c.status==='paused');
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(c =>
@@ -1264,8 +1211,12 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null }) 
             {visible.length === 0 && (!showPending || pendingInvites.length === 0) ? (
               <div style={{ padding:'40px', textAlign:'center', borderRadius:11,
                 background:C.surface, border:`1px solid ${C.border}` }}>
-                <p style={{ fontSize:13, color:C.t2, fontWeight:600, margin:'0 0 4px' }}>No clients found</p>
-                <p style={{ fontSize:11, color:C.t3, margin:0 }}>Try adjusting your search or filter</p>
+                <p style={{ fontSize:13, color:C.t2, fontWeight:600, margin:'0 0 4px' }}>
+                  {allClients.length === 0 ? 'No clients yet' : 'No clients match this filter'}
+                </p>
+                <p style={{ fontSize:11, color:C.t3, margin:0 }}>
+                  {allClients.length === 0 ? 'Clients appear here automatically when members book into your classes' : 'Try adjusting your search or filter'}
+                </p>
               </div>
             ) : (
               <>
