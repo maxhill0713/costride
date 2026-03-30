@@ -528,15 +528,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return groups;
   };
 
-  // ── Grouped card grid: Set-label | Reps | Weight [| Edit]
-  // We want Set label on left, then gap, then reps aligned with normal reps col,
-  // then weight aligned with normal weight col.
-  // Normal cols: 1fr | 44px | 12px | 44px | auto [| auto]
-  // For grouped rows we skip the "1fr" name col (name is above) and the "×" divider.
-  // Layout: set-label(~72px) | gap(12px) | reps(44px) | weight(auto) [| edit]
-  const groupedRowCols = alreadyLoggedToday ?
-  '72px 12px 44px 1fr' :
-  '72px 12px 44px 1fr auto';
+
 
   return (
     <>
@@ -799,12 +791,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{}}
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {/* Exercise name spanning full width */}
-                        <div className="text-sm font-bold text-white leading-tight ml-1 mb-2 pr-2">
-                          {group.name}
-                        </div>
-
-                        {/* ── Grouped rows — NO column headers ── */}
+                        {/* ── Grouped rows — exercise name inline with first set row ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
                       const isEditingThis = editingGroupedSet?.index === index;
@@ -871,33 +858,34 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       return (
                         <div
                           key={index}
-                          className="grid gap-1 items-center mb-1.5 pr-2"
-                          style={{ gridTemplateColumns: groupedRowCols }}>
-                              {/* Set label pill — left column */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center ml-20" style={{ minWidth: '60px', maxWidth: '72px' }}>
+                          className="flex items-center gap-1 mb-1 pr-2">
+                              {/* Exercise name — only shown on first row, invisible placeholder on others */}
+                              <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
+                                {group.name}
+                              </div>
+                              {/* Set label pill */}
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '44px' }}>
                                 {setLabel}
                               </div>
-                              {/* Spacer — aligns with the "×" column */}
-                              <div />
-                              {/* Reps — aligns with normal reps column */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-16" style={{ width: '44px' }}>
+                              {/* Reps */}
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0 ml-1" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
-                              {/* Weight + progress + edit — aligns with normal weight column */}
-                              <div className="flex items-center gap-2 ml-1">
-                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px] ml-16">
+                              {/* Weight + progress + edit */}
+                              <div className="flex items-center gap-1 ml-1 flex-1">
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                                 {!alreadyLoggedToday &&
-                            <motion.button
-                              onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                              whileTap={{ scale: 0.78, y: 1 }}
-                              transition={{ type: 'spring', stiffness: 500, damping: 22 }} className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ">
-                              
+                                  <motion.button
+                                    onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                                    whileTap={{ scale: 0.78, y: 1 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </motion.button>
-                            }
+                                }
                               </div>
                             </div>);
 
