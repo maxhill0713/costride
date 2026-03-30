@@ -18,7 +18,7 @@
  *   - No per-element color tinting on cards — color lives in value / badge only
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -66,48 +66,14 @@ const C = {
 const CARD_SHADOW  = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)';
 const CARD_RADIUS  = 14;
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-const CLIENT = {
-  name: 'Sarah Mitchell', avatar_url: null, hero_url: null,
-  email: 'sarah.mitchell@email.com', phone: '+44 7700 900 142',
-  location: 'Manchester, UK', joined: 'Jan 2024', goal: 'Weight Loss & Strength',
-  tags: ['Premium', 'PT Client'], retention_status: 'at_risk', trend: 'declining',
-  last_visit: '6 days ago', visits_per_week: 1.2, completion_pct: 34,
-  next_session: null, total_sessions: 47, no_show_rate: 18, streak: 0,
+// ─── Empty client defaults (no hardcoded mock data) ───────────────────────────
+const EMPTY_CLIENT = {
+  name: '', avatar_url: null, hero_url: null,
+  email: '', phone: '', location: '', joined: '',
+  goal: '', tags: [], retention_status: 'healthy', trend: 'stable',
+  last_visit: '—', visits_per_week: 0, completion_pct: 0,
+  next_session: null, total_sessions: 0, no_show_rate: 0, streak: 0,
 };
-const INSIGHTS = [
-  { id: 1, severity: 'high',   title: 'No visit in 6 days',           body: 'Average cadence was 3×/week.',             action: 'Book session',   key: 'book' },
-  { id: 2, severity: 'high',   title: 'Missed last 2 sessions',       body: 'No-showed Mon 22nd and Wed 24th.',          action: 'Send message',   key: 'message' },
-  { id: 3, severity: 'medium', title: 'Workout completion below 40%', body: 'Only 34% of assigned workouts completed.',  action: 'Assign workout', key: 'assign' },
-  { id: 4, severity: 'medium', title: 'No sessions booked this week', body: 'Client has no upcoming sessions.',          action: 'Book session',   key: 'book' },
-];
-const TIMELINE = [
-  { id: 1, type: 'no_show',  label: 'No-show',           sub: 'Wed 9:00 AM session',     time: '2 days ago' },
-  { id: 2, type: 'no_show',  label: 'No-show',           sub: 'Mon 7:00 AM session',     time: '4 days ago' },
-  { id: 3, type: 'message',  label: 'Message received',  sub: '"Running a bit behind…"', time: '5 days ago' },
-  { id: 4, type: 'workout',  label: 'Workout completed', sub: 'Upper Body Strength B',   time: '6 days ago' },
-  { id: 5, type: 'attended', label: 'Session attended',  sub: 'Fri 6:00 AM — 55 min',   time: '8 days ago' },
-  { id: 6, type: 'attended', label: 'Session attended',  sub: 'Wed 9:00 AM — 60 min',   time: '11 days ago' },
-  { id: 7, type: 'attended', label: 'Session attended',  sub: 'Mon 7:00 AM — 60 min',   time: '14 days ago' },
-];
-const PAST_SESSIONS = [
-  { date: 'Mon 22 Apr', time: '7:00 AM',  status: 'no_show',   duration: null },
-  { date: 'Wed 17 Apr', time: '9:00 AM',  status: 'no_show',   duration: null },
-  { date: 'Fri 12 Apr', time: '6:00 AM',  status: 'attended',  duration: '55 min' },
-  { date: 'Wed 10 Apr', time: '9:00 AM',  status: 'attended',  duration: '60 min' },
-  { date: 'Mon 8 Apr',  time: '7:00 AM',  status: 'attended',  duration: '60 min' },
-  { date: 'Fri 5 Apr',  time: '6:00 AM',  status: 'cancelled', duration: null },
-  { date: 'Wed 3 Apr',  time: '9:00 AM',  status: 'attended',  duration: '50 min' },
-];
-const WORKOUTS = [
-  { name: 'Full Body Recomp – Week 4', completed: 2, total: 6, pct: 33, last: '3 days ago', flag: true },
-  { name: 'Upper Body Strength B',     completed: 4, total: 5, pct: 80, last: '6 days ago', flag: false },
-  { name: 'Lower Body Power A',        completed: 3, total: 5, pct: 60, last: '12 days ago', flag: false },
-];
-const WEEKLY = [
-  { week: 'W1', v: 3 }, { week: 'W2', v: 3 },
-  { week: 'W3', v: 2 }, { week: 'W4', v: 1 }, { week: 'W5', v: 0 },
-];
 
 const STATUS_MAP = {
   healthy:         { label: 'Healthy',         color: C.success },
@@ -329,7 +295,7 @@ function RiskRing({ score }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, onAssign, selectedGym, currentUser }) {
+export default function ClientProfile({ client: cl = EMPTY_CLIENT, onMessage, onBook, onAssign, selectedGym, currentUser, clientCheckIns = [], clientBookings = [], clientWorkouts = [] }) {
   const [tlExpanded, setTlExpanded] = useState(false);
   const [expandWork, setExpandWork] = useState(null);
   const [toastMsg,   setToastMsg]   = useState(null);
@@ -399,6 +365,50 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
     setToastMsg(label);
     setTimeout(() => setToastMsg(null), 2400);
   };
+  // Build timeline from real bookings
+  const TIMELINE = useMemo(() => clientBookings.slice(0, 10).map((b, i) => {
+    const type = b.status === 'attended' ? 'attended' : b.status === 'no_show' ? 'no_show' : b.status === 'cancelled' ? 'cancelled' : 'attended';
+    const minsAgo = b.session_date ? Math.floor((Date.now() - new Date(b.session_date)) / 60000) : null;
+    const timeStr = minsAgo === null ? 'Unknown' : minsAgo < 1440 ? `${Math.floor(minsAgo / 60)}h ago` : `${Math.floor(minsAgo / 1440)}d ago`;
+    return { id: i, type, label: type === 'attended' ? 'Session attended' : type === 'no_show' ? 'No-show' : 'Session cancelled', sub: b.session_name || 'Session', time: timeStr };
+  }), [clientBookings]);
+
+  // Build insights from real data
+  const INSIGHTS = useMemo(() => {
+    const items = [];
+    const now_ = Date.now();
+    const lastCI = clientCheckIns.length > 0 ? clientCheckIns.sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0] : null;
+    const daysAgo = lastCI ? Math.floor((now_ - new Date(lastCI.check_in_date)) / 86400000) : null;
+    if (daysAgo !== null && daysAgo >= 7) items.push({ id: 1, severity: 'high', title: `No visit in ${daysAgo} days`, body: 'Member is inactive — a personal check-in is recommended.', action: 'Send message', key: 'message' });
+    const noShows = clientBookings.filter(b => b.status === 'no_show').length;
+    if (noShows >= 2) items.push({ id: 2, severity: 'high', title: `${noShows} no-shows`, body: 'Multiple missed sessions. Consider rescheduling or checking in.', action: 'Send message', key: 'message' });
+    if (!cl.next_session) items.push({ id: 3, severity: 'medium', title: 'No upcoming sessions booked', body: 'Client has no scheduled sessions.', action: 'Book session', key: 'book' });
+    return items;
+  }, [clientCheckIns, clientBookings, cl]);
+
+  // Past sessions from real bookings
+  const PAST_SESSIONS = useMemo(() => clientBookings.slice(0, 7).map(b => ({
+    date: b.session_date ? new Date(b.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '—',
+    time: b.session_date ? new Date(b.session_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '—',
+    status: b.status === 'attended' ? 'attended' : b.status === 'no_show' ? 'no_show' : 'cancelled',
+    duration: b.status === 'attended' ? '60 min' : null,
+  })), [clientBookings]);
+
+  // Weekly visits from check-ins (last 5 weeks)
+  const WEEKLY = useMemo(() => Array.from({ length: 5 }, (_, i) => {
+    const wEnd = new Date(Date.now() - i * 7 * 86400000);
+    const wStart = new Date(+wEnd - 7 * 86400000);
+    const count = clientCheckIns.filter(c => { const d = new Date(c.check_in_date); return d >= wStart && d < wEnd; }).length;
+    return { week: `W${5 - i}`, v: count };
+  }).reverse(), [clientCheckIns]);
+
+  // Workouts from real assigned workout data
+  const WORKOUTS = useMemo(() => clientWorkouts.map(w => {
+    const ex = w.workout_data?.exercises || [];
+    const pct = w.is_activated ? 100 : 0;
+    return { name: w.workout_data?.name || 'Workout', completed: w.is_activated ? ex.length : 0, total: ex.length || 1, pct, last: w.assigned_date ? new Date(w.assigned_date).toLocaleDateString() : '—', flag: !w.is_activated };
+  }), [clientWorkouts]);
+
   const tlShow = tlExpanded ? TIMELINE : TIMELINE.slice(0, 4);
 
   return (
@@ -579,7 +589,7 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
                   <span style={{ fontSize: 10, color: C.t3, fontWeight: 500 }}>{label}</span>
                 </div>
               ))}
-              <span style={{ marginLeft: 'auto', fontSize: 11, color: C.danger, fontWeight: 700 }}>No-show rate: {CLIENT.no_show_rate}%</span>
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: C.danger, fontWeight: 700 }}>No-show rate: {cl.no_show_rate}%</span>
             </div>
 
             <div style={{ height: 1, background: C.divider, margin: '4px 0 18px' }} />
@@ -656,9 +666,9 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {[
-                { label: 'Avg Freq',  value: '1.2×/wk', warn: true },
-                { label: 'Streak',    value: '0 days',   warn: true },
-                { label: 'Trend',     value: 'Declining', warn: true },
+                { label: 'Avg Freq',  value: `${cl.visits_per_week}×/wk`, warn: cl.visits_per_week < 2 },
+                { label: 'Streak',    value: `${cl.streak} days`,          warn: cl.streak === 0 },
+                { label: 'Trend',     value: cl.trend === 'improving' ? 'Improving' : cl.trend === 'declining' ? 'Declining' : 'Stable', warn: cl.trend === 'declining' },
               ].map(({ label, value, warn }) => (
                 <div key={label} style={{ padding: '12px 13px', borderRadius: 11, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: C.t4, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>{label}</div>
@@ -672,10 +682,10 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
           <Section label="Interaction History" icon={MessageSquare} action="Send Message" onAction={() => act('Message', 'message')}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
               {[
-                { label: 'Last Message',      value: '5 days ago', sub: '"Running a bit behind…"', warn: false },
-                { label: 'Last Coach Action', value: '8 days ago', sub: 'Session booked',           warn: true  },
-                { label: 'Response Time',     value: 'Slow',       sub: 'Avg. 6 hrs to reply',      warn: true  },
-                { label: 'Interaction Score', value: '4 / 10',     sub: 'Low engagement',            warn: true  },
+                { label: 'Last Visit',        value: cl.last_visit || '—',                                                        sub: 'Most recent check-in',  warn: cl.retention_status === 'at_risk' },
+                { label: 'Total Check-ins',   value: clientCheckIns.length,                                                        sub: 'All time',              warn: false },
+                { label: 'Booked Sessions',   value: clientBookings.filter(b => b.status === 'confirmed').length,                   sub: 'Upcoming',              warn: false },
+                { label: 'Completion',        value: `${cl.completion_pct}%`,                                                      sub: 'Assigned workouts',     warn: cl.completion_pct < 50 },
               ].map(({ label, value, sub, warn }) => (
                 <div key={label} style={{ padding: '12px 13px', borderRadius: 11, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: C.t4, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>{label}</div>
@@ -684,15 +694,17 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
                 </div>
               ))}
             </div>
-            <Signal
-              color={C.warn}
-              icon={AlertCircle}
-              title="No coach interaction in 8 days"
-              detail="A proactive check-in could significantly help prevent churn."
-              action="Send message"
-              onAction={() => act('Message', 'message')}
-              last
-            />
+            {cl.retention_status !== 'healthy' && (
+              <Signal
+                color={C.warn}
+                icon={AlertCircle}
+                title={cl.retention_status === 'at_risk' ? 'Client needs outreach' : 'Check in with this client'}
+                detail="A proactive check-in could significantly help prevent churn."
+                action="Send message"
+                onAction={() => act('Message', 'message')}
+                last
+              />
+            )}
           </Section>
         </div>
 
@@ -724,10 +736,10 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
           <CardShell>
             <CardHeader label="Snapshot" icon={BarChart2} />
             <div style={{ padding: '4px 16px 12px' }}>
-              <StatRow label="Total Sessions"  value={CLIENT.total_sessions} />
-              <StatRow label="No-show Rate"    value={`${CLIENT.no_show_rate}%`}   valueColor={CLIENT.no_show_rate > 15 ? C.danger : C.t1} />
-              <StatRow label="Completion"      value={`${CLIENT.completion_pct}%`} valueColor={CLIENT.completion_pct < 50 ? C.danger : C.t1} />
-              <StatRow label="Visits / Week"   value={`${CLIENT.visits_per_week}×`} valueColor={CLIENT.visits_per_week < 2 ? C.danger : C.t1} last />
+              <StatRow label="Total Sessions"  value={cl.total_sessions} />
+              <StatRow label="No-show Rate"    value={`${cl.no_show_rate}%`}   valueColor={cl.no_show_rate > 15 ? C.danger : C.t1} />
+              <StatRow label="Completion"      value={`${cl.completion_pct}%`} valueColor={cl.completion_pct < 50 ? C.danger : C.t1} />
+              <StatRow label="Visits / Week"   value={`${cl.visits_per_week}×`} valueColor={cl.visits_per_week < 2 ? C.danger : C.t1} last />
             </div>
           </CardShell>
 
@@ -735,21 +747,35 @@ export default function ClientProfile({ client: cl = CLIENT, onMessage, onBook, 
           <CardShell style={{ border: `1px solid ${C.dangerBrd}` }}>
             <CardHeader label="Retention Risk" icon={AlertTriangle} iconColor={C.danger} />
             <div style={{ padding: '18px 16px' }}>
-              <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                <RiskRing score={78} />
-                <div style={{ fontSize: 10, fontWeight: 700, color: C.danger, marginTop: 6, textTransform: 'uppercase', letterSpacing: '.07em' }}>High Risk Score</div>
-              </div>
-              {/* risk bar */}
-              <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 16 }}>
-                <div style={{ height: '100%', width: '78%', borderRadius: 99, background: `linear-gradient(90deg,${C.warn},${C.danger})` }} />
-              </div>
+              {(() => {
+                const riskScore = cl.retention_status === 'at_risk' ? 78 : cl.retention_status === 'needs_attention' ? 45 : 20;
+                const riskLabel = riskScore >= 70 ? 'High Risk Score' : riskScore >= 40 ? 'Moderate Risk' : 'Low Risk';
+                const riskColor = riskScore >= 70 ? C.danger : riskScore >= 40 ? C.warn : C.success;
+                const riskFactors = [
+                  cl.retention_status === 'at_risk' && { label: 'Attendance concern', sev: 'high' },
+                  cl.completion_pct < 50 && { label: 'Low completion', sev: 'high' },
+                  !cl.next_session && { label: 'No upcoming session', sev: 'med' },
+                  cl.visits_per_week < 2 && { label: 'Low visit frequency', sev: 'med' },
+                ].filter(Boolean);
+                return (
+                  <>
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                      <RiskRing score={riskScore} />
+                      <div style={{ fontSize: 10, fontWeight: 700, color: riskColor, marginTop: 6, textTransform: 'uppercase', letterSpacing: '.07em' }}>{riskLabel}</div>
+                    </div>
+                    <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 16 }}>
+                      <div style={{ height: '100%', width: `${riskScore}%`, borderRadius: 99, background: `linear-gradient(90deg,${C.warn},${C.danger})` }} />
+                    </div>
+                  </>
+                );
+              })()}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
-                  { label: 'Attendance drop', sev: 'high' },
-                  { label: 'Low completion',  sev: 'high' },
-                  { label: 'No booking made', sev: 'med'  },
-                  { label: 'Low engagement',  sev: 'med'  },
-                ].map(({ label, sev }) => (
+                  cl.retention_status === 'at_risk' && { label: 'Attendance concern', sev: 'high' },
+                  cl.completion_pct < 50 && { label: 'Low completion', sev: 'high' },
+                  !cl.next_session && { label: 'No upcoming session', sev: 'med' },
+                  cl.visits_per_week < 2 && { label: 'Low visit frequency', sev: 'med' },
+                ].filter(Boolean).map(({ label, sev }) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 12, color: C.t2 }}>{label}</span>
                     <span style={{
