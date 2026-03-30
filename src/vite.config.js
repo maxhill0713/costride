@@ -6,7 +6,13 @@ import base44Plugin from '@base44/vite-plugin';
 export default defineConfig({
   plugins: [
     react(),
-    base44Plugin(),
+    base44Plugin({
+      pwa: {
+        workbox: {
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        },
+      },
+    }),
   ],
   build: {
     rollupOptions: {
