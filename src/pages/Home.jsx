@@ -316,6 +316,15 @@ export default function Home() {
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
     return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
   }, [queryClient]);
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try { return await base44.auth.me(); }
+      catch (error) { console.error('Auth error:', error); return null; }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
   useEffect(() => {
     injectStreakStyles();
     if (!currentUser) return;
@@ -363,15 +372,6 @@ export default function Home() {
     const t = setTimeout(() => setDebouncedFriendSearch(sanitiseUsernameQuery(friendSearchQuery)), 300);
     return () => clearTimeout(t);
   }, [friendSearchQuery]);
-  const { data: currentUser, isLoading: userLoading } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      try { return await base44.auth.me(); }
-      catch (error) { console.error('Auth error:', error); return null; }
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
