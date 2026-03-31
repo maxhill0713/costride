@@ -679,7 +679,11 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           confirmLabel={post.is_favourite ? 'Remove' : 'Add to Favourites'}
           confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} isPending={updatePostMutation.isPending} />
-        <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
+                <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
+        {typeof document !== 'undefined' && ReactDOM.createPortal(
+          <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />,
+          document.body
+        )}
       </>
     );
   }
