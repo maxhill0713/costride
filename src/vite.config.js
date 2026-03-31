@@ -19,12 +19,12 @@ export default defineConfig({
         }
       },
     },
-    base44Plugin(),
     VitePWA({
       workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       },
     }),
+    base44Plugin(),
   ],
   build: {
     chunkSizeWarningLimit: 1500,

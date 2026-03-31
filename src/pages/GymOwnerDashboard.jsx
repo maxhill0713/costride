@@ -1,4 +1,4 @@
- import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
@@ -573,11 +573,6 @@ export default function GymOwnerDashboard() {
     return base;
   }, [memberLastCheckIn, rawCheckIns]);
 
-  // Use the resolved avatar map (fetched from User entity) as the primary source
-  // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
-  const avatarMapFull = useMemo(() => {
-    return { ...avatarMap, ...memberAvatarMapResolved };
-  }, [avatarMap, memberAvatarMapResolved]);
   const activeCoachRecord = useMemo(() => {
     if (!isCoach) return null;
     if (selectedCoachId) return coaches.find((c) => c.id === selectedCoachId) || null;
@@ -606,6 +601,12 @@ export default function GymOwnerDashboard() {
     if (clientIds && clientIds.length > 0) return checkIns.filter((c) => clientIds.includes(c.user_id));
     return checkIns;
   }, [isCoach, activeCoachRecord, checkIns]);
+  // Use the resolved avatar map (fetched from User entity) as the primary source
+  // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
+  const avatarMapFull = useMemo(() => {
+    return { ...avatarMap, ...memberAvatarMapResolved };
+  }, [avatarMap, memberAvatarMapResolved]);
+
   const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
   const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
   const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
