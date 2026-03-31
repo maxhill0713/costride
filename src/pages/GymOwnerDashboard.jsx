@@ -34,7 +34,9 @@ import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import EditPricingModal from '../components/gym/EditPricingModal';
 import QRCode from 'react-qr-code';
+
 import { lazy, Suspense } from 'react';
+
 const TabOverview = lazy(() => import('../components/dashboard/TabOverview'));
 const TabMembersComponent = lazy(() => import('../components/dashboard/TabMembers'));
 const TabContentComponent = lazy(() => import('../components/dashboard/TabContent'));
@@ -48,6 +50,7 @@ const TabCoachProfile = lazy(() => import('../components/dashboard/TabCoachProfi
 const TabEngagement = lazy(() => import('../components/dashboard/TabEngagement'));
 const TabRewards = lazy(() => import('../components/dashboard/TabRewards'));
 const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday'));
+
 function TabLoader() {
   return (
     <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
@@ -55,6 +58,7 @@ function TabLoader() {
       <div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: '_tab-spin 0.7s linear infinite' }} />
     </div>);
 }
+
 const D = {
   bgBase: '#080e18',
   bgSidebar: '#070c16',
@@ -80,6 +84,7 @@ const D = {
   t3: '#475569',
   t4: '#2d3f55'
 };
+
 const ALL_NAV = [
 { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['gym_owner'] },
 { id: 'today', label: 'Today', icon: Sun, roles: ['coach'] },
@@ -90,6 +95,8 @@ const ALL_NAV = [
 { id: 'profile', label: 'Profile', icon: Crown, roles: ['coach'] },
 { id: 'engagement', label: 'Automations', icon: Zap, roles: ['gym_owner'] },
 { id: 'gym', label: 'Settings', icon: Settings, roles: ['gym_owner'] }];
+
+
 function injectDashCSS() {
   if (typeof document === 'undefined' || document.getElementById('dash-root-css')) return;
   const el = document.createElement('style');
@@ -97,6 +104,7 @@ function injectDashCSS() {
   el.textContent = DASH_CSS_TEXT;
   document.head.appendChild(el);
 }
+
 const DASH_CSS_TEXT = `
   .dash-root, .dash-root * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; box-sizing: border-box; }
   .dash-root {
@@ -113,9 +121,11 @@ const DASH_CSS_TEXT = `
     --amber:    #f59e0b;
     --green:    #10b981;
   }
+
   .dash-root ::-webkit-scrollbar { width: 3px; height: 3px; }
   .dash-root ::-webkit-scrollbar-track { background: transparent; }
   .dash-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 99px; }
+
   .dash-root .nav-item {
     display: flex; align-items: center; width: 100%;
     border: none; background: transparent; cursor: pointer;
@@ -135,6 +145,7 @@ const DASH_CSS_TEXT = `
     border-left-color: #3b82f6;
     font-weight: 700;
   }
+
   .dash-root .stat-card {
     background: #0c1422;
     border: 1px solid rgba(255,255,255,0.07);
@@ -157,8 +168,10 @@ const DASH_CSS_TEXT = `
     font-size: 11px; color: #475569;
     display: flex; align-items: center; gap: 5px;
   }
+
   .dash-root .member-row { transition: background 0.10s; cursor: pointer; }
   .dash-root .member-row:hover { background: rgba(255,255,255,0.02); }
+
   .dash-root .priority-row {
     border-left: 2px solid transparent;
     border-radius: 0 8px 8px 0;
@@ -168,6 +181,7 @@ const DASH_CSS_TEXT = `
     background: rgba(255,255,255,0.025);
     border-left-color: rgba(239,68,68,0.4);
   }
+
   .dash-root .filter-tab {
     color: #475569; border-radius: 7px; border: 1px solid transparent;
     transition: all 0.12s; cursor: pointer; background: none;
@@ -179,11 +193,13 @@ const DASH_CSS_TEXT = `
     background: rgba(59,130,246,0.08);
     border-color: rgba(59,130,246,0.20);
   }
+
   @keyframes dashFadeUp {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: none; }
   }
   .dash-root .fade-up { animation: dashFadeUp 0.28s ease both; }
+
   .dash-root .pill         { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; border: 1px solid; }
   .dash-root .pill-blue    { color: #3b82f6;  background: rgba(59,130,246,0.10);  border-color: rgba(59,130,246,0.22);  }
   .dash-root .pill-green   { color: #10b981; background: rgba(16,185,129,0.08);  border-color: rgba(16,185,129,0.20);  }
@@ -192,6 +208,7 @@ const DASH_CSS_TEXT = `
   .dash-root .pill-neutral { color: #475569;   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
 `;
 injectDashCSS();
+
 const Spark = ({ data = [], color = D.blue, height = 32 }) => {
   if (!data.length) return null;
   const w = 100,h = height;
@@ -217,6 +234,7 @@ const Spark = ({ data = [], color = D.blue, height = 32 }) => {
       <polygon points={area} fill={`url(#${id})`} />
     </svg>);
 };
+
 const Delta = ({ val }) => {
   const up = val > 0;
   const flat = val === 0;
@@ -233,6 +251,7 @@ const Delta = ({ val }) => {
       {flat ? '—' : up ? '+' : ''}{val}%
     </span>);
 };
+
 function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, footerColor, trend }) {
   const valColor = valueColor || D.t1;
   const barColor = footerColor || D.blue;
@@ -263,9 +282,11 @@ function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBa
       }
     </div>);
 }
+
 function CoachKpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, trend }) {
   return <KpiCard icon={Icon} label={label} value={value} sub={sub} subColor={subColor} valueColor={valueColor} footerBar={footerBar} trend={trend} />;
 }
+
 function DashCard({ children, style = {}, accentColor, title, action, onAction }) {
   return (
     <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 12, position: 'relative', overflow: 'hidden', ...style }}>
@@ -285,18 +306,22 @@ function DashCard({ children, style = {}, accentColor, title, action, onAction }
       {children}
     </div>);
 }
+
 const CoachCard = DashCard;
+
 function MiniAvatar({ name, src, size = 30 }) {
   return (
     <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: src ? 'transparent' : 'rgba(255,255,255,0.08)', border: `1.5px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, color: D.t2, overflow: 'hidden' }}>
       {src ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (name || '?').charAt(0).toUpperCase()}
     </div>);
 }
+
 const CLASS_TYPE_COLORS = { hiit: D.red, yoga: D.green, strength: D.blue, spin: D.blue, boxing: D.red, cardio: D.amber, pilates: D.green, default: D.blue };
 function classColor(cls) {
   const n = (cls?.class_type || cls?.name || '').toLowerCase();
   return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
 }
+
 function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
   const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
   let items;
@@ -330,15 +355,18 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
       )}
     </div>);
 }
+
 export default function GymOwnerDashboard() {
   const [tab, setTab] = useState('overview');
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
+
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen] = useState(false);
   const [modal, setModal] = useState(null);
@@ -353,17 +381,21 @@ export default function GymOwnerDashboard() {
   const [memberPageSize] = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [showChat, setShowChat] = useState(false);
+
   const openModal = useCallback((name) => {if (name === 'message') {setTab('members');return;}setModal(name);}, []);
   const closeModal = useCallback(() => setModal(null), []);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const [selectedCoachId, setSelectedCoachId] = useState(null);
+
   const effectiveAccountType = selectedCoachId ? 'coach' : currentUser?.account_type;
   const isCoach = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole = isCoach ? 'coach' : 'gym_owner';
   const roleLabel = isCoach ? 'Coach' : 'Gym Owner';
+
   const tabInitialised = React.useRef(false);
   useEffect(() => {
     if (!tabInitialised.current && currentUser) {
@@ -371,18 +403,22 @@ export default function GymOwnerDashboard() {
       tabInitialised.current = true;
     }
   }, [currentUser, isCoach]);
+
   useEffect(() => {
     const h = () => base44.auth.logout();
     document.addEventListener('dash-logout', h);
     return () => document.removeEventListener('dash-logout', h);
   }, []);
+
   const handleRoleSelect = (roleId) => {
     if (roleId === 'gym_owner') {setSelectedCoachId(null);} else {setSelectedCoachId(roleId);}
     setTab(roleId === 'gym_owner' ? 'overview' : 'today');
   };
+
   const NAV = ALL_NAV.filter((item) => item.roles.includes(dashRole)).map((item) => ({
     ...item, label: isCoach && item.coachLabel ? item.coachLabel : item.label
   }));
+
   const { data: gyms = [], error: gymsError } = useQuery({
     queryKey: ['ownerGyms', currentUser?.email],
     queryFn: async () => {
@@ -396,12 +432,16 @@ export default function GymOwnerDashboard() {
     },
     enabled: !!currentUser?.email, retry: 3, staleTime: 60 * 1000, refetchInterval: 60 * 1000, refetchIntervalInBackground: false
   });
+
   const myGyms = isCoach ? gyms : gyms.filter((g) => g.owner_email === currentUser?.email);
   const approvedGyms = myGyms.filter((g) => g.status === 'approved');
   const pendingGyms = isCoach ? [] : myGyms.filter((g) => g.status === 'pending');
+
   useEffect(() => {if (approvedGyms.length > 0 && !selectedGym) setSelectedGym(approvedGyms[0]);}, [approvedGyms, selectedGym]);
+
   const qo = { staleTime: 3 * 60 * 1000, placeholderData: (p) => p };
   const on = !!selectedGym;
+
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards', selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }, 'title', 50), enabled: on, ...qo });
   const { data: classes = [] } = useQuery({ queryKey: ['classes', selectedGym?.id], queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
   const { data: coaches = [] } = useQuery({ queryKey: ['coaches', selectedGym?.id], queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
@@ -409,6 +449,7 @@ export default function GymOwnerDashboard() {
   const { data: posts = [] } = useQuery({ queryKey: ['posts', selectedGym?.id], queryFn: () => base44.entities.Post.filter({ gym_id: selectedGym.id }, '-created_date', 20), enabled: on, ...qo });
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
   const { data: polls = [] } = useQuery({ queryKey: ['polls', selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
+
   const { data: coachBookings = [] } = useQuery({ queryKey: ['coachBookings', selectedGym?.id], queryFn: () => base44.entities.Booking.filter({ gym_id: selectedGym.id }, '-session_date', 300), enabled: on && isCoach, staleTime: 2 * 60 * 1000 });
   const { data: coachAssignedWorkouts = [] } = useQuery({
     queryKey: ['coachAssignedWorkouts', selectedGym?.id, selectedCoachId],
@@ -421,40 +462,21 @@ export default function GymOwnerDashboard() {
     enabled: on && isCoach, staleTime: 2 * 60 * 1000
   });
 
-  // ── REAL CHECK-INS QUERY ─────────────────────────────────────────────────
-  // Fetches raw check-in records directly so ci30 and memberLastCheckIn
-  // are always populated from real data, independent of the stats function.
-  const { data: rawCheckIns = [] } = useQuery({
-    queryKey: ['rawCheckIns', selectedGym?.id],
-    queryFn: () => base44.entities.CheckIn.filter(
-      { gym_id: selectedGym.id },
-      '-check_in_time',
-      500
-    ),
-    enabled: on,
-    staleTime: 2 * 60 * 1000
-  });
-
   const { data: stats = {} } = useQuery({
     queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
     queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then((r) => r.data),
     enabled: on, staleTime: 3 * 60 * 1000, placeholderData: (p) => p
   });
+
   const checkIns = stats.recentCheckIns || [];
   const recentActivity = stats.recentActivity || [];
   const allMemberships = stats.membersWithActivity || [];
   const effectiveMemberships = allMemberships;
 
-  // ── UPDATED inv — invalidates rawCheckIns too ────────────────────────────
-  const inv = useCallback((...keys) => {
-    [...keys, 'rawCheckIns'].forEach((k) =>
-      queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] })
-    );
-    queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });
-  }, [queryClient, selectedGym?.id]);
-
+  const inv = useCallback((...keys) => {keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] }));queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });}, [queryClient, selectedGym?.id]);
   const invGyms = useCallback(() => queryClient.invalidateQueries({ queryKey: ['gyms'] }), [queryClient]);
   const onErr = useCallback((e) => toast.error(e?.message || 'Something went wrong'), []);
+
   const createRewardM = useMutation({ mutationFn: (d) => base44.entities.Reward.create(d), onSuccess: () => inv('rewards'), onError: onErr });
   const deleteRewardM = useMutation({ mutationFn: (id) => base44.entities.Reward.delete(id), onSuccess: () => inv('rewards'), onError: onErr });
   const createClassM = useMutation({ mutationFn: (d) => base44.entities.GymClass.create(d), onSuccess: () => inv('classes'), onError: onErr });
@@ -476,7 +498,9 @@ export default function GymOwnerDashboard() {
   const deleteEventM = useMutation({ mutationFn: (id) => base44.entities.Event.delete(id), onSuccess: () => inv('events'), onError: onErr });
   const deleteChallengeM = useMutation({ mutationFn: (id) => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges'), onError: onErr });
   const deletePollM = useMutation({ mutationFn: (id) => base44.entities.Poll.delete(id), onSuccess: () => inv('polls'), onError: onErr });
+
   const now = new Date();
+
   const memberUserIds = useMemo(() => {
     const ids = new Set();
     (allMemberships || []).forEach((m) => {if (m.user_id) ids.add(m.user_id);});
@@ -484,12 +508,14 @@ export default function GymOwnerDashboard() {
     recentActivity.forEach((a) => {if (a.user_id) ids.add(a.user_id);});
     return [...ids].slice(0, 100);
   }, [allMemberships, checkIns, recentActivity]);
+
   const { data: memberUserRecords = [] } = useQuery({
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
     queryFn: () => base44.entities.User.filter({ id: { $in: memberUserIds } }),
     enabled: !!selectedGym && memberUserIds.length > 0,
     staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000
   });
+
   const memberAvatarMapResolved = useMemo(() => {
     const map = {};
     (allMemberships || []).forEach((m) => {if (m.user_id && m.avatar_url) map[m.user_id] = m.avatar_url;});
@@ -497,6 +523,7 @@ export default function GymOwnerDashboard() {
     if (currentUser?.id && currentUser.avatar_url) map[currentUser.id] = currentUser.avatar_url;
     return map;
   }, [allMemberships, memberUserRecords, currentUser]);
+
   const memberNameMap = useMemo(() => {
     const map = {};
     (allMemberships || []).forEach((m) => {if (m.user_id && m.user_name) map[m.user_id] = m.user_name;});
@@ -506,6 +533,7 @@ export default function GymOwnerDashboard() {
     if (currentUser?.id) {const name = currentUser.display_name || currentUser.username || currentUser.full_name;if (name) map[currentUser.id] = name;}
     return map;
   }, [allMemberships, checkIns, recentActivity, memberUserRecords, currentUser]);
+
   const {
     todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
     activeThisWeek = 0, weeklyChangePct = 0,
@@ -528,117 +556,53 @@ export default function GymOwnerDashboard() {
     engagementSegmentsCoach = {}, weekSpark = []
   } = stats;
 
-  // ── 30-DAY CUTOFF ────────────────────────────────────────────────────────
-  // Shared ISO timestamp used by ci30 and contentStats so they stay in sync.
-  const thirtyDaysAgo = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString();
-  }, []);
-
-  // ── REAL ci30 — derived from rawCheckIns ─────────────────────────────────
-  // Replaces the old hardcoded `const ci30 = []`.
-  // Filters the direct check-in query to the last 30 days so every component
-  // that receives ci30 gets real attendance data.
-  const ci30 = useMemo(() =>
-    rawCheckIns.filter((c) => c.check_in_time >= thirtyDaysAgo),
-    [rawCheckIns, thirtyDaysAgo]
-  );
-
-  // ── REAL coachCi30 — scoped to this coach's clients ──────────────────────
-  // Replaces the old hardcoded `const coachCi30 = []`.
-  const coachCi30 = useMemo(() => {
-    if (!isCoach || !activeCoachRecord) return ci30;
-    const clientIds = new Set(coachBookings.map((b) => b.client_id).filter(Boolean));
-    if (clientIds.size > 0) return ci30.filter((c) => clientIds.has(c.user_id));
-    if (activeCoachRecord?.client_notes) {
-      const ids = new Set(Object.keys(activeCoachRecord.client_notes));
-      if (ids.size > 0) return ci30.filter((c) => ids.has(c.user_id));
-    }
-    return ci30;
-  }, [ci30, isCoach, activeCoachRecord, coachBookings]);
-
-  // ── RESOLVED memberLastCheckIn ───────────────────────────────────────────
-  // Merges the server-computed map with timestamps derived directly from
-  // rawCheckIns so "last seen" and at-risk flags are always accurate even
-  // when the stats cloud function is stale or returns an empty map.
-  const memberLastCheckInResolved = useMemo(() => {
-    const base = { ...(memberLastCheckIn || {}) };
-    rawCheckIns.forEach((c) => {
-      if (!c.user_id) return;
-      if (!base[c.user_id] || c.check_in_time > base[c.user_id]) {
-        base[c.user_id] = c.check_in_time;
-      }
-    });
-    return base;
-  }, [memberLastCheckIn, rawCheckIns]);
-
-  const activeCoachRecord = useMemo(() => {
-    if (!isCoach) return null;
-    if (selectedCoachId) return coaches.find((c) => c.id === selectedCoachId) || null;
-    return coaches.find((c) => c.user_email === currentUser?.email) || null;
-  }, [isCoach, selectedCoachId, coaches, currentUser]);
-  const myClasses = useMemo(() => {
-    if (!isCoach) return classes;
-    if (activeCoachRecord) return classes.filter((c) => c.coach_id === activeCoachRecord.id || c.instructor === activeCoachRecord.name || c.coach_name === activeCoachRecord.name || c.coach_email === activeCoachRecord.user_email);
-    return classes.filter((c) => c.instructor === currentUser?.full_name || c.instructor === currentUser?.email || c.coach_name === currentUser?.full_name || c.coach_email === currentUser?.email || c.coach_id === currentUser?.id);
-  }, [classes, currentUser, isCoach, activeCoachRecord]);
-  const coachMemberships = useMemo(() => {
-    if (!isCoach) return allMemberships;
-    const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
-    if (bookedClientIds.size > 0) {
-      return allMemberships.filter(m => bookedClientIds.has(m.user_id));
-    }
-    if (activeCoachRecord?.client_notes) {
-      const ids = Object.keys(activeCoachRecord.client_notes);
-      if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
-    }
-    return allMemberships;
-  }, [isCoach, activeCoachRecord, allMemberships, coachBookings]);
-  const coachCheckIns = useMemo(() => {
-    if (!isCoach || !activeCoachRecord) return checkIns;
-    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
-    if (clientIds && clientIds.length > 0) return checkIns.filter((c) => clientIds.includes(c.user_id));
-    return checkIns;
-  }, [isCoach, activeCoachRecord, checkIns]);
+  const ci30 = [];
   // Use the resolved avatar map (fetched from User entity) as the primary source
   // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
   const avatarMapFull = useMemo(() => {
     return { ...avatarMap, ...memberAvatarMapResolved };
   }, [avatarMap, memberAvatarMapResolved]);
 
+  const activeCoachRecord = useMemo(() => {
+    if (!isCoach) return null;
+    if (selectedCoachId) return coaches.find((c) => c.id === selectedCoachId) || null;
+    return coaches.find((c) => c.user_email === currentUser?.email) || null;
+  }, [isCoach, selectedCoachId, coaches, currentUser]);
+
+  const myClasses = useMemo(() => {
+    if (!isCoach) return classes;
+    if (activeCoachRecord) return classes.filter((c) => c.coach_id === activeCoachRecord.id || c.instructor === activeCoachRecord.name || c.coach_name === activeCoachRecord.name || c.coach_email === activeCoachRecord.user_email);
+    return classes.filter((c) => c.instructor === currentUser?.full_name || c.instructor === currentUser?.email || c.coach_name === currentUser?.full_name || c.coach_email === currentUser?.email || c.coach_id === currentUser?.id);
+  }, [classes, currentUser, isCoach, activeCoachRecord]);
+
+  const coachMemberships = useMemo(() => {
+    if (!isCoach) return allMemberships;
+    // Include members who have a booking with this coach
+    const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
+    if (bookedClientIds.size > 0) {
+      return allMemberships.filter(m => bookedClientIds.has(m.user_id));
+    }
+    // Fallback: filter by client_notes if available
+    if (activeCoachRecord?.client_notes) {
+      const ids = Object.keys(activeCoachRecord.client_notes);
+      if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
+    }
+    return allMemberships;
+  }, [isCoach, activeCoachRecord, allMemberships, coachBookings]);
+
+  const coachCheckIns = useMemo(() => {
+    if (!isCoach || !activeCoachRecord) return checkIns;
+    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
+    if (clientIds && clientIds.length > 0) return checkIns.filter((c) => clientIds.includes(c.user_id));
+    return checkIns;
+  }, [isCoach, activeCoachRecord, checkIns]);
+
+  const coachCi30 = [];
   const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
   const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
   const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
   const coachChallenges = isCoach ? challenges.filter((c) => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
   const coachPolls = isCoach ? polls.filter((p) => p.created_by === coachUserId || !p.created_by) : polls;
-
-  // ── REAL CONTENT STATS ───────────────────────────────────────────────────
-  // Derived directly from the entity arrays so content tab cards always
-  // reflect live data without relying on the aggregated stats function.
-  const contentStats = useMemo(() => {
-    const cutoff = new Date(thirtyDaysAgo);
-    return {
-      // Posts published in the last 30 days
-      postsLast30: posts.filter((p) => new Date(p.created_date) >= cutoff).length,
-      // Events that haven't happened yet
-      eventsUpcoming: events.filter((e) => new Date(e.event_date) >= now).length,
-      // Challenges currently marked active
-      activeChallenges: challenges.filter((c) => c.status === 'active').length,
-      // Sum of all voters across active polls
-      totalPollVotes: polls.reduce((sum, p) => sum + (p.voters?.length || 0), 0),
-      // Sum of attendee counts across all events
-      totalEventAttendees: events.reduce((sum, e) => sum + (Number(e.attendees) || 0), 0),
-      // Sum of participants across all challenges
-      totalChallengeParticipants: challenges.reduce(
-        (sum, c) => sum + (c.participants?.length || 0), 0
-      ),
-      // Total post likes / reactions if stored on the post entity
-      totalPostLikes: posts.reduce((sum, p) => sum + (p.likes?.length || p.like_count || 0), 0),
-      // Total post comments if stored on the post entity
-      totalPostComments: posts.reduce((sum, p) => sum + (p.comments?.length || p.comment_count || 0), 0),
-    };
-  }, [posts, events, challenges, polls, thirtyDaysAgo, now]);
 
   const priorities = [
   atRisk > 0 && { icon: AlertCircle, color: D.red, label: `${atRisk} members inactive 14+ days`, action: 'View members', fn: () => setTab('members') },
@@ -646,6 +610,7 @@ export default function GymOwnerDashboard() {
   polls.length === 0 && { icon: BarChart2, color: D.amber, label: 'No active polls', action: 'Create poll', fn: () => openModal('poll') },
   monthChangePct < 0 && { icon: TrendingDown, color: D.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') }].
   filter(Boolean).slice(0, 4);
+
   const tabPanels = NAV.map((item) => {
     let content = null;
     if (item.id === 'overview' && !isCoach) {
@@ -657,81 +622,11 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'members') {
       content = isCoach ?
       <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
-      <TabMembersComponent
-        allMemberships={effectiveMemberships}
-        checkIns={checkIns}
-        ci30={ci30}
-        // Use resolved map so "last seen" is always accurate
-        memberLastCheckIn={memberLastCheckInResolved}
-        selectedGym={selectedGym}
-        atRisk={atRisk}
-        atRiskMembersList={atRiskMembersList}
-        retentionRate={retentionRate}
-        totalMembers={totalMembers}
-        activeThisWeek={activeThisWeek}
-        newSignUps={newSignUps}
-        weeklyChangePct={weeklyChangePct}
-        avatarMap={avatarMapFull}
-        memberFilter={memberFilter}
-        setMemberFilter={setMemberFilter}
-        memberSearch={memberSearch}
-        setMemberSearch={setMemberSearch}
-        memberSort={memberSort}
-        setMemberSort={setMemberSort}
-        memberPage={memberPage}
-        setMemberPage={setMemberPage}
-        memberPageSize={memberPageSize}
-        selectedRows={selectedRows}
-        setSelectedRows={setSelectedRows}
-        openModal={openModal}
-        now={now}
-        Spark={Spark}
-        Delta={Delta}
-      />;
+      <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?
-      <TabCoachContent
-        bookings={coachBookings}
-        assignedWorkouts={coachAssignedWorkouts}
-        events={coachEvents}
-        challenges={coachChallenges}
-        polls={coachPolls}
-        posts={coachPosts}
-        classes={myClasses}
-        checkIns={coachCheckIns}
-        ci30={coachCi30}
-        avatarMap={avatarMapFull}
-        allMemberships={coachMemberships}
-        openModal={openModal}
-        now={now}
-        contentStats={contentStats}
-        onDeletePost={(id) => deletePostM.mutate(id)}
-        onDeleteEvent={(id) => deleteEventM.mutate(id)}
-        onDeleteChallenge={(id) => deleteChallengeM.mutate(id)}
-        onDeleteClass={(id) => deleteClassM.mutate(id)}
-        onDeletePoll={(id) => deletePollM.mutate(id)}
-      /> :
-      <TabContentComponent
-        events={events}
-        challenges={challenges}
-        polls={polls}
-        posts={posts}
-        classes={classes}
-        checkIns={checkIns}
-        ci30={ci30}
-        avatarMap={avatarMapFull}
-        currentUser={currentUser}
-        leaderboardView={leaderboardView}
-        setLeaderboardView={setLeaderboardView}
-        openModal={openModal}
-        now={now}
-        contentStats={contentStats}
-        onDeletePost={(id) => deletePostM.mutate(id)}
-        onDeleteEvent={(id) => deleteEventM.mutate(id)}
-        onDeleteChallenge={(id) => deleteChallengeM.mutate(id)}
-        onDeleteClass={(id) => deleteClassM.mutate(id)}
-        onDeletePoll={(id) => deletePollM.mutate(id)}
-      />;
+      <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
+      <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
     } else if (item.id === 'analytics') {
       content = isCoach ?
       <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
@@ -745,12 +640,14 @@ export default function GymOwnerDashboard() {
     }
     return { id: item.id, content };
   }).filter((p) => p.content !== null);
+
   const Splash = ({ children }) =>
   <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.bgBase }}>
       <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 16, padding: 36, maxWidth: 380, width: '100%', textAlign: 'center' }}>
         {children}
       </div>
     </div>;
+
   if (gymsError) return (
     <Splash>
       <X style={{ width: 26, height: 26, color: D.red, margin: '0 auto 12px' }} />
@@ -758,6 +655,7 @@ export default function GymOwnerDashboard() {
       <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>{gymsError.message}</p>
       <button onClick={() => window.location.reload()} style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
     </Splash>);
+
   if (approvedGyms.length === 0 && pendingGyms.length > 0) return (
     <Splash>
       <Clock style={{ width: 26, height: 26, color: D.amber, margin: '0 auto 12px' }} />
@@ -765,6 +663,7 @@ export default function GymOwnerDashboard() {
       <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Your gym <strong style={{ color: D.t1 }}>{pendingGyms[0].name}</strong> is under review. We'll notify you once it's approved.</p>
       <Link to={createPageUrl('Home')}><button style={{ background: 'rgba(255,255,255,0.06)', color: D.t1, border: `1px solid ${D.border}`, borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Home</button></Link>
     </Splash>);
+
   if (myGyms.length === 0 && !isCoach) return (
     <Splash>
       <Dumbbell style={{ width: 26, height: 26, color: D.blue, margin: '0 auto 12px' }} />
@@ -772,6 +671,7 @@ export default function GymOwnerDashboard() {
       <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Register your gym to get started with the dashboard.</p>
       <Link to={createPageUrl('GymSignup')}><button style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Register Your Gym</button></Link>
     </Splash>);
+
   const sharedModals =
   <>
       <ManageClassesModal open={modal === 'classes'} onClose={closeModal} classes={classes} onCreateClass={(d) => createClassM.mutate(d)} onUpdateClass={(id, data) => updateClassM.mutate({ id, data })} onDeleteClass={(id) => deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending || updateClassM.isPending} />
@@ -790,6 +690,7 @@ export default function GymOwnerDashboard() {
       <EditBasicInfoModal open={modal === 'editInfo'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
       <EditGymLogoModal open={modal === 'logo'} onClose={closeModal} currentLogoUrl={selectedGym?.logo_url} onSave={(url) => updateGymM.mutate({ logo_url: url })} isLoading={updateGymM.isPending} />
       <EditPricingModal open={modal === 'pricing'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
+
       <AlertDialog open={modal === 'deleteGym'} onOpenChange={(v) => !v && closeModal()}>
         <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
           <AlertDialogHeader>
@@ -808,6 +709,7 @@ export default function GymOwnerDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <AlertDialog open={modal === 'deleteAccount'} onOpenChange={(v) => !v && closeModal()}>
         <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
           <AlertDialogHeader>
@@ -826,9 +728,11 @@ export default function GymOwnerDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)} />
       <MemberChatPanel open={showChat} onClose={() => setShowChat(false)} allMemberships={allMemberships} currentUser={currentUser} avatarMap={memberAvatarMapResolved} />
     </>;
+
   // ── MOBILE ────────────────────────────────────────────────────────────────
   if (isMobile) return (
     <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: D.bgBase, overflow: 'hidden' }}>
@@ -856,7 +760,9 @@ export default function GymOwnerDashboard() {
           </button>
         </div>
       </header>
+
       <MobileKpiStrip tab={tab} isCoach={isCoach} stats={stats} posts={posts} events={events} challenges={challenges} polls={polls} coaches={coaches} classes={classes} myClasses={myClasses} allMemberships={effectiveMemberships} />
+
       <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
         <div style={{ maxWidth: '100%' }}>
           <Suspense fallback={<TabLoader />}>
@@ -866,6 +772,7 @@ export default function GymOwnerDashboard() {
           </Suspense>
         </div>
       </main>
+
       <nav style={{ flexShrink: 0, background: D.bgSidebar, borderTop: `1px solid ${D.border}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map((item) => {
           const active = tab === item.id;
@@ -880,9 +787,11 @@ export default function GymOwnerDashboard() {
       </nav>
       {sharedModals}
     </div>);
+
   // ── DESKTOP ───────────────────────────────────────────────────────────────
   return (
     <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: D.bgBase }}>
+
       {/* ── SIDEBAR ── */}
       <aside style={{
         width: collapsed ? 56 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
@@ -890,6 +799,7 @@ export default function GymOwnerDashboard() {
         display: 'flex', flexDirection: 'column',
         transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)'
       }}>
+
         <div style={{ padding: collapsed ? '13px 0' : '13px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
           {collapsed ?
           <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -925,6 +835,7 @@ export default function GymOwnerDashboard() {
               </button>
             </div>
           }
+
           {!collapsed && approvedGyms.length > 1 &&
           <div style={{ position: 'relative', marginTop: 10 }}>
               <button onClick={() => setGymOpen((o) => !o)}
@@ -945,6 +856,7 @@ export default function GymOwnerDashboard() {
             </div>
           }
         </div>
+
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
           {!collapsed &&
@@ -963,6 +875,7 @@ export default function GymOwnerDashboard() {
               </button>);
           })}
         </nav>
+
         {/* Upgrade prompt */}
         {!collapsed && isGymOwner &&
         <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
@@ -979,6 +892,7 @@ export default function GymOwnerDashboard() {
             </Link>
           </div>
         }
+
         {/* Footer */}
         <div style={{ flexShrink: 0, borderTop: `1px solid ${D.border}` }}>
           {!collapsed &&
@@ -1025,13 +939,19 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
       </aside>
+
       {/* ── MAIN ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        {/* ── TOP BAR ── */}
+
+        {/* ── TOP BAR — date on the left, actions on the right ── */}
         <header style={{ height: 54, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: D.bgSidebar, borderBottom: `1px solid ${D.border}` }}>
+
+          {/* LEFT: live date, shown on every tab */}
           <div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
+
+          {/* RIGHT: action buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isGymOwner && selectedGym?.join_code &&
             <button onClick={() => setShowPoster(true)}
@@ -1042,25 +962,30 @@ export default function GymOwnerDashboard() {
                 <span style={{ fontFamily: 'monospace', letterSpacing: '0.10em' }}>{selectedGym.join_code}</span>
               </button>
             }
+
             {atRisk > 0 &&
             <button onClick={() => setTab('members')}
             style={{ background: D.redDim, color: D.red, border: `1px solid ${D.redBrd}`, borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
                 <AlertTriangle style={{ width: 11, height: 11 }} />{atRisk} at risk
               </button>
             }
+
             <button onClick={() => openModal('qrScanner')}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: D.t2, border: `1px solid ${D.border}`, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.12s', fontFamily: 'inherit' }}
             onMouseEnter={(e) => {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}
             onMouseLeave={(e) => {e.currentTarget.style.color = D.t2;e.currentTarget.style.borderColor = D.border;}}>
               <QrCode style={{ width: 12, height: 12 }} /> Scan QR
             </button>
+
             <button onClick={() => openModal('post')}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: D.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.12s', fontFamily: 'inherit' }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.88'}
             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
               <Plus style={{ width: 12, height: 12 }} /> New Post
             </button>
+
             <ProfileDropdown currentUser={currentUser} coaches={coaches} currentRole={selectedCoachId || (isCoach ? 'coach' : 'gym_owner')} onRoleSelect={handleRoleSelect} />
+
             <button
               onClick={() => setShowChat((o) => !o)}
               style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showChat ? D.blueDim : 'rgba(255,255,255,0.03)', border: `1px solid ${showChat ? D.blueBrd : D.border}`, color: showChat ? D.blue : D.t3, cursor: 'pointer', position: 'relative', transition: 'all 0.12s', fontFamily: 'inherit' }}
@@ -1070,6 +995,7 @@ export default function GymOwnerDashboard() {
             </button>
           </div>
         </header>
+
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
             <Suspense fallback={<TabLoader />}>
@@ -1080,6 +1006,7 @@ export default function GymOwnerDashboard() {
           </div>
         </main>
       </div>
+
       {sharedModals}
     </div>);
 }
