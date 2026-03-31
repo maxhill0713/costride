@@ -57,7 +57,7 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
       {/* Bottom Navigation */}
       {!hideNavigation &&
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-1 h-[6px] px-2">
+          <div className="flex justify-around items-start pt-1 h-[65px] px-2">
             {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
