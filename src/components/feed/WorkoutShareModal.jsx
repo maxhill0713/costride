@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'https://esm.sh/html2canvas@1.4.1';
 
 // ── Costride logo (inline SVG wordmark) ──────────────────────────────────────
 function CostrideLogoMark({ size = 28, className = '' }) {
