@@ -815,11 +815,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{}}
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {/* ── Exercise name header (always shown when logged, hidden per-row otherwise) ── */}
-                        {alreadyLoggedToday &&
-                    <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
-                    }
-                        {/* ── Grouped rows ── */}
+                        {/* ── Grouped rows — each row uses the same grid as the header ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
                       const isEditingThis = editingGroupedSet?.index === index;
@@ -827,9 +823,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       if (isEditingThis) {
                         return (
                           <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                {/* Set label replaces the "Sets" field */}
-                                <div className="inline-flex items-center justify-center px-3 py-1 mb-3 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
-                                  {setLabel}
+                                {/* Exercise name + set label */}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div className="text-sm font-bold text-white">{group.name}</div>
+                                  <div className="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
+                                    {setLabel}
+                                  </div>
                                 </div>
                                 <div className="flex gap-2">
                                   <div className="flex-1">
@@ -883,40 +882,57 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                       }
 
+                      // ── Normal grouped row — use the same grid as single exercise rows ──
                       return (
                         <div
                           key={index}
-                          className={`flex items-center gap-2 mb-1 pr-2 ${alreadyLoggedToday ? 'ml-1' : ''}`}>
-                              {/* Exercise name — only shown on first row, invisible placeholder on others (only when edit button present) */}
-                              {!alreadyLoggedToday &&
-                          <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
-                                  {group.name}
-                                </div>
-                          }
-                              {/* Set label pill */}
-                              <div className={`bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ${!alreadyLoggedToday ? 'ml-5' : ''}`} style={{ width: '44px' }}>
+                          className="grid gap-1 items-center pr-2 mb-1"
+                          style={{ gridTemplateColumns: exerciseGridCols }}>
+
+                              {/* Col 1: Exercise name (first row only) or empty spacer */}
+                              <div className="ml-1">
+                                {setIdx === 0 ? (
+                                  <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
+                                ) : (
+                                  <div />
+                                )}
+                              </div>
+
+                              {/* Col 2: Set label pill — sits under the "Sets" header */}
+                              <div
+                                className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center"
+                                style={{ width: '36px' }}>
                                 {setLabel}
                               </div>
-                              {/* Reps */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
+
+                              {/* Col 3: × separator — sits under the spacer column */}
+                              <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
+
+                              {/* Col 4: Reps — sits under the "Reps" header */}
+                              <div
+                                className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center"
+                                style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
-                              {/* Weight + progress + edit */}
-                              <div className="flex items-center gap-1 flex-1">
+
+                              {/* Col 5: Weight + progress badge */}
+                              <div className="flex items-center gap-1 ml-1">
                                 <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                                {!alreadyLoggedToday &&
-                            <motion.button
-                              onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                              whileTap={{ scale: 0.78, y: 1 }}
-                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                              className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
-                                    <Edit2 className="w-3.5 h-3.5" />
-                                  </motion.button>
-                            }
                               </div>
+
+                              {/* Col 6: Edit pencil (unlogged only) */}
+                              {!alreadyLoggedToday && (
+                                <motion.button
+                                  onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                                  whileTap={{ scale: 0.78, y: 1 }}
+                                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                                  className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </motion.button>
+                              )}
                             </div>);
 
                     })}
@@ -1115,51 +1131,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-                        
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
@@ -1199,8 +1170,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       {/* ── Workout Summary Modal ── */}
       <HomeSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
-
-
 
       <WorkoutSwitcherModal
         open={showSwitcher}
