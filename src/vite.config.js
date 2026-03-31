@@ -18,7 +18,13 @@ export default defineConfig({
         }
       },
     },
-    base44Plugin(),
+    base44Plugin({
+      pwa: {
+        workbox: {
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        },
+      },
+    }),
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -91,11 +97,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    },
-  },
-  pwa: {
-    workbox: {
-      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
     },
   },
 });
