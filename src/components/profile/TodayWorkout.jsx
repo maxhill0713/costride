@@ -1003,7 +1003,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 {c.rounds || '—'}
                               </div>
                               <div />
-                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-3">
+                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-2">
                                 {c.time ? formatTime(c.time) : '—'}
                               </div>
                               <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center " style={{ width: '36px' }}>
@@ -1115,6 +1115,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
 
 
 
