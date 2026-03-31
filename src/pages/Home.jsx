@@ -33,7 +33,7 @@ const sanitiseUsernameQuery = (v) =>
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 // ── MOCK MODE: set to true to force all training day buttons to appear blue for screenshots ──
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc = ctx.createOscillator();
