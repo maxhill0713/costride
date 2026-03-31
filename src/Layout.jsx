@@ -21,15 +21,15 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
   const navItems = isDashboardUser ? [
-    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
-  ] : [
-    { name: 'Home', icon: Home, page: 'Home' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
-    { name: 'Progress', icon: BarChart3, page: 'Progress' },
-    { name: 'Challenges', icon: Gift, page: 'RedeemReward' },
-    { name: 'Profile', icon: Crown, page: 'Profile' },
-  ];
+  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard' },
+  { name: 'Gyms', icon: Dumbbell, page: 'Gyms' }] :
+  [
+  { name: 'Home', icon: Home, page: 'Home' },
+  { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
+  { name: 'Progress', icon: BarChart3, page: 'Progress' },
+  { name: 'Challenges', icon: Gift, page: 'RedeemReward' },
+  { name: 'Profile', icon: Crown, page: 'Profile' }];
+
 
   useEffect(() => {
     const currentTab = navItems.find((item) => item.page === currentPageName);
@@ -56,73 +56,73 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
 
       {/* Bottom Navigation */}
       {!hideNavigation &&
-        <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-1 h-[79px] px-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex justify-around items-start pt-1 h-[6px] px-2">
             {navItems.map((item) => {
-              const isActive = currentPageName === item.page;
-              return (
-                <Link
-                  key={item.page}
-                  to={getTabLink(item)}
-                  onClick={(e) => {
-                    handleTabClick(item, e);
-                    if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
-                  }}
-                  aria-label={item.name}
-                  className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl"
-                  style={{ transition: 'transform 60ms ease-in-out' }}
-                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
-                  onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                  onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                  onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
+            const isActive = currentPageName === item.page;
+            return (
+              <Link
+                key={item.page}
+                to={getTabLink(item)}
+                onClick={(e) => {
+                  handleTabClick(item, e);
+                  if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
+                }}
+                aria-label={item.name}
+                className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl"
+                style={{ transition: 'transform 60ms ease-in-out' }}
+                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
+                onMouseUp={(e) => {e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';e.currentTarget.style.transform = 'scale(1) translateY(0)';}}
+                onMouseLeave={(e) => {e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';e.currentTarget.style.transform = 'scale(1) translateY(0)';}}
+                onTouchStart={(e) => {e.currentTarget.style.transition = 'transform 60ms ease-in-out';e.currentTarget.style.transform = 'scale(0.82) translateY(3px)';}}
+                onTouchEnd={(e) => {e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';e.currentTarget.style.transform = 'scale(1) translateY(0)';}}>
                   <div className="relative">
                     <item.icon className={`w-6 h-6 ${isActive ? 'text-blue-400' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                     {item.badge > 0 &&
-                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                         {item.badge > 9 ? '9+' : item.badge}
                       </div>
-                    }
+                  }
                   </div>
                   <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-blue-400' : ''}`}>{item.name}</span>
-                </Link>
-              );
-            })}
+                </Link>);
+
+          })}
           </div>
         </nav>
       }
 
       {/* Side Navigation for Desktop */}
       {!hideNavigation &&
-        <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
           <Link to={createPageUrl('Gyms')} className="mb-8">
 
           </Link>
           <div className="flex flex-col gap-3">
             {navItems.map((item) => {
-              const isActive = currentPageName === item.page;
-              return (
-                <Link
-                  key={item.page}
-                  to={getTabLink(item)}
-                  onClick={(e) => handleTabClick(item, e)}
-                  className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-200 ${
-                    isActive
-                      ? 'bg-blue-500/15 text-blue-400 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/70'
-                  }`}>
+            const isActive = currentPageName === item.page;
+            return (
+              <Link
+                key={item.page}
+                to={getTabLink(item)}
+                onClick={(e) => handleTabClick(item, e)}
+                className={`relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-200 ${
+                isActive ?
+                'bg-blue-500/15 text-blue-400 shadow-sm' :
+                'text-slate-500 hover:text-slate-200 hover:bg-slate-800/70'}`
+                }>
                   <div className="relative">
                     <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                     {item.badge > 0 &&
-                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                         {item.badge > 9 ? '9+' : item.badge}
                       </div>
-                    }
+                  }
                   </div>
                   {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-400 rounded-r-full" />}
-                </Link>
-              );
-            })}
+                </Link>);
+
+          })}
           </div>
         </nav>
       }
@@ -142,11 +142,11 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
         restTimer={restTimer}
         initialRestTime={initialRestTime}
         onTimerStateChange={setIsTimerActive}
-        onTimerValueChange={setRestTimer}
-      />
+        onTimerValueChange={setRestTimer} />
+      
 
-    </div>
-  );
+    </div>);
+
 }
 
 // ── Outer Layout — sets up TimerProvider then renders LayoutInner ─────────────
@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
       id: 'guest', full_name: 'Guest', email: 'guest@example.com', account_type: 'user'
     })),
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: notifications = [] } = useQuery({
@@ -167,7 +167,7 @@ export default function Layout({ children, currentPageName }) {
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000,
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: false
   });
 
   const { data: gymMemberships = [] } = useQuery({
@@ -175,7 +175,7 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser && currentUser.id !== 'guest',
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || currentPageName === 'GymOwnerDashboard';
@@ -192,6 +192,6 @@ export default function Layout({ children, currentPageName }) {
         hideNavigation={hideNavigation}>
         {children}
       </LayoutInner>
-    </TimerProvider>
-  );
+    </TimerProvider>);
+
 }
