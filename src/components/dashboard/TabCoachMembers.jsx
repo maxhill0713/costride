@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
@@ -6,174 +6,221 @@ import {
   Minus, Activity, AlertTriangle, Zap, Star, CreditCard,
   Clock, MessageCircle, User, UserPlus, ChevronRight, Bell,
   Edit3, Send, CheckCircle, Plus, Trash2, ShieldAlert, ChevronDown,
+  ArrowUpRight, ArrowDownRight, Eye, BarChart3, Users, Target,
+  Flame, Shield, Upload, BookOpen, Sparkles, Info, MoreHorizontal,
+  Mail, Lightbulb, Heart, XCircle,
 } from 'lucide-react';
 import AddClientModal from '../coach/AddClientModal';
 
 // ─── INJECT CSS ───────────────────────────────────────────────────────────────
-if (typeof document !== 'undefined' && !document.getElementById('tcm-css')) {
+if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
   const s = document.createElement('style');
-  s.id = 'tcm-css';
+  s.id = 'cis-css';
   s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    .tcm { font-family: 'DM Sans', -apple-system, sans-serif; }
-    @keyframes tcmFU { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
-    @keyframes tcmSD { from { opacity:0; transform:translateY(-3px) } to { opacity:1; transform:none } }
-    .tcm-fu { animation: tcmFU .25s ease both; }
-    .tcm-sd { animation: tcmSD .18s ease both; }
-    .tcm-root { display: grid; grid-template-columns: minmax(0,1fr) 268px; gap: 14px; }
-    .tcm-left  { display: flex; flex-direction: column; gap: 0; }
-    .tcm-tabs  { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.07);
-                 overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
-    .tcm-tabs::-webkit-scrollbar { display: none; }
-    .tcm-tab   { padding: 9px 14px; font-size: 11px; font-family: inherit; background: none;
-                 border: none; border-bottom: 2px solid transparent; cursor: pointer;
-                 transition: all .14s; white-space: nowrap; flex-shrink: 0; margin-bottom: -1px; }
-    .tcm-feed  { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; }
-    .tcm-row   { transition: background .1s; cursor: pointer; }
-    .tcm-row:hover { background: rgba(255,255,255,.022) !important; }
-    .tcm-btn   { font-family: 'DM Sans', sans-serif; cursor: pointer; outline: none;
-                 transition: all .12s; }
-    .tcm-btn:hover   { filter: brightness(1.1); }
-    .tcm-btn:active  { filter: brightness(.95); transform: scale(.98); }
-    .tcm-sidebar { display: flex; flex-direction: column; gap: 10px; }
-    .tcm-inp { width: 100%; background: #0c1520; border: 1px solid rgba(255,255,255,.07);
-               color: #dde6f0; font-size: 11px; font-family: 'DM Sans', sans-serif;
-               outline: none; border-radius: 8px; padding: 8px 12px;
-               transition: border-color .14s; resize: vertical; }
-    .tcm-inp:focus { border-color: rgba(61,130,244,.45); }
-    .tcm-sel { background: #091320; border: 1px solid rgba(255,255,255,.07);
-               color: #dde6f0; font-size: 11px; font-family: 'DM Sans', sans-serif;
-               outline: none; border-radius: 7px; padding: 7px 10px; cursor: pointer; }
-    @media (max-width: 900px) {
-      .tcm-root { grid-template-columns: 1fr; }
-      .tcm-sidebar { display: none; }
+    .cis { font-family: 'Instrument Sans', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    @keyframes cisFadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+    @keyframes cisSlideIn { from { opacity:0; transform:translateX(-6px) } to { opacity:1; transform:none } }
+    @keyframes cisPulse { 0%,100% { opacity:.6 } 50% { opacity:1 } }
+    @keyframes cisShimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+    @keyframes cisGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0) } 50% { box-shadow: 0 0 0 4px rgba(239,68,68,.08) } }
+
+    .cis-fade { animation: cisFadeUp .3s cubic-bezier(.4,0,.2,1) both; }
+    .cis-slide { animation: cisSlideIn .25s cubic-bezier(.4,0,.2,1) both; }
+    .cis-pulse { animation: cisPulse 2s ease infinite; }
+    .cis-glow { animation: cisGlow 2.5s ease infinite; }
+
+    .cis-btn { font-family: 'Instrument Sans', sans-serif; cursor: pointer; outline: none;
+               transition: all .15s cubic-bezier(.4,0,.2,1); border: none; }
+    .cis-btn:active { transform: scale(.97); }
+
+    .cis-row { transition: all .15s cubic-bezier(.4,0,.2,1); cursor: pointer; position: relative; }
+    .cis-row:hover { background: rgba(255,255,255,.018) !important; }
+    .cis-row:hover .cis-row-actions { opacity: 1; pointer-events: auto; }
+    .cis-row-actions { opacity: 0; pointer-events: none; transition: opacity .15s; }
+
+    .cis-input { width: 100%; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+                 color: #e2e8f0; font-size: 13px; font-family: 'Instrument Sans', sans-serif;
+                 outline: none; border-radius: 10px; padding: 10px 14px;
+                 transition: all .15s; }
+    .cis-input:focus { border-color: rgba(99,102,241,.4); background: rgba(255,255,255,.04);
+                       box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+    .cis-input::placeholder { color: rgba(148,163,184,.4); }
+
+    .cis-select { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+                  color: #e2e8f0; font-size: 12px; font-family: 'Instrument Sans', sans-serif;
+                  outline: none; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+                  appearance: none; }
+
+    .cis-scrollbar::-webkit-scrollbar { width: 4px; }
+    .cis-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .cis-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 99px; }
+
+    .cis-tooltip { position: relative; }
+    .cis-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px);
+      left: 50%; transform: translateX(-50%); background: #1e293b; color: #e2e8f0;
+      font-size: 11px; padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 50;
+      border: 1px solid rgba(255,255,255,.08); }
+    .cis-tooltip:hover::after { opacity: 1; }
+
+    @media (max-width: 1024px) {
+      .cis-grid { grid-template-columns: 1fr !important; }
+      .cis-sidebar { display: none !important; }
+      .cis-health-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 640px) {
+      .cis-health-grid { grid-template-columns: 1fr !important; }
+      .cis-controls { flex-direction: column !important; }
     }
   `;
   document.head.appendChild(s);
 }
 
-// ─── TOKENS ───────────────────────────────────────────────────────────────────
-const C = {
-  bg:       '#080f1a',
-  surface:  '#0c1520',
-  inset:    '#091320',
-  border:   'rgba(255,255,255,0.07)',
-  borderMd: 'rgba(255,255,255,0.11)',
-  t1: '#dde6f0',
-  t2: '#7a8fa8',
-  t3: '#3d5068',
-  t4: '#1e3048',
-  blue:     '#3d82f4',
-  blueDim:  'rgba(61,130,244,0.10)',
-  blueStr:  'rgba(61,130,244,0.22)',
-  amber:    '#e8962a',
-  amberDim: 'rgba(232,150,42,0.09)',
-  amberStr: 'rgba(232,150,42,0.20)',
-  red:      '#e05252',
-  redDim:   'rgba(224,82,82,0.09)',
-  redStr:   'rgba(224,82,82,0.20)',
-  green:    '#21a36f',
-  greenDim: 'rgba(33,163,111,0.09)',
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
+const T = {
+  bg:       '#06090f',
+  surface:  '#0b1121',
+  surfaceH: '#0e1528',
+  card:     '#0d1424',
+  border:   'rgba(255,255,255,.05)',
+  borderH:  'rgba(255,255,255,.09)',
+  borderA:  'rgba(255,255,255,.12)',
+
+  t1: '#f1f5f9',
+  t2: '#94a3b8',
+  t3: '#475569',
+  t4: '#1e293b',
+
+  // Semantic
+  emerald:    '#10b981',
+  emeraldDim: 'rgba(16,185,129,.08)',
+  emeraldBdr: 'rgba(16,185,129,.18)',
+
+  indigo:    '#6366f1',
+  indigoDim: 'rgba(99,102,241,.08)',
+  indigoBdr: 'rgba(99,102,241,.18)',
+
+  amber:    '#f59e0b',
+  amberDim: 'rgba(245,158,11,.07)',
+  amberBdr: 'rgba(245,158,11,.16)',
+
+  red:      '#ef4444',
+  redDim:   'rgba(239,68,68,.07)',
+  redBdr:   'rgba(239,68,68,.16)',
+
+  sky:      '#38bdf8',
+  skyDim:   'rgba(56,189,248,.07)',
+  skyBdr:   'rgba(56,189,248,.16)',
+
+  mono: "'JetBrains Mono', monospace",
 };
 
 // ─── PRIMITIVES ───────────────────────────────────────────────────────────────
-function Avatar({ name = '?', size = 32, src = null }) {
-  const [imgFailed, setImgFailed] = React.useState(false);
+function Avatar({ name = '?', size = 36, src = null, status }) {
+  const [imgFail, setImgFail] = useState(false);
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const statusColors = { active: T.emerald, at_risk: T.red, paused: T.amber };
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(61,130,244,0.10)', border: '1px solid rgba(61,130,244,0.20)',
-      fontSize: size * .33, fontWeight: 800, color: C.blue, letterSpacing: '-.01em',
-      overflow: 'hidden',
-    }}>
-      {src && !imgFailed
-        ? <img src={src} alt={name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgFailed(true)} />
-        : initials}
-    </div>
-  );
-}
-
-function Card({ children, style }) {
-  return (
-    <div style={{
-      background: C.surface, border: `1px solid ${C.border}`,
-      borderRadius: 11, overflow: 'hidden', ...style,
-    }}>{children}</div>
-  );
-}
-
-function CardHdr({ title, badge, action, onAction }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px',
-      borderBottom: `1px solid ${C.border}` }}>
-      <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: C.t1,
-        textTransform: 'uppercase', letterSpacing: '.07em' }}>{title}</span>
-      {badge && <span style={{ fontSize: 8, fontWeight: 800, color: C.amber,
-        background: C.amberDim, border: `1px solid ${C.amberStr}`,
-        borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase',
-        letterSpacing: '.05em' }}>{badge}</span>}
-      {action && (
-        <button className="tcm-btn" onClick={onAction} style={{
-          fontSize: 9, fontWeight: 700, color: C.blue,
-          background: C.blueDim, border: `1px solid ${C.blueStr}`,
-          borderRadius: 6, padding: '3px 9px',
-        }}>{action}</button>
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <div style={{
+        width: size, height: size, borderRadius: 12, overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, rgba(99,102,241,.12), rgba(99,102,241,.04))',
+        border: '1px solid rgba(99,102,241,.15)',
+        fontSize: size * .32, fontWeight: 700, color: T.indigo, letterSpacing: '-.02em',
+      }}>
+        {src && !imgFail
+          ? <img src={src} alt={name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgFail(true)} />
+          : initials}
+      </div>
+      {status && (
+        <div style={{
+          position: 'absolute', bottom: -1, right: -1,
+          width: 10, height: 10, borderRadius: '50%',
+          background: statusColors[status] || T.t3,
+          border: `2px solid ${T.bg}`,
+        }} />
       )}
     </div>
   );
 }
 
-function SideCard({ children, style }) {
+function Pill({ children, color = T.t3, bg, border, style }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`,
-      borderRadius: 11, padding: '13px 14px', ...style }}>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      fontSize: 10, fontWeight: 700, color,
+      background: bg || `${color}0d`, border: `1px solid ${border || `${color}22`}`,
+      borderRadius: 6, padding: '2px 8px', letterSpacing: '.02em',
+      textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: '16px',
+      ...style,
+    }}>{children}</span>
+  );
+}
+
+function Mono({ children, style }) {
+  return (
+    <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 500, letterSpacing: '-.02em', ...style }}>
       {children}
+    </span>
+  );
+}
+
+// ─── HEALTH BAR VIZ ───────────────────────────────────────────────────────────
+function HealthBar({ segments, height = 6 }) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
+  return (
+    <div style={{ display: 'flex', gap: 2, height, borderRadius: 99, overflow: 'hidden' }}>
+      {segments.map((seg, i) => (
+        <div key={i} style={{
+          flex: seg.value / total,
+          background: seg.color,
+          borderRadius: 99,
+          minWidth: seg.value > 0 ? 4 : 0,
+          transition: 'flex .4s cubic-bezier(.4,0,.2,1)',
+        }} />
+      ))}
     </div>
   );
 }
 
-function SideHdr({ children }) {
-  return (
-    <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase',
-      letterSpacing: '.08em', marginBottom: 10 }}>{children}</div>
-  );
-}
-
-// ─── SPARKLINE ────────────────────────────────────────────────────────────────
-function Spark({ data = [], color = C.blue, w = 64, h = 22 }) {
-  if (!data || data.length < 2) return null;
+// ─── MINI TREND CHART ─────────────────────────────────────────────────────────
+function TrendLine({ data = [], color = T.indigo, w = 80, h = 28 }) {
+  if (!data || data.length < 2) return <div style={{ width: w, height: h }} />;
   const min = Math.min(...data), max = Math.max(...data), rng = (max - min) || 1;
   const pts = data.map((v, i) => [
-    2 + (i / (data.length - 1)) * (w - 4),
-    3 + (1 - (v - min) / rng) * (h - 6),
+    (i / (data.length - 1)) * w,
+    4 + (1 - (v - min) / rng) * (h - 8),
   ]);
-  const poly = pts.map(p => p.join(',')).join(' ');
+  const line = pts.map(p => p.join(',')).join(' ');
+  const area = `0,${h} ${line} ${w},${h}`;
   const [lx, ly] = pts[pts.length - 1];
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none"
-      style={{ display: 'block', overflow: 'visible', opacity: .75, flexShrink: 0 }}>
-      <polyline points={poly} stroke={color} strokeWidth="1.2"
-        fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx={lx} cy={ly} r="2" fill={color}/>
+      style={{ display: 'block', overflow: 'visible', flexShrink: 0 }}>
+      <polygon points={area} fill={`${color}08`} />
+      <polyline points={line} stroke={color} strokeWidth="1.5"
+        fill="none" strokeLinecap="round" strokeLinejoin="round" opacity=".7" />
+      <circle cx={lx} cy={ly} r="2.5" fill={color} />
     </svg>
   );
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function scoreColor(s) {
-  if (s >= 80) return C.green;
-  if (s >= 60) return C.t1;
-  if (s >= 40) return C.amber;
-  return C.red;
+  if (s >= 80) return T.emerald;
+  if (s >= 60) return T.t2;
+  if (s >= 40) return T.amber;
+  return T.red;
 }
-function scoreMeta(s) {
-  if (s >= 80) return { label: 'Healthy',   color: C.green };
-  if (s >= 60) return { label: 'Stable',    color: C.t1   };
-  if (s >= 40) return { label: 'Caution',   color: C.amber };
-  return              { label: 'At Risk',   color: C.red   };
+function scoreTier(s) {
+  if (s >= 80) return { label: 'Healthy', color: T.emerald, bg: T.emeraldDim, bdr: T.emeraldBdr };
+  if (s >= 60) return { label: 'Stable',  color: T.t2,      bg: 'rgba(148,163,184,.06)', bdr: 'rgba(148,163,184,.12)' };
+  if (s >= 40) return { label: 'Caution', color: T.amber,   bg: T.amberDim,  bdr: T.amberBdr };
+  return              { label: 'At Risk', color: T.red,     bg: T.redDim,    bdr: T.redBdr };
 }
 function trendOf(hist) {
   if (!hist || hist.length < 4) return { dir: 'flat', delta: 0 };
@@ -182,15 +229,32 @@ function trendOf(hist) {
   if (d < -4) return { dir: 'down', delta: d };
   return            { dir: 'flat', delta: 0 };
 }
+function riskReason(client) {
+  const reasons = [];
+  if (client.lastVisit >= 21) reasons.push('No visit in 3+ weeks');
+  else if (client.lastVisit >= 14) reasons.push('No visit in 2+ weeks');
+  if (client.sessionsThisMonth === 0 && client.sessionsLastMonth === 0) reasons.push('Zero sessions in 2 months');
+  else if (client.sessionsThisMonth < client.sessionsLastMonth) reasons.push('Session frequency declining');
+  if (client.consecutiveMissed >= 2) reasons.push(`${client.consecutiveMissed} no-shows`);
+  if (reasons.length === 0 && client.retentionScore < 40) reasons.push('Low engagement pattern');
+  return reasons;
+}
+function suggestedAction(client) {
+  if (client.lastVisit >= 21) return { label: 'Call them', icon: Phone, color: T.red };
+  if (client.lastVisit >= 14) return { label: 'Send message', icon: MessageCircle, color: T.amber };
+  if (client.sessionsThisMonth < client.sessionsLastMonth) return { label: 'Book session', icon: Calendar, color: T.indigo };
+  if (client.consecutiveMissed >= 2) return { label: 'Check in', icon: Heart, color: T.amber };
+  return { label: 'Message', icon: MessageCircle, color: T.indigo };
+}
 
 const SEV = {
-  Active:  { color: C.red,   dim: C.redDim,   str: C.redStr   },
-  Monitor: { color: C.amber, dim: C.amberDim, str: C.amberStr },
-  Mild:    { color: C.blue,  dim: C.blueDim,  str: C.blueStr  },
-  Cleared: { color: C.green, dim: C.greenDim, str: 'rgba(33,163,111,0.2)' },
+  Active:  { color: T.red,     dim: T.redDim,     bdr: T.redBdr },
+  Monitor: { color: T.amber,   dim: T.amberDim,   bdr: T.amberBdr },
+  Mild:    { color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr },
+  Cleared: { color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr },
 };
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── BUILD CLIENT FROM BOOKINGS ──────────────────────────────────────────────
 function buildClientFromBookings(userId, clientName, clientBookings, checkIns, now) {
   const now_ = now ? now.getTime() : Date.now();
   const msDay = 86400000;
@@ -201,14 +265,11 @@ function buildClientFromBookings(userId, clientName, clientBookings, checkIns, n
   const confirmed = clientBookings.filter(b => b.status === 'confirmed');
   const sessionsThisMonth  = clientBookings.filter(b => b.session_date && (now_ - new Date(b.session_date)) < msMonth).length;
   const sessionsLastMonth  = clientBookings.filter(b => { const d = b.session_date ? now_ - new Date(b.session_date) : null; return d !== null && d >= msMonth && d < 2 * msMonth; }).length;
-  const noShowRate = clientBookings.length > 0 ? Math.round((noShows.length / clientBookings.length) * 100) : 0;
 
-  // Last visit from check-ins
   const userCI = checkIns.filter(c => c.user_id === userId).sort((a,b) => new Date(b.check_in_date) - new Date(a.check_in_date));
   const lastCIDate = userCI[0] ? new Date(userCI[0].check_in_date) : null;
   const lastVisitDays = lastCIDate ? Math.floor((now_ - lastCIDate.getTime()) / msDay) : 999;
 
-  // Streak
   let streak = 0;
   for (let i = 0; i < userCI.length; i++) {
     const daysDiff = Math.floor((now_ - new Date(userCI[i].check_in_date).getTime()) / msDay);
@@ -216,7 +277,6 @@ function buildClientFromBookings(userId, clientName, clientBookings, checkIns, n
     else break;
   }
 
-  // Retention score (0-100 based on activity)
   let score = 70;
   if (lastVisitDays === 999) score -= 40;
   else if (lastVisitDays > 21) score -= 30;
@@ -227,7 +287,6 @@ function buildClientFromBookings(userId, clientName, clientBookings, checkIns, n
   else if (sessionsThisMonth < sessionsLastMonth) score -= 10;
   score = Math.max(5, Math.min(98, score));
 
-  // Retention history (last 8 weeks — simplified)
   const retentionHistory = Array.from({length: 8}, (_, i) => {
     const weekStart = now_ - (7-i) * 7 * msDay;
     const weekEnd   = weekStart + 7 * msDay;
@@ -237,14 +296,16 @@ function buildClientFromBookings(userId, clientName, clientBookings, checkIns, n
 
   const status = score >= 65 ? 'active' : score >= 35 ? 'paused' : 'at_risk';
   const nextBooking = confirmed.filter(b => b.session_date && new Date(b.session_date) > now).sort((a,b) => new Date(a.session_date) - new Date(b.session_date))[0];
-
   const firstBooking = [...clientBookings].sort((a,b) => new Date(a.session_date || a.created_date) - new Date(b.session_date || b.created_date))[0];
+
+  // Determine if "new" (joined within last 30 days)
+  const joinDateRaw = firstBooking ? new Date(firstBooking.session_date || firstBooking.created_date) : null;
+  const isNew = joinDateRaw && (now_ - joinDateRaw.getTime()) < msMonth;
 
   return {
     id: userId,
     name: clientName || 'Client',
-    email: '',
-    phone: '',
+    email: '', phone: '',
     tier: 'Standard',
     status,
     goal: 'General Fitness',
@@ -260,6 +321,7 @@ function buildClientFromBookings(userId, clientName, clientBookings, checkIns, n
     monthlySpend: 0,
     tags: [],
     notes: '',
+    isNew,
     nextSession: nextBooking ? new Date(nextBooking.session_date).toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}) : null,
     upcomingClasses: confirmed.filter(b => b.session_date && new Date(b.session_date) > now).slice(0,3).map(b => b.session_name || 'Class'),
     injuries: [],
@@ -275,10 +337,373 @@ const PRESETS = [
   { id:'welcome',  label:'Welcome back',    text: fn=>`Hi ${fn}, great to have you back! We've got some exciting sessions lined up — let's pick up right where you left off.` },
 ];
 
+// ─── HEALTH OVERVIEW SECTION ─────────────────────────────────────────────────
+function HealthOverview({ clients }) {
+  const healthy  = clients.filter(c => c.retentionScore >= 80).length;
+  const stable   = clients.filter(c => c.retentionScore >= 60 && c.retentionScore < 80).length;
+  const caution  = clients.filter(c => c.retentionScore >= 40 && c.retentionScore < 60).length;
+  const atRisk   = clients.filter(c => c.retentionScore < 40).length;
+  const total    = clients.length || 1;
+  const avgScore = Math.round(clients.reduce((s,c) => s + c.retentionScore, 0) / total);
+
+  // Trend: compare current avg to what it was ~4 weeks ago via histories
+  const prevAvg = Math.round(clients.reduce((s,c) => {
+    const h = c.retentionHistory;
+    return s + (h && h.length >= 5 ? h[h.length - 5] : c.retentionScore);
+  }, 0) / total);
+  const trendDelta = avgScore - prevAvg;
+  const trendDir = trendDelta > 2 ? 'up' : trendDelta < -2 ? 'down' : 'flat';
+
+  const improving = clients.filter(c => { const t = trendOf(c.retentionHistory); return t.dir === 'up'; }).length;
+  const declining = clients.filter(c => { const t = trendOf(c.retentionHistory); return t.dir === 'down'; }).length;
+
+  return (
+    <div className="cis-fade" style={{ marginBottom: 20 }}>
+      <div className="cis-health-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
+        {/* Overall Score */}
+        <div style={{
+          padding: '18px 20px', borderRadius: 14,
+          background: `linear-gradient(135deg, ${T.surface}, ${T.card})`,
+          border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120,
+            background: `radial-gradient(circle at top right, ${scoreColor(avgScore)}06, transparent 70%)`,
+          }} />
+          <div style={{ fontSize: 10, color: T.t3, fontWeight: 600, letterSpacing: '.06em',
+            textTransform: 'uppercase', marginBottom: 12 }}>Portfolio Health</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontFamily: T.mono, fontSize: 38, fontWeight: 700,
+              color: scoreColor(avgScore), lineHeight: 1, letterSpacing: '-.04em' }}>
+              {avgScore || '—'}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              {trendDir === 'up' && <ArrowUpRight style={{ width: 13, height: 13, color: T.emerald }} />}
+              {trendDir === 'down' && <ArrowDownRight style={{ width: 13, height: 13, color: T.red }} />}
+              {trendDir !== 'flat' && (
+                <span style={{ fontSize: 12, fontWeight: 700,
+                  color: trendDir === 'up' ? T.emerald : T.red }}>
+                  {trendDelta > 0 ? '+' : ''}{trendDelta}
+                </span>
+              )}
+            </div>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <HealthBar height={5} segments={[
+              { value: healthy, color: T.emerald },
+              { value: stable,  color: T.t3 },
+              { value: caution, color: T.amber },
+              { value: atRisk,  color: T.red },
+            ]} />
+          </div>
+        </div>
+
+        {/* Healthy */}
+        <div style={{
+          padding: '18px 20px', borderRadius: 14,
+          background: T.surface, border: `1px solid ${T.border}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.emerald }} />
+            <span style={{ fontSize: 10, color: T.t3, fontWeight: 600, letterSpacing: '.06em',
+              textTransform: 'uppercase' }}>Healthy</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontFamily: T.mono, fontSize: 32, fontWeight: 700, color: T.t1,
+              lineHeight: 1, letterSpacing: '-.03em' }}>{healthy}</span>
+            <span style={{ fontSize: 12, color: T.t3 }}>/ {total}</span>
+          </div>
+          <div style={{ fontSize: 11, color: T.t3, marginTop: 6 }}>
+            {Math.round((healthy / total) * 100)}% of clients
+          </div>
+        </div>
+
+        {/* Needs Attention */}
+        <div style={{
+          padding: '18px 20px', borderRadius: 14,
+          background: atRisk > 0 ? T.redDim : T.surface,
+          border: `1px solid ${atRisk > 0 ? T.redBdr : T.border}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.red }} />
+            <span style={{ fontSize: 10, color: atRisk > 0 ? T.red : T.t3, fontWeight: 600,
+              letterSpacing: '.06em', textTransform: 'uppercase' }}>Need Outreach</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontFamily: T.mono, fontSize: 32, fontWeight: 700,
+              color: atRisk > 0 ? T.red : T.t1, lineHeight: 1, letterSpacing: '-.03em' }}>
+              {atRisk}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: atRisk > 0 ? T.red : T.t3, marginTop: 6, fontWeight: atRisk > 0 ? 600 : 400 }}>
+            {atRisk > 0 ? 'Action required this week' : 'No at-risk clients'}
+          </div>
+        </div>
+
+        {/* Momentum */}
+        <div style={{
+          padding: '18px 20px', borderRadius: 14,
+          background: T.surface, border: `1px solid ${T.border}`,
+        }}>
+          <div style={{ fontSize: 10, color: T.t3, fontWeight: 600, letterSpacing: '.06em',
+            textTransform: 'uppercase', marginBottom: 12 }}>Momentum</div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                <ArrowUpRight style={{ width: 11, height: 11, color: T.emerald }} />
+                <span style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 700, color: T.emerald }}>{improving}</span>
+              </div>
+              <span style={{ fontSize: 10, color: T.t3 }}>Improving</span>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                <ArrowDownRight style={{ width: 11, height: 11, color: T.red }} />
+                <span style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 700, color: T.red }}>{declining}</span>
+              </div>
+              <span style={{ fontSize: 10, color: T.t3 }}>Declining</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PRIORITY CLIENTS ────────────────────────────────────────────────────────
+function PriorityClients({ clients, onSelect }) {
+  const priority = clients
+    .filter(c => c.status === 'at_risk' || (c.status === 'paused' && c.lastVisit > 14))
+    .sort((a, b) => a.retentionScore - b.retentionScore)
+    .slice(0, 4);
+
+  if (priority.length === 0) return null;
+
+  return (
+    <div className="cis-fade" style={{ marginBottom: 20, animationDelay: '.05s' }}>
+      <div style={{
+        borderRadius: 14, overflow: 'hidden',
+        border: `1px solid ${T.redBdr}`,
+        background: `linear-gradient(135deg, ${T.redDim}, ${T.surface})`,
+      }}>
+        <div style={{
+          padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderBottom: `1px solid ${T.redBdr}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="cis-glow" style={{
+              width: 8, height: 8, borderRadius: '50%', background: T.red, flexShrink: 0,
+            }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.t1 }}>Priority Outreach</span>
+            <Pill color={T.red}>{priority.length} client{priority.length > 1 ? 's' : ''}</Pill>
+          </div>
+          <span style={{ fontSize: 10, color: T.t3 }}>Sorted by urgency</span>
+        </div>
+
+        <div style={{ padding: '6px' }}>
+          {priority.map((client, i) => {
+            const reasons = riskReason(client);
+            const action = suggestedAction(client);
+            const ActionIcon = action.icon;
+            return (
+              <div key={client.id}
+                className="cis-row"
+                onClick={() => onSelect(client)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '12px 14px', borderRadius: 10,
+                  animationDelay: `${i * .05}s`,
+                }}>
+                <Avatar name={client.name} src={client.avatar} size={36} status={client.status} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.t1, marginBottom: 3 }}>{client.name}</div>
+                  <div style={{ fontSize: 11, color: T.red, fontWeight: 500 }}>
+                    {reasons[0] || 'Low engagement'}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, marginRight: 8 }}>
+                  <span style={{ fontFamily: T.mono, fontSize: 18, fontWeight: 700,
+                    color: scoreColor(client.retentionScore) }}>{client.retentionScore}</span>
+                </div>
+                <button className="cis-btn" onClick={e => { e.stopPropagation(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '7px 14px', borderRadius: 8,
+                    background: `${action.color}12`, border: `1px solid ${action.color}25`,
+                    color: action.color, fontSize: 11, fontWeight: 700, flexShrink: 0,
+                  }}>
+                  <ActionIcon style={{ width: 12, height: 12 }} />
+                  {action.label}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CLIENT INSIGHTS PANEL ───────────────────────────────────────────────────
+function InsightsPanel({ clients }) {
+  const atRiskCount = clients.filter(c => c.status === 'at_risk').length;
+  const avgSessions = clients.length > 0
+    ? (clients.reduce((s,c) => s + c.sessionsThisMonth, 0) / clients.length).toFixed(1) : 0;
+  const highStreaks = clients.filter(c => c.streak >= 14).length;
+  const newClients = clients.filter(c => c.isNew).length;
+
+  const insights = [
+    atRiskCount > 0 && {
+      icon: AlertTriangle, color: T.red,
+      text: `${atRiskCount} client${atRiskCount > 1 ? 's' : ''} at risk of churning this week`,
+      action: 'Review now',
+    },
+    avgSessions > 0 && {
+      icon: BarChart3, color: T.indigo,
+      text: `Average ${avgSessions} sessions/month across your roster`,
+    },
+    highStreaks > 0 && {
+      icon: Flame, color: T.amber,
+      text: `${highStreaks} client${highStreaks > 1 ? 's' : ''} on a 14+ day streak — celebrate them`,
+    },
+    newClients > 0 && {
+      icon: Sparkles, color: T.sky,
+      text: `${newClients} new client${newClients > 1 ? 's' : ''} joined this month`,
+    },
+    {
+      icon: Lightbulb, color: T.emerald,
+      text: 'Clients attending 2×/week retain 3× longer than 1×/week',
+    },
+  ].filter(Boolean).slice(0, 4);
+
+  return (
+    <div style={{
+      borderRadius: 14, overflow: 'hidden',
+      background: T.surface, border: `1px solid ${T.border}`,
+    }}>
+      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}`,
+        display: 'flex', alignItems: 'center', gap: 7 }}>
+        <Sparkles style={{ width: 12, height: 12, color: T.indigo }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.t1, letterSpacing: '.02em' }}>Insights</span>
+      </div>
+      <div style={{ padding: '8px 10px' }}>
+        {insights.map((ins, i) => {
+          const Ic = ins.icon;
+          return (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '10px 8px', borderRadius: 8,
+              transition: 'background .12s',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.02)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <div style={{
+                width: 24, height: 24, borderRadius: 7, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: `${ins.color}0d`, border: `1px solid ${ins.color}1a`,
+              }}>
+                <Ic style={{ width: 11, height: 11, color: ins.color }} />
+              </div>
+              <span style={{ fontSize: 12, color: T.t2, lineHeight: 1.5, flex: 1 }}>{ins.text}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── RETENTION BREAKDOWN SIDEBAR ─────────────────────────────────────────────
+function RetentionBreakdown({ clients }) {
+  const tiers = [
+    { label: 'Healthy',  range: '80–100', count: clients.filter(c => c.retentionScore >= 80).length, color: T.emerald },
+    { label: 'Stable',   range: '60–79',  count: clients.filter(c => c.retentionScore >= 60 && c.retentionScore < 80).length, color: T.t2 },
+    { label: 'Caution',  range: '40–59',  count: clients.filter(c => c.retentionScore >= 40 && c.retentionScore < 60).length, color: T.amber },
+    { label: 'At Risk',  range: '< 40',   count: clients.filter(c => c.retentionScore < 40).length, color: T.red },
+  ];
+  const total = clients.length || 1;
+
+  return (
+    <div style={{
+      borderRadius: 14, background: T.surface, border: `1px solid ${T.border}`,
+      padding: '16px 18px',
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.t1, marginBottom: 14, letterSpacing: '.02em' }}>
+        Retention Breakdown
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {tiers.map(tier => {
+          const pct = Math.round((tier.count / total) * 100);
+          return (
+            <div key={tier.label}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: tier.color }} />
+                  <span style={{ fontSize: 11, color: T.t2 }}>{tier.label}</span>
+                  <span style={{ fontFamily: T.mono, fontSize: 9, color: T.t3 }}>{tier.range}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: tier.color }}>
+                    {tier.count}
+                  </span>
+                  <span style={{ fontFamily: T.mono, fontSize: 10, color: T.t3 }}>{pct}%</span>
+                </div>
+              </div>
+              <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,.04)', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: 99, background: tier.color,
+                  width: `${pct}%`, transition: 'width .5s cubic-bezier(.4,0,.2,1)',
+                }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── TOP PERFORMER SIDEBAR ────────────────────────────────────────────────────
+function TopPerformers({ clients, onSelect }) {
+  const top = [...clients].sort((a,b) => b.retentionScore - a.retentionScore).slice(0,3);
+  if (top.length === 0) return null;
+
+  return (
+    <div style={{
+      borderRadius: 14, background: T.surface, border: `1px solid ${T.border}`,
+      padding: '16px 18px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+        <Star style={{ width: 11, height: 11, color: T.amber }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.t1, letterSpacing: '.02em' }}>Top Performers</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {top.map((c, i) => (
+          <div key={c.id} onClick={() => onSelect(c)} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 10px', borderRadius: 9, cursor: 'pointer',
+            transition: 'background .12s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.025)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.t3, width: 14 }}>{i+1}.</span>
+            <Avatar name={c.name} src={c.avatar} size={28} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.t1,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+              <div style={{ fontSize: 10, color: T.t3 }}>{c.sessionsThisMonth} sessions/mo</div>
+            </div>
+            <span style={{ fontFamily: T.mono, fontSize: 15, fontWeight: 700,
+              color: scoreColor(c.retentionScore) }}>{c.retentionScore}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── DROP PANEL (DETAIL VIEW) ────────────────────────────────────────────────
 const DROP_TABS = ['Overview','Notes','Injuries','Schedule','Actions'];
 
-// ─── INLINE DROP PANEL ────────────────────────────────────────────────────────
-function DropPanel({ client, onClose, openModal }) {
+function DropPanel({ client, onClose }) {
   const [tab,      setTab]      = useState('Overview');
   const [noteVal,  setNoteVal]  = useState(client.notes);
   const [noteSaved,setNoteSaved]= useState(false);
@@ -290,19 +715,16 @@ function DropPanel({ client, onClose, openModal }) {
   const [addInj,   setAddInj]   = useState(false);
   const [injForm,  setInjForm]  = useState({ area:'', severity:'Monitor', note:'' });
 
-  const fn            = client.name.split(' ')[0];
-  const isRisk        = client.status === 'at_risk';
-  const isPaused      = client.status === 'paused';
-  const activeInj     = injuries.filter(i => i.severity !== 'Cleared');
-  const hasActiveInj  = injuries.some(i => i.severity === 'Active');
-  const accentColor   = isRisk ? C.red : C.blue;
-  const delta         = client.sessionsThisMonth - client.sessionsLastMonth;
-  const sc            = scoreColor(client.retentionScore);
-  const smeta         = scoreMeta(client.retentionScore);
-  const trend         = trendOf(client.retentionHistory);
-  const TIcon         = trend.dir === 'up' ? TrendingUp : trend.dir === 'down' ? TrendingDown : Minus;
-  const tColor        = trend.dir === 'up' ? C.green : trend.dir === 'down' ? C.red : C.t3;
-  const message       = preset ? (PRESETS.find(p => p.id === preset)?.text(fn) || '') : custom;
+  const fn = client.name.split(' ')[0];
+  const isRisk = client.status === 'at_risk';
+  const sc = scoreColor(client.retentionScore);
+  const tier = scoreTier(client.retentionScore);
+  const trend = trendOf(client.retentionHistory);
+  const delta = client.sessionsThisMonth - client.sessionsLastMonth;
+  const reasons = riskReason(client);
+  const activeInj = injuries.filter(i => i.severity !== 'Cleared');
+  const hasActiveInj = injuries.some(i => i.severity === 'Active');
+  const message = preset ? (PRESETS.find(p => p.id === preset)?.text(fn) || '') : custom;
 
   useEffect(() => { setNoteVal(client.notes); setTab('Overview'); }, [client.id]);
   useEffect(() => { setAddInj(false); setPreset(null); }, [tab]);
@@ -323,276 +745,281 @@ function DropPanel({ client, onClose, openModal }) {
   }
 
   return (
-    <div className="tcm-sd" style={{
-      borderTop: `1px solid ${accentColor}20`,
-      borderLeft: `2px solid ${accentColor}`,
+    <div className="cis-slide" onClick={e => e.stopPropagation()} style={{
+      borderTop: `1px solid ${isRisk ? T.redBdr : T.border}`,
+      background: T.card,
     }}>
-      {/* Drop header */}
-      <div style={{ padding:'11px 14px', background: C.inset,
-        borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-          <Avatar name={client.name} src={client.avatar} size={22}/>
+      {/* Header */}
+      <div style={{
+        padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: `1px solid ${T.border}`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={client.name} src={client.avatar} size={28} status={client.status} />
           <div>
-            <span style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{client.name}</span>
-            <span style={{ fontSize:10, color:C.t3, marginLeft:8 }}>{client.membership} · Since {client.joinDate}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>{client.name}</span>
+            <span style={{ fontSize: 10, color: T.t3, marginLeft: 8 }}>Since {client.joinDate}</span>
           </div>
-          <span style={{ fontSize:8, fontWeight:800, color:C.t3,
-            background:'rgba(255,255,255,.05)', border:`1px solid ${C.border}`,
-            borderRadius:99, padding:'2px 7px', textTransform:'uppercase', letterSpacing:'.05em' }}>{client.tier}</span>
-          {isRisk && <span style={{ fontSize:8, fontWeight:800, color:C.red,
-            background:C.redDim, border:`1px solid ${C.redStr}`,
-            borderRadius:99, padding:'2px 7px', textTransform:'uppercase' }}>At Risk</span>}
-          {isPaused && <span style={{ fontSize:8, fontWeight:800, color:C.t3,
-            background:'rgba(255,255,255,.04)', border:`1px solid ${C.border}`,
-            borderRadius:99, padding:'2px 7px', textTransform:'uppercase' }}>Paused</span>}
+          <Pill color={tier.color} bg={tier.bg} border={tier.bdr}>{tier.label}</Pill>
         </div>
-        <button className="tcm-btn" onClick={e => { e.stopPropagation(); onClose(); }} style={{
-          width:24, height:24, borderRadius:6, display:'flex', alignItems:'center',
-          justifyContent:'center', background:'transparent', border:`1px solid ${C.border}`,
+        <button className="cis-btn" onClick={onClose} style={{
+          width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', background: 'rgba(255,255,255,.03)',
+          border: `1px solid ${T.border}`, color: T.t3,
         }}>
-          <X style={{ width:10, height:10, color:C.t3 }}/>
+          <X style={{ width: 11, height: 11 }} />
         </button>
       </div>
 
       {/* Tab bar */}
-      <div style={{ display:'flex', background:C.surface, borderBottom:`1px solid ${C.border}`,
-        overflowX:'auto', scrollbarWidth:'none' }}>
+      <div style={{ display: 'flex', borderBottom: `1px solid ${T.border}`, padding: '0 8px' }}>
         {DROP_TABS.map(t => {
           const isAct = tab === t;
-          const isInj = t === 'Injuries';
-          const badge = isInj ? activeInj.length : 0;
-          const badgeColor = hasActiveInj ? C.red : C.amber;
+          const accent = isRisk ? T.red : T.indigo;
+          const badge = t === 'Injuries' ? activeInj.length : 0;
           return (
-            <button key={t} onClick={e => { e.stopPropagation(); setTab(t); }} style={{
-              padding:'8px 14px', fontSize:11, fontFamily:'inherit',
-              background:'none', border:'none',
-              borderBottom:`2px solid ${isAct ? accentColor : 'transparent'}`,
-              cursor:'pointer', whiteSpace:'nowrap', flexShrink:0, marginBottom:-1,
+            <button key={t} className="cis-btn" onClick={() => setTab(t)} style={{
+              padding: '10px 14px', fontSize: 11,
+              background: 'none',
+              borderBottom: `2px solid ${isAct ? accent : 'transparent'}`,
+              color: isAct ? accent : T.t3,
               fontWeight: isAct ? 700 : 500,
-              color: isAct ? accentColor : C.t3,
-              display:'flex', alignItems:'center', gap:5, transition:'color .14s',
+              display: 'flex', alignItems: 'center', gap: 5,
+              marginBottom: -1,
             }}>
               {t}
-              {badge > 0 && (
-                <span style={{ fontSize:8, fontWeight:800, color:badgeColor,
-                  background:`${badgeColor}12`, border:`1px solid ${badgeColor}25`,
-                  borderRadius:99, padding:'0 5px' }}>{badge}</span>
-              )}
+              {badge > 0 && <Pill color={hasActiveInj ? T.red : T.amber} style={{ fontSize: 8, padding: '0 5px' }}>{badge}</Pill>}
             </button>
           );
         })}
       </div>
 
-      {/* Tab body */}
-      <div onClick={e => e.stopPropagation()} style={{ padding:'14px 16px 16px' }}>
+      {/* Tab content */}
+      <div style={{ padding: '16px 20px' }}>
 
-        {/* ── OVERVIEW ── */}
+        {/* OVERVIEW */}
         {tab === 'Overview' && (
           <div>
-            {/* Score hero */}
-            <div style={{ display:'flex', alignItems:'center', gap:14, padding:'10px 12px',
-              borderRadius:9, marginBottom:12,
-              background:`${sc}07`, border:`1px solid ${sc}1a` }}>
-              <div style={{ textAlign:'center', minWidth:52 }}>
-                <div style={{ fontSize:34, fontWeight:800, color:sc, lineHeight:1, letterSpacing:'-.04em' }}>
-                  {client.retentionScore}
-                </div>
-                <div style={{ fontSize:8, color:sc, fontWeight:700, marginTop:3,
-                  textTransform:'uppercase', letterSpacing:'.06em' }}>{smeta.label}</div>
+            {/* Score + Trend */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 20,
+              padding: '14px 16px', borderRadius: 12, marginBottom: 14,
+              background: `${sc}06`, border: `1px solid ${sc}15`,
+            }}>
+              <div style={{ textAlign: 'center', minWidth: 56 }}>
+                <div style={{ fontFamily: T.mono, fontSize: 40, fontWeight: 700, color: sc,
+                  lineHeight: 1, letterSpacing: '-.04em' }}>{client.retentionScore}</div>
+                <div style={{ fontSize: 9, color: sc, fontWeight: 700, marginTop: 4,
+                  textTransform: 'uppercase', letterSpacing: '.06em' }}>{tier.label}</div>
               </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:7 }}>
-                  <TIcon style={{ width:10, height:10, color:tColor }}/>
-                  <span style={{ fontSize:10, fontWeight:700, color:tColor }}>
-                    {trend.dir==='up' ? `+${trend.delta} pts — Improving`
-                      : trend.dir==='down' ? `${trend.delta} pts — Declining`
-                      : 'Stable — holding steady'}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+                  {trend.dir === 'up' && <ArrowUpRight style={{ width: 12, height: 12, color: T.emerald }} />}
+                  {trend.dir === 'down' && <ArrowDownRight style={{ width: 12, height: 12, color: T.red }} />}
+                  {trend.dir === 'flat' && <Minus style={{ width: 12, height: 12, color: T.t3 }} />}
+                  <span style={{ fontSize: 11, fontWeight: 700,
+                    color: trend.dir === 'up' ? T.emerald : trend.dir === 'down' ? T.red : T.t3 }}>
+                    {trend.dir === 'up' ? `+${trend.delta} pts — Improving`
+                      : trend.dir === 'down' ? `${trend.delta} pts — Declining`
+                      : 'Holding steady'}
                   </span>
                 </div>
-                <Spark data={client.retentionHistory} color={sc} w={160} h={28}/>
+                <TrendLine data={client.retentionHistory} color={sc} w={200} h={32} />
               </div>
             </div>
 
-            {/* Stats row */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:7, marginBottom:12 }}>
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
               {[
-                { l:'Sessions / mo', v:client.sessionsThisMonth, c: delta > 0 ? C.green : delta < 0 ? C.red : C.t1 },
-                { l:'Monthly spend', v:`£${client.monthlySpend}`, c:C.t1 },
-                { l:'Streak',        v: client.streak > 0 ? `${client.streak}d` : '—', c: client.streak >= 14 ? C.green : C.t1 },
-              ].map((s,i) => (
-                <div key={i} style={{ padding:'8px 10px', borderRadius:8, textAlign:'center',
-                  background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}` }}>
-                  <div style={{ fontSize:16, fontWeight:800, color:s.c, letterSpacing:'-.03em', lineHeight:1 }}>{s.v}</div>
-                  <div style={{ fontSize:8, color:C.t3, textTransform:'uppercase', letterSpacing:'.06em', marginTop:3 }}>{s.l}</div>
+                { l: 'Sessions / mo', v: client.sessionsThisMonth, c: delta > 0 ? T.emerald : delta < 0 ? T.red : T.t1 },
+                { l: 'Monthly spend', v: `£${client.monthlySpend}`, c: T.t1 },
+                { l: 'Streak', v: client.streak > 0 ? `${client.streak}d` : '—', c: client.streak >= 14 ? T.emerald : T.t1 },
+              ].map((s, i) => (
+                <div key={i} style={{
+                  padding: '10px 12px', borderRadius: 10, textAlign: 'center',
+                  background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                }}>
+                  <div style={{ fontFamily: T.mono, fontSize: 18, fontWeight: 700, color: s.c, lineHeight: 1 }}>{s.v}</div>
+                  <div style={{ fontSize: 9, color: T.t3, textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 4 }}>{s.l}</div>
                 </div>
               ))}
             </div>
 
-            {/* Nudges */}
+            {/* Contextual nudge */}
             {isRisk && (
-              <div style={{ padding:'9px 12px', borderRadius:8, background:C.redDim,
-                border:`1px solid ${C.redStr}`, borderLeft:`2px solid ${C.red}`,
-                display:'flex', alignItems:'flex-start', gap:8 }}>
-                <AlertTriangle style={{ width:11, height:11, color:C.red, flexShrink:0, marginTop:1 }}/>
-                <div style={{ flex:1 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:C.red }}>High churn risk. </span>
-                  <span style={{ fontSize:11, color:C.t3, lineHeight:1.5 }}>
-                    Last visit {client.lastVisit} days ago. A personal call beats any automated message.
-                  </span>
+              <div style={{
+                padding: '12px 14px', borderRadius: 10, marginBottom: 6,
+                background: T.redDim, border: `1px solid ${T.redBdr}`,
+                borderLeft: `3px solid ${T.red}`,
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+              }}>
+                <AlertTriangle style={{ width: 13, height: 13, color: T.red, flexShrink: 0, marginTop: 1 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.red, marginBottom: 3 }}>High churn risk</div>
+                  <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.5 }}>
+                    {reasons.join(' · ')}. A personal call beats any automated message.
+                  </div>
                 </div>
-                <button className="tcm-btn" onClick={() => setTab('Actions')} style={{
-                  fontSize:9, fontWeight:700, color:C.red, background:'transparent',
-                  border:'none', whiteSpace:'nowrap', flexShrink:0, display:'flex', alignItems:'center', gap:2,
-                }}>Actions <ChevronRight style={{ width:9, height:9 }}/></button>
+                <button className="cis-btn" onClick={() => setTab('Actions')} style={{
+                  padding: '5px 12px', borderRadius: 7,
+                  background: `${T.red}15`, border: `1px solid ${T.red}25`,
+                  color: T.red, fontSize: 10, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                }}>
+                  Take action <ChevronRight style={{ width: 10, height: 10 }} />
+                </button>
               </div>
             )}
             {client.streak >= 21 && (
-              <div style={{ padding:'9px 12px', borderRadius:8, background:C.greenDim,
-                border:`1px solid rgba(33,163,111,.2)`, borderLeft:`2px solid ${C.green}`,
-                display:'flex', alignItems:'flex-start', gap:8 }}>
-                <Zap style={{ width:11, height:11, color:C.green, flexShrink:0, marginTop:1 }}/>
-                <div style={{ flex:1 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:C.green }}>{client.streak}-day streak. </span>
-                  <span style={{ fontSize:11, color:C.t3 }}>Acknowledge this milestone — recognition drives retention.</span>
-                </div>
-                <button className="tcm-btn" onClick={() => setTab('Actions')} style={{
-                  fontSize:9, fontWeight:700, color:C.green, background:'transparent',
-                  border:'none', whiteSpace:'nowrap', flexShrink:0, display:'flex', alignItems:'center', gap:2,
-                }}>Message <ChevronRight style={{ width:9, height:9 }}/></button>
+              <div style={{
+                padding: '12px 14px', borderRadius: 10,
+                background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`,
+                borderLeft: `3px solid ${T.emerald}`,
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <Flame style={{ width: 13, height: 13, color: T.amber, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: T.t2, flex: 1 }}>
+                  <strong style={{ color: T.emerald }}>{client.streak}-day streak!</strong> Recognition drives retention.
+                </span>
               </div>
             )}
             {!isRisk && client.streak < 21 && (
-              <div style={{ padding:'8px 12px', borderRadius:8,
-                background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-                borderLeft:`2px solid ${C.green}`, display:'flex', alignItems:'center', gap:8 }}>
-                <CheckCircle style={{ width:11, height:11, color:C.green, flexShrink:0 }}/>
-                <span style={{ fontSize:11, color:C.t3 }}>Tracking well — no action needed right now.</span>
+              <div style={{
+                padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                borderLeft: `3px solid ${T.emerald}`,
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <CheckCircle style={{ width: 12, height: 12, color: T.emerald, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: T.t3 }}>On track — no action needed right now.</span>
               </div>
             )}
           </div>
         )}
 
-        {/* ── NOTES ── */}
+        {/* NOTES */}
         {tab === 'Notes' && (
           <div>
-            <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
-              letterSpacing:'.08em', marginBottom:8 }}>Coach Notes — Private</div>
-            <textarea className="tcm-inp" rows={6} value={noteVal}
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase',
+              letterSpacing: '.07em', marginBottom: 10 }}>Coach Notes — Private</div>
+            <textarea className="cis-input" rows={5} value={noteVal}
               onChange={e => setNoteVal(e.target.value)}
-              placeholder={`Add coaching notes for ${fn}…`}/>
-            <button className="tcm-btn" onClick={saveNote} style={{
-              marginTop:8, display:'flex', alignItems:'center', gap:5, padding:'6px 12px',
-              borderRadius:7, background: noteSaved ? C.greenDim : C.blueDim,
-              border:`1px solid ${noteSaved ? 'rgba(33,163,111,.2)' : C.blueStr}`,
-              color: noteSaved ? C.green : C.blue, fontSize:10, fontWeight:700,
+              placeholder={`Add coaching notes for ${fn}…`}
+              style={{ resize: 'vertical', lineHeight: 1.6 }} />
+            <button className="cis-btn" onClick={saveNote} style={{
+              marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+              borderRadius: 8, background: noteSaved ? T.emeraldDim : T.indigoDim,
+              border: `1px solid ${noteSaved ? T.emeraldBdr : T.indigoBdr}`,
+              color: noteSaved ? T.emerald : T.indigo, fontSize: 12, fontWeight: 700,
             }}>
-              {noteSaved ? <><CheckCircle style={{ width:10, height:10 }}/> Saved</>
-                        : <><Edit3 style={{ width:10, height:10 }}/> Save Notes</>}
+              {noteSaved ? <><CheckCircle style={{ width: 12, height: 12 }} /> Saved</> : <><Edit3 style={{ width: 12, height: 12 }} /> Save Notes</>}
             </button>
-            <div style={{ marginTop:14 }}>
-              <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
-                letterSpacing:'.08em', marginBottom:8 }}>Quick Reference</div>
+            <div style={{ marginTop: 18 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase',
+                letterSpacing: '.07em', marginBottom: 10 }}>Quick Reference</div>
               {[
-                { l:'Since',         v:client.joinDate            },
-                { l:'Sessions/mo',   v:client.sessionsThisMonth   },
-                { l:'Last Visit',    v:client.lastVisit >= 999 ? 'Never' : client.lastVisit === 0 ? 'Today' : `${client.lastVisit}d ago` },
-                { l:'Streak',        v:client.streak > 0 ? `${client.streak}d` : '—' },
-                { l:'No-show Rate',  v:`${client.consecutiveMissed > 0 ? Math.round((client.consecutiveMissed / Math.max(client.sessionsThisMonth + client.sessionsLastMonth, 1)) * 100) : 0}%` },
-              ].map((r,i,arr) => (
-                <div key={i} style={{ display:'flex', justifyContent:'space-between',
-                  alignItems:'center', padding:'6px 0',
-                  borderBottom: i < arr.length-1 ? `1px solid ${C.border}` : 'none' }}>
-                  <span style={{ fontSize:10, color:C.t3 }}>{r.l}</span>
-                  <span style={{ fontSize:10, fontWeight:600, color:C.t1 }}>{r.v}</span>
+                { l: 'Member since', v: client.joinDate },
+                { l: 'Sessions / mo', v: client.sessionsThisMonth },
+                { l: 'Last visit', v: client.lastVisit >= 999 ? 'Never' : client.lastVisit === 0 ? 'Today' : `${client.lastVisit}d ago` },
+                { l: 'Streak', v: client.streak > 0 ? `${client.streak}d` : '—' },
+              ].map((r, i, arr) => (
+                <div key={i} style={{
+                  display: 'flex', justifyContent: 'space-between', padding: '8px 0',
+                  borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : 'none',
+                }}>
+                  <span style={{ fontSize: 11, color: T.t3 }}>{r.l}</span>
+                  <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: T.t1 }}>{r.v}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* ── INJURIES ── */}
+        {/* INJURIES */}
         {tab === 'Injuries' && (
           <div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div>
-                <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase', letterSpacing:'.08em' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '.07em' }}>
                   Injury & Limitation Log
                 </div>
                 {activeInj.length > 0 && (
-                  <div style={{ fontSize:10, color: hasActiveInj ? C.red : C.amber, fontWeight:600, marginTop:2 }}>
-                    {activeInj.length} active {activeInj.length===1?'restriction':'restrictions'}
+                  <div style={{ fontSize: 11, color: hasActiveInj ? T.red : T.amber, fontWeight: 600, marginTop: 3 }}>
+                    {activeInj.length} active restriction{activeInj.length > 1 ? 's' : ''}
                   </div>
                 )}
               </div>
-              <button className="tcm-btn" onClick={() => setAddInj(v=>!v)} style={{
-                display:'flex', alignItems:'center', gap:5, padding:'4px 10px',
-                borderRadius:6, background:C.blueDim, border:`1px solid ${C.blueStr}`,
-                color:C.blue, fontSize:9, fontWeight:700,
+              <button className="cis-btn" onClick={() => setAddInj(v => !v)} style={{
+                display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
+                borderRadius: 8, background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+                color: T.indigo, fontSize: 11, fontWeight: 700,
               }}>
-                <Plus style={{ width:9, height:9 }}/> Log
+                <Plus style={{ width: 11, height: 11 }} /> Log
               </button>
             </div>
 
             {addInj && (
-              <div style={{ padding:11, borderRadius:8, marginBottom:12,
-                background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-                borderLeft:`2px solid ${C.blue}` }}>
-                <div style={{ display:'flex', gap:7, marginBottom:7 }}>
-                  <input className="tcm-inp" value={injForm.area}
-                    onChange={e => setInjForm(f=>({...f, area:e.target.value}))}
+              <div style={{
+                padding: 14, borderRadius: 10, marginBottom: 14,
+                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                borderLeft: `3px solid ${T.indigo}`,
+              }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  <input className="cis-input" value={injForm.area}
+                    onChange={e => setInjForm(f => ({ ...f, area: e.target.value }))}
                     placeholder="Body area (e.g. Left Knee)"
-                    style={{ flex:1, padding:'7px 10px', borderRadius:7 }}/>
-                  <select className="tcm-sel" value={injForm.severity}
-                    onChange={e => setInjForm(f=>({...f, severity:e.target.value}))}>
-                    {['Active','Monitor','Mild','Cleared'].map(s=><option key={s}>{s}</option>)}
+                    style={{ flex: 1, padding: '8px 12px' }} />
+                  <select className="cis-select" value={injForm.severity}
+                    onChange={e => setInjForm(f => ({ ...f, severity: e.target.value }))}>
+                    {['Active','Monitor','Mild','Cleared'].map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
-                <textarea className="tcm-inp" rows={2} value={injForm.note}
-                  onChange={e => setInjForm(f=>({...f, note:e.target.value}))}
-                  placeholder="Describe the limitation…" style={{ marginBottom:8 }}/>
-                <div style={{ display:'flex', gap:6 }}>
-                  <button className="tcm-btn" onClick={addInjury} style={{
-                    flex:1, padding:'6px 10px', borderRadius:7, fontSize:10, fontWeight:700,
-                    background:C.blue, border:'none', color:'#fff',
+                <textarea className="cis-input" rows={2} value={injForm.note}
+                  onChange={e => setInjForm(f => ({ ...f, note: e.target.value }))}
+                  placeholder="Describe the limitation…" style={{ marginBottom: 10, lineHeight: 1.5 }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="cis-btn" onClick={addInjury} style={{
+                    flex: 1, padding: '8px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    background: T.indigo, color: '#fff',
                   }}>Save</button>
-                  <button className="tcm-btn" onClick={() => setAddInj(false)} style={{
-                    padding:'6px 10px', borderRadius:7, fontSize:10, fontWeight:700,
-                    background:'transparent', border:`1px solid ${C.border}`, color:C.t3,
+                  <button className="cis-btn" onClick={() => setAddInj(false)} style={{
+                    padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`, color: T.t3,
                   }}>Cancel</button>
                 </div>
               </div>
             )}
 
             {injuries.length === 0 ? (
-              <div style={{ padding:'20px', textAlign:'center', borderRadius:9,
-                background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}` }}>
-                <p style={{ fontSize:12, color:C.t2, fontWeight:600, margin:'0 0 3px' }}>No injuries logged</p>
-                <p style={{ fontSize:10, color:C.t3, margin:0 }}>{fn} has no active restrictions on file.</p>
+              <div style={{ padding: 24, textAlign: 'center', borderRadius: 12,
+                background: 'rgba(255,255,255,.015)', border: `1px solid ${T.border}` }}>
+                <Shield style={{ width: 20, height: 20, color: T.t3, margin: '0 auto 8px' }} />
+                <p style={{ fontSize: 13, color: T.t2, fontWeight: 600, margin: '0 0 4px' }}>No injuries logged</p>
+                <p style={{ fontSize: 11, color: T.t3, margin: 0 }}>{fn} has no active restrictions on file.</p>
               </div>
             ) : (
-              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {injuries.map(inj => {
                   const s = SEV[inj.severity] || SEV.Mild;
                   return (
-                    <div key={inj.id} style={{ padding:'10px 12px', borderRadius:8,
-                      background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-                      borderLeft:`2px solid ${s.color}` }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:5 }}>
-                        <span style={{ fontSize:11, fontWeight:700, color:C.t1, flex:1 }}>{inj.area}</span>
-                        <span style={{ fontSize:8, fontWeight:800, color:s.color,
-                          background:s.dim, border:`1px solid ${s.str}`,
-                          borderRadius:99, padding:'2px 7px', whiteSpace:'nowrap',
-                          textTransform:'uppercase' }}>{inj.severity}</span>
-                        <button className="tcm-btn" onClick={() => setInjuries(p=>p.filter(i=>i.id!==inj.id))}
-                          style={{ width:20, height:20, borderRadius:5, display:'flex', alignItems:'center',
-                            justifyContent:'center', background:'transparent', border:'none', color:C.t3 }}
-                          onMouseEnter={e=>e.currentTarget.style.color=C.red}
-                          onMouseLeave={e=>e.currentTarget.style.color=C.t3}>
-                          <Trash2 style={{ width:10, height:10 }}/>
+                    <div key={inj.id} style={{
+                      padding: '12px 14px', borderRadius: 10,
+                      background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                      borderLeft: `3px solid ${s.color}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: T.t1, flex: 1 }}>{inj.area}</span>
+                        <Pill color={s.color} bg={s.dim} border={s.bdr}>{inj.severity}</Pill>
+                        <button className="cis-btn" onClick={() => setInjuries(p => p.filter(i => i.id !== inj.id))}
+                          style={{ width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', background: 'transparent', color: T.t3 }}
+                          onMouseEnter={e => e.currentTarget.style.color = T.red}
+                          onMouseLeave={e => e.currentTarget.style.color = T.t3}>
+                          <Trash2 style={{ width: 11, height: 11 }} />
                         </button>
                       </div>
-                      {inj.note && <p style={{ fontSize:10, color:C.t2, margin:'0 0 4px', lineHeight:1.55 }}>{inj.note}</p>}
-                      <span style={{ fontSize:9, color:C.t3 }}>Logged {inj.logged}</span>
+                      {inj.note && <p style={{ fontSize: 11, color: T.t2, margin: '0 0 4px', lineHeight: 1.55 }}>{inj.note}</p>}
+                      <span style={{ fontSize: 10, color: T.t3 }}>Logged {inj.logged}</span>
                     </div>
                   );
                 })}
@@ -601,122 +1028,135 @@ function DropPanel({ client, onClose, openModal }) {
           </div>
         )}
 
-        {/* ── SCHEDULE ── */}
+        {/* SCHEDULE */}
         {tab === 'Schedule' && (
           <div>
-            <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
-              letterSpacing:'.08em', marginBottom:12 }}>Sessions & Classes</div>
             {client.nextSession ? (
-              <div style={{ display:'flex', alignItems:'center', gap:9, padding:'10px 12px',
-                borderRadius:9, marginBottom:10, background:C.blueDim,
-                border:`1px solid ${C.blueStr}` }}>
-                <Calendar style={{ width:12, height:12, color:C.blue, flexShrink:0 }}/>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+                borderRadius: 10, marginBottom: 12,
+                background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+              }}>
+                <Calendar style={{ width: 14, height: 14, color: T.indigo, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize:9, color:C.t3, fontWeight:600, marginBottom:2 }}>Next session</div>
-                  <div style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{client.nextSession}</div>
+                  <div style={{ fontSize: 10, color: T.t3, fontWeight: 600, marginBottom: 2 }}>Next session</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.t1 }}>{client.nextSession}</div>
                 </div>
               </div>
             ) : (
-              <div style={{ padding:'10px 12px', borderRadius:9, marginBottom:10,
-                background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-                borderLeft:`2px solid ${isPaused ? C.amber : C.t4}` }}>
-                <p style={{ fontSize:11, color:C.t2, margin:0, fontWeight:600 }}>
-                  {isPaused ? `${fn}'s membership is paused.` : 'No upcoming sessions booked.'}
+              <div style={{
+                padding: '12px 14px', borderRadius: 10, marginBottom: 12,
+                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                borderLeft: `3px solid ${T.t4}`,
+              }}>
+                <p style={{ fontSize: 12, color: T.t2, margin: 0, fontWeight: 600 }}>
+                  No upcoming sessions booked.
                 </p>
               </div>
             )}
+
             {client.upcomingClasses?.length > 0 && (
-              <div style={{ display:'flex', flexDirection:'column', gap:5, marginBottom:12 }}>
-                {client.upcomingClasses.map((cls,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', gap:8,
-                    padding:'7px 10px', borderRadius:7,
-                    background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}` }}>
-                    <div style={{ width:5, height:5, borderRadius:'50%', background:C.blue, flexShrink:0 }}/>
-                    <span style={{ flex:1, fontSize:11, color:C.t1, fontWeight:500 }}>{cls}</span>
-                    <span style={{ fontSize:8, color:C.t3, fontWeight:700, textTransform:'uppercase',
-                      letterSpacing:'.05em' }}>Booked</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
+                {client.upcomingClasses.map((cls, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '8px 12px', borderRadius: 8,
+                    background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                  }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.indigo }} />
+                    <span style={{ flex: 1, fontSize: 12, color: T.t1 }}>{cls}</span>
+                    <span style={{ fontSize: 9, color: T.t3, fontWeight: 700, textTransform: 'uppercase' }}>Booked</span>
                   </div>
                 ))}
               </div>
             )}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:7, marginBottom:12 }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
               {[
-                { l:'This Month', v:client.sessionsThisMonth, c:C.t1 },
-                { l:'Last Month', v:client.sessionsLastMonth, c:C.t2 },
-                { l:'Change',     v:`${client.sessionsThisMonth - client.sessionsLastMonth>=0?'+':''}${client.sessionsThisMonth - client.sessionsLastMonth}`, c: client.sessionsThisMonth - client.sessionsLastMonth>=0?C.green:C.red },
-              ].map((s,i) => (
-                <div key={i} style={{ padding:'9px 10px', borderRadius:8, textAlign:'center',
-                  background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}` }}>
-                  <div style={{ fontSize:18, fontWeight:800, color:s.c, letterSpacing:'-.03em', lineHeight:1 }}>{s.v}</div>
-                  <div style={{ fontSize:8, color:C.t3, textTransform:'uppercase', letterSpacing:'.06em', marginTop:3 }}>{s.l}</div>
+                { l: 'This Month', v: client.sessionsThisMonth, c: T.t1 },
+                { l: 'Last Month', v: client.sessionsLastMonth, c: T.t2 },
+                { l: 'Change', v: `${delta >= 0 ? '+' : ''}${delta}`, c: delta >= 0 ? T.emerald : T.red },
+              ].map((s, i) => (
+                <div key={i} style={{
+                  padding: '10px', borderRadius: 10, textAlign: 'center',
+                  background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                }}>
+                  <div style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 700, color: s.c, lineHeight: 1 }}>{s.v}</div>
+                  <div style={{ fontSize: 9, color: T.t3, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: 4 }}>{s.l}</div>
                 </div>
               ))}
             </div>
-            <button className="tcm-btn" style={{
-              width:'100%', padding:'8px 14px', borderRadius:8,
-              background:C.blueDim, border:`1px solid ${C.blueStr}`,
-              color:C.blue, fontSize:11, fontWeight:700,
-              display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+
+            <button className="cis-btn" style={{
+              width: '100%', padding: '10px', borderRadius: 10,
+              background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+              color: T.indigo, fontSize: 12, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}>
-              <Calendar style={{ width:11, height:11 }}/> Book into a Class
+              <Calendar style={{ width: 13, height: 13 }} /> Book into a Class
             </button>
           </div>
         )}
 
-        {/* ── ACTIONS ── */}
+        {/* ACTIONS */}
         {tab === 'Actions' && (
           <div>
-            <div style={{ display:'flex', gap:7, marginBottom:14, flexWrap:'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
               {[
-                { icon:Phone,    label:'Call',    color:C.green },
-                { icon:Calendar, label:'Book',    color:C.blue  },
-                { icon:Dumbbell, label:'Workout', color:C.amber },
-              ].map(({ icon:Ic, label, color },i) => (
-                <button key={i} className="tcm-btn" style={{
-                  flex:'1 1 auto', display:'flex', alignItems:'center',
-                  justifyContent:'center', gap:5, padding:'8px 10px', borderRadius:8,
-                  background:`${color}09`, border:`1px solid ${color}20`,
-                  color, fontSize:10, fontWeight:700,
+                { icon: Phone,    label: 'Call',    color: T.emerald },
+                { icon: Calendar, label: 'Book',    color: T.indigo },
+                { icon: Dumbbell, label: 'Workout', color: T.amber },
+              ].map(({ icon: Ic, label, color }, i) => (
+                <button key={i} className="cis-btn" style={{
+                  flex: '1 1 auto', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: 6, padding: '10px 14px', borderRadius: 10,
+                  background: `${color}0a`, border: `1px solid ${color}20`,
+                  color, fontSize: 12, fontWeight: 700,
                 }}>
-                  <Ic style={{ width:11, height:11 }}/> {label}
+                  <Ic style={{ width: 13, height: 13 }} /> {label}
                 </button>
               ))}
             </div>
-            <div style={{ fontSize:9, fontWeight:700, color:C.t3, textTransform:'uppercase',
-              letterSpacing:'.08em', marginBottom:8 }}>Send Message to {fn}</div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:10 }}>
+
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase',
+              letterSpacing: '.07em', marginBottom: 10 }}>Send Message to {fn}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
               {PRESETS.map(p => (
-                <button key={p.id} className="tcm-btn" onClick={() => setPreset(v=>v===p.id?null:p.id)} style={{
-                  padding:'4px 9px', borderRadius:6, fontSize:10, fontWeight:600,
-                  background: preset===p.id ? C.blueDim : 'rgba(255,255,255,.03)',
-                  border:`1px solid ${preset===p.id ? C.blueStr : C.border}`,
-                  color: preset===p.id ? C.blue : C.t3,
+                <button key={p.id} className="cis-btn" onClick={() => setPreset(v => v === p.id ? null : p.id)} style={{
+                  padding: '5px 11px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                  background: preset === p.id ? T.indigoDim : 'rgba(255,255,255,.03)',
+                  border: `1px solid ${preset === p.id ? T.indigoBdr : T.border}`,
+                  color: preset === p.id ? T.indigo : T.t3,
                 }}>{p.label}</button>
               ))}
             </div>
+
             {preset ? (
-              <div style={{ marginBottom:10, padding:'9px 11px', borderRadius:8,
-                background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-                borderLeft:`2px solid ${C.blue}`,
-                fontSize:11, color:C.t2, lineHeight:1.6 }}>{message}</div>
+              <div style={{
+                marginBottom: 12, padding: '12px 14px', borderRadius: 10,
+                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                borderLeft: `3px solid ${T.indigo}`,
+                fontSize: 12, color: T.t2, lineHeight: 1.6,
+              }}>{message}</div>
             ) : (
-              <textarea className="tcm-inp" rows={3} value={custom}
+              <textarea className="cis-input" rows={3} value={custom}
                 onChange={e => setCustom(e.target.value)}
                 placeholder={`Write a message to ${fn}…`}
-                style={{ marginBottom:10 }}/>
+                style={{ marginBottom: 12, lineHeight: 1.5 }} />
             )}
-            <button className="tcm-btn" onClick={handleSend}
+
+            <button className="cis-btn" onClick={handleSend}
               disabled={!message.trim() || sending || sent} style={{
-                width:'100%', padding:'8px 14px', borderRadius:8,
-                background: sent ? C.greenDim : !message.trim() ? 'rgba(255,255,255,.04)' : C.blue,
-                border:`1px solid ${sent ? 'rgba(33,163,111,.25)' : !message.trim() ? C.border : C.blueStr}`,
-                color: sent ? C.green : !message.trim() ? C.t3 : '#fff',
-                fontSize:11, fontWeight:700,
-                display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+                width: '100%', padding: '10px', borderRadius: 10,
+                background: sent ? T.emeraldDim : !message.trim() ? 'rgba(255,255,255,.03)' : T.indigo,
+                border: `1px solid ${sent ? T.emeraldBdr : !message.trim() ? T.border : T.indigoBdr}`,
+                color: sent ? T.emerald : !message.trim() ? T.t3 : '#fff',
+                fontSize: 12, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}>
-              {sent ? <><CheckCircle style={{ width:11, height:11 }}/> Sent</>
-                : sending ? 'Sending…'
-                : <><Send style={{ width:11, height:11 }}/> Send to {fn}</>}
+              {sent ? <><CheckCircle style={{ width: 13, height: 13 }} /> Sent</> :
+                sending ? 'Sending…' :
+                <><Send style={{ width: 13, height: 13 }} /> Send to {fn}</>}
             </button>
           </div>
         )}
@@ -726,254 +1166,141 @@ function DropPanel({ client, onClose, openModal }) {
 }
 
 // ─── CLIENT ROW ───────────────────────────────────────────────────────────────
-function ClientRow({ client, isOpen, onToggle, openModal }) {
+function ClientRow({ client, isOpen, onToggle }) {
   const isRisk   = client.status === 'at_risk';
   const isPaused = client.status === 'paused';
   const sc       = scoreColor(client.retentionScore);
+  const tier     = scoreTier(client.retentionScore);
   const trend    = trendOf(client.retentionHistory);
   const delta    = client.sessionsThisMonth - client.sessionsLastMonth;
-  const TIcon    = trend.dir === 'up' ? TrendingUp : trend.dir === 'down' ? TrendingDown : Minus;
-  const tColor   = trend.dir === 'up' ? C.green : trend.dir === 'down' ? C.red : C.t3;
+  const reasons  = riskReason(client);
   const activeInj = (client.injuries || []).filter(i => i.severity !== 'Cleared').length;
   const hasActive = (client.injuries || []).some(i => i.severity === 'Active');
 
-  return (
-    <div style={{ background: C.surface, border:`1px solid ${C.border}`,
-      borderRadius: 10, overflow:'hidden',
-      borderLeft: isRisk && !isOpen ? `2px solid ${C.red}` : `2px solid transparent`,
-    }}>
-      {/* Row */}
-      <div className="tcm-row" onClick={onToggle} style={{
-        display:'flex', alignItems:'center', gap:12, padding:'12px 14px',
-        background:'transparent',
-      }}>
-        {/* Avatar */}
-        <Avatar name={client.name} src={client.avatar} size={34}/>
+  const lastVisitLabel = client.lastVisit === 0 ? 'Today'
+    : client.lastVisit === 1 ? 'Yesterday'
+    : client.lastVisit >= 999 ? 'Never'
+    : `${client.lastVisit}d ago`;
 
-        {/* Name + meta */}
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:4, flexWrap:'wrap' }}>
-            <span style={{ fontSize:13, fontWeight:700, color:C.t1,
-              letterSpacing:'-.015em' }}>{client.name}</span>
-            <span style={{ fontSize:8, fontWeight:700, color:C.t3,
-              background:'rgba(255,255,255,.05)', border:`1px solid ${C.border}`,
-              borderRadius:99, padding:'1px 7px', textTransform:'uppercase',
-              letterSpacing:'.05em' }}>{client.tier}</span>
-            {isRisk && <span style={{ fontSize:8, fontWeight:800, color:C.red,
-              background:C.redDim, border:`1px solid ${C.redStr}`,
-              borderRadius:99, padding:'1px 7px', textTransform:'uppercase' }}>At Risk</span>}
-            {isPaused && <span style={{ fontSize:8, fontWeight:700, color:C.t3,
-              background:'rgba(255,255,255,.04)', border:`1px solid ${C.border}`,
-              borderRadius:99, padding:'1px 7px', textTransform:'uppercase' }}>Paused</span>}
-            {client.streak >= 14 && <span style={{ fontSize:9, color:C.amber }}>🔥 {client.streak}d</span>}
+  const lastVisitColor = client.lastVisit === 0 ? T.emerald
+    : client.lastVisit > 14 ? T.red
+    : client.lastVisit > 7 ? T.amber
+    : T.t3;
+
+  return (
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderRadius: 14, overflow: 'hidden',
+      borderLeft: isRisk && !isOpen ? `3px solid ${T.red}` : `3px solid transparent`,
+      transition: 'border-color .2s',
+    }}>
+      <div className="cis-row" onClick={onToggle} style={{
+        display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
+      }}>
+        <Avatar name={client.name} src={client.avatar} size={38} status={client.status} />
+
+        {/* Name column */}
+        <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: T.t1, letterSpacing: '-.02em' }}>
+              {client.name}
+            </span>
+            {client.isNew && <Pill color={T.sky} bg={T.skyDim} border={T.skyBdr}>New</Pill>}
+            {isRisk && <Pill color={T.red} bg={T.redDim} border={T.redBdr}>At Risk</Pill>}
+            {isPaused && <Pill color={T.t3}>Paused</Pill>}
+            {client.streak >= 14 && (
+              <span style={{ fontSize: 10, color: T.amber, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Flame style={{ width: 10, height: 10 }} /> {client.streak}d
+              </span>
+            )}
             {activeInj > 0 && (
-              <span style={{ fontSize:9, fontWeight:700,
-                color: hasActive ? C.red : C.amber,
-                display:'flex', alignItems:'center', gap:2 }}>
-                <ShieldAlert style={{ width:9, height:9 }}/> {activeInj}
+              <span style={{ fontSize: 10, fontWeight: 700,
+                color: hasActive ? T.red : T.amber,
+                display: 'flex', alignItems: 'center', gap: 3 }}>
+                <ShieldAlert style={{ width: 10, height: 10 }} /> {activeInj}
               </span>
             )}
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-            <span style={{ fontSize:10, color:C.t3 }}>{client.goal}</span>
-            <span style={{ fontSize:10, color:C.t4 }}>·</span>
-            <span style={{ fontSize:10, fontWeight:600,
-              color: client.lastVisit===0 ? C.green : client.lastVisit > 999 ? C.t3 : client.lastVisit>14 ? C.red : client.lastVisit>7 ? C.amber : C.t3 }}>
-              {client.lastVisit===0 ? 'Today' : client.lastVisit===1 ? 'Yesterday' : client.lastVisit >= 999 ? 'Never' : `${client.lastVisit}d ago`}
+          {isRisk && reasons.length > 0 && (
+            <div style={{ fontSize: 11, color: T.red, fontWeight: 500, opacity: .9 }}>
+              {reasons[0]}
+            </div>
+          )}
+          {!isRisk && (
+            <div style={{ fontSize: 11, color: T.t3 }}>
+              {client.goal}
+            </div>
+          )}
+        </div>
+
+        {/* Last Visit */}
+        <div style={{ flex: '0 0 70px', textAlign: 'center' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: lastVisitColor }}>{lastVisitLabel}</div>
+          <div style={{ fontSize: 9, color: T.t3, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: 2 }}>Last visit</div>
+        </div>
+
+        {/* Sessions */}
+        <div style={{ flex: '0 0 65px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 3 }}>
+            <span style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: T.t1 }}>
+              {client.sessionsThisMonth}
             </span>
-            <span style={{ fontSize:10, color:C.t4 }}>·</span>
-            <span style={{ fontSize:10, color:C.t3 }}>
-              {client.sessionsThisMonth} sessions
-              {delta !== 0 && (
-                <span style={{ color: delta>0?C.green:C.red, fontWeight:700, marginLeft:3 }}>
-                  ({delta>0?'+':''}{delta})
-                </span>
-              )}
-            </span>
+            {delta !== 0 && (
+              <span style={{ fontFamily: T.mono, fontSize: 10, fontWeight: 700,
+                color: delta > 0 ? T.emerald : T.red }}>
+                {delta > 0 ? '+' : ''}{delta}
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 9, color: T.t3, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: 2 }}>Sessions</div>
+        </div>
+
+        {/* Trend + Score */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 0 130px', justifyContent: 'flex-end' }}>
+          <TrendLine data={client.retentionHistory} color={sc} w={64} h={24} />
+          <div style={{ textAlign: 'right', minWidth: 36 }}>
+            <div style={{ fontFamily: T.mono, fontSize: 22, fontWeight: 700, color: sc,
+              lineHeight: 1, letterSpacing: '-.04em' }}>{client.retentionScore}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, marginTop: 3 }}>
+              {trend.dir === 'up' && <ArrowUpRight style={{ width: 9, height: 9, color: T.emerald }} />}
+              {trend.dir === 'down' && <ArrowDownRight style={{ width: 9, height: 9, color: T.red }} />}
+              <span style={{ fontSize: 8, fontWeight: 700, color: T.t3, textTransform: 'uppercase' }}>
+                {trend.dir}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Spark + score */}
-        <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
-          <Spark data={client.retentionHistory} color={sc} w={64} h={22}/>
-          <div style={{ textAlign:'right', minWidth:34 }}>
-            <div style={{ fontSize:20, fontWeight:800, color:sc,
-              lineHeight:1, letterSpacing:'-.04em' }}>{client.retentionScore}</div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:2, marginTop:2 }}>
-              <TIcon style={{ width:8, height:8, color:tColor }}/>
-              <span style={{ fontSize:7.5, fontWeight:700, color:C.t3,
-                textTransform:'uppercase', letterSpacing:'.04em' }}>{trend.dir}</span>
-            </div>
-          </div>
-          <ChevronDown style={{
-            width:12, height:12, flexShrink:0, color: isOpen ? C.blue : C.t4,
-            transform: isOpen ? 'rotate(180deg)' : 'none', transition:'transform .2s ease, color .14s',
-          }}/>
+        {/* Inline actions (visible on hover) */}
+        <div className="cis-row-actions" style={{
+          display: 'flex', gap: 4, flexShrink: 0,
+        }}>
+          {[
+            { icon: MessageCircle, tip: 'Message', color: T.indigo },
+            { icon: Calendar,      tip: 'Book',    color: T.emerald },
+            { icon: Dumbbell,      tip: 'Workout', color: T.amber },
+          ].map(({ icon: Ic, tip, color }, i) => (
+            <button key={i} className="cis-btn cis-tooltip" data-tip={tip}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: 30, height: 30, borderRadius: 8, display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                background: `${color}0a`, border: `1px solid ${color}18`, color,
+              }}>
+              <Ic style={{ width: 13, height: 13 }} />
+            </button>
+          ))}
         </div>
+
+        <ChevronDown style={{
+          width: 14, height: 14, flexShrink: 0,
+          color: isOpen ? T.indigo : T.t4,
+          transform: isOpen ? 'rotate(180deg)' : 'none',
+          transition: 'transform .2s ease, color .15s',
+        }} />
       </div>
 
-      {/* Drop panel */}
-      {isOpen && <DropPanel client={client} onClose={onToggle} openModal={openModal}/>}
-    </div>
-  );
-}
-
-// ─── SUMMARY STRIP ────────────────────────────────────────────────────────────
-function SummaryStrip({ clients }) {
-  const avgScore     = Math.round(clients.reduce((s,c) => s + c.retentionScore, 0) / (clients.length || 1));
-  const active       = clients.filter(c => c.status === 'active').length;
-  const atRisk       = clients.filter(c => c.status === 'at_risk').length;
-  const totalSessions = clients.reduce((s,c) => s + c.sessionsThisMonth, 0);
-  const ameta        = scoreMeta(avgScore);
-  return (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
-      {[
-        { label:'Total Clients',   value:clients.length,  sub:'from class bookings',  color:C.blue  },
-        { label:'Avg Retention',   value:avgScore || '—', sub:ameta.label,            color:ameta.color },
-        { label:'Active',          value:active,          sub:'regularly attending',  color:C.green },
-        { label:'Need Outreach',   value:atRisk,          sub:'at churn risk',        color:atRisk>0?C.red:C.t3 },
-      ].map((s,i) => (
-        <div key={i} style={{ padding:'13px 16px', borderRadius:11,
-          background:C.surface, border:`1px solid ${C.border}` }}>
-          <div style={{ fontSize:9, color:C.t3, fontWeight:700, textTransform:'uppercase',
-            letterSpacing:'.07em', marginBottom:6 }}>{s.label}</div>
-          <div style={{ fontSize:24, fontWeight:800, color:s.color,
-            lineHeight:1, letterSpacing:'-.04em', marginBottom:4 }}>{s.value}</div>
-          <div style={{ fontSize:9, color:C.t3 }}>{s.sub}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
-function Sidebar({ clients, openClient }) {
-  const atRisk   = clients.filter(c => c.status === 'at_risk');
-  const topClient = [...clients].sort((a,b) => b.retentionScore - a.retentionScore)[0];
-  const withActiveInj = clients.filter(c => (c.injuries||[]).some(i=>i.severity==='Active'));
-
-  return (
-    <div className="tcm-sidebar">
-
-      {/* Priority Outreach */}
-      {atRisk.length > 0 && (
-        <SideCard style={{ borderLeft:`2px solid ${C.red}` }}>
-          <SideHdr>Priority Outreach</SideHdr>
-          <div style={{ fontSize:10, color:C.red, fontWeight:600, marginTop:-6, marginBottom:10 }}>
-            {atRisk.length} at churn risk
-          </div>
-          {atRisk.map((c,i) => (
-            <div key={c.id} onClick={() => openClient(c)} style={{
-              display:'flex', alignItems:'center', gap:9, padding:'8px 10px',
-              borderRadius:8, marginBottom: i<atRisk.length-1 ? 5 : 0,
-              background:'rgba(255,255,255,.02)', border:`1px solid ${C.border}`,
-              cursor:'pointer', transition:'border-color .13s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.redStr}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-              <Avatar name={c.name} src={c.avatar} size={26}/>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.t1,
-                  overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.name}</div>
-                <div style={{ fontSize:9, color:C.t3 }}>{c.lastVisit >= 999 ? 'Never visited' : `${c.lastVisit}d since last visit`}</div>
-              </div>
-              <span style={{ fontSize:15, fontWeight:800, color:scoreColor(c.retentionScore),
-                letterSpacing:'-.03em' }}>{c.retentionScore}</span>
-            </div>
-          ))}
-        </SideCard>
-      )}
-
-      {/* Retention Health */}
-      <SideCard>
-        <SideHdr>Retention Health</SideHdr>
-        {[
-          { label:'Healthy (80+)',   count:clients.filter(c=>c.retentionScore>=80).length,                                        color:C.green },
-          { label:'Stable (60–79)', count:clients.filter(c=>c.retentionScore>=60&&c.retentionScore<80).length,                    color:C.t1    },
-          { label:'Caution (40–59)',count:clients.filter(c=>c.retentionScore>=40&&c.retentionScore<60).length,                    color:C.amber },
-          { label:'At Risk (<40)',   count:clients.filter(c=>c.retentionScore<40).length,                                         color:C.red   },
-        ].map((r,i,arr) => (
-          <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
-            padding:'7px 0', borderBottom: i<arr.length-1 ? `1px solid ${C.border}` : 'none' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-              <div style={{ width:6, height:6, borderRadius:'50%', background:r.color, flexShrink:0 }}/>
-              <span style={{ fontSize:11, color:C.t2 }}>{r.label}</span>
-            </div>
-            <span style={{ fontSize:13, fontWeight:700, color:r.color }}>{r.count}</span>
-          </div>
-        ))}
-      </SideCard>
-
-      {/* Top Performer */}
-      {topClient && (
-        <SideCard>
-          <SideHdr>Top Performer</SideHdr>
-          <div onClick={() => openClient(topClient)} style={{ cursor:'pointer' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:10 }}>
-              <Avatar name={topClient.name} src={topClient.avatar} size={32}/>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.t1 }}>{topClient.name}</div>
-                <div style={{ fontSize:10, color:C.t3 }}>{topClient.sessionsThisMonth} sessions this month</div>
-              </div>
-            </div>
-            <div style={{ padding:'8px 10px', borderRadius:8, background:C.greenDim,
-              border:`1px solid rgba(33,163,111,.18)`,
-              display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ fontSize:28, fontWeight:800, color:C.green,
-                letterSpacing:'-.04em', lineHeight:1 }}>{topClient.retentionScore}</div>
-              <Spark data={topClient.retentionHistory} color={C.green} w={100} h={24}/>
-            </div>
-          </div>
-        </SideCard>
-      )}
-
-      {/* Active injury alerts */}
-      {withActiveInj.length > 0 && (
-        <SideCard style={{ borderLeft:`2px solid ${C.red}` }}>
-          <SideHdr>Active Injuries</SideHdr>
-          <div style={{ fontSize:10, color:C.red, fontWeight:600, marginTop:-6, marginBottom:10 }}>
-            {withActiveInj.length} client{withActiveInj.length>1?'s':''} restricted
-          </div>
-          {withActiveInj.map((c,i) => {
-            const active = (c.injuries||[]).filter(i=>i.severity==='Active');
-            return (
-              <div key={c.id} onClick={() => openClient(c)} style={{
-                padding:'8px 10px', borderRadius:8, background:C.redDim,
-                border:`1px solid ${C.redStr}`,
-                marginBottom: i<withActiveInj.length-1 ? 5 : 0, cursor:'pointer',
-              }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.t1, marginBottom:3 }}>{c.name}</div>
-                {active.map(inj => (
-                  <div key={inj.id} style={{ fontSize:9, color:C.red, fontWeight:600 }}>⚠ {inj.area}</div>
-                ))}
-              </div>
-            );
-          })}
-        </SideCard>
-      )}
-
-      {/* Session activity split */}
-      <SideCard>
-        <SideHdr>Session Activity</SideHdr>
-        {[
-          { label: 'Active (65+)',    count: clients.filter(c => c.retentionScore >= 65).length,                   color: C.green },
-          { label: 'Caution (35–64)',count: clients.filter(c => c.retentionScore >= 35 && c.retentionScore < 65).length, color: C.amber },
-          { label: 'At Risk (<35)',   count: clients.filter(c => c.retentionScore < 35).length,                    color: C.red   },
-        ].map(({ label, count, color }, i, arr) => {
-          const pct = clients.length > 0 ? Math.round((count / clients.length) * 100) : 0;
-          return (
-            <div key={label} style={{ marginBottom: i < arr.length-1 ? 9 : 0 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                <span style={{ fontSize:10, color:C.t2 }}>{label}</span>
-                <span style={{ fontSize:10, fontWeight:700, color }}>{count} <span style={{ color:C.t3, fontWeight:400 }}>({pct}%)</span></span>
-              </div>
-              <div style={{ height:2, borderRadius:99, background:'rgba(255,255,255,.05)', overflow:'hidden' }}>
-                <div style={{ height:'100%', width:`${pct}%`, borderRadius:99, background:color }}/>
-              </div>
-            </div>
-          );
-        })}
-      </SideCard>
+      {isOpen && <DropPanel client={client} onClose={onToggle} />}
     </div>
   );
 }
@@ -984,55 +1311,112 @@ function PendingClientRow({ invite, onCancel }) {
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10,
-      overflow: 'hidden', borderLeft: `2px solid ${C.blue}`, opacity: 0.85, position: 'relative' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px' }}>
-        <div style={{ width:34, height:34, borderRadius:'50%', flexShrink:0,
-          background:'rgba(61,130,244,0.10)', border:'1px solid rgba(61,130,244,0.20)',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          fontSize:12, fontWeight:800, color:C.blue }}>
-          {ini(invite.member_name)}
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14,
+      overflow: 'hidden', borderLeft: `3px solid ${T.indigo}`, opacity: 0.8,
+      position: 'relative',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+          background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, fontWeight: 700, color: T.indigo,
+        }}>{ini(invite.member_name)}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.t1, marginBottom: 3 }}>{invite.member_name}</div>
+          <div style={{ fontSize: 11, color: T.t3 }}>Invite sent · awaiting response</div>
         </div>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:13, fontWeight:700, color:C.t1, marginBottom:3 }}>{invite.member_name}</div>
-          <div style={{ fontSize:10, color:C.t3 }}>Invite sent · awaiting response</div>
-        </div>
-        <span style={{ fontSize:9, fontWeight:800, color:C.blue,
-          background:C.blueDim, border:`1px solid ${C.blueStr}`,
-          borderRadius:99, padding:'3px 10px', textTransform:'uppercase', letterSpacing:'.05em',
-          flexShrink:0 }}>Pending</span>
-
-        {/* 3-dots menu */}
-        <div style={{ position:'relative', flexShrink:0 }}>
-          <button
-            className="tcm-btn"
-            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
-            style={{ width:26, height:26, borderRadius:6, display:'flex', alignItems:'center',
-              justifyContent:'center', background:'transparent', border:`1px solid ${C.border}`,
-              color:C.t3, marginLeft:4 }}>
-            <span style={{ fontSize:14, lineHeight:1, letterSpacing:'1px' }}>···</span>
+        <Pill color={T.indigo} bg={T.indigoDim} border={T.indigoBdr}>Pending</Pill>
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <button className="cis-btn" onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
+            style={{
+              width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', background: 'rgba(255,255,255,.03)',
+              border: `1px solid ${T.border}`, color: T.t3,
+            }}>
+            <MoreHorizontal style={{ width: 13, height: 13 }} />
           </button>
           {menuOpen && (
             <>
-              {/* click-away backdrop */}
-              <div onClick={() => setMenuOpen(false)}
-                style={{ position:'fixed', inset:0, zIndex:99 }} />
-              <div style={{ position:'absolute', right:0, top:'110%', zIndex:100,
-                background:'#0c1520', border:`1px solid ${C.borderMd}`,
-                borderRadius:9, overflow:'hidden', minWidth:130,
-                boxShadow:'0 8px 24px rgba(0,0,0,0.6)' }}>
-                <button
-                  className="tcm-btn"
-                  onClick={e => { e.stopPropagation(); setMenuOpen(false); onCancel(invite); }}
-                  style={{ width:'100%', display:'flex', alignItems:'center', gap:7,
-                    padding:'9px 13px', background:'transparent', border:'none',
-                    color:C.red, fontSize:11, fontWeight:700, textAlign:'left' }}>
-                  <X style={{ width:11, height:11 }}/> Cancel Invite
+              <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+              <div style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 100,
+                background: T.card, border: `1px solid ${T.borderA}`,
+                borderRadius: 10, overflow: 'hidden', minWidth: 140,
+                boxShadow: '0 12px 32px rgba(0,0,0,.5)',
+              }}>
+                <button className="cis-btn" onClick={() => { setMenuOpen(false); onCancel(invite); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '10px 14px', background: 'transparent',
+                    color: T.red, fontSize: 12, fontWeight: 700, textAlign: 'left',
+                  }}>
+                  <XCircle style={{ width: 13, height: 13 }} /> Cancel Invite
                 </button>
               </div>
             </>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── EMPTY STATE ──────────────────────────────────────────────────────────────
+function EmptyState({ onAddClient }) {
+  const steps = [
+    { icon: UserPlus, label: 'Add your first client', desc: 'Invite clients to connect with your coaching profile', action: 'Add Client', onClick: onAddClient, color: T.indigo },
+    { icon: Upload,   label: 'Import client list',    desc: 'Bulk import from a spreadsheet or CSV file',          action: 'Import',     color: T.sky },
+    { icon: Calendar, label: 'Create first session',  desc: 'Set up a class or 1:1 session to get started',       action: 'Create',     color: T.emerald },
+  ];
+
+  return (
+    <div className="cis-fade" style={{
+      padding: '48px 32px', textAlign: 'center', borderRadius: 16,
+      background: `linear-gradient(180deg, ${T.surface}, ${T.bg})`,
+      border: `1px solid ${T.border}`,
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16, margin: '0 auto 20px',
+        background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Users style={{ width: 24, height: 24, color: T.indigo }} />
+      </div>
+      <h3 style={{ fontSize: 20, fontWeight: 700, color: T.t1, margin: '0 0 6px', letterSpacing: '-.02em' }}>
+        Build Your Client Intelligence
+      </h3>
+      <p style={{ fontSize: 13, color: T.t3, margin: '0 0 32px', maxWidth: 400, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
+        Clients appear here automatically when members book your classes, or you can add them directly.
+      </p>
+
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 600, margin: '0 auto' }}>
+        {steps.map((step, i) => {
+          const Ic = step.icon;
+          return (
+            <div key={i} className="cis-fade" style={{
+              flex: '1 1 170px', maxWidth: 200,
+              padding: '20px 16px', borderRadius: 14, textAlign: 'center',
+              background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+              animationDelay: `${i * .08}s`,
+              cursor: 'pointer', transition: 'border-color .15s, background .15s',
+            }}
+              onClick={step.onClick}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = `${step.color}30`; e.currentTarget.style.background = `${step.color}06`; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, margin: '0 auto 12px',
+                background: `${step.color}0d`, border: `1px solid ${step.color}1a`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Ic style={{ width: 16, height: 16, color: step.color }} />
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.t1, marginBottom: 4 }}>{step.label}</div>
+              <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.5 }}>{step.desc}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1049,7 +1433,6 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
   const coachId = coach?.id || coach?.user_id;
   const queryClient = useQueryClient();
 
-  // Fetch pending invites sent by this coach
   const { data: pendingInvites = [] } = useQuery({
     queryKey: ['coachInvitesForCoach', coachId, 'pending'],
     queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'pending' }, '-created_date', 50),
@@ -1063,16 +1446,13 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] }),
   });
 
-  // Build real clients from bookings: unique clients who booked a class with this coach
   const allClients = useMemo(() => {
-    // Group bookings by client
     const byClient = {};
     bookings.forEach(b => {
       if (!b.client_id) return;
       if (!byClient[b.client_id]) byClient[b.client_id] = { name: b.client_name || 'Client', bookings: [] };
       byClient[b.client_id].bookings.push(b);
     });
-
     return Object.entries(byClient).map(([userId, { name, bookings: clientBookings }]) => ({
       ...buildClientFromBookings(userId, name, clientBookings, checkIns, now),
       avatar: avatarMap?.[userId] || null,
@@ -1081,48 +1461,53 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
 
   const acceptedMemberIds = allClients.map(c => c.id);
   const pendingMemberIds  = pendingInvites.map(i => i.member_id);
-
   const atRiskCount = allClients.filter(c => c.status === 'at_risk').length;
+  const newCount = allClients.filter(c => c.isNew).length;
+  const inactiveCount = allClients.filter(c => c.lastVisit >= 14 || c.lastVisit >= 999).length;
+  const highValueCount = allClients.filter(c => c.retentionScore >= 80).length;
 
   const FILTERS = [
-    { id:'all',     label:'All Clients', count:allClients.length + pendingInvites.length },
-    { id:'active',  label:'Active',      count:allClients.filter(c=>c.status==='active').length },
-    { id:'at_risk', label:'At Risk',     count:atRiskCount, urgent:true },
-    { id:'paused',  label:'Paused',      count:allClients.filter(c=>c.status==='paused').length },
+    { id: 'all',       label: 'All Clients',  count: allClients.length + pendingInvites.length },
+    { id: 'at_risk',   label: 'At Risk',       count: atRiskCount,     urgent: true },
+    { id: 'high_value',label: 'High Value',    count: highValueCount },
+    { id: 'inactive',  label: 'Inactive',      count: inactiveCount },
+    { id: 'new',       label: 'New',           count: newCount },
   ];
 
   const visible = useMemo(() => {
     let list = [...allClients];
-    if (filter === 'active')  list = list.filter(c=>c.status==='active');
-    if (filter === 'at_risk') list = list.filter(c=>c.status==='at_risk');
-    if (filter === 'paused')  list = list.filter(c=>c.status==='paused');
+    if (filter === 'at_risk')    list = list.filter(c => c.status === 'at_risk');
+    if (filter === 'high_value') list = list.filter(c => c.retentionScore >= 80);
+    if (filter === 'inactive')   list = list.filter(c => c.lastVisit >= 14 || c.lastVisit >= 999);
+    if (filter === 'new')        list = list.filter(c => c.isNew);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(c =>
         c.name.toLowerCase().includes(q) ||
         c.goal.toLowerCase().includes(q) ||
-        c.tags.some(t=>t.toLowerCase().includes(q))
+        c.tags.some(t => t.toLowerCase().includes(q))
       );
     }
-    if (sortBy==='risk')      list.sort((a,b)=>a.retentionScore-b.retentionScore);
-    if (sortBy==='score')     list.sort((a,b)=>b.retentionScore-a.retentionScore);
-    if (sortBy==='lastVisit') list.sort((a,b)=>b.lastVisit-a.lastVisit);
-    if (sortBy==='name')      list.sort((a,b)=>a.name.localeCompare(b.name));
+    if (sortBy === 'risk')      list.sort((a,b) => a.retentionScore - b.retentionScore);
+    if (sortBy === 'score')     list.sort((a,b) => b.retentionScore - a.retentionScore);
+    if (sortBy === 'lastVisit') list.sort((a,b) => b.lastVisit - a.lastVisit);
+    if (sortBy === 'name')      list.sort((a,b) => a.name.localeCompare(b.name));
     return list;
   }, [allClients, filter, search, sortBy]);
 
-  // Show pending invites only on 'all' filter
   const showPending = filter === 'all';
 
   function openClient(c) {
     setOpenId(c.id);
     setTimeout(() => {
-      document.getElementById(`cr-${c.id}`)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      document.getElementById(`cr-${c.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 40);
   }
 
+  const hasClients = allClients.length > 0 || pendingInvites.length > 0;
+
   return (
-    <div className="tcm" style={{ background:C.bg, minHeight:'100vh', padding:'20px' }}>
+    <div className="cis" style={{ background: T.bg, minHeight: '100vh', padding: '24px' }}>
       <AddClientModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -1131,122 +1516,188 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
         pendingClientIds={pendingMemberIds}
       />
 
-      <SummaryStrip clients={allClients}/>
-
-      {/* Controls */}
-      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, flexWrap:'wrap' }}>
-        <div style={{ position:'relative', flex:1, minWidth:220 }}>
-          <Search style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)',
-            width:12, height:12, color:C.t3, pointerEvents:'none' }}/>
-          <input value={search} onChange={e=>setSearch(e.target.value)}
-            placeholder="Search by name, goal, or class…"
-            style={{ width:'100%', padding:'9px 34px', borderRadius:9, background:C.surface,
-              border:`1px solid ${C.border}`, color:C.t1, fontSize:11, outline:'none',
-              fontFamily:'inherit', boxSizing:'border-box', transition:'border-color .14s' }}
-            onFocus={e=>e.target.style.borderColor=C.blueStr}
-            onBlur={e=>e.target.style.borderColor=C.border}/>
-          {search && (
-            <button onClick={()=>setSearch('')} style={{ position:'absolute', right:10, top:'50%',
-              transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer',
-              color:C.t3, display:'flex', padding:0 }}>
-              <X style={{ width:12, height:12 }}/>
-            </button>
-          )}
+      {/* Page Header */}
+      <div className="cis-fade" style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 20,
+      }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: T.t1, margin: 0, letterSpacing: '-.03em' }}>
+            Client Intelligence
+          </h1>
+          <p style={{ fontSize: 12, color: T.t3, margin: '4px 0 0' }}>
+            {allClients.length} client{allClients.length !== 1 ? 's' : ''} · Last updated just now
+          </p>
         </div>
-
-        {/* Sort */}
-        <div style={{ display:'flex', gap:3, padding:'3px', background:'rgba(255,255,255,.02)',
-          border:`1px solid ${C.border}`, borderRadius:8 }}>
-          {[{id:'risk',label:'Priority'},{id:'score',label:'Score'},{id:'lastVisit',label:'Last Seen'},{id:'name',label:'Name'}].map(s => (
-            <button key={s.id} className="tcm-btn" onClick={()=>setSortBy(s.id)} style={{
-              padding:'5px 10px', borderRadius:6, fontSize:10,
-              fontWeight: sortBy===s.id ? 700 : 500,
-              background: sortBy===s.id ? C.blueDim : 'transparent',
-              border:`1px solid ${sortBy===s.id ? C.blueStr : 'transparent'}`,
-              color: sortBy===s.id ? C.blue : C.t3,
-              whiteSpace:'nowrap',
-            }}>{s.label}</button>
-          ))}
-        </div>
-
-        <button className="tcm-btn" onClick={() => setShowAddModal(true)} style={{
-          display:'flex', alignItems:'center', gap:6, padding:'9px 14px', borderRadius:9,
-          background:C.blue, border:`1px solid ${C.blueStr}`, color:'#fff',
-          fontSize:11, fontWeight:700, flexShrink:0,
+        <button className="cis-btn" onClick={() => setShowAddModal(true)} style={{
+          display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 10,
+          background: T.indigo, color: '#fff', fontSize: 13, fontWeight: 700,
+          boxShadow: '0 2px 12px rgba(99,102,241,.25)',
         }}>
-          <UserPlus style={{ width:12, height:12 }}/> Add Client
+          <UserPlus style={{ width: 14, height: 14 }} /> Add Client
         </button>
       </div>
 
-      {/* Filter tabs — "Clients" label removed */}
-      <div className="tcm-tabs" style={{ marginBottom:0 }}>
-        {FILTERS.map(f => {
-          const isAct = filter === f.id;
-          const isUrg = f.urgent && f.count > 0;
-          const tc = isAct ? (isUrg ? C.red : C.blue) : C.t3;
-          return (
-            <button key={f.id} className="tcm-tab" onClick={()=>setFilter(f.id)} style={{
-              fontWeight: isAct ? 700 : 500, color: tc,
-              borderBottomColor: isAct ? tc : 'transparent',
-              display:'flex', alignItems:'center', gap:5,
-            }}>
-              {f.label}
-              {f.count > 0 && (
-                <span style={{ fontSize:8, fontWeight:800,
-                  background: isAct ? (isUrg ? `${C.red}18` : C.blueDim) : 'rgba(255,255,255,.05)',
-                  color: isAct ? tc : C.t3, padding:'1px 5px', borderRadius:99 }}>
-                  {f.count}
-                </span>
+      {!hasClients ? (
+        <EmptyState onAddClient={() => setShowAddModal(true)} />
+      ) : (
+        <>
+          {/* Health Overview */}
+          <HealthOverview clients={allClients} />
+
+          {/* Priority Outreach */}
+          <PriorityClients clients={allClients} onSelect={openClient} />
+
+          {/* Controls Row */}
+          <div className="cis-controls cis-fade" style={{
+            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+            flexWrap: 'wrap', animationDelay: '.1s',
+          }}>
+            {/* Search */}
+            <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+              <Search style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)',
+                width: 14, height: 14, color: T.t3, pointerEvents: 'none' }} />
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name, goal, or class…"
+                className="cis-input"
+                style={{ paddingLeft: 38, paddingRight: 36 }}
+                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,.4)'}
+                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.06)'} />
+              {search && (
+                <button onClick={() => setSearch('')} style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: T.t3,
+                  display: 'flex', padding: 0,
+                }}>
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
               )}
-            </button>
-          );
-        })}
-      </div>
+            </div>
 
-      {/* Main grid */}
-      <div className="tcm-root" style={{ marginTop:14 }}>
-        <div className="tcm-left">
-          {/* Column hint removed */}
-
-          {/* List */}
-          <div className="tcm-feed">
-            {/* Pending invites at top (only on 'all' filter) */}
-            {showPending && pendingInvites.map(invite => (
-              <PendingClientRow key={invite.id} invite={invite} onCancel={cancelInviteMutation.mutate} />
-            ))}
-
-            {visible.length === 0 && (!showPending || pendingInvites.length === 0) ? (
-              <div style={{ padding:'40px', textAlign:'center', borderRadius:11,
-                background:C.surface, border:`1px solid ${C.border}` }}>
-                <p style={{ fontSize:13, color:C.t2, fontWeight:600, margin:'0 0 4px' }}>
-                  {allClients.length === 0 ? 'No clients yet' : 'No clients match this filter'}
-                </p>
-                <p style={{ fontSize:11, color:C.t3, margin:0 }}>
-                  {allClients.length === 0 ? 'Clients appear here automatically when members book into your classes' : 'Try adjusting your search or filter'}
-                </p>
-              </div>
-            ) : (
-              <>
-                {visible.map(c => (
-                  <div key={c.id} id={`cr-${c.id}`}>
-                    <ClientRow
-                      client={c}
-                      isOpen={openId === c.id}
-                      onToggle={() => setOpenId(p => p===c.id ? null : c.id)}
-                      openModal={openModal}
-                    />
-                  </div>
-                ))}
-                <p style={{ textAlign:'center', fontSize:10, color:C.t3, margin:'8px 0 0', paddingBottom:16 }}>
-                  {visible.length} clients{showPending && pendingInvites.length > 0 ? ` · ${pendingInvites.length} pending` : ''}
-                </p>
-              </>
-            )}
+            {/* Sort */}
+            <div style={{
+              display: 'flex', gap: 2, padding: '3px',
+              background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+              borderRadius: 10,
+            }}>
+              {[
+                { id: 'risk',      label: 'Priority' },
+                { id: 'score',     label: 'Score' },
+                { id: 'lastVisit', label: 'Last Seen' },
+                { id: 'name',      label: 'Name' },
+              ].map(s => (
+                <button key={s.id} className="cis-btn" onClick={() => setSortBy(s.id)} style={{
+                  padding: '6px 12px', borderRadius: 8, fontSize: 11,
+                  fontWeight: sortBy === s.id ? 700 : 500,
+                  background: sortBy === s.id ? T.indigoDim : 'transparent',
+                  border: `1px solid ${sortBy === s.id ? T.indigoBdr : 'transparent'}`,
+                  color: sortBy === s.id ? T.indigo : T.t3,
+                  whiteSpace: 'nowrap',
+                }}>{s.label}</button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <Sidebar clients={visible.length > 0 ? visible : allClients} openClient={openClient}/>
-      </div>
+          {/* Filter Tabs */}
+          <div style={{
+            display: 'flex', gap: 2, marginBottom: 16,
+            borderBottom: `1px solid ${T.border}`, paddingBottom: 0,
+          }}>
+            {FILTERS.map(f => {
+              const isAct = filter === f.id;
+              const isUrg = f.urgent && f.count > 0;
+              const accent = isAct ? (isUrg ? T.red : T.indigo) : T.t3;
+              return (
+                <button key={f.id} className="cis-btn" onClick={() => setFilter(f.id)} style={{
+                  padding: '10px 16px', fontSize: 12,
+                  background: 'none',
+                  borderBottom: `2px solid ${isAct ? accent : 'transparent'}`,
+                  color: accent,
+                  fontWeight: isAct ? 700 : 500,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  marginBottom: -1,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {f.label}
+                  {f.count > 0 && (
+                    <span style={{
+                      fontFamily: T.mono, fontSize: 10, fontWeight: 700,
+                      background: isAct ? (isUrg ? T.redDim : T.indigoDim) : 'rgba(255,255,255,.04)',
+                      color: isAct ? accent : T.t3,
+                      padding: '1px 7px', borderRadius: 99,
+                    }}>{f.count}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Main Grid */}
+          <div className="cis-grid" style={{
+            display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 280px', gap: 16,
+          }}>
+            {/* Client List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {/* Column headers */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '0 18px 8px', fontSize: 9, fontWeight: 700,
+                color: T.t3, textTransform: 'uppercase', letterSpacing: '.08em',
+              }}>
+                <span style={{ width: 38 }} />
+                <span style={{ flex: '1 1 180px' }}>Client</span>
+                <span style={{ flex: '0 0 70px', textAlign: 'center' }}>Last Visit</span>
+                <span style={{ flex: '0 0 65px', textAlign: 'center' }}>Sessions</span>
+                <span style={{ flex: '0 0 130px', textAlign: 'right' }}>Engagement</span>
+                <span style={{ width: 106 }} />
+                <span style={{ width: 14 }} />
+              </div>
+
+              {showPending && pendingInvites.map(invite => (
+                <PendingClientRow key={invite.id} invite={invite} onCancel={cancelInviteMutation.mutate} />
+              ))}
+
+              {visible.length === 0 && (!showPending || pendingInvites.length === 0) ? (
+                <div style={{
+                  padding: 40, textAlign: 'center', borderRadius: 14,
+                  background: T.surface, border: `1px solid ${T.border}`,
+                }}>
+                  <Search style={{ width: 20, height: 20, color: T.t3, margin: '0 auto 10px' }} />
+                  <p style={{ fontSize: 14, color: T.t2, fontWeight: 600, margin: '0 0 4px' }}>
+                    {allClients.length === 0 ? 'No clients yet' : 'No clients match this filter'}
+                  </p>
+                  <p style={{ fontSize: 12, color: T.t3, margin: 0 }}>
+                    {allClients.length === 0 ? 'Clients appear here when members book your classes' : 'Try adjusting your search or filter'}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {visible.map((c, i) => (
+                    <div key={c.id} id={`cr-${c.id}`} className="cis-fade" style={{ animationDelay: `${Math.min(i * .03, .3)}s` }}>
+                      <ClientRow
+                        client={c}
+                        isOpen={openId === c.id}
+                        onToggle={() => setOpenId(p => p === c.id ? null : c.id)}
+                      />
+                    </div>
+                  ))}
+                  <p style={{ textAlign: 'center', fontSize: 11, color: T.t3, margin: '10px 0 0', paddingBottom: 20 }}>
+                    <span style={{ fontFamily: T.mono }}>{visible.length}</span> clients
+                    {showPending && pendingInvites.length > 0 ? ` · ${pendingInvites.length} pending` : ''}
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="cis-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <InsightsPanel clients={allClients} />
+              <RetentionBreakdown clients={visible.length > 0 ? visible : allClients} />
+              <TopPerformers clients={allClients} onSelect={openClient} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
