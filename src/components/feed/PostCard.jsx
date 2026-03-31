@@ -16,7 +16,6 @@ import { createPageUrl } from '@/utils';
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 // ── Reactions Modal — standalone component rendered outside any overflow:hidden parent ──
-// backdrop uses top:-100px to bleed above the safe-area/status-bar and eliminate the gap
 function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
   const [search, setSearch] = useState('');
   if (!open) return null;
@@ -231,7 +230,6 @@ function formatPostDate(dateStr) {
     const d = Math.floor(diffDays);
     return d === 1 ? '1 day ago' : `${d} days ago`;
   }
-  // Ordinal suffix e.g. "24th March 2026"
   const day = date.getDate();
   const suffix = day === 1 || day === 21 || day === 31 ? 'st'
                : day === 2 || day === 22 ? 'nd'
@@ -241,7 +239,21 @@ function formatPostDate(dateStr) {
   const year = date.getFullYear();
   return `${day}${suffix} ${month} ${year}`;
 }
-// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Post author location line: "Gym Name · 6 hours ago" ──────────────────────
+function PostMeta({ post, gymName }) {
+  const timeStr = formatPostDate(post.created_date);
+  if (gymName) {
+    return (
+      <p className="text-[11px] text-white/70 font-medium leading-tight">
+        <span className="text-blue-400 font-semibold">{gymName}</span>
+        <span className="text-white/40 mx-1">·</span>
+        {timeStr}
+      </p>
+    );
+  }
+  return <p className="text-[11px] text-white/70 font-medium">{timeStr}</p>;
+}
 
 function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
   const [reacted, setReacted] = useState(false);
@@ -300,6 +312,34 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
+
+  // ── Fetch the gym associated with this post's check-in ────────────────────
+  // Posts store gym_id if the user was checked in when logging
+  const { data: postGym } = useQuery({
+    queryKey: ['postGym', post.gym_id],
+    queryFn: () => base44.entities.Gym.filter({ id: post.gym_id }).then(r => r[0] || null),
+    enabled: !!post.gym_id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  // Fallback: if no gym_id on post but it's a workout post from the current user, try to find their primary gym
+  const { data: fallbackGym } = useQuery({
+    queryKey: ['primaryGym', post.member_id],
+    queryFn: async () => {
+      const memberships = await base44.entities.GymMembership.filter({ user_id: post.member_id, status: 'active' });
+      if (!memberships.length) return null;
+      const author = await base44.entities.User.filter({ id: post.member_id }).then(r => r[0]);
+      const primaryId = author?.primary_gym_id || memberships[0]?.gym_id;
+      if (!primaryId) return null;
+      return base44.entities.Gym.filter({ id: primaryId }).then(r => r[0] || null);
+    },
+    enabled: !post.gym_id && !!post.workout_name && !!post.member_id,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  const gymName = postGym?.name || fallbackGym?.name || null;
 
   const reactedUserIds = useMemo(() => Object.keys(post.reactions || {}), [post.reactions]);
   const { data: reactedUsers = [] } = useQuery({
@@ -361,10 +401,8 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
-  // Local reaction state so toggles are instant regardless of memo/prop staleness
   const [localReacted, setLocalReacted] = useState(() => !!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
   const [localReactions, setLocalReactions] = useState(() => ({ ...(post.reactions || {}) }));
-  // Sync from prop when it changes externally (e.g. after refetch)
   const prevReactionsRef = React.useRef(post.reactions);
   useEffect(() => {
     if (post.reactions !== prevReactionsRef.current) {
@@ -385,7 +423,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     },
     onMutate: async (isReacting) => {
       reactMutationLockRef.current = true;
-      // Update local state immediately for instant UI feedback
       setLocalReacted(isReacting);
       setLocalReactions(prev => {
         const updated = { ...prev };
@@ -403,13 +440,10 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           return { ...p, reactions: updatedReactions };
         });
       };
-      // Cancel in-flight refetches so they don't overwrite optimistic update
       await queryClient.cancelQueries({ queryKey: ['friendPosts'] });
       await queryClient.cancelQueries({ queryKey: ['posts'] });
       await queryClient.cancelQueries({ queryKey: ['userPosts'] });
-      // Snapshot current data for rollback
       const snapshots = queryClient.getQueryCache().getAll().map(({ queryKey, state }) => ({ queryKey, data: state.data }));
-      // Apply optimistic update to all array caches
       queryClient.getQueryCache().getAll().forEach(({ queryKey, state }) => {
         if (Array.isArray(state.data)) {
           queryClient.setQueryData(queryKey, applyUpdate(state.data));
@@ -418,7 +452,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       return { snapshots };
     },
     onError: (err, isReacting, context) => {
-      // Rollback local state
       setLocalReacted(!isReacting);
       setLocalReactions({ ...(post.reactions || {}) });
       context?.snapshots?.forEach(({ queryKey, data }) => queryClient.setQueryData(queryKey, data));
@@ -577,7 +610,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
-                  <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
+                  <PostMeta post={post} gymName={gymName} />
                 </div>
               </Link>
               {renderMenu(
@@ -615,7 +648,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; touchCurrentX.current = e.touches[0].clientX; setIsDragging(false); setDragOffset(0); }}
               onTouchMove={(e) => { if (touchStartX.current === null) return; const dx = e.touches[0].clientX - touchStartX.current; const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > dy) { setIsDragging(true); touchCurrentX.current = e.touches[0].clientX; const rawOffset = dx; const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.92; const minDrag = slide === 0 ? -window.innerWidth * 0.92 : 0; setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset))); } }}
               onTouchEnd={(e) => { if (touchStartX.current === null) return; const dx = e.changedTouches[0].clientX - touchStartX.current; const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0)); if (Math.abs(dx) > 40 && Math.abs(dx) > dy) { setSlide(dx < 0 ? 1 : 0); } touchStartX.current = null; touchStartY.current = null; touchCurrentX.current = null; setIsDragging(false); setDragOffset(0); }}>
-              {/* Single track slides both panels together — no overlap ever */}
               <div style={{
                 position: 'absolute', top: 0, height: '100%',
                 left: 0, width: '200%',
@@ -625,11 +657,9 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
               }}>
-                {/* Photo — 2.5% of track = 5% of card margin each side, 45% of track = 90% of card wide → centred */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '2.5%', width: '45%', borderRadius: '8px', overflow: 'hidden' }}>
                   <img src={post.image_url} alt="workout" loading="lazy" decoding="async" style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '130%', top: '-15%', objectFit: 'cover', objectPosition: 'center center' }} />
                 </div>
-                {/* Summary — starts at 48.5% of track (= just after photo right edge + 1% gap), same width */}
                 <div style={{ position: 'absolute', top: 0, height: '100%', left: '48.5%', width: '45%', overflow: 'hidden' }}>
                   {exerciseSummaryJSX}
                 </div>
@@ -679,9 +709,9 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           confirmLabel={post.is_favourite ? 'Remove' : 'Add to Favourites'}
           confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }} isPending={updatePostMutation.isPending} />
-                <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
+        <ReportModal open={showReportModal} onClose={() => setShowReportModal(false)} postId={post.id} />
         {typeof document !== 'undefined' && ReactDOM.createPortal(
-          <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />,
+          <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} gymName={gymName} />,
           document.body
         )}
       </>
@@ -724,7 +754,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
-                <p className="text-[11px] text-white/70 font-medium">{formatPostDate(post.created_date)}</p>
+                <PostMeta post={post} gymName={gymName} />
               </div>
             </Link>
             {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
@@ -791,7 +821,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <>
             <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
             <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
-            <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} />
+            <WorkoutShareModal open={showWorkoutShare} onClose={() => setShowWorkoutShare(false)} post={post} gymName={gymName} />
             <PostShareModal open={showPostShare} onClose={() => setShowPostShare(false)} post={post} />
           </>,
           document.body
