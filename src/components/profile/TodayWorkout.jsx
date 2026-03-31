@@ -381,7 +381,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         const sets = parseFloat(ex.sets || ex.setsReps?.split('x')?.[0]) || 0;
         const reps = parseFloat(ex.reps || ex.setsReps?.split('x')?.[1]) || 0;
         const weight = parseFloat(ex.weight) || 0;
-        return sum + (sets * reps * weight);
+        return sum + sets * reps * weight;
       }, 0);
 
       // Duration: use frozenDurationRef (seconds) captured at button press time
@@ -389,12 +389,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const durationMins = durationSecs > 0 ? Math.round(durationSecs / 60) : undefined;
 
       // Normalise exercises so sets + reps are always stored as top-level fields
-      const normalisedExercises = (todayWorkout.exercises || []).map(ex => {
+      const normalisedExercises = (todayWorkout.exercises || []).map((ex) => {
         const setsRepsStr = String(ex.setsReps || '');
         const srParts = /[xX×]/.test(setsRepsStr) ? setsRepsStr.split(/[xX×]/) : [];
         const sets = String(ex.sets || srParts[0] || '');
         const reps = String(ex.reps || srParts[1] || '');
-        return { ...ex, sets, reps, setsReps: sets && reps ? `${sets}x${reps}` : (ex.setsReps || null) };
+        return { ...ex, sets, reps, setsReps: sets && reps ? `${sets}x${reps}` : ex.setsReps || null };
       });
 
       await base44.entities.WorkoutLog.create({
@@ -408,7 +408,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0],
         duration_minutes: durationMins,
-        total_volume: totalVolume > 0 ? Math.round(totalVolume) : undefined,
+        total_volume: totalVolume > 0 ? Math.round(totalVolume) : undefined
       });
 
       const newStreak = (currentUser.current_streak || 0) + 1;
@@ -678,7 +678,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             exit={{ height: 0 }}
             transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{ overflow: 'hidden', transformOrigin: 'top', visibility: isExpanded ? 'visible' : 'hidden' }}>
-              <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</p>
+              
 
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
@@ -816,9 +816,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
                         {/* ── Exercise name header (always shown when logged, hidden per-row otherwise) ── */}
-                        {alreadyLoggedToday && (
-                          <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
-                        )}
+                        {alreadyLoggedToday &&
+                    <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
+                    }
                         {/* ── Grouped rows ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
@@ -888,11 +888,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           key={index}
                           className={`flex items-center gap-2 mb-1 pr-2 ${alreadyLoggedToday ? 'ml-1' : ''}`}>
                               {/* Exercise name — only shown on first row, invisible placeholder on others (only when edit button present) */}
-                              {!alreadyLoggedToday && (
-                                <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
+                              {!alreadyLoggedToday &&
+                          <div className="text-sm font-bold text-white leading-tight ml-1 flex-shrink-0" style={{ width: '72px', opacity: setIdx === 0 ? 1 : 0 }}>
                                   {group.name}
                                 </div>
-                              )}
+                          }
                               {/* Set label pill */}
                               <div className={`bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0 ${!alreadyLoggedToday ? 'ml-5' : ''}`} style={{ width: '44px' }}>
                                 {setLabel}
@@ -1115,6 +1115,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                        
 
 
 
