@@ -152,7 +152,7 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
               onClick={onClose}
               className="p-2 -m-2 text-slate-400 hover:text-white transition-colors">
               
-              <X className="w-5 h-5" />
+              
             </button>
           </div>
 
