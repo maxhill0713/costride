@@ -108,8 +108,8 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-2 mb-5">
             {[
-              { label: 'Duration', value: duration },
               { label: 'Exercises', value: exerciseCount },
+              { label: 'Duration', value: duration },
               { label: 'Volume', value: volume },
             ].map((stat) => (
               <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">

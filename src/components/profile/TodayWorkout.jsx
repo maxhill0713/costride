@@ -384,8 +384,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         return sum + sets * reps * weight;
       }, 0);
 
-      // Duration: use frozenDurationRef (seconds) captured at button press time
-      const durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
+      // Duration: use frozenDurationRef (seconds) if available, else fallback to today's check-in time
+      let durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
+      if (!durationSecs && currentUser?.id) {
+        try {
+          const recentCIs = await base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 5);
+          const todayCI = recentCIs.find(c => {
+            const d = new Date(c.check_in_date);
+            const now2 = new Date();
+            return d.getFullYear() === now2.getFullYear() && d.getMonth() === now2.getMonth() && d.getDate() === now2.getDate();
+          });
+          if (todayCI) durationSecs = Math.round((Date.now() - new Date(todayCI.check_in_date).getTime()) / 1000);
+        } catch {}
+      }
       const durationMins = durationSecs > 0 ? Math.round(durationSecs / 60) : undefined;
 
       // Normalise exercises so sets + reps are always stored as top-level fields

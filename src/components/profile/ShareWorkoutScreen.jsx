@@ -170,7 +170,7 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, onContinue }) {
+export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, onContinue, durationMinutes }) {
   const [comment, setComment] = useState('');
   const [postTitle, setPostTitle] = useState(workoutName || '');
   const [photoUrl, setPhotoUrl] = useState(null);
@@ -223,6 +223,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
           const { sets, reps, weight } = parseEx(ex);
           return { name: displayName || 'Exercise', sets, reps, weight };
         }),
+        workout_duration: durationMinutes > 0 ? `${durationMinutes}m` : null,
         workout_volume: volumeStr,
         gym_name: gymName || null,
       });
@@ -236,7 +237,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const PANEL_HEIGHT = 'min(71vw, 315px)';
   const PREVIEW_COUNT_POST = 8;
 
-  const totalSets = exercises?.reduce((acc, ex) => acc + (parseFloat(parseEx(ex).sets) || 0), 0) || 0;
+  const durationStr = durationMinutes > 0 ? `${durationMinutes}m` : '—';
   const totalVol = exercises?.reduce((acc, ex) => {
     const { sets: s, reps: r, weight: w } = parseEx(ex);
     return acc + (parseFloat(s)||0) * (parseFloat(r)||0) * (parseFloat(w)||0);
@@ -301,8 +302,8 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
               </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">
-                <span className="text-sm font-black text-white leading-tight">{totalSets > 0 ? totalSets : '—'}</span>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Sets</span>
+                <span className="text-sm font-black text-white leading-tight">{durationStr}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
               </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">

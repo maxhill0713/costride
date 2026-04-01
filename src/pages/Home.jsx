@@ -257,6 +257,7 @@ export default function Home() {
   const [celebrationExercises, setCelebrationExercises] = useState([]);
   const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
   const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
+  const [celebrationDurationMinutes, setCelebrationDurationMinutes] = useState(0);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
   const [bubblePos, setBubblePos] = useState(null);
@@ -701,6 +702,17 @@ export default function Home() {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
     setJustLoggedDay(todayAdjusted);
+    // Calculate duration: prefer workoutStartTime (timer), fallback to today's check-in time
+    const nowMs = Date.now();
+    let durationMins = 0;
+    if (workoutStartTime) {
+      durationMins = Math.round((nowMs - workoutStartTime) / 60000);
+    } else {
+      const todayCI = allCheckIns.find(c => c.user_id === currentUser?.id && isToday(new Date(c.check_in_date)));
+      if (todayCI) {
+        durationMins = Math.round((nowMs - new Date(todayCI.check_in_date).getTime()) / 60000);
+      }
+    }
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
@@ -713,6 +725,7 @@ export default function Home() {
     setCelebrationExercises(exercises);
     setCelebrationWorkoutName(workoutName);
     setCelebrationPreviousExercises(previousExercises);
+    setCelebrationDurationMinutes(durationMins > 0 ? durationMins : 0);
     const showShare = () => { setShowShareWorkout(true); };
     setShowStreakCelebration(true);
     setTimeout(() => {
@@ -1256,6 +1269,7 @@ export default function Home() {
         celebrationWorkoutName={celebrationWorkoutName}
         celebrationExercises={celebrationExercises}
         celebrationPreviousExercises={celebrationPreviousExercises}
+        celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}

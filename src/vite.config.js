@@ -18,36 +18,23 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch VitePWA's workbox options to raise the 2MB file size limit to 10MB.
-    // Must run AFTER base44Plugin so the vite-plugin-pwa plugin is already in the list.
+    // Patch workbox-build's generateSW to raise the 2MB precache limit to 10MB.
+    // We do this by intercepting the module after it's dynamically imported by vite-plugin-pwa.
     {
-      name: 'patch-pwa-file-size-limit',
+      name: 'patch-workbox-file-size-limit',
       enforce: 'post',
-      configResolved(config) {
-        const flat = (arr) => arr.reduce((a, p) => a.concat(Array.isArray(p) ? flat(p) : p), []);
-        flat(config.plugins).forEach((p) => {
-          if (!p || p.name !== 'vite-plugin-pwa') return;
-          // Walk every property recursively looking for maximumFileSizeToCacheInBytes
-          const patch = (obj, depth = 0) => {
-            if (!obj || typeof obj !== 'object' || depth > 8) return;
-            if ('maximumFileSizeToCacheInBytes' in obj) {
-              obj.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
-            }
-            for (const key of Object.keys(obj)) {
-              try { patch(obj[key], depth + 1); } catch {}
-            }
-          };
-          patch(p);
-          // Also wrap closeBundle to patch just before SW generation
-          const orig = p.closeBundle;
-          if (orig) {
-            p.closeBundle = async function (...args) {
-              patch(this);
-              patch(p);
-              return orig.apply(this, args);
+      async buildStart() {
+        try {
+          const wb = await import('workbox-build');
+          const target = wb.default || wb;
+          if (typeof target.generateSW === 'function') {
+            const orig = target.generateSW.bind(target);
+            target.generateSW = (cfg) => {
+              cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
+              return orig(cfg);
             };
           }
-        });
+        } catch {}
       },
     },
   ],
