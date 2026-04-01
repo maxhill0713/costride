@@ -1325,43 +1325,102 @@ export default function Home() {
                   <h3 className="text-2xl font-black text-white mb-2">{workoutName}</h3>
                   <p className="text-sm text-slate-400 font-medium mt-2">{formattedDate}</p>
                 </div>
-                {exercises.length > 0 ? (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-4">Sets</div>
-                      <div />
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Reps</div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
-                    </div>
-                    <div className="space-y-2 -mx-2">
-                      {exercises.map((ex, idx) => {
-                        const exName = ex.exercise || ex.name || ex.title || `Exercise ${idx + 1}`;
-                        const setsRepsStr2 = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
-                        const srParts2 = /[xX]/.test(setsRepsStr2) ? setsRepsStr2.split(/[xX]/).map(s => s.trim()) : [];
-                        const rawSets2 = ex.sets ?? ex.set_count ?? ex.num_sets;
-                        const sets = (rawSets2 !== undefined && rawSets2 !== null && String(rawSets2) !== '') ? String(rawSets2) : srParts2[0] || '-';
-                        const rawReps2 = ex.reps ?? ex.rep_count ?? ex.num_reps;
-                        const reps = (rawReps2 !== undefined && rawReps2 !== null && String(rawReps2) !== '') ? String(rawReps2) : srParts2[1] || '-';
-                        const rawWeight2 = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
-                        const weight = (rawWeight2 !== undefined && rawWeight2 !== null && String(rawWeight2) !== '') ? String(rawWeight2) : '-';
-                        return (
-                          <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
-                            <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
-                            <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-3" style={{ width: '36px' }}>{sets}</div>
-                            <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-4">×</div>
-                            <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-2" style={{ width: '36px' }}>{reps}</div>
-                            <div className="ml-3 pr-3">
-                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-                                {weight}<span className="text-[10px] font-bold">kg</span>
+                {exercises.length > 0 ? (() => {
+                  // Group exercises by name — same logic as TodayWorkout
+                  const groups = [];
+                  const nameToGroupIdx = {};
+                  exercises.forEach((ex, index) => {
+                    const key = (ex.exercise || ex.name || '').trim().toLowerCase();
+                    if (!key) {
+                      groups.push({ key: `__empty_${index}`, name: ex.exercise || ex.name || '', items: [{ ex, index }] });
+                      return;
+                    }
+                    if (nameToGroupIdx[key] === undefined) {
+                      nameToGroupIdx[key] = groups.length;
+                      groups.push({ key, name: ex.exercise || ex.name, items: [{ ex, index }] });
+                    } else {
+                      groups[nameToGroupIdx[key]].items.push({ ex, index });
+                    }
+                  });
+
+                  return (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-4">Sets</div>
+                        <div />
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Reps</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+                      </div>
+                      <div className="space-y-2 -mx-2">
+                        {groups.map((group) => {
+                          const isGrouped = group.items.length > 1;
+
+                          if (!isGrouped) {
+                            const { ex, index } = group.items[0];
+                            const exName = ex.exercise || ex.name || ex.title || `Exercise ${index + 1}`;
+                            const setsRepsStr = String(ex.setsReps || ex.sets_reps || ex.set_reps || '');
+                            const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                            const rawSets = ex.sets ?? ex.set_count ?? ex.num_sets;
+                            const sets = (rawSets !== undefined && rawSets !== null && String(rawSets) !== '') ? String(rawSets) : srParts[0] || '-';
+                            const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
+                            const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '') ? String(rawReps) : srParts[1] || '-';
+                            const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
+                            const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
+                            return (
+                              <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+                                <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
+                                <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-3" style={{ width: '36px' }}>{sets}</div>
+                                <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-4">×</div>
+                                <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-2" style={{ width: '36px' }}>{reps}</div>
+                                <div className="ml-3 pr-3">
+                                  <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                    {weight}<span className="text-[10px] font-bold">kg</span>
+                                  </div>
+                                </div>
                               </div>
+                            );
+                          }
+
+                          // Grouped (multi-set) — sort heaviest first = Set 1
+                          const sorted = [...group.items].sort(
+                            (a, b) => (parseFloat(b.ex.weight_kg ?? b.ex.weight_lbs ?? b.ex.weight) || 0) - (parseFloat(a.ex.weight_kg ?? a.ex.weight_lbs ?? a.ex.weight) || 0)
+                          );
+                          return (
+                            <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10">
+                              {sorted.map(({ ex, index }, setIdx) => {
+                                const setLabel = `Set ${setIdx + 1}`;
+                                const rawReps = ex.reps ?? ex.rep_count ?? ex.num_reps;
+                                const setsRepsStr = String(ex.setsReps || '');
+                                const srParts = /[xX]/.test(setsRepsStr) ? setsRepsStr.split(/[xX]/).map(s => s.trim()) : [];
+                                const reps = (rawReps !== undefined && rawReps !== null && String(rawReps) !== '') ? String(rawReps) : srParts[1] || '-';
+                                const rawWeight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight;
+                                const weight = (rawWeight !== undefined && rawWeight !== null && String(rawWeight) !== '') ? String(rawWeight) : '-';
+                                return (
+                                  <div key={index} className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center pr-2 mb-1">
+                                    <div className="ml-1">
+                                      {setIdx === 0
+                                        ? <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
+                                        : <div />}
+                                    </div>
+                                    <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center ml-3" style={{ width: '36px' }}>{setLabel}</div>
+                                    <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-4">×</div>
+                                    <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-2" style={{ width: '36px' }}>{reps}</div>
+                                    <div className="ml-3 pr-1">
+                                      <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                        {weight}<span className="text-[10px] font-bold">kg</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ) : (
+                  );
+                })() : (
                   <p className="text-xs text-slate-500 text-center mt-4">No exercises configured for this day.</p>
                 )}
               </motion.div>
