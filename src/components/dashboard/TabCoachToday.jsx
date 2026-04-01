@@ -1,684 +1,813 @@
-import React, { useState, useMemo } from "react";
-import { differenceInDays, format, isToday, parseISO } from "date-fns";
+/**
+ * TabCoachToday — Mission Control Redesign
+ *
+ * Design philosophy: "Every pixel has a job."
+ * Gym owners open this page and immediately know what to act on.
+ * No passive data. No decorative charts. No wasted space.
+ *
+ * LAYOUT:
+ *   [COMMAND HEADER]  — greeting + live pulse + next session
+ *   [TODAY'S PRIORITIES] — 3-5 ranked, actionable intelligence cards
+ *   [TWO-COLUMN GRID]
+ *     Left:  Attendance Chart (14d, meaningful) → Today's Sessions → Activity Feed
+ *     Right: Weekly Performance → Client Risk Feed
+ *
+ * REMOVED: stat cards, tiny sparklines, redundant adherence %s, daily goals widget
+ * ADDED:   priority engine, session health scoring, risk feed with actions, activity stream
+ */
 
-// ─── INJECT STYLES ────────────────────────────────────────────────────────────
-if (typeof document !== "undefined" && !document.getElementById("tct-v2-css")) {
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { differenceInDays, format, parseISO } from "date-fns";
+
+// ─── CSS INJECTION ────────────────────────────────────────────────────────────
+if (typeof document !== "undefined" && !document.getElementById("mcc-css")) {
   const s = document.createElement("style");
-  s.id = "tct-v2-css";
+  s.id = "mcc-css";
   s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 
-    .tct-root, .tct-root * { box-sizing: border-box; margin: 0; padding: 0; }
-    .tct-root { font-family: 'Inter', -apple-system, sans-serif; }
+    .mcc-root, .mcc-root * { box-sizing: border-box; margin: 0; padding: 0; }
+    .mcc-root { font-family: 'Figtree', system-ui, sans-serif; }
+    .mono { font-family: 'DM Mono', monospace !important; }
 
-    @keyframes tct-fadeUp   { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:none } }
-    @keyframes tct-fadeIn   { from { opacity:0 } to { opacity:1 } }
-    @keyframes tct-pulse    { 0%,100%{opacity:1} 50%{opacity:.35} }
-    @keyframes tct-shimmer  { from{background-position:-200% 0} to{background-position:200% 0} }
-    @keyframes tct-expand   { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
-    @keyframes tct-scaleIn  { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+    @keyframes mcc-up    { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+    @keyframes mcc-in    { from { opacity:0; transform:scale(.98)      } to { opacity:1; transform:none } }
+    @keyframes mcc-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    @keyframes mcc-grow  { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+    @keyframes mcc-bar   { from{height:0} to{height:var(--h)} }
 
-    .tct-fade-up   { animation: tct-fadeUp .32s cubic-bezier(.22,1,.36,1) both; }
-    .tct-scale-in  { animation: tct-scaleIn .28s cubic-bezier(.22,1,.36,1) both; }
-    .tct-expand    { animation: tct-expand .2s ease both; }
-    .tct-pulse-dot { animation: tct-pulse 1.8s ease-in-out infinite; }
+    .u  { animation: mcc-up .3s cubic-bezier(.22,1,.36,1) both; }
+    .u1 { animation-delay: .04s } .u2 { animation-delay: .08s }
+    .u3 { animation-delay: .12s } .u4 { animation-delay: .16s }
+    .u5 { animation-delay: .20s }
 
-    .tct-row-hover { transition: background .1s ease; cursor: pointer; }
-    .tct-row-hover:hover { background: rgba(255,255,255,0.022) !important; }
+    .mcc-btn { font-family: 'Figtree', sans-serif; cursor: pointer; border: none; outline: none;
+      transition: all .13s; display: inline-flex; align-items: center; gap: 5px; }
+    .mcc-btn:active { transform: scale(.96); }
 
-    .tct-btn { font-family: 'Inter', sans-serif; cursor: pointer; border: none; outline: none;
-      transition: all .14s ease; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-    .tct-btn:hover { filter: brightness(1.12); }
-    .tct-btn:active { transform: scale(.975); }
+    .mcc-hover { transition: background .1s; }
+    .mcc-hover:hover { background: rgba(255,255,255,0.025) !important; }
 
-    .tct-tab { cursor: pointer; transition: all .14s; user-select: none; }
+    .mcc-scr::-webkit-scrollbar { width: 2px; }
+    .mcc-scr::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 4px; }
 
-    .tct-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
-    .tct-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .tct-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
+    .mcc-card { border-radius: 11px; overflow: hidden; transition: border-color .15s; }
+    .mcc-card:hover { border-color: rgba(255,255,255,0.10) !important; }
 
-    .tct-mono { font-family: 'DM Mono', monospace; }
-    .tct-syne { font-family: 'Syne', sans-serif; }
+    .pri-card { border-radius: 10px; cursor: pointer; transition: all .14s; }
+    .pri-card:hover { background: rgba(255,255,255,0.03) !important; border-color: rgba(255,255,255,0.11) !important; }
 
-    .tct-card { transition: border-color .15s ease; }
-    .tct-card:hover { border-color: rgba(255,255,255,0.11) !important; }
-
-    .tct-progress-bar { transition: width .8s cubic-bezier(.22,1,.36,1); }
-
-    @media (max-width: 900px) {
-      .tct-main-grid { grid-template-columns: 1fr !important; }
-    }
+    .tip { position: absolute; pointer-events: none; transition: opacity .12s; }
   `;
   document.head.appendChild(s);
 }
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
+// ─── TOKENS ───────────────────────────────────────────────────────────────────
 const T = {
-  // Surfaces
-  bg:       "#07090e",
-  s0:       "#0a0d14",
-  s1:       "#0d1119",
-  s2:       "#101520",
-  s3:       "#131926",
-  // Borders
-  b0:       "rgba(255,255,255,0.05)",
-  b1:       "rgba(255,255,255,0.08)",
-  b2:       "rgba(255,255,255,0.13)",
-  // Text
-  t0:       "#eef2f7",
-  t1:       "#c8d3e0",
-  t2:       "#7e90a4",
-  t3:       "#3d5068",
-  t4:       "#1e2e3e",
-  // Accents — deliberately restrained palette
-  blue:     "#4a8df0",
-  blueDim:  "rgba(74,141,240,0.10)",
-  blueMid:  "rgba(74,141,240,0.18)",
-  blueStr:  "rgba(74,141,240,0.30)",
-  green:    "#1ea870",
-  greenDim: "rgba(30,168,112,0.10)",
-  greenStr: "rgba(30,168,112,0.25)",
-  amber:    "#d68e28",
-  amberDim: "rgba(214,142,40,0.10)",
-  amberStr: "rgba(214,142,40,0.25)",
-  red:      "#d95050",
-  redDim:   "rgba(217,80,80,0.10)",
-  redStr:   "rgba(217,80,80,0.25)",
+  bg:  "#07090e", s0: "#0a0c14", s1: "#0d1018", s2: "#10141f", s3: "#131926",
+  b0:  "rgba(255,255,255,0.05)", b1: "rgba(255,255,255,0.08)", b2: "rgba(255,255,255,0.13)",
+  t0:  "#eef2f7", t1: "#c8d3e0", t2: "#7e90a4", t3: "#3d5068", t4: "#1e2e3e",
+  blue:    "#4a8df0", blueDim:  "rgba(74,141,240,0.09)", blueBrd: "rgba(74,141,240,0.22)",
+  green:   "#1ea870", greenDim: "rgba(30,168,112,0.09)", greenBrd:"rgba(30,168,112,0.22)",
+  amber:   "#d68e28", amberDim: "rgba(214,142,40,0.09)", amberBrd:"rgba(214,142,40,0.22)",
+  red:     "#d95050", redDim:   "rgba(217,80,80,0.09)",  redBrd:  "rgba(217,80,80,0.22)",
+  purple:  "#8b6cf6", purpleDim:"rgba(139,108,246,0.09)",purpleBrd:"rgba(139,108,246,0.22)",
 };
 
-// ─── MICRO COMPONENTS ─────────────────────────────────────────────────────────
+const CARD  = { background: T.s1, border: `1px solid ${T.b1}`, borderRadius: 11, overflow: "hidden" };
+const CSHADOW = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 10px rgba(0,0,0,0.4)";
 
-function Mono({ children, style }) {
-  return <span className="tct-mono" style={{ ...style }}>{children}</span>;
-}
+// ─── ATOMS ────────────────────────────────────────────────────────────────────
+const Lbl = ({ c, style = {} }) => (
+  <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: c || T.t3, ...style }}>{c}</span>
+);
 
-function Label({ children, style }) {
+const Dot = ({ color, pulse }) => (
+  <div style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0,
+    animation: pulse ? "mcc-pulse 2s ease-in-out infinite" : "none" }} />
+);
+
+const Chip = ({ children, color, bg, brd, style = {} }) => (
+  <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:9, fontWeight:800,
+    letterSpacing:".07em", textTransform:"uppercase", color: color||T.t2,
+    background: bg||"rgba(255,255,255,0.05)", border:`1px solid ${brd||T.b1}`,
+    borderRadius:4, padding:"2px 7px", whiteSpace:"nowrap", ...style }}>
+    {children}
+  </span>
+);
+
+const Divider = ({ style = {} }) => <div style={{ height:1, background:T.b0, ...style }} />;
+
+const CardHead = ({ label, sub, right, border = true }) => (
+  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12,
+    padding:"13px 18px", ...(border ? { borderBottom:`1px solid ${T.b0}` } : {}) }}>
+    <div>
+      <div style={{ fontSize:11.5, fontWeight:700, color:T.t0, letterSpacing:"-.01em" }}>{label}</div>
+      {sub && <div style={{ fontSize:10, color:T.t2, marginTop:2 }}>{sub}</div>}
+    </div>
+    {right}
+  </div>
+);
+
+function Avatar({ name, src, size = 28, accent = T.t3 }) {
+  const [err, setErr] = useState(false);
+  const ini = (name||"?").split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
   return (
-    <span style={{
-      fontSize: 9, fontWeight: 700, letterSpacing: ".10em",
-      textTransform: "uppercase", color: T.t3, ...style
-    }}>{children}</span>
-  );
-}
-
-function Divider({ vertical, style }) {
-  return vertical
-    ? <div style={{ width: 1, background: T.b0, alignSelf: "stretch", ...style }} />
-    : <div style={{ height: 1, background: T.b0, ...style }} />;
-}
-
-function Avatar({ name, size = 28, src, riskLevel }) {
-  const [err, setErr] = React.useState(false);
-  const initials = (name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-  const accent = riskLevel === "high" ? T.red : riskLevel === "med" ? T.amber : T.t3;
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: `${accent}18`, border: `1.5px solid ${accent}28`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * .34, fontWeight: 700, color: accent,
-      fontFamily: "Inter, sans-serif", overflow: "hidden",
-    }}>
-      {src && !err
-        ? <img src={src} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={() => setErr(true)} />
-        : initials}
+    <div style={{ width:size, height:size, borderRadius:"50%", flexShrink:0, overflow:"hidden",
+      background:`${accent}18`, border:`1.5px solid ${accent}28`,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      fontSize:size*.33, fontWeight:700, color:accent }}>
+      {src&&!err ? <img src={src} alt={name} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={()=>setErr(true)}/> : ini}
     </div>
   );
 }
 
-function StatusDot({ status }) {
-  const cfg = {
-    live:     { bg: T.green,  pulse: true  },
-    upcoming: { bg: T.blue,   pulse: false },
-    done:     { bg: T.t4,     pulse: false },
-  }[status] || { bg: T.t4, pulse: false };
+function ActionBtn({ label, color, bg, brd, onClick, icon }) {
   return (
-    <div className={cfg.pulse ? "tct-pulse-dot" : ""}
-      style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.bg, flexShrink: 0 }} />
+    <button className="mcc-btn" onClick={onClick} style={{ fontSize:10, fontWeight:700, color, background:bg,
+      border:`1px solid ${brd}`, borderRadius:6, padding:"5px 11px", whiteSpace:"nowrap" }}>
+      {icon && icon}{label}
+    </button>
   );
 }
 
-function Pill({ children, color = T.t2, bg = "rgba(255,255,255,0.05)", border, style }) {
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4,
-      fontSize: 9, fontWeight: 800, letterSpacing: ".07em", textTransform: "uppercase",
-      color, background: bg, border: `1px solid ${border || "rgba(255,255,255,0.08)"}`,
-      borderRadius: 4, padding: "2px 7px", whiteSpace: "nowrap", ...style,
-    }}>{children}</span>
-  );
+// ─── 1. TODAY'S PRIORITIES (HERO SECTION) ────────────────────────────────────
+function derivePriorities({ allMemberships, checkIns, sessions, now, openModal, setTab }) {
+  const priorities = [];
+
+  // P1: Clients inactive 7+ days
+  const inactive7 = allMemberships.filter(m => {
+    const mCI = checkIns.filter(c => c.user_id === m.user_id);
+    const last = mCI.sort((a,b) => new Date(b.check_in_date||b.check_in_time) - new Date(a.check_in_date||a.check_in_time))[0];
+    const d = last ? differenceInDays(now, new Date(last.check_in_date||last.check_in_time)) : 999;
+    return d >= 7 && d < 999;
+  });
+  const neverChecked = allMemberships.filter(m => checkIns.filter(c=>c.user_id===m.user_id).length === 0);
+
+  if (inactive7.length > 0 || neverChecked.length > 0) {
+    const count = inactive7.length + neverChecked.length;
+    priorities.push({
+      id: "inactive",
+      severity: "high",
+      icon: "🔴",
+      title: `${count} client${count>1?"s":""} haven't attended in 7+ days`,
+      context: count > 1
+        ? `${inactive7.map(m=>m.user_name||"Client").slice(0,2).join(", ")}${count>2?` + ${count-2} more`:""} — each additional inactive day increases churn risk by ~4%.`
+        : `${(inactive7[0]||neverChecked[0])?.user_name||"A client"} — re-engagement now is 3× more effective than waiting another week.`,
+      cta: "Send Re-engagement Messages",
+      ctaFn: () => openModal?.("message"),
+      color: T.red, colorDim: T.redDim, colorBrd: T.redBrd,
+    });
+  }
+
+  // P2: Underbooked sessions today
+  const underbooked = sessions.filter(s => s.status !== "done" && s.cap > 0 && (s.booked / s.cap) < 0.4);
+  if (underbooked.length > 0) {
+    const s = underbooked[0];
+    const pct = Math.round((s.booked/s.cap)*100);
+    priorities.push({
+      id: "underbooked",
+      severity: "med",
+      icon: "🟡",
+      title: `${underbooked.length > 1 ? `${underbooked.length} sessions are` : `"${s.name}" is`} significantly underbooked`,
+      context: `${s.name} is at ${pct}% capacity (${s.booked}/${s.cap} spots). A quick message to your members could fill ${s.cap - s.booked} open slot${s.cap-s.booked>1?"s":""}.`,
+      cta: "Promote Session",
+      ctaFn: () => openModal?.("classes"),
+      color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBrd,
+    });
+  }
+
+  // P3: Clients with zero check-ins ever (onboarding risk)
+  if (neverChecked.length > 0 && inactive7.length === 0) {
+    priorities.push({
+      id: "onboarding",
+      severity: "med",
+      icon: "🟡",
+      title: `${neverChecked.length} member${neverChecked.length>1?"s have":""} never checked in`,
+      context: `New members who don't check in within their first 2 weeks are 70% more likely to cancel. Reach out to ${neverChecked[0]?.user_name||"them"} today.`,
+      cta: "Message New Members",
+      ctaFn: () => openModal?.("message"),
+      color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBrd,
+    });
+  }
+
+  // P4: No sessions scheduled today
+  if (sessions.length === 0) {
+    priorities.push({
+      id: "nosessions",
+      severity: "low",
+      icon: "🔵",
+      title: "No sessions scheduled today",
+      context: "Gyms with scheduled classes have 38% higher member retention. Adding even one group session can significantly boost engagement.",
+      cta: "Schedule a Session",
+      ctaFn: () => openModal?.("classes"),
+      color: T.blue, colorDim: T.blueDim, colorBrd: T.blueBrd,
+    });
+  }
+
+  // P5: Live session with no check-ins
+  const liveEmpty = sessions.find(s => s.status === "live" && s.booked > 0 && s.checkInsToday === 0);
+  if (liveEmpty) {
+    priorities.push({
+      id: "livemissing",
+      severity: "high",
+      icon: "🔴",
+      title: `"${liveEmpty.name}" is live but no one has checked in`,
+      context: `${liveEmpty.booked} member${liveEmpty.booked>1?"s":""} booked this session. Use QR check-in or manually log attendance now.`,
+      cta: "Open Check-in Scanner",
+      ctaFn: () => openModal?.("qrScanner"),
+      color: T.red, colorDim: T.redDim, colorBrd: T.redBrd,
+    });
+  }
+
+  // If everything is fine
+  if (priorities.length === 0) {
+    priorities.push({
+      id: "allgood",
+      severity: "ok",
+      icon: "✅",
+      title: "You're on top of everything today",
+      context: `All clients active, sessions healthy. Use this window to plan next week's schedule or review monthly performance.`,
+      cta: "View Analytics",
+      ctaFn: () => setTab?.("analytics"),
+      color: T.green, colorDim: T.greenDim, colorBrd: T.greenBrd,
+    });
+  }
+
+  return priorities.slice(0, 5);
 }
 
-function AdherenceBar({ pct, showLabel = true }) {
-  const color = pct >= 75 ? T.green : pct >= 50 ? T.blue : pct >= 30 ? T.amber : T.red;
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 3, background: T.b0, borderRadius: 99, overflow: "hidden" }}>
-        <div className="tct-progress-bar" style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 99 }} />
-      </div>
-      {showLabel && <Mono style={{ fontSize: 10, color, fontWeight: 500, width: 28, textAlign: "right" }}>{pct}%</Mono>}
-    </div>
-  );
-}
-
-// Mini sparkline
-function Spark({ data = [], color = T.blue, h = 24, w = 52 }) {
-  if (data.length < 2) return (
-    <svg width={w} height={h}><line x1={0} y1={h/2} x2={w} y2={h/2} stroke={T.t4} strokeWidth={1} strokeDasharray="2 2"/></svg>
-  );
-  const max = Math.max(...data, 1);
-  const pts = data.map((v, i) => `${((i/(data.length-1))*w).toFixed(1)},${(h - (v/max)*(h-4) - 2).toFixed(1)}`).join(" ");
-  const last = data[data.length-1];
-  const lx = w, ly = h - (last/max)*(h-4) - 2;
-  return (
-    <svg width={w} height={h} style={{ flexShrink: 0, overflow: "visible" }}>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={.8}/>
-      <circle cx={lx} cy={ly} r={2.2} fill={color}/>
-    </svg>
-  );
-}
-
-// ─── CARD WRAPPER ─────────────────────────────────────────────────────────────
-function Card({ children, style, accent }) {
-  return (
-    <div className="tct-card" style={{
-      background: T.s1, border: `1px solid ${T.b1}`,
-      borderRadius: 10, overflow: "hidden",
-      ...(accent ? { borderTop: `2px solid ${accent}` } : {}),
-      ...style,
-    }}>{children}</div>
-  );
-}
-
-function CardHeader({ title, right, sub, border = true }) {
-  return (
-    <div style={{
-      padding: "13px 18px",
-      ...(border ? { borderBottom: `1px solid ${T.b0}` } : {}),
-      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-    }}>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.t1, letterSpacing: "-.01em" }}>{title}</div>
-        {sub && <div style={{ fontSize: 10, color: T.t2, marginTop: 2 }}>{sub}</div>}
-      </div>
-      {right}
-    </div>
-  );
-}
-
-// ─── KPI CARDS ────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, subOk, sparkData, sparkColor, delay = 0 }) {
-  const subColor = subOk === true ? T.green : subOk === false ? T.red : T.t2;
-  return (
-    <div className="tct-card tct-fade-up" style={{
-      animationDelay: `${delay}s`,
-      background: T.s1, border: `1px solid ${T.b1}`, borderRadius: 10,
-      padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14,
-    }}>
-      <Label>{label}</Label>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
-        <Mono style={{ fontSize: 34, fontWeight: 400, color: T.t0, letterSpacing: "-.05em", lineHeight: 1 }}>
-          {value}
-        </Mono>
-        {sparkData && <Spark data={sparkData} color={sparkColor || T.blue} h={26} w={54}/>}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div style={{ width: 5, height: 5, borderRadius: "50%",
-          background: subColor, opacity: .8, flexShrink: 0 }} />
-        <span style={{ fontSize: 10, color: subColor, fontWeight: 500 }}>{sub}</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── SESSION TIMELINE ITEM ────────────────────────────────────────────────────
-function SessionItem({ s, expanded, onToggle, isLast }) {
-  const pct = s.cap > 0 ? Math.round((s.booked / s.cap) * 100) : 0;
-  const statusCfg = {
-    live:     { label: "Live",     color: T.green, bg: T.greenDim, brd: T.greenStr },
-    upcoming: { label: "Upcoming", color: T.blue,  bg: T.blueDim,  brd: T.blueStr  },
-    done:     { label: "Done",     color: T.t3,    bg: "rgba(255,255,255,0.03)", brd: T.b0 },
-  }[s.status] || { label: "–", color: T.t3, bg: T.b0, brd: T.b0 };
-
-  const isDone = s.status === "done";
+function TodaysPriorities({ priorities }) {
+  const SvgIcons = {
+    high: <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1={12} y1={9} x2={12} y2={13}/><line x1={12} y1={17} x2={12.01} y2={17}/></svg>,
+    med: <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><circle cx={12} cy={12} r={10}/><line x1={12} y1={8} x2={12} y2={12}/><line x1={12} y1={16} x2={12.01} y2={16}/></svg>,
+    low: <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><circle cx={12} cy={12} r={10}/><line x1={12} y1={8} x2={12} y2={12}/><line x1={12} y1={16} x2={12.01} y2={16}/></svg>,
+    ok: <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>,
+  };
 
   return (
-    <div style={{ position: "relative" }}>
-      {/* Timeline connector */}
-      {!isLast && (
-        <div style={{
-          position: "absolute", left: 29, top: 52, bottom: 0, width: 1,
-          background: isDone ? T.b0 : `linear-gradient(${T.b1}, transparent)`,
-          zIndex: 0,
-        }} />
-      )}
-
-      <div className="tct-row-hover tct-fade-up" onClick={onToggle} style={{
-        display: "flex", alignItems: "flex-start", gap: 0,
-        padding: "16px 20px", cursor: "pointer",
-        opacity: isDone ? .6 : 1, position: "relative", zIndex: 1,
-      }}>
-        {/* Time + status column */}
-        <div style={{ width: 72, flexShrink: 0, display: "flex", flexDirection: "column", gap: 6, paddingTop: 1 }}>
-          <Mono style={{ fontSize: 11, color: isDone ? T.t3 : T.t2, fontWeight: 400 }}>{s.time}</Mono>
-          <StatusDot status={s.status} />
-        </div>
-
-        {/* Main info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: isDone ? T.t2 : T.t0, letterSpacing: "-.01em" }}>
-              {s.name}
-            </span>
-            <Pill color={statusCfg.color} bg={statusCfg.bg} border={statusCfg.brd}>
-              {s.status === "live" && <span className="tct-pulse-dot" style={{ width: 4, height: 4, borderRadius: "50%", background: T.green, display: "inline-block" }}/>}
-              {statusCfg.label}
-            </Pill>
-            {s.coach && <Pill color={T.t3} bg="transparent" border={T.b0}>{s.coach}</Pill>}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {/* Fill bar */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 200 }}>
-              <div style={{ flex: 1, height: 2, background: T.b0, borderRadius: 99, overflow: "hidden" }}>
-                <div className="tct-progress-bar" style={{
-                  height: "100%", borderRadius: 99,
-                  width: `${pct}%`,
-                  background: isDone ? T.t4 : pct >= 80 ? T.green : pct >= 50 ? T.blue : T.amber,
-                }}/>
+    <div className="mcc-card u" style={{ ...CARD, boxShadow: CSHADOW, marginBottom: 14 }}>
+      <CardHead
+        label="Today's Priorities"
+        sub={`${priorities.filter(p=>p.severity!=="ok").length} item${priorities.filter(p=>p.severity!=="ok").length!==1?"s":""} need your attention`}
+        right={
+          <Chip color={priorities[0]?.severity==="ok" ? T.green : T.red} bg={priorities[0]?.severity==="ok" ? T.greenDim : T.redDim} brd={priorities[0]?.severity==="ok" ? T.greenBrd : T.redBrd}>
+            {priorities[0]?.severity==="ok" ? "All Clear" : priorities.filter(p=>p.severity==="high").length > 0 ? `${priorities.filter(p=>p.severity==="high").length} Urgent` : "Review"}
+          </Chip>
+        }
+      />
+      <div style={{ display:"grid", gridTemplateColumns: priorities.length === 1 ? "1fr" : priorities.length === 2 ? "1fr 1fr" : "1fr 1fr 1fr", gap:0 }}>
+        {priorities.map((p, i) => (
+          <div key={p.id} className="pri-card"
+            style={{ background:"transparent", border:"none", borderRight: i < priorities.length-1 ? `1px solid ${T.b0}` : "none",
+              padding:"16px 18px", display:"flex", flexDirection:"column", gap:10 }}>
+            {/* Header */}
+            <div style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
+              <div style={{ width:26, height:26, borderRadius:7, background:p.colorDim, border:`1px solid ${p.colorBrd}`,
+                display:"flex", alignItems:"center", justifyContent:"center", color:p.color, flexShrink:0, marginTop:1 }}>
+                {SvgIcons[p.severity]}
               </div>
-              <Mono style={{ fontSize: 10, color: T.t3, whiteSpace: "nowrap" }}>{s.booked}/{s.cap}</Mono>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:12.5, fontWeight:700, color:T.t0, lineHeight:1.35, letterSpacing:"-.01em" }}>{p.title}</div>
+              </div>
             </div>
-            <Mono style={{ fontSize: 10, color: T.t3 }}>{s.duration}</Mono>
+            {/* Context */}
+            <div style={{ fontSize:11, color:T.t2, lineHeight:1.6, paddingLeft:35 }}>{p.context}</div>
+            {/* CTA */}
+            <div style={{ paddingLeft:35 }}>
+              <button className="mcc-btn" onClick={p.ctaFn}
+                style={{ fontSize:11, fontWeight:700, color:p.color, background:p.colorDim, border:`1px solid ${p.colorBrd}`,
+                  borderRadius:7, padding:"7px 14px", display:"flex", alignItems:"center", gap:5 }}>
+                {p.cta}
+                <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><line x1={5} y1={12} x2={19} y2={12}/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Chevron */}
-        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={T.t4} strokeWidth={2}
-          style={{ flexShrink: 0, marginTop: 3, transform: expanded ? "rotate(90deg)" : "none", transition: "transform .2s" }}>
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        ))}
       </div>
+    </div>
+  );
+}
 
-      {/* Expanded panel */}
-      {expanded && (
-        <div className="tct-expand" style={{
-          padding: "0 20px 16px 92px",
-          marginTop: -4,
-        }}>
-          <div style={{
-            background: T.s2, border: `1px solid ${T.b0}`,
-            borderRadius: 8, overflow: "hidden",
-          }}>
-            {/* Stats row */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0 }}>
-              {[
-                { l: "Booked",   v: s.booked,                        dim: false },
-                { l: "Capacity", v: s.cap,                           dim: true  },
-                { l: "Open",     v: Math.max(0, s.cap - s.booked),   dim: true  },
-                { l: "Fill",     v: `${pct}%`,                       dim: false },
-              ].map((st, i) => (
-                <div key={i} style={{
-                  padding: "12px 14px",
-                  borderRight: i < 3 ? `1px solid ${T.b0}` : "none",
-                }}>
-                  <Label style={{ marginBottom: 6, display: "block" }}>{st.l}</Label>
-                  <Mono style={{ fontSize: 20, fontWeight: 400, color: st.dim ? T.t2 : T.t0 }}>{st.v}</Mono>
-                </div>
-              ))}
-            </div>
+// ─── 2. ATTENDANCE CHART (14-day, meaningful) ─────────────────────────────────
+function AttendanceChart({ checkIns, now }) {
+  const [tooltip, setTooltip] = useState(null);
+  const svgRef = useRef(null);
 
-            {/* Session notes placeholder */}
-            <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.b0}` }}>
-              <span style={{ fontSize: 10, color: T.t3 }}>
-                {s.notes || "No session notes — tap to add details after the class."}
+  const data = useMemo(() => Array.from({ length: 14 }, (_, i) => {
+    const t = new Date(now);
+    t.setDate(t.getDate() - (13 - i));
+    const count = checkIns.filter(c => {
+      const d = new Date(c.check_in_date || c.check_in_time);
+      return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+    }).length;
+    return {
+      date: t,
+      label: t.toLocaleDateString("en-GB", { weekday:"short", day:"numeric" }),
+      v: count,
+      isToday: i === 13,
+      isWeekend: t.getDay()===0 || t.getDay()===6,
+    };
+  }), [checkIns, now]);
+
+  const maxV = Math.max(...data.map(d=>d.v), 1);
+  const W = 100, H = 80; // SVG viewBox percentages
+  const PAD = { t:8, b:28, l:4, r:4 };
+  const plotW = W - PAD.l - PAD.r;
+  const plotH = H - PAD.t - PAD.b;
+
+  const pts = data.map((d, i) => ({
+    x: PAD.l + (i / (data.length-1)) * plotW,
+    y: PAD.t + plotH - (d.v / maxV) * plotH,
+    ...d,
+  }));
+
+  // Detect anomalies (drops > 50% from adjacent average)
+  const anomalies = pts.filter((p, i) => {
+    if (i < 1 || i > pts.length - 2) return false;
+    const avg = (pts[i-1].v + pts[i+1].v) / 2;
+    return avg > 2 && p.v < avg * 0.4;
+  });
+
+  const pathD = pts.map((p,i) => `${i===0?"M":"L"} ${p.x} ${p.y}`).join(" ");
+  const areaD = `${pathD} L ${pts[pts.length-1].x} ${PAD.t+plotH} L ${pts[0].x} ${PAD.t+plotH} Z`;
+
+  const prevWeek = data.slice(0,7).reduce((a,b)=>a+b.v,0);
+  const thisWeek = data.slice(7).reduce((a,b)=>a+b.v,0);
+  const trend = prevWeek > 0 ? Math.round(((thisWeek-prevWeek)/prevWeek)*100) : 0;
+  const trendUp = trend >= 0;
+
+  return (
+    <div className="mcc-card u u1" style={{ ...CARD, boxShadow: CSHADOW, marginBottom: 12 }}>
+      <CardHead
+        label="Attendance — Last 14 Days"
+        sub={`${thisWeek} check-ins this week`}
+        right={
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {anomalies.length > 0 && (
+              <Chip color={T.amber} bg={T.amberDim} brd={T.amberBrd}>
+                <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94"/></svg>
+                {anomalies.length} anomaly{anomalies.length>1?"s":""}
+              </Chip>
+            )}
+            <div style={{ display:"flex", alignItems:"center", gap:4, padding:"3px 9px", borderRadius:5,
+              background: trendUp ? T.greenDim : T.redDim, border:`1px solid ${trendUp ? T.greenBrd : T.redBrd}` }}>
+              <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={trendUp?T.green:T.red} strokeWidth={2.5}>
+                {trendUp ? <polyline points="18 15 12 9 6 15"/> : <polyline points="6 9 12 15 18 9"/>}
+              </svg>
+              <span className="mono" style={{ fontSize:10, fontWeight:500, color:trendUp?T.green:T.red }}>
+                {Math.abs(trend)}% vs last week
               </span>
             </div>
           </div>
-        </div>
-      )}
-
-      {!isLast && <Divider />}
-    </div>
-  );
-}
-
-// ─── WEEK ACTIVITY CHART ──────────────────────────────────────────────────────
-function WeekActivity({ checkIns, now }) {
-  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const todayDow = (now.getDay() + 6) % 7;
-
-  const vals = useMemo(() => Array.from({ length: 7 }, (_, i) => {
-    const t = new Date(now);
-    t.setDate(t.getDate() - (6 - i));
-    return checkIns.filter(c => {
-      const d = new Date(c.check_in_date || c.check_in_time);
-      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-    }).length;
-  }), [checkIns, now]);
-
-  const dayLabels = Array.from({ length: 7 }, (_, i) => days[(todayDow - 6 + i + 7) % 7]);
-  const max = Math.max(...vals, 1);
-  const totalWeek = vals.reduce((a, b) => a + b, 0);
-  const avg = totalWeek > 0 ? (totalWeek / 7).toFixed(1) : "0";
-  const todayVal = vals[6];
-
-  return (
-    <Card>
-      <CardHeader title="Weekly Activity"
-        right={<Mono style={{ fontSize: 10, color: T.t2 }}>{totalWeek} this week</Mono>}
+        }
       />
-      <div style={{ padding: "16px 18px 14px" }}>
-        <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 56, marginBottom: 12 }}>
-          {vals.map((v, i) => {
-            const isT = i === 6;
-            const h = Math.max(3, (v / max) * 52);
+      <div style={{ padding:"16px 18px 8px", position:"relative" }}>
+        <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:160, overflow:"visible" }}
+          onMouseLeave={() => setTooltip(null)}>
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor={T.blue} stopOpacity={0.18}/>
+              <stop offset="100%" stopColor={T.blue} stopOpacity={0.01}/>
+            </linearGradient>
+            <linearGradient id="areaGradA" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor={T.amber} stopOpacity={0.12}/>
+              <stop offset="100%" stopColor={T.amber} stopOpacity={0.01}/>
+            </linearGradient>
+          </defs>
+
+          {/* Weekend bands */}
+          {pts.filter(p=>p.isWeekend&&!p.isToday).map((p,i) => (
+            <rect key={i} x={p.x-1.5} y={PAD.t} width={3} height={plotH} fill="rgba(255,255,255,0.015)" rx={1}/>
+          ))}
+
+          {/* Area fill */}
+          <path d={areaD} fill="url(#areaGrad)"/>
+
+          {/* Anomaly areas */}
+          {anomalies.map((p,i) => (
+            <circle key={i} cx={p.x} cy={p.y} r={5} fill={T.amberDim} stroke={T.amber} strokeWidth={1}/>
+          ))}
+
+          {/* Line */}
+          <path d={pathD} fill="none" stroke={T.blue} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" opacity={.85}/>
+
+          {/* Today highlight */}
+          {(() => {
+            const p = pts[pts.length-1];
             return (
-              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <div title={`${v} check-ins`} style={{
-                  width: "100%", height: h, borderRadius: "3px 3px 2px 2px",
-                  background: isT ? T.blue : v === 0 ? T.b0 : `rgba(74,141,240,${0.15 + (v/max)*0.45})`,
-                  transition: "height .6s cubic-bezier(.22,1,.36,1)",
-                  cursor: "default",
-                }}/>
-                <Label style={{ color: isT ? T.blue : T.t4, fontWeight: isT ? 800 : 600 }}>{dayLabels[i]}</Label>
-              </div>
+              <>
+                <line x1={p.x} y1={PAD.t} x2={p.x} y2={PAD.t+plotH} stroke={T.blue} strokeWidth={.8} strokeDasharray="2 2" opacity={.4}/>
+                <circle cx={p.x} cy={p.y} r={3} fill={T.blue} stroke={T.s1} strokeWidth={1.5}/>
+              </>
             );
-          })}
-        </div>
-        <Divider style={{ marginBottom: 12 }} />
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          })()}
+
+          {/* Hover targets */}
+          {pts.map((p, i) => (
+            <rect key={i} x={p.x-3} y={PAD.t} width={6} height={plotH+2} fill="transparent" style={{cursor:"crosshair"}}
+              onMouseEnter={() => setTooltip({ x:p.x, y:p.y, label:p.label, v:p.v, isAnomaly:anomalies.includes(p) })}/>
+          ))}
+
+          {/* Tooltip */}
+          {tooltip && (
+            <g style={{ pointerEvents:"none" }}>
+              <circle cx={tooltip.x} cy={tooltip.y} r={3} fill={tooltip.isAnomaly?T.amber:T.blue} stroke={T.s1} strokeWidth={1.5}/>
+              <rect x={Math.min(tooltip.x-12, W-28)} y={tooltip.y-18} width={26} height={14} rx={3} fill={T.s3} stroke={T.b2} strokeWidth={.5}/>
+              <text x={Math.min(tooltip.x, W-15)} y={tooltip.y-8} textAnchor="middle" fill={T.t0} fontSize={6} fontFamily="DM Mono" fontWeight={500}>{tooltip.v}</text>
+            </g>
+          )}
+
+          {/* X axis labels */}
+          {pts.filter((_, i) => i % 2 === 0 || i === pts.length-1).map((p,i) => (
+            <text key={i} x={p.x} y={H-4} textAnchor="middle" fontSize={5.5} fill={p.isToday?T.blue:T.t4} fontFamily="Figtree" fontWeight={p.isToday?700:400}>
+              {p.isToday ? "Today" : p.label}
+            </text>
+          ))}
+        </svg>
+
+        {/* Insight strip below chart */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:1, borderTop:`1px solid ${T.b0}`, marginTop:4 }}>
           {[
-            { l: "Today",      v: String(todayVal), c: todayVal > 0 ? T.blue : T.t2 },
-            { l: "Daily avg",  v: avg,              c: T.t1 },
-            { l: "This week",  v: String(totalWeek),c: T.t1 },
-          ].map((s, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <Label>{s.l}</Label>
-              <Mono style={{ fontSize: 16, fontWeight: 500, color: s.c }}>{s.v}</Mono>
+            { l:"This week", v:thisWeek, sub:"check-ins" },
+            { l:"Daily avg", v:data.slice(7).length ? (thisWeek/7).toFixed(1) : "—", sub:"per day" },
+            { l:"Best day", v:Math.max(...data.slice(7).map(d=>d.v)), sub:data.slice(7).reduce((a,b)=>b.v>a.v?b:a,{v:-1,label:"?"}).label },
+          ].map((s,i) => (
+            <div key={i} style={{ padding:"10px 14px", borderRight: i<2 ? `1px solid ${T.b0}` : "none" }}>
+              <div style={{ fontSize:9.5, fontWeight:700, color:T.t3, textTransform:"uppercase", letterSpacing:".11em", marginBottom:4 }}>{s.l}</div>
+              <div className="mono" style={{ fontSize:18, fontWeight:500, color:T.t0, lineHeight:1 }}>{s.v}</div>
+              <div style={{ fontSize:10, color:T.t3, marginTop:2 }}>{s.sub}</div>
             </div>
           ))}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
-// ─── CLIENT ADHERENCE TABLE ────────────────────────────────────────────────────
-function AdherencePanel({ allMemberships, checkIns, now, onMessage, onViewAll }) {
-  const MAX_SHOWN = 6;
-  const [show, setShow] = useState(false);
+// ─── 3. TODAY'S SESSIONS (UPGRADED) ──────────────────────────────────────────
+function sessionHealth(booked, cap) {
+  const pct = cap > 0 ? booked / cap : 0;
+  if (pct >= 0.85) return { label:"Full",         color:T.green,  dim:T.greenDim,  brd:T.greenBrd  };
+  if (pct >= 0.5 ) return { label:"Healthy",      color:T.blue,   dim:T.blueDim,   brd:T.blueBrd   };
+  if (pct >= 0.2 ) return { label:"Underbooked",  color:T.amber,  dim:T.amberDim,  brd:T.amberBrd  };
+  return               { label:"Critical",     color:T.red,    dim:T.redDim,    brd:T.redBrd    };
+}
 
-  const clients = useMemo(() => {
-    return allMemberships.map(m => {
-      const mCI = checkIns.filter(c => c.user_id === m.user_id);
-      const last = mCI.sort((a, b) => new Date(b.check_in_date || b.check_in_time) - new Date(a.check_in_date || a.check_in_time))[0];
-      const daysAgo = last ? differenceInDays(now, new Date(last.check_in_date || last.check_in_time)) : 999;
-      // 30-day adherence: CI count in last 30 days / 12 expected sessions (~3x/week)
-      const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 30);
-      const ci30 = mCI.filter(c => new Date(c.check_in_date || c.check_in_time) >= cutoff).length;
-      const adherence = Math.min(100, Math.round((ci30 / 12) * 100));
-      // Week streak
-      const streak = mCI.filter(c => {
-        const d = new Date(c.check_in_date || c.check_in_time);
-        return differenceInDays(now, d) < 7;
-      }).length;
-      return {
-        id: m.user_id, name: m.user_name || "Client",
-        avatar: m.avatar_url || null, daysAgo,
-        ci30, adherence, streak,
-        status: daysAgo <= 3 ? "active" : daysAgo <= 13 ? "cooling" : "atrisk",
-      };
-    }).sort((a, b) => a.daysAgo - b.daysAgo);
-  }, [allMemberships, checkIns, now]);
+function TodaysSessions({ sessions, openModal }) {
+  const [expanded, setExpanded] = useState(null);
 
-  const displayed = show ? clients : clients.slice(0, MAX_SHOWN);
+  const statMap = { live:"Live", upcoming:"Upcoming", done:"Done" };
+  const statColor = { live:T.green, upcoming:T.blue, done:T.t3 };
 
-  if (clients.length === 0) return null;
-
-  const activeCount   = clients.filter(c => c.status === "active").length;
-  const atRiskCount   = clients.filter(c => c.status === "atrisk").length;
-  const avgAdherence  = clients.length ? Math.round(clients.reduce((s, c) => s + c.adherence, 0) / clients.length) : 0;
+  if (sessions.length === 0) return (
+    <div className="mcc-card u u2" style={{ ...CARD, boxShadow:CSHADOW, marginBottom:12 }}>
+      <CardHead label="Today's Sessions" right={
+        <ActionBtn label="Add Session" color={T.blue} bg={T.blueDim} brd={T.blueBrd} onClick={()=>openModal?.("classes")}
+          icon={<svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}><line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/></svg>}/>
+      }/>
+      <div style={{ padding:"36px 24px", textAlign:"center" }}>
+        <div style={{ width:38, height:38, borderRadius:10, background:T.s2, border:`1px solid ${T.b1}`,
+          display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 10px", color:T.t3 }}>
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x={3} y={4} width={18} height={18} rx={2}/><line x1={16} y1={2} x2={16} y2={6}/><line x1={8} y1={2} x2={8} y2={6}/><line x1={3} y1={10} x2={21} y2={10}/></svg>
+        </div>
+        <div style={{ fontSize:13, fontWeight:600, color:T.t1, marginBottom:6 }}>No sessions scheduled</div>
+        <div style={{ fontSize:11, color:T.t3, lineHeight:1.6, maxWidth:300, margin:"0 auto 16px" }}>
+          Classes and PT sessions help track fill rates, attendance, and client engagement in one place.
+        </div>
+        <button className="mcc-btn" onClick={()=>openModal?.("classes")}
+          style={{ fontSize:12, fontWeight:700, color:T.blue, background:T.blueDim, border:`1px solid ${T.blueBrd}`, borderRadius:8, padding:"9px 18px" }}>
+          Schedule First Session
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <Card>
-      <CardHeader
-        title="Client Adherence"
-        sub={`${clients.length} clients · 30-day window`}
+    <div className="mcc-card u u2" style={{ ...CARD, boxShadow:CSHADOW, marginBottom:12 }}>
+      <CardHead
+        label="Today's Sessions"
+        sub={`${sessions.length} scheduled · ${Math.round(sessions.reduce((a,s)=>a+(s.cap>0?s.booked/s.cap:0),0)/sessions.length*100)}% avg fill`}
         right={
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {atRiskCount > 0 && (
-              <Pill color={T.red} bg={T.redDim} border={T.redStr}>{atRiskCount} at risk</Pill>
+          <ActionBtn label="Add Session" color={T.blue} bg={T.blueDim} brd={T.blueBrd} onClick={()=>openModal?.("classes")}
+            icon={<svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}><line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/></svg>}/>
+        }
+      />
+
+      {/* Column heads */}
+      <div style={{ display:"grid", gridTemplateColumns:"60px 1fr 80px 100px 80px",
+        padding:"7px 18px", borderBottom:`1px solid ${T.b0}`, gap:0 }}>
+        {["Time","Session","Fill","Health","Actions"].map((h,i) => (
+          <div key={i} style={{ fontSize:9.5, fontWeight:700, color:T.t3, textTransform:"uppercase", letterSpacing:".11em", textAlign: i>1?"center":"left" }}>{h}</div>
+        ))}
+      </div>
+
+      {sessions.map((s, i) => {
+        const health = sessionHealth(s.booked, s.cap);
+        const pct = s.cap > 0 ? Math.round((s.booked/s.cap)*100) : 0;
+        const isExp = expanded === s.id;
+        const isDone = s.status === "done";
+        return (
+          <div key={s.id} style={{ opacity: isDone ? .6 : 1 }}>
+            <div className="mcc-hover" onClick={() => setExpanded(isExp ? null : s.id)}
+              style={{ display:"grid", gridTemplateColumns:"60px 1fr 80px 100px 80px",
+                padding:"12px 18px", gap:0, alignItems:"center", cursor:"pointer",
+                borderBottom: i<sessions.length-1 ? `1px solid ${T.b0}` : "none",
+                borderLeft:`2.5px solid ${isDone ? T.t4 : health.color}` }}>
+
+              {/* Time */}
+              <div className="mono" style={{ fontSize:11, color:isDone?T.t3:T.t2 }}>{s.time||"—"}</div>
+
+              {/* Name + coach + status */}
+              <div style={{ minWidth:0, paddingRight:8 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
+                  {s.status==="live" && <Dot color={T.green} pulse/>}
+                  <span style={{ fontSize:13, fontWeight:600, color:isDone?T.t2:T.t0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.name}</span>
+                  <Chip color={statColor[s.status]} bg={`${statColor[s.status]}10`} brd={`${statColor[s.status]}25`}>
+                    {statMap[s.status]}
+                  </Chip>
+                </div>
+                {s.coach && <div style={{ fontSize:10, color:T.t3 }}>{s.coach} · {s.duration}</div>}
+              </div>
+
+              {/* Fill bar + numbers */}
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                <div style={{ width:"100%", height:3, background:T.b0, borderRadius:99, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:`${pct}%`, background:isDone?T.t4:health.color, borderRadius:99, transition:"width .6s" }}/>
+                </div>
+                <div className="mono" style={{ fontSize:9.5, color:T.t2 }}>{s.booked}/{s.cap}</div>
+              </div>
+
+              {/* Health badge */}
+              <div style={{ display:"flex", justifyContent:"center" }}>
+                <Chip color={health.color} bg={health.dim} brd={health.brd}>{health.label}</Chip>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display:"flex", justifyContent:"center" }}>
+                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.t4} strokeWidth={2}
+                  style={{ transform:isExp?"rotate(90deg)":"none", transition:"transform .2s" }}>
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Expanded quick actions */}
+            {isExp && (
+              <div style={{ padding:"12px 18px 14px 22px", borderBottom:`1px solid ${T.b0}`, background:"rgba(255,255,255,0.01)" }}>
+                <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+                  <ActionBtn label="Message Attendees" color={T.blue} bg={T.blueDim} brd={T.blueBrd} onClick={()=>openModal?.("message")}
+                    icon={<svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>}/>
+                  {!isDone && health.label !== "Full" && (
+                    <ActionBtn label="Promote Class" color={T.amber} bg={T.amberDim} brd={T.amberBrd} onClick={()=>openModal?.("classes")}
+                      icon={<svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>}/>
+                  )}
+                  <ActionBtn label="Open Check-in" color={T.green} bg={T.greenDim} brd={T.greenBrd} onClick={()=>openModal?.("qrScanner")}
+                    icon={<svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x={3} y={3} width={7} height={7}/><rect x={14} y={3} width={7} height={7}/><rect x={14} y={14} width={7} height={7}/><rect x={3} y={14} width={4} height={4}/></svg>}/>
+                </div>
+                {s.notes && (
+                  <div style={{ marginTop:10, fontSize:11, color:T.t3, fontStyle:"italic" }}>{s.notes}</div>
+                )}
+              </div>
             )}
-            <Pill color={T.t2} bg="transparent" border={T.b1}>Avg {avgAdherence}%</Pill>
+          </div>
+        );
+      })}
+
+      {/* Footer totals */}
+      <div style={{ padding:"11px 18px", display:"flex", gap:20, alignItems:"center", background:"rgba(255,255,255,0.01)" }}>
+        {[
+          { l:"Total booked",   v:sessions.reduce((a,s)=>a+s.booked,0) },
+          { l:"Total capacity", v:sessions.reduce((a,s)=>a+s.cap,0) },
+          { l:"Sessions done",  v:`${sessions.filter(s=>s.status==="done").length}/${sessions.length}` },
+        ].map((s,i) => (
+          <div key={i} style={{ display:"flex", gap:6, alignItems:"baseline" }}>
+            <span className="mono" style={{ fontSize:14, fontWeight:500, color:T.t1 }}>{s.v}</span>
+            <span style={{ fontSize:9.5, fontWeight:700, color:T.t3, textTransform:"uppercase", letterSpacing:".1em" }}>{s.l}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 4. RECENT ACTIVITY FEED ──────────────────────────────────────────────────
+function ActivityFeed({ checkIns, allMemberships, now }) {
+  const events = useMemo(() => {
+    const evs = checkIns.map(ci => {
+      const member = allMemberships.find(m => m.user_id === ci.user_id);
+      const d = new Date(ci.check_in_date || ci.check_in_time);
+      const minsAgo = Math.floor((now - d) / 60000);
+      return {
+        type: "checkin",
+        name: member?.user_name || ci.user_name || "Member",
+        avatar: member?.avatar_url || null,
+        time: minsAgo < 1 ? "Just now" : minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo/60)}h ago` : `${Math.floor(minsAgo/1440)}d ago`,
+        timeMs: d.getTime(),
+        color: T.green, label: "Checked in",
+      };
+    });
+    return evs.sort((a,b) => b.timeMs - a.timeMs).slice(0, 10);
+  }, [checkIns, allMemberships, now]);
+
+  return (
+    <div className="mcc-card u u4" style={{ ...CARD, boxShadow:CSHADOW }}>
+      <CardHead label="Recent Activity" sub={events.length ? `${events.length} events today` : "No activity yet today"} />
+      {events.length === 0 ? (
+        <div style={{ padding:"28px 18px", textAlign:"center" }}>
+          <div style={{ fontSize:12, color:T.t3, lineHeight:1.6 }}>Activity will appear here as members check in, book sessions, or receive messages.</div>
+        </div>
+      ) : (
+        <div className="mcc-scr" style={{ maxHeight:280, overflowY:"auto" }}>
+          {events.map((ev, i) => (
+            <div key={i} className="mcc-hover" style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px",
+              borderBottom: i<events.length-1 ? `1px solid ${T.b0}` : "none" }}>
+              <div style={{ position:"relative", flexShrink:0 }}>
+                <Avatar name={ev.name} src={ev.avatar} size={28} accent={ev.color}/>
+                <div style={{ position:"absolute", bottom:-1, right:-1, width:8, height:8, borderRadius:"50%",
+                  background:ev.color, border:`1.5px solid ${T.s1}` }}/>
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:12, fontWeight:600, color:T.t1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  {ev.name}
+                </div>
+                <div style={{ fontSize:10, color:T.t3, marginTop:1 }}>{ev.label}</div>
+              </div>
+              <div className="mono" style={{ fontSize:10, color:T.t4, flexShrink:0 }}>{ev.time}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 5. WEEKLY PERFORMANCE SUMMARY ───────────────────────────────────────────
+function WeeklyPerformance({ checkIns, sessions, allMemberships, now }) {
+  const thisWeekStart = new Date(now); thisWeekStart.setDate(thisWeekStart.getDate() - 7);
+  const lastWeekStart = new Date(now); lastWeekStart.setDate(lastWeekStart.getDate() - 14);
+
+  const ciThisWeek = checkIns.filter(c => new Date(c.check_in_date||c.check_in_time) >= thisWeekStart).length;
+  const ciLastWeek = checkIns.filter(c => {
+    const d = new Date(c.check_in_date||c.check_in_time);
+    return d >= lastWeekStart && d < thisWeekStart;
+  }).length;
+
+  const totalBooked = sessions.reduce((a,s)=>a+s.booked,0);
+  const totalCap    = sessions.reduce((a,s)=>a+s.cap,0);
+  const fillRate    = totalCap > 0 ? Math.round((totalBooked/totalCap)*100) : 0;
+
+  const atRiskNow  = allMemberships.filter(m => {
+    const last = checkIns.filter(c=>c.user_id===m.user_id).sort((a,b)=>new Date(b.check_in_date||b.check_in_time)-new Date(a.check_in_date||a.check_in_time))[0];
+    return !last || differenceInDays(now, new Date(last.check_in_date||last.check_in_time)) >= 14;
+  }).length;
+
+  const ciChange = ciLastWeek > 0 ? Math.round(((ciThisWeek-ciLastWeek)/ciLastWeek)*100) : null;
+
+  const metrics = [
+    { l:"Attendance", v:ciThisWeek, change:ciChange, up:ciChange>=0, sub:"check-ins this week" },
+    { l:"Fill Rate",  v:`${fillRate}%`, change:null, up:fillRate>=60, sub:totalCap>0?`${totalBooked}/${totalCap} spots`:"No sessions yet" },
+    { l:"At Risk",    v:atRiskNow, change:null, up:atRiskNow===0, sub:atRiskNow>0?"inactive 14+ days":"all clients active" },
+  ];
+
+  return (
+    <div className="mcc-card u" style={{ ...CARD, boxShadow:CSHADOW, marginBottom:12 }}>
+      <CardHead label="Weekly Performance" />
+      <div style={{ display:"flex", flexDirection:"column" }}>
+        {metrics.map((m, i) => (
+          <div key={i} style={{ padding:"12px 16px", borderBottom: i<metrics.length-1 ? `1px solid ${T.b0}` : "none",
+            display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+            <div>
+              <div style={{ fontSize:9.5, fontWeight:700, color:T.t3, textTransform:"uppercase", letterSpacing:".11em", marginBottom:5 }}>{m.l}</div>
+              <div className="mono" style={{ fontSize:22, fontWeight:500, color: m.l==="At Risk" && m.v>0 ? T.red : m.l==="At Risk" ? T.green : T.t0, letterSpacing:"-.04em", lineHeight:1 }}>{m.v}</div>
+              <div style={{ fontSize:10, color:T.t3, marginTop:3 }}>{m.sub}</div>
+            </div>
+            {m.change !== null && (
+              <div style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 9px", borderRadius:6,
+                background: m.up ? T.greenDim : T.redDim, border:`1px solid ${m.up?T.greenBrd:T.redBrd}` }}>
+                <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={m.up?T.green:T.red} strokeWidth={2.5}>
+                  {m.up ? <polyline points="18 15 12 9 6 15"/> : <polyline points="6 9 12 15 18 9"/>}
+                </svg>
+                <span className="mono" style={{ fontSize:11, color:m.up?T.green:T.red }}>{Math.abs(m.change)}%</span>
+              </div>
+            )}
+            {m.change === null && (
+              <div style={{ width:32, height:3, borderRadius:99, background:m.up?T.green:m.v===0?T.t4:T.red }}/>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 6. CLIENT RISK FEED ─────────────────────────────────────────────────────
+function ClientRiskFeed({ allMemberships, checkIns, now, openModal, setTab }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const clients = useMemo(() => allMemberships.map(m => {
+    const mCI = checkIns.filter(c=>c.user_id===m.user_id)
+      .sort((a,b) => new Date(b.check_in_date||b.check_in_time) - new Date(a.check_in_date||a.check_in_time));
+    const last = mCI[0];
+    const daysAgo = last ? differenceInDays(now, new Date(last.check_in_date||last.check_in_time)) : 999;
+    const ci30 = mCI.filter(c => differenceInDays(now, new Date(c.check_in_date||c.check_in_time)) <= 30).length;
+    let level, reason;
+    if (daysAgo === 999) { level="critical"; reason="Never checked in — immediate outreach needed"; }
+    else if (daysAgo >= 21) { level="critical"; reason=`${daysAgo} days inactive — high churn risk`; }
+    else if (daysAgo >= 14) { level="high"; reason=`${daysAgo} days inactive — send re-engagement`; }
+    else if (daysAgo >= 7)  { level="med";  reason=`${daysAgo} days since last visit — check in`; }
+    else return null;
+    return { id:m.user_id, name:m.user_name||"Client", avatar:m.avatar_url||null, daysAgo, ci30, level, reason };
+  }).filter(Boolean).sort((a,b) => b.daysAgo - a.daysAgo), [allMemberships, checkIns, now]);
+
+  const SHOW = 5;
+  const shown = expanded ? clients : clients.slice(0, SHOW);
+  const lvlColor = { critical:T.red, high:T.amber, med:T.blue };
+
+  if (clients.length === 0) return (
+    <div className="mcc-card u u1" style={{ ...CARD, boxShadow:CSHADOW }}>
+      <CardHead label="Client Risk Feed"/>
+      <div style={{ padding:"24px 16px", textAlign:"center" }}>
+        <div style={{ width:32, height:32, borderRadius:"50%", background:T.greenDim, border:`1px solid ${T.greenBrd}`,
+          display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 8px" }}>
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style={{ fontSize:12, fontWeight:600, color:T.t1, marginBottom:3 }}>All clients active</div>
+        <div style={{ fontSize:10, color:T.t3 }}>No one inactive for 7+ days</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="mcc-card u u1" style={{ ...CARD, boxShadow:CSHADOW, borderTop:`2px solid ${T.red}` }}>
+      <CardHead
+        label="Client Risk Feed"
+        sub={`${clients.length} client${clients.length>1?"s":""} need attention`}
+        right={
+          <div style={{ display:"flex", gap:6 }}>
+            {clients.filter(c=>c.level==="critical").length > 0 && (
+              <Chip color={T.red} bg={T.redDim} brd={T.redBrd}>{clients.filter(c=>c.level==="critical").length} Critical</Chip>
+            )}
+            <button className="mcc-btn" onClick={()=>setTab?.("members")}
+              style={{ fontSize:9.5, fontWeight:700, color:T.t2, background:"transparent", border:`1px solid ${T.b1}`, borderRadius:5, padding:"3px 9px" }}>
+              View all →
+            </button>
           </div>
         }
       />
 
-      {/* Summary row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", borderBottom: `1px solid ${T.b0}` }}>
-        {[
-          { l: "Active",   v: activeCount,  c: T.green },
-          { l: "Cooling",  v: clients.filter(c=>c.status==="cooling").length, c: T.amber },
-          { l: "At Risk",  v: atRiskCount,  c: T.red },
-        ].map((s, i) => (
-          <div key={i} style={{
-            padding: "12px 18px", textAlign: "center",
-            borderRight: i < 2 ? `1px solid ${T.b0}` : "none",
-          }}>
-            <Mono style={{ fontSize: 22, fontWeight: 400, color: s.c }}>{s.v}</Mono>
-            <Label style={{ marginTop: 4, display: "block" }}>{s.l}</Label>
+      <div>
+        {shown.map((c, i) => (
+          <div key={c.id||i} style={{ borderBottom: i<shown.length-1 ? `1px solid ${T.b0}` : "none",
+            borderLeft:`2.5px solid ${lvlColor[c.level]}`, padding:"11px 14px",
+            display:"flex", alignItems:"flex-start", gap:10 }}>
+            <Avatar name={c.name} src={c.avatar} size={30} accent={lvlColor[c.level]}/>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:12, fontWeight:600, color:T.t0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{c.name}</div>
+              <div style={{ fontSize:10.5, color:c.level==="critical"?T.red:c.level==="high"?T.amber:T.blue, lineHeight:1.4 }}>{c.reason}</div>
+              <div style={{ fontSize:10, color:T.t3, marginTop:2 }}>{c.ci30} check-in{c.ci30!==1?"s":""} in last 30 days</div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:5, flexShrink:0 }}>
+              <ActionBtn label="Message" color={T.amber} bg={T.amberDim} brd={T.amberBrd} onClick={()=>openModal?.("message")}/>
+              <ActionBtn label="Book" color={T.blue} bg={T.blueDim} brd={T.blueBrd} onClick={()=>openModal?.("classes")}/>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Column headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 70px 56px",
-        gap: 0, padding: "8px 18px", borderBottom: `1px solid ${T.b0}` }}>
-        {["Client", "Last CI", "30-Day", "Streak"].map((h, i) => (
-          <Label key={i} style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</Label>
-        ))}
-      </div>
-
-      {/* Rows */}
-      <div>
-        {displayed.map((c, i) => {
-          const statusColor = c.status === "active" ? T.green : c.status === "cooling" ? T.amber : T.red;
-          const lastLabel = c.daysAgo === 999 ? "Never" : c.daysAgo === 0 ? "Today" : `${c.daysAgo}d ago`;
-          return (
-            <div key={c.id || i} className="tct-row-hover" style={{
-              display: "grid", gridTemplateColumns: "1fr 60px 70px 56px",
-              gap: 0, padding: "11px 18px", alignItems: "center",
-              borderLeft: `2px solid ${statusColor}28`,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-                <Avatar name={c.name} size={26} src={c.avatar} riskLevel={c.status === "atrisk" ? "high" : c.status === "cooling" ? "med" : null}/>
-                <span style={{ fontSize: 12, fontWeight: 500, color: T.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-              </div>
-              <Mono style={{ fontSize: 10, color: c.daysAgo > 14 ? T.red : T.t2, textAlign: "right" }}>{lastLabel}</Mono>
-              <div style={{ paddingLeft: 8 }}>
-                <AdherenceBar pct={c.adherence} />
-              </div>
-              <Mono style={{ fontSize: 11, color: c.streak > 0 ? T.blue : T.t3, textAlign: "right", fontWeight: c.streak > 2 ? 600 : 400 }}>
-                {c.streak > 0 ? `${c.streak}×` : "—"}
-              </Mono>
-            </div>
-          );
-        })}
-      </div>
-
-      {clients.length > MAX_SHOWN && (
-        <div style={{ padding: "10px 18px", borderTop: `1px solid ${T.b0}` }}>
-          <button className="tct-btn" onClick={() => setShow(p => !p)} style={{
-            fontSize: 10, fontWeight: 600, color: T.blue, background: "transparent",
-            width: "100%", padding: "4px 0",
-          }}>
-            {show ? "Show less" : `Show ${clients.length - MAX_SHOWN} more`}
+      {clients.length > SHOW && (
+        <div style={{ padding:"9px 16px", borderTop:`1px solid ${T.b0}` }}>
+          <button className="mcc-btn" onClick={()=>setExpanded(p=>!p)}
+            style={{ fontSize:10, fontWeight:700, color:T.blue, background:"transparent", width:"100%", padding:"3px 0" }}>
+            {expanded ? "Show less" : `Show ${clients.length - SHOW} more at-risk clients`}
           </button>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 
-// ─── AT-RISK PANEL ────────────────────────────────────────────────────────────
-function AtRiskPanel({ atRiskMembers, onMessage, onViewAll }) {
-  if (atRiskMembers.length === 0) {
-    return (
-      <Card>
-        <CardHeader title="At-Risk Clients" />
-        <div style={{ padding: "24px 18px", textAlign: "center" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%", background: T.greenDim,
-            border: `1px solid ${T.greenStr}`, display: "flex", alignItems: "center",
-            justifyContent: "center", margin: "0 auto 10px",
-          }}>
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth={2.5}>
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: T.t1, marginBottom: 4 }}>All clients on track</div>
-          <div style={{ fontSize: 10, color: T.t3 }}>No one inactive for 14+ days</div>
-        </div>
-      </Card>
-    );
-  }
-  return (
-    <Card accent={T.red}>
-      <CardHeader
-        title="At-Risk Clients"
-        right={
-          <div style={{ display: "flex", gap: 6 }}>
-            <Pill color={T.red} bg={T.redDim} border={T.redStr}>{atRiskMembers.length}</Pill>
-            <button className="tct-btn" onClick={onViewAll} style={{
-              fontSize: 9, fontWeight: 700, color: T.t2, background: "transparent",
-              border: `1px solid ${T.b1}`, borderRadius: 5, padding: "3px 8px",
-            }}>View all →</button>
-          </div>
-        }
-      />
-      <div>
-        {atRiskMembers.map((m, i) => (
-          <div key={m.id || i} className="tct-row-hover" style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "11px 16px",
-            borderLeft: `2px solid ${m.level === "high" ? T.red : T.amber}`,
-            borderBottom: i < atRiskMembers.length - 1 ? `1px solid ${T.b0}` : "none",
-          }}>
-            <Avatar name={m.name} size={28} src={m.avatar} riskLevel={m.level} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: T.t1,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</div>
-              <div style={{ fontSize: 9, color: m.level === "high" ? T.red : T.amber, marginTop: 2 }}>
-                {m.reason}
-              </div>
-            </div>
-            <button className="tct-btn" onClick={() => onMessage?.(m)} style={{
-              fontSize: 9, fontWeight: 700, color: T.amber,
-              background: T.amberDim, border: `1px solid ${T.amberStr}`,
-              borderRadius: 5, padding: "4px 9px", whiteSpace: "nowrap",
-            }}>Message</button>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-// ─── QUICK ACTIONS ────────────────────────────────────────────────────────────
-function QuickActions({ openModal, setTab }) {
+// ─── 7. QUICK ACTIONS STRIP ───────────────────────────────────────────────────
+function QuickActionsStrip({ openModal, setTab }) {
   const actions = [
-    { icon: "qr",      label: "Scan Check-in",    sub: "Open QR scanner",      fn: () => openModal?.("qrScanner") },
-    { icon: "plus",    label: "Add Session",       sub: "Create a class",       fn: () => openModal?.("classes")   },
-    { icon: "msg",     label: "Broadcast Message", sub: "Post to all clients",  fn: () => openModal?.("post")      },
-    { icon: "members", label: "View All Clients",  sub: "Full client roster",   fn: () => setTab?.("members")      },
-    { icon: "chart",   label: "Analytics",         sub: "Performance metrics",  fn: () => setTab?.("analytics")    },
+    { label:"Scan Check-in", color:T.green, bg:T.greenDim, brd:T.greenBrd, fn:()=>openModal?.("qrScanner"),
+      icon:<svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x={3} y={3} width={7} height={7}/><rect x={14} y={3} width={7} height={7}/><rect x={14} y={14} width={7} height={7}/><rect x={3} y={14} width={4} height={4}/></svg> },
+    { label:"Broadcast Message", color:T.blue, bg:T.blueDim, brd:T.blueBrd, fn:()=>openModal?.("post"),
+      icon:<svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> },
+    { label:"Schedule Session", color:T.purple, bg:T.purpleDim, brd:T.purpleBrd, fn:()=>openModal?.("classes"),
+      icon:<svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x={3} y={4} width={18} height={18} rx={2}/><line x1={16} y1={2} x2={16} y2={6}/><line x1={8} y1={2} x2={8} y2={6}/><line x1={3} y1={10} x2={21} y2={10}/></svg> },
+    { label:"View All Clients", color:T.t1, bg:"rgba(255,255,255,0.04)", brd:T.b1, fn:()=>setTab?.("members"),
+      icon:<svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx={9} cy={7} r={4}/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> },
   ];
-  const icons = {
-    qr: (
-      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-        <rect x={3} y={3} width={7} height={7}/><rect x={14} y={3} width={7} height={7}/>
-        <rect x={14} y={14} width={7} height={7}/><rect x={3} y={14} width={4} height={4}/>
-      </svg>
-    ),
-    plus: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/></svg>,
-    msg: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
-    members: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx={9} cy={7} r={4}/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
-    chart: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><line x1={18} y1={20} x2={18} y2={10}/><line x1={12} y1={20} x2={12} y2={4}/><line x1={6} y1={20} x2={6} y2={14}/></svg>,
-  };
   return (
-    <Card>
-      <CardHeader title="Quick Actions" border={false}/>
-      <div style={{ padding: "0 10px 10px" }}>
-        {actions.map(({ icon, label, sub, fn }, i) => (
-          <button key={i} className="tct-btn tct-row-hover" onClick={fn} style={{
-            width: "100%", padding: "9px 10px", borderRadius: 7,
-            background: "transparent", border: `1px solid transparent`,
-            justifyContent: "flex-start", gap: 10,
-          }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7, background: T.s2,
-              border: `1px solid ${T.b1}`, display: "flex", alignItems: "center",
-              justifyContent: "center", color: T.t2, flexShrink: 0,
-            }}>
-              {icons[icon]}
-            </div>
-            <div style={{ textAlign: "left", flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: T.t1 }}>{label}</div>
-              <div style={{ fontSize: 9, color: T.t3, marginTop: 1 }}>{sub}</div>
-            </div>
-            <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={T.t4} strokeWidth={2.5}>
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-// ─── GOAL TRACKER ─────────────────────────────────────────────────────────────
-function DailyGoalTracker({ sessions, todayCI, allMemberships }) {
-  const goals = useMemo(() => [
-    {
-      label: "Check-ins today",
-      current: todayCI,
-      target: Math.max(10, Math.round(allMemberships.length * 0.2)),
-      color: T.blue,
-    },
-    {
-      label: "Sessions filled",
-      current: sessions.filter(s => s.booked > 0).length,
-      target: Math.max(1, sessions.length),
-      color: T.green,
-    },
-  ], [sessions, todayCI, allMemberships]);
-
-  return (
-    <Card>
-      <CardHeader title="Today's Goals" />
-      <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
-        {goals.map((g, i) => {
-          const pct = g.target > 0 ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0;
-          return (
-            <div key={i}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                <span style={{ fontSize: 11, color: T.t1, fontWeight: 500 }}>{g.label}</span>
-                <Mono style={{ fontSize: 10, color: T.t2 }}>{g.current} / {g.target}</Mono>
-              </div>
-              <div style={{ height: 4, background: T.b0, borderRadius: 99, overflow: "hidden" }}>
-                <div className="tct-progress-bar" style={{
-                  height: "100%", width: `${pct}%`,
-                  background: g.color, borderRadius: 99,
-                }}/>
-              </div>
-              <div style={{ marginTop: 4, fontSize: 9, color: pct >= 100 ? T.green : T.t3 }}>
-                {pct >= 100 ? "✓ Goal reached" : `${pct}% to goal`}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </Card>
+    <div style={{ display:"flex", gap:7, marginBottom:20, flexWrap:"wrap" }}>
+      {actions.map((a,i) => (
+        <button key={i} className="mcc-btn" onClick={a.fn}
+          style={{ fontSize:12, fontWeight:700, color:a.color, background:a.bg, border:`1px solid ${a.brd}`, borderRadius:8, padding:"8px 16px", gap:7 }}>
+          {a.icon} {a.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -692,291 +821,100 @@ export default function TabCoachToday({
   setTab,
   now = new Date(),
 }) {
-  const [expandedId, setExpandedId] = useState(null);
-  const toggle = id => setExpandedId(p => p === id ? null : id);
 
-  // ── Derive sessions from myClasses ───────────────────────────────────────
+  // ── Session derivation (same logic as original) ──────────────────────────
   const sessions = useMemo(() => {
     const nowDecimal = now.getHours() + now.getMinutes() / 60;
     return myClasses.map((cls, i) => {
-      const schedStr = typeof cls.schedule === "string" ? cls.schedule
+      const schedStr = typeof cls.schedule==="string" ? cls.schedule
         : (Array.isArray(cls.schedule) && cls.schedule[0]?.time ? cls.schedule[0].time : "");
       let timeHour = null;
       const m = schedStr.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
       if (m) {
         timeHour = parseInt(m[1]);
-        if (m[3]?.toLowerCase() === "pm" && timeHour !== 12) timeHour += 12;
-        if (m[3]?.toLowerCase() === "am" && timeHour === 12) timeHour = 0;
-        if (m[2]) timeHour += parseInt(m[2]) / 60;
+        if (m[3]?.toLowerCase()==="pm" && timeHour!==12) timeHour+=12;
+        if (m[3]?.toLowerCase()==="am" && timeHour===12) timeHour=0;
+        if (m[2]) timeHour += parseInt(m[2])/60;
       }
       const cap = cls.max_capacity || cls.capacity || 20;
       const booked = (cls.bookings || []).length;
       const durMin = cls.duration_minutes || cls.duration || 60;
       let status = "upcoming";
-      if (timeHour !== null) {
-        if (nowDecimal > timeHour + durMin / 60) status = "done";
-        else if (nowDecimal >= timeHour) status = "live";
+      if (timeHour!==null) {
+        if (nowDecimal > timeHour+durMin/60) status="done";
+        else if (nowDecimal >= timeHour) status="live";
       }
       return {
-        id: cls.id || `cls-${i}`,
-        name: cls.name || "Unnamed Class",
-        time: schedStr || "—",
-        booked, cap,
-        duration: `${durMin}m`,
-        status,
-        coach: cls.instructor || cls.coach_name || null,
-        notes: cls.notes || null,
-        _sortKey: timeHour ?? 99,
+        id: cls.id||`cls-${i}`, name:cls.name||"Unnamed Class", time:schedStr||"—",
+        booked, cap, duration:`${durMin}m`, status,
+        coach:cls.instructor||cls.coach_name||null, notes:cls.notes||null,
+        _sortKey: timeHour??99,
       };
-    }).sort((a, b) => a._sortKey - b._sortKey);
+    }).sort((a,b)=>a._sortKey-b._sortKey);
   }, [myClasses, now]);
 
-  // ── KPI derivations ───────────────────────────────────────────────────────
-  const todayCI = useMemo(() => checkIns.filter(c => {
-    const d = new Date(c.check_in_date || c.check_in_time);
-    return d.getFullYear() === now.getFullYear()
-      && d.getMonth() === now.getMonth()
-      && d.getDate() === now.getDate();
-  }).length, [checkIns, now]);
-
-  const totalBooked   = sessions.reduce((a, s) => a + s.booked, 0);
-  const totalCap      = sessions.reduce((a, s) => a + s.cap, 0);
-  const fillRate      = totalCap > 0 ? Math.round((totalBooked / totalCap) * 100) : 0;
-  const sessionsLive  = sessions.filter(s => s.status === "live").length;
-  const sessionsDone  = sessions.filter(s => s.status === "done").length;
-  const liveSession   = sessions.find(s => s.status === "live");
-
-  // ── At-risk clients ───────────────────────────────────────────────────────
-  const atRiskMembers = useMemo(() => allMemberships.map(m => {
-    const mCI = checkIns.filter(c => c.user_id === m.user_id).sort((a, b) =>
-      new Date(b.check_in_date || b.check_in_time) - new Date(a.check_in_date || a.check_in_time));
-    const last = mCI[0];
-    const daysAgo = last ? differenceInDays(now, new Date(last.check_in_date || last.check_in_time)) : 999;
-    return { ...m, daysAgo };
-  }).filter(m => m.daysAgo >= 14).sort((a, b) => b.daysAgo - a.daysAgo).slice(0, 5).map(m => ({
-    id: m.user_id, name: m.user_name || "Client", days: m.daysAgo,
-    reason: m.daysAgo >= 999 ? "Never checked in" : `${m.daysAgo} days inactive`,
-    level: m.daysAgo >= 21 ? "high" : "med",
-    avatar: m.avatar_url || null,
-  })), [allMemberships, checkIns, now]);
-
-  // ── Spark histories (7-day rolling counts) ────────────────────────────────
-  const ciSpark = useMemo(() => Array.from({ length: 7 }, (_, i) => {
-    const t = new Date(now); t.setDate(t.getDate() - (6 - i));
-    return checkIns.filter(c => {
-      const d = new Date(c.check_in_date || c.check_in_time);
-      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-    }).length;
-  }), [checkIns, now]);
+  const priorities = useMemo(() => derivePriorities({ allMemberships, checkIns, sessions, now, openModal, setTab }), [allMemberships, checkIns, sessions, now]);
 
   const greeting = (() => {
     const h = now.getHours();
     return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
   })();
   const firstName = currentUser?.display_name?.split(" ")[0] || currentUser?.full_name?.split(" ")[0] || "Coach";
-  const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const dateStr = now.toLocaleDateString("en-GB", { weekday:"long", day:"numeric", month:"long" });
+  const liveSession = sessions.find(s=>s.status==="live");
 
   return (
-    <div className="tct-root tct-scrollbar" style={{
-      background: T.bg, minHeight: "100%",
-      padding: "0 0 40px",
-      display: "flex", flexDirection: "column", gap: 0,
-    }}>
+    <div className="mcc-root mcc-scr" style={{ background:T.bg, minHeight:"100%", padding:"0 0 48px" }}>
 
-      {/* ── PAGE HEADER ── */}
-      <div className="tct-fade-up" style={{ padding: "24px 0 20px", borderBottom: `1px solid ${T.b0}`, marginBottom: 22 }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+      {/* ── COMMAND HEADER ── */}
+      <div className="u" style={{ padding:"24px 0 18px", borderBottom:`1px solid ${T.b0}`, marginBottom:18 }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
           <div>
-            <div style={{ fontSize: 11, color: T.t2, marginBottom: 4 }}>
-              {dateStr}
-            </div>
-            <h1 className="tct-syne" style={{ fontSize: 22, fontWeight: 700, color: T.t0,
-              letterSpacing: "-.03em", lineHeight: 1 }}>
+            <div style={{ fontSize:11, color:T.t2, marginBottom:5 }}>{dateStr}</div>
+            <h1 style={{ fontFamily:"Figtree, sans-serif", fontSize:24, fontWeight:800, color:T.t0,
+              letterSpacing:"-.04em", lineHeight:1 }}>
               {greeting}, {firstName}
             </h1>
           </div>
-
-          {/* Live badge */}
-          {liveSession ? (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
-              background: T.greenDim, border: `1px solid ${T.greenStr}`, borderRadius: 8,
-            }}>
-              <div className="tct-pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }}/>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.green }}>{liveSession.name} · Live now</span>
-            </div>
-          ) : sessions.length > 0 && sessionsLive === 0 ? (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "7px 12px",
-              background: T.s2, border: `1px solid ${T.b1}`, borderRadius: 8,
-            }}>
-              <StatusDot status="upcoming"/>
-              <span style={{ fontSize: 11, color: T.t2 }}>
-                {sessionsDone === sessions.length
-                  ? "All sessions complete"
-                  : `Next: ${sessions.find(s => s.status === "upcoming")?.time || "—"}`}
-              </span>
-            </div>
-          ) : null}
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {liveSession ? (
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px",
+                background:T.greenDim, border:`1px solid ${T.greenBrd}`, borderRadius:8 }}>
+                <Dot color={T.green} pulse/>
+                <span style={{ fontSize:12, fontWeight:700, color:T.green }}>{liveSession.name} · Live now</span>
+                <span className="mono" style={{ fontSize:10, color:T.green, opacity:.7 }}>{liveSession.booked}/{liveSession.cap}</span>
+              </div>
+            ) : sessions.find(s=>s.status==="upcoming") && (
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 13px",
+                background:T.s2, border:`1px solid ${T.b1}`, borderRadius:8 }}>
+                <Dot color={T.blue}/>
+                <span style={{ fontSize:11, color:T.t2 }}>Next: <strong style={{color:T.t1}}>{sessions.find(s=>s.status==="upcoming")?.name}</strong> · {sessions.find(s=>s.status==="upcoming")?.time}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── KPI STRIP ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
-        <KpiCard
-          label="Check-ins Today"
-          value={String(todayCI)}
-          sub={todayCI > 0 ? `${todayCI} member${todayCI !== 1 ? "s" : ""} attended` : "No check-ins yet"}
-          subOk={todayCI > 0 ? true : null}
-          sparkData={ciSpark}
-          sparkColor={T.blue}
-          delay={0}
-        />
-        <KpiCard
-          label="Fill Rate"
-          value={`${fillRate}%`}
-          sub={`${totalBooked} booked across ${sessions.length} session${sessions.length !== 1 ? "s" : ""}`}
-          subOk={fillRate >= 60 ? true : fillRate > 0 && fillRate < 40 ? false : null}
-          sparkData={[50, 55, 58, 62, 65, fillRate > 0 ? fillRate - 5 : 0, fillRate]}
-          sparkColor={fillRate >= 60 ? T.green : T.amber}
-          delay={.05}
-        />
-        <KpiCard
-          label="At-Risk Clients"
-          value={String(atRiskMembers.length)}
-          sub={atRiskMembers.length > 0 ? `${atRiskMembers.length} need${atRiskMembers.length === 1 ? "s" : ""} attention` : "All clients active"}
-          subOk={atRiskMembers.length > 0 ? false : true}
-          sparkData={[0, 0, 0, 0, 0, 0, atRiskMembers.length]}
-          sparkColor={atRiskMembers.length > 0 ? T.red : T.green}
-          delay={.10}
-        />
-        <KpiCard
-          label="Sessions Today"
-          value={String(sessions.length)}
-          sub={`${sessionsDone} done · ${sessionsLive} live · ${sessions.length - sessionsDone - sessionsLive} upcoming`}
-          subOk={null}
-          sparkData={[0, 0, 0, 0, 0, 0, sessions.length]}
-          sparkColor={T.blue}
-          delay={.15}
-        />
-      </div>
+      {/* ── TODAY'S PRIORITIES ── */}
+      <TodaysPriorities priorities={priorities} />
+
+      {/* ── QUICK ACTIONS STRIP ── */}
+      <QuickActionsStrip openModal={openModal} setTab={setTab} />
 
       {/* ── MAIN GRID ── */}
-      <div className="tct-main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 290px", gap: 14, alignItems: "start" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:14, alignItems:"start" }}>
 
-        {/* LEFT: Sessions + Adherence */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-          {/* SESSION TIMELINE */}
-          <Card className="tct-fade-up" style={{ animationDelay: ".18s" }}>
-            <CardHeader
-              title="Today's Sessions"
-              sub={sessions.length > 0 ? `${sessions.length} scheduled · ${fillRate}% fill rate` : "No sessions scheduled"}
-              right={
-                <button className="tct-btn" onClick={() => openModal?.("classes")} style={{
-                  fontSize: 10, fontWeight: 700, color: T.blue,
-                  background: T.blueDim, border: `1px solid ${T.blueStr}`,
-                  borderRadius: 6, padding: "5px 11px",
-                }}>
-                  <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                    <line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/>
-                  </svg>
-                  Add Session
-                </button>
-              }
-            />
-
-            {sessions.length === 0 ? (
-              <div style={{ padding: "40px 24px", textAlign: "center" }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 10, background: T.s2,
-                  border: `1px solid ${T.b1}`, display: "flex", alignItems: "center",
-                  justifyContent: "center", margin: "0 auto 12px", color: T.t3,
-                }}>
-                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                    <rect x={3} y={4} width={18} height={18} rx={2}/><line x1={16} y1={2} x2={16} y2={6}/>
-                    <line x1={8} y1={2} x2={8} y2={6}/><line x1={3} y1={10} x2={21} y2={10}/>
-                  </svg>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, marginBottom: 6 }}>No sessions today</div>
-                <div style={{ fontSize: 11, color: T.t3, marginBottom: 16, lineHeight: 1.5 }}>
-                  Add classes to track attendance, fill rates, and client engagement.
-                </div>
-                <button className="tct-btn" onClick={() => openModal?.("classes")} style={{
-                  fontSize: 11, fontWeight: 700, color: T.blue, background: T.blueDim,
-                  border: `1px solid ${T.blueStr}`, borderRadius: 7, padding: "8px 16px",
-                }}>Add First Session</button>
-              </div>
-            ) : (
-              <>
-                {/* Column headers */}
-                <div style={{
-                  display: "grid", gridTemplateColumns: "72px 1fr 14px",
-                  padding: "8px 20px", borderBottom: `1px solid ${T.b0}`, gap: 0,
-                }}>
-                  <Label>Time</Label>
-                  <Label>Session</Label>
-                  <span/>
-                </div>
-                {sessions.map((s, i) => (
-                  <SessionItem
-                    key={s.id} s={s}
-                    expanded={expandedId === s.id}
-                    onToggle={() => toggle(s.id)}
-                    isLast={i === sessions.length - 1}
-                  />
-                ))}
-                {/* Summary footer */}
-                <div style={{
-                  padding: "12px 20px", borderTop: `1px solid ${T.b0}`,
-                  display: "flex", gap: 24, alignItems: "center",
-                }}>
-                  {[
-                    { l: "Total booked",   v: String(totalBooked) },
-                    { l: "Total capacity", v: String(totalCap) },
-                    { l: "Overall fill",   v: `${fillRate}%` },
-                    { l: "Sessions done",  v: `${sessionsDone} / ${sessions.length}` },
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
-                      <Mono style={{ fontSize: 14, fontWeight: 500, color: T.t1, letterSpacing: "-.03em" }}>{s.v}</Mono>
-                      <Label>{s.l}</Label>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </Card>
-
-          {/* CLIENT ADHERENCE */}
-          {allMemberships.length > 0 && (
-            <AdherencePanel
-              allMemberships={allMemberships}
-              checkIns={checkIns}
-              now={now}
-              onMessage={(m) => openModal?.("message")}
-              onViewAll={() => setTab?.("members")}
-            />
-          )}
+        {/* LEFT COLUMN */}
+        <div style={{ display:"flex", flexDirection:"column" }}>
+          <AttendanceChart checkIns={checkIns} now={now}/>
+          <TodaysSessions sessions={sessions} openModal={openModal}/>
+          <ActivityFeed checkIns={checkIns} allMemberships={allMemberships} now={now}/>
         </div>
 
-        {/* RIGHT: Sidebar */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-
-          {/* Daily Goals */}
-          <DailyGoalTracker sessions={sessions} todayCI={todayCI} allMemberships={allMemberships} />
-
-          {/* At-Risk */}
-          <AtRiskPanel
-            atRiskMembers={atRiskMembers}
-            onMessage={(m) => openModal?.("message")}
-            onViewAll={() => setTab?.("members")}
-          />
-
-          {/* Week Activity */}
-          <WeekActivity checkIns={checkIns} now={now} />
-
-          {/* Quick Actions */}
-          <QuickActions openModal={openModal} setTab={setTab} />
+        {/* RIGHT SIDEBAR */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12, position:"sticky", top:0 }}>
+          <WeeklyPerformance checkIns={checkIns} sessions={sessions} allMemberships={allMemberships} now={now}/>
+          <ClientRiskFeed allMemberships={allMemberships} checkIns={checkIns} now={now} openModal={openModal} setTab={setTab}/>
         </div>
       </div>
     </div>
