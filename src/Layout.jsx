@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3 } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3, ClipboardList, CalendarDays, UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -11,7 +11,7 @@ import PersistentRestTimer from './components/PersistentRestTimer';
 import { TimerProvider, useTimer } from './components/TimerContext';
 
 // ── Inner layout that can access TimerContext ─────────────────────────────────
-function LayoutInner({ children, currentPageName, currentUser, notifications, gymMemberships, isDashboardUser, hideNavigation }) {
+function LayoutInner({ children, currentPageName, currentUser, notifications, gymMemberships, isDashboardUser, isCoachUser, hideNavigation }) {
   const location = useLocation();
   const tabHistoryRef = React.useRef({});
   const lastTabPageRef = React.useRef({});
@@ -19,16 +19,23 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
 
   const unreadCount = notifications.length;
   const isGymOwner = currentUser?.account_type === 'gym_owner';
+  const isCoach = currentUser?.account_type === 'coach';
 
-  const navItems = isDashboardUser ? [
-  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard' },
-  { name: 'Gyms', icon: Dumbbell, page: 'Gyms' }] :
-  [
-  { name: 'Home', icon: Home, page: 'Home' },
-  { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
-  { name: 'Progress', icon: BarChart3, page: 'Progress' },
-  { name: 'Challenges', icon: Gift, page: 'RedeemReward' },
-  { name: 'Profile', icon: Crown, page: 'Profile' }];
+  const navItems = isCoach ? [
+    { name: 'Dashboard', icon: ClipboardList, page: 'GymOwnerDashboard' },
+    { name: 'Members', icon: UserCheck, page: 'Gyms' },
+    { name: 'Schedule', icon: CalendarDays, page: 'Gyms' },
+    { name: 'Messages', icon: MessageCircle, page: 'Messages' },
+  ] : isGymOwner ? [
+    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard' },
+    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
+  ] : [
+    { name: 'Home', icon: Home, page: 'Home' },
+    { name: 'Gyms', icon: Dumbbell, page: 'Gyms' },
+    { name: 'Progress', icon: BarChart3, page: 'Progress' },
+    { name: 'Challenges', icon: Gift, page: 'RedeemReward' },
+    { name: 'Profile', icon: Crown, page: 'Profile' },
+  ];
 
 
   useEffect(() => {
@@ -127,8 +134,36 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
         </nav>
       }
 
+      {/* Coach Top Bar */}
+      {isCoachUser && !hideNavigation && (
+        <div className="fixed top-0 left-0 right-0 z-40 md:left-20" style={{ background: 'rgba(10,14,26,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', paddingTop: 'env(safe-area-inset-top)' }}>
+          <div className="flex items-center justify-between px-4 h-12">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}>
+                <ClipboardList className="w-3.5 h-3.5" style={{ color: '#818cf8' }} />
+              </div>
+              <span className="text-sm font-bold text-white tracking-tight">Coach</span>
+              {currentUser?.full_name && (
+                <span className="text-xs text-slate-500 font-medium hidden sm:inline">— {currentUser.full_name}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {notifications.length > 0 && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.22)', color: '#f87171' }}>
+                  <Bell className="w-3 h-3" />
+                  {notifications.length}
+                </div>
+              )}
+              <div className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}>
+                Coach
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))' }}>
+      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))', paddingTop: isCoachUser ? '3rem' : 0 }}>
         <ErrorBoundary>
           <PageTransition key={currentPageName}>
             {children}
@@ -178,8 +213,10 @@ export default function Layout({ children, currentPageName }) {
     gcTime: 15 * 60 * 1000
   });
 
-  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || currentPageName === 'GymOwnerDashboard';
-  const isDashboardUser = currentUser?.account_type === 'gym_owner' || currentUser?.account_type === 'coach';
+  const isCoachUser = currentUser?.account_type === 'coach';
+  const isGymOwnerUser = currentUser?.account_type === 'gym_owner';
+  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup' || (currentPageName === 'GymOwnerDashboard' && !isCoachUser);
+  const isDashboardUser = isGymOwnerUser || isCoachUser;
 
   return (
     <TimerProvider>
@@ -189,6 +226,7 @@ export default function Layout({ children, currentPageName }) {
         notifications={notifications}
         gymMemberships={gymMemberships}
         isDashboardUser={isDashboardUser}
+        isCoachUser={isCoachUser}
         hideNavigation={hideNavigation}>
         {children}
       </LayoutInner>
