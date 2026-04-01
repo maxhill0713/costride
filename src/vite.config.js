@@ -18,29 +18,40 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch workbox-build's generateSW to raise the 2MB precache limit to 10MB.
-    // Uses require() so the module is patched in the same synchronous module registry
-    // that vite-plugin-pwa will use when it calls generateSW in closeBundle.
+    // Patch vite-plugin-pwa's bundled chunk to suppress the maximumFileSizeToCacheInBytes error.
+    // The chunk contains `logWorkboxResult` which throws when a file exceeds 2MB.
+    // We replace the hard-coded 2MB default with 10MB by transforming the chunk source.
     {
       name: 'patch-workbox-file-size-limit',
-      enforce: 'post',
-      apply: 'build',
-      closeBundle: {
-        order: 'pre',
-        handler() {
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const wb = require('workbox-build');
-            if (typeof wb.generateSW === 'function' && !wb.__patched) {
-              const orig = wb.generateSW.bind(wb);
-              wb.generateSW = (cfg) => {
-                cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
-                return orig(cfg);
-              };
-              wb.__patched = true;
-            }
-          } catch {}
-        },
+      enforce: 'pre',
+      resolveId(id) {
+        // Let normal resolution happen
+        return null;
+      },
+      load(id) {
+        if (id.includes('vite-plugin-pwa') && id.includes('chunk-')) {
+          // Will be handled in transform
+        }
+        return null;
+      },
+      transform(code, id) {
+        // Patch workbox-build's default maximumFileSizeToCacheInBytes (2097152 = 2MB) to 10MB
+        if (id.includes('workbox-build') && code.includes('maximumFileSizeToCacheInBytes')) {
+          return {
+            code: code.replace(/maximumFileSizeToCacheInBytes:\s*2\s*\*\s*1024\s*\*\s*1024/g, 'maximumFileSizeToCacheInBytes: 10 * 1024 * 1024')
+                       .replace(/maximumFileSizeToCacheInBytes:\s*2097152/g, 'maximumFileSizeToCacheInBytes: 10485760'),
+            map: null,
+          };
+        }
+        // Also patch vite-plugin-pwa's chunk that contains logWorkboxResult
+        if (id.includes('vite-plugin-pwa') && code.includes('maximumFileSizeToCacheInBytes')) {
+          return {
+            code: code.replace(/2\s*\*\s*1024\s*\*\s*1024/g, '10 * 1024 * 1024')
+                       .replace(/\b2097152\b/g, '10485760'),
+            map: null,
+          };
+        }
+        return null;
       },
     },
   ],

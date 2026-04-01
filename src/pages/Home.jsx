@@ -1450,7 +1450,6 @@ export default function Home() {
                   };
                   return (
                     <div className="mt-4">
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Cardio</p>
                       {/* Cardio column headers */}
                       <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 36px 12px 44px 36px' }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
