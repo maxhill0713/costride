@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import base44Plugin from '@base44/vite-plugin';
 
 export default defineConfig({
@@ -18,40 +19,26 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch vite-plugin-pwa's bundled chunk to suppress the maximumFileSizeToCacheInBytes error.
-    // The chunk contains `logWorkboxResult` which throws when a file exceeds 2MB.
-    // We replace the hard-coded 2MB default with 10MB by transforming the chunk source.
+    // Patch vite-plugin-pwa's dist chunk on disk before it runs its closeBundle hook.
+    // The chunk file contains logWorkboxResult which throws when any asset > 2MB.
+    // We find the chunk file and rewrite the 2MB constant to 10MB at buildStart.
     {
       name: 'patch-workbox-file-size-limit',
-      enforce: 'pre',
-      resolveId(id) {
-        // Let normal resolution happen
-        return null;
-      },
-      load(id) {
-        if (id.includes('vite-plugin-pwa') && id.includes('chunk-')) {
-          // Will be handled in transform
+      enforce: 'post',
+      buildStart() {
+        const pwaDir = path.resolve(__dirname, 'node_modules/vite-plugin-pwa/dist');
+        if (!fs.existsSync(pwaDir)) return;
+        const files = fs.readdirSync(pwaDir).filter(f => f.endsWith('.js'));
+        for (const file of files) {
+          const filePath = path.join(pwaDir, file);
+          const content = fs.readFileSync(filePath, 'utf-8');
+          if (content.includes('maximumFileSizeToCacheInBytes') && content.includes('2097152')) {
+            const patched = content.replace(/\b2097152\b/g, '10485760');
+            if (patched !== content) {
+              fs.writeFileSync(filePath, patched, 'utf-8');
+            }
+          }
         }
-        return null;
-      },
-      transform(code, id) {
-        // Patch workbox-build's default maximumFileSizeToCacheInBytes (2097152 = 2MB) to 10MB
-        if (id.includes('workbox-build') && code.includes('maximumFileSizeToCacheInBytes')) {
-          return {
-            code: code.replace(/maximumFileSizeToCacheInBytes:\s*2\s*\*\s*1024\s*\*\s*1024/g, 'maximumFileSizeToCacheInBytes: 10 * 1024 * 1024')
-                       .replace(/maximumFileSizeToCacheInBytes:\s*2097152/g, 'maximumFileSizeToCacheInBytes: 10485760'),
-            map: null,
-          };
-        }
-        // Also patch vite-plugin-pwa's chunk that contains logWorkboxResult
-        if (id.includes('vite-plugin-pwa') && code.includes('maximumFileSizeToCacheInBytes')) {
-          return {
-            code: code.replace(/2\s*\*\s*1024\s*\*\s*1024/g, '10 * 1024 * 1024')
-                       .replace(/\b2097152\b/g, '10485760'),
-            map: null,
-          };
-        }
-        return null;
       },
     },
   ],
