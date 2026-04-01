@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
@@ -136,7 +135,6 @@ async function drawBreakdownCard(post, gymName) {
 
   const PAD = 60;
 
-  // TOP: gym · date centred
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
   const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
   ctx.font = '700 34px -apple-system,sans-serif';
@@ -145,7 +143,6 @@ async function drawBreakdownCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 90);
   ctx.textAlign = 'left';
 
-  // Workout name — centred
   const pTop = 130;
   ctx.font = '900 68px -apple-system,sans-serif';
   ctx.fillStyle = 'white';
@@ -155,7 +152,6 @@ async function drawBreakdownCard(post, gymName) {
   ctx.shadowBlur = 0;
   ctx.textAlign = 'left';
 
-  // Stats pills (same style as stats card)
   const pillTop = pTop + 100;
   const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
   const mS = [
@@ -176,13 +172,11 @@ async function drawBreakdownCard(post, gymName) {
     ctx.fillText(s.l, px + pillW / 2, pillTop + 92);
   });
 
-  // Exercise rows — TodayWorkout style
   const tTop = pillTop + pillH + 60;
   const colW = [W - PAD * 2 - 320, 100, 50, 100, 160];
   const colX = [PAD + 20];
   colW.slice(0, -1).forEach((w, i) => colX.push(colX[i] + colW[i] + 10));
 
-  // Column headers
   ctx.font = '700 26px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ['EXERCISE', 'SETS', '', 'REPS', 'WEIGHT'].forEach((h, i) => {
@@ -199,32 +193,26 @@ async function drawBreakdownCard(post, gymName) {
     const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
       .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-    // Row background — subtle like TodayWorkout
     ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, ry, W - PAD * 2, rH, 18);
     ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
 
-    // Exercise name
     ctx.font = '700 36px -apple-system,sans-serif'; ctx.fillStyle = 'white';
     ctx.fillText(name, colX[0], ry + 58, colW[0] - 10);
 
-    // Sets pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[1], ry + 18, colW[1], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.textAlign = 'center'; ctx.fillText(String(ex.sets || ex.set_count || '—'), colX[1] + colW[1] / 2, ry + 56);
 
-    // × separator
     ctx.font = '700 30px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.28)';
     ctx.fillText('×', colX[2] + colW[2] / 2, ry + 56);
 
-    // Reps pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[3], ry + 18, colW[3], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fillText(String(ex.reps || ex.rep_count || '—'), colX[3] + colW[3] / 2, ry + 56);
 
-    // Weight pill — blue gradient
     const wG = ctx.createLinearGradient(colX[4], ry, colX[4] + colW[4], ry);
     wG.addColorStop(0, 'rgba(29,78,216,0.9)');
     wG.addColorStop(1, 'rgba(59,130,246,0.9)');
@@ -242,7 +230,6 @@ async function drawBreakdownCard(post, gymName) {
     ctx.textAlign = 'left';
   }
 
-  // CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
   const logoSize = 54;
   const wordmark = 'CoStride';
@@ -349,23 +336,13 @@ function StatsPreview({ post, gymName }) {
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
-
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 10px 0', textAlign: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>
-          {topLine}
-        </span>
+        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{topLine}</span>
       </div>
-
       <div style={{ position: 'absolute', bottom: '13%', left: 0, right: 0, padding: '0 10px' }}>
-        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>
-          {post.workout_name || 'Workout'}
-        </div>
+        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>{post.workout_name || 'Workout'}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
-          {[
-            { label: 'Exercises', value: exercises.length || '—' },
-            { label: 'Duration', value: post.workout_duration || '—' },
-            { label: 'Volume', value: post.workout_volume || '—' },
-          ].map(({ label, value }) => (
+          {[{ label: 'Exercises', value: exercises.length || '—' }, { label: 'Duration', value: post.workout_duration || '—' }, { label: 'Volume', value: post.workout_volume || '—' }].map(({ label, value }) => (
             <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, padding: '6px 3px', textAlign: 'center' }}>
               <div style={{ color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 }}>{value}</div>
               <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
@@ -373,7 +350,6 @@ function StatsPreview({ post, gymName }) {
           ))}
         </div>
       </div>
-
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
         <img src={LOGO_URL} alt="" style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover' }} />
         <span style={{ color: 'rgba(255,255,255,0.88)', fontSize: 11, fontWeight: 800, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>CoStride</span>
@@ -396,68 +372,39 @@ function BreakdownPreview({ post, gymName }) {
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 100%)' }} />
       )}
-
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '8px 10px 8px' }}>
-        {/* TOP: gym · date — centred */}
         <div style={{ textAlign: 'center', marginBottom: 5 }}>
-          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {topLine}
-          </span>
+          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{topLine}</span>
         </div>
-
-        {/* Workout title — centred */}
-        <div style={{ color: 'white', fontSize: 13, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>
-          {post.workout_name || 'Workout'}
-        </div>
-
-        {/* Stats pills — same style as StatsPreview */}
+        <div style={{ color: 'white', fontSize: 13, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>{post.workout_name || 'Workout'}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 7 }}>
-          {[
-            { label: 'Exercises', value: exercises.length || '—' },
-            { label: 'Duration', value: post.workout_duration || '—' },
-            { label: 'Volume', value: post.workout_volume || '—' },
-          ].map(({ label, value }) => (
+          {[{ label: 'Exercises', value: exercises.length || '—' }, { label: 'Duration', value: post.workout_duration || '—' }, { label: 'Volume', value: post.workout_volume || '—' }].map(({ label, value }) => (
             <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 7, padding: '5px 3px', textAlign: 'center' }}>
               <div style={{ color: 'white', fontSize: 10, fontWeight: 900, lineHeight: 1 }}>{value}</div>
               <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
             </div>
           ))}
         </div>
-
-        {/* Exercise column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, paddingLeft: 4, marginBottom: 3 }}>
           {['Exercise', 'Sets', '', 'Reps', 'Wt'].map((h, i) => (
             <div key={i} style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', textAlign: i > 0 ? 'center' : 'left' }}>{h}</div>
           ))}
         </div>
-
-        {/* Exercise rows — TodayWorkout style */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {exercises.slice(0, 8).map((ex, idx) => {
-            const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
-              .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             return (
-              <div key={idx} style={{
-                display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.09)',
-                borderRadius: 6,
-                padding: '3px 4px 3px 6px'
-              }}>
+              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 6, padding: '3px 4px 3px 6px' }}>
                 <div style={{ color: 'white', fontSize: 7.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
                 <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.sets || ex.set_count || '—'}</div>
                 <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, textAlign: 'center', fontWeight: 700 }}>×</div>
                 <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.reps || ex.rep_count || '—'}</div>
-                <div style={{ background: 'linear-gradient(135deg,rgba(29,78,216,0.9),rgba(59,130,246,0.9))', borderRadius: 5, color: 'white', fontSize: 7, fontWeight: 800, textAlign: 'center', padding: '2px 0' }}>
-                  {ex.weight ?? ex.weight_kg ?? '—'}<span style={{ fontSize: 5.5 }}>kg</span>
-                </div>
+                <div style={{ background: 'linear-gradient(135deg,rgba(29,78,216,0.9),rgba(59,130,246,0.9))', borderRadius: 5, color: 'white', fontSize: 7, fontWeight: 800, textAlign: 'center', padding: '2px 0' }}>{ex.weight ?? ex.weight_kg ?? '—'}<span style={{ fontSize: 5.5 }}>kg</span></div>
               </div>
             );
           })}
           {exercises.length > 8 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 7.5, textAlign: 'center', paddingTop: 2 }}>+{exercises.length - 8} more</div>}
         </div>
-
-        {/* BOTTOM: CoStride logo — centred */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, paddingTop: 6 }}>
           <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3, objectFit: 'cover' }} />
           <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: 800 }}>CoStride</span>
@@ -479,16 +426,12 @@ function CleanPreview({ post, gymName }) {
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
-
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <img src={LOGO_URL} alt="" style={{ width: 18, height: 18, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
-
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px', textAlign: 'center' }}>
-        {gymName && (
-          <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
-        )}
+        {gymName && <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>}
         <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{dateStr}</div>
       </div>
     </div>
@@ -503,10 +446,7 @@ async function getImageFile(blob, name) {
 async function shareImageNative(blob, post, extraText = '') {
   const name = `${(post.workout_name || 'workout').replace(/\s+/g, '-').toLowerCase()}-costride.png`;
   const file = await getImageFile(blob, name);
-  const shareData = {
-    files: [file],
-    text: extraText || `Check out my ${post.workout_name || 'workout'} on CoStride 💪`,
-  };
+  const shareData = { files: [file], text: extraText || `Check out my ${post.workout_name || 'workout'} on CoStride 💪` };
   if (navigator.share && navigator.canShare?.(shareData)) {
     await navigator.share(shareData);
   } else {
@@ -521,7 +461,6 @@ async function shareToAppWithScheme(blob, post, urlScheme) {
   const name = `${(post.workout_name || 'workout').replace(/\s+/g, '-').toLowerCase()}-costride.png`;
   const file = await getImageFile(blob, name);
   const shareData = { files: [file], text: `My ${post.workout_name || 'workout'} on CoStride 💪` };
-
   if (navigator.share && navigator.canShare?.(shareData)) {
     navigator.share(shareData).catch(() => {});
     setTimeout(() => { try { window.location.href = urlScheme; } catch (_) {} }, 600);
@@ -536,119 +475,33 @@ async function shareToAppWithScheme(blob, post, urlScheme) {
 // ─── App button definitions ───────────────────────────────────────────────────
 const APP_BUTTONS = [
   {
-    id: 'instagram_story',
-    label: 'Instagram\nStory',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <defs>
-          <radialGradient id="ig1" cx="30%" cy="107%" r="120%">
-            <stop offset="0%" stopColor="#ffd600"/>
-            <stop offset="50%" stopColor="#ff6f00"/>
-            <stop offset="100%" stopColor="#ff6f00" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="ig2" cx="10%" cy="100%" r="100%">
-            <stop offset="0%" stopColor="#ff4081"/>
-            <stop offset="60%" stopColor="#ff4081" stopOpacity="0"/>
-          </radialGradient>
-          <linearGradient id="ig3" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff6f00" stopOpacity="0"/>
-            <stop offset="40%" stopColor="#e040fb"/>
-            <stop offset="100%" stopColor="#7c4dff"/>
-          </linearGradient>
-        </defs>
-        <rect width="60" height="60" rx="14" fill="#000"/>
-        <rect width="60" height="60" rx="14" fill="url(#ig1)"/>
-        <rect width="60" height="60" rx="14" fill="url(#ig2)"/>
-        <rect width="60" height="60" rx="14" fill="url(#ig3)"/>
-        <rect x="14" y="14" width="32" height="32" rx="8" fill="none" stroke="white" strokeWidth="3"/>
-        <circle cx="30" cy="30" r="8" fill="none" stroke="white" strokeWidth="3"/>
-        <circle cx="41.5" cy="18.5" r="2.5" fill="white"/>
-      </svg>
-    ),
+    id: 'instagram_story', label: 'Instagram\nStory',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><defs><radialGradient id="ig1" cx="30%" cy="107%" r="120%"><stop offset="0%" stopColor="#ffd600"/><stop offset="50%" stopColor="#ff6f00"/><stop offset="100%" stopColor="#ff6f00" stopOpacity="0"/></radialGradient><radialGradient id="ig2" cx="10%" cy="100%" r="100%"><stop offset="0%" stopColor="#ff4081"/><stop offset="60%" stopColor="#ff4081" stopOpacity="0"/></radialGradient><linearGradient id="ig3" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#ff6f00" stopOpacity="0"/><stop offset="40%" stopColor="#e040fb"/><stop offset="100%" stopColor="#7c4dff"/></linearGradient></defs><rect width="60" height="60" rx="14" fill="#000"/><rect width="60" height="60" rx="14" fill="url(#ig1)"/><rect width="60" height="60" rx="14" fill="url(#ig2)"/><rect width="60" height="60" rx="14" fill="url(#ig3)"/><rect x="14" y="14" width="32" height="32" rx="8" fill="none" stroke="white" strokeWidth="3"/><circle cx="30" cy="30" r="8" fill="none" stroke="white" strokeWidth="3"/><circle cx="41.5" cy="18.5" r="2.5" fill="white"/></svg>),
     action: (blob, post) => shareToAppWithScheme(blob, post, 'instagram-stories://share'),
   },
   {
-    id: 'instagram_dm',
-    label: 'Instagram\nMessages',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <defs>
-          <radialGradient id="igdm1" cx="30%" cy="107%" r="120%">
-            <stop offset="0%" stopColor="#ffd600"/>
-            <stop offset="50%" stopColor="#ff6f00"/>
-            <stop offset="100%" stopColor="#ff6f00" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="igdm2" cx="10%" cy="100%" r="100%">
-            <stop offset="0%" stopColor="#ff4081"/>
-            <stop offset="60%" stopColor="#ff4081" stopOpacity="0"/>
-          </radialGradient>
-          <linearGradient id="igdm3" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff6f00" stopOpacity="0"/>
-            <stop offset="40%" stopColor="#e040fb"/>
-            <stop offset="100%" stopColor="#7c4dff"/>
-          </linearGradient>
-        </defs>
-        <rect width="60" height="60" rx="14" fill="#000"/>
-        <rect width="60" height="60" rx="14" fill="url(#igdm1)"/>
-        <rect width="60" height="60" rx="14" fill="url(#igdm2)"/>
-        <rect width="60" height="60" rx="14" fill="url(#igdm3)"/>
-        <path d="M14 30 L46 18 L38 46 L28 36 Z" fill="none" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
-        <path d="M28 36 L26 44 L32 38" fill="none" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
-        <path d="M28 36 L46 18" fill="none" stroke="white" strokeWidth="2.5"/>
-      </svg>
-    ),
+    id: 'instagram_dm', label: 'Instagram\nMessages',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><defs><radialGradient id="igdm1" cx="30%" cy="107%" r="120%"><stop offset="0%" stopColor="#ffd600"/><stop offset="50%" stopColor="#ff6f00"/><stop offset="100%" stopColor="#ff6f00" stopOpacity="0"/></radialGradient><radialGradient id="igdm2" cx="10%" cy="100%" r="100%"><stop offset="0%" stopColor="#ff4081"/><stop offset="60%" stopColor="#ff4081" stopOpacity="0"/></radialGradient><linearGradient id="igdm3" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#ff6f00" stopOpacity="0"/><stop offset="40%" stopColor="#e040fb"/><stop offset="100%" stopColor="#7c4dff"/></linearGradient></defs><rect width="60" height="60" rx="14" fill="#000"/><rect width="60" height="60" rx="14" fill="url(#igdm1)"/><rect width="60" height="60" rx="14" fill="url(#igdm2)"/><rect width="60" height="60" rx="14" fill="url(#igdm3)"/><path d="M14 30 L46 18 L38 46 L28 36 Z" fill="none" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/><path d="M28 36 L26 44 L32 38" fill="none" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/><path d="M28 36 L46 18" fill="none" stroke="white" strokeWidth="2.5"/></svg>),
     action: (blob, post) => shareImageNative(blob, post, `My ${post.workout_name || 'workout'} on CoStride 💪`),
   },
   {
-    id: 'snapchat',
-    label: 'Snapchat',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <rect width="60" height="60" rx="14" fill="#FFFC00"/>
-        <path d="M30 13c-5.5 0-10 4.5-10 10v1.5c-1 .2-2.5.8-2.5 2 0 1 .8 1.8 1.9 2-.5 1.4-1.4 3-3.3 3.9-.7.3-1 1-.7 1.7.5 1.2 2.4 1.6 3.9 1.7.2.5.3 1.2.8 1.5.3.2.8 0 1.5-.2.9-.3 2.1-.7 3.4-.7s2.5.4 3.4.7c.7.2 1.2.4 1.5.2.5-.3.6-1 .8-1.5 1.5-.1 3.4-.5 3.9-1.7.3-.7 0-1.4-.7-1.7-1.9-.9-2.8-2.5-3.3-3.9 1.1-.2 1.9-.9 1.9-2 0-1.2-1.5-1.8-2.5-2V23c0-5.5-4.5-10-10-10z" fill="black"/>
-      </svg>
-    ),
+    id: 'snapchat', label: 'Snapchat',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><rect width="60" height="60" rx="14" fill="#FFFC00"/><path d="M30 13c-5.5 0-10 4.5-10 10v1.5c-1 .2-2.5.8-2.5 2 0 1 .8 1.8 1.9 2-.5 1.4-1.4 3-3.3 3.9-.7.3-1 1-.7 1.7.5 1.2 2.4 1.6 3.9 1.7.2.5.3 1.2.8 1.5.3.2.8 0 1.5-.2.9-.3 2.1-.7 3.4-.7s2.5.4 3.4.7c.7.2 1.2.4 1.5.2.5-.3.6-1 .8-1.5 1.5-.1 3.4-.5 3.9-1.7.3-.7 0-1.4-.7-1.7-1.9-.9-2.8-2.5-3.3-3.9 1.1-.2 1.9-.9 1.9-2 0-1.2-1.5-1.8-2.5-2V23c0-5.5-4.5-10-10-10z" fill="black"/></svg>),
     action: (blob, post) => shareToAppWithScheme(blob, post, 'snapchat://'),
   },
   {
-    id: 'whatsapp',
-    label: 'WhatsApp',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <rect width="60" height="60" rx="14" fill="#25D366"/>
-        <path d="M30 13C20.6 13 13 20.6 13 30c0 3.7 1.2 7.1 3.2 9.9L14 46l6.4-2.1C23 45.5 26.4 47 30 47c9.4 0 17-7.6 17-17S39.4 13 30 13zm8.9 23.8c-.4 1.1-2.3 2.1-3.2 2.2-.8.1-1.8.2-2.9-.2-.7-.2-1.6-.5-2.7-1-4.7-2.1-7.8-6.9-8-7.2-.2-.3-1.9-2.5-1.9-4.8s1.2-3.4 1.6-3.9c.4-.5.9-.6 1.2-.6h.9c.3 0 .7-.1 1 .8.4.9 1.3 3.2 1.4 3.4.1.2.2.5 0 .8-.2.3-.2.5-.4.8-.2.3-.4.6-.6.8-.2.2-.4.5-.2.9.3.5 1.1 1.9 2.4 3 1.7 1.5 3 2 3.5 2.2.5.2.7.2 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.5.6-.4 1-.2.4.2 2.6 1.2 3.1 1.4.5.2.8.3.9.5.1.2.1 1.1-.3 2.2z" fill="white"/>
-      </svg>
-    ),
+    id: 'whatsapp', label: 'WhatsApp',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><rect width="60" height="60" rx="14" fill="#25D366"/><path d="M30 13C20.6 13 13 20.6 13 30c0 3.7 1.2 7.1 3.2 9.9L14 46l6.4-2.1C23 45.5 26.4 47 30 47c9.4 0 17-7.6 17-17S39.4 13 30 13zm8.9 23.8c-.4 1.1-2.3 2.1-3.2 2.2-.8.1-1.8.2-2.9-.2-.7-.2-1.6-.5-2.7-1-4.7-2.1-7.8-6.9-8-7.2-.2-.3-1.9-2.5-1.9-4.8s1.2-3.4 1.6-3.9c.4-.5.9-.6 1.2-.6h.9c.3 0 .7-.1 1 .8.4.9 1.3 3.2 1.4 3.4.1.2.2.5 0 .8-.2.3-.2.5-.4.8-.2.3-.4.6-.6.8-.2.2-.4.5-.2.9.3.5 1.1 1.9 2.4 3 1.7 1.5 3 2 3.5 2.2.5.2.7.2 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.5.6-.4 1-.2.4.2 2.6 1.2 3.1 1.4.5.2.8.3.9.5.1.2.1 1.1-.3 2.2z" fill="white"/></svg>),
     action: (blob, post) => shareImageNative(blob, post, `My ${post.workout_name || 'workout'} on CoStride 💪`),
   },
   {
-    id: 'messages',
-    label: 'Message',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <defs>
-          <linearGradient id="msg" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#5BF75B"/>
-            <stop offset="100%" stopColor="#27C227"/>
-          </linearGradient>
-        </defs>
-        <rect width="60" height="60" rx="14" fill="url(#msg)"/>
-        <path d="M30 14C20.6 14 13 20.6 13 28.5c0 4.3 2 8.2 5.2 10.9L17 46l6.5-3.2c2 .7 4.2 1.2 6.5 1.2 9.4 0 17-6.5 17-14.5S39.4 14 30 14z" fill="white"/>
-      </svg>
-    ),
+    id: 'messages', label: 'Message',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><defs><linearGradient id="msg" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#5BF75B"/><stop offset="100%" stopColor="#27C227"/></linearGradient></defs><rect width="60" height="60" rx="14" fill="url(#msg)"/><path d="M30 14C20.6 14 13 20.6 13 28.5c0 4.3 2 8.2 5.2 10.9L17 46l6.5-3.2c2 .7 4.2 1.2 6.5 1.2 9.4 0 17-6.5 17-14.5S39.4 14 30 14z" fill="white"/></svg>),
     action: (blob, post) => shareImageNative(blob, post, `My ${post.workout_name || 'workout'} on CoStride 💪`),
   },
   {
-    id: 'more',
-    label: 'More',
-    icon: (
-      <svg viewBox="0 0 60 60" width="60" height="60">
-        <rect width="60" height="60" rx="14" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="1"/>
-        <circle cx="18" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/>
-        <circle cx="30" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/>
-        <circle cx="42" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/>
-      </svg>
-    ),
+    id: 'more', label: 'More',
+    icon: (<svg viewBox="0 0 60 60" width="60" height="60"><rect width="60" height="60" rx="14" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="1"/><circle cx="18" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/><circle cx="30" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/><circle cx="42" cy="30" r="3.5" fill="rgba(255,255,255,0.7)"/></svg>),
     action: (blob, post) => shareImageNative(blob, post),
   },
 ];
@@ -671,10 +524,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
     { label: 'Clean', drawFn: drawCleanCard, node: <CleanPreview post={post || {}} gymName={gymName} /> },
   ];
 
-  const getCanvas = useCallback(
-    () => cards[activeCard].drawFn(post, gymName),
-    [activeCard, post, gymName]
-  );
+  const getCanvas = useCallback(() => cards[activeCard].drawFn(post, gymName), [activeCard, post, gymName]);
 
   const handleBtn = useCallback(async (btn) => {
     if (loadingId) return;
@@ -707,8 +557,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
   const handleTouchStart = useCallback((e) => {
     touchStartXRef.current = e.touches[0].clientX;
     touchStartYRef.current = e.touches[0].clientY;
-    setIsDragging(false);
-    setDragOffset(0);
+    setIsDragging(false); setDragOffset(0);
   }, []);
 
   const handleTouchMove = useCallback((e) => {
@@ -719,8 +568,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
       setIsDragging(true);
       const atStart = activeCard === 0 && dx > 0;
       const atEnd = activeCard === cards.length - 1 && dx < 0;
-      const resistance = (atStart || atEnd) ? 0.25 : 1;
-      setDragOffset(dx * resistance);
+      setDragOffset(dx * ((atStart || atEnd) ? 0.25 : 1));
       e.preventDefault();
     }
   }, [activeCard, cards.length]);
@@ -733,10 +581,8 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
       if (dx < 0 && activeCard < cards.length - 1) setActiveCard(v => v + 1);
       else if (dx > 0 && activeCard > 0) setActiveCard(v => v - 1);
     }
-    touchStartXRef.current = null;
-    touchStartYRef.current = null;
-    setIsDragging(false);
-    setDragOffset(0);
+    touchStartXRef.current = null; touchStartYRef.current = null;
+    setIsDragging(false); setDragOffset(0);
   }, [activeCard, cards.length]);
 
   if (!open || !post) return null;
@@ -746,9 +592,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
   const containerWidth = containerRef.current?.offsetWidth || 220;
   const stripWidth = containerWidth * cards.length;
   const dragPercent = (dragOffset / stripWidth) * 100;
-  const translateX = isDragging
-    ? `${baseTranslate + dragPercent}%`
-    : `${baseTranslate}%`;
+  const translateX = isDragging ? `${baseTranslate + dragPercent}%` : `${baseTranslate}%`;
 
   return (
     <AnimatePresence>
@@ -759,7 +603,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
             onClick={onClose}
             style={{ position: 'fixed', inset: 0, zIndex: 10010, background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
           />
-
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
@@ -775,15 +618,14 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               overflow: 'hidden',
             }}
           >
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 18px 8px', flexShrink: 0, position: 'relative' }}>
+            {/* Drag handle bar */}
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)' }} />
+            </div>
+
+            {/* Header — no X button */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 18px 8px', flexShrink: 0 }}>
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Activity</span>
-              <button
-                onClick={onClose}
-                style={{ position: 'absolute', right: 18, background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: 4 }}
-              >
-                <X size={18} />
-              </button>
             </div>
 
             {/* Portrait card carousel */}
@@ -796,17 +638,9 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  <div style={{
-                    display: 'flex',
-                    width: `${cards.length * 100}%`,
-                    transform: `translateX(${translateX})`,
-                    transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                    willChange: 'transform',
-                  }}>
+                  <div style={{ display: 'flex', width: `${cards.length * 100}%`, transform: `translateX(${translateX})`, transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25, 0.46, 0.45, 0.94)', willChange: 'transform' }}>
                     {cards.map((card, i) => (
-                      <div key={i} style={{ width: `${100 / cards.length}%`, flexShrink: 0 }}>
-                        {card.node}
-                      </div>
+                      <div key={i} style={{ width: `${100 / cards.length}%`, flexShrink: 0 }}>{card.node}</div>
                     ))}
                   </div>
                 </div>
@@ -827,19 +661,8 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0' }}>Share to</p>
               <div style={{ display: 'flex', gap: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 }}>
                 {APP_BUTTONS.map((btn) => (
-                  <button
-                    key={btn.id}
-                    onClick={() => handleBtn(btn)}
-                    disabled={!!loadingId}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                      background: 'none', border: 'none',
-                      cursor: loadingId ? 'default' : 'pointer',
-                      opacity: loadingId && loadingId !== btn.id ? 0.3 : 1,
-                      flexShrink: 0, padding: 0,
-                      transition: 'opacity 0.15s',
-                    }}
-                  >
+                  <button key={btn.id} onClick={() => handleBtn(btn)} disabled={!!loadingId}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: loadingId ? 'default' : 'pointer', opacity: loadingId && loadingId !== btn.id ? 0.3 : 1, flexShrink: 0, padding: 0, transition: 'opacity 0.15s' }}>
                     <div style={{ position: 'relative', width: 60, height: 60 }}>
                       {loadingId === btn.id
                         ? <div style={{ width: 60, height: 60, borderRadius: 14, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -847,9 +670,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                           </div>
                         : btn.icon}
                     </div>
-                    <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.2, maxWidth: 64 }}>
-                      {btn.label}
-                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.2, maxWidth: 64 }}>{btn.label}</span>
                   </button>
                 ))}
               </div>
@@ -857,19 +678,8 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
 
             {/* Save Image */}
             <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
-              <button
-                onClick={handleSave}
-                disabled={!!loadingId}
-                style={{
-                  width: '100%', padding: '14px 0', borderRadius: 14,
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: loadingId === 'save' ? 'rgba(255,255,255,0.3)' : 'white',
-                  fontSize: 14, fontWeight: 700,
-                  cursor: loadingId ? 'default' : 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
+              <button onClick={handleSave} disabled={!!loadingId}
+                style={{ width: '100%', padding: '14px 0', borderRadius: 14, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', color: loadingId === 'save' ? 'rgba(255,255,255,0.3)' : 'white', fontSize: 14, fontWeight: 700, cursor: loadingId ? 'default' : 'pointer', transition: 'all 0.15s' }}>
                 {loadingId === 'save' ? 'Saving…' : 'Save Image'}
               </button>
             </div>
