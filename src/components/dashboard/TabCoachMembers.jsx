@@ -11,6 +11,7 @@ import {
   Mail, Lightbulb, Heart, XCircle,
 } from 'lucide-react';
 import AddClientModal from '../coach/AddClientModal';
+import ClientPerformancePanel from './ClientPerformancePanel';
 
 // ─── INJECT CSS ───────────────────────────────────────────────────────────────
 if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
@@ -701,7 +702,7 @@ function TopPerformers({ clients, onSelect }) {
 }
 
 // ─── DROP PANEL (DETAIL VIEW) ────────────────────────────────────────────────
-const DROP_TABS = ['Overview','Notes','Injuries','Schedule','Actions'];
+const DROP_TABS = ['Overview','Performance','Notes','Injuries','Schedule','Actions'];
 
 function DropPanel({ client, onClose }) {
   const [tab,      setTab]      = useState('Overview');
@@ -895,6 +896,11 @@ function DropPanel({ client, onClose }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* PERFORMANCE */}
+        {tab === 'Performance' && (
+          <ClientPerformancePanel clientId={client.id} clientName={client.name} />
         )}
 
         {/* NOTES */}
