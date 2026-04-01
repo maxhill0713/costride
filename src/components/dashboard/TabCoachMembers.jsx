@@ -355,7 +355,7 @@ function TrendLine({ data = [], color = T.indigo, w = 80, h = 28 }) {
 // ─── BACKGROUND ───────────────────────────────────────────────────────────────
 function BackgroundOrbs() {
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
       <div style={{
         position: 'absolute', top: '-8%', right: '-6%', width: 500, height: 500,
         background: 'radial-gradient(circle, rgba(129,140,248,.035) 0%, transparent 70%)',

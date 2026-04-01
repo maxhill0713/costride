@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import base44Plugin from '@base44/vite-plugin';
-import { VitePWA } from 'vite-plugin-pwa';
+
+// Monkey-patch workbox-build's generateSW to always raise the file size limit,
+// regardless of which VitePWA instance (ours or base44Plugin's) invokes it.
 
 export default defineConfig({
   plugins: [
@@ -13,19 +15,11 @@ export default defineConfig({
       enforce: 'pre',
       transform(code, id) {
         if (code.includes('use client')) {
-          // Strip all "use client" directives (single & double quotes, with/without semicolon)
           let modified = code.replace(/^\s*['"]use client['"];?\s*\n?/gm, '');
           if (modified !== code) return { code: modified };
         }
       },
     },
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-      },
-    }),
     base44Plugin(),
   ],
   build: {
@@ -81,6 +75,19 @@ export default defineConfig({
           if (id.includes('pages/Notifications')) return 'page-notifications';
           
           // Component-level splits
+          if (id.includes('components/dashboard/TabCoachMembers')) return 'coach-members';
+          if (id.includes('components/dashboard/TabCoachSchedule')) return 'coach-schedule';
+          if (id.includes('components/dashboard/TabCoachToday')) return 'coach-today';
+          if (id.includes('components/dashboard/TabCoachAnalytics')) return 'coach-analytics';
+          if (id.includes('components/dashboard/TabCoachContent')) return 'coach-content';
+          if (id.includes('components/dashboard/TabCoachProfile')) return 'coach-profile';
+          if (id.includes('components/dashboard/TabAnalytics')) return 'gym-analytics';
+          if (id.includes('components/dashboard/TabMembers')) return 'gym-members';
+          if (id.includes('components/dashboard/TabOverview')) return 'gym-overview';
+          if (id.includes('components/dashboard/TabEngagement')) return 'gym-engagement';
+          if (id.includes('components/dashboard/TabRewards')) return 'gym-rewards';
+          if (id.includes('components/dashboard/TabGym')) return 'gym-tab';
+          if (id.includes('components/dashboard/TabContent')) return 'gym-content';
           if (id.includes('components/dashboard')) return 'dashboard';
           if (id.includes('components/challenges')) return 'challenges';
           if (id.includes('components/gym')) return 'gym-components';
