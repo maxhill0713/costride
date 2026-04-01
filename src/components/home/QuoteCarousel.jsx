@@ -9,9 +9,9 @@ const quotes = [
   context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
 },
 {
-  text: "I am changing the things I cannot accept.",
-  author: "Angela Davis",
-  context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
+  text: "Action is the foundational key to all success.",
+  author: "Pablo Picasso",
+  context: "True success is born not from the brilliance of an idea, but from the physical manifestation of effort that bridges the gap between imagination and reality.",
 },
 {
   text: "The only thing we have to fear is fear itself.",
