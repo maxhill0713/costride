@@ -15,7 +15,7 @@ import { createPageUrl } from '@/utils';
 
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
-// ── Reactions Modal — standalone component rendered outside any overflow:hidden parent ──
+// ── Reactions Modal ───────────────────────────────────────────────────────────
 function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
   const [search, setSearch] = useState('');
   if (!open) return null;
@@ -93,7 +93,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
   );
 }
 
-// ── Shared confirm dialog ────────────────────────────────────────────────────
+// ── Confirm dialog ────────────────────────────────────────────────────────────
 function ConfirmDialog({ open, onClose, title, description, confirmLabel, confirmClass, onConfirm, isPending }) {
   if (!open) return null;
   return (
@@ -120,7 +120,7 @@ function ConfirmDialog({ open, onClose, title, description, confirmLabel, confir
   );
 }
 
-// ── Report categories ────────────────────────────────────────────────────────
+// ── Report categories ─────────────────────────────────────────────────────────
 const REPORT_CATEGORIES = [
   { id: 'dislike', label: "I just don't like it", definition: "This post isn't for you — it might be annoying, uninteresting, or just not your thing. You won't see more like it." },
   { id: 'violence', label: 'Violence or abuse', definition: "Content that depicts, promotes, or glorifies physical violence, self-harm, abuse, or threatening behaviour toward people or animals." },
@@ -130,17 +130,12 @@ const REPORT_CATEGORIES = [
   { id: 'other', label: 'Other', definition: "Something else not covered above. Please submit and our team will review the post." },
 ];
 
-// ── Report Modal ─────────────────────────────────────────────────────────────
 function ReportModal({ open, onClose, postId }) {
   const [selected, setSelected] = useState(null);
   const [expanded, setExpanded] = useState(null);
 
   const handleClose = () => { setSelected(null); setExpanded(null); onClose(); };
-
-  const handleSubmit = () => {
-    handleClose();
-    toast.success('Report submitted. Thank you.');
-  };
+  const handleSubmit = () => { handleClose(); toast.success('Report submitted. Thank you.'); };
 
   if (!open) return null;
 
@@ -192,7 +187,7 @@ function ReportModal({ open, onClose, postId }) {
   );
 }
 
-// ── Exercise row ─────────────────────────────────────────────────────────────
+// ── Exercise row ──────────────────────────────────────────────────────────────
 function ExerciseRow({ ex, idx }) {
   const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '';
   const displayName = exName ? exName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : `Exercise ${idx + 1}`;
@@ -240,7 +235,6 @@ function formatPostDate(dateStr) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-// ── Post author location line: "Gym Name · 6 hours ago" ──────────────────────
 function PostMeta({ post, gymName }) {
   const timeStr = formatPostDate(post.created_date);
   if (gymName) {
@@ -313,8 +307,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 10 * 60 * 1000
   });
 
-  // ── Fetch the gym associated with this post's check-in ────────────────────
-  // Posts store gym_id if the user was checked in when logging
   const { data: postGym } = useQuery({
     queryKey: ['postGym', post.gym_id],
     queryFn: () => base44.entities.Gym.filter({ id: post.gym_id }).then(r => r[0] || null),
@@ -323,23 +315,20 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 60 * 60 * 1000,
   });
 
-  // Fallback: if no gym_id on post but it's a workout post from the current user, try to find their primary gym
   const { data: fallbackGym } = useQuery({
     queryKey: ['postGymFromCheckIn', post.member_id, post.created_date],
     queryFn: async () => {
-      // Fetch the author's most recent check-ins (up to 5)
       const checkIns = await base44.entities.CheckIn.filter(
         { user_id: post.member_id },
         '-check_in_date',
         5
       );
       if (!checkIns.length) return null;
-      // Find the check-in closest in time to when the post was created (within 12 h)
       const postTime = new Date(post.created_date).getTime();
       const closest = checkIns.find(ci => {
         const ciTime = new Date(ci.check_in_date).getTime();
         return Math.abs(postTime - ciTime) < 12 * 60 * 60 * 1000;
-      }) || checkIns[0]; // if nothing within 12 h, use the most recent check-in
+      }) || checkIns[0];
       if (!closest?.gym_id) return null;
       return base44.entities.Gym.filter({ id: closest.gym_id }).then(r => r[0] || null);
     },
@@ -393,7 +382,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     }
   });
 
-  // Resolve live display name for the post author
   const { data: postAuthor } = useQuery({
     queryKey: ['postAuthor', post.member_id],
     queryFn: () => base44.entities.User.filter({ id: post.member_id }).then(r => r[0]),
@@ -505,7 +493,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     onError: () => toast.error('Failed to nudge friends')
   });
 
-  // ── Shared 3-dot menu renderer ───────────────────────────────────────────
+  // ── 3-dot menu ────────────────────────────────────────────────────────────
   const renderMenu = (extraMenuItems = null) => (
     <div className="relative flex items-center gap-2">
       {!isOwner ? null : post.is_favourite && <Star className="w-4 h-4 fill-amber-400 text-amber-400" />}
@@ -536,7 +524,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     </div>
   );
 
-  // ── Gym join post ────────────────────────────────────────────────────────
+  // ── Gym join post ─────────────────────────────────────────────────────────
   if (isGymJoinPost) {
     return (
       <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`}>
@@ -575,10 +563,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
       });
       return kept.join('\n').trim() || null;
     })();
-
-    const handleWorkoutShare = () => {
-      setShowWorkoutShare(true);
-    };
 
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
@@ -678,6 +662,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             exercises.length > 0 && <div style={{ width: SUMMARY_WIDTH }}>{exerciseSummaryJSX}</div>
           )}
 
+          {/* Action bar — share only shown for owner */}
           <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
             <div className="flex items-center gap-1">
               {currentUser && (
@@ -687,9 +672,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                     : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
                 </motion.button>
               )}
-              <motion.button onClick={(e) => { e.stopPropagation(); handleWorkoutShare(); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
-                <Send className="w-5 h-5" />
-              </motion.button>
+              {/* Share button — only visible for post owner */}
+              {isOwner && (
+                <motion.button onClick={(e) => { e.stopPropagation(); setShowWorkoutShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
+                  <Send className="w-5 h-5" />
+                </motion.button>
+              )}
             </div>
             {Object.keys(localReactions).length > 0 && (
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
@@ -729,14 +717,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   // ── STANDARD POST ─────────────────────────────────────────────────────────
   const totalReactions = Object.keys(localReactions).length;
-
-  const handleShare = async () => {
-    if (isWorkoutPost) {
-      setShowWorkoutShare(true);
-      return;
-    }
-    setShowPostShare(true);
-  };
 
   const standardOwnerExtras = (
     <button onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }} disabled={updatePostMutation.isPending}
@@ -797,6 +777,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           </div>
         )}
 
+        {/* Action bar — share only shown for post owner */}
         <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
           <div className="flex items-center gap-1">
             {currentUser && (
@@ -806,9 +787,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                   : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
               </motion.button>
             )}
-            <motion.button onClick={(e) => { e.stopPropagation(); handleShare(); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
-              <Send className="w-5 h-5" />
-            </motion.button>
+            {/* Share button — only visible for post owner */}
+            {isOwner && (
+              <motion.button onClick={(e) => { e.stopPropagation(); setShowPostShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
+                <Send className="w-5 h-5" />
+              </motion.button>
+            )}
           </div>
           {totalReactions > 0 && (
             <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
