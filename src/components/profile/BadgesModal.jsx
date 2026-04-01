@@ -140,12 +140,12 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
-                <Trophy className="w-5 h-5 text-white" />
-              </div>
+              
+
+              
               <div>
-                <h2 className="text-xl font-bold text-white">Your Badges</h2>
-                <p className="text-xs text-slate-400">Earned {earnedBadges.length} of {BADGE_LIBRARY.length}</p>
+                <h2 className="text-xl font-bold text-white ml-2">Your Badges</h2>
+                
               </div>
             </div>
             <button
