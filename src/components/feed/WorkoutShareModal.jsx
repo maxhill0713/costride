@@ -22,10 +22,6 @@ function canvasToBlob(canvas) {
 }
 
 // ─── Stats Card Canvas ────────────────────────────────────────────────────────
-// Layout:
-//   TOP:    gym · date   (centred, near top)
-//   MIDDLE: workout name + stat pills  (shifted lower, smaller)
-//   BOTTOM: CoStride logo + wordmark  (centred at bottom)
 async function drawStatsCard(post, gymName) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
@@ -64,15 +60,18 @@ async function drawStatsCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 110);
   ctx.shadowBlur = 0;
 
-  // ── MIDDLE: workout name + stat pills ─────────────────────────────────────
-  // Pushed to ~60% down the image so it's noticeably below centre
-  const contentY = H * 0.60;
+  // ── BOTTOM CONTENT: workout name + stat pills — just above CoStride branding ──
+  // CoStride branding sits at H - 90, so content sits above it
+  const brandingY = H - 90;
+  const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
+  const pillY = brandingY - pillH - 60; // pills just above branding
+  const titleY = pillY - 40; // title just above pills
 
   ctx.font = '900 74px -apple-system,sans-serif';
   ctx.fillStyle = 'white';
   ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
   ctx.textAlign = 'center';
-  ctx.fillText(post.workout_name || 'Workout', W / 2, contentY, W - PAD * 2);
+  ctx.fillText(post.workout_name || 'Workout', W / 2, titleY, W - PAD * 2);
   ctx.shadowBlur = 0;
 
   // Stat pills
@@ -81,19 +80,17 @@ async function drawStatsCard(post, gymName) {
     { l: 'DURATION', v: post.workout_duration || '—' },
     { l: 'VOLUME', v: post.workout_volume || '—' },
   ];
-  const pH = 112, pG = 20, pW = (W - PAD * 2 - pG * 2) / 3;
-  const pY = contentY + 28;
   stats.forEach((s, i) => {
-    const px = PAD + i * (pW + pG);
-    ctx.save(); ctx.beginPath(); ctx.roundRect(px, pY, pW, pH, 24);
+    const px = PAD + i * (pillW + pillG);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(px, pillY, pillW, pillH, 24);
     ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.20)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
     ctx.font = '900 48px -apple-system,sans-serif';
     ctx.fillStyle = 'white'; ctx.textAlign = 'center';
-    ctx.fillText(s.v, px + pW / 2, pY + 58, pW - 20);
+    ctx.fillText(s.v, px + pillW / 2, pillY + 58, pillW - 20);
     ctx.font = '700 24px -apple-system,sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.50)';
-    ctx.fillText(s.l, px + pW / 2, pY + 92);
+    ctx.fillText(s.l, px + pillW / 2, pillY + 92);
   });
 
   // ── BOTTOM: CoStride logo + wordmark ──────────────────────────────────────
@@ -251,19 +248,83 @@ async function drawBreakdownCard(post, gymName) {
   return canvas;
 }
 
+// ─── Clean Card Canvas ────────────────────────────────────────────────────────
+async function drawCleanCard(post, gymName) {
+  const W = 1080, H = 1920;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // ── Background ────────────────────────────────────────────────────────────
+  if (post.image_url) {
+    const img = await loadImage(post.image_url);
+    if (img) {
+      const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      ctx.drawImage(img, (W - img.naturalWidth * s) / 2, (H - img.naturalHeight * s) / 2, img.naturalWidth * s, img.naturalHeight * s);
+    }
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(0,0,0,0.55)');
+    g.addColorStop(0.3, 'rgba(0,0,0,0.15)');
+    g.addColorStop(0.7, 'rgba(0,0,0,0.15)');
+    g.addColorStop(1, 'rgba(0,0,0,0.75)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  } else {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#0d1117'); g.addColorStop(0.45, '#111827'); g.addColorStop(1, '#0f172a');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+
+  // ── TOP: CoStride logo + wordmark (centred) ───────────────────────────────
+  const logo = await loadImage(LOGO_URL);
+  const logoSize = 80;
+  const wordmark = 'CoStride';
+  ctx.font = '900 64px -apple-system,sans-serif';
+  const wm = ctx.measureText(wordmark);
+  const totalW = logoSize + 20 + wm.width;
+  const logoX = (W - totalW) / 2;
+  const brandY = 130;
+
+  if (logo) {
+    ctx.save(); ctx.beginPath();
+    ctx.roundRect(logoX, brandY - logoSize + 16, logoSize, logoSize, 18);
+    ctx.clip(); ctx.drawImage(logo, logoX, brandY - logoSize + 16, logoSize, logoSize); ctx.restore();
+  }
+  ctx.font = '900 64px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.textAlign = 'left';
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 14;
+  ctx.fillText(wordmark, logoX + logoSize + 20, brandY);
+  ctx.shadowBlur = 0;
+
+  // ── BOTTOM: date + gym ────────────────────────────────────────────────────
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  if (gymName) {
+    ctx.font = '700 44px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
+    ctx.fillText(gymName, W / 2, H - 160);
+    ctx.shadowBlur = 0;
+    ctx.font = '600 36px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText(dateStr, W / 2, H - 100);
+  } else {
+    ctx.font = '700 44px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
+    ctx.fillText(dateStr, W / 2, H - 120);
+    ctx.shadowBlur = 0;
+  }
+
+  return canvas;
+}
+
 // ─── React Preview: Stats card ────────────────────────────────────────────────
 function StatsPreview({ post, gymName }) {
   const exercises = post.workout_exercises || [];
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
-
-  const comment = (() => {
-    if (!post.content) return null;
-    return post.content.split('\n').filter(l => {
-      const t = l.trim();
-      return t && !t.includes('Just finished') && !/[0-9]+\s*[xX]\s*[0-9]+/.test(t) && !/[0-9]+(kg|lbs)/i.test(t);
-    }).join(' ').trim() || null;
-  })();
 
   return (
     <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif", display: 'flex', flexDirection: 'column' }}>
@@ -282,9 +343,9 @@ function StatsPreview({ post, gymName }) {
         </span>
       </div>
 
-      {/* MIDDLE: workout name + stats — lower down */}
-      <div style={{ position: 'absolute', bottom: '22%', left: 0, right: 0, padding: '0 10px' }}>
-        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>
+      {/* BOTTOM: workout name + stats — just above CoStride branding */}
+      <div style={{ position: 'absolute', bottom: '13%', left: 0, right: 0, padding: '0 10px' }}>
+        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>
           {post.workout_name || 'Workout'}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
@@ -299,7 +360,6 @@ function StatsPreview({ post, gymName }) {
             </div>
           ))}
         </div>
-        {comment && <div style={{ marginTop: 7, color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 500, lineHeight: 1.4, fontStyle: 'italic', borderLeft: '2px solid rgba(255,255,255,0.28)', paddingLeft: 7 }}>"{comment}"</div>}
       </div>
 
       {/* BOTTOM: CoStride logo */}
@@ -384,6 +444,37 @@ function BreakdownPreview({ post, gymName }) {
           <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3, objectFit: 'cover' }} />
           <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: 800 }}>CoStride</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── React Preview: Clean card ────────────────────────────────────────────────
+function CleanPreview({ post, gymName }) {
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  return (
+    <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
+      {/* Background */}
+      {post.image_url ? (<>
+        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.50) 0%,rgba(0,0,0,0.08) 25%,rgba(0,0,0,0.08) 70%,rgba(0,0,0,0.65) 100%)' }} />
+      </>) : (
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
+      )}
+
+      {/* TOP: CoStride logo + wordmark centred */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <img src={LOGO_URL} alt="" style={{ width: 18, height: 18, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
+        <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
+      </div>
+
+      {/* BOTTOM: date + gym */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px', textAlign: 'center' }}>
+        {gymName && (
+          <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
+        )}
+        <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{dateStr}</div>
       </div>
     </div>
   );
@@ -551,12 +642,23 @@ const APP_BUTTONS = [
 export default function WorkoutShareModal({ open, onClose, post, gymName }) {
   const [activeCard, setActiveCard] = useState(0);
   const [loadingId, setLoadingId] = useState(null);
+  // Touch/drag state for smooth carousel
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
   const touchStartXRef = useRef(null);
+  const touchStartYRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => { if (open) setActiveCard(0); }, [open]);
 
+  const cards = [
+    { label: 'Summary', drawFn: drawStatsCard, node: <StatsPreview post={post || {}} gymName={gymName} /> },
+    { label: 'Breakdown', drawFn: drawBreakdownCard, node: <BreakdownPreview post={post || {}} gymName={gymName} /> },
+    { label: 'Clean', drawFn: drawCleanCard, node: <CleanPreview post={post || {}} gymName={gymName} /> },
+  ];
+
   const getCanvas = useCallback(
-    () => activeCard === 0 ? drawStatsCard(post, gymName) : drawBreakdownCard(post, gymName),
+    () => cards[activeCard].drawFn(post, gymName),
     [activeCard, post, gymName]
   );
 
@@ -588,12 +690,54 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
     finally { setLoadingId(null); }
   }, [loadingId, getCanvas, post]);
 
+  // Touch handlers for smooth drag
+  const handleTouchStart = useCallback((e) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+    setIsDragging(false);
+    setDragOffset(0);
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (touchStartXRef.current === null) return;
+    const dx = e.touches[0].clientX - touchStartXRef.current;
+    const dy = Math.abs(e.touches[0].clientY - (touchStartYRef.current || 0));
+    if (Math.abs(dx) > dy && Math.abs(dx) > 5) {
+      setIsDragging(true);
+      // Resist at edges
+      const atStart = activeCard === 0 && dx > 0;
+      const atEnd = activeCard === cards.length - 1 && dx < 0;
+      const resistance = (atStart || atEnd) ? 0.25 : 1;
+      setDragOffset(dx * resistance);
+      e.preventDefault();
+    }
+  }, [activeCard, cards.length]);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (touchStartXRef.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartXRef.current;
+    const dy = Math.abs(e.changedTouches[0].clientY - (touchStartYRef.current || 0));
+    if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
+      if (dx < 0 && activeCard < cards.length - 1) setActiveCard(v => v + 1);
+      else if (dx > 0 && activeCard > 0) setActiveCard(v => v - 1);
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    setIsDragging(false);
+    setDragOffset(0);
+  }, [activeCard, cards.length]);
+
   if (!open || !post) return null;
 
-  const cards = [
-    { label: 'Summary', node: <StatsPreview post={post} gymName={gymName} /> },
-    { label: 'Full Breakdown', node: <BreakdownPreview post={post} gymName={gymName} /> },
-  ];
+  const cardWidthPercent = 100 / cards.length;
+  const baseTranslate = -(activeCard * cardWidthPercent);
+  // Convert dragOffset pixels to percentage of total strip width
+  const containerWidth = containerRef.current?.offsetWidth || 220;
+  const stripWidth = containerWidth * cards.length;
+  const dragPercent = (dragOffset / stripWidth) * 100;
+  const translateX = isDragging
+    ? `${baseTranslate + dragPercent}%`
+    : `${baseTranslate}%`;
 
   return (
     <AnimatePresence>
@@ -620,49 +764,50 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               overflow: 'hidden',
             }}
           >
-            {/* Handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, flexShrink: 0 }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.2)' }} />
-            </div>
-
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 18px 8px', flexShrink: 0 }}>
+            {/* Header — centred title, plain X button (no circle, no handle bar) */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 18px 8px', flexShrink: 0, position: 'relative' }}>
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Activity</span>
-              <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)', cursor: 'pointer' }}>
-                <X size={14} />
+              <button
+                onClick={onClose}
+                style={{ position: 'absolute', right: 18, background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: 4 }}
+              >
+                <X size={18} />
               </button>
             </div>
 
-            {/* Portrait card preview */}
+            {/* Portrait card carousel — smooth drag */}
             <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
-                  style={{ width: 'min(52vw, 220px)', flexShrink: 0 }}
-                  onTouchStart={e => { touchStartXRef.current = e.touches[0].clientX; }}
-                  onTouchEnd={e => {
-                    if (touchStartXRef.current === null) return;
-                    const dx = e.changedTouches[0].clientX - touchStartXRef.current;
-                    if (Math.abs(dx) > 30) setActiveCard(v => dx < 0 ? Math.min(cards.length - 1, v + 1) : Math.max(0, v - 1));
-                    touchStartXRef.current = null;
-                  }}
+                  ref={containerRef}
+                  style={{ width: 'min(57.2vw, 242px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y' }}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                 >
-                  <div style={{ overflow: 'hidden', borderRadius: 14 }}>
-                    <div style={{ display: 'flex', transition: 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)', transform: `translateX(calc(-${activeCard * 100}%))` }}>
-                      {cards.map((card, i) => (
-                        <div key={i} style={{ minWidth: '100%', flexShrink: 0 }}>{card.node}</div>
-                      ))}
-                    </div>
+                  {/* Sliding strip */}
+                  <div style={{
+                    display: 'flex',
+                    width: `${cards.length * 100}%`,
+                    transform: `translateX(${translateX})`,
+                    transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    willChange: 'transform',
+                  }}>
+                    {cards.map((card, i) => (
+                      <div key={i} style={{ width: `${100 / cards.length}%`, flexShrink: 0 }}>
+                        {card.node}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Dots */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, flexShrink: 0 }}>
               {cards.map((card, i) => (
-                <button key={i} onClick={() => setActiveCard(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: 0 }}>
+                <button key={i} onClick={() => setActiveCard(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
                   <div style={{ width: activeCard === i ? 18 : 6, height: 6, borderRadius: 3, background: activeCard === i ? 'white' : 'rgba(255,255,255,0.2)', transition: 'all 0.24s cubic-bezier(0.34,1.56,0.64,1)' }} />
-                  <span style={{ color: activeCard === i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.22)', fontSize: 10, fontWeight: 700, transition: 'color 0.2s' }}>{card.label}</span>
                 </button>
               ))}
             </div>
