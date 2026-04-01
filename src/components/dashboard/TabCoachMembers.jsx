@@ -1441,23 +1441,40 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
     refetchInterval: 30 * 1000,
   });
 
+  const { data: acceptedInvites = [] } = useQuery({
+    queryKey: ['coachInvitesForCoach', coachId, 'accepted'],
+    queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'accepted' }, '-created_date', 100),
+    enabled: !!coachId,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
   const cancelInviteMutation = useMutation({
     mutationFn: (invite) => base44.entities.CoachInvite.delete(invite.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] }),
   });
 
   const allClients = useMemo(() => {
+    // Build from bookings
     const byClient = {};
     bookings.forEach(b => {
       if (!b.client_id) return;
       if (!byClient[b.client_id]) byClient[b.client_id] = { name: b.client_name || 'Client', bookings: [] };
       byClient[b.client_id].bookings.push(b);
     });
+
+    // Also include accepted invite members who haven't booked yet
+    acceptedInvites.forEach(invite => {
+      if (!byClient[invite.member_id]) {
+        byClient[invite.member_id] = { name: invite.member_name || 'Client', bookings: [] };
+      }
+    });
+
     return Object.entries(byClient).map(([userId, { name, bookings: clientBookings }]) => ({
       ...buildClientFromBookings(userId, name, clientBookings, checkIns, now),
       avatar: avatarMap?.[userId] || null,
     }));
-  }, [bookings, checkIns, avatarMap, now]);
+  }, [bookings, acceptedInvites, checkIns, avatarMap, now]);
 
   const acceptedMemberIds = allClients.map(c => c.id);
   const pendingMemberIds  = pendingInvites.map(i => i.member_id);
