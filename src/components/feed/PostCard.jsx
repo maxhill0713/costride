@@ -246,8 +246,8 @@ function PostMeta({ post, gymName }) {
   if (gymName) {
     return (
       <p className="text-[11px] text-white/70 font-medium leading-tight">
-        <span className="text-blue-400 font-semibold">{gymName}</span>
-        <span className="text-white/40 mx-1">·</span>
+        {gymName}
+        <span className="mx-1 opacity-40">·</span>
         {timeStr}
       </p>
     );
@@ -325,14 +325,23 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   // Fallback: if no gym_id on post but it's a workout post from the current user, try to find their primary gym
   const { data: fallbackGym } = useQuery({
-    queryKey: ['primaryGym', post.member_id],
+    queryKey: ['postGymFromCheckIn', post.member_id, post.created_date],
     queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.filter({ user_id: post.member_id, status: 'active' });
-      if (!memberships.length) return null;
-      const author = await base44.entities.User.filter({ id: post.member_id }).then(r => r[0]);
-      const primaryId = author?.primary_gym_id || memberships[0]?.gym_id;
-      if (!primaryId) return null;
-      return base44.entities.Gym.filter({ id: primaryId }).then(r => r[0] || null);
+      // Fetch the author's most recent check-ins (up to 5)
+      const checkIns = await base44.entities.CheckIn.filter(
+        { user_id: post.member_id },
+        '-check_in_date',
+        5
+      );
+      if (!checkIns.length) return null;
+      // Find the check-in closest in time to when the post was created (within 12 h)
+      const postTime = new Date(post.created_date).getTime();
+      const closest = checkIns.find(ci => {
+        const ciTime = new Date(ci.check_in_date).getTime();
+        return Math.abs(postTime - ciTime) < 12 * 60 * 60 * 1000;
+      }) || checkIns[0]; // if nothing within 12 h, use the most recent check-in
+      if (!closest?.gym_id) return null;
+      return base44.entities.Gym.filter({ id: closest.gym_id }).then(r => r[0] || null);
     },
     enabled: !post.gym_id && !!post.workout_name && !!post.member_id,
     staleTime: 30 * 60 * 1000,
