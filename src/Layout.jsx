@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3, ClipboardList, CalendarDays, UserCheck } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift, BarChart3, ClipboardList, CalendarDays, UserCheck, UserPlus, CalendarPlus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -154,6 +154,23 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
                   {notifications.length}
                 </div>
               )}
+              {/* Add Client */}
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('coachAction', { detail: 'addClient' }))}
+                title="Add Client"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all active:scale-95"
+                style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8' }}>
+                <UserPlus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Add Client</span>
+              </button>
+              {/* Book Client */}
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('coachAction', { detail: 'bookClient' }))}
+                title="Book Client"
+                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all active:scale-95"
+                style={{ background: 'rgba(29,170,114,0.12)', border: '1px solid rgba(29,170,114,0.25)', color: '#34d399' }}>
+                <CalendarPlus className="w-3.5 h-3.5" />
+              </button>
               <div className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}>
                 Coach
               </div>

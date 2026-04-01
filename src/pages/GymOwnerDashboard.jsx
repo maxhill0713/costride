@@ -410,6 +410,20 @@ export default function GymOwnerDashboard() {
     return () => document.removeEventListener('dash-logout', h);
   }, []);
 
+  // Handle coach quick actions from the top bar
+  useEffect(() => {
+    const h = (e) => {
+      if (e.detail === 'addClient') {
+        setTab('members');
+        setTimeout(() => window.dispatchEvent(new CustomEvent('coachOpenAddClient')), 100);
+      } else if (e.detail === 'bookClient') {
+        openModal('classes');
+      }
+    };
+    window.addEventListener('coachAction', h);
+    return () => window.removeEventListener('coachAction', h);
+  }, [openModal]);
+
   const handleRoleSelect = (roleId) => {
     if (roleId === 'gym_owner') {setSelectedCoachId(null);} else {setSelectedCoachId(roleId);}
     setTab(roleId === 'gym_owner' ? 'overview' : 'today');

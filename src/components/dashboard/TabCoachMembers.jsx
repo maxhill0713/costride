@@ -1433,6 +1433,13 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
   const coachId = coach?.id || coach?.user_id;
   const queryClient = useQueryClient();
 
+  // Listen for external trigger to open add client modal (from coach top bar)
+  useEffect(() => {
+    const h = () => setShowAddModal(true);
+    window.addEventListener('coachOpenAddClient', h);
+    return () => window.removeEventListener('coachOpenAddClient', h);
+  }, []);
+
   const { data: pendingInvites = [] } = useQuery({
     queryKey: ['coachInvitesForCoach', coachId, 'pending'],
     queryFn: () => base44.entities.CoachInvite.filter({ coach_id: coachId, status: 'pending' }, '-created_date', 50),
