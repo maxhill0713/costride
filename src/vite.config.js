@@ -19,21 +19,29 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch vite-plugin-pwa's dist chunk on disk before it runs its closeBundle hook.
-    // The chunk file contains logWorkboxResult which throws when any asset > 2MB.
-    // We find the chunk file and rewrite the 2MB constant to 10MB at buildStart.
+    // Patch vite-plugin-pwa and workbox-build to raise the 2MB asset cache limit to 10MB.
+    // Runs at buildStart (before closeBundle where the error fires) and patches all
+    // relevant JS files regardless of their hashed chunk filename.
     {
       name: 'patch-workbox-file-size-limit',
       enforce: 'post',
       buildStart() {
-        const pwaDir = path.resolve(__dirname, 'node_modules/vite-plugin-pwa/dist');
-        if (!fs.existsSync(pwaDir)) return;
-        const files = fs.readdirSync(pwaDir).filter(f => f.endsWith('.js'));
-        for (const file of files) {
-          const filePath = path.join(pwaDir, file);
-          const content = fs.readFileSync(filePath, 'utf-8');
-          if (content.includes('maximumFileSizeToCacheInBytes') && content.includes('2097152')) {
-            const patched = content.replace(/\b2097152\b/g, '10485760');
+        const dirsToCheck = [
+          path.resolve(__dirname, 'node_modules/vite-plugin-pwa/dist'),
+          path.resolve(__dirname, 'node_modules/workbox-build/build'),
+          path.resolve(__dirname, 'node_modules/workbox-build/dist'),
+        ];
+        for (const dir of dirsToCheck) {
+          if (!fs.existsSync(dir)) continue;
+          const files = fs.readdirSync(dir).filter(f => f.endsWith('.js') || f.endsWith('.mjs') || f.endsWith('.cjs'));
+          for (const file of files) {
+            const filePath = path.join(dir, file);
+            let content;
+            try { content = fs.readFileSync(filePath, 'utf-8'); } catch { continue; }
+            // Patch both the literal byte value and any expression forms
+            let patched = content
+              .replace(/\b2097152\b/g, '10485760')
+              .replace(/2\s*\*\s*1024\s*\*\s*1024/g, '10485760');
             if (patched !== content) {
               fs.writeFileSync(filePath, patched, 'utf-8');
             }
