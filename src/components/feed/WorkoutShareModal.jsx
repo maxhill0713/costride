@@ -29,7 +29,6 @@ async function drawStatsCard(post, gymName) {
   const ctx = canvas.getContext('2d');
   const exercises = post.workout_exercises || [];
 
-  // ── Background ────────────────────────────────────────────────────────────
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
@@ -50,7 +49,6 @@ async function drawStatsCard(post, gymName) {
 
   const PAD = 72;
 
-  // ── TOP: gym · date ───────────────────────────────────────────────────────
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
   ctx.font = '600 36px -apple-system,sans-serif';
@@ -60,12 +58,10 @@ async function drawStatsCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 110);
   ctx.shadowBlur = 0;
 
-  // ── BOTTOM CONTENT: workout name + stat pills — just above CoStride branding ──
-  // CoStride branding sits at H - 90, so content sits above it
   const brandingY = H - 90;
   const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
-  const pillY = brandingY - pillH - 60; // pills just above branding
-  const titleY = pillY - 40; // title just above pills
+  const pillY = brandingY - pillH - 60;
+  const titleY = pillY - 40;
 
   ctx.font = '900 74px -apple-system,sans-serif';
   ctx.fillStyle = 'white';
@@ -74,7 +70,6 @@ async function drawStatsCard(post, gymName) {
   ctx.fillText(post.workout_name || 'Workout', W / 2, titleY, W - PAD * 2);
   ctx.shadowBlur = 0;
 
-  // Stat pills
   const stats = [
     { l: 'EXERCISES', v: String(exercises.length || '—') },
     { l: 'DURATION', v: post.workout_duration || '—' },
@@ -93,7 +88,6 @@ async function drawStatsCard(post, gymName) {
     ctx.fillText(s.l, px + pillW / 2, pillY + 92);
   });
 
-  // ── BOTTOM: CoStride logo + wordmark ──────────────────────────────────────
   const logo = await loadImage(LOGO_URL);
   const logoSize = 60;
   const wordmark = 'CoStride';
@@ -126,7 +120,6 @@ async function drawBreakdownCard(post, gymName) {
   const ctx = canvas.getContext('2d');
   const exercises = post.workout_exercises || [];
 
-  // ── Background ────────────────────────────────────────────────────────────
   if (post.image_url) {
     const off = document.createElement('canvas'); off.width = W; off.height = H;
     const oc = off.getContext('2d');
@@ -143,7 +136,7 @@ async function drawBreakdownCard(post, gymName) {
 
   const PAD = 60;
 
-  // ── TOP: gym · date ───────────────────────────────────────────────────────
+  // TOP: gym · date centred
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
   const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
   ctx.font = '700 34px -apple-system,sans-serif';
@@ -152,36 +145,44 @@ async function drawBreakdownCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 90);
   ctx.textAlign = 'left';
 
-  // ── Workout summary panel (shifted down from top) ─────────────────────────
-  const pTop = 148;
-  ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, pTop, W - PAD * 2, 170, 28);
-  ctx.fillStyle = 'rgba(255,255,255,0.09)'; ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+  // Workout name — centred
+  const pTop = 130;
+  ctx.font = '900 68px -apple-system,sans-serif';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
+  ctx.fillText(post.workout_name || 'Workout', W / 2, pTop + 60, W - PAD * 2);
+  ctx.shadowBlur = 0;
+  ctx.textAlign = 'left';
 
-  ctx.font = '900 52px -apple-system,sans-serif';
-  ctx.fillStyle = 'white'; ctx.textAlign = 'left';
-  ctx.fillText(post.workout_name || 'Workout', PAD + 30, pTop + 62, W - PAD * 2 - 60);
-
+  // Stats pills (same style as stats card)
+  const pillTop = pTop + 100;
+  const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
   const mS = [
     { l: 'EXERCISES', v: String(exercises.length || '—') },
     { l: 'DURATION', v: post.workout_duration || '—' },
     { l: 'VOLUME', v: post.workout_volume || '—' },
   ];
-  const mW = (W - PAD * 2 - 60) / 3;
   mS.forEach((s, i) => {
-    const mx = PAD + 30 + i * mW;
-    ctx.font = '800 38px -apple-system,sans-serif'; ctx.fillStyle = 'white';
-    ctx.fillText(s.v, mx, pTop + 124, mW - 20);
-    ctx.font = '700 24px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.36)';
-    ctx.fillText(s.l, mx, pTop + 158);
+    const px = PAD + i * (pillW + pillG);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(px, pillTop, pillW, pillH, 24);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.20)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+    ctx.font = '900 48px -apple-system,sans-serif';
+    ctx.fillStyle = 'white'; ctx.textAlign = 'center';
+    ctx.fillText(s.v, px + pillW / 2, pillTop + 58, pillW - 20);
+    ctx.font = '700 24px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.50)';
+    ctx.fillText(s.l, px + pillW / 2, pillTop + 92);
   });
 
-  // ── Exercise rows ─────────────────────────────────────────────────────────
-  const tTop = pTop + 218;
+  // Exercise rows — TodayWorkout style
+  const tTop = pillTop + pillH + 60;
   const colW = [W - PAD * 2 - 320, 100, 50, 100, 160];
   const colX = [PAD + 20];
   colW.slice(0, -1).forEach((w, i) => colX.push(colX[i] + colW[i] + 10));
 
+  // Column headers
   ctx.font = '700 26px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ['EXERCISE', 'SETS', '', 'REPS', 'WEIGHT'].forEach((h, i) => {
@@ -190,33 +191,50 @@ async function drawBreakdownCard(post, gymName) {
   });
   ctx.textAlign = 'left';
 
-  const rH = 88;
-  const maxR = Math.min(exercises.length, Math.floor((H - tTop - 160) / (rH + 10)));
+  const rH = 96;
+  const rowGap = 14;
+  const maxR = Math.min(exercises.length, Math.floor((H - tTop - 200) / (rH + rowGap)));
   exercises.slice(0, maxR).forEach((ex, idx) => {
-    const ry = tTop + 20 + idx * (rH + 10);
+    const ry = tTop + 28 + idx * (rH + rowGap);
     const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
       .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    // Row background — subtle like TodayWorkout
     ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, ry, W - PAD * 2, rH, 18);
-    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
-    ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'white';
-    ctx.fillText(name, colX[0], ry + 56, colW[0] - 10);
-    [[String(ex.sets || ex.set_count || '—'), 1], [String(ex.reps || ex.rep_count || '—'), 3]].forEach(([v, ci]) => {
-      ctx.save(); ctx.beginPath(); ctx.roundRect(colX[ci], ry + 14, colW[ci], 58, 10);
-      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.restore();
-      ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.textAlign = 'center'; ctx.fillText(v, colX[ci] + colW[ci] / 2, ry + 54);
-    });
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+
+    // Exercise name
+    ctx.font = '700 36px -apple-system,sans-serif'; ctx.fillStyle = 'white';
+    ctx.fillText(name, colX[0], ry + 58, colW[0] - 10);
+
+    // Sets pill
+    ctx.save(); ctx.beginPath(); ctx.roundRect(colX[1], ry + 18, colW[1], 58, 10);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
+    ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.textAlign = 'center'; ctx.fillText(String(ex.sets || ex.set_count || '—'), colX[1] + colW[1] / 2, ry + 56);
+
+    // × separator
     ctx.font = '700 30px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.28)';
-    ctx.fillText('×', colX[2] + colW[2] / 2, ry + 54);
-    const wG = ctx.createLinearGradient(colX[4], ry, colX[4], ry + rH);
-    wG.addColorStop(0, 'rgba(59,130,246,0.9)'); wG.addColorStop(1, 'rgba(29,78,216,0.95)');
-    ctx.save(); ctx.beginPath(); ctx.roundRect(colX[4], ry + 14, colW[4], 58, 10);
+    ctx.fillText('×', colX[2] + colW[2] / 2, ry + 56);
+
+    // Reps pill
+    ctx.save(); ctx.beginPath(); ctx.roundRect(colX[3], ry + 18, colW[3], 58, 10);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
+    ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(String(ex.reps || ex.rep_count || '—'), colX[3] + colW[3] / 2, ry + 56);
+
+    // Weight pill — blue gradient
+    const wG = ctx.createLinearGradient(colX[4], ry, colX[4] + colW[4], ry);
+    wG.addColorStop(0, 'rgba(29,78,216,0.9)');
+    wG.addColorStop(1, 'rgba(59,130,246,0.9)');
+    ctx.save(); ctx.beginPath(); ctx.roundRect(colX[4], ry + 18, colW[4], 58, 10);
     ctx.fillStyle = wG; ctx.fill(); ctx.restore();
     ctx.fillStyle = 'white'; ctx.font = '800 34px -apple-system,sans-serif';
-    ctx.fillText(`${String(ex.weight ?? ex.weight_kg ?? '—')}kg`, colX[4] + colW[4] / 2, ry + 54);
+    ctx.fillText(`${String(ex.weight ?? ex.weight_kg ?? '—')}kg`, colX[4] + colW[4] / 2, ry + 56);
     ctx.textAlign = 'left';
   });
+
   if (exercises.length > maxR) {
     ctx.font = '600 28px -apple-system,sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.textAlign = 'center';
@@ -224,7 +242,7 @@ async function drawBreakdownCard(post, gymName) {
     ctx.textAlign = 'left';
   }
 
-  // ── BOTTOM: CoStride logo + wordmark ──────────────────────────────────────
+  // CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
   const logoSize = 54;
   const wordmark = 'CoStride';
@@ -255,7 +273,6 @@ async function drawCleanCard(post, gymName) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // ── Background ────────────────────────────────────────────────────────────
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
@@ -274,7 +291,6 @@ async function drawCleanCard(post, gymName) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  // ── TOP: CoStride logo + wordmark (centred) ───────────────────────────────
   const logo = await loadImage(LOGO_URL);
   const logoSize = 80;
   const wordmark = 'CoStride';
@@ -296,7 +312,6 @@ async function drawCleanCard(post, gymName) {
   ctx.fillText(wordmark, logoX + logoSize + 20, brandY);
   ctx.shadowBlur = 0;
 
-  // ── BOTTOM: date + gym ────────────────────────────────────────────────────
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   if (gymName) {
     ctx.font = '700 44px -apple-system,sans-serif';
@@ -328,7 +343,6 @@ function StatsPreview({ post, gymName }) {
 
   return (
     <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif", display: 'flex', flexDirection: 'column' }}>
-      {/* Background */}
       {post.image_url ? (<>
         <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.52) 55%,rgba(0,0,0,0.96) 100%)' }} />
@@ -336,14 +350,12 @@ function StatsPreview({ post, gymName }) {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
 
-      {/* TOP: gym · date */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 10px 0', textAlign: 'center' }}>
         <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>
           {topLine}
         </span>
       </div>
 
-      {/* BOTTOM: workout name + stats — just above CoStride branding */}
       <div style={{ position: 'absolute', bottom: '13%', left: 0, right: 0, padding: '0 10px' }}>
         <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>
           {post.workout_name || 'Workout'}
@@ -362,7 +374,6 @@ function StatsPreview({ post, gymName }) {
         </div>
       </div>
 
-      {/* BOTTOM: CoStride logo */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
         <img src={LOGO_URL} alt="" style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover' }} />
         <span style={{ color: 'rgba(255,255,255,0.88)', fontSize: 11, fontWeight: 800, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>CoStride</span>
@@ -379,7 +390,6 @@ function BreakdownPreview({ post, gymName }) {
 
   return (
     <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
-      {/* Background */}
       {post.image_url ? (<>
         <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(8px) brightness(0.28)', transform: 'scale(1.08)' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,7,16,0.45)' }} />
@@ -389,27 +399,29 @@ function BreakdownPreview({ post, gymName }) {
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '8px 10px 8px' }}>
         {/* TOP: gym · date — centred */}
-        <div style={{ textAlign: 'center', marginBottom: 7 }}>
+        <div style={{ textAlign: 'center', marginBottom: 5 }}>
           <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {topLine}
           </span>
         </div>
 
-        {/* Workout summary panel */}
-        <div style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '7px 9px', marginBottom: 5 }}>
-          <div style={{ color: 'white', fontSize: 11, fontWeight: 900, marginBottom: 4 }}>{post.workout_name || 'Workout'}</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[
-              { label: 'Exercises', value: exercises.length || '—' },
-              { label: 'Duration', value: post.workout_duration || '—' },
-              { label: 'Volume', value: post.workout_volume || '—' },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <div style={{ color: 'white', fontSize: 10, fontWeight: 800 }}>{value}</div>
-                <div style={{ color: 'rgba(255,255,255,0.36)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
-              </div>
-            ))}
-          </div>
+        {/* Workout title — centred */}
+        <div style={{ color: 'white', fontSize: 13, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>
+          {post.workout_name || 'Workout'}
+        </div>
+
+        {/* Stats pills — same style as StatsPreview */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 7 }}>
+          {[
+            { label: 'Exercises', value: exercises.length || '—' },
+            { label: 'Duration', value: post.workout_duration || '—' },
+            { label: 'Volume', value: post.workout_volume || '—' },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 7, padding: '5px 3px', textAlign: 'center' }}>
+              <div style={{ color: 'white', fontSize: 10, fontWeight: 900, lineHeight: 1 }}>{value}</div>
+              <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+            </div>
+          ))}
         </div>
 
         {/* Exercise column headers */}
@@ -419,18 +431,24 @@ function BreakdownPreview({ post, gymName }) {
           ))}
         </div>
 
-        {/* Exercise rows */}
+        {/* Exercise rows — TodayWorkout style */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {exercises.slice(0, 8).map((ex, idx) => {
             const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
               .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             return (
-              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 5, padding: '3px 2px 3px 5px' }}>
-                <div style={{ color: 'white', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 3, color: 'rgba(255,255,255,0.8)', fontSize: 8, fontWeight: 700, textAlign: 'center', padding: '1.5px 0' }}>{ex.sets || ex.set_count || '—'}</div>
+              <div key={idx} style={{
+                display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.09)',
+                borderRadius: 6,
+                padding: '3px 4px 3px 6px'
+              }}>
+                <div style={{ color: 'white', fontSize: 7.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+                <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.sets || ex.set_count || '—'}</div>
                 <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, textAlign: 'center', fontWeight: 700 }}>×</div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 3, color: 'rgba(255,255,255,0.8)', fontSize: 8, fontWeight: 700, textAlign: 'center', padding: '1.5px 0' }}>{ex.reps || ex.rep_count || '—'}</div>
-                <div style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.85),rgba(29,78,216,0.95))', borderRadius: 4, color: 'white', fontSize: 7.5, fontWeight: 800, textAlign: 'center', padding: '1.5px 0' }}>
+                <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.reps || ex.rep_count || '—'}</div>
+                <div style={{ background: 'linear-gradient(135deg,rgba(29,78,216,0.9),rgba(59,130,246,0.9))', borderRadius: 5, color: 'white', fontSize: 7, fontWeight: 800, textAlign: 'center', padding: '2px 0' }}>
                   {ex.weight ?? ex.weight_kg ?? '—'}<span style={{ fontSize: 5.5 }}>kg</span>
                 </div>
               </div>
@@ -455,7 +473,6 @@ function CleanPreview({ post, gymName }) {
 
   return (
     <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
-      {/* Background */}
       {post.image_url ? (<>
         <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.50) 0%,rgba(0,0,0,0.08) 25%,rgba(0,0,0,0.08) 70%,rgba(0,0,0,0.65) 100%)' }} />
@@ -463,13 +480,11 @@ function CleanPreview({ post, gymName }) {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
 
-      {/* TOP: CoStride logo + wordmark centred */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <img src={LOGO_URL} alt="" style={{ width: 18, height: 18, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
 
-      {/* BOTTOM: date + gym */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px', textAlign: 'center' }}>
         {gymName && (
           <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
@@ -642,7 +657,6 @@ const APP_BUTTONS = [
 export default function WorkoutShareModal({ open, onClose, post, gymName }) {
   const [activeCard, setActiveCard] = useState(0);
   const [loadingId, setLoadingId] = useState(null);
-  // Touch/drag state for smooth carousel
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const touchStartXRef = useRef(null);
@@ -690,7 +704,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
     finally { setLoadingId(null); }
   }, [loadingId, getCanvas, post]);
 
-  // Touch handlers for smooth drag
   const handleTouchStart = useCallback((e) => {
     touchStartXRef.current = e.touches[0].clientX;
     touchStartYRef.current = e.touches[0].clientY;
@@ -704,7 +717,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
     const dy = Math.abs(e.touches[0].clientY - (touchStartYRef.current || 0));
     if (Math.abs(dx) > dy && Math.abs(dx) > 5) {
       setIsDragging(true);
-      // Resist at edges
       const atStart = activeCard === 0 && dx > 0;
       const atEnd = activeCard === cards.length - 1 && dx < 0;
       const resistance = (atStart || atEnd) ? 0.25 : 1;
@@ -731,7 +743,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
 
   const cardWidthPercent = 100 / cards.length;
   const baseTranslate = -(activeCard * cardWidthPercent);
-  // Convert dragOffset pixels to percentage of total strip width
   const containerWidth = containerRef.current?.offsetWidth || 220;
   const stripWidth = containerWidth * cards.length;
   const dragPercent = (dragOffset / stripWidth) * 100;
@@ -764,7 +775,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               overflow: 'hidden',
             }}
           >
-            {/* Header — centred title, plain X button (no circle, no handle bar) */}
+            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 18px 8px', flexShrink: 0, position: 'relative' }}>
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Activity</span>
               <button
@@ -775,7 +786,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               </button>
             </div>
 
-            {/* Portrait card carousel — smooth drag */}
+            {/* Portrait card carousel */}
             <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
@@ -785,7 +796,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  {/* Sliding strip */}
                   <div style={{
                     display: 'flex',
                     width: `${cards.length * 100}%`,
