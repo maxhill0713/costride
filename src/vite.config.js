@@ -19,22 +19,28 @@ export default defineConfig({
     },
     base44Plugin(),
     // Patch workbox-build's generateSW to raise the 2MB precache limit to 10MB.
-    // We do this by intercepting the module after it's dynamically imported by vite-plugin-pwa.
+    // Uses require() so the module is patched in the same synchronous module registry
+    // that vite-plugin-pwa will use when it calls generateSW in closeBundle.
     {
       name: 'patch-workbox-file-size-limit',
       enforce: 'post',
-      async buildStart() {
-        try {
-          const wb = await import('workbox-build');
-          const target = wb.default || wb;
-          if (typeof target.generateSW === 'function') {
-            const orig = target.generateSW.bind(target);
-            target.generateSW = (cfg) => {
-              cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
-              return orig(cfg);
-            };
-          }
-        } catch {}
+      apply: 'build',
+      closeBundle: {
+        order: 'pre',
+        handler() {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const wb = require('workbox-build');
+            if (typeof wb.generateSW === 'function' && !wb.__patched) {
+              const orig = wb.generateSW.bind(wb);
+              wb.generateSW = (cfg) => {
+                cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
+                return orig(cfg);
+              };
+              wb.__patched = true;
+            }
+          } catch {}
+        },
       },
     },
   ],
