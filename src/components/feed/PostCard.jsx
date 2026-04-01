@@ -283,15 +283,14 @@ function ExpandableCaption({ text, className = '' }) {
               WebkitLineClamp: 1,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              // Reserve space so the fade sits over the text area
-              paddingRight: needsTruncation ? '60px' : '0',
+              // Reserve just enough space for the fade + "more" word
+              paddingRight: needsTruncation ? '42px' : '0',
             }}
           >
             {text}
           </p>
           {needsTruncation && (
-            // Fade gradient + "more" button, absolutely positioned at the right
-            // of the single clamped line so it never pushes outside the card
+            // Narrow fade so more text is visible; "more" matches caption colour
             <div
               style={{
                 position: 'absolute',
@@ -300,15 +299,15 @@ function ExpandableCaption({ text, className = '' }) {
                 bottom: 0,
                 display: 'flex',
                 alignItems: 'center',
-                // Gradient fades from transparent (left) to the card background (right)
-                background: 'linear-gradient(to right, transparent 0%, rgba(10,12,28,0.92) 38%)',
-                paddingLeft: '28px',
+                // Shorter gradient — only 22% opaque zone so less text is hidden
+                background: 'linear-gradient(to right, transparent 0%, rgba(10,12,28,0.92) 22%)',
+                paddingLeft: '14px',
                 paddingRight: '2px',
               }}
             >
               <button
                 onClick={() => setExpanded(true)}
-                className="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap flex-shrink-0"
+                className="text-sm font-semibold text-slate-300 transition-colors whitespace-nowrap flex-shrink-0"
                 style={{ lineHeight: 'inherit' }}
               >
                 more
@@ -323,7 +322,7 @@ function ExpandableCaption({ text, className = '' }) {
           {' '}
           <button
             onClick={() => setExpanded(false)}
-            className="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+            className="text-sm font-semibold text-slate-300 transition-colors"
           >
             less
           </button>
@@ -674,7 +673,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     return (
       <>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+          className="mb-2 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
           style={{ background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
 
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
@@ -814,7 +813,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+        className="mb-2 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
         style={{ background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
 
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
