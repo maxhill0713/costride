@@ -22,6 +22,8 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import {
   format, subDays, addDays, startOfDay, startOfWeek, endOfWeek,
   startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth,
@@ -479,7 +481,7 @@ function KpiCard({ title, value, sub, color = T.indigo, icon: Ic, accent, childr
 }
 
 // ─── WEEKLY PERFORMANCE BAR ───────────────────────────────────────────────────
-function WeeklyPerformanceBar({ sessions, totalBooked, totalPresent, totalNoShows, avgFill, totalRevenue, totalLateCancels, isToday, dateLabel, checkIns, now }) {
+function WeeklyPerformanceBar({ sessions, totalBooked, totalPresent, totalNoShows, avgFill, totalRevenue, totalLateCancels, isToday, dateLabel, checkIns, now, openModal }) {
   const thisWeekCI = checkIns.filter(c => (now - new Date(c.check_in_date)) < 7 * 864e5).length;
   const lastWeekCI = checkIns.filter(c => { const d = now - new Date(c.check_in_date); return d >= 7 * 864e5 && d < 14 * 864e5; }).length;
   const weekDelta = thisWeekCI - lastWeekCI;
@@ -552,11 +554,13 @@ function WeeklyPerformanceBar({ sessions, totalBooked, totalPresent, totalNoShow
           <span style={{ fontFamily: T.mono, fontSize: 42, fontWeight: 700, color: totalNoShows > 0 ? T.red : T.t3, lineHeight: 1, letterSpacing: '-.05em' }}>{totalNoShows}</span>
         </div>
         {totalLateCancels > 0
-          ? <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          ? <button className="spt-btn" onClick={() => openModal?.('post')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <AlertTriangle style={{ width: 9, height: 9, color: T.amber }} />
               <span style={{ fontSize: 10, color: T.amber, fontWeight: 600 }}>{totalLateCancels} late cancel{totalLateCancels > 1 ? 's' : ''}</span>
-            </div>
-          : <span style={{ fontSize: 11, color: T.t3 }}>{totalNoShows === 0 ? 'Perfect attendance' : 'Need follow-up'}</span>
+            </button>
+          : totalNoShows > 0
+          ? <button className="spt-btn" onClick={() => openModal?.('post')} style={{ fontSize: 11, color: T.red, fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>Follow up →</button>
+          : <span style={{ fontSize: 11, color: T.t3 }}>Perfect attendance</span>
         }
       </KpiCard>
 
@@ -731,20 +735,20 @@ function SessionCard({ cls, onOpen, isSelected, now, openModal, avatarMap = {} }
 }
 
 // ─── OPTIMIZATION PANEL ───────────────────────────────────────────────────────
-function OptimizationSuggestions({ classesWithData, checkIns, now }) {
+function OptimizationSuggestions({ classesWithData, checkIns, now, openModal }) {
   const suggestions = useMemo(() => {
     const items = [];
     const underbooked = classesWithData.filter(c => c.fill < 40 && !c.isCancelled);
-    if (underbooked.length > 0) items.push({ icon: AlertTriangle, color: T.red, text: `${underbooked.length} session${underbooked.length > 1 ? 's' : ''} underbooked — promote or reschedule` });
+    if (underbooked.length > 0) items.push({ icon: AlertTriangle, color: T.red, text: `${underbooked.length} session${underbooked.length > 1 ? 's' : ''} underbooked — promote or reschedule`, action: () => openModal('post') });
     const full = classesWithData.filter(c => c.fill >= 90 && !c.isCancelled);
-    if (full.length > 0) items.push({ icon: TrendingUp, color: T.sky, text: `${full.length} session${full.length > 1 ? 's' : ''} at capacity — add a second slot` });
+    if (full.length > 0) items.push({ icon: TrendingUp, color: T.sky, text: `${full.length} session${full.length > 1 ? 's' : ''} at capacity — add a second slot`, action: () => openModal('classes') });
     const withWaitlist = classesWithData.filter(c => c.waitlist.length > 0);
     if (withWaitlist.length > 0) {
       const total = withWaitlist.reduce((s, c) => s + c.waitlist.length, 0);
-      items.push({ icon: Users, color: T.violet, text: `${total} member${total > 1 ? 's' : ''} on waitlists — demand exceeds supply` });
+      items.push({ icon: Users, color: T.violet, text: `${total} member${total > 1 ? 's' : ''} on waitlists — demand exceeds supply`, action: () => openModal('promoteWaitlist') });
     }
     items.push({ icon: Lightbulb, color: T.amber, text: 'Consistent schedules retain 2.8× more members than sporadic ones' });
-    items.push({ icon: Sparkles, color: T.indigo, text: 'Send pre-class reminders 2hr before to reduce no-shows by up to 40%' });
+    items.push({ icon: Sparkles, color: T.indigo, text: 'Send pre-class reminders 2hr before to reduce no-shows by up to 40%', action: () => openModal('post') });
     return items.slice(0, 5);
   }, [classesWithData, checkIns, now]);
 
@@ -757,10 +761,11 @@ function OptimizationSuggestions({ classesWithData, checkIns, now }) {
         {suggestions.map((s, i) => {
           const Ic = s.icon;
           return (
-            <div key={i} style={{
+            <div key={i} onClick={s.action} style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 8px', borderRadius: 10,
               transition: 'background .12s',
+              cursor: s.action ? 'pointer' : 'default',
             }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.025)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -773,6 +778,7 @@ function OptimizationSuggestions({ classesWithData, checkIns, now }) {
                   <span style={{ fontSize: 11, color: T.t2, lineHeight: 1.6 }}>{s.text}</span>
                 </div>
               </div>
+              {s.action && <ArrowRight style={{ width: 10, height: 10, color: T.t4, flexShrink: 0, marginTop: 4 }} />}
             </div>
           );
         })}
@@ -1007,7 +1013,7 @@ function SessionDetailPanel({ cls, allMemberships, checkIns, avatarMap, attendan
                   </div>
                   <div style={{ display: 'flex', gap: 5, marginTop: 10 }}>
                     <MiniBtn icon={MessageCircle} label="Message" color={T.indigo} onClick={() => openModal('post', { memberId: m.user_id })} size="xs" />
-                    {!isIn && !isCxl && <MiniBtn icon={Check} label="Mark Present" color={T.emerald} onClick={() => {}} size="xs" />}
+                    {!isIn && !isCxl && <MiniBtn icon={Check} label="Mark Present" color={T.emerald} onClick={() => onToggle(key, m.user_id)} size="xs" />}
                     <MiniBtn icon={Calendar} label="Rebook" color={T.amber} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })} size="xs" />
                   </div>
                 </div>
@@ -1353,13 +1359,15 @@ function EmptyState({ openModal }) {
 }
 
 // ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
-export default function TabCoachSchedule({ myClasses = [], checkIns = [], events = [], allMemberships = [], avatarMap = {}, openModal, now }) {
+export default function TabCoachSchedule({ myClasses = [], checkIns = [], events = [], allMemberships = [], avatarMap = {}, openModal, now, selectedGym, onRefresh }) {
   const [calView, setCalView] = useState('week');
   const [selectedDate, setSelectedDate] = useState(now);
   const [monthDate, setMonthDate] = useState(now);
   const [detailCls, setDetailCls] = useState(null);
   const [typeFilter, setTypeFilter] = useState('all');
   const [confirmCancel, setConfirmCancel] = useState(null);
+
+  const queryClient = useQueryClient();
 
   const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || fallback); } catch { return JSON.parse(fallback); } };
   const [attendance, setAttendance] = useState(() => load('coachAttendanceSheets', '{}'));
@@ -1370,8 +1378,73 @@ export default function TabCoachSchedule({ myClasses = [], checkIns = [], events
   const persist = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch {} };
   const saveNote = (k, v) => { const u = { ...notes, [k]: v }; setNotes(u); persist('coachSessionNotes', u); };
   const saveAnnounce = (k, v) => { const u = { ...classAnnounce, [k]: v }; setClassAnnounce(u); persist('coachClassAnnouncements', u); };
-  const toggleAttendance = (rk, uid) => { const s = attendance[rk] || []; const u = { ...attendance, [rk]: s.includes(uid) ? s.filter(id => id !== uid) : [...s, uid] }; setAttendance(u); persist('coachAttendanceSheets', u); };
-  const markAllPresent = (rk) => { const u = { ...attendance, [rk]: allMemberships.map(m => m.user_id) }; setAttendance(u); persist('coachAttendanceSheets', u); };
+
+  const createCheckInM = useMutation({
+    mutationFn: ({ uid, userName, classId, dateStr }) =>
+      base44.entities.CheckIn.create({
+        user_id: uid,
+        user_name: userName,
+        gym_id: selectedGym?.id,
+        check_in_date: new Date(`${dateStr}T12:00:00`).toISOString(),
+        class_id: classId,
+        source: 'coach_attendance',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });
+      onRefresh?.();
+    },
+    onError: (_, { uid, rk }) => {
+      setAttendance(prev => {
+        const u = { ...prev, [rk]: (prev[rk] || []).filter(id => id !== uid) };
+        persist('coachAttendanceSheets', u);
+        return u;
+      });
+    },
+  });
+
+  const deleteCheckInM = useMutation({
+    mutationFn: async ({ uid, classId, dateStr }) => {
+      const records = await base44.entities.CheckIn.filter({
+        user_id: uid, class_id: classId, source: 'coach_attendance',
+      });
+      const target = records.find(r => r.check_in_date?.startsWith(dateStr));
+      if (target) await base44.entities.CheckIn.delete(target.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });
+      onRefresh?.();
+    },
+  });
+
+  const toggleAttendance = (rk, uid) => {
+    const s = attendance[rk] || [];
+    const isPresent = s.includes(uid);
+    const u = { ...attendance, [rk]: isPresent ? s.filter(id => id !== uid) : [...s, uid] };
+    setAttendance(u);
+    persist('coachAttendanceSheets', u);
+    const dateStr = rk.slice(-10);
+    const classId = rk.slice(0, rk.length - 11);
+    if (!isPresent && selectedGym?.id) {
+      const member = allMemberships.find(m => m.user_id === uid);
+      createCheckInM.mutate({ uid, userName: member?.user_name || '', classId, dateStr, rk });
+    } else if (isPresent && selectedGym?.id) {
+      deleteCheckInM.mutate({ uid, classId, dateStr });
+    }
+  };
+  const markAllPresent = (rk) => {
+    const alreadyIn = attendance[rk] || [];
+    const newIds = allMemberships.map(m => m.user_id);
+    const u = { ...attendance, [rk]: newIds };
+    setAttendance(u);
+    persist('coachAttendanceSheets', u);
+    if (selectedGym?.id) {
+      const dateStr = rk.slice(-10);
+      const classId = rk.slice(0, rk.length - 11);
+      allMemberships
+        .filter(m => !alreadyIn.includes(m.user_id))
+        .forEach(m => createCheckInM.mutate({ uid: m.user_id, userName: m.user_name || '', classId, dateStr }));
+    }
+  };
   const clearAttendance = (rk) => { const u = { ...attendance, [rk]: [] }; setAttendance(u); persist('coachAttendanceSheets', u); };
   const cancelClass = (cls, ds) => { const k = `${cls.id}-${ds}`; const u = [...cancelledClasses, k]; setCancelledClasses(u); persist('coachCancelledClasses', u); setConfirmCancel(null); setDetailCls(null); };
   const reinstateClass = (cls) => { const k = `${cls.id}-${selDateStr}`; const u = cancelledClasses.filter(x => x !== k); setCancelledClasses(u); persist('coachCancelledClasses', u); };
@@ -1545,7 +1618,7 @@ export default function TabCoachSchedule({ myClasses = [], checkIns = [], events
               sessions={classesWithData.length} totalBooked={totalBooked} totalPresent={totalPresent}
               totalNoShows={totalNoShows} avgFill={avgFill} totalRevenue={totalRevToday}
               totalLateCancels={totalLateCancels} isToday={isToday} dateLabel={format(selectedDate, 'EEE, MMM d')}
-              checkIns={checkIns} now={now}
+              checkIns={checkIns} now={now} openModal={openModal}
             />
 
             {/* Main two-column grid */}
@@ -1738,7 +1811,7 @@ export default function TabCoachSchedule({ myClasses = [], checkIns = [], events
 
               {/* ── RIGHT SIDEBAR ── */}
               <div className="spt-sidebar-col" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <OptimizationSuggestions classesWithData={classesWithData} checkIns={checkIns} now={now} />
+                <OptimizationSuggestions classesWithData={classesWithData} checkIns={checkIns} now={now} openModal={openModal} />
                 <ActionCentre allMemberships={allMemberships} checkIns={checkIns} myClasses={myClasses} now={now} openModal={openModal} />
 
                 {/* Day Summary */}

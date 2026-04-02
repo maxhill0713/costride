@@ -1100,9 +1100,9 @@ export default function TabContent({
               {/* Content stats */}
               <div style={{ padding: 16, borderRadius: 12, background: T.card, border: `1px solid ${T.border}`, flexShrink: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: T.text1, marginBottom: 4 }}>Content Stats</div>
-                <StatRow label="Upcoming Events"        value={upcomingEvents.length}   color={T.green}  onClick={() => {}} />
-                <StatRow label="Challenge Participants" value={totalChalPart}            color={T.amber}  onClick={() => {}} />
-                <StatRow label="Active Polls"           value={polls.length}            color={T.purple} onClick={() => {}} last />
+                <StatRow label="Upcoming Events"        value={upcomingEvents.length}   color={T.green}  onClick={() => openModal('event')} />
+                <StatRow label="Challenge Participants" value={totalChalPart}            color={T.amber}  onClick={() => openModal('challenge')} />
+                <StatRow label="Active Polls"           value={polls.length}            color={T.purple} onClick={() => openModal('poll')} last />
               </div>
 
               <MilestonesWidget milestones={milestones} avatarMap={avatarMap} />

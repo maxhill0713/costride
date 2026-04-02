@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { X, Loader2 } from 'lucide-react';
 
-export default function AssignWorkoutModal({ open, onClose, member, coach }) {
+export default function AssignWorkoutModal({ open, onClose, member, coach, onSuccess }) {
   const [workoutData, setWorkoutData] = useState({
     exercises: [{ name: '', sets: 3, reps: 10, weight: 0 }],
   });
@@ -18,6 +18,7 @@ export default function AssignWorkoutModal({ open, onClose, member, coach }) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
+      onSuccess?.();
       setWorkoutData({ exercises: [{ name: '', sets: 3, reps: 10, weight: 0 }] });
       onClose();
     },

@@ -680,7 +680,7 @@ function CommandHeader({ currentUser, now, sessions, priorities }) {
 }
 
 // ─── PRIORITIES ───────────────────────────────────────────────────────────────
-function TodaysPriorities({ priorities, toast }) {
+function TodaysPriorities({ priorities, openModal }) {
   const urgent = priorities.filter(p => p.severity === "high").length;
 
   const sevIcon = (sev, color) => (
@@ -737,7 +737,7 @@ function TodaysPriorities({ priorities, toast }) {
               paddingLeft: 44,
             }}>{p.context}</div>
             <div style={{ paddingLeft: 44, marginTop: 2 }}>
-              <button className="tct-btn" onClick={() => toast(`Started: ${p.cta}`, p.color)} style={{
+              <button className="tct-btn" onClick={() => openModal?.('post')} style={{
                 fontSize: 11.5, fontWeight: 600, color: p.color,
                 background: `linear-gradient(135deg, ${p.colorDim} 0%, transparent 100%)`,
                 border: `1px solid ${p.colorBrd}`,
@@ -755,19 +755,19 @@ function TodaysPriorities({ priorities, toast }) {
 }
 
 // ─── QUICK ACTIONS ────────────────────────────────────────────────────────────
-function QuickStrip({ toast }) {
+function QuickStrip({ openModal, setTab }) {
   const items = [
-    { label: "Scan Check-in",     color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",    msg: "QR scanner opened" },
-    { label: "Broadcast",         color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",   msg: "Broadcast composer opened" },
-    { label: "Schedule Session",  color: T.sky,     dim: T.skyDim,     bdr: T.skyBdr,     icon: "cal",   msg: "Session scheduler opened" },
-    { label: "All Clients",       color: T.t2,      dim: "rgba(255,255,255,.03)", bdr: T.border, icon: "users", msg: "Clients view opening" },
+    { label: "Scan Check-in",    color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",    fn: () => openModal?.('qrScanner') },
+    { label: "Broadcast",        color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",   fn: () => openModal?.('post') },
+    { label: "Schedule Session", color: T.sky,     dim: T.skyDim,     bdr: T.skyBdr,     icon: "cal",   fn: () => openModal?.('classes') },
+    { label: "All Clients",      color: T.t2,      dim: "rgba(255,255,255,.03)", bdr: T.border, icon: "users", fn: () => setTab?.('members') },
   ];
   return (
     <div className="tct-quick-strip t-fu t-d2" style={{
       display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap",
     }}>
       {items.map((a, i) => (
-        <button key={i} className="tct-btn" onClick={() => toast(a.msg, a.color)} style={{
+        <button key={i} className="tct-btn" onClick={a.fn} style={{
           fontSize: 12, fontWeight: 600, color: a.color,
           background: `linear-gradient(135deg, ${a.dim} 0%, transparent 100%)`,
           border: `1px solid ${a.bdr}`,
@@ -1065,7 +1065,7 @@ function SessionTimeline({ sessions, now }) {
 }
 
 // ─── TODAY'S SESSIONS ─────────────────────────────────────────────────────────
-function TodaysSessions({ sessions, toast, now }) {
+function TodaysSessions({ sessions, openModal, now }) {
   const [exp, setExp] = useState(null);
   const statLabel = { live: "Live", upcoming: "Upcoming", done: "Done" };
   const statColor = { live: T.emerald, upcoming: T.indigo, done: T.t3 };
@@ -1080,7 +1080,7 @@ function TodaysSessions({ sessions, toast, now }) {
         label="Today's Sessions"
         sub={`${sessions.length} scheduled · ${avgFill}% avg fill`}
         right={
-          <button className="tct-btn" onClick={() => toast("Session scheduler opened", T.indigo)} style={{
+          <button className="tct-btn" onClick={() => openModal?.('classes')} style={{
             fontSize: 11, fontWeight: 600, color: T.indigo,
             background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
             borderRadius: T.r1, padding: "7px 14px",
@@ -1176,13 +1176,13 @@ function TodaysSessions({ sessions, toast, now }) {
               }}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {[
-                    { label: "Message Attendees", color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",     msg: `Messaging ${s.booked} attendees` },
+                    { label: "Message Attendees", color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",     fn: () => openModal?.('post', { classId: s.id }) },
                     ...(!isDone && h.label !== "Full" ? [
-                      { label: "Promote Class",   color: T.amber,   dim: T.amberDim,   bdr: T.amberBdr,   icon: "speaker", msg: `Promoting ${s.name}` },
+                      { label: "Promote Class",   color: T.amber,   dim: T.amberDim,   bdr: T.amberBdr,   icon: "speaker", fn: () => openModal?.('post') },
                     ] : []),
-                    { label: "Check-in",          color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",      msg: "QR scanner ready" },
+                    { label: "Check-in",          color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",      fn: () => openModal?.('qrScanner') },
                   ].map((a, j) => (
-                    <button key={j} className="tct-btn" onClick={() => toast(a.msg, a.color)} style={{
+                    <button key={j} className="tct-btn" onClick={a.fn} style={{
                       fontSize: 11, fontWeight: 600, color: a.color,
                       background: a.dim, border: `1px solid ${a.bdr}`,
                       borderRadius: T.r1, padding: "8px 14px",
@@ -1231,7 +1231,7 @@ function TodaysSessions({ sessions, toast, now }) {
 }
 
 // ─── ACTIVITY FEED ────────────────────────────────────────────────────────────
-function ActivityFeed({ toast }) {
+function ActivityFeed({ openModal }) {
   const iconMap = {
     check: "check", x: "x", send: "send", plus: "plus", warn: "warn", star: "star",
   };
@@ -1263,7 +1263,7 @@ function ActivityFeed({ toast }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               {ev.action && (
-                <button className="tct-btn" onClick={() => toast(`${ev.action}: ${ev.name}`, ev.tcolor)} style={{
+                <button className="tct-btn" onClick={() => openModal?.('post')} style={{
                   fontSize: 10, fontWeight: 600, color: ev.tcolor,
                   background: `${ev.tcolor}0a`, border: `1px solid ${ev.tcolor}18`,
                   borderRadius: 6, padding: "5px 10px",
@@ -1351,7 +1351,7 @@ function WeeklyPerformance({ checkIns, sessions, allMemberships, now }) {
 }
 
 // ─── CLIENT RISK FEED (SIDEBAR) ───────────────────────────────────────────────
-function ClientRiskFeed({ allMemberships, checkIns, now, toast }) {
+function ClientRiskFeed({ allMemberships, checkIns, now, openModal }) {
   const [filter, setFilter] = useState("all");
   const [showAll, setShowAll] = useState(false);
 
@@ -1453,7 +1453,7 @@ function ClientRiskFeed({ allMemberships, checkIns, now, toast }) {
               <span style={{ fontSize: 9.5, color: T.t4 }}>· {c.ci30} visits / 30d</span>
             </div>
           </div>
-          <button className="tct-btn" onClick={() => toast(`Reaching out to ${c.name}`, lvlC[c.level])} style={{
+          <button className="tct-btn" onClick={() => openModal?.('post', { memberId: c.id })} style={{
             fontSize: 10, fontWeight: 600, color: lvlC[c.level],
             background: `${lvlC[c.level]}0a`,
             border: `1px solid ${lvlC[c.level]}18`,
@@ -1560,8 +1560,8 @@ function EngagementHeatmap({ checkIns, now }) {
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now }) {
-  const { toasts, toast } = useToast();
+function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now, openModal, setTab }) {
+  const { toasts } = useToast();
   const sessions   = useMemo(() => deriveSessions(myClasses, now), [myClasses, now]);
   const priorities = useMemo(() => derivePriorities({ allMemberships, checkIns, sessions, now }), [allMemberships, checkIns, sessions, now]);
 
@@ -1581,8 +1581,8 @@ function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now }
         padding: "32px 32px 80px",
       }}>
         <CommandHeader currentUser={currentUser} now={now} sessions={sessions} priorities={priorities} />
-        <TodaysPriorities priorities={priorities} toast={toast} />
-        <QuickStrip toast={toast} />
+        <TodaysPriorities priorities={priorities} openModal={openModal} />
+        <QuickStrip openModal={openModal} setTab={setTab} />
 
         <div className="tct-main-grid" style={{
           display: "grid", gridTemplateColumns: "1fr 320px",
@@ -1591,8 +1591,8 @@ function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now }
           {/* Main column */}
           <div>
             <AttendanceChart checkIns={checkIns} now={now} />
-            <TodaysSessions sessions={sessions} toast={toast} now={now} />
-            <ActivityFeed toast={toast} />
+            <TodaysSessions sessions={sessions} openModal={openModal} now={now} />
+            <ActivityFeed openModal={openModal} />
           </div>
 
           {/* Sidebar */}
@@ -1601,7 +1601,7 @@ function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now }
             position: "sticky", top: 16,
           }}>
             <WeeklyPerformance checkIns={checkIns} sessions={sessions} allMemberships={allMemberships} now={now} />
-            <ClientRiskFeed allMemberships={allMemberships} checkIns={checkIns} now={now} toast={toast} />
+            <ClientRiskFeed allMemberships={allMemberships} checkIns={checkIns} now={now} openModal={openModal} />
             <EngagementHeatmap checkIns={checkIns} now={now} />
           </div>
         </div>

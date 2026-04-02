@@ -838,7 +838,7 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
 }
 
 // ─── INSIGHTS PANEL ───────────────────────────────────────────────────────────
-function InsightsPanel({ workouts, workoutStats }) {
+function InsightsPanel({ workouts, workoutStats, onSortBy }) {
   const unassigned = workouts.filter(w => (workoutStats[w.id]?.assignedCount || 0) === 0);
   const lowEngagement = workouts.filter(w => {
     const s = workoutStats[w.id];
@@ -864,10 +864,12 @@ function InsightsPanel({ workouts, workoutStats }) {
     unassigned.length > 0 && {
       icon: AlertTriangle, color: T.amber,
       text: `${unassigned.length} workout${unassigned.length > 1 ? 's are' : ' is'} never used — assign or archive them`,
+      action: () => onSortBy?.('not_assigned'),
     },
     lowEngagement.length > 0 && {
       icon: TrendingDown, color: T.red,
       text: `${lowEngagement.length} workout${lowEngagement.length > 1 ? 's have' : ' has'} completion below 40%`,
+      action: () => onSortBy?.('least_engaged'),
     },
     {
       icon: Lightbulb, color: T.sky,
@@ -893,10 +895,11 @@ function InsightsPanel({ workouts, workoutStats }) {
         {insights.map((ins, i) => {
           const Ic = ins.icon;
           return (
-            <div key={i} style={{
+            <div key={i} onClick={ins.action} style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 8px', borderRadius: 8,
               transition: 'background .12s',
+              cursor: ins.action ? 'pointer' : 'default',
             }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.02)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -908,6 +911,7 @@ function InsightsPanel({ workouts, workoutStats }) {
                 <Ic style={{ width: 11, height: 11, color: ins.color }} />
               </div>
               <span style={{ fontSize: 12, color: T.t2, lineHeight: 1.5, flex: 1 }}>{ins.text}</span>
+              {ins.action && <ChevronRight style={{ width: 11, height: 11, color: T.t4, flexShrink: 0, marginTop: 2 }} />}
             </div>
           );
         })}
@@ -917,7 +921,7 @@ function InsightsPanel({ workouts, workoutStats }) {
 }
 
 // ─── LIBRARY BREAKDOWN ────────────────────────────────────────────────────────
-function LibraryBreakdown({ workouts }) {
+function LibraryBreakdown({ workouts, onTypeFilter }) {
   const counts = {};
   workouts.forEach(w => { counts[w.type] = (counts[w.type] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
@@ -933,7 +937,9 @@ function LibraryBreakdown({ workouts }) {
         const tc = WORKOUT_TYPES[type] || WORKOUT_TYPES.strength;
         const pct = Math.round((count / workouts.length) * 100);
         return (
-          <div key={type} style={{ marginBottom: i < arr.length - 1 ? 10 : 0 }}>
+          <div key={type} onClick={() => onTypeFilter?.(type)} style={{ marginBottom: i < arr.length - 1 ? 10 : 0, cursor: 'pointer', borderRadius: 6, padding: '2px 4px', transition: 'background .12s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.03)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13 }}>{tc.emoji}</span>
@@ -1624,8 +1630,8 @@ export default function TabCoachContent({
 
                 {/* Sidebar */}
                 <div className="wps-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <InsightsPanel workouts={workouts} workoutStats={workoutStats} />
-                  <LibraryBreakdown workouts={workouts} />
+                  <InsightsPanel workouts={workouts} workoutStats={workoutStats} onSortBy={setSortBy} />
+                  <LibraryBreakdown workouts={workouts} onTypeFilter={setTypeFilter} />
 
                   {/* Quick Actions */}
                   <div style={{
@@ -1705,11 +1711,14 @@ export default function TabCoachContent({
                         const d = new Date(ev.event_date);
                         const diff = Math.floor((d - now) / 86400000);
                         return (
-                          <div key={ev.id || i} style={{
+                          <div key={ev.id || i} onClick={() => openModal('event', { eventId: ev.id })} style={{
                             display: 'flex', alignItems: 'center', gap: 10,
-                            padding: '8px 0',
+                            padding: '8px 0', cursor: 'pointer',
                             borderBottom: i < Math.min(upcomingEvents.length, 3) - 1 ? `1px solid ${T.border}` : 'none',
-                          }}>
+                            transition: 'opacity .12s',
+                          }}
+                            onMouseEnter={e => e.currentTarget.style.opacity = '.75'}
+                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                             <div style={{
                               flexShrink: 0, borderRadius: 8, padding: '4px 8px', textAlign: 'center',
                               background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, minWidth: 32,

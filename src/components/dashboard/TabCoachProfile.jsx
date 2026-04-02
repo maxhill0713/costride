@@ -979,12 +979,13 @@ function FrequencyBars({ clientCheckIns }) {
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
-export default function ClientCommandCenter({
+// ─── Main Display ─────────────────────────────────────────────────────────────
+function ClientCommandCenter({
   client:         cl             = EMPTY_CLIENT,
   onMessage,
   onBook,
   onAssign,
+  openModal,
   selectedGym,
   currentUser,
   clientCheckIns  = [],
@@ -994,7 +995,12 @@ export default function ClientCommandCenter({
   const [toast_, setToast] = useState(null);
 
   const act = key => {
-    const map = { message: onMessage, book: onBook, assign: onAssign };
+    // Use explicit handlers if provided, otherwise fall back to openModal
+    const map = {
+      message: onMessage ?? (() => openModal?.('post')),
+      book:    onBook    ?? (() => openModal?.('bookAppointment')),
+      assign:  onAssign  ?? (() => openModal?.('assignWorkout')),
+    };
     map[key]?.();
     const labels = { message: 'Opening messages…', book: 'Opening booking…', assign: 'Opening workouts…' };
     setToast(labels[key] || 'Action triggered');
@@ -1054,6 +1060,152 @@ export default function ClientCommandCenter({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Client Picker + Data Wrapper (default export) ────────────────────────────
+export default function TabCoachProfile({ selectedGym, currentUser, openModal, coach, bookings = [], checkIns = [], avatarMap = {} }) {
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [search, setSearch] = useState('');
+
+  // Build deduplicated client list from bookings
+  const clientMap = useMemo(() => {
+    const map = {};
+    bookings.forEach(b => {
+      if (!b.client_id) return;
+      if (!map[b.client_id]) map[b.client_id] = { id: b.client_id, name: b.client_name || 'Client', bookings: [] };
+      map[b.client_id].bookings.push(b);
+    });
+    return map;
+  }, [bookings]);
+
+  const clients = useMemo(() => {
+    const list = Object.values(clientMap);
+    if (!search.trim()) return list;
+    const q = search.toLowerCase();
+    return list.filter(c => c.name.toLowerCase().includes(q));
+  }, [clientMap, search]);
+
+  // Fetch selected client's check-ins and assigned workouts
+  const { data: clientCheckIns = [] } = useQuery({
+    queryKey: ['clientCheckIns', selectedClientId],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: selectedClientId }, '-check_in_date', 120),
+    enabled: !!selectedClientId,
+    staleTime: 3 * 60 * 1000,
+  });
+
+  const { data: clientWorkouts = [] } = useQuery({
+    queryKey: ['clientWorkouts', selectedClientId],
+    queryFn: () => base44.entities.AssignedWorkout.filter({ member_id: selectedClientId }, '-assigned_date', 50),
+    enabled: !!selectedClientId,
+    staleTime: 3 * 60 * 1000,
+  });
+
+  const clientBookings = useMemo(() => bookings.filter(b => b.client_id === selectedClientId), [bookings, selectedClientId]);
+
+  // Build a client shape that ClientCommandCenter expects
+  const clientObj = useMemo(() => {
+    const c = selectedClientId ? clientMap[selectedClientId] : null;
+    if (!c) return EMPTY_CLIENT;
+    const lastCI = clientCheckIns[0];
+    const lastVisitDays = lastCI ? Math.floor((Date.now() - new Date(lastCI.check_in_date)) / 86400000) : 999;
+    const weeklyVisits = clientCheckIns.filter(ci => (Date.now() - new Date(ci.check_in_date)) < 7 * 86400000).length;
+    return {
+      ...EMPTY_CLIENT,
+      name:             c.name,
+      avatar_url:       avatarMap[selectedClientId] || null,
+      last_visit:       lastVisitDays === 0 ? 'Today' : lastVisitDays === 999 ? 'Never' : `${lastVisitDays}d ago`,
+      total_sessions:   clientBookings.length,
+      visits_per_week:  weeklyVisits,
+      retention_status: lastVisitDays > 14 ? 'at_risk' : lastVisitDays > 7 ? 'declining' : 'healthy',
+      trend:            lastVisitDays > 14 ? 'declining' : 'stable',
+      streak: clientCheckIns.reduce((n, _, i) => {
+        if (i === 0) return 1;
+        const diff = (new Date(clientCheckIns[i-1].check_in_date) - new Date(clientCheckIns[i].check_in_date)) / 86400000;
+        return diff <= 2 ? n + 1 : n;
+      }, clientCheckIns.length > 0 ? 1 : 0),
+    };
+  }, [selectedClientId, clientMap, clientCheckIns, clientBookings, avatarMap]);
+
+  // ── Empty state ──────────────────────────────────────────────────────────────
+  if (!bookings.length) {
+    return (
+      <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <style>{GLOBAL_CSS}</style>
+        <div className="ccc" style={{ textAlign: 'center', maxWidth: 320 }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>👥</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.t1, marginBottom: 8 }}>No clients yet</div>
+          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6, marginBottom: 20 }}>Book clients into your classes to see their performance here.</div>
+          <button className="action-primary" onClick={() => openModal?.('classes')}>Manage Classes</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Client picker ────────────────────────────────────────────────────────────
+  if (!selectedClientId) {
+    return (
+      <div style={{ background: C.bg, minHeight: '100vh', padding: '28px 28px 80px' }}>
+        <style>{GLOBAL_CSS}</style>
+        <div className="ccc" style={{ maxWidth: 520, margin: '0 auto' }}>
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em', marginBottom: 4 }}>Client Profile</div>
+            <div style={{ fontSize: 13, color: C.t2 }}>Select a client to view their full performance dashboard.</div>
+          </div>
+          <div style={{ position: 'relative', marginBottom: 14 }}>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients…"
+              style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px 10px 38px', borderRadius: 10, background: C.surfaceEl, border: `1px solid ${C.border}`, color: C.t1, fontSize: 13, outline: 'none', fontFamily: 'inherit' }} />
+            <svg style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: C.t3 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {clients.map(c => {
+              const lastB = c.bookings.sort((a, b) => new Date(b.session_date) - new Date(a.session_date))[0];
+              const lastDate = lastB?.session_date ? new Date(lastB.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+              return (
+                <button key={c.id} onClick={() => setSelectedClientId(c.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.15s', fontFamily: 'inherit' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+                >
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: C.accentSub, border: `1px solid ${C.accentBrd}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: C.accent, overflow: 'hidden' }}>
+                    {avatarMap[c.id] ? <img src={avatarMap[c.id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ini(c.name)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{c.name}</div>
+                    <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{c.bookings.length} session{c.bookings.length !== 1 ? 's' : ''} · Last: {lastDate}</div>
+                  </div>
+                  <ChevronRight style={{ width: 14, height: 14, color: C.t3, flexShrink: 0 }} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Client detail ────────────────────────────────────────────────────────────
+  return (
+    <div>
+      <div style={{ background: C.bg, padding: '8px 28px 0', borderBottom: `1px solid ${C.border}` }}>
+        <button onClick={() => setSelectedClientId(null)}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: C.t2, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0', fontFamily: 'inherit', transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = C.t1}
+          onMouseLeave={e => e.currentTarget.style.color = C.t2}
+        >
+          <ChevronRight style={{ width: 13, height: 13, transform: 'rotate(180deg)' }} /> All Clients
+        </button>
+      </div>
+      <ClientCommandCenter
+        client={clientObj}
+        openModal={openModal}
+        selectedGym={selectedGym}
+        currentUser={currentUser}
+        clientCheckIns={clientCheckIns}
+        clientBookings={clientBookings}
+        clientWorkouts={clientWorkouts}
+      />
     </div>
   );
 }
