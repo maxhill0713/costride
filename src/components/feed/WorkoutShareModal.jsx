@@ -107,8 +107,8 @@ async function drawStatsCard(post, gymName, streakNum = 0) {
   ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 14;
   ctx.fillText('CoStride', brandX + brandLogoSz + 16, brandY); ctx.shadowBlur = 0;
 
-  // Footer: gym · date — centred, bigger font
-  const bottomY = H - 80;
+  // Footer: gym · date — centred, bigger font. Raised so text isn't cropped on share.
+  const bottomY = H - 160;
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const footerLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
   ctx.font = '500 32px -apple-system,sans-serif';
@@ -278,8 +278,9 @@ async function drawBreakdownCard(post, gymName) {
   ctx.font = '700 24px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.26)';
   ['EXERCISE', 'SETS', '', 'REPS', 'WEIGHT'].forEach((h, i) => { ctx.textAlign = i === 0 ? 'left' : 'center'; ctx.fillText(h, i === 0 ? colX[i] : colX[i] + colW[i] / 2, colHY); }); ctx.textAlign = 'left';
 
+  // No bottom branding — rows fill all remaining height
   const rH = 86, rowGap = 12, tableStart = colHY + 24;
-  const maxFit = Math.floor((H - 90 - tableStart) / (rH + rowGap));
+  const maxFit = Math.floor((H - 36 - tableStart) / (rH + rowGap));
   const showCount = Math.min(exercises.length, maxFit > 0 ? maxFit : exercises.length);
 
   exercises.slice(0, showCount).forEach((ex, idx) => {
@@ -302,7 +303,6 @@ async function drawBreakdownCard(post, gymName) {
     ctx.fillText(`+${exercises.length - showCount} more`, W / 2, tableStart + showCount * (rH + rowGap) + 28); ctx.textAlign = 'left';
   }
 
-  await drawCentredBrand(ctx, W, H - 56, 44, 38);
   return canvas;
 }
 
@@ -329,16 +329,16 @@ async function drawCleanCard(post, gymName) {
   let titleSz = 108; ctx.font = `900 ${titleSz}px -apple-system,sans-serif`;
   while (ctx.measureText(titleText).width > W - 144 && titleSz > 60) { titleSz -= 4; ctx.font = `900 ${titleSz}px -apple-system,sans-serif`; }
   ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 32;
-  ctx.fillText(titleText, W / 2, H - 148); ctx.shadowBlur = 0;
+  ctx.fillText(titleText, W / 2, H - 248); ctx.shadowBlur = 0;
 
   if (gymName) {
     ctx.font = '600 38px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.70)'; ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10; ctx.fillText(gymName, W / 2, H - 92); ctx.shadowBlur = 0;
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10; ctx.fillText(gymName, W / 2, H - 192); ctx.shadowBlur = 0;
   }
 
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   ctx.font = '500 30px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.38)'; ctx.textAlign = 'center';
-  ctx.letterSpacing = '0.04em'; ctx.fillText(dateStr.toUpperCase(), W / 2, gymName ? H - 50 : H - 92); ctx.letterSpacing = '0';
+  ctx.letterSpacing = '0.04em'; ctx.fillText(dateStr.toUpperCase(), W / 2, gymName ? H - 150 : H - 192); ctx.letterSpacing = '0';
 
   return canvas;
 }
@@ -363,8 +363,8 @@ function StatsPreview({ post, gymName, streakNum = 0 }) {
         <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>CoStride</span>
       </div>
 
-      {/* BOTTOM BLOCK */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 9px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* BOTTOM BLOCK — raised so content clears share UI chrome */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
         {/* Title + streak badge — on the same row, whole row centred */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 7, width: '100%' }}>
@@ -459,7 +459,7 @@ function BreakdownPreview({ post, gymName }) {
           ))}
         </div>
 
-        {/* All exercise rows */}
+        {/* All exercise rows — no bottom branding, full height used */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2.5, overflow: 'hidden' }}>
           {exercises.map((ex, idx) => {
             const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -473,11 +473,6 @@ function BreakdownPreview({ post, gymName }) {
               </div>
             );
           })}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 5 }}>
-          <img src={LOGO_URL} alt="" style={{ width: 13, height: 13, borderRadius: 2, objectFit: 'cover' }} />
-          <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 9, fontWeight: 800 }}>CoStride</span>
         </div>
       </div>
     </div>
@@ -501,8 +496,8 @@ function CleanPreview({ post, gymName }) {
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 12, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
 
-      {/* Bottom block — ALL centred */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 11px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* Bottom block — ALL centred, raised so content clears share UI chrome */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ color: 'white', fontSize: 21, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,0.85)', textAlign: 'center', marginBottom: 5 }}>
           {post.workout_name || 'Workout'}
         </div>
