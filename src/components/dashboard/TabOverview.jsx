@@ -629,33 +629,8 @@ function TopNav({ active, setActive, date, atRiskCount }) {
   ];
   return (
     <header style={{ background:"rgba(8,14,24,0.96)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${T.border}`, position:"sticky", top:0, zIndex:100 }}>
-      {/* Brand bar */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 32px", height:54 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:11 }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:T.accent, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:"#fff", fontFamily:T.mono, flexShrink:0 }}>F</div>
-          <div>
-            <div style={{ fontSize:13.5, fontWeight:700, color:T.t1, letterSpacing:"-0.02em", lineHeight:1 }}>Foundry Gym</div>
-            <div style={{ fontSize:9, color:T.t4, textTransform:"uppercase", letterSpacing:".14em", fontFamily:T.mono, lineHeight:1.3 }}>Owner Portal</div>
-          </div>
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          {atRiskCount > 0 && (
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 11px", borderRadius:T.radiusSm, background:T.dangerSub, border:`1px solid ${T.dangerBrd}` }}>
-              <div style={{ width:5, height:5, borderRadius:"50%", background:T.danger, animation:"pulse 2s infinite" }}/>
-              <span style={{ fontSize:10.5, fontWeight:600, color:T.danger, fontFamily:T.mono }}>{atRiskCount} at risk</span>
-            </div>
-          )}
-          <Btn variant="ghost" size="sm">Scan QR</Btn>
-          <button style={{ padding:"6px 15px", borderRadius:T.radiusSm, fontSize:12, fontWeight:600, background:T.accent, color:"#fff", border:"none", cursor:"pointer" }}>
-            + New Post
-          </button>
-          <div style={{ width:1, height:22, background:T.border }}/>
-          <div style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-            <div style={{ width:28, height:28, borderRadius:"50%", background:T.surfaceEl, border:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:T.t2, fontFamily:T.mono }}>M</div>
-            <span style={{ fontSize:12, fontWeight:600, color:T.t2 }}>Max</span>
-          </div>
-        </div>
-      </div>
+     
+
       {/* Nav tabs */}
       <div style={{ display:"flex", alignItems:"center", padding:"0 32px", borderTop:`1px solid ${T.border}` }}>
         {navItems.map(n => {
