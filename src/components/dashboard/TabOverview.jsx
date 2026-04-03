@@ -273,6 +273,7 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
         borderRadius: 9,
         background:   hov && onAction ? INNER_BG : CARD_BG,
         border:       `1px solid ${hov && onAction ? CARD_BDR_H : CARD_BDR}`,
+        borderLeft:   `3px solid ${color}`,
         marginBottom: last ? 0 : 6,
         cursor:       onAction ? 'pointer' : 'default',
         transition:   'background .15s, border-color .15s',
@@ -321,6 +322,7 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
       borderRadius: 8,
       background:   INNER_BG,
       border:       `1px solid ${CARD_BDR}`,
+      borderLeft:   `2px solid ${color}`,
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
