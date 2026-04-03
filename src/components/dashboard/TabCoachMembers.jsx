@@ -30,6 +30,7 @@ if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
     @keyframes cisFadeUp  { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
     @keyframes cisSlideIn { from { opacity:0; transform:translateX(-8px) } to { opacity:1; transform:none } }
     @keyframes cisPulse   { 0%,100% { opacity:.5 } 50% { opacity:1 } }
+    @keyframes cisGlow    { 0%,100% { box-shadow:0 0 0 0 rgba(248,113,113,0) } 50% { box-shadow:0 0 0 6px rgba(248,113,113,.07) } }
     @keyframes cisOrb     { 0%,100% { transform:translate(0,0) scale(1) } 33% { transform:translate(12px,-8px) scale(1.04) } 66% { transform:translate(-8px,6px) scale(.97) } }
     @keyframes cisSlideDown { from { opacity:0; transform:translateY(-6px); max-height:0 } to { opacity:1; transform:none; max-height:800px } }
 
@@ -56,14 +57,19 @@ if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
     .cis-btn:hover::after { opacity: 1; }
 
     .cis-card {
-      background: #111113;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 12px;
+      background: #0a0f1e;
+      border: 1px solid rgba(255,255,255,.04);
+      border-radius: 16px;
       overflow: hidden;
       transition: border-color .2s, box-shadow .3s;
       position: relative;
     }
-    .cis-card:hover { border-color: rgba(255,255,255,.12); box-shadow: 0 4px 24px rgba(0,0,0,.2); }
+    .cis-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,.012) 0%, transparent 40%);
+      pointer-events: none; border-radius: inherit;
+    }
+    .cis-card:hover { border-color: rgba(255,255,255,.07); box-shadow: 0 4px 24px rgba(0,0,0,.15); }
 
     .cis-row {
       transition: all .18s cubic-bezier(.16,1,.3,1); cursor: pointer; position: relative;
@@ -73,20 +79,20 @@ if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
     .cis-row-actions { opacity: 0; pointer-events: none; transition: opacity .18s; }
 
     .cis-input {
-      width: 100%; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-      color: #fafafa; font-size: 13px; font-family: 'DM Sans', sans-serif;
-      outline: none; border-radius: 8px; padding: 11px 15px;
+      width: 100%; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.05);
+      color: #eef2ff; font-size: 13px; font-family: 'DM Sans', sans-serif;
+      outline: none; border-radius: 10px; padding: 11px 15px;
       transition: all .2s;
     }
     .cis-input:focus {
-      border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.06);
-      box-shadow: none;
+      border-color: rgba(129,140,248,.35); background: rgba(255,255,255,.035);
+      box-shadow: 0 0 0 3px rgba(129,140,248,.06);
     }
-    .cis-input::placeholder { color: rgba(161,161,170,.35); }
+    .cis-input::placeholder { color: rgba(139,149,179,.35); }
 
     .cis-select {
-      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-      color: #fafafa; font-size: 12px; font-family: 'DM Sans', sans-serif;
+      background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.05);
+      color: #eef2ff; font-size: 12px; font-family: 'DM Sans', sans-serif;
       outline: none; border-radius: 8px; padding: 8px 12px; cursor: pointer;
       appearance: none;
     }
@@ -98,7 +104,7 @@ if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
     .cis-tooltip { position: relative; }
     .cis-tooltip::after {
       content: attr(data-tip); position: absolute; bottom: calc(100% + 8px);
-      left: 50%; transform: translateX(-50%); background: #18181b; color: #fafafa;
+      left: 50%; transform: translateX(-50%); background: #151b30; color: #eef2ff;
       font-size: 11px; font-weight: 500; padding: 6px 11px; border-radius: 8px;
       white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .18s;
       z-index: 50; border: 1px solid rgba(255,255,255,.08);
@@ -141,49 +147,49 @@ if (typeof document !== 'undefined' && !document.getElementById('cis-css')) {
   document.head.appendChild(s);
 }
 
-// ─── DESIGN TOKENS — Neutral-first, $500M SaaS ────────────────────────────────
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
-  bg:        '#09090b',   // zinc-950
-  bgSub:     '#0c0c0f',
-  surface:   '#111113',   // zinc-900
-  surfaceUp: '#18181b',   // zinc-800
-  card:      '#111113',
-  glass:     'rgba(17,17,19,.72)',
+  bg:        '#050810',
+  bgSub:     '#080c16',
+  surface:   '#0a0f1e',
+  surfaceUp: '#0d1225',
+  card:      '#0b1020',
+  glass:     'rgba(12,17,35,.72)',
 
-  border:    'rgba(255,255,255,.07)',
-  borderH:   'rgba(255,255,255,.12)',
-  borderA:   'rgba(255,255,255,.16)',
-  borderF:   'rgba(255,255,255,.07)',
+  border:    'rgba(255,255,255,.04)',
+  borderH:   'rgba(255,255,255,.07)',
+  borderA:   'rgba(255,255,255,.10)',
+  borderF:   'rgba(255,255,255,.14)',
 
-  t1: '#fafafa',   // zinc-50
-  t2: '#a1a1aa',   // zinc-400
-  t3: '#52525b',   // zinc-600
-  t4: '#3f3f46',   // zinc-700
-  t5: '#27272a',   // zinc-800
+  t1: '#eef2ff',
+  t2: '#8b95b3',
+  t3: '#4b5578',
+  t4: '#252d45',
+  t5: '#181e32',
 
-  emerald:    '#10b981',
-  emeraldDim: 'rgba(16,185,129,.08)',
-  emeraldBdr: 'rgba(16,185,129,.22)',
+  emerald:    '#34d399',
+  emeraldDim: 'rgba(52,211,153,.06)',
+  emeraldBdr: 'rgba(52,211,153,.14)',
 
-  indigo:    '#3b82f6',   // blue — actions only
-  indigoDim: 'rgba(59,130,246,.09)',
-  indigoBdr: 'rgba(59,130,246,.25)',
+  indigo:    '#818cf8',
+  indigoDim: 'rgba(129,140,248,.06)',
+  indigoBdr: 'rgba(129,140,248,.14)',
 
-  amber:     '#f59e0b',
-  amberDim:  'rgba(245,158,11,.08)',
-  amberBdr:  'rgba(245,158,11,.22)',
+  amber:     '#fbbf24',
+  amberDim:  'rgba(251,191,36,.05)',
+  amberBdr:  'rgba(251,191,36,.12)',
 
-  red:       '#ef4444',
-  redDim:    'rgba(239,68,68,.08)',
-  redBdr:    'rgba(239,68,68,.22)',
+  red:       '#f87171',
+  redDim:    'rgba(248,113,113,.05)',
+  redBdr:    'rgba(248,113,113,.12)',
 
-  sky:       '#a1a1aa',   // mapped to neutral — no decorative color
-  skyDim:    'rgba(255,255,255,.04)',
-  skyBdr:    'rgba(255,255,255,.09)',
+  sky:       '#38bdf8',
+  skyDim:    'rgba(56,189,248,.06)',
+  skyBdr:    'rgba(56,189,248,.14)',
 
-  violet:    '#a1a1aa',
-  violetDim: 'rgba(255,255,255,.04)',
-  violetBdr: 'rgba(255,255,255,.09)',
+  violet:    '#a78bfa',
+  violetDim: 'rgba(167,139,250,.06)',
+  violetBdr: 'rgba(167,139,250,.14)',
 
   mono: "'IBM Plex Mono', 'SF Mono', monospace",
   display: "'DM Sans', -apple-system, sans-serif",
@@ -199,9 +205,9 @@ function Avatar({ name = '?', size = 36, src = null, status }) {
       <div style={{
         width: size, height: size, borderRadius: size * .3, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(255,255,255,.06)',
-        border: `1px solid rgba(255,255,255,.1)`,
-        fontSize: size * .3, fontWeight: 700, color: T.t2, letterSpacing: '-.02em',
+        background: 'linear-gradient(135deg, rgba(129,140,248,.14), rgba(129,140,248,.04))',
+        border: '1px solid rgba(129,140,248,.18)',
+        fontSize: size * .3, fontWeight: 700, color: T.indigo, letterSpacing: '-.02em',
       }}>
         {src && !imgFail
           ? <img src={src} alt={name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgFail(true)} />
@@ -213,6 +219,7 @@ function Avatar({ name = '?', size = 36, src = null, status }) {
           width: 10, height: 10, borderRadius: '50%',
           background: statusColors[status] || T.t3,
           border: `2px solid ${T.bg}`,
+          boxShadow: `0 0 6px ${(statusColors[status] || T.t3)}40`,
         }} />
       )}
     </div>
@@ -224,9 +231,10 @@ function Pill({ children, color = T.t3, bg, border, glow, style }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
       fontSize: 10, fontWeight: 600, color,
-      background: bg || 'rgba(255,255,255,.04)', border: `1px solid ${border || T.border}`,
+      background: bg || `${color}0a`, border: `1px solid ${border || `${color}18`}`,
       borderRadius: 6, padding: '2.5px 8px', letterSpacing: '.03em',
       textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: '16px',
+      boxShadow: glow ? `0 0 12px ${color}12` : 'none',
       ...style,
     }}>{children}</span>
   );
@@ -249,7 +257,18 @@ function Label({ children, style }) {
   );
 }
 
-function GlowBar() { return null; }
+function GlowBar({ color, position = 'top' }) {
+  const s = position === 'top'
+    ? { top: 0, left: 0, right: 0, height: 1 }
+    : { top: 0, bottom: 0, left: 0, width: 2 };
+  return (
+    <div style={{
+      position: 'absolute', ...s,
+      background: `linear-gradient(${position === 'top' ? '90deg' : '180deg'}, transparent 0%, ${color} 50%, transparent 100%)`,
+      opacity: .5,
+    }} />
+  );
+}
 
 function CardHead({ label, sub, right, noBorder }) {
   return (
@@ -275,9 +294,10 @@ function HealthBar({ segments, height = 5 }) {
       {segments.map((seg, i) => (
         <div key={i} style={{
           flex: seg.value / total,
-          background: seg.color,
+          background: `linear-gradient(90deg, ${seg.color}90, ${seg.color})`,
           borderRadius: 99, minWidth: seg.value > 0 ? 4 : 0,
           transition: 'flex .5s cubic-bezier(.16,1,.3,1)',
+          boxShadow: seg.value > 0 ? `0 0 8px ${seg.color}25` : 'none',
         }} />
       ))}
     </div>
@@ -333,7 +353,31 @@ function TrendLine({ data = [], color = T.indigo, w = 80, h = 28 }) {
 }
 
 // ─── BACKGROUND ───────────────────────────────────────────────────────────────
-function BackgroundOrbs() { return null; }
+function BackgroundOrbs() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <div style={{
+        position: 'absolute', top: '-8%', right: '-6%', width: 500, height: 500,
+        background: 'radial-gradient(circle, rgba(129,140,248,.035) 0%, transparent 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'cisOrb 22s ease-in-out infinite',
+      }}/>
+      <div style={{
+        position: 'absolute', bottom: '5%', left: '-8%', width: 420, height: 420,
+        background: 'radial-gradient(circle, rgba(52,211,153,.025) 0%, transparent 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'cisOrb 28s ease-in-out infinite reverse',
+      }}/>
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `linear-gradient(${T.border} 1px, transparent 1px), linear-gradient(90deg, ${T.border} 1px, transparent 1px)`,
+        backgroundSize: '64px 64px', opacity: .25,
+        maskImage: 'radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%)',
+      }}/>
+    </div>
+  );
+}
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function scoreColor(s) {
@@ -343,10 +387,10 @@ function scoreColor(s) {
   return T.red;
 }
 function scoreTier(s) {
-  if (s >= 80) return { label: 'Healthy', color: T.emerald, bg: 'rgba(255,255,255,.04)', bdr: T.border };
-  if (s >= 60) return { label: 'Stable',  color: T.t2,      bg: 'rgba(255,255,255,.04)', bdr: T.border };
-  if (s >= 40) return { label: 'Caution', color: T.amber,   bg: 'rgba(255,255,255,.04)', bdr: T.border };
-  return              { label: 'At Risk', color: T.red,     bg: 'rgba(255,255,255,.04)', bdr: T.border };
+  if (s >= 80) return { label: 'Healthy', color: T.emerald, bg: T.emeraldDim, bdr: T.emeraldBdr };
+  if (s >= 60) return { label: 'Stable',  color: T.t2,      bg: 'rgba(139,149,179,.05)', bdr: 'rgba(139,149,179,.10)' };
+  if (s >= 40) return { label: 'Caution', color: T.amber,   bg: T.amberDim,  bdr: T.amberBdr };
+  return              { label: 'At Risk', color: T.red,     bg: T.redDim,    bdr: T.redBdr };
 }
 function trendOf(hist) {
   if (!hist || hist.length < 4) return { dir: 'flat', delta: 0 };
@@ -373,10 +417,10 @@ function suggestedAction(client) {
   return { label: 'Message', icon: MessageCircle, color: T.indigo };
 }
 const SEV = {
-  Active:  { color: T.red,     dim: 'rgba(255,255,255,.04)', bdr: T.border },
-  Monitor: { color: T.amber,   dim: 'rgba(255,255,255,.04)', bdr: T.border },
-  Mild:    { color: T.indigo,  dim: 'rgba(255,255,255,.04)', bdr: T.border },
-  Cleared: { color: T.emerald, dim: 'rgba(255,255,255,.04)', bdr: T.border },
+  Active:  { color: T.red,     dim: T.redDim,     bdr: T.redBdr },
+  Monitor: { color: T.amber,   dim: T.amberDim,   bdr: T.amberBdr },
+  Mild:    { color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr },
+  Cleared: { color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr },
 };
 
 // ─── BUILD CLIENT FROM BOOKINGS ──────────────────────────────────────────────
@@ -465,10 +509,14 @@ function HealthOverview({ clients }) {
       <div className="cis-health-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: 10 }}>
         {/* Portfolio Health */}
         <div className="cis-stat-card" style={{
-          padding: '20px 22px', borderRadius: 12,
-          background: T.surface, border: `1px solid ${T.border}`,
-          position: 'relative', overflow: 'hidden',
+          padding: '20px 22px', borderRadius: 16,
+          background: `linear-gradient(135deg, ${T.surface}, ${T.card})`,
+          border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden',
         }}>
+          <div style={{
+            position: 'absolute', top: -30, right: -30, width: 140, height: 140,
+            background: `radial-gradient(circle, ${sc}08, transparent 70%)`,
+          }} />
           <Label style={{ marginBottom: 14 }}>Portfolio Health</Label>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
             <Mono style={{ fontSize: 42, fontWeight: 700, color: sc, lineHeight: 1 }}>
@@ -507,11 +555,12 @@ function HealthOverview({ clients }) {
 
         {/* Healthy count */}
         <div className="cis-stat-card" style={{
-          padding: '20px 22px', borderRadius: 12,
+          padding: '20px 22px', borderRadius: 16,
           background: T.surface, border: `1px solid ${T.border}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.emerald }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.emerald,
+              boxShadow: `0 0 8px ${T.emerald}40` }} />
             <Label>Healthy</Label>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
@@ -525,12 +574,15 @@ function HealthOverview({ clients }) {
 
         {/* Need Outreach */}
         <div className="cis-stat-card" style={{
-          padding: '20px 22px', borderRadius: 12, position: 'relative',
-          background: T.surface,
-          border: `1px solid ${T.border}`,
+          padding: '20px 22px', borderRadius: 16, position: 'relative',
+          background: atRisk > 0 ? `linear-gradient(135deg, ${T.redDim}, ${T.surface})` : T.surface,
+          border: `1px solid ${atRisk > 0 ? T.redBdr : T.border}`,
         }}>
+          {atRisk > 0 && <GlowBar color={T.red} />}
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.red }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.red,
+              boxShadow: atRisk > 0 ? `0 0 8px ${T.red}40` : 'none',
+              animation: atRisk > 0 ? 'cisPulse 2s ease infinite' : 'none' }} />
             <Label style={atRisk > 0 ? { color: T.red } : {}}>Need Outreach</Label>
           </div>
           <Mono style={{ fontSize: 36, fontWeight: 700, color: atRisk > 0 ? T.red : T.t1, lineHeight: 1 }}>
@@ -545,7 +597,7 @@ function HealthOverview({ clients }) {
         {/* Momentum */}
         <div className="cis-stat-card" style={{
           padding: '20px 22px', borderRadius: 16,
-          background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12,
+          background: T.surface, border: `1px solid ${T.border}`,
         }}>
           <Label style={{ marginBottom: 14 }}>Momentum</Label>
           <div style={{ display: 'flex', gap: 20 }}>
@@ -581,16 +633,20 @@ function PriorityClients({ clients, onSelect, openModal }) {
   return (
     <div className="c-fu c-d2" style={{ marginBottom: 22 }}>
       <div className="cis-card" style={{
-        borderLeft: `3px solid ${T.red}`,
+        border: `1px solid ${T.redBdr}`,
+        background: `linear-gradient(135deg, ${T.redDim}, ${T.surface})`,
       }}>
+        <GlowBar color={T.red} />
         <div style={{
           padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${T.border}`,
+          borderBottom: `1px solid ${T.redBdr}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.red, flexShrink: 0 }} />
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.red, flexShrink: 0,
+              animation: 'cisGlow 2.5s ease infinite',
+              boxShadow: `0 0 8px ${T.red}40` }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>Priority Outreach</span>
-            <Pill color={T.red}>
+            <Pill color={T.red} bg={T.redDim} border={T.redBdr} glow>
               {priority.length} client{priority.length > 1 ? 's' : ''}
             </Pill>
           </div>
@@ -621,12 +677,12 @@ function PriorityClients({ clients, onSelect, openModal }) {
                   <Mono style={{ fontSize: 20, fontWeight: 700,
                     color: scoreColor(client.retentionScore) }}>{client.retentionScore}</Mono>
                 </div>
-                <button className="cis-btn" onClick={e => { e.stopPropagation(); openModal?.('post', { id: client.id, full_name: client.name }); }}
+                <button className="cis-btn" onClick={e => { e.stopPropagation(); openModal?.('post', { memberId: client.id }); }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '8px 16px', borderRadius: 8,
-                    background: 'rgba(255,255,255,.04)',
-                    border: `1px solid ${T.border}`,
+                    background: `linear-gradient(135deg, ${action.color}10, transparent)`,
+                    border: `1px solid ${action.color}20`,
                     color: action.color, fontSize: 11.5, fontWeight: 600, flexShrink: 0,
                   }}>
                   <ActionIcon style={{ width: 12, height: 12 }} />
@@ -642,54 +698,35 @@ function PriorityClients({ clients, onSelect, openModal }) {
 }
 
 // ─── INSIGHTS PANEL ──────────────────────────────────────────────────────────
-function InsightsPanel({ clients, onFilterChange, openModal }) {
-  const atRiskClients = clients.filter(c => c.status === 'at_risk');
+function InsightsPanel({ clients, onFilterChange }) {
+  const atRiskCount = clients.filter(c => c.status === 'at_risk').length;
   const avgSessions = clients.length > 0
     ? (clients.reduce((s,c) => s + c.sessionsThisMonth, 0) / clients.length).toFixed(1) : 0;
-  const streakClients = clients.filter(c => c.streak >= 14);
-  const newClients = clients.filter(c => c.isNew);
+  const highStreaks = clients.filter(c => c.streak >= 14).length;
+  const newClients = clients.filter(c => c.isNew).length;
 
   const insights = [
-    atRiskClients.length > 0 && {
+    atRiskCount > 0 && {
       icon: AlertTriangle, color: T.red,
-      text: `${atRiskClients.length} client${atRiskClients.length > 1 ? 's' : ''} at risk of churning this week`,
+      text: `${atRiskCount} client${atRiskCount > 1 ? 's' : ''} at risk of churning this week`,
       filter: 'at_risk',
-      cta: 'Message them',
-      ctaFn: () => openModal?.('post', { id: atRiskClients[0].id, full_name: atRiskClients[0].name }),
-    },
-    newClients.length > 0 && {
-      icon: Sparkles, color: T.sky,
-      text: `${newClients.length} new client${newClients.length > 1 ? 's' : ''} joined — get them started`,
-      filter: 'new',
-      cta: 'Assign workout',
-      ctaFn: () => openModal?.('assignWorkout', { id: newClients[0].id, full_name: newClients[0].name }),
-    },
-    streakClients.length > 0 && {
-      icon: Flame, color: T.amber,
-      text: `${streakClients.length} client${streakClients.length > 1 ? 's' : ''} on a 14+ day streak`,
-      cta: 'Celebrate',
-      ctaFn: () => openModal?.('post', { id: streakClients[0].id, full_name: streakClients[0].name }),
     },
     avgSessions > 0 && {
       icon: BarChart3, color: T.indigo,
-      text: `Average ${avgSessions} sessions/month across your clients — aim for 8+ to maximise retention`,
+      text: `Average ${avgSessions} sessions/month across your roster`,
     },
-    (() => {
-      const twoX = clients.filter(c => c.sessionsThisMonth >= 8).length;
-      const oneX = clients.filter(c => c.sessionsThisMonth >= 4 && c.sessionsThisMonth < 8).length;
-      if (twoX > 0 && oneX > 0) return {
-        icon: Lightbulb, color: T.emerald,
-        text: `${twoX} client${twoX > 1 ? 's' : ''} train 2×/week vs ${oneX} at 1×/week. Moving ${oneX} to 2× could cut your churn rate by up to 3×.`,
-      };
-      if (twoX === 0 && clients.length > 0) return {
-        icon: Lightbulb, color: T.amber,
-        text: `None of your ${clients.length} clients train 2×/week. Clients who do retain 3× longer — book more sessions to raise the bar.`,
-      };
-      return {
-        icon: Lightbulb, color: T.emerald,
-        text: `${twoX} of ${clients.length} clients train 2×/week — your strongest retention group. Keep pushing.`,
-      };
-    })(),
+    highStreaks > 0 && {
+      icon: Flame, color: T.amber,
+      text: `${highStreaks} client${highStreaks > 1 ? 's' : ''} on a 14+ day streak`,
+    },
+    newClients > 0 && {
+      icon: Sparkles, color: T.sky,
+      text: `${newClients} new client${newClients > 1 ? 's' : ''} joined this month`,
+    },
+    {
+      icon: Lightbulb, color: T.emerald,
+      text: 'Clients attending 2×/week retain 3× longer than 1×/week',
+    },
   ].filter(Boolean).slice(0, 4);
 
   return (
@@ -698,177 +735,28 @@ function InsightsPanel({ clients, onFilterChange, openModal }) {
       <div style={{ padding: '6px 8px' }}>
         {insights.map((ins, i) => {
           const Ic = ins.icon;
-          const isFilterable = !!ins.filter;
+          const isClickable = !!ins.filter;
           return (
-            <div key={i} style={{
+            <div key={i} onClick={() => isClickable && onFilterChange?.(ins.filter)} style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 10px', borderRadius: 10,
-              transition: 'background .15s', cursor: isFilterable ? 'pointer' : 'default',
+              transition: 'background .15s', cursor: isClickable ? 'pointer' : 'default',
             }}
-              onClick={() => isFilterable && onFilterChange?.(ins.filter)}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.015)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
               <div style={{
                 width: 26, height: 26, borderRadius: 8, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,.04)',
-                border: `1px solid ${T.border}`,
+                background: `linear-gradient(135deg, ${ins.color}10, transparent)`,
+                border: `1px solid ${ins.color}16`,
               }}>
                 <Ic style={{ width: 11, height: 11, color: ins.color }} />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 12, color: T.t2, lineHeight: 1.55, display: 'block' }}>{ins.text}</span>
-                {ins.ctaFn && (
-                  <button className="cis-btn" onClick={e => { e.stopPropagation(); ins.ctaFn(); }} style={{
-                    marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '5px 12px', borderRadius: 7,
-                    background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
-                    color: ins.color, fontSize: 10.5, fontWeight: 600,
-                  }}>
-                    {ins.cta} <ChevronRight style={{ width: 9, height: 9, color: T.t3 }} />
-                  </button>
-                )}
-              </div>
-              {isFilterable && !ins.ctaFn && <ChevronRight style={{ width: 11, height: 11, color: T.t4, flexShrink: 0, marginTop: 3 }} />}
+              <span style={{ fontSize: 12, color: T.t2, lineHeight: 1.55, flex: 1 }}>{ins.text}</span>
+              {isClickable && <ChevronRight style={{ width: 11, height: 11, color: T.t4, flexShrink: 0, marginTop: 3 }} />}
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-// ─── NEXT BEST ACTIONS ───────────────────────────────────────────────────────
-function NextBestActions({ clients, openModal, onFilterChange }) {
-  const actions = useMemo(() => {
-    const result = [];
-
-    const inactive = clients.filter(c => c.lastVisit >= 14 && c.status !== 'active').sort((a, b) => b.lastVisit - a.lastVisit);
-    if (inactive.length > 0) {
-      result.push({
-        id: 'outreach',
-        severity: 'high',
-        color: T.red, colorDim: T.redDim, colorBrd: T.redBdr,
-        title: `Message ${inactive.length} inactive client${inactive.length > 1 ? 's' : ''}`,
-        reason: `${inactive[0].name}${inactive.length > 1 ? ` and ${inactive.length - 1} others` : ''} haven't visited in ${inactive[0].lastVisit === 999 ? 'a long time' : `${inactive[0].lastVisit} days`}`,
-        context: 'A personal message now can prevent cancellations. Clients contacted within 14 days of inactivity return 60% of the time.',
-        cta: 'Send message',
-        icon: MessageCircle,
-        fn: () => openModal?.('post', { id: inactive[0].id, full_name: inactive[0].name }),
-      });
-    }
-
-    const noWorkout = clients.filter(c => c.sessionsThisMonth === 0);
-    if (noWorkout.length > 0) {
-      result.push({
-        id: 'assign',
-        severity: noWorkout.length >= 3 ? 'high' : 'med',
-        color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBdr,
-        title: `Assign workouts to ${noWorkout.length} client${noWorkout.length > 1 ? 's' : ''}`,
-        reason: `${noWorkout[0].name}${noWorkout.length > 1 ? ` +${noWorkout.length - 1} others` : ''} have no sessions this month`,
-        context: 'Clients with assigned home workouts show 2× better retention between in-person sessions.',
-        cta: 'Assign workout',
-        icon: Dumbbell,
-        fn: () => openModal?.('assignWorkout', { id: noWorkout[0].id, full_name: noWorkout[0].name }),
-      });
-    }
-
-    const streakers = clients.filter(c => c.streak >= 21);
-    if (streakers.length > 0) {
-      result.push({
-        id: 'celebrate',
-        severity: 'low',
-        color: T.emerald, colorDim: T.emeraldDim, colorBrd: T.emeraldBdr,
-        title: `Recognise ${streakers.length} client${streakers.length > 1 ? 's' : ''} on a streak`,
-        reason: `${streakers[0].name} has a ${streakers[0].streak}-day streak${streakers.length > 1 ? ` (+${streakers.length - 1} more)` : ''}`,
-        context: 'Recognition messages at streak milestones increase long-term retention by up to 40%.',
-        cta: 'Send congrats',
-        icon: Star,
-        fn: () => openModal?.('post', { id: streakers[0].id, full_name: streakers[0].name }),
-      });
-    }
-
-    const lowBook = clients.filter(c => c.sessionsThisMonth < (c.sessionsLastMonth / 2) && c.sessionsLastMonth > 0);
-    if (lowBook.length > 0 && result.length < 3) {
-      result.push({
-        id: 'rebook',
-        severity: 'med',
-        color: T.indigo, colorDim: T.indigoDim, colorBrd: T.indigoBdr,
-        title: `Rebook ${lowBook.length} client${lowBook.length > 1 ? 's' : ''} — sessions dropping`,
-        reason: `${lowBook[0].name}'s session frequency is half of last month`,
-        context: 'Early re-engagement when frequency drops prevents churn before it happens.',
-        cta: 'Book a class',
-        icon: Calendar,
-        fn: () => openModal?.('bookClient', { id: lowBook[0].id, full_name: lowBook[0].name }),
-      });
-    }
-
-    return result.slice(0, 3);
-  }, [clients, openModal]);
-
-  if (actions.length === 0) return null;
-
-  const urgentCount = actions.filter(a => a.severity === 'high').length;
-
-  return (
-    <div className="c-fu c-d2" style={{ marginBottom: 22 }}>
-      <div className="cis-card" style={{
-        ...(urgentCount > 0 ? { borderLeft: `3px solid ${T.red}` } : {}),
-      }}>
-        <div style={{
-          padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${T.border}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Zap style={{ width: 13, height: 13, color: urgentCount > 0 ? T.red : T.indigo }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>Next Best Actions</span>
-            {urgentCount > 0 && (
-              <Pill color={T.red}>{urgentCount} urgent</Pill>
-            )}
-          </div>
-          <span style={{ fontSize: 10.5, color: T.t3 }}>Based on client data</span>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: actions.map(() => '1fr').join(' '),
-        }}>
-          {actions.map((a, i) => {
-            const Ic = a.icon;
-            return (
-              <div key={a.id} style={{
-                padding: '16px 20px',
-                borderRight: i < actions.length - 1 ? `1px solid ${T.border}` : 'none',
-                display: 'flex', flexDirection: 'column', gap: 10,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                    background: 'rgba(255,255,255,.04)',
-                    border: `1px solid ${T.border}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Ic style={{ width: 13, height: 13, color: a.color }} />
-                  </div>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: T.t1, lineHeight: 1.4, flex: 1 }}>{a.title}</div>
-                </div>
-                <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.6, paddingLeft: 40 }}>{a.reason}. {a.context}</div>
-                <div style={{ paddingLeft: 40 }}>
-                  <button className="cis-btn" onClick={a.fn} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '7px 14px', borderRadius: 8,
-                    background: 'rgba(255,255,255,.04)',
-                    border: `1px solid ${T.border}`,
-                    color: a.color, fontSize: 11, fontWeight: 600,
-                  }}>
-                    <Ic style={{ width: 11, height: 11 }} /> {a.cta}
-                    <ChevronRight style={{ width: 9, height: 9, color: T.t3 }} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
@@ -896,7 +784,8 @@ function RetentionBreakdown({ clients }) {
             <div key={tier.label}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: tier.color }} />
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: tier.color,
+                    boxShadow: `0 0 6px ${tier.color}30` }} />
                   <span style={{ fontSize: 11.5, color: T.t2, fontWeight: 500 }}>{tier.label}</span>
                   <Mono style={{ fontSize: 9, color: T.t4 }}>{tier.range}</Mono>
                 </div>
@@ -908,8 +797,9 @@ function RetentionBreakdown({ clients }) {
               <div style={{ height: 3, borderRadius: 99, background: T.t5, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 99,
-                  background: tier.color,
+                  background: `linear-gradient(90deg, ${tier.color}80, ${tier.color})`,
                   width: `${pct}%`, transition: 'width .6s cubic-bezier(.16,1,.3,1)',
+                  boxShadow: pct > 0 ? `0 0 8px ${tier.color}25` : 'none',
                 }} />
               </div>
             </div>
@@ -921,7 +811,7 @@ function RetentionBreakdown({ clients }) {
 }
 
 // ─── TOP PERFORMERS ──────────────────────────────────────────────────────────
-function TopPerformers({ clients, onSelect, openModal }) {
+function TopPerformers({ clients, onSelect }) {
   const top = [...clients].sort((a,b) => b.retentionScore - a.retentionScore).slice(0,3);
   if (top.length === 0) return null;
 
@@ -945,23 +835,11 @@ function TopPerformers({ clients, onSelect, openModal }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: T.t1,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-              <div style={{ fontSize: 10, color: T.t3 }}>
-                {c.sessionsThisMonth} sessions/mo
-                {c.streak >= 14 && <span style={{ color: T.amber, marginLeft: 4 }}>· {c.streak}d streak 🔥</span>}
-              </div>
+              <div style={{ fontSize: 10, color: T.t3 }}>{c.sessionsThisMonth} sessions/mo</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {c.streak >= 14 && openModal && (
-                <button className="cis-btn" onClick={e => { e.stopPropagation(); openModal('post', { id: c.id, full_name: c.name }); }} style={{
-                  fontSize: 9, fontWeight: 700, color: T.amber,
-                  background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
-                  borderRadius: 6, padding: '3px 8px', flexShrink: 0,
-                }}>Celebrate</button>
-              )}
-              <Mono style={{ fontSize: 16, fontWeight: 700, color: scoreColor(c.retentionScore) }}>
-                {c.retentionScore}
-              </Mono>
-            </div>
+            <Mono style={{ fontSize: 16, fontWeight: 700, color: scoreColor(c.retentionScore) }}>
+              {c.retentionScore}
+            </Mono>
           </div>
         ))}
       </div>
@@ -1017,8 +895,8 @@ function DropPanel({ client, onClose, openModal }) {
 
   return (
     <div className="c-sd" onClick={e => e.stopPropagation()} style={{
-      borderTop: `1px solid ${T.border}`,
-      background: T.card,
+      borderTop: `1px solid ${isRisk ? T.redBdr : T.border}`,
+      background: `linear-gradient(180deg, ${T.card}, ${T.surface})`,
     }}>
       {/* Header */}
       <div style={{
@@ -1071,9 +949,9 @@ function DropPanel({ client, onClose, openModal }) {
           <div>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 22,
-              padding: '16px 18px', borderRadius: 10, marginBottom: 16,
-              background: 'rgba(255,255,255,.03)',
-              border: `1px solid ${T.border}`,
+              padding: '16px 18px', borderRadius: 14, marginBottom: 16,
+              background: `linear-gradient(135deg, ${sc}08, transparent)`,
+              border: `1px solid ${sc}12`,
             }}>
               <div style={{ textAlign: 'center', minWidth: 60 }}>
                 <Mono style={{ fontSize: 44, fontWeight: 700, color: sc, lineHeight: 1 }}>
@@ -1116,9 +994,9 @@ function DropPanel({ client, onClose, openModal }) {
 
             {isRisk && (
               <div style={{
-                padding: '14px 16px', borderRadius: 10, marginBottom: 8,
-                background: 'rgba(255,255,255,.02)',
-                border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.red}`,
+                padding: '14px 16px', borderRadius: 12, marginBottom: 8,
+                background: `linear-gradient(135deg, ${T.redDim}, transparent)`,
+                border: `1px solid ${T.redBdr}`, borderLeft: `3px solid ${T.red}`,
                 display: 'flex', alignItems: 'flex-start', gap: 12,
               }}>
                 <AlertTriangle style={{ width: 14, height: 14, color: T.red, flexShrink: 0, marginTop: 1 }} />
@@ -1128,31 +1006,20 @@ function DropPanel({ client, onClose, openModal }) {
                     {reasons.join(' · ')}. A personal call beats any automated message.
                   </div>
                 </div>
-                {(() => {
-                  const sa = suggestedAction(client);
-                  const SaIc = sa.icon;
-                  const saFn = (sa.label === 'Call them' || sa.label === 'Send message' || sa.label === 'Check in' || sa.label === 'Message')
-                    ? () => openModal?.('post', { id: client.id, full_name: client.name })
-                    : sa.label === 'Book session'
-                    ? () => openModal?.('bookIntoClass', { id: client.id, full_name: client.name })
-                    : () => setTab('Actions');
-                  return (
-                    <button className="cis-btn" onClick={saFn} style={{
-                      padding: '6px 14px', borderRadius: 8,
-                      background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
-                      color: sa.color, fontSize: 10.5, fontWeight: 600,
-                      display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                    }}>
-                      <SaIc style={{ width: 11, height: 11 }} /> {sa.label}
-                    </button>
-                  );
-                })()}
+                <button className="cis-btn" onClick={() => setTab('Actions')} style={{
+                  padding: '6px 14px', borderRadius: 8,
+                  background: `${T.red}10`, border: `1px solid ${T.red}20`,
+                  color: T.red, fontSize: 10.5, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                }}>
+                  Take action <ChevronRight style={{ width: 10, height: 10 }} />
+                </button>
               </div>
             )}
             {client.streak >= 21 && (
               <div style={{
-                padding: '13px 16px', borderRadius: 10,
-                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
+                padding: '13px 16px', borderRadius: 12,
+                background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`,
                 borderLeft: `3px solid ${T.emerald}`,
                 display: 'flex', alignItems: 'center', gap: 10,
               }}>
@@ -1188,8 +1055,8 @@ function DropPanel({ client, onClose, openModal }) {
               style={{ resize: 'vertical', lineHeight: 1.6 }} />
             <button className="cis-btn" onClick={saveNote} style={{
               marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px',
-              borderRadius: 8, background: 'rgba(255,255,255,.04)',
-              border: `1px solid ${T.border}`,
+              borderRadius: 8, background: noteSaved ? T.emeraldDim : T.indigoDim,
+              border: `1px solid ${noteSaved ? T.emeraldBdr : T.indigoBdr}`,
               color: noteSaved ? T.emerald : T.indigo, fontSize: 12, fontWeight: 600,
             }}>
               {noteSaved ? <><CheckCircle style={{ width: 12 }} /> Saved</> : <><Edit3 style={{ width: 12 }} /> Save Notes</>}
@@ -1228,10 +1095,10 @@ function DropPanel({ client, onClose, openModal }) {
               </div>
               <button className="cis-btn" onClick={() => setAddInj(v => !v)} style={{
                 display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px',
-                borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+                borderRadius: 8, background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
                 color: T.indigo, fontSize: 11.5, fontWeight: 600,
               }}>
-                <Plus style={{ width: 11 }} /> Log Injury
+                <Plus style={{ width: 11 }} /> Log
               </button>
             </div>
 
@@ -1311,10 +1178,9 @@ function DropPanel({ client, onClose, openModal }) {
             {client.nextSession ? (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-                borderRadius: 10, marginBottom: 14,
-                background: 'rgba(255,255,255,.03)',
-                border: `1px solid ${T.border}`,
-                borderLeft: `3px solid ${T.indigo}`,
+                borderRadius: 12, marginBottom: 14,
+                background: `linear-gradient(135deg, ${T.indigoDim}, transparent)`,
+                border: `1px solid ${T.indigoBdr}`,
               }}>
                 <Calendar style={{ width: 15, height: 15, color: T.indigo, flexShrink: 0 }} />
                 <div>
@@ -1363,9 +1229,9 @@ function DropPanel({ client, onClose, openModal }) {
                 </div>
               ))}
             </div>
-            <button className="cis-btn" onClick={() => openModal?.('bookIntoClass', { id: client.id, full_name: client.name })} style={{
+            <button className="cis-btn" onClick={() => openModal?.('bookIntoClass', { memberId: client.id })} style={{
               width: '100%', padding: '11px', borderRadius: 10,
-              background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+              background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
               color: T.indigo, fontSize: 12, fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}>
@@ -1379,15 +1245,15 @@ function DropPanel({ client, onClose, openModal }) {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
               {[
-                { icon: Phone,    label: 'Call',    color: T.emerald, fn: () => openModal?.('post', { id: client.id, full_name: client.name }) },
+                { icon: Phone,    label: 'Call',    color: T.emerald, fn: () => openModal?.('post', { memberId: client.id }) },
                 { icon: Calendar, label: 'Book',    color: T.indigo,  fn: () => openModal?.('bookAppointment', { id: client.id, full_name: client.name }) },
                 { icon: Dumbbell, label: 'Workout', color: T.amber,   fn: () => openModal?.('assignWorkout', { id: client.id, full_name: client.name }) },
               ].map(({ icon: Ic, label, color, fn }, i) => (
                 <button key={i} className="cis-btn" onClick={fn} style={{
                   flex: '1 1 auto', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', gap: 7, padding: '11px 16px', borderRadius: 10,
-                  background: 'rgba(255,255,255,.04)',
-                  border: `1px solid ${T.border}`,
+                  background: `linear-gradient(135deg, ${color}08, transparent)`,
+                  border: `1px solid ${color}18`,
                   color, fontSize: 12, fontWeight: 600,
                 }}>
                   <Ic style={{ width: 13 }} /> {label}
@@ -1400,9 +1266,9 @@ function DropPanel({ client, onClose, openModal }) {
               {PRESETS.map(p => (
                 <button key={p.id} className="cis-btn" onClick={() => setPreset(v => v === p.id ? null : p.id)} style={{
                   padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                  background: preset === p.id ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.025)',
-                  border: `1px solid ${preset === p.id ? T.borderH : T.border}`,
-                  color: preset === p.id ? T.t1 : T.t3,
+                  background: preset === p.id ? T.indigoDim : 'rgba(255,255,255,.025)',
+                  border: `1px solid ${preset === p.id ? T.indigoBdr : T.border}`,
+                  color: preset === p.id ? T.indigo : T.t3,
                 }}>{p.label}</button>
               ))}
             </div>
@@ -1424,8 +1290,8 @@ function DropPanel({ client, onClose, openModal }) {
             <button className="cis-btn" onClick={handleSend}
               disabled={!message.trim() || sending || sent} style={{
                 width: '100%', padding: '11px', borderRadius: 10,
-                background: sent ? 'rgba(255,255,255,.04)' : !message.trim() ? 'rgba(255,255,255,.025)' : T.indigo,
-                border: `1px solid ${T.border}`,
+                background: sent ? T.emeraldDim : !message.trim() ? 'rgba(255,255,255,.025)' : T.indigo,
+                border: `1px solid ${sent ? T.emeraldBdr : !message.trim() ? T.border : T.indigoBdr}`,
                 color: sent ? T.emerald : !message.trim() ? T.t3 : '#fff',
                 fontSize: 12, fontWeight: 600,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
@@ -1474,7 +1340,7 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
               {client.name}
             </span>
             {client.isNew && <Pill color={T.sky} bg={T.skyDim} border={T.skyBdr}>New</Pill>}
-            {isRisk && <Pill color={T.red}>At Risk</Pill>}
+            {isRisk && <Pill color={T.red} bg={T.redDim} border={T.redBdr} glow>At Risk</Pill>}
             {isPaused && <Pill color={T.t3}>Paused</Pill>}
             {client.streak >= 14 && (
               <span style={{ fontSize: 10, color: T.amber, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -1530,7 +1396,7 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
 
         <div className="cis-row-actions" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {[
-            { icon: MessageCircle, tip: 'Message', color: T.indigo,  fn: () => openModal?.('post', { id: client.id, full_name: client.name }) },
+            { icon: MessageCircle, tip: 'Message', color: T.indigo,  fn: () => openModal?.('post', { memberId: client.id }) },
             { icon: Calendar,      tip: 'Book',    color: T.emerald, fn: () => openModal?.('bookAppointment', { id: client.id, full_name: client.name }) },
             { icon: Dumbbell,      tip: 'Workout', color: T.amber,   fn: () => openModal?.('assignWorkout', { id: client.id, full_name: client.name }) },
           ].map(({ icon: Ic, tip, color, fn }, i) => (
@@ -1539,8 +1405,8 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
               style={{
                 width: 32, height: 32, borderRadius: 8, display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,.04)',
-                border: `1px solid ${T.border}`, color,
+                background: `linear-gradient(135deg, ${color}08, transparent)`,
+                border: `1px solid ${color}14`, color,
               }}>
               <Ic style={{ width: 13, height: 13 }} />
             </button>
@@ -1549,7 +1415,7 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
 
         <ChevronDown style={{
           width: 14, height: 14, flexShrink: 0,
-          color: isOpen ? T.t1 : T.t4,
+          color: isOpen ? T.indigo : T.t4,
           transform: isOpen ? 'rotate(180deg)' : 'none',
           transition: 'transform .25s cubic-bezier(.16,1,.3,1), color .15s',
         }} />
@@ -1570,16 +1436,16 @@ function PendingClientRow({ invite, onCancel }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 20px' }}>
         <div style={{
           width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-          background: 'rgba(255,255,255,.06)',
-          border: `1px solid ${T.border}`,
+          background: `linear-gradient(135deg, ${T.indigoDim}, transparent)`,
+          border: `1px solid ${T.indigoBdr}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, fontWeight: 700, color: T.t2,
+          fontSize: 14, fontWeight: 700, color: T.indigo,
         }}>{ini(invite.member_name)}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: T.t1, marginBottom: 3 }}>{invite.member_name}</div>
           <div style={{ fontSize: 11, color: T.t3 }}>Invite sent · awaiting response</div>
         </div>
-        <Pill color={T.indigo}>Pending</Pill>
+        <Pill color={T.indigo} bg={T.indigoDim} border={T.indigoBdr}>Pending</Pill>
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <button className="cis-btn" onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
             style={{
@@ -1625,17 +1491,17 @@ function EmptyState({ onAddClient }) {
 
   return (
     <div className="c-fu" style={{
-      padding: '56px 36px', textAlign: 'center', borderRadius: 12,
-      background: T.surface,
+      padding: '56px 36px', textAlign: 'center', borderRadius: 20,
+      background: `linear-gradient(180deg, ${T.surface}, ${T.bg})`,
       border: `1px solid ${T.border}`,
     }}>
       <div style={{
         width: 60, height: 60, borderRadius: 18, margin: '0 auto 22px',
-        background: 'rgba(255,255,255,.04)',
-        border: `1px solid ${T.border}`,
+        background: `linear-gradient(135deg, ${T.indigoDim}, transparent)`,
+        border: `1px solid ${T.indigoBdr}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Users style={{ width: 26, height: 26, color: T.t2 }} />
+        <Users style={{ width: 26, height: 26, color: T.indigo }} />
       </div>
       <h3 style={{ fontSize: 22, fontWeight: 800, color: T.t1, margin: '0 0 8px', letterSpacing: '-.03em' }}>
         Build Your Client Intelligence
@@ -1659,8 +1525,8 @@ function EmptyState({ onAddClient }) {
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = 'rgba(255,255,255,.015)'; e.currentTarget.style.transform = 'none'; }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 12, margin: '0 auto 14px',
-                background: 'rgba(255,255,255,.04)',
-                border: `1px solid ${T.border}`,
+                background: `linear-gradient(135deg, ${step.color}10, transparent)`,
+                border: `1px solid ${step.color}18`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Ic style={{ width: 16, height: 16, color: step.color }} />
@@ -1795,8 +1661,9 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
           </div>
           <button className="cis-btn" onClick={() => setShowAddModal(true)} style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10,
-            background: T.indigo,
+            background: `linear-gradient(135deg, ${T.indigo}, #6366f1)`,
             color: '#fff', fontSize: 13, fontWeight: 700,
+            boxShadow: `0 2px 16px ${T.indigo}30, 0 0 40px ${T.indigo}10`,
           }}>
             <UserPlus style={{ width: 15, height: 15 }} /> Add Client
           </button>
@@ -1807,7 +1674,6 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
         ) : (
           <>
             <HealthOverview clients={allClients} />
-            <NextBestActions clients={allClients} openModal={openModal} onFilterChange={setFilter} />
             <PriorityClients clients={allClients} onSelect={openClient} openModal={openModal} />
 
             {/* Controls Row */}
@@ -1840,9 +1706,9 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
                   <button key={s.id} className="cis-btn" onClick={() => setSortBy(s.id)} style={{
                     padding: '7px 14px', borderRadius: 8, fontSize: 11.5,
                     fontWeight: sortBy === s.id ? 700 : 500,
-                    background: sortBy === s.id ? 'rgba(255,255,255,.07)' : 'transparent',
-                    border: `1px solid ${sortBy === s.id ? T.borderH : 'transparent'}`,
-                    color: sortBy === s.id ? T.t1 : T.t3, whiteSpace: 'nowrap',
+                    background: sortBy === s.id ? T.indigoDim : 'transparent',
+                    border: `1px solid ${sortBy === s.id ? T.indigoBdr : 'transparent'}`,
+                    color: sortBy === s.id ? T.indigo : T.t3, whiteSpace: 'nowrap',
                   }}>{s.label}</button>
                 ))}
               </div>
@@ -1869,10 +1735,10 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
                     {f.count > 0 && (
                       <Mono style={{
                         fontSize: 10, fontWeight: 700,
-                        background: isAct ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.03)',
+                        background: isAct ? (isUrg ? T.redDim : T.indigoDim) : 'rgba(255,255,255,.03)',
                         color: isAct ? accent : T.t3,
                         padding: '2px 8px', borderRadius: 99,
-                        border: `1px solid ${isAct ? T.borderH : 'transparent'}`,
+                        border: `1px solid ${isAct ? (isUrg ? T.redBdr : T.indigoBdr) : 'transparent'}`,
                       }}>{f.count}</Mono>
                     )}
                   </button>
@@ -1934,9 +1800,9 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
 
               {/* Sidebar */}
               <div className="cis-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 16 }}>
-                <InsightsPanel clients={allClients} onFilterChange={setFilter} openModal={openModal} />
+                <InsightsPanel clients={allClients} onFilterChange={setFilter} />
                 <RetentionBreakdown clients={visible.length > 0 ? visible : allClients} />
-                <TopPerformers clients={allClients} onSelect={openClient} openModal={openModal} />
+                <TopPerformers clients={allClients} onSelect={openClient} />
               </div>
             </div>
           </>

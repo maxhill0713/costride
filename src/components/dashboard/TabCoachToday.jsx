@@ -4,81 +4,80 @@ import { useState, useMemo, useEffect, useRef } from "react";
 const diffDays = (a, b) => Math.floor((a - b) / 86400000);
 const lerp = (a, b, t) => a + (b - a) * t;
 
-// ─── DESIGN TOKENS — Neutral-first, $500M SaaS ────────────────────────────────
+// ─── DESIGN TOKENS — Refined dark luxury ──────────────────────────────────────
 const T = {
-  // Surfaces — true zinc, no blue tint
-  bg:        '#09090b',   // zinc-950
-  bgSub:     '#0c0c0f',
-  surface:   '#111113',   // zinc-900
-  surfaceUp: '#18181b',   // zinc-800
-  card:      '#111113',
-  cardHover: '#1c1c1f',
+  // Surfaces — deeper blacks with blue undertone
+  bg:        '#050810',
+  bgSub:     '#080c16',
+  surface:   '#0a0f1e',
+  surfaceUp: '#0d1225',
+  card:      '#0b1020',
+  cardHover: '#0d1328',
+  glass:     'rgba(12,17,35,.72)',
+  glassBdr:  'rgba(255,255,255,.04)',
 
-  // Borders — single neutral weight
-  border:    'rgba(255,255,255,.07)',
-  borderH:   'rgba(255,255,255,.12)',
-  borderA:   'rgba(255,255,255,.16)',
-  borderF:   'rgba(255,255,255,.07)',  // alias
+  // Borders — ultra subtle
+  border:    'rgba(255,255,255,.04)',
+  borderH:   'rgba(255,255,255,.07)',
+  borderA:   'rgba(255,255,255,.10)',
+  borderF:   'rgba(255,255,255,.14)',
 
-  // Typography — zinc scale, high contrast
-  t1: '#fafafa',   // zinc-50
-  t2: '#a1a1aa',   // zinc-400
-  t3: '#52525b',   // zinc-600
-  t4: '#3f3f46',   // zinc-700
-  t5: '#27272a',   // zinc-800
+  // Typography
+  t1: '#eef2ff',
+  t2: '#8b95b3',
+  t3: '#4b5578',
+  t4: '#252d45',
+  t5: '#181e32',
 
-  // Semantic: red = urgent
-  red:       '#ef4444',
-  redDim:    'rgba(239,68,68,.08)',
-  redBdr:    'rgba(239,68,68,.22)',
-  redMid:    '#ef4444',
-  redGlo:    'rgba(239,68,68,.12)',
+  // Accents — richer, more saturated
+  emerald:    '#34d399',
+  emeraldMid: '#10b981',
+  emeraldDim: 'rgba(52,211,153,.06)',
+  emeraldBdr: 'rgba(52,211,153,.14)',
+  emeraldGlo: 'rgba(52,211,153,.20)',
 
-  // Semantic: amber = warning
-  amber:     '#f59e0b',
-  amberDim:  'rgba(245,158,11,.08)',
-  amberBdr:  'rgba(245,158,11,.22)',
+  indigo:    '#818cf8',
+  indigoMid: '#6366f1',
+  indigoDim: 'rgba(129,140,248,.06)',
+  indigoBdr: 'rgba(129,140,248,.14)',
+  indigoGlo: 'rgba(129,140,248,.20)',
+
+  amber:     '#fbbf24',
   amberMid:  '#f59e0b',
-  amberGlo:  'rgba(245,158,11,.12)',
+  amberDim:  'rgba(251,191,36,.05)',
+  amberBdr:  'rgba(251,191,36,.12)',
+  amberGlo:  'rgba(251,191,36,.18)',
 
-  // Semantic: emerald = success / live
-  emerald:   '#10b981',
-  emeraldDim:'rgba(16,185,129,.08)',
-  emeraldBdr:'rgba(16,185,129,.22)',
-  emeraldMid:'#10b981',
-  emeraldGlo:'rgba(16,185,129,.12)',
+  red:       '#f87171',
+  redMid:    '#ef4444',
+  redDim:    'rgba(248,113,113,.05)',
+  redBdr:    'rgba(248,113,113,.12)',
+  redGlo:    'rgba(248,113,113,.18)',
 
-  // Semantic: blue = actions / interactive
-  indigo:    '#3b82f6',   // mapped to blue — actions only
-  indigoMid: '#3b82f6',
-  indigoDim: 'rgba(59,130,246,.09)',
-  indigoBdr: 'rgba(59,130,246,.25)',
-  indigoGlo: 'rgba(59,130,246,.12)',
+  sky:       '#38bdf8',
+  skyDim:    'rgba(56,189,248,.06)',
+  skyBdr:    'rgba(56,189,248,.14)',
 
-  // sky/violet — mapped to neutral (no more decorative color)
-  sky:       '#a1a1aa',
-  skyDim:    'rgba(255,255,255,.04)',
-  skyBdr:    'rgba(255,255,255,.09)',
-  violet:    '#a1a1aa',
-  violetDim: 'rgba(255,255,255,.04)',
-  violetBdr: 'rgba(255,255,255,.09)',
+  violet:    '#a78bfa',
+  violetDim: 'rgba(167,139,250,.06)',
+  violetBdr: 'rgba(167,139,250,.14)',
 
   // Fonts
   display: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
   body:    "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
   mono:    "'IBM Plex Mono', 'SF Mono', monospace",
 
-  // Radii — tighter
-  r1: 6,
-  r2: 8,
-  r3: 12,
-  r4: 16,
+  // Radii
+  r1: 8,
+  r2: 12,
+  r3: 16,
+  r4: 20,
 
-  // Shadows — elevation only, no color glow
-  shadowSm: '0 1px 3px rgba(0,0,0,.5)',
-  shadowMd: '0 4px 16px rgba(0,0,0,.35)',
-  shadowLg: '0 8px 32px rgba(0,0,0,.4)',
-  shadowGlow: () => 'none',
+  // Shadows
+  shadowSm: '0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.15)',
+  shadowMd: '0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)',
+  shadowLg: '0 8px 32px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2)',
+  shadowGlow: (c, a = .12) => `0 0 20px rgba(${c},${a}), 0 0 60px rgba(${c},${a * .5})`,
 };
 
 // ─── INJECT CSS ───────────────────────────────────────────────────────────────
@@ -249,6 +248,63 @@ if (typeof document !== "undefined" && !document.getElementById("tct-css")) {
   document.head.appendChild(s);
 }
 
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+const NOW_MOCK = (() => { const d = new Date(); d.setHours(12, 15, 0, 0); return d; })();
+
+const mkCI = (() => {
+  let n = 1;
+  return (uid, daysAgo) => {
+    const d = new Date(NOW_MOCK);
+    d.setDate(d.getDate() - daysAgo);
+    d.setHours(7 + Math.floor(Math.random() * 4), Math.floor(Math.random() * 60));
+    return { id: `ci${n++}`, user_id: uid, check_in_date: d.toISOString() };
+  };
+})();
+
+const MEMBERS = [
+  { user_id: "u1",  user_name: "Sophie Allen",  membership: "Premium" },
+  { user_id: "u2",  user_name: "James Park",    membership: "Standard" },
+  { user_id: "u3",  user_name: "Rachel Kim",    membership: "Premium" },
+  { user_id: "u4",  user_name: "Michael Chen",  membership: "Standard" },
+  { user_id: "u5",  user_name: "Ella Torres",   membership: "Premium" },
+  { user_id: "u6",  user_name: "David Lowe",    membership: "Standard" },
+  { user_id: "u7",  user_name: "Maria Santos",  membership: "Premium" },
+  { user_id: "u8",  user_name: "Tom Bradley",   membership: "Standard" },
+  { user_id: "u9",  user_name: "Lisa Chen",     membership: "Premium" },
+  { user_id: "u10", user_name: "Alex Kumar",    membership: "Standard" },
+];
+
+const CHECKINS = [
+  ...[0,1,3,5,7,9,11].map(d => mkCI("u6", d)),
+  ...[0,2,4,6,9,11,13].map(d => mkCI("u7", d)),
+  ...[1,3,5,8,10,12].map(d => mkCI("u8", d)),
+  ...[0,1,2,4,6,8,11].map(d => mkCI("u9", d)),
+  ...[3,5,7,9,11].map(d => mkCI("u4", d)),
+  ...[6,8,10,12,13].map(d => mkCI("u5", d)),
+  ...[7,9,11,12,13].map(d => mkCI("u1", d)),
+  ...[8,10,12,13].map(d => mkCI("u2", d)),
+  ...[15,18,21,24].map(d => mkCI("u3", d)),
+];
+
+const CLASSES = [
+  { id:"c1", name:"Morning Strength", schedule:"7:00 am",  max_capacity:15, bookings:Array.from({length:12},(_,i)=>({id:i})), duration_minutes:60, instructor:"Marcus Reid" },
+  { id:"c2", name:"Yoga Flow",        schedule:"9:30 am",  max_capacity:15, bookings:Array.from({length:6}, (_,i)=>({id:i})), duration_minutes:60, instructor:"Sarah Mills" },
+  { id:"c3", name:"Lunch HIIT",       schedule:"12:00 pm", max_capacity:15, bookings:Array.from({length:15},(_,i)=>({id:i})), duration_minutes:45, instructor:"Marcus Reid", notes:"Full house — consider sending a warmup tip before class." },
+  { id:"c4", name:"Evening HIIT",     schedule:"6:00 pm",  max_capacity:20, bookings:Array.from({length:7}, (_,i)=>({id:i})), duration_minutes:45, instructor:"Tom Harris" },
+  { id:"c5", name:"Spin Class",       schedule:"7:30 pm",  max_capacity:18, bookings:Array.from({length:14},(_,i)=>({id:i})), duration_minutes:45, instructor:"Amy Price" },
+];
+
+const CURRENT_USER = { display_name: "Marcus Reid" };
+
+const MOCK_ACTIVITY = [
+  { type:"checkin", name:"David Lowe",   detail:"Checked in to Morning Strength",        time:"2m ago",    tcolor: T.emerald, icon: "check" },
+  { type:"missed",  name:"Rachel Kim",   detail:"Missed Yoga Flow — no cancellation",    time:"14m ago",   tcolor: T.red,     icon: "x",     action:"Follow up" },
+  { type:"sent",    name:"You",          detail:"Sent renewal message to Tom Bradley",   time:"47m ago",   tcolor: T.indigo,  icon: "send" },
+  { type:"booking", name:"Maria Santos", detail:"Booked Evening HIIT at 6 pm",           time:"1h ago",    tcolor: T.emerald, icon: "plus" },
+  { type:"booking", name:"3 members",    detail:"Booked Spin Class — now 14/18",         time:"2h ago",    tcolor: T.emerald, icon: "plus" },
+  { type:"cancel",  name:"Michael Chen", detail:"Cancelled Thursday — 2nd this week",    time:"3h ago",    tcolor: T.amber,   icon: "warn",  action:"Check in" },
+  { type:"new",     name:"Emma Wilson",  detail:"Started a 7-day trial",                 time:"Yesterday", tcolor: T.sky,     icon: "star" },
+];
 
 
 // ─── ICON SYSTEM ──────────────────────────────────────────────────────────────
@@ -447,129 +503,81 @@ function deriveSessions(myClasses, now) {
   }).sort((a, b) => (a.th ?? 99) - (b.th ?? 99));
 }
 
-function derivePriorities({ allMemberships, checkIns, sessions, now, bookings = [] }) {
+function derivePriorities({ allMemberships, checkIns, sessions, now }) {
   const out = [];
-
-  // 1. Inactive clients (7+ days) — message them
   const inactive = allMemberships.filter(m => {
     const last = checkIns.filter(c => c.user_id === m.user_id)
       .sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
     return last && diffDays(now, new Date(last.check_in_date)) >= 7;
   });
-  const neverVisited = allMemberships.filter(m => !checkIns.some(c => c.user_id === m.user_id));
-  const atRisk = [...inactive, ...neverVisited];
-  if (atRisk.length > 0) {
-    const names = atRisk.map(m => m.user_name?.split(" ")[0]).filter(Boolean).slice(0, 3).join(", ");
-    const extra = atRisk.length > 3 ? ` + ${atRisk.length - 3} more` : "";
-    const worstDays = inactive.length > 0
-      ? Math.max(...inactive.map(m => {
-          const last = checkIns.filter(c => c.user_id === m.user_id)
-            .sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-          return last ? diffDays(now, new Date(last.check_in_date)) : 999;
-        }))
-      : null;
-    const reasonSuffix = neverVisited.length > 0
-      ? `${neverVisited.length} have never visited.`
-      : `Longest gap: ${worstDays}d.`;
+  const never = allMemberships.filter(m => !checkIns.some(c => c.user_id === m.user_id));
+  if (inactive.length > 0 || never.length > 0) {
+    const count = inactive.length + never.length;
+    const names = [...inactive, ...never].map(m => m.user_name?.split(" ")[0]).slice(0, 2).join(", ");
     out.push({
       id: "inactive", rank: 1, severity: "high",
-      title: `Message ${atRisk.length} inactive client${atRisk.length > 1 ? "s" : ""}`,
-      context: `${names}${extra} haven't shown up in 7+ days. ${reasonSuffix} Re-engagement drops ~4% per extra day.`,
-      cta: "Send Message", icon: "msg", actionKey: "message_inactive",
-      color: T.red, colorDim: T.redDim, colorBrd: T.redBdr, colorGlo: T.redGlo,
-      members: atRisk,
+      title: `${count} client${count > 1 ? "s" : ""} inactive 7+ days`,
+      context: `${names}${count > 2 ? ` + ${count - 2} more` : ""} — each extra day lowers re-engagement by ~4 %. Act now.`,
+      cta: "Send Re-engagement", icon: "msg", color: T.red, colorDim: T.redDim, colorBrd: T.redBdr, colorGlo: T.redGlo,
     });
   }
-
-  // 2. Underbooked upcoming sessions — promote
-  const under = sessions.filter(s => s.status !== "done" && s.cap > 0 && s.booked / s.cap < 0.5);
+  const trialNames = ["Emma Wilson", "Josh Lee", "Priya Nair", "Sam Parker"];
+  out.push({
+    id: "trials", rank: 2, severity: "med",
+    title: `${trialNames.length} trials expiring this week`,
+    context: `68 % convert when contacted before day 4. Today is day 4 for ${trialNames[0]}. Send the upsell sequence.`,
+    cta: "Start Upsell", icon: "zap", color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBdr, colorGlo: T.amberGlo,
+  });
+  const under = sessions.filter(s => s.status !== "done" && s.cap > 0 && s.booked / s.cap < 0.4);
   if (under.length > 0) {
-    const s = under.sort((a, b) => (a.booked / a.cap) - (b.booked / b.cap))[0];
-    const spotsLeft = s.cap - s.booked;
-    const pct = Math.round(s.booked / s.cap * 100);
+    const s = under[0];
     out.push({
-      id: "underbooked", rank: 2, severity: pct < 25 ? "high" : "med",
-      title: `Fill "${s.name}" — ${spotsLeft} spot${spotsLeft > 1 ? "s" : ""} open`,
-      context: `${s.booked}/${s.cap} booked (${pct}%). ${s.time ? `Starts at ${s.time}.` : ""} Post now to give members time to join.`,
-      cta: "Promote Class", icon: "speaker", actionKey: "promote_class",
-      color: T.indigo, colorDim: T.indigoDim, colorBrd: T.indigoBdr, colorGlo: T.indigoGlo,
-      session: s,
+      id: "underbooked", rank: 3, severity: "med",
+      title: `"${s.name}" at ${Math.round(s.booked / s.cap * 100)} % — ${s.cap - s.booked} spots`,
+      context: `${s.booked}/${s.cap} booked. Last month averaged ${s.cap - 2}. Push now to fill before ${s.time}.`,
+      cta: "Promote Class", icon: "speaker", color: T.indigo, colorDim: T.indigoDim, colorBrd: T.indigoBdr, colorGlo: T.indigoGlo,
     });
   }
-
-  // 3. Full session → notify next-in-line or waitlist
-  const full = sessions.filter(s => s.status !== "done" && s.cap > 0 && s.booked >= s.cap);
-  if (full.length > 0) {
-    const s = full[0];
-    out.push({
-      id: "full_session", rank: 3, severity: "med",
-      title: `"${s.name}" is full — prep your class`,
-      context: `${s.booked}/${s.cap} spots filled. Send a warm-up tip or logistics note before ${s.time || "the session"}.`,
-      cta: "Message Attendees", icon: "msg", actionKey: "message_attendees",
-      color: T.emerald, colorDim: T.emeraldDim, colorBrd: T.emeraldBdr, colorGlo: T.emeraldGlo,
-      session: s,
-    });
-  }
-
-  // 4. Clients with no workouts assigned (no check-ins ever = new = assign workout)
-  if (neverVisited.length > 0 && out.length < 3) {
-    const names = neverVisited.map(m => m.user_name?.split(" ")[0]).filter(Boolean).slice(0, 2).join(", ");
-    out.push({
-      id: "no_workout", rank: 4, severity: "med",
-      title: `Assign workouts to ${neverVisited.length} new client${neverVisited.length > 1 ? "s" : ""}`,
-      context: `${names}${neverVisited.length > 2 ? ` + ${neverVisited.length - 2} more` : ""} have no visit history. A first workout plan increases 30-day retention by 2×.`,
-      cta: "Assign Workout", icon: "target", actionKey: "assign_workout",
-      color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBdr, colorGlo: T.amberGlo,
-      members: neverVisited,
-    });
-  }
-
-  // 5. Attendance down vs last week — view analytics
-  const ciThis = checkIns.filter(c => diffDays(now, new Date(c.check_in_date)) <= 7).length;
-  const ciLast = checkIns.filter(c => { const d = diffDays(now, new Date(c.check_in_date)); return d > 7 && d <= 14; }).length;
-  if (ciLast > 0 && ciThis < ciLast * 0.8 && out.length < 3) {
-    const drop = Math.round(((ciLast - ciThis) / ciLast) * 100);
-    out.push({
-      id: "attendance_drop", rank: 5, severity: "med",
-      title: `Attendance down ${drop}% this week`,
-      context: `${ciThis} check-ins vs ${ciLast} last week. Check which sessions are underperforming and act before it compounds.`,
-      cta: "View Analytics", icon: "trend", actionKey: "view_analytics",
-      color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBdr, colorGlo: T.amberGlo,
-    });
-  }
-
-  // 6. No-shows this week — follow up before they quit
-  if (out.length < 3) {
-    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekNoShows = bookings.filter(b => {
-      const isNoShow = b.no_show === true || b.status === 'no_show' || b.attended === false;
-      const sessionDate = new Date(b.session_date || b.created_at);
-      return isNoShow && sessionDate >= weekAgo && sessionDate <= now;
-    });
-    if (weekNoShows.length > 0) {
-      const uniqueIds = [...new Set(weekNoShows.map(b => b.client_id).filter(Boolean))];
-      const namesList = weekNoShows.slice(0, 3).map(b => b.client_name?.split(' ')[0]).filter(Boolean).join(', ');
-      out.push({
-        id: "no_shows", rank: 6, severity: uniqueIds.length >= 3 ? "high" : "med",
-        title: `${uniqueIds.length} no-show${uniqueIds.length > 1 ? 's' : ''} this week — follow up`,
-        context: `${namesList}${uniqueIds.length > 3 ? ` +${uniqueIds.length - 3} more` : ''} missed sessions. Re-engagement within 48h recovers 60% of at-risk clients.`,
-        cta: "Message them", icon: "msg", actionKey: "message_noshows",
-        color: T.amber, colorDim: T.amberDim, colorBrd: T.amberBdr, colorGlo: T.amberGlo,
-        members: weekNoShows.filter(b => b.client_id).map(b => ({ user_id: b.client_id, user_name: b.client_name })),
-      });
-    }
-  }
-
   return out.slice(0, 3);
 }
 
 // ─── BACKGROUND ───────────────────────────────────────────────────────────────
 function BackgroundOrbs() {
-  return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <div style={{
+        position: 'absolute', top: '-10%', right: '-5%', width: 500, height: 500,
+        background: 'radial-gradient(circle, rgba(99,102,241,.04) 0%, transparent 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'tctOrb 20s ease-in-out infinite',
+      }}/>
+      <div style={{
+        position: 'absolute', bottom: '10%', left: '-8%', width: 400, height: 400,
+        background: 'radial-gradient(circle, rgba(52,211,153,.03) 0%, transparent 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'tctOrb 25s ease-in-out infinite reverse',
+      }}/>
+      <div style={{
+        position: 'absolute', top: '40%', left: '50%', width: 600, height: 600,
+        transform: 'translate(-50%, -50%)',
+        background: 'radial-gradient(circle, rgba(248,113,113,.015) 0%, transparent 70%)',
+        borderRadius: '50%', filter: 'blur(80px)',
+      }}/>
+      {/* Grid pattern */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `linear-gradient(${T.border} 1px, transparent 1px), linear-gradient(90deg, ${T.border} 1px, transparent 1px)`,
+        backgroundSize: '64px 64px',
+        opacity: .3,
+        maskImage: 'radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%)',
+      }}/>
+    </div>
+  );
 }
 
 // ─── HEADER ───────────────────────────────────────────────────────────────────
-function CommandHeader({ currentUser, now, sessions, priorities, revenueMTD }) {
+function CommandHeader({ currentUser, now, sessions, priorities }) {
   const firstName = currentUser?.display_name?.split(" ")[0] || "Coach";
   const h = now.getHours();
   const greeting = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
@@ -644,14 +652,14 @@ function CommandHeader({ currentUser, now, sessions, priorities, revenueMTD }) {
 
           <div className="tct-stat-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
             {[
-              { label: "urgent",   v: urgent,        color: urgent > 0 ? T.red : T.t2,  dim: urgent > 0 ? T.redDim : 'rgba(255,255,255,.03)', bdr: urgent > 0 ? T.redBdr : T.border },
-              { label: "avg fill", v: `${avgFill}%`, color: T.t2, dim: 'rgba(255,255,255,.03)', bdr: T.border },
-              { label: "mtd", v: revenueMTD != null ? `£${Math.round(revenueMTD).toLocaleString()}` : "—", color: T.t2, dim: 'rgba(255,255,255,.03)', bdr: T.border },
+              { label: "urgent",   v: urgent,        color: T.red,     dim: T.redDim,     bdr: T.redBdr },
+              { label: "avg fill", v: `${avgFill}%`, color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr },
+              { label: "mtd",      v: "£8,240",      color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr },
             ].map((p, i) => (
               <div key={i} className="tct-stat" style={{
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "8px 14px",
-                background: p.dim,
+                background: `linear-gradient(135deg, ${p.dim} 0%, transparent 100%)`,
                 border: `1px solid ${p.bdr}`,
                 borderRadius: T.r1,
                 transition: 'all .2s',
@@ -672,15 +680,15 @@ function CommandHeader({ currentUser, now, sessions, priorities, revenueMTD }) {
 }
 
 // ─── PRIORITIES ───────────────────────────────────────────────────────────────
-function TodaysPriorities({ priorities, openModal, setTab }) {
+function TodaysPriorities({ priorities, openModal }) {
   const urgent = priorities.filter(p => p.severity === "high").length;
 
   const sevIcon = (sev, color) => (
     <div style={{
       width: 32, height: 32, borderRadius: T.r1, flexShrink: 0,
-      background: 'rgba(255,255,255,.04)',
-      border: `1px solid ${T.border}`,
-      display: "flex", alignItems: "center", justifyContent: "center",
+      background: `linear-gradient(135deg, ${color}14 0%, ${color}06 100%)`,
+      border: `1px solid ${color}22`,
+      display: "flex", alignItems: "center", justifyContent: "center", color,
     }}>
       <Icon name={sev === "high" ? "warn" : sev === "med" ? "info" : "check"} size={14} color={color} />
     </div>
@@ -729,30 +737,14 @@ function TodaysPriorities({ priorities, openModal, setTab }) {
               paddingLeft: 44,
             }}>{p.context}</div>
             <div style={{ paddingLeft: 44, marginTop: 2 }}>
-              <button className="tct-btn" onClick={() => {
-                if (p.actionKey === 'assign_workout') {
-                  const m = p.members?.[0];
-                  openModal?.('assignWorkout', m ? { id: m.user_id, full_name: m.user_name } : undefined);
-                } else if (p.actionKey === 'view_analytics') {
-                  setTab?.('schedule');
-                } else if (p.actionKey === 'message_attendees') {
-                  openModal?.('post', { classId: p.session?.id });
-                } else if (p.actionKey === 'message_inactive' || p.actionKey === 'message_noshows') {
-                  const m = p.members?.[0];
-                  openModal?.('post', m ? { id: m.user_id, full_name: m.user_name } : undefined);
-                } else if (p.actionKey === 'promote_class') {
-                  openModal?.('post');
-                } else {
-                  openModal?.('post');
-                }
-              }} style={{
+              <button className="tct-btn" onClick={() => openModal?.('post')} style={{
                 fontSize: 11.5, fontWeight: 600, color: p.color,
-                background: 'rgba(255,255,255,.04)',
-                border: `1px solid ${T.border}`,
+                background: `linear-gradient(135deg, ${p.colorDim} 0%, transparent 100%)`,
+                border: `1px solid ${p.colorBrd}`,
                 borderRadius: T.r1, padding: "8px 16px",
               }}>
                 <Icon name={p.icon} size={12} color={p.color} /> {p.cta}
-                <Icon name="arrow" size={11} color={T.t3} />
+                <Icon name="arrow" size={11} color={p.color} />
               </button>
             </div>
           </div>
@@ -765,9 +757,9 @@ function TodaysPriorities({ priorities, openModal, setTab }) {
 // ─── QUICK ACTIONS ────────────────────────────────────────────────────────────
 function QuickStrip({ openModal, setTab }) {
   const items = [
-    { label: "Scan Check-in",    color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "qr",    fn: () => openModal?.('qrScanner') },
-    { label: "Broadcast",        color: T.t2,      dim: 'rgba(255,255,255,.03)', bdr: T.border, icon: "msg", fn: () => openModal?.('post') },
-    { label: "Schedule Session", color: T.t2,      dim: 'rgba(255,255,255,.03)', bdr: T.border, icon: "cal", fn: () => openModal?.('classes') },
+    { label: "Scan Check-in",    color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",    fn: () => openModal?.('qrScanner') },
+    { label: "Broadcast",        color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",   fn: () => openModal?.('post') },
+    { label: "Schedule Session", color: T.sky,     dim: T.skyDim,     bdr: T.skyBdr,     icon: "cal",   fn: () => openModal?.('classes') },
     { label: "All Clients",      color: T.t2,      dim: "rgba(255,255,255,.03)", bdr: T.border, icon: "users", fn: () => setTab?.('members') },
   ];
   return (
@@ -777,7 +769,7 @@ function QuickStrip({ openModal, setTab }) {
       {items.map((a, i) => (
         <button key={i} className="tct-btn" onClick={a.fn} style={{
           fontSize: 12, fontWeight: 600, color: a.color,
-          background: a.dim,
+          background: `linear-gradient(135deg, ${a.dim} 0%, transparent 100%)`,
           border: `1px solid ${a.bdr}`,
           borderRadius: T.r1, padding: "10px 18px",
         }}>
@@ -854,14 +846,14 @@ function AttendanceChart({ checkIns, now }) {
             <div style={{
               display: "flex", alignItems: "center", gap: 5, padding: "5px 12px",
               borderRadius: T.r1,
-              background: 'rgba(255,255,255,.04)',
-              border: `1px solid ${T.border}`,
+              background: tUp ? T.emeraldDim : T.redDim,
+              border: `1px solid ${tUp ? T.emeraldBdr : T.redBdr}`,
             }}>
               <Icon name={tUp ? "up" : "down"} size={10} color={tUp ? T.emerald : T.red} />
               <Mono style={{ fontSize: 11, color: tUp ? T.emerald : T.red }}>
                 {Math.abs(trend)}%
               </Mono>
-              <span style={{ fontSize: 10, color: T.t3 }}>vs last wk</span>
+              <span style={{ fontSize: 10, color: tUp ? T.emerald : T.red, opacity: .6 }}>vs last wk</span>
             </div>
           </div>
         }
@@ -903,8 +895,12 @@ function AttendanceChart({ checkIns, now }) {
           <path d={areaD} fill="url(#tct-ag2)" />
 
           {/* Main line */}
-          <path d={pathD} fill="none" stroke={T.indigo} strokeWidth={1.4}
-            strokeLinejoin="round" strokeLinecap="round" opacity={.7} />
+          <path d={pathD} fill="none" stroke="url(#tct-line)" strokeWidth={1.6}
+            strokeLinejoin="round" strokeLinecap="round" />
+
+          {/* Glow line */}
+          <path d={pathD} fill="none" stroke={T.indigo} strokeWidth={3}
+            strokeLinejoin="round" strokeLinecap="round" opacity={.08} filter="url(#glow)" />
 
           {/* Today marker */}
           {(() => {
@@ -967,7 +963,7 @@ function AttendanceChart({ checkIns, now }) {
         {[
           { l: "This week", v: thisW, s: "check-ins", c: T.t1 },
           { l: "Daily avg",  v: dailyAvg, s: "per day", c: T.t1 },
-          { l: "Peak day",   v: Math.max(...data.slice(7).map(d => d.v)), s: bestDay.label, c: T.t1 },
+          { l: "Peak day",   v: Math.max(...data.slice(7).map(d => d.v)), s: bestDay.label, c: T.indigo },
         ].map((s, i) => (
           <div key={i} style={{
             padding: "14px 18px",
@@ -1089,7 +1085,7 @@ function TodaysSessions({ sessions, openModal, now }) {
             background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
             borderRadius: T.r1, padding: "7px 14px",
           }}>
-            <Icon name="plus" size={11} color={T.indigo} /> New
+            <Icon name="plus" size={11} color={T.indigo} /> Add
           </button>
         }
       />
@@ -1180,15 +1176,15 @@ function TodaysSessions({ sessions, openModal, now }) {
               }}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {[
-                    { label: "Message Attendees", color: T.indigo, icon: "msg",     fn: () => openModal?.('post', { classId: s.id }) },
+                    { label: "Message Attendees", color: T.indigo,  dim: T.indigoDim,  bdr: T.indigoBdr,  icon: "msg",     fn: () => openModal?.('post', { classId: s.id }) },
                     ...(!isDone && h.label !== "Full" ? [
-                      { label: "Promote Class",   color: T.t2,    icon: "speaker", fn: () => openModal?.('post') },
+                      { label: "Promote Class",   color: T.amber,   dim: T.amberDim,   bdr: T.amberBdr,   icon: "speaker", fn: () => openModal?.('post') },
                     ] : []),
-                    { label: "Check-in",          color: T.t2,    icon: "qr",      fn: () => openModal?.('qrScanner') },
+                    { label: "Check-in",          color: T.emerald, dim: T.emeraldDim, bdr: T.emeraldBdr, icon: "qr",      fn: () => openModal?.('qrScanner') },
                   ].map((a, j) => (
                     <button key={j} className="tct-btn" onClick={a.fn} style={{
                       fontSize: 11, fontWeight: 600, color: a.color,
-                      background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+                      background: a.dim, border: `1px solid ${a.bdr}`,
                       borderRadius: T.r1, padding: "8px 14px",
                     }}>
                       <Icon name={a.icon} size={11} color={a.color} /> {a.label}
@@ -1200,11 +1196,11 @@ function TodaysSessions({ sessions, openModal, now }) {
                     marginTop: 12, fontSize: 11.5, color: T.t3,
                     fontStyle: "italic", lineHeight: 1.6,
                     padding: '10px 14px',
-                    background: 'rgba(255,255,255,.03)',
-                    border: `1px solid ${T.border}`,
+                    background: T.amberDim,
+                    border: `1px solid ${T.amberBdr}`,
                     borderRadius: T.r1,
                   }}>
-                    <Icon name="info" size={11} color={T.t3} /> {s.notes}
+                    <Icon name="info" size={11} color={T.amber} /> {s.notes}
                   </div>
                 )}
               </div>
@@ -1235,83 +1231,28 @@ function TodaysSessions({ sessions, openModal, now }) {
 }
 
 // ─── ACTIVITY FEED ────────────────────────────────────────────────────────────
-function ActivityFeed({ openModal, checkIns = [], allMemberships = [], now }) {
-  const events = useMemo(() => {
-    const cutoff = new Date(now); cutoff.setHours(0, 0, 0, 0);
-    const memberMap = {};
-    allMemberships.forEach(m => { memberMap[m.user_id] = m.user_name || m.full_name || 'Member'; });
-
-    // today's check-ins sorted newest first
-    const todayCI = checkIns
-      .filter(c => {
-        const d = new Date(c.check_in_date);
-        return d >= cutoff && d <= now;
-      })
-      .sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))
-      .slice(0, 8)
-      .map(c => {
-        const name = c.user_name || memberMap[c.user_id] || 'Member';
-        const mins = Math.round((now - new Date(c.check_in_date)) / 60000);
-        const timeLabel = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.round(mins/60)}h ago`;
-        return {
-          name, tcolor: T.emerald, icon: 'check',
-          detail: c.class_name ? `Checked in to ${c.class_name}` : 'Checked in',
-          time: timeLabel, action: null,
-        };
-      });
-
-    // inactive members (14+ days) as "at risk" items — personalized with days + last class
-    const riskItems = allMemberships
-      .map(m => {
-        const mCI = checkIns
-          .filter(c => c.user_id === m.user_id)
-          .sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-        const last = mCI[0];
-        const days = last ? diffDays(now, new Date(last.check_in_date)) : 999;
-        return { m, last, days };
-      })
-      .filter(({ days }) => days >= 14)
-      .sort((a, b) => b.days - a.days)
-      .slice(0, 3)
-      .map(({ m, last, days }) => {
-        const daysLabel = days >= 999 ? 'never visited' : `${days}d inactive`;
-        const lastClass = last?.class_name ? ` · last: ${last.class_name}` : '';
-        return {
-          name: m.user_name || m.full_name || 'Member',
-          tcolor: T.amber, icon: 'warn',
-          detail: `${daysLabel}${lastClass}`,
-          time: '',
-          action: 'Message',
-          memberId: m.user_id,
-        };
-      });
-
-    const combined = [...todayCI, ...riskItems];
-    return combined.length > 0 ? combined : null;
-  }, [checkIns, allMemberships, now]);
-
+function ActivityFeed({ openModal }) {
+  const iconMap = {
+    check: "check", x: "x", send: "send", plus: "plus", warn: "warn", star: "star",
+  };
   return (
     <div className="tct-card t-fu t-d6">
-      <CardHead label="Activity Feed" sub={events ? `${events.filter(e => e.icon === 'check').length} check-ins today` : "No activity yet"} />
+      <CardHead label="Activity Feed" sub="Today's events" />
       <div className="tct-scr" style={{ maxHeight: 320, overflowY: "auto" }}>
-        {(!events || events.length === 0) ? (
-          <div style={{ padding: "28px 18px", textAlign: "center", color: T.t3, fontSize: 12 }}>
-            No activity recorded today
-          </div>
-        ) : events.map((ev, i) => (
+        {MOCK_ACTIVITY.map((ev, i) => (
           <div key={i} className="tct-row" style={{
             display: "flex", alignItems: "center", gap: 12,
             padding: "12px 18px",
           }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <Avatar name={ev.name} size={30} color={ev.icon === 'check' ? T.t3 : ev.tcolor} />
+              <Avatar name={ev.name} size={30} color={ev.tcolor} />
               <div style={{
                 position: "absolute", bottom: -2, right: -2,
                 width: 14, height: 14, borderRadius: 5,
-                background: T.bg, border: `1px solid ${T.border}`,
+                background: T.bg, border: `1px solid ${ev.tcolor}30`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon name={ev.icon} size={8} color={ev.icon === 'check' ? T.t2 : ev.tcolor} strokeWidth={2.5} />
+                <Icon name={iconMap[ev.icon] || "check"} size={8} color={ev.tcolor} strokeWidth={2.5} />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1322,15 +1263,15 @@ function ActivityFeed({ openModal, checkIns = [], allMemberships = [], now }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               {ev.action && (
-                <button className="tct-btn" onClick={() => openModal?.('post', ev.memberId ? { id: ev.memberId, full_name: ev.name } : undefined)} style={{
+                <button className="tct-btn" onClick={() => openModal?.('post')} style={{
                   fontSize: 10, fontWeight: 600, color: ev.tcolor,
-                  background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+                  background: `${ev.tcolor}0a`, border: `1px solid ${ev.tcolor}18`,
                   borderRadius: 6, padding: "5px 10px",
                 }}>
                   {ev.action}
                 </button>
               )}
-              {ev.time && <Mono style={{ fontSize: 10, color: T.t4, fontWeight: 400 }}>{ev.time}</Mono>}
+              <Mono style={{ fontSize: 10, color: T.t4, fontWeight: 400 }}>{ev.time}</Mono>
             </div>
           </div>
         ))}
@@ -1340,7 +1281,7 @@ function ActivityFeed({ openModal, checkIns = [], allMemberships = [], now }) {
 }
 
 // ─── WEEKLY PERFORMANCE (SIDEBAR) ─────────────────────────────────────────────
-function WeeklyPerformance({ checkIns, sessions, allMemberships, now, openModal, setTab, revenueMTD }) {
+function WeeklyPerformance({ checkIns, sessions, allMemberships, now }) {
   const thisStart = new Date(now); thisStart.setDate(thisStart.getDate() - 7);
   const lastStart = new Date(now); lastStart.setDate(lastStart.getDate() - 14);
 
@@ -1362,44 +1303,39 @@ function WeeklyPerformance({ checkIns, sessions, allMemberships, now, openModal,
   }).length;
 
   const rows = [
-    { l: "Attendance",  v: ciThis,         change: ciChange, up: (ciChange ?? 0) >= 0, sub: "check-ins this week",    vc: null,      icon: "activity", fn: () => setTab?.('schedule') },
-    { l: "Fill Rate",   v: `${fillRate}%`, change: null,     up: fillRate >= 60,        sub: `${sessions.reduce((a,s)=>a+s.booked,0)}/${sessions.reduce((a,s)=>a+s.cap,0)} spots`, vc: null, icon: "target", fn: () => setTab?.('schedule') },
-    { l: "At Risk",     v: atRisk,         change: null,     up: atRisk === 0,          sub: "inactive 14+ days",     vc: atRisk > 0 ? T.red : T.emerald, icon: "shield", fn: atRisk > 0 ? () => openModal?.('post') : null },
-    { l: "Revenue MTD", v: revenueMTD != null ? `£${Math.round(revenueMTD).toLocaleString()}` : "—", change: null, up: true, sub: "this month to date", vc: T.emerald, icon: "trend", fn: () => setTab?.('analytics') },
+    { l: "Attendance",  v: ciThis,         change: ciChange, up: (ciChange ?? 0) >= 0, sub: "check-ins this week",    vc: null,      icon: "activity" },
+    { l: "Fill Rate",   v: `${fillRate}%`, change: null,     up: fillRate >= 60,        sub: `${sessions.reduce((a,s)=>a+s.booked,0)}/${sessions.reduce((a,s)=>a+s.cap,0)} spots`, vc: null, icon: "target" },
+    { l: "At Risk",     v: atRisk,         change: null,     up: atRisk === 0,          sub: "inactive 14+ days",     vc: atRisk > 0 ? T.red : T.emerald, icon: "shield" },
+    { l: "Revenue MTD", v: "£8,240",       change: 8,        up: true,                  sub: "vs £7,630 last month",  vc: T.emerald, icon: "trend" },
   ];
 
   return (
     <div className="tct-card t-fu t-d5" style={{ marginBottom: 14 }}>
       <CardHead label="Performance" sub="This week" />
       {rows.map((m, i) => (
-        <div key={i} onClick={m.fn || undefined} style={{
+        <div key={i} style={{
           padding: "14px 18px",
           borderBottom: i < rows.length - 1 ? `1px solid ${T.border}` : "none",
           display: "flex", alignItems: "center", gap: 14,
-          cursor: m.fn ? 'pointer' : 'default',
-          transition: 'background .15s',
-        }}
-          onMouseEnter={e => { if (m.fn) e.currentTarget.style.background = 'rgba(255,255,255,.025)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-        >
+        }}>
           <div style={{
             width: 32, height: 32, borderRadius: T.r1, flexShrink: 0,
-            background: 'rgba(255,255,255,.04)',
-            border: `1px solid ${T.border}`,
+            background: `${(m.vc || T.indigo)}08`,
+            border: `1px solid ${(m.vc || T.indigo)}14`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Icon name={m.icon} size={14} color={m.vc || T.t2} />
+            <Icon name={m.icon} size={14} color={m.vc || T.indigo} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <Label style={{ marginBottom: 4 }}>{m.l}</Label>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <Mono style={{ fontSize: 22, color: m.vc === T.red ? T.red : T.t1, lineHeight: 1, fontWeight: 600 }}>{m.v}</Mono>
+              <Mono style={{ fontSize: 22, color: m.vc || T.t1, lineHeight: 1, fontWeight: 600 }}>{m.v}</Mono>
               {m.change !== null && (
                 <div style={{
                   display: "flex", alignItems: "center", gap: 3, padding: "2px 7px",
                   borderRadius: 5,
-                  background: 'rgba(255,255,255,.04)',
-                  border: `1px solid ${T.border}`,
+                  background: m.up ? T.emeraldDim : T.redDim,
+                  border: `1px solid ${m.up ? T.emeraldBdr : T.redBdr}`,
                 }}>
                   <Icon name={m.up ? "up" : "down"} size={9} color={m.up ? T.emerald : T.red} />
                   <Mono style={{ fontSize: 10, color: m.up ? T.emerald : T.red }}>{Math.abs(m.change)}%</Mono>
@@ -1450,10 +1386,10 @@ function ClientRiskFeed({ allMemberships, checkIns, now, openModal }) {
       <div style={{ padding: "28px 18px", textAlign: "center" }}>
         <div style={{
           width: 40, height: 40, borderRadius: '50%', margin: "0 auto 12px",
-          background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+          background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Icon name="check" size={16} color={T.t2} />
+          <Icon name="check" size={16} color={T.emerald} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, marginBottom: 4 }}>All clients active</div>
         <div style={{ fontSize: 11, color: T.t3 }}>No one inactive 7+ days</div>
@@ -1517,10 +1453,10 @@ function ClientRiskFeed({ allMemberships, checkIns, now, openModal }) {
               <span style={{ fontSize: 9.5, color: T.t4 }}>· {c.ci30} visits / 30d</span>
             </div>
           </div>
-          <button className="tct-btn" onClick={() => openModal?.('post', { id: c.id, full_name: c.name })} style={{
+          <button className="tct-btn" onClick={() => openModal?.('post', { memberId: c.id })} style={{
             fontSize: 10, fontWeight: 600, color: lvlC[c.level],
-            background: 'rgba(255,255,255,.04)',
-            border: `1px solid ${T.border}`,
+            background: `${lvlC[c.level]}0a`,
+            border: `1px solid ${lvlC[c.level]}18`,
             borderRadius: 6, padding: "5px 9px",
           }}>
             <Icon name="msg" size={10} color={lvlC[c.level]} />
@@ -1531,13 +1467,13 @@ function ClientRiskFeed({ allMemberships, checkIns, now, openModal }) {
       {filtered.length > 4 && (
         <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.border}` }}>
           <button className="tct-btn" onClick={() => setShowAll(p => !p)} style={{
-            fontSize: 11, fontWeight: 600, color: T.t2,
+            fontSize: 11, fontWeight: 600, color: T.indigo,
             background: "transparent", width: "100%",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
           }}>
             {showAll ? "Show less" : `${filtered.length - 4} more`}
             <span style={{ transition: "transform .25s", transform: showAll ? "rotate(180deg)" : "none", display: "flex" }}>
-              <Icon name="chevD" size={11} color={T.t3} />
+              <Icon name="chevD" size={11} color={T.indigo} />
             </span>
           </button>
         </div>
@@ -1591,13 +1527,13 @@ function EngagementHeatmap({ checkIns, now }) {
             const intensity = cell.count / max;
             const bg = cell.count === 0
               ? T.t5
-              : `rgba(255,255,255,${.06 + intensity * .22})`;
+              : `rgba(99,102,241,${.1 + intensity * .55})`;
             return (
               <div key={i} title={`${cell.date.toLocaleDateString('en-GB')} — ${cell.count} check-ins`} style={{
                 gridColumn: w + 2, gridRow: d + 1,
                 width: '100%', aspectRatio: '1', borderRadius: 3,
                 background: bg,
-                border: `1px solid ${cell.count > 0 ? `rgba(255,255,255,${.04 + intensity * .08})` : 'transparent'}`,
+                border: `1px solid ${cell.count > 0 ? `rgba(99,102,241,${.08 + intensity * .15})` : 'transparent'}`,
                 transition: 'transform .15s, opacity .15s',
                 cursor: 'default',
               }} />
@@ -1612,7 +1548,7 @@ function EngagementHeatmap({ checkIns, now }) {
           {[0, .15, .3, .5, .7].map((v, i) => (
             <div key={i} style={{
               width: 10, height: 10, borderRadius: 2,
-              background: v === 0 ? T.t5 : `rgba(255,255,255,${.06 + v * .22})`,
+              background: v === 0 ? T.t5 : `rgba(99,102,241,${.1 + v * .55})`,
             }} />
           ))}
           <span style={{ fontSize: 9, color: T.t4, fontFamily: T.mono }}>More</span>
@@ -1624,22 +1560,10 @@ function EngagementHeatmap({ checkIns, now }) {
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export default function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now, openModal, setTab, payments = [], bookings = [] }) {
+function TabCoachToday({ allMemberships, checkIns, myClasses, currentUser, now, openModal, setTab }) {
   const { toasts } = useToast();
   const sessions   = useMemo(() => deriveSessions(myClasses, now), [myClasses, now]);
-
-  const revenueMTD = useMemo(() => {
-    if (!payments.length) return null;
-    const monthStart = new Date(now);
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    const total = payments
-      .filter(p => new Date(p.date || p.created_at || p.payment_date) >= monthStart)
-      .reduce((s, p) => s + (p.amount || 0), 0);
-    return total;
-  }, [payments, now]);
-
-  const priorities = useMemo(() => derivePriorities({ allMemberships, checkIns, sessions, now, bookings }), [allMemberships, checkIns, sessions, now, bookings]);
+  const priorities = useMemo(() => derivePriorities({ allMemberships, checkIns, sessions, now }), [allMemberships, checkIns, sessions, now]);
 
   return (
     <div className="tct tct-scr" style={{
@@ -1656,8 +1580,8 @@ export default function TabCoachToday({ allMemberships, checkIns, myClasses, cur
         margin: '0 auto',
         padding: "32px 32px 80px",
       }}>
-        <CommandHeader currentUser={currentUser} now={now} sessions={sessions} priorities={priorities} revenueMTD={revenueMTD} />
-        <TodaysPriorities priorities={priorities} openModal={openModal} setTab={setTab} />
+        <CommandHeader currentUser={currentUser} now={now} sessions={sessions} priorities={priorities} />
+        <TodaysPriorities priorities={priorities} openModal={openModal} />
         <QuickStrip openModal={openModal} setTab={setTab} />
 
         <div className="tct-main-grid" style={{
@@ -1668,7 +1592,7 @@ export default function TabCoachToday({ allMemberships, checkIns, myClasses, cur
           <div>
             <AttendanceChart checkIns={checkIns} now={now} />
             <TodaysSessions sessions={sessions} openModal={openModal} now={now} />
-            <ActivityFeed openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} now={now} />
+            <ActivityFeed openModal={openModal} />
           </div>
 
           {/* Sidebar */}
@@ -1676,12 +1600,25 @@ export default function TabCoachToday({ allMemberships, checkIns, myClasses, cur
             display: "flex", flexDirection: "column", gap: 0,
             position: "sticky", top: 16,
           }}>
-            <WeeklyPerformance checkIns={checkIns} sessions={sessions} allMemberships={allMemberships} now={now} openModal={openModal} setTab={setTab} revenueMTD={revenueMTD} />
+            <WeeklyPerformance checkIns={checkIns} sessions={sessions} allMemberships={allMemberships} now={now} />
             <ClientRiskFeed allMemberships={allMemberships} checkIns={checkIns} now={now} openModal={openModal} />
             <EngagementHeatmap checkIns={checkIns} now={now} />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── ROOT EXPORT ──────────────────────────────────────────────────────────────
+export default function App() {
+  return (
+    <TabCoachToday
+      allMemberships={MEMBERS}
+      checkIns={CHECKINS}
+      myClasses={CLASSES}
+      currentUser={CURRENT_USER}
+      now={NOW_MOCK}
+    />
   );
 }

@@ -588,7 +588,7 @@ export default function TabCoachOverview({
                     )}
                     <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
                       <button onClick={() => openModal('memberNote', m)} style={{ fontSize: 9, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer' }}>Note</button>
-                      <button onClick={() => openModal('post', { id: m.user_id, full_name: m.user_name })} style={{ fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <button onClick={() => openModal('post', { memberId: m.user_id, nudge: true })} style={{ fontSize: 9, fontWeight: 700, color: '#fbbf24', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 5, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                         <Zap style={{ width: 9, height: 9 }} /> Nudge
                       </button>
                     </div>
