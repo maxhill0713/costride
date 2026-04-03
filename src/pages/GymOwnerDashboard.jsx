@@ -33,8 +33,6 @@ import CreatePollModal from '../components/polls/CreatePollModal';
 import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import EditPricingModal from '../components/gym/EditPricingModal';
-import AssignWorkoutModal from '../components/coach/AssignWorkoutModal';
-import BookClientModal from '../components/coach/BookClientModal';
 import QRCode from 'react-qr-code';
 
 import { lazy, Suspense } from 'react';
@@ -372,7 +370,6 @@ export default function GymOwnerDashboard() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen] = useState(false);
   const [modal, setModal] = useState(null);
-  const [modalData, setModalData] = useState(null);
   const [showPoster, setShowPoster] = useState(false);
   const [chartRange, setChartRange] = useState(7);
   const [leaderboardView, setLeaderboardView] = useState('checkins');
@@ -385,13 +382,8 @@ export default function GymOwnerDashboard() {
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [showChat, setShowChat] = useState(false);
 
-  const openModal = useCallback((name, data) => {
-    if (name === 'message') { setTab('members'); return; }
-    if (name === 'bookAppointment' || name === 'bookIntoClass') { setModal('bookClient'); setModalData(data ?? null); return; }
-    setModal(name);
-    setModalData(data ?? null);
-  }, []);
-  const closeModal = useCallback(() => { setModal(null); setModalData(null); }, []);
+  const openModal = useCallback((name) => {if (name === 'message') {setTab('members');return;}setModal(name);}, []);
+  const closeModal = useCallback(() => setModal(null), []);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -510,7 +502,6 @@ export default function GymOwnerDashboard() {
   const updateGalleryM = useMutation({ mutationFn: (g) => base44.entities.Gym.update(selectedGym.id, { gallery: g }), onSuccess: () => {invGyms();closeModal();}, onError: onErr });
   const updateGymM = useMutation({ mutationFn: (d) => base44.entities.Gym.update(selectedGym.id, d), onSuccess: () => {invGyms();closeModal();}, onError: onErr });
   const createEventM = useMutation({ mutationFn: (d) => base44.entities.Event.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, attendees: 0 }), onSuccess: () => {inv('events');closeModal();}, onError: onErr });
-  const updateEventM = useMutation({ mutationFn: ({ id, ...d }) => base44.entities.Event.update(id, d), onSuccess: () => {inv('events');closeModal();}, onError: onErr });
   const createChallengeM = useMutation({ mutationFn: (d) => base44.entities.Challenge.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, participants: [], status: 'upcoming' }), onSuccess: () => {inv('challenges');closeModal();}, onError: onErr });
   const banMemberM = useMutation({ mutationFn: (uid) => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'ban' }), onSuccess: invGyms, onError: onErr });
   const unbanMemberM = useMutation({ mutationFn: (uid) => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'unban' }), onSuccess: invGyms, onError: onErr });
@@ -641,7 +632,7 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'today' && isCoach) {
       content = <TabCoachToday allMemberships={coachMemberships} checkIns={coachCheckIns} myClasses={myClasses} currentUser={currentUser} openModal={openModal} setTab={setTab} now={now} />;
     } else if (item.id === 'schedule' && isCoach) {
-      content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} selectedGym={selectedGym} onRefresh={() => inv('dashboardStats', 'coachBookings')} />;
+      content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach ?
       <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
@@ -655,7 +646,7 @@ export default function GymOwnerDashboard() {
       <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
       <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />;
     } else if (item.id === 'profile' && isCoach) {
-      content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} />;
+      content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
     } else if (item.id === 'gym') {
@@ -698,13 +689,11 @@ export default function GymOwnerDashboard() {
   const sharedModals =
   <>
       <ManageClassesModal open={modal === 'classes'} onClose={closeModal} classes={classes} onCreateClass={(d) => createClassM.mutate(d)} onUpdateClass={(id, data) => updateClassM.mutate({ id, data })} onDeleteClass={(id) => deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending || updateClassM.isPending} />
-      <CreateGymOwnerPostModal open={modal === 'post'} onClose={closeModal} gym={selectedGym} onSuccess={() => inv('posts')} targetMember={modalData} />
-      <CreateEventModal open={modal === 'event'} onClose={closeModal} onSave={(d) => d.id ? updateEventM.mutate(d) : createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending || updateEventM.isPending} initialEvent={modalData} />
+      <CreateGymOwnerPostModal open={modal === 'post'} onClose={closeModal} gym={selectedGym} onSuccess={() => inv('posts')} />
+      <CreateEventModal open={modal === 'event'} onClose={closeModal} onSave={(d) => createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending} />
       <CreateChallengeModal open={modal === 'challenge'} onClose={closeModal} gyms={gyms} onSave={(d) => createChallengeM.mutate(d)} isLoading={createChallengeM.isPending} />
       <QRScanner open={modal === 'qrScanner'} onClose={closeModal} />
       <CreatePollModal open={modal === 'poll'} onClose={closeModal} onSave={(d) => createPollM.mutate(d)} isLoading={createPollM.isPending} />
-      <AssignWorkoutModal open={modal === 'assignWorkout'} onClose={closeModal} member={modalData} coach={activeCoachRecord} onSuccess={() => inv('coachAssignedWorkouts')} />
-      <BookClientModal open={modal === 'bookClient'} onClose={closeModal} member={modalData} classes={myClasses} coach={activeCoachRecord} gymId={selectedGym?.id} onSuccess={() => inv('coachBookings')} />
       <ManageRewardsModal open={modal === 'rewards'} onClose={closeModal} rewards={rewards} onCreateReward={(d) => createRewardM.mutate(d)} onDeleteReward={(id) => deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending} />
       <ManageCoachesModal open={modal === 'coaches'} onClose={closeModal} coaches={coaches} onCreateCoach={(d) => createCoachM.mutate(d)} onDeleteCoach={(id) => deleteCoachM.mutate(id)} onUpdateCoach={(id, data) => updateCoachM.mutate({ id, data })} gym={selectedGym} isLoading={createCoachM.isPending} allMemberships={allMemberships} classes={classes} />
       <EditGymPhotoModal open={modal === 'heroPhoto'} onClose={closeModal} gym={selectedGym} onSave={(url) => updateGymM.mutate({ image_url: url })} isLoading={updateGymM.isPending} />
