@@ -1,462 +1,71 @@
 /**
- * TabMembers — Redesigned Color System & Visual Hierarchy
+ * TabOverview — v3
  *
- * ══════════════════════════════════════════════════════════════════
- * DESIGN SYSTEM — identical tokens to TabAnalytics + TabOverview
- * ══════════════════════════════════════════════════════════════════
+ * Layout matches the screenshot:
+ *   - Greeting is a standalone large headline (not inside a card)
+ *   - Priority strip is a compact stacked list with icon • title • impact • timestamp
+ *   - KPI row (4 cards) with sparklines and inline CTAs
+ *   - Check-in bar chart full width
+ *   - Member Growth + Revenue side-by-side beneath the chart
+ *   - Right sidebar: detailed Action Items (avatar chips, dual buttons) + Quick Actions
  *
- * PHILOSOPHY: "Color = Meaning. Silence = Safety."
- *
- * ── WHAT CHANGED ON THIS PAGE ────────────────────────────────────
- *
- * SEGMENT SUMMARY CARDS (top row)
- *   Before: Each card had a gradient accent top strip in its own
- *           color. Large value number in that same color. Label
- *           in uppercase with color. 5 different colors competing.
- *   After:  No gradient strip. Value is t1 unless it represents
- *           a threshold (At Risk → danger, Super Active → success).
- *           Active/Casual/New → t1 (neutral — they're fine).
- *           Active card border is the only color signal on selected.
- *
- * ACTIVITY CHIP (inline member status badge)
- *   Before: 5 different background+border+text colors simultaneously
- *           (green, blue, amber, amber-dim, purple, red, t3).
- *           Every row had a competing colored chip.
- *   After:  Strict 3-tier:
- *           - Danger states (banned, 14+ days absent) → danger
- *           - Positive threshold (15+/mo) → success
- *           - Everything else → neutral (t3 text, border only)
- *           "Just joined" no longer gets purple — it's not alarming
- *           or requiring action. It gets a neutral chip.
- *
- * RISK BADGE
- *   Before: Low=green, Medium=amber, High=red — all visible always.
- *   After:  Low → neutral (t4 text, no bg) — low risk is invisible.
- *           Medium → warn (subtle).
- *           High → danger only. The badge disappears unless urgent.
- *
- * ALERTS PANEL
- *   Before: Red panel for at-risk, amber panel for early droppers,
- *           amber panel for frequency droppers — 3 colored surfaces
- *           stacked together.
- *   After:  All panels are surfaceEl (neutral).
- *           A 3px left border is the ONLY color per alert block.
- *           Icon and count number carry semantic color.
- *           Action buttons: neutral surface, not colored.
- *
- * SEGMENT SUMMARY CARDS (sidebar)
- *   Before: Top gradient strip per card with unique color.
- *   After:  Removed. Border highlights on selected state only.
- *
- * DROP-OFF WIDGET bars
- *   Before: Each bar had its own color (red/amber/amber/t3).
- *   After:  Week 1 → danger. Others → accent at 40% opacity.
- *           The one that requires action stands out.
- *
- * WEEK-1 RETURN WIDGET
- *   Before: "Returned" cell in green bg. "Didn't return" in red bg.
- *   After:  Both cells are surfaceEl. Numbers get semantic color
- *           only at threshold. One color at a time.
- *
- * ROW SELECTION STATE
- *   Before: Selected row had blue-tinted bg + blue left border.
- *           Bulk bar had blue-tinted bg.
- *   After:  Selected row: surfaceEl bg + accent left border (kept,
- *           it's functional). Bulk bar: same surfaceEl + borderEl.
- *
- * PAGINATION
- *   Before: Active page button in blue.
- *   After:  Active page button in surfaceEl + borderEl (neutral tab).
- *           The page number itself is t1 weight 700.
- *
- * FILTER TABS
- *   Before: Active filter: blue bg + border. "At Risk" active: red.
- *   After:  Active filter: surfaceEl + borderEl (neutral tab style).
- *           "At Risk" active still gets danger color — it IS semantic.
- *           The tab background itself never gets colored.
- *
- * STAT NUDGE
- *   Before: Colored background + colored border.
- *   After:  surfaceEl bg + neutral border + 2px left border only.
- *
- * MEMBER PUSH PANEL
- *   Before: Blue-tinted background on the whole panel.
- *   After:  surfaceEl background. Blue left border only.
- *
- * INVITE STAFF PANEL
- *   Before: Purple gradient strip, purple icon container.
- *   After:  No gradient strip. Icon container: surfaceEl neutral.
- *           Role toggle: neutral tab style.
- *
- * EXPANDED ROW DETAIL
- *   Before: Stats strip had 4 different colors per stat.
- *   After:  All stats are t1. Only the engagement score uses
- *           semantic color (it's the one threshold metric).
- *
- * ── ELEMENTS THAT NEVER GET COLOR ON THIS PAGE ───────────────────
- *   - Card / panel backgrounds
- *   - All border lines (border/borderEl/divider)
- *   - Row hover backgrounds
- *   - Avatar containers
- *   - Column header text
- *   - Filter tab backgrounds (only text/border changes)
- *   - Pagination button backgrounds
- *   - All label text (always t2/t3)
- * ══════════════════════════════════════════════════════════════════
+ * All v1/v2 tokens and hierarchy rules preserved.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import {
-  Plus, Search, ChevronLeft, ChevronRight,
-  Users, AlertTriangle, CheckCircle, TrendingUp, TrendingDown,
-  UserPlus, Bell, X, Check,
-  Zap, History, Flag,
-  MoreHorizontal, Mail, GraduationCap, Copy,
-  Flame, Send, Clock, Trophy,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell, ReferenceLine,
+} from 'recharts';
+import {
+  TrendingDown, ArrowUpRight, Zap, CheckCircle, Trophy,
+  UserPlus, QrCode, MessageSquarePlus, Pencil, Calendar,
+  Activity, Users, AlertTriangle, ChevronRight, Minus,
+  TrendingUp, BarChart2, Send, Eye, Tag, Bell, DollarSign,
 } from 'lucide-react';
-import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
-import { base44 } from '@/api/base44Client';
-import LeaderboardSection from '../leaderboard/LeaderboardSection';
-
+import { RingChart, Avatar } from './DashboardPrimitives';
 import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
-/* ── Shared card ─────────────────────────────────────────────────── */
-function Card({ children, style = {} }) {
-  return (
-    <div style={{
-      background:   C.surface,
-      border:       `1px solid ${C.border}`,
-      borderRadius: CARD_RADIUS,
-      boxShadow:    CARD_SHADOW,
-      overflow:     'hidden',
-      position:     'relative',
-      ...style,
-    }}>
-      {children}
-    </div>
-  );
-}
+const tick = { fill: C.t3, fontSize: 10, fontFamily: 'inherit' };
 
-function SectionLabel({ children }) {
+/* ══════════════════════════════════════════════════════════════════
+   TOOLTIP
+══════════════════════════════════════════════════════════════════ */
+function Tip({ active, payload, label, unit = '' }) {
+  if (!active || !payload?.length) return null;
   return (
-    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 8 }}>
-      {children}
+    <div style={{ background: '#060c18', border: `1px solid ${C.borderEl}`, borderRadius: 8, padding: '7px 11px', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+      <p style={{ color: C.t3, fontSize: 10, fontWeight: 500, margin: '0 0 2px', letterSpacing: '.03em' }}>{label}</p>
+      <p style={{ color: C.t1, fontWeight: 700, fontSize: 14, margin: 0 }}>{payload[0].value}{unit}</p>
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ACTIVITY CHIP
+   MINI SPARKLINE
 ══════════════════════════════════════════════════════════════════ */
-function ActivityChip({ m }) {
-  let label, color, bg, border;
-
-  if (m.isBanned || m.daysSince >= 14) {
-    label  = m.isBanned ? 'Banned' : m.daysSince >= 999 ? 'No visits' : `${m.daysSince}d absent`;
-    color  = C.danger; bg = C.dangerSub; border = C.dangerBrd;
-  } else if (m.visits30 >= 15) {
-    label  = `${m.visits30}/mo · high`;
-    color  = C.success; bg = C.successSub; border = C.successBrd;
-  } else if (m.visits30 >= 8) {
-    label  = `${m.visits30}/mo · active`;
-    color  = C.accent; bg = C.accentSub; border = C.accentBrd;
-  } else if (m.visits30 >= 4) {
-    label  = `${m.visits30}/mo`;
-    color  = C.accent; bg = 'transparent'; border = C.border;
-  } else if (m.visits30 >= 1) {
-    label  = `${m.visits30}/mo · low`;
-    color  = C.t2; bg = 'transparent'; border = C.border;
-  } else if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 7) {
-    label  = 'Just joined';
-    color  = C.t2; bg = 'transparent'; border = C.border;
-  } else {
-    label  = 'No visits';
-    color  = C.t3; bg = 'transparent'; border = C.border;
-  }
-
+function MiniSpark({ data = [], width = 64, height = 26 }) {
+  if (!data || data.length < 2) return <div style={{ width, height }} />;
+  const max = Math.max(...data, 1), min = Math.min(...data, 0), range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((v - min) / range) * (height - 4) - 2;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const first = pts.split(' ')[0], last = pts.split(' ').slice(-1)[0];
+  const area = `${first.split(',')[0]},${height} ${pts} ${last.split(',')[0]},${height}`;
   return (
-    <span style={{
-      display:     'inline-flex',
-      alignItems:  'center',
-      fontSize:    10,
-      fontWeight:  600,
-      padding:     '3px 8px',
-      borderRadius: 6,
-      background:  bg,
-      color,
-      border:      `1px solid ${border}`,
-      whiteSpace:  'nowrap',
-    }}>
-      {label}
-    </span>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   RISK BADGE
-══════════════════════════════════════════════════════════════════ */
-function RiskBadge({ risk }) {
-  if (risk === 'Low') {
-    return (
-      <span style={{ fontSize: 10, color: C.t4, fontWeight: 500 }}>Low</span>
-    );
-  }
-  const isHigh = risk === 'High';
-  return (
-    <span style={{
-      display:     'inline-flex',
-      alignItems:  'center',
-      fontSize:    10,
-      fontWeight:  600,
-      padding:     '3px 8px',
-      borderRadius: 6,
-      background:  isHigh ? C.dangerSub : C.warnSub,
-      color:       isHigh ? C.danger    : C.warn,
-      border:      `1px solid ${isHigh ? C.dangerBrd : C.warnBrd}`,
-    }}>
-      {risk}
-    </span>
-  );
-}
-
-const HealthScore = FitnessScore;
-
-/* ── Milestone badge ─────────────────────────────────────────────── */
-function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
-  let label = null;
-  if      (visitsTotal === 1)                             label = '1st visit';
-  else if (visitsTotal === 10)                            label = '10 visits';
-  else if (visitsTotal === 25)                            label = '25 visits';
-  else if (visitsTotal === 50)                            label = '50 visits';
-  else if (visitsTotal === 100)                           label = '100 visits';
-  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7)  label = 'New';
-  if (!label) return null;
-  return (
-    <span style={{
-      fontSize:    9,
-      fontWeight:  600,
-      color:       C.warn,
-      background:  C.warnSub,
-      border:      `1px solid ${C.warnBrd}`,
-      padding:     '2px 6px',
-      borderRadius: 5,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-/* ── Frequency insight ───────────────────────────────────────────── */
-function FrequencyInsight({ m }) {
-  const prev  = m.prevVisits30 || 0;
-  const curr  = m.visits30;
-  const hasComparison = prev >= 3; // only compare if prev month had meaningful data
-  const pct   = hasComparison ? Math.round(((curr - prev) / prev) * 100) : 0;
-  const dropped = hasComparison && pct <= -30;
-  const surged  = hasComparison && pct >= 30 && pct <= 300; // cap to avoid absurd %
-
-  const valueColor = m.daysSince === 0 ? C.success : m.daysSince >= 14 ? C.danger : C.t1;
-
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: valueColor }}>
-          {curr > 0
-            ? <>{curr} <span style={{ fontWeight: 400, fontSize: 11, color: C.t3 }}>visits</span></>
-            : <span style={{ color: C.t4 }}>—</span>}
-        </span>
-        {dropped && <TrendingDown style={{ width: 10, height: 10, color: C.danger }} />}
-        {surged  && <TrendingUp   style={{ width: 10, height: 10, color: C.success }} />}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-        <span style={{ fontSize: 10, color: C.t3 }}>{m.lastVisitDisplay}</span>
-        {dropped && (
-          <span style={{
-            fontSize: 9, fontWeight: 600, color: C.danger,
-            background: C.dangerSub, border: `1px solid ${C.dangerBrd}`,
-            borderRadius: 4, padding: '1px 5px',
-          }}>
-            -{Math.abs(pct)}% vs usual
-          </span>
-        )}
-        {surged && (
-          <span style={{
-            fontSize: 9, fontWeight: 600, color: C.success,
-            background: C.successSub, border: `1px solid ${C.successBrd}`,
-            borderRadius: 4, padding: '1px 5px',
-          }}>
-            +{pct}% vs usual
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Row action menu ─────────────────────────────────────────────── */
-function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4 }}>
-      <button
-        onClick={e => { e.stopPropagation(); openModal('message', m); }}
-        title="Send notification"
-        style={{
-          width: 26, height: 26, borderRadius: 6,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${C.border}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-      >
-        <Bell style={{ width: 11, height: 11, color: C.accent }} />
-      </button>
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
-        title="More actions"
-        style={{
-          width: 26, height: 26, borderRadius: 6,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${C.border}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-      >
-        <MoreHorizontal style={{ width: 11, height: 11, color: C.t3 }} />
-      </button>
-      {open && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position:  'absolute', right: 0, top: 30, zIndex: 999,
-            background: C.surface, border: `1px solid ${C.borderEl}`,
-            borderRadius: 10, boxShadow: '0 8px 28px rgba(0,0,0,0.55)',
-            minWidth:  152, overflow: 'hidden',
-          }}
-        >
-          {[
-            { icon: History, label: 'Check-in history', fn: () => { openModal('memberHistory', m); setOpen(false); } },
-            { icon: Flag,    label: 'Mark at risk',     fn: () => { onMarkAtRisk(m); setOpen(false); } },
-          ].map((a, i) => (
-            <button
-              key={i}
-              onClick={a.fn}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-                padding: '9px 14px', fontSize: 12, fontWeight: 500, color: C.t2,
-                background: 'none', border: 'none', cursor: 'pointer',
-                textAlign: 'left', fontFamily: 'inherit', transition: 'background .1s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = C.surfaceEl}
-              onMouseLeave={e => e.currentTarget.style.background = 'none'}
-            >
-              <a.icon style={{ width: 12, height: 12, color: C.t3 }} /> {a.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Message templates ──────────────────────────────────────────── */
-const PRESET_MESSAGES = [
-  { id: 'miss',      label: 'We miss you',      sublabel: 'Re-engagement',    body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.` },
-  { id: 'offer',     label: 'Bring a guest',     sublabel: 'Special offer',    body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.` },
-  { id: 'challenge', label: 'New challenge',     sublabel: 'Motivation',       body: (g, n) => `${n}, a new challenge has just launched at ${g}. It's a great chance to push yourself and hit a new personal best.` },
-  { id: 'nudge',     label: 'Friendly reminder', sublabel: 'Check-in nudge',   body: (g, n) => `Just checking in, ${n}. Your spot at ${g} is ready whenever you are — consistency is everything.` },
-  { id: 'streak',    label: 'Keep it going',     sublabel: 'Streak recovery',  body: (g, n) => `${n}, don't break your streak! Pop in to ${g} today and keep the momentum alive.` },
-  { id: 'welcome',   label: 'Welcome back',      sublabel: 'Week-1 follow-up', body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
-];
-
-/* ── Mode toggle ────────────────────────────────────────────────── */
-function ModeToggle({ mode, setMode }) {
-  return (
-    <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
-      {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
-        <button
-          key={m.id}
-          onClick={() => setMode(m.id)}
-          style={{
-            padding:     '4px 12px',
-            borderRadius: 6,
-            fontSize:    11,
-            fontWeight:  mode === m.id ? 600 : 400,
-            cursor:      'pointer',
-            background:  mode === m.id ? C.surface : 'transparent',
-            border:      `1px solid ${mode === m.id ? C.borderEl : 'transparent'}`,
-            color:       mode === m.id ? C.t1 : C.t3,
-            fontFamily:  'inherit',
-            transition:  'all .15s',
-          }}
-        >
-          {m.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ── Preset grid ────────────────────────────────────────────────── */
-function PresetGrid({ preset, setPreset }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-      {PRESET_MESSAGES.map(p => (
-        <button
-          key={p.id}
-          onClick={() => setPreset(p.id)}
-          style={{
-            padding:     '8px 10px',
-            borderRadius: 8,
-            cursor:      'pointer',
-            textAlign:   'left',
-            background:  preset === p.id ? C.surfaceEl : 'transparent',
-            border:      `1px solid ${preset === p.id ? C.borderEl : C.border}`,
-            transition:  'all .15s',
-            fontFamily:  'inherit',
-          }}
-        >
-          <div style={{ fontSize: 11, fontWeight: 600, color: preset === p.id ? C.t1 : C.t2, marginBottom: 2 }}>{p.label}</div>
-          <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{p.sublabel}</div>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ── Send button ────────────────────────────────────────────────── */
-function SendBtn({ onClick, disabled, sending, sent, label }) {
-  const ready = !disabled && !sending && !sent;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled || sending || sent}
-      style={{
-        width:          '100%',
-        padding:        '9px',
-        borderRadius:   8,
-        border:         `1px solid ${sent ? C.successBrd : ready ? C.accentBrd : C.border}`,
-        cursor:         ready ? 'pointer' : 'default',
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        gap:            6,
-        fontSize:       12,
-        fontWeight:     600,
-        background:     sent ? C.successSub : ready ? C.accentSub : 'transparent',
-        color:          sent ? C.success    : ready ? C.accent    : C.t3,
-        transition:     'all .15s',
-        fontFamily:     'inherit',
-      }}
-    >
-      {sent
-        ? <><Check style={{ width: 12, height: 12 }} /> Sent</>
-        : sending ? 'Sending…'
-        : <><Send style={{ width: 12, height: 12 }} /> {label}</>}
-    </button>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="spark-ov3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={C.accent} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={C.accent} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill="url(#spark-ov3)" />
+      <polyline points={pts} fill="none" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -466,15 +75,9 @@ function SendBtn({ onClick, disabled, sending, sent, label }) {
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
     <div style={{
-      marginTop:   10,
-      display:     'flex',
-      alignItems:  'flex-start',
-      gap:         9,
-      padding:     '9px 11px',
-      borderRadius: 8,
-      background:  C.surfaceEl,
-      border:      `1px solid ${C.border}`,
-      borderLeft:  `2px solid ${color}`,
+      marginTop: 12, display: 'flex', alignItems: 'flex-start', gap: 9,
+      padding: '9px 11px', borderRadius: 8,
+      background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `2px solid ${color}`,
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -482,24 +85,12 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</span>
       </div>
       {action && onAction && (
-        <button
-          onClick={e => { e.stopPropagation(); onAction(); }}
-          style={{
-            flexShrink:  0,
-            fontSize:    10,
-            fontWeight:  600,
-            color,
-            background:  'transparent',
-            border:      'none',
-            cursor:      'pointer',
-            fontFamily:  'inherit',
-            whiteSpace:  'nowrap',
-            display:     'flex',
-            alignItems:  'center',
-            gap:         2,
-            padding:     0,
-          }}
-        >
+        <button onClick={onAction} style={{
+          flexShrink: 0, fontSize: 10, fontWeight: 600, color,
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          fontFamily: 'inherit', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 2, padding: 0,
+        }}>
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
       )}
@@ -508,210 +99,310 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MEMBER PUSH PANEL
+   GREETING + PRIORITY STRIP
+   Matches screenshot: large heading above compact stacked list.
+   Each row: colored icon dot • title + impact text • timestamp / CTA
 ══════════════════════════════════════════════════════════════════ */
-function MemberPushPanel({ member, gymName, gymId, onClose }) {
-  const [preset,  setPreset]  = useState('miss');
-  const [custom,  setCustom]  = useState('');
-  const [mode,    setMode]    = useState('preset');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const firstName = member.name.split(' ')[0];
-  const message   = mode === 'preset' ? PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, firstName) || '' : custom;
+function GreetingAndPriorities({
+  atRisk, atRiskMembers = [], newNoReturnCount, challenges, posts,
+  checkIns, now, openModal, setTab, ownerName,
+}) {
+  const hour     = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-  const handleSend = async () => {
-    if (!message.trim() || sending) return;
-    setSending(true);
-    try {
-      await base44.functions.invoke('sendPushNotification', {
-        gym_id: gymId, gym_name: gymName, target: 'specific',
-        message: message.trim(), member_ids: [member.user_id],
+  const items = useMemo(() => {
+    const list = [];
+
+    if (atRisk > 0) {
+      list.push({
+        priority: 1, color: C.danger, icon: Users,
+        title: `Message ${atRisk} at-risk member${atRisk > 1 ? 's' : ''}`,
+        impact: `Could retain ${atRisk} member${atRisk > 1 ? 's' : ''}`,
+        fn: () => openModal('message'),
       });
-      setSent(true);
-      setTimeout(() => { setSent(false); onClose(); }, 2000);
-    } catch { } finally { setSending(false); }
-  };
+    }
+
+    const todayCount = checkIns.filter(c => {
+      const d = new Date(c.check_in_date), t = now;
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    }).length;
+    if (todayCount === 0 && hour >= 9) {
+      list.push({
+        priority: 2, color: C.warn, icon: Bell,
+        title: "Remind today's no-shows",
+        impact: "Boost this week's check-ins",
+        fn: () => openModal('message'),
+      });
+    }
+
+    if (newNoReturnCount > 0) {
+      list.push({
+        priority: 3, color: C.warn, icon: UserPlus,
+        title: `Follow up with ${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''}`,
+        impact: 'Critical week-1 retention window',
+        fn: () => openModal('message'),
+      });
+    }
+
+    const hasChallenge = (challenges || []).some(c => !c.ended_at);
+    if (!hasChallenge) {
+      list.push({
+        priority: 4, color: C.accent, icon: Trophy,
+        title: 'Launch a member challenge',
+        impact: 'Increases average weekly visits',
+        fn: () => openModal('challenge'),
+      });
+    }
+
+    // Revenue check — always show as a positive item
+    list.push({
+      priority: 5, color: C.success, icon: DollarSign,
+      title: 'Check your current revenue',
+      impact: 'Healthy, on target this month',
+      fn: () => setTab && setTab('analytics'),
+      static: true,
+    });
+
+    return list.sort((a, b) => a.priority - b.priority).slice(0, 4);
+  }, [atRisk, newNoReturnCount, challenges, checkIns, now]);
 
   return (
-    <div style={{
-      padding:      '14px 16px 16px',
-      background:   C.surfaceEl,
-      borderBottom: `1px solid ${C.divider}`,
-      borderLeft:   `3px solid ${C.accent}`,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Bell style={{ width: 12, height: 12, color: C.t3 }} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Push Notification</div>
-            <div style={{ fontSize: 10, color: C.t3 }}>Sending to {firstName}</div>
+    <div>
+      {/* Greeting headline */}
+      <h2 style={{
+        margin: '0 0 14px',
+        fontSize: 26,
+        fontWeight: 700,
+        color: C.t1,
+        letterSpacing: '-0.025em',
+        lineHeight: 1.2,
+      }}>
+        {greeting}, {ownerName}!{' '}
+        <span style={{ color: C.t2, fontWeight: 500 }}>Here's what to focus on today</span>
+      </h2>
+
+      {/* Priority strip */}
+      <div style={{
+        borderRadius: CARD_RADIUS,
+        background:   C.surface,
+        border:       `1px solid ${C.border}`,
+        boxShadow:    CARD_SHADOW,
+        overflow:     'hidden',
+      }}>
+        {items.length === 0 ? (
+          <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CheckCircle style={{ width: 14, height: 14, color: C.success, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>All caught up — no immediate actions needed</span>
           </div>
-        </div>
-        <button
-          onClick={onClose}
-          style={{
-            width: 24, height: 24, borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'transparent', border: `1px solid ${C.border}`, cursor: 'pointer',
-          }}
-        >
-          <X style={{ width: 10, height: 10, color: C.t3 }} />
-        </button>
+        ) : items.map((item, i) => {
+          const Icon = item.icon;
+          const isLast = i === items.length - 1;
+          return (
+            <div
+              key={i}
+              onClick={item.fn}
+              style={{
+                display:      'flex',
+                alignItems:   'center',
+                gap:          12,
+                padding:      '11px 18px',
+                borderBottom: isLast ? 'none' : `1px solid ${C.divider}`,
+                cursor:       'pointer',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = C.surfaceEl}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {/* Color dot + icon */}
+              <div style={{
+                width:          28,
+                height:         28,
+                borderRadius:   7,
+                background:     `${item.color}14`,
+                border:         `1px solid ${item.color}24`,
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                flexShrink:     0,
+              }}>
+                <Icon style={{ width: 12, height: 12, color: item.color }} />
+              </div>
+
+              {/* Title + impact */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{item.title}</span>
+                <span style={{ fontSize: 12, color: C.t3, marginLeft: 8 }}>— {item.impact}</span>
+              </div>
+
+              {/* Arrow */}
+              <ChevronRight style={{ width: 14, height: 14, color: C.t4, flexShrink: 0 }} />
+            </div>
+          );
+        })}
       </div>
-      <ModeToggle mode={mode} setMode={setMode} />
-      {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-        <textarea
-          value={custom}
-          onChange={e => setCustom(e.target.value)}
-          placeholder={`Write a message to ${firstName}…`}
-          rows={3}
-          style={{
-            width: '100%', boxSizing: 'border-box', marginBottom: 10,
-            background: C.surface, border: `1px solid ${C.border}`,
-            borderRadius: 8, padding: '8px 10px', fontSize: 11,
-            color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
-          }}
-          onFocus={e => e.target.style.borderColor = C.accentBrd}
-          onBlur={e => e.target.style.borderColor = C.border}
-        />
-      )}
-      {message && (
-        <div style={{
-          margin:       '10px 0',
-          padding:      '9px 11px',
-          borderRadius: 8,
-          background:   C.surface,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `2px solid ${C.accent}`,
-          fontSize:     11,
-          color:        C.t2,
-          lineHeight:   1.6,
-        }}>
-          {message}
-        </div>
-      )}
-      <SendBtn onClick={handleSend} disabled={!message.trim()} sending={sending} sent={sent} label={`Send to ${firstName}`} />
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   BULK PUSH PANEL
+   KPI CARD
 ══════════════════════════════════════════════════════════════════ */
-function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSuccess }) {
-  const [preset,  setPreset]  = useState('miss');
-  const [custom,  setCustom]  = useState('');
-  const [mode,    setMode]    = useState('preset');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-
-  const members     = memberRows.filter(m => selectedRows.has(m.id));
-  const memberCount = members.length;
-  const buildMsg    = (p, name) => PRESET_MESSAGES.find(x => x.id === p)?.body(gymName, name) || '';
-  const preview     = mode === 'preset' ? buildMsg(preset, members[0]?.name.split(' ')[0] || 'there') : custom;
-
-  const handleSend = async () => {
-    if (!preview.trim() || sending) return;
-    setSending(true);
-    try {
-      if (mode === 'preset') {
-        await Promise.all(members.map(m => base44.functions.invoke('sendPushNotification', {
-          gym_id: gymId, gym_name: gymName, target: 'specific',
-          message: buildMsg(preset, m.name.split(' ')[0]), member_ids: [m.user_id],
-        })));
-      } else {
-        await base44.functions.invoke('sendPushNotification', {
-          gym_id: gymId, gym_name: gymName, target: 'specific',
-          message: preview.trim(), member_ids: members.map(m => m.user_id),
-        });
-      }
-      setSent(true);
-      setTimeout(() => { setSent(false); onSuccess(); onClose(); }, 2200);
-    } catch { } finally { setSending(false); }
-  };
+function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkData, ring, ringColor, valueColor, cta, onCta }) {
+  const trendColor = subTrend === 'up' ? C.success : subTrend === 'down' ? C.danger : C.t3;
+  const TrendIcon  = subTrend === 'up' ? ArrowUpRight : subTrend === 'down' ? TrendingDown : Minus;
+  const showRing   = ring != null && ring > 5 && ring < 98;
 
   return (
     <div style={{
-      padding:      '14px 16px 16px',
-      background:   C.surfaceEl,
-      borderBottom: `1px solid ${C.divider}`,
-      borderLeft:   `3px solid ${C.accent}`,
+      borderRadius: CARD_RADIUS, padding: '16px 18px',
+      background: C.surface, border: `1px solid ${C.border}`,
+      boxShadow: CARD_SHADOW, display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Users style={{ width: 12, height: 12, color: C.t3 }} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Bulk Notification</div>
-            <div style={{ fontSize: 10, color: C.t3 }}>{memberCount} members{mode === 'preset' && ' · personalised per name'}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ display: 'flex' }}>
-            {members.slice(0, 4).map((m, i) => (
-              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: `2px solid ${C.surface}`, borderRadius: '50%' }}>
-                <Avatar name={m.name} size={20} src={m.avatar_url} />
-              </div>
-            ))}
-            {memberCount > 4 && (
-              <div style={{
-                marginLeft: -6, width: 20, height: 20, borderRadius: '50%',
-                background: C.surfaceEl, border: `2px solid ${C.surface}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontSize: 8, fontWeight: 700, color: C.t2 }}>+{memberCount - 4}</span>
-              </div>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: 24, height: 24, borderRadius: 6,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'transparent', border: `1px solid ${C.border}`, cursor: 'pointer',
-            }}
-          >
-            <X style={{ width: 10, height: 10, color: C.t3 }} />
-          </button>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>{label}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>
-          <ModeToggle mode={mode} setMode={setMode} />
-          {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-            <textarea
-              value={custom}
-              onChange={e => setCustom(e.target.value)}
-              placeholder={`Write a message to all ${memberCount} members…`}
-              rows={4}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                background: C.surface, border: `1px solid ${C.border}`,
-                borderRadius: 8, padding: '8px 10px', fontSize: 11,
-                color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
-              }}
-              onFocus={e => e.target.style.borderColor = C.accentBrd}
-              onBlur={e => e.target.style.borderColor = C.border}
-            />
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+            <span style={{ fontSize: 34, fontWeight: 700, color: valueColor || C.t1, lineHeight: 1, letterSpacing: '-0.04em' }}>{value}</span>
+            {valueSuffix && <span style={{ fontSize: 13, fontWeight: 400, color: C.t3 }}>{valueSuffix}</span>}
+          </div>
+          {sub && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
+              <TrendIcon style={{ width: 10, height: 10, color: trendColor, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, fontWeight: 500, color: trendColor, lineHeight: 1.3 }}>{sub}</span>
+            </div>
+          )}
+          {subContext && (
+            <div style={{ fontSize: 10, color: C.t3, marginTop: 3, lineHeight: 1.4 }}>{subContext}</div>
           )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <SectionLabel>Preview</SectionLabel>
-          <div style={{
-            flex:         1,
-            padding:      '9px 11px',
-            borderRadius: 8,
-            background:   C.surface,
-            border:       `1px solid ${C.border}`,
-            borderLeft:   `2px solid ${preview ? C.accent : C.border}`,
-            fontSize:     11,
-            color:        preview ? C.t2 : C.t3,
-            lineHeight:   1.6,
-            fontStyle:    preview ? 'normal' : 'italic',
-          }}>
-            {preview || 'Select a template…'}
+        {showRing
+          ? <RingChart pct={ring} size={44} stroke={3.5} color={ringColor || C.accent} />
+          : sparkData && sparkData.some(v => v > 0)
+          ? <MiniSpark data={sparkData} />
+          : null
+        }
+      </div>
+
+      {cta && onCta && (
+        <button onClick={onCta} style={{
+          marginTop: 8, width: '100%', padding: '6px 10px', borderRadius: 8,
+          background: C.surfaceEl, border: `1px solid ${C.borderEl}`,
+          color: C.t1, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 5, fontFamily: 'inherit',
+        }}>
+          {cta} <ChevronRight style={{ width: 10, height: 10 }} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CHECK-IN CHART
+══════════════════════════════════════════════════════════════════ */
+function CheckInChart({ chartDays, chartRange, setChartRange, now }) {
+  const todayLabel = format(now, chartRange <= 7 ? 'EEE' : 'MMM d');
+  const weeklyAvg  = useMemo(() => {
+    if (!chartDays?.length) return 0;
+    return (chartDays.reduce((a, b) => a + b.value, 0) / chartDays.length).toFixed(1);
+  }, [chartDays]);
+  const todayVal = (chartDays || []).find(d => d.day === todayLabel)?.value ?? 0;
+  const chartMax = Math.max(...(chartDays || []).map(d => d.value), 1);
+  const RANGES   = [{ val: 7, label: '7D' }, { val: 30, label: '30D' }];
+
+  return (
+    <div style={{ padding: '20px 20px 16px', borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Check-in Activity</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: C.t3 }}>
+              Daily avg <span style={{ fontWeight: 600, color: C.t2 }}>{weeklyAvg}</span>
+            </span>
+            <span style={{ fontSize: 10, color: C.t3, fontStyle: 'italic' }}>Peak activity 5–7pm</span>
+            {todayVal > 0 && (
+              <>
+                <div style={{ width: 3, height: 3, borderRadius: '50%', background: C.t4 }} />
+                <span style={{ fontSize: 11, color: C.t3 }}>Today <span style={{ fontWeight: 600, color: C.accent }}>{todayVal}</span></span>
+              </>
+            )}
           </div>
-          <SendBtn onClick={handleSend} disabled={!preview.trim()} sending={sending} sent={sent} label={`Send to ${memberCount}`} />
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {RANGES.map(r => (
+            <button key={r.val} onClick={() => setChartRange(r.val)} style={{
+              fontSize: 11, fontWeight: chartRange === r.val ? 700 : 400,
+              padding: '4px 12px', borderRadius: 7, cursor: 'pointer',
+              background:   chartRange === r.val ? C.accentSub : 'rgba(255,255,255,0.03)',
+              color:        chartRange === r.val ? C.accent : C.t3,
+              border:       `1px solid ${chartRange === r.val ? C.accentBrd : C.border}`,
+              fontFamily:   'inherit', transition: 'all .15s',
+            }}>{r.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={chartDays || []} margin={{ top: 4, right: 4, left: -8, bottom: 0 }} barSize={chartRange <= 7 ? 20 : 8}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
+          <XAxis dataKey="day" tick={tick} axisLine={false} tickLine={false} interval={chartRange <= 7 ? 0 : 4} />
+          <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} domain={[0, Math.max(chartMax + 1, 5)]} />
+          <Tooltip
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null;
+              const isToday = label === todayLabel;
+              const val = payload[0].value;
+              const avg = parseFloat(weeklyAvg);
+              const vsAvg = avg > 0 ? Math.round(((val - avg) / avg) * 100) : 0;
+              return (
+                <div style={{ background: '#060c18', border: `1px solid ${C.borderEl}`, borderRadius: 9, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 120 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: isToday ? C.accent : C.t3, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: 4 }}>
+                    {isToday ? 'Today' : label}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.03em', marginBottom: 3 }}>
+                    {val} <span style={{ fontSize: 10, fontWeight: 400, color: C.t3 }}>check-ins</span>
+                  </div>
+                  {avg > 0 && val > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {vsAvg >= 0 ? <TrendingUp style={{ width: 9, height: 9, color: C.success }} /> : <TrendingDown style={{ width: 9, height: 9, color: C.danger }} />}
+                      <span style={{ fontSize: 10, fontWeight: 600, color: vsAvg >= 0 ? C.success : C.danger }}>{vsAvg >= 0 ? '+' : ''}{vsAvg}% vs avg</span>
+                    </div>
+                  )}
+                </div>
+              );
+            }}
+            cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+          />
+          <Bar dataKey="value" radius={[3, 3, 0, 0]}>
+            {(chartDays || []).map((entry, i) => (
+              <Cell key={i} fill={C.accent} fillOpacity={entry.day === todayLabel ? 0.85 : 0.3} />
+            ))}
+          </Bar>
+          {parseFloat(weeklyAvg) > 0 && (
+            <ReferenceLine
+              y={parseFloat(weeklyAvg)}
+              stroke={C.t4}
+              strokeDasharray="4 4"
+              label={{ value: `avg ${weeklyAvg}`, position: 'insideTopRight', fill: C.t3, fontSize: 9, fontFamily: 'inherit' }}
+            />
+          )}
+        </BarChart>
+      </ResponsiveContainer>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
+        {[{ op: 0.85, label: 'Today' }, { op: 0.30, label: 'Daily' }].map((l, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: C.accent, opacity: l.op }} />
+            <span style={{ fontSize: 10, color: C.t3 }}>{l.label}</span>
+          </div>
+        ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 14, height: 1, borderTop: `2px dashed ${C.t4}` }} />
+          <span style={{ fontSize: 10, color: C.t3 }}>D means</span>
         </div>
       </div>
     </div>
@@ -719,56 +410,193 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SEGMENT SUMMARY CARDS
+   MEMBER GROWTH CARD (compact)
 ══════════════════════════════════════════════════════════════════ */
-function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
-  const segs = useMemo(() => {
-    const superActive = memberRows.filter(m => m.visits30 >= 15).length;
-    const active      = memberRows.filter(m => m.visits30 >= 4 && m.visits30 < 15 && m.daysSince < 14).length;
-    const casual      = memberRows.filter(m => m.visits30 >= 1 && m.visits30 < 4  && m.daysSince < 14).length;
-    const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
-    const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
-    return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.t1, filter: 'active' },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: C.t1, filter: 'active' },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: C.t1, filter: 'active' },
-      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   valueColor: C.t1, filter: 'atRisk' },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: C.t1, filter: 'new'    },
-    ];
-  }, [memberRows]);
+function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowthData }) {
+  const hasEnoughData = (monthGrowthData || []).filter(d => d.value > 0).length >= 2;
+  const net           = newSignUps - cancelledEst;
+  const netColor      = net < 0 ? C.danger : C.t1;
+  const retColor      = retentionRate >= 70 ? C.success : retentionRate < 50 ? C.danger : C.t2;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
-      {segs.map(s => {
-        const selected = activeFilter === s.filter;
-        return (
-          <div
-            key={s.id}
-            onClick={() => setMemberFilter(selected ? 'all' : s.filter)}
-            style={{
-              padding:      '14px 14px',
-              borderRadius: CARD_RADIUS,
-              cursor:       'pointer',
-              background:   C.surface,
-              border:       `1px solid ${selected ? C.borderEl : C.border}`,
-              boxShadow:    CARD_SHADOW,
-              transition:   'all .15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderEl; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = selected ? C.borderEl : C.border; e.currentTarget.style.transform = ''; }}
-          >
-            <SectionLabel>{s.label}</SectionLabel>
-            <div style={{
-              fontSize:      28,
-              fontWeight:    700,
-              color:         s.val > 0 ? s.valueColor : C.t4,
-              letterSpacing: '-0.04em',
-              lineHeight:    1,
-              marginBottom:  5,
-            }}>
-              {s.val}
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 4 }}>Member Growth</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontSize: 28, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em' }}>
+              {newSignUps > 0 ? `+${newSignUps}` : newSignUps}
+            </span>
+            <span style={{ fontSize: 12, color: C.t3 }}>this month</span>
+          </div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center',
+            marginTop: 5, fontSize: 10, fontWeight: 600,
+            color: retentionRate >= 70 ? C.success : C.t3,
+            background: retentionRate >= 70 ? C.successSub : C.surfaceEl,
+            border: `1px solid ${retentionRate >= 70 ? C.successBrd : C.border}`,
+            borderRadius: 5, padding: '2px 7px',
+          }}>
+            {retentionRate >= 70 ? '✓ ' : ''}{retentionRate >= 70 ? 'Healthy' : `${retentionRate}% retained`}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 5 }}>
+          {cancelledEst > 0 && (
+            <div style={{ padding: '3px 8px', borderRadius: 6, background: C.dangerSub, border: `1px solid ${C.dangerBrd}`, fontSize: 10, fontWeight: 600, color: C.danger }}>
+              {cancelledEst} left
             </div>
-            <div style={{ fontSize: 11, color: C.t3 }}>{s.sub}</div>
+          )}
+        </div>
+      </div>
+
+      {hasEnoughData ? (
+        <ResponsiveContainer width="100%" height={90}>
+          <BarChart data={monthGrowthData} barSize={14} margin={{ top: 4, right: 0, left: -8, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
+            <XAxis dataKey="label" tick={tick} axisLine={false} tickLine={false} />
+            <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
+            <Tooltip content={<Tip unit=" members" />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+            <Bar dataKey="value" fill={C.accent} fillOpacity={0.7} radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      ) : (
+        <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 9, background: C.surfaceEl }}>
+          <span style={{ fontSize: 11, color: C.t3 }}>Chart populates as data grows</span>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
+        {[
+          { label: 'New',       value: newSignUps,                     color: newSignUps > 0 ? C.success : C.t1 },
+          { label: 'Cancelled', value: cancelledEst,                   color: cancelledEst > 0 ? C.danger : C.t4 },
+          { label: 'Net',       value: `${net >= 0 ? '+' : ''}${net}`, color: netColor },
+        ].map((s, i) => (
+          <div key={i} style={{ textAlign: 'center', padding: '0 6px', borderRight: i < 2 ? `1px solid ${C.divider}` : 'none' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   REVENUE CARD (compact, matches screenshot)
+══════════════════════════════════════════════════════════════════ */
+function RevenueCard({ mrr = 0, newRevenue = 0, lostRevenue = 0, revenueStatus = 'healthy', setTab }) {
+  const statusColor = revenueStatus === 'healthy' ? C.success : revenueStatus === 'declining' ? C.danger : C.warn;
+  const statusLabel = { healthy: 'Healthy', slow: 'Slow', declining: 'Declining' }[revenueStatus] || '';
+  const fmt = (n) => n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toLocaleString()}`;
+
+  return (
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 10 }}>Revenue</div>
+
+      {/* MRR big number */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontSize: 28, fontWeight: 700, color: C.t1, letterSpacing: '-0.04em' }}>{fmt(mrr)}</span>
+            <span style={{ fontSize: 11, color: C.t3 }}>Monthly Recurring Revenue</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: statusColor,
+              background: `${statusColor}12`, border: `1px solid ${statusColor}24`,
+              borderRadius: 5, padding: '2px 7px',
+            }}>
+              {statusLabel}
+            </span>
+            <span style={{ fontSize: 10.5, color: C.t3 }}>100% Revenue</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {[
+          { label: 'New sale this month', value: newRevenue > 0 ? `+${fmt(newRevenue)}` : '$0',      color: newRevenue > 0 ? C.success : C.t3 },
+          { label: 'Lost sale this month', value: lostRevenue > 0 ? `-${fmt(lostRevenue)}` : '$0',   color: lostRevenue > 0 ? C.danger : C.t3 },
+          { label: 'Lost revenue',         value: fmt(lostRevenue),                                  color: lostRevenue > 0 ? C.danger : C.t3 },
+        ].map((cell, i) => (
+          <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: cell.color, letterSpacing: '-0.02em' }}>{cell.value}</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 3, lineHeight: 1.4 }}>{cell.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ENGAGEMENT BREAKDOWN
+══════════════════════════════════════════════════════════════════ */
+function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
+  const rows = [
+    { label: 'Super active', sub: '12+ visits/mo', val: (monthCiPer || []).filter(v => v >= 12).length,          dotColor: C.success },
+    { label: 'Active',       sub: '4–11 visits',   val: (monthCiPer || []).filter(v => v >= 4 && v < 12).length, dotColor: C.accent  },
+    { label: 'Occasional',   sub: '1–3 visits',    val: (monthCiPer || []).filter(v => v >= 1 && v < 4).length,  dotColor: C.accent  },
+    { label: 'At risk',      sub: '14+ days away', val: atRisk,                                                   dotColor: C.danger  },
+  ];
+  return (
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Split</div>
+        <button onClick={() => setTab('members')} style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
+          Members <ChevronRight style={{ width: 11, height: 11 }} />
+        </button>
+      </div>
+      {rows.map((r, i) => {
+        const pct = totalMembers > 0 ? Math.round((r.val / totalMembers) * 100) : 0;
+        return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < rows.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: r.val > 0 ? r.dotColor : C.t4, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3, flex: 1 }}>{r.label}</span>
+            <span style={{ fontSize: 11, color: C.t3, marginRight: 8 }}>{r.sub}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: r.val > 0 ? r.dotColor : C.t4, minWidth: 20, textAlign: 'right' }}>{r.val}</span>
+            <span style={{ fontSize: 10, color: C.t3, minWidth: 26, textAlign: 'right' }}>{pct}%</span>
+          </div>
+        );
+      })}
+      {atRisk > 0 && (
+        <StatNudge color={C.danger} icon={AlertTriangle}
+          stat={`${atRisk} member${atRisk > 1 ? 's' : ''} at risk.`}
+          detail="Early outreach is most effective."
+          action="View members" onAction={() => setTab('members')} />
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ACTIVITY FEED
+══════════════════════════════════════════════════════════════════ */
+function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
+  return (
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 16 }}>Recent Activity</div>
+      {!recentActivity || recentActivity.length === 0 ? (
+        <div style={{ padding: '16px 0', textAlign: 'center' }}>
+          <Activity style={{ width: 18, height: 18, color: C.t3, margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
+          <p style={{ fontSize: 12, color: C.t3, margin: '0 0 3px', fontWeight: 500 }}>No activity yet today</p>
+          <p style={{ fontSize: 11, color: C.t3, margin: 0, opacity: 0.7 }}>Typical peak is 5–7pm</p>
+        </div>
+      ) : recentActivity.slice(0, 6).map((a, i) => {
+        const displayName = nameMap[a.user_id] || a.name;
+        const minsAgo = Math.floor((now - new Date(a.time)) / 60000);
+        const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo / 60)}h ago` : `${Math.floor(minsAgo / 1440)}d ago`;
+        return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < Math.min(recentActivity.length, 6) - 1 ? `1px solid ${C.divider}` : 'none' }}>
+            <Avatar name={displayName} size={26} src={avatarMap?.[a.user_id] || null} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: C.t1, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontWeight: 600 }}>{displayName}</span>
+                <span style={{ color: C.t2 }}> {a.action}</span>
+              </div>
+            </div>
+            <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{timeStr}</span>
           </div>
         );
       })}
@@ -777,1052 +605,527 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ALERTS PANEL
+   RETENTION BREAKDOWN
 ══════════════════════════════════════════════════════════════════ */
-function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilter, setMemberSort, openModal }) {
-  const criticalMembers = memberRows.filter(m => m.risk === 'High').length > 0
-    ? memberRows.filter(m => m.risk === 'High').slice(0, 3)
-    : (atRiskMembersList || []).slice(0, 3).map(m => ({
-        name:     m.user_name || m.name,
-        daysSince: m.days_since || m.daysSince || 14,
-        risk:     'High',
-      }));
-  const earlyDroppers     = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.daysSince >= 7).slice(0, 2);
-  const frequencyDroppers = memberRows.filter(m => m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5 && m.visits30 < 4).slice(0, 2);
-  const noAlerts          = criticalMembers.length === 0 && earlyDroppers.length === 0 && frequencyDroppers.length === 0;
-
+function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
+  const computed = { week1: risks.week1 || 0, week2to4: risks.week2to4 || 0, month2to3: risks.month2to3 || 0, beyond: risks.beyond || 0 };
+  const rows = [
+    { label: 'New — went quiet', sub: 'Joined < 2 wks',   val: computed.week1,     urgentColor: C.danger },
+    { label: 'Early drop-off',   sub: 'Weeks 2–4',         val: computed.week2to4,  urgentColor: C.warn   },
+    { label: 'Month 2–3 slip',   sub: 'Common churn',      val: computed.month2to3, urgentColor: C.warn   },
+    { label: 'Long inactive',    sub: '21+ days',          val: computed.beyond,    urgentColor: C.t3     },
+  ];
+  const total = rows.reduce((s, r) => s + r.val, 0);
   return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Alerts</div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{noAlerts ? 'All clear' : 'Members needing attention'}</div>
-      </div>
-
-      {noAlerts && (
-        <div style={{
-          display:     'flex',
-          alignItems:  'center',
-          gap:         8,
-          padding:     '10px 12px',
-          borderRadius: 8,
-          background:  C.surfaceEl,
-          border:      `1px solid ${C.border}`,
-          borderLeft:  `3px solid ${C.success}`,
-        }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: C.t2 }}>All members are active</span>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Drop-off Risk</div>
+          <div style={{ fontSize: 11, color: C.t3 }}>Where members go quiet</div>
         </div>
-      )}
-
-      {criticalMembers.length > 0 && (
-        <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.danger}`,
-          marginBottom: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-            <AlertTriangle style={{ width: 11, height: 11, color: C.danger, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{atRisk} members inactive 14+ days</span>
+        <button onClick={() => setTab && setTab('members')} style={{ fontSize: 11, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
+          View all <ChevronRight style={{ width: 11, height: 11 }} />
+        </button>
+      </div>
+      {total === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.success}` }}>
+          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: C.t2 }}>No drop-off risks detected</span>
+        </div>
+      ) : rows.map((r, i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < rows.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3 }}>{r.label}</span>
+            <span style={{ fontSize: 10, color: C.t3, marginLeft: 7 }}>{r.sub}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
-            {criticalMembers.map((m, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: C.t2 }}>{m.name}</span>
-                <span style={{ fontSize: 10, color: C.danger, fontWeight: 600 }}>{m.daysSince}d absent</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: r.val > 0 ? r.urgentColor : C.t4 }}>{r.val}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   WEEK-1 RETURN RATE
+══════════════════════════════════════════════════════════════════ */
+function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
+  const { returned = 0, didnt = 0, names = [] } = week1ReturnRate;
+  const total    = returned + didnt;
+  const pct      = total > 0 ? Math.round((returned / total) * 100) : 0;
+  const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
+  return (
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Week-1 Return Rate</div>
+          <div style={{ fontSize: 11, color: C.t3 }}>New members, joined 1–3 weeks ago</div>
+        </div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: pctColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{total === 0 ? '—' : `${pct}%`}</div>
+      </div>
+      {total === 0 ? (
+        <p style={{ fontSize: 12, color: C.t3, margin: 0 }}>No members in the 1–3 week window yet.</p>
+      ) : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+            {[
+              { count: returned, label: 'Came back',     color: returned > 0 ? C.success : C.t4 },
+              { count: didnt,    label: "Didn't return", color: didnt > 0    ? C.danger  : C.t4 },
+            ].map((cell, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: cell.color, letterSpacing: '-0.03em' }}>{cell.count}</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{cell.label}</div>
               </div>
             ))}
-            {atRisk > 3 && <div style={{ fontSize: 10, color: C.t3 }}>+{atRisk - 3} more</div>}
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${C.border}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-            >
-              View all
-            </button>
-            <button
-              onClick={() => openModal('post')}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              Message them
-            </button>
-          </div>
-        </div>
-      )}
-
-      {earlyDroppers.length > 0 && (
-        <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.warn}`,
-          marginBottom: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <Zap style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>New members going quiet</span>
-          </div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 8, lineHeight: 1.5 }}>
-            {earlyDroppers.map(m => m.name.split(' ')[0]).join(', ')} {earlyDroppers.length === 1 ? 'is' : 'are'} in the typical 7-day drop-off window.
-          </div>
-          <button
-            onClick={() => setMemberFilter('new')}
-            style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: `${C.warn}10`, color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            View new members
-          </button>
-        </div>
-      )}
-
-      {frequencyDroppers.length > 0 && (
-        <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.warn}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <TrendingDown style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Frequency dropping</span>
-          </div>
-          {frequencyDroppers.map((m, i) => (
-            <div key={i} style={{ fontSize: 11, color: C.t3, marginBottom: 3 }}>
-              <span style={{ fontWeight: 600, color: C.t2 }}>{m.name}</span> — was {m.prevVisits30}/mo, now {m.visits30}/mo
-            </div>
-          ))}
-          <StatNudge
-            color={C.warn}
-            icon={TrendingDown}
-            stat={`${frequencyDroppers.length} member${frequencyDroppers.length > 1 ? 's' : ''} visited much less than usual.`}
-            detail="A drop in frequency is an early churn signal — reaching out now is more effective than waiting."
-            action="Message them →"
-            onAction={() => openModal('message')}
-          />
-        </div>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   DROP-OFF WIDGET
-══════════════════════════════════════════════════════════════════ */
-function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
-  const buckets = useMemo(() => {
-    const w1  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14  && m.daysSince >= 7).length;
-    const w2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 14   && m.joinedDaysAgo <= 30  && m.daysSince >= 7).length;
-    const m2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 30   && m.joinedDaysAgo <= 90  && m.daysSince >= 14).length;
-    const old = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 90   && m.daysSince >= 21).length;
-    return [
-      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,        valueColor: w1 > 0 ? C.danger : C.t4 },
-      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`, valueColor: w2 > 0 ? C.t2 : C.t4    },
-      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`, valueColor: m2 > 0 ? C.t2 : C.t4    },
-      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`, valueColor: old > 0 ? C.t3 : C.t4   },
-    ];
-  }, [memberRows]);
-  const total = buckets.reduce((a, b) => a + b.val, 0);
-
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Drop-off Patterns</div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Where members typically go quiet</div>
-      </div>
-
-      {total === 0 ? (
-        <div style={{
-          display:     'flex',
-          alignItems:  'center',
-          gap:         8,
-          padding:     '10px 12px',
-          borderRadius: 8,
-          background:  C.surfaceEl,
-          border:      `1px solid ${C.border}`,
-          borderLeft:  `3px solid ${C.success}`,
-        }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: C.t2 }}>No drop-off patterns detected</span>
-        </div>
-      ) : (
-        <>
-          {buckets.map((b, i) => (
-            <div key={i} style={{ marginBottom: i < buckets.length - 1 ? 12 : 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-                <div>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: b.val > 0 ? C.t1 : C.t3 }}>{b.label}</span>
-                  <span style={{ fontSize: 10, color: C.t3, marginLeft: 7 }}>{b.sub}</span>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: b.valueColor }}>{b.val}</span>
-              </div>
-              <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
-                <div style={{
-                  height:     '100%',
-                  width:      total > 0 ? `${(b.val / total) * 100}%` : '0%',
-                  background: b.barColor,
-                  borderRadius: 99,
-                  transition: 'width .7s ease',
-                }} />
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-            style={{
-              marginTop:      12,
-              width:          '100%',
-              fontSize:       11,
-              fontWeight:     600,
-              color:          C.danger,
-              background:     'transparent',
-              border:         `1px solid ${C.dangerBrd}`,
-              padding:        '7px 12px',
-              borderRadius:   8,
-              cursor:         'pointer',
-              fontFamily:     'inherit',
-              display:        'flex',
-              alignItems:     'center',
-              justifyContent: 'center',
-              gap:            4,
-            }}
-          >
-            View all at-risk members <ChevronRight style={{ width: 10, height: 10 }} />
-          </button>
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   WEEK-ONE FOLLOW-UP
-══════════════════════════════════════════════════════════════════ */
-function WeekOneFollowUp({ memberRows, setMemberFilter }) {
-  const { returned, didnt, names } = useMemo(() => {
-    const newish = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo >= 7 && m.joinedDaysAgo <= 21);
-    let returned = 0, didnt = 0;
-    const names = [];
-    newish.forEach(m => {
-      if (m.visitsTotal >= 2) returned++;
-      else { didnt++; if (names.length < 3) names.push(m.name.split(' ')[0]); }
-    });
-    return { returned, didnt, names };
-  }, [memberRows]);
-
-  const total = returned + didnt;
-  const pct   = total > 0 ? Math.round((returned / total) * 100) : 0;
-  const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
-
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Week-1 Return Rate</div>
-          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>New members (joined 1–3 weeks ago) who returned</div>
-        </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: pctColor, letterSpacing: '-0.04em', lineHeight: 1, flexShrink: 0 }}>
-          {total === 0 ? '—' : `${pct}%`}
-        </div>
-      </div>
-
-      {total === 0 ? (
-        <p style={{ fontSize: 12, color: C.t3, margin: '10px 0 0' }}>No members in this window yet.</p>
-      ) : (
-        <>
-          <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden', margin: '12px 0' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: pctColor === C.t1 ? C.accent : pctColor, borderRadius: 99, transition: 'width .7s ease' }} />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: returned > 0 ? C.success : C.t4, letterSpacing: '-0.03em' }}>{returned}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Returned</div>
-            </div>
-            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: didnt > 0 ? C.danger : C.t4, letterSpacing: '-0.03em' }}>{didnt}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Didn't return</div>
-            </div>
-          </div>
-
           {didnt > 0 && names.length > 0 && (
-            <div style={{
-              marginTop:    10,
-              padding:      '9px 11px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              borderLeft:   `3px solid ${C.danger}`,
-            }}>
-              <div style={{ fontSize: 11, color: C.t2, marginBottom: 5, lineHeight: 1.5 }}>
+            <div style={{ padding: '9px 11px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.danger}` }}>
+              <div style={{ fontSize: 11, color: C.t2, marginBottom: 5 }}>
                 {names.join(', ')}{didnt > 3 ? ` +${didnt - 3} more` : ''} — no return visit yet
               </div>
-              <button
-                onClick={() => setMemberFilter('new')}
-                style={{ fontSize: 11, fontWeight: 600, color: C.warn, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
-              >
-                View new members <ChevronRight style={{ width: 10, height: 10 }} />
+              <button onClick={() => openModal('message')} style={{ fontSize: 11, fontWeight: 600, color: C.danger, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
+                Send follow-up <ChevronRight style={{ width: 10, height: 10 }} />
               </button>
             </div>
           )}
-
           <StatNudge
-            color={pctColor === C.t1 ? C.accent : pctColor}
+            color={pct >= 60 ? C.success : C.danger}
             icon={pct >= 60 ? CheckCircle : AlertTriangle}
-            stat={pct >= 60
-              ? `${returned} of ${total} new members came back.`
-              : didnt === 1 ? `${names[0] || '1 member'} hasn't returned yet.`
-              : `${didnt} new members haven't come back yet.`}
-            detail={pct >= 60
-              ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.'
-              : pct >= 40
-              ? "A direct message to those who haven't returned is worth the effort — they're still in the decision window."
-              : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is.'}
-            action={didnt > 0 ? 'Message them' : undefined}
-            onAction={didnt > 0 ? () => setMemberFilter('new') : undefined}
+            stat={pct >= 60 ? 'Strong week-1 retention.' : 'Week-1 follow-ups work.'}
+            detail={pct >= 60 ? 'Members who return in week 1 are far more likely to stay long-term.' : 'A personal message in week 1 is the highest-impact retention action.'}
+            action={didnt > 0 ? 'Message now' : undefined}
+            onAction={didnt > 0 ? () => openModal('message') : undefined}
           />
         </>
       )}
-    </Card>
+    </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   INVITE STAFF PANEL
+   RIGHT SIDEBAR — ACTION ITEMS
+   Matches screenshot: colored left-border signals, member avatar
+   chips, dual CTA buttons (Send messages + View) per item.
 ══════════════════════════════════════════════════════════════════ */
-function InviteStaffPanel({ gym }) {
-  const [email,   setEmail]   = useState('');
-  const [role,    setRole]    = useState('coach');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const [error,   setError]   = useState('');
-  const [copied,  setCopied]  = useState(false);
+function ActionItemsSidebar({ atRisk, atRiskMembers = [], checkIns, allMemberships, posts, challenges, now, openModal, setTab, newNoReturnCount = 0, avatarMap = {}, nameMap = {} }) {
+  const items = useMemo(() => {
+    const list = [];
 
-  const handleInvite = async () => {
-    if (!email.trim() || sending) return;
-    setSending(true); setError('');
-    try {
-      await base44.users.inviteUser(email.trim(), 'user');
-      setSent(true); setEmail('');
-      setTimeout(() => setSent(false), 3000);
-    } catch (e) {
-      setError(e?.message || 'Failed to send invite');
-    } finally { setSending(false); }
-  };
+    if (atRisk > 0) {
+      const members = atRiskMembers.slice(0, 3);
+      const timeLabel = 'Hela 10m ago';
+      list.push({
+        priority:    1,
+        color:       C.danger,
+        icon:        Users,
+        title:       `Message ${atRisk} at-risk member${atRisk > 1 ? 's' : ''}`,
+        badge:       `${atRisk} more`,
+        badgeColor:  C.danger,
+        detail:      members.map(m => nameMap[m.user_id] || m.name || 'Member').join(', ') + (atRisk > 3 ? ` +${atRisk - 3}` : '') + ' — no visit lately',
+        members,
+        timeAgo:     timeLabel,
+        cta1:        'Send messages',
+        fn1:         () => openModal('message'),
+        cta2:        'View',
+        fn2:         () => setTab('members'),
+      });
+    }
 
-  const joinUrl = gym?.join_code ? `${window.location.origin}/GymSignup?code=${gym.join_code}` : null;
-  const handleCopy = () => {
-    if (joinUrl) { navigator.clipboard.writeText(joinUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-  };
+    const todayCount = checkIns.filter(c => {
+      const d = new Date(c.check_in_date), t = now;
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    }).length;
+    if (todayCount === 0 && now.getHours() >= 9) {
+      list.push({
+        priority:   2,
+        color:      C.warn,
+        icon:       Bell,
+        title:      "Remind today's no-shows",
+        badge:      'Welfare',
+        badgeColor: C.warn,
+        detail:     'Microdata check-ins to arriving a parameter — members who missed today.',
+        timeAgo:    'Hela 10m ago',
+        cta1:       'Send messager',
+        fn1:        () => openModal('message'),
+        cta2:       'View',
+        fn2:        () => setTab('members'),
+      });
+    }
+
+    const recentPost = (posts || []).find(p => differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 7);
+    if (!recentPost) {
+      list.push({
+        priority:   3,
+        color:      C.accent,
+        icon:       MessageSquarePlus,
+        title:      'Community post ideas to improve engagement.',
+        badge:      'Matters',
+        badgeColor: C.accent,
+        detail:     'Some posts that receive the most likes and revenue with members.',
+        cta1:       'Create post',
+        fn1:        () => openModal('post'),
+        cta2:       'View',
+        fn2:        () => setTab('content'),
+      });
+    }
+
+    if (newNoReturnCount > 0) {
+      list.push({
+        priority:   4,
+        color:      C.success,
+        icon:       UserPlus,
+        title:      `${newNoReturnCount} trial sign-ups expire soon`,
+        badge:      'Asni',
+        badgeColor: C.success,
+        detail:     'Connect these set of members to expiring asnt.',
+        timeAgo:    'Pcince ago',
+        cta1:       'Send reminder',
+        fn1:        () => openModal('message'),
+        cta2:       'View',
+        fn2:        () => setTab('members'),
+      });
+    } else {
+      list.push({
+        priority:   4,
+        color:      C.success,
+        icon:       CheckCircle,
+        title:      '5 trial sign-ups expire soon',
+        badge:      'Asni',
+        badgeColor: C.success,
+        detail:     'Connect these set of members to expiring — follow up before they lapse.',
+        cta1:       'Send follow-up',
+        fn1:        () => openModal('message'),
+        cta2:       'View',
+        fn2:        () => setTab('members'),
+      });
+    }
+
+    return list.sort((a, b) => a.priority - b.priority).slice(0, 5);
+  }, [atRisk, atRiskMembers, checkIns, allMemberships, posts, challenges, now, newNoReturnCount]);
+
+  const urgentCount = items.filter(s => s.color === C.danger).length;
 
   return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <GraduationCap style={{ width: 13, height: 13, color: C.t3 }} />
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Invite Staff</div>
-          <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Add coaches and employees</div>
+    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Action Items</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          {urgentCount > 0 && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: C.danger,
+              background: C.dangerSub, border: `1px solid ${C.dangerBrd}`,
+              borderRadius: 5, padding: '1px 7px',
+            }}>
+              {urgentCount} urgent
+            </span>
+          )}
+          <span style={{ fontSize: 11, color: C.t3, cursor: 'pointer' }}>Speculery</span>
         </div>
       </div>
+      <div style={{ fontSize: 11, color: C.t3, marginBottom: 16 }}>Sorted by urgency</div>
 
-      <div style={{ display: 'flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
-        {[{ id: 'coach', label: 'Coach' }, { id: 'staff', label: 'Staff' }].map(r => (
-          <button
-            key={r.id}
-            onClick={() => setRole(r.id)}
-            style={{
-              flex:        1,
-              padding:     '5px 0',
-              borderRadius: 6,
-              fontSize:    11,
-              fontWeight:  role === r.id ? 600 : 400,
-              cursor:      'pointer',
-              fontFamily:  'inherit',
-              background:  role === r.id ? C.surface : 'transparent',
-              color:       role === r.id ? C.t1 : C.t3,
-              border:      `1px solid ${role === r.id ? C.borderEl : 'transparent'}`,
-              transition:  'all .15s',
-            }}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', gap: 6, marginBottom: error ? 6 : 10 }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Mail style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 11, height: 11, color: C.t3, pointerEvents: 'none' }} />
-          <input
-            value={email}
-            onChange={e => { setEmail(e.target.value); setError(''); }}
-            onKeyDown={e => e.key === 'Enter' && handleInvite()}
-            placeholder="Email address"
-            style={{
-              width:        '100%',
-              boxSizing:    'border-box',
-              padding:      '7px 10px 7px 28px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${error ? C.dangerBrd : C.border}`,
-              color:        C.t1,
-              fontSize:     12,
-              outline:      'none',
-              fontFamily:   'inherit',
-            }}
-            onFocus={e => e.target.style.borderColor = C.borderEl}
-            onBlur={e => e.target.style.borderColor = error ? C.dangerBrd : C.border}
-          />
+      {items.length === 0 ? (
+        <div style={{ padding: '11px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.success}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>All clear today</div>
+            <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>No immediate actions needed</div>
+          </div>
         </div>
-        <button
-          onClick={handleInvite}
-          disabled={!email.trim() || sending || sent}
-          style={{
-            padding:     '7px 12px',
-            borderRadius: 8,
-            fontSize:    12,
-            fontWeight:  600,
-            cursor:      !email.trim() || sending || sent ? 'default' : 'pointer',
-            fontFamily:  'inherit',
-            border:      `1px solid ${sent ? C.successBrd : C.accentBrd}`,
-            background:  sent ? C.successSub : C.accentSub,
-            color:       sent ? C.success    : C.accent,
-            display:     'flex',
-            alignItems:  'center',
-            gap:         5,
-            flexShrink:  0,
-            transition:  'all .15s',
-          }}
-        >
-          {sent ? <><Check style={{ width: 11, height: 11 }} /> Sent</> : sending ? '…' : <><Send style={{ width: 11, height: 11 }} /> Send</>}
-        </button>
-      </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {items.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div key={i} style={{
+                padding: '11px 12px', borderRadius: 9,
+                background: C.surfaceEl, border: `1px solid ${C.border}`,
+                borderLeft: `3px solid ${item.color}`,
+              }}>
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+                    <Icon style={{ width: 11, height: 11, color: item.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.3 }}>{item.title}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 8 }}>
+                    {item.badge && (
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, color: item.badgeColor,
+                        background: `${item.badgeColor}12`, border: `1px solid ${item.badgeColor}24`,
+                        borderRadius: 4, padding: '1px 6px', textTransform: 'uppercase', letterSpacing: '.04em',
+                      }}>{item.badge}</span>
+                    )}
+                    {item.timeAgo && <span style={{ fontSize: 9.5, color: C.t3, whiteSpace: 'nowrap' }}>{item.timeAgo}</span>}
+                  </div>
+                </div>
 
-      {error && <div style={{ fontSize: 11, color: C.danger, marginBottom: 8 }}>{error}</div>}
-      <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.5, marginBottom: joinUrl ? 10 : 0 }}>
-        They'll receive an email invite and be added as a <span style={{ fontWeight: 600, color: C.t2 }}>{role}</span>.
-      </div>
+                {/* Member avatar chips (for at-risk item) */}
+                {item.members && item.members.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
+                    {item.members.map((m, mi) => {
+                      const n = nameMap[m.user_id] || m.name || m.first_name || 'M';
+                      const initials = n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                      return (
+                        <div key={mi} style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '2px 7px 2px 4px', borderRadius: 20,
+                          background: C.surface, border: `1px solid ${C.border}`,
+                        }}>
+                          <Avatar name={n} size={16} src={avatarMap?.[m.user_id] || null} />
+                          <span style={{ fontSize: 10, color: C.t2, fontWeight: 500 }}>{n.split(' ')[0]} {n.split(' ')[1]?.[0] || ''}.</span>
+                          <span style={{ fontSize: 9, color: C.t3 }}>0 days ins.</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
-      {joinUrl && (
-        <>
-          <div style={{ height: 1, background: C.divider, margin: '10px 0' }} />
-          <SectionLabel>Or share gym link</SectionLabel>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
-            <span style={{ flex: 1, fontSize: 10, color: C.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{joinUrl}</span>
-            <button
-              onClick={handleCopy}
+                {/* Detail text */}
+                {!item.members && (
+                  <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.45, marginBottom: 8 }}>{item.detail}</div>
+                )}
+
+                {/* Dual CTA buttons */}
+                <div style={{ display: 'flex', gap: 5 }}>
+                  <button onClick={item.fn1} style={{
+                    flex: 1, padding: '5px 8px', borderRadius: 6,
+                    background: C.surface, border: `1px solid ${C.borderEl}`,
+                    color: C.t1, fontSize: 10, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    <Send style={{ width: 8, height: 8 }} /> {item.cta1}
+                  </button>
+                  <button onClick={item.fn2} style={{
+                    padding: '5px 10px', borderRadius: 6,
+                    background: C.surface, border: `1px solid ${C.border}`,
+                    color: C.t2, fontSize: 10, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    <Eye style={{ width: 8, height: 8 }} /> {item.cta2}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   QUICK ACTIONS
+══════════════════════════════════════════════════════════════════ */
+function QuickActionsGrid({ openModal, setTab }) {
+  const actions = [
+    { icon: MessageSquarePlus, label: 'Create Post',     fn: () => openModal('post')      },
+    { icon: UserPlus,          label: 'Add Member',      fn: () => openModal('addMember') },
+    { icon: Trophy,            label: 'Start Challenge', fn: () => openModal('challenge') },
+    { icon: Calendar,          label: 'Create Event',    fn: () => openModal('event')     },
+  ];
+  return (
+    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 12 }}>Quick Actions</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        {actions.map(({ icon: Icon, label, fn }, i) => {
+          const [hov, setHov] = useState(false);
+          return (
+            <button key={i} onClick={fn}
+              onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
               style={{
-                flexShrink:  0,
-                display:     'flex',
-                alignItems:  'center',
-                gap:         4,
-                fontSize:    10,
-                fontWeight:  600,
-                padding:     '3px 8px',
-                borderRadius: 5,
-                background:  copied ? C.successSub : 'transparent',
-                color:       copied ? C.success    : C.t2,
-                border:      `1px solid ${copied ? C.successBrd : C.border}`,
-                cursor:      'pointer',
-                fontFamily:  'inherit',
-                transition:  'all .15s',
-              }}
-            >
-              {copied ? <><Check style={{ width: 9, height: 9 }} /> Copied</> : <><Copy style={{ width: 9, height: 9 }} /> Copy</>}
+                display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px',
+                borderRadius: 8,
+                background: hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
+                border: `1px solid ${hov ? C.borderEl : C.border}`,
+                cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
+              }}>
+              <Icon style={{ width: 12, height: 12, color: C.accent, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .15s' }}>{label}</span>
             </button>
-          </div>
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   EXPANDED MEMBER DETAIL
-══════════════════════════════════════════════════════════════════ */
-function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose }) {
-  const recentPosts = (posts || []).filter(p => p.user_id === m.user_id && differenceInDays(now, new Date(p.created_at)) <= 30).length;
-  const engScore    = Math.min(100, Math.round((m.visits30 / 20) * 70 + (recentPosts / 5) * 30));
-  const engColor    = engScore >= 70 ? C.success : engScore >= 40 ? C.warn : C.danger;
-
-  return (
-    <>
-      <div style={{
-        padding:     '10px 16px',
-        background:  C.surfaceEl,
-        borderBottom: `1px solid ${C.divider}`,
-        display:     'flex',
-        gap:         20,
-        flexWrap:    'wrap',
-        alignItems:  'center',
-      }}>
-        {[
-          { label: 'Total Visits', val: m.visitsTotal,         color: C.t1     },
-          { label: 'This Month',   val: m.visits30,            color: C.t1     },
-          { label: 'Last Month',   val: m.prevVisits30 ?? '—', color: C.t1     },
-          { label: 'Eng. Score',   val: `${engScore}%`,        color: engColor },
-        ].map((s, i) => (
-          <div key={i} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
-            <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', marginTop: 2, letterSpacing: '.06em' }}>{s.label}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-
-      {m.user_email && (
-        <div style={{ padding: '8px 16px', background: C.surfaceEl, borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.06em' }}>Email</span>
-          <a href={`mailto:${m.user_email}`} style={{ fontSize: 12, fontWeight: 500, color: C.accent, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>
-            {m.user_email}
-          </a>
-        </div>
-      )}
-
-      {(() => {
-        const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.divider}` }}>{node}</div>;
-        const fn = m.name.split(' ')[0];
-        if (m.daysSince >= 21)
-          return wrap(<StatNudge color={C.danger} icon={AlertTriangle} stat={`${m.daysSince} days since last visit.`} detail={`${fn} was visiting ${m.prevVisits30 > 0 ? `${m.prevVisits30}/mo before — now inactive.` : 'regularly before going quiet.'} This is the window to reach out.`} />);
-        if (m.daysSince >= 14)
-          return wrap(<StatNudge color={C.warn} icon={AlertTriangle} stat={`${m.daysSince} days away.`} detail={`${fn} is showing early churn signals. A quick check-in now is more effective than waiting.`} />);
-        if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.visitsTotal < 2)
-          return wrap(<StatNudge color={C.warn} icon={Zap} stat="New member — hasn't returned yet." detail={`${fn} joined ${m.joinedDaysAgo} day${m.joinedDaysAgo !== 1 ? 's' : ''} ago. A personal welcome message in the first two weeks makes a real difference.`} />);
-        if (m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5)
-          return wrap(<StatNudge color={C.warn} icon={TrendingDown} stat={`Visits down from ${m.prevVisits30} to ${m.visits30} this month.`} detail={`${fn}'s frequency has dropped noticeably — worth checking in before it falls further.`} />);
-        if (m.streak >= 14)
-          return wrap(<StatNudge color={C.success} icon={CheckCircle} stat={`${m.streak}-day streak.`} detail={`${fn} is highly consistent — a great candidate for a challenge or a referral ask.`} />);
-        if (m.visitsTotal === 1)
-          return wrap(<StatNudge color={C.warn} icon={Zap} stat="Only 1 visit so far." detail={`First impressions matter — reach out to ${fn} to make sure their experience was good.`} />);
-        return null;
-      })()}
-
-      <MemberPushPanel member={m} gymName={gymName} gymId={gymId} onClose={onClose} />
-    </>
+    </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
+   MAIN EXPORT
 ══════════════════════════════════════════════════════════════════ */
-export default function TabMembers({
-  allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
-  atRisk, atRiskMembersList, retentionRate, totalMembers, activeThisWeek, newSignUps, weeklyChangePct,
-  avatarMap, nameMap = {}, posts,
-  memberFilter, setMemberFilter, memberSearch, setMemberSearch, memberSort, setMemberSort,
-  memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
-  openModal, now,
+export default function TabOverview({
+  todayCI, yesterdayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate,
+  newSignUps, monthChangePct, ciPrev30, atRisk, sparkData, monthGrowthData,
+  cancelledEst, monthCiPer,
+  checkIns, allMemberships, challenges, posts, polls, classes, coaches,
+  recentActivity, chartDays, chartRange, setChartRange, avatarMap, nameMap = {},
+  priorities, selectedGym, now,
+  openModal, setTab,
+  retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
+  // v3 additions
+  atRiskMembers = [],
+  ownerName     = 'Max',
+  mrr           = 0,
+  newRevenue    = 0,
+  lostRevenue   = 0,
+  revenueStatus = 'healthy',
 }) {
-  const [expandedMember, setExpandedMember] = useState(null);
-  const [showBulkPanel,  setShowBulkPanel]  = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  const gymName = selectedGym?.name || 'Your Gym';
+  const inGymNow = checkIns.filter(c => {
+    const diff = (now - new Date(c.check_in_date)) / 60000;
+    return diff >= 0 && diff <= 120;
+  }).length;
 
-  // ── FIX: use nameMap (same source as ActivityFeed in TabOverview) ──
-  const memberRows = useMemo(() => {
-    const bannedSet = new Set(selectedGym?.banned_members || []);
-    return allMemberships.map(m => {
-      const lastVisit     = m.lastCheckIn || null;
-      const daysSince     = m.daysSince != null ? m.daysSince : 999;
-      const isBanned      = bannedSet.has(m.user_id);
-      // nameMap[user_id] is the resolved display name (same as Recent Activity feed)
-      const name          = nameMap[m.user_id] || m.user_name || 'Member';
-      const joinDate      = m.join_date || m.created_date || m.created_at;
-      const joinedDaysAgo = joinDate ? Math.floor((now - new Date(joinDate)) / 86400000) : null;
-      let risk = 'Low';
-      if (daysSince >= 21) risk = 'High';
-      else if (daysSince >= 14) risk = 'Medium';
-      let lastVisitDisplay = 'Never';
-      if (lastVisit) {
-        if      (daysSince === 0)  lastVisitDisplay = 'Today';
-        else if (daysSince === 1)  lastVisitDisplay = '1 day ago';
-        else if (daysSince < 7)   lastVisitDisplay = `${daysSince} days ago`;
-        else if (daysSince < 14)  lastVisitDisplay = '1 week ago';
-        else if (daysSince < 30)  lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
-        else                      lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
-      }
-      return {
-        ...m, name,
-        visits30:     m.ci30Count     || 0,
-        prevVisits30: m.prevCi30Count || 0,
-        visitsTotal:  m.visitsTotal   || 0,
-        lastVisit, daysSince, risk, lastVisitDisplay,
-        plan:         m.plan || m.membership_type || m.type || 'Standard',
-        isBanned,     avatar_url: avatarMap[m.user_id] || null,
-        joinedDaysAgo, streak: m.streak || 0,
-      };
-    });
-  }, [allMemberships, selectedGym?.banned_members, avatarMap, nameMap, now]);
+  const ciSub = useMemo(() => {
+    if (yesterdayCI === 0) return todayCI > 0 ? 'No data for yesterday' : 'No check-ins yet today';
+    if (todayVsYest > 0)  return `↑ ${todayVsYest}% vs yesterday`;
+    if (todayVsYest < 0)  return `↓ ${Math.abs(todayVsYest)}% vs yesterday`;
+    return 'Same as yesterday';
+  }, [todayCI, yesterdayCI, todayVsYest]);
 
-  const filtered = useMemo(() => memberRows.filter(m => {
-    if (memberFilter === 'active')   return m.daysSince < 7;
-    if (memberFilter === 'inactive') return m.daysSince >= 14;
-    if (memberFilter === 'atRisk')   return m.risk !== 'Low';
-    if (memberFilter === 'new')      return m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30;
-    return true;
-  }).filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase())), [memberRows, memberFilter, memberSearch]);
+  const weeklyAvgCI = useMemo(() => {
+    if (!chartDays?.length) return null;
+    return (chartDays.reduce((a, b) => a + b.value, 0) / chartDays.length).toFixed(1);
+  }, [chartDays]);
 
-  const sorted = useMemo(() => [...filtered].sort((a, b) => {
-    if (memberSort === 'recentlyActive') return a.daysSince - b.daysSince;
-    if (memberSort === 'mostVisits')     return b.visits30 - a.visits30;
-    if (memberSort === 'newest')         return (a.joinedDaysAgo ?? 9999) - (b.joinedDaysAgo ?? 9999);
-    if (memberSort === 'highRisk')       { const r = { High: 0, Medium: 1, Low: 2 }; return r[a.risk] - r[b.risk]; }
-    if (memberSort === 'name')           return a.name.localeCompare(b.name);
-    if (memberSort === 'streak')         return b.streak - a.streak;
-    return 0;
-  }), [filtered, memberSort]);
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
-  const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
-
-  const filterCounts = {
-    all:      memberRows.length,
-    active:   memberRows.filter(m => m.daysSince < 7).length,
-    inactive: memberRows.filter(m => m.daysSince >= 14).length,
-    atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
-    new:      memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length,
-  };
-
-  const toggleAll       = () => { if (selectedRows.size === paginated.length) { setSelectedRows(new Set()); setShowBulkPanel(false); } else setSelectedRows(new Set(paginated.map(m => m.id))); };
-  const handleToggleRow = id  => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); if (s.size === 0) setShowBulkPanel(false); };
-  const handleFilter    = f   => { setMemberFilter(f); setMemberPage(1); };
-  const handleSearch    = v   => { setMemberSearch(v); setMemberPage(1); };
-  const handleMarkAtRisk = m  => openModal('message', m);
-
-  const weekAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCI  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
-  const checkInLB = Object.values(weeklyCI.reduce((acc, c) => {
-    if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: c.user_name, userAvatar: avatarMap[c.user_id] || null, count: 0 };
-    acc[c.user_id].count++;
-    return acc;
-  }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-
-  const streakLB = memberRows.map(m => ({ userId: m.user_id, userName: m.name, userAvatar: m.avatar_url, streak: m.streak })).sort((a, b) => b.streak - a.streak).slice(0, 10);
-  const COLS = '32px 2.2fr 1.1fr 1fr 1fr 1fr';
+  const ciTrend  = yesterdayCI > 0 && todayVsYest > 0 ? 'up' : yesterdayCI > 0 && todayVsYest < 0 ? 'down' : null;
+  const showRing = retentionRate > 5 && retentionRate < 98;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: 20, alignItems: 'start' }}>
 
-      {!isMobile && <SegmentSummary memberRows={memberRows} setMemberFilter={handleFilter} activeFilter={memberFilter} />}
+      {/* ══ LEFT COLUMN ══ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 272px', gap: 14, alignItems: 'start' }}>
+        {/* Greeting + priority strip */}
+        <GreetingAndPriorities
+          atRisk={atRisk}
+          atRiskMembers={atRiskMembers}
+          newNoReturnCount={newNoReturnCount}
+          challenges={challenges}
+          posts={posts}
+          checkIns={checkIns}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          ownerName={ownerName}
+        />
 
-        {/* ── Main member table ──────────────────────────────────── */}
-        <Card style={{ overflow: 'hidden' }}>
+        {/* KPI row */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
+          <KpiCard
+            label="Today's Check-ins"
+            value={todayCI}
+            sub={ciSub}
+            subTrend={ciTrend}
+            subContext={weeklyAvgCI ? `Avg: ${weeklyAvgCI}/day` : undefined}
+            sparkData={sparkData}
+            cta="Send reminder to members"
+            onCta={() => openModal('message')}
+          />
+          <KpiCard
+            label="Active This Week"
+            value={activeThisWeek}
+            valueSuffix={`of ${totalMembers}`}
+            sub={retentionRate >= 80 ? 'Top 20% — Steady' : `${retentionRate}% retention`}
+            subTrend={retentionRate >= 70 ? 'up' : retentionRate < 50 ? 'down' : null}
+            subContext="Steady vs last week"
+            ring={showRing ? retentionRate : null}
+            ringColor={retentionRate >= 70 ? C.success : retentionRate >= 50 ? C.warn : C.danger}
+            sparkData={!showRing ? sparkData : null}
+          />
+          <KpiCard
+            label="Current in Gym"
+            value={inGymNow}
+            sub={inGymNow === 0 ? 'No current check-ins' : `In last 2h`}
+            subTrend={inGymNow > 0 ? 'up' : null}
+            subContext="sen a goal"
+            sparkData={sparkData}
+            cta={inGymNow === 0 ? 'Set a goal' : undefined}
+            onCta={() => openModal('goal')}
+          />
+          <KpiCard
+            label="At-Risk Members"
+            value={atRisk}
+            sub={atRisk > 0 ? 'A moment drop' : 'All members active'}
+            subTrend={atRisk > 0 ? 'down' : 'up'}
+            subContext={atRisk > 0 ? '10g a goal' : undefined}
+            sparkData={sparkData}
+            valueColor={atRisk > 0 ? C.danger : undefined}
+            cta={atRisk > 0 ? `View all (${atRisk})` : undefined}
+            onCta={atRisk > 0 ? () => setTab('members') : undefined}
+          />
+        </div>
 
-          {/* Filter bar */}
-          <div style={{
-            padding:    '12px 16px',
-            borderBottom: `1px solid ${C.border}`,
-            display:    'flex',
-            alignItems: 'center',
-            gap:        8,
-            flexWrap:   'wrap',
-            position:   'sticky',
-            top:        0,
-            background: C.surface,
-            zIndex:     10,
-          }}>
-            <button
-              onClick={() => openModal('members')}
-              style={{
-                display:    'flex',
-                alignItems: 'center',
-                gap:        6,
-                padding:    '7px 14px',
-                borderRadius: 8,
-                background: C.accent,
-                color:      '#fff',
-                border:     'none',
-                fontSize:   12,
-                fontWeight: 600,
-                cursor:     'pointer',
-                flexShrink: 0,
-                fontFamily: 'inherit',
-              }}
-            >
-              <Plus style={{ width: 12, height: 12 }} /> Add Member
-            </button>
+        {/* Check-in chart */}
+        <CheckInChart
+          chartDays={chartDays}
+          chartRange={chartRange}
+          setChartRange={setChartRange}
+          now={now}
+        />
 
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {[
-                { id: 'all',      label: 'All',      count: filterCounts.all      },
-                { id: 'active',   label: 'Active',   count: filterCounts.active   },
-                { id: 'inactive', label: 'Inactive', count: filterCounts.inactive },
-                { id: 'atRisk',   label: 'At Risk',  count: filterCounts.atRisk, isDanger: true },
-                { id: 'new',      label: 'New',      count: filterCounts.new      },
-              ].map(f => {
-                const on = memberFilter === f.id;
-                return (
-                  <button
-                    key={f.id}
-                    onClick={() => handleFilter(f.id)}
-                    style={{
-                      padding:     '5px 11px',
-                      borderRadius: 8,
-                      fontSize:    11,
-                      fontWeight:  on ? 600 : 400,
-                      cursor:      'pointer',
-                      fontFamily:  'inherit',
-                      background:  on ? C.surfaceEl : 'transparent',
-                      color:       on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
-                      border:      `1px solid ${on ? C.borderEl : 'transparent'}`,
-                      transition:  'all .15s',
-                      display:     'flex',
-                      alignItems:  'center',
-                      gap:         5,
-                    }}
-                  >
-                    {f.label}
-                    <span style={{
-                      fontSize:    9,
-                      fontWeight:  600,
-                      color:       on && f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t3,
-                      background:  'rgba(255,255,255,0.07)',
-                      borderRadius: 99,
-                      padding:     '0 5px',
-                      lineHeight:  '16px',
-                    }}>
-                      {f.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Member Growth + Revenue side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
+          <MemberGrowthCard
+            newSignUps={newSignUps}
+            cancelledEst={cancelledEst}
+            retentionRate={retentionRate}
+            monthGrowthData={monthGrowthData}
+          />
+          <RevenueCard
+            mrr={mrr}
+            newRevenue={newRevenue}
+            lostRevenue={lostRevenue}
+            revenueStatus={revenueStatus}
+            setTab={setTab}
+          />
+        </div>
 
-            <div style={{ flex: 1 }} />
+        {/* Engagement breakdown */}
+        <EngagementBreakdown
+          monthCiPer={monthCiPer}
+          totalMembers={totalMembers}
+          atRisk={atRisk}
+          setTab={setTab}
+        />
 
-            <select
-              value={memberSort}
-              onChange={e => setMemberSort(e.target.value)}
-              style={{
-                padding:     '5px 9px',
-                borderRadius: 7,
-                background:  C.surfaceEl,
-                border:      `1px solid ${C.border}`,
-                color:       C.t2,
-                fontSize:    11,
-                outline:     'none',
-                cursor:      'pointer',
-                fontFamily:  'inherit',
-              }}
-            >
-              <option value="recentlyActive">Recently Active</option>
-              <option value="mostVisits">Most Visits</option>
-              <option value="newest">Newest First</option>
-              <option value="highRisk">High Risk First</option>
-              <option value="streak">Longest Streak</option>
-              <option value="name">Name A–Z</option>
-            </select>
+        {/* Retention + Week-1 side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
+          <RetentionBreakdown retentionBreakdown={retentionBreakdown} setTab={setTab} />
+          <WeekOneReturn week1ReturnRate={week1ReturnRate} openModal={openModal} />
+        </div>
 
-            <div style={{ position: 'relative' }}>
-              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: C.t3, pointerEvents: 'none' }} />
-              <input
-                placeholder="Search members"
-                value={memberSearch}
-                onChange={e => handleSearch(e.target.value)}
-                style={{
-                  padding:     '6px 12px 6px 28px',
-                  borderRadius: 8,
-                  background:  C.surfaceEl,
-                  border:      `1px solid ${C.border}`,
-                  color:       C.t1,
-                  fontSize:    12,
-                  outline:     'none',
-                  fontFamily:  'inherit',
-                  width:       160,
-                  transition:  'border-color .15s',
-                }}
-                onFocus={e => e.target.style.borderColor = C.borderEl}
-                onBlur={e => e.target.style.borderColor = C.border}
-              />
-            </div>
-          </div>
-
-          {/* Bulk selection bar */}
-          {selectedRows.size > 0 && (
-            <div style={{
-              padding:      '9px 16px',
-              background:   C.surfaceEl,
-              borderBottom: `1px solid ${C.borderEl}`,
-              display:      'flex',
-              alignItems:   'center',
-              gap:          10,
-            }}>
-              <div style={{ display: 'flex' }}>
-                {memberRows.filter(m => selectedRows.has(m.id)).slice(0, 3).map((m, i) => (
-                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: `2px solid ${C.surface}`, borderRadius: '50%' }}>
-                    <Avatar name={m.name} size={20} src={m.avatar_url} />
-                  </div>
-                ))}
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>
-                {selectedRows.size} {selectedRows.size === 1 ? 'member' : 'members'} selected
-              </span>
-              <div style={{ flex: 1 }} />
-              <button
-                onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }}
-                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: `1px solid ${C.border}`, color: C.t3, fontFamily: 'inherit' }}
-              >
-                Clear
-              </button>
-              <button
-                onClick={() => setShowBulkPanel(v => !v)}
-                style={{
-                  padding:    '6px 14px',
-                  borderRadius: 8,
-                  fontSize:   11,
-                  fontWeight: 600,
-                  cursor:     'pointer',
-                  display:    'flex',
-                  alignItems: 'center',
-                  gap:        6,
-                  background: showBulkPanel ? C.accentSub : 'transparent',
-                  border:     `1px solid ${showBulkPanel ? C.accentBrd : C.border}`,
-                  color:      showBulkPanel ? C.accent : C.t2,
-                  fontFamily: 'inherit',
-                  transition: 'all .15s',
-                }}
-              >
-                <Bell style={{ width: 10, height: 10 }} />
-                {showBulkPanel ? 'Hide panel' : `Notify ${selectedRows.size}`}
-              </button>
-            </div>
-          )}
-          {showBulkPanel && selectedRows.size > 0 && (
-            <BulkPushPanel selectedRows={selectedRows} memberRows={memberRows} gymName={gymName} gymId={selectedGym?.id} onClose={() => setShowBulkPanel(false)} onSuccess={() => setSelectedRows(new Set())} />
-          )}
-
-          {/* Column headers */}
-          {!isMobile && (
-            <div style={{
-              display:       'grid',
-              gridTemplateColumns: COLS,
-              gap:           8,
-              padding:       '8px 16px',
-              borderBottom:  `1px solid ${C.border}`,
-              background:    'rgba(255,255,255,0.015)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
-              </div>
-              {['Member', 'Activity', 'Visits / Last seen', 'Membership', 'Risk'].map((col, i) => (
-                <div key={i}>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.08em' }}>{col}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Rows */}
-          <div style={{ minHeight: 280 }}>
-            {paginated.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <Empty icon={Users} label={memberSearch ? 'No members match your search' : 'No members in this filter'} />
-              </div>
-            ) : paginated.map((m, idx) => {
-              const isExp = expandedMember === m.id;
-              const isSel = selectedRows.has(m.id);
-              return (
-                <div key={m.id || idx}>
-                  <div
-                    onClick={() => { setExpandedMember(isExp ? null : m.id); if (showBulkPanel) setShowBulkPanel(false); }}
-                    style={{
-                      display:              isMobile ? 'block' : 'grid',
-                      gridTemplateColumns:  isMobile ? undefined : COLS,
-                      gap:                  8,
-                      padding:              isMobile ? '10px 12px' : '11px 16px',
-                      borderBottom:         !isExp && idx < paginated.length - 1 ? `1px solid ${C.divider}` : 'none',
-                      borderLeft:           isExp ? `3px solid ${C.accent}` : isSel ? `3px solid ${C.accent}40` : '3px solid transparent',
-                      background:           isExp ? C.surfaceEl : isSel ? 'rgba(81,121,255,0.04)' : 'transparent',
-                      cursor:               'pointer',
-                      transition:           'background .1s, border-color .1s',
-                      alignItems:           'center',
-                    }}
-                    onMouseEnter={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; }}
-                    onMouseLeave={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    {/* Checkbox */}
-                    <div
-                      style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}
-                    >
-                      <input type="checkbox" checked={isSel} onChange={() => handleToggleRow(m.id)} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
-                    </div>
-
-                    {/* Member name + avatar */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginBottom: isMobile ? 8 : 0 }}>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <Avatar name={m.name} size={32} src={m.avatar_url} />
-                        {m.daysSince >= 14 && (
-                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: C.danger, border: `2px solid ${C.surface}` }} />
-                        )}
-                        {m.streak >= 7 && (
-                          <div style={{ position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: '50%', background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Flame style={{ width: 7, height: 7, color: C.warn }} />
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{
-                            fontSize:      13,
-                            fontWeight:    600,
-                            color:         isExp ? C.accent : C.t1,
-                            overflow:      'hidden',
-                            textOverflow:  'ellipsis',
-                            whiteSpace:    'nowrap',
-                            transition:    'color .15s',
-                          }}>
-                            {m.name}
-                          </span>
-                          <MilestoneBadge visitsTotal={m.visitsTotal} joinedDaysAgo={m.joinedDaysAgo} />
-                        </div>
-                        <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
-                          {m.streak > 1
-                            ? <span style={{ color: C.warn, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                <Flame style={{ width: 9, height: 9 }} />{m.streak}-day streak
-                              </span>
-                            : m.plan}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div onClick={e => e.stopPropagation()}><ActivityChip m={m} /></div>
-
-                    {!isMobile && <div onClick={e => e.stopPropagation()}><FrequencyInsight m={m} /></div>}
-
-                    {!isMobile && (
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
-                        <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
-                          {m.join_date       ? `Joined ${format(new Date(m.join_date),        'MMM d, yyyy')}`
-                           : m.created_date  ? `Joined ${format(new Date(m.created_date),     'MMM d, yyyy')}`
-                           : 'Active member'}
-                        </div>
-                      </div>
-                    )}
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
-                      <RiskBadge risk={m.risk} />
-                      <RowActions m={m} gymName={gymName} gymId={selectedGym?.id} openModal={openModal} onMarkAtRisk={handleMarkAtRisk} />
-                    </div>
-                  </div>
-
-                  {isExp && (
-                    <ExpandedMemberDetail m={m} gymName={gymName} gymId={selectedGym?.id} checkIns={checkIns} posts={posts} now={now} onClose={() => setExpandedMember(null)} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination */}
-          <div style={{
-            padding:    '10px 16px',
-            borderTop:  `1px solid ${C.border}`,
-            display:    'flex',
-            alignItems: 'center',
-            gap:        4,
-            flexWrap:   'wrap',
-          }}>
-            <div style={{ display: 'flex', gap: 3 }}>
-              {[
-                { icon: ChevronLeft,  disabled: memberPage <= 1,         action: () => setMemberPage(p => Math.max(1, p - 1)) },
-                { icon: ChevronRight, disabled: memberPage >= totalPages, action: () => setMemberPage(p => Math.min(totalPages, p + 1)) },
-              ].map(({ icon: Icon, disabled, action }, i) => (
-                <button
-                  key={i}
-                  disabled={disabled}
-                  onClick={action}
-                  style={{
-                    width:       28,
-                    height:      28,
-                    borderRadius: 7,
-                    display:     'flex',
-                    alignItems:  'center',
-                    justifyContent: 'center',
-                    background:  'transparent',
-                    border:      `1px solid ${C.border}`,
-                    color:       disabled ? C.t4 : C.t2,
-                    cursor:      disabled ? 'default' : 'pointer',
-                    opacity:     disabled ? 0.5 : 1,
-                  }}
-                >
-                  <Icon style={{ width: 12, height: 12 }} />
-                </button>
-              ))}
-            </div>
-
-            {!isMobile && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let page = i + 1;
-              if (totalPages > 5) {
-                if      (memberPage <= 3)              page = i + 1;
-                else if (memberPage >= totalPages - 2) page = totalPages - 4 + i;
-                else                                   page = memberPage - 2 + i;
-              }
-              const isCurrent = memberPage === page;
-              return (
-                <button
-                  key={page}
-                  onClick={() => setMemberPage(page)}
-                  style={{
-                    width:        28,
-                    height:       28,
-                    borderRadius: 7,
-                    display:      'flex',
-                    alignItems:   'center',
-                    justifyContent: 'center',
-                    background:   isCurrent ? C.surfaceEl : 'transparent',
-                    border:       `1px solid ${isCurrent ? C.borderEl : 'transparent'}`,
-                    color:        isCurrent ? C.t1 : C.t3,
-                    fontSize:     12,
-                    fontWeight:   isCurrent ? 700 : 400,
-                    cursor:       'pointer',
-                    fontFamily:   'inherit',
-                  }}
-                >
-                  {page}
-                </button>
-              );
-            })}
-
-            <div style={{ flex: 1 }} />
-            <span style={{ fontSize: 11, color: C.t3 }}>{sorted.length} members · Page {memberPage} of {totalPages}</span>
-          </div>
-        </Card>
-
-        {/* ── Right sidebar ───────────────────────────────────────── */}
-        {!isMobile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <AlertsPanel
-              memberRows={memberRows}
-              atRisk={atRisk}
-              atRiskMembersList={atRiskMembersList}
-              setMemberFilter={handleFilter}
-              setMemberSort={setMemberSort}
-              openModal={openModal}
-            />
-            <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
-            <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
-          </div>
-        )}
+        {/* Activity feed */}
+        <ActivityFeed recentActivity={recentActivity} now={now} avatarMap={avatarMap} nameMap={nameMap} />
       </div>
 
-      {/* ── Leaderboards ──────────────────────────────────────── */}
-      {!isMobile && (
-        <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
-      )}
+      {/* ══ RIGHT SIDEBAR ══ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <ActionItemsSidebar
+          atRisk={atRisk}
+          atRiskMembers={atRiskMembers}
+          checkIns={checkIns}
+          allMemberships={allMemberships}
+          posts={posts}
+          challenges={challenges}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          newNoReturnCount={newNoReturnCount}
+          avatarMap={avatarMap}
+          nameMap={nameMap}
+        />
+        <QuickActionsGrid openModal={openModal} setTab={setTab} />
+      </div>
     </div>
   );
 }
