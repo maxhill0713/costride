@@ -594,48 +594,6 @@ function RevenueSection({ mrr, newRev, lostRev }) {
   );
 }
 
-// ─── SIDEBAR NAV ──────────────────────────────────────────────────────────────
-function SidebarNav({ active, setActive }) {
-  const navItems = [
-    { id:"overview",    label:"Overview",    icon:"⊞" },
-    { id:"members",     label:"Members",     icon:"👥" },
-    { id:"content",     label:"Content",     icon:"📄" },
-    { id:"analytics",   label:"Analytics",   icon:"📊" },
-    { id:"automations", label:"Automations", icon:"⚡" },
-    { id:"settings",    label:"Settings",    icon:"⚙️" },
-  ];
-  return (
-    <aside style={{ width:220, flexShrink:0, background:"#070c18", borderRight:`1px solid ${T.border}`, display:"flex", flexDirection:"column", position:"sticky", top:0, height:"100vh", overflow:"hidden" }}>
-      {/* Logo */}
-      <div style={{ padding:"20px 18px 18px", borderBottom:`1px solid ${T.border}` }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:38, height:38, borderRadius:10, flexShrink:0, background:`linear-gradient(135deg,${T.accent},#3a5acc)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:800, color:"#fff", fontFamily:T.mono, boxShadow:`0 0 18px ${T.accentSub}` }}>F</div>
-          <div>
-            <div style={{ fontSize:13, fontWeight:800, color:T.t1, letterSpacing:"-0.02em" }}>Foundry Gym</div>
-            <div style={{ fontSize:9, color:T.t4, textTransform:"uppercase", letterSpacing:".1em", fontFamily:T.mono }}>GYM OWNER</div>
-          </div>
-        </div>
-      </div>
-      {/* Nav */}
-
-      {/* Links */}
-      <div style={{ padding:"12px 18px 16px", borderTop:`1px solid ${T.border}` }}>
-        <SectionLabel style={{ marginBottom:6 }}>Links</SectionLabel>
-        {["View Gym Page","Member View"].map((l,i)=>(
-          <div key={i} style={{ fontSize:11, color:T.t4, padding:"5px 0", cursor:"pointer", display:"flex", alignItems:"center", gap:5, transition:"color .15s" }}
-            onMouseEnter={e=>e.currentTarget.style.color=T.t3}
-            onMouseLeave={e=>e.currentTarget.style.color=T.t4}
-          >
-            <span style={{ fontSize:9 }}>↗</span>{l}
-          </div>
-        ))}
-        <div style={{ fontSize:11, color:T.danger, padding:"5px 0", cursor:"pointer", display:"flex", alignItems:"center", gap:5, marginTop:4 }}>
-          <span>↩</span>Log Out
-        </div>
-      </div>
-    </aside>
-  );
-}
 
 // ─── TOP HEADER ───────────────────────────────────────────────────────────────
 function TopHeader({ date, atRiskCount }) {
