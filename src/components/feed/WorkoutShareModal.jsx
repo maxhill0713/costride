@@ -74,51 +74,69 @@ async function drawStatsCard(post, gymName, streakNum = 0) {
   ctx.fillText(wordmark, brandX + logoSize + 18, brandY);
   ctx.shadowBlur = 0;
 
-  // Thin separator line beneath branding
-  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(PAD, brandY + 24); ctx.lineTo(W - PAD, brandY + 24); ctx.stroke();
+  // Thin separator line beneath branding — REMOVED
 
   // ── BOTTOM BLOCK: title + streak + pills + location ──
   const bottomBlockTop = H * 0.68;
 
-  // Workout title — serif, italic-style via transform
+  // Workout title — bold clean sans, large and impactful
   const titleText = post.workout_name || 'Workout';
-  ctx.save();
-  ctx.font = 'italic 900 88px Georgia,serif';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 24;
-  // Measure to check if we need to shrink
-  let titleFontSize = 88;
-  while (ctx.measureText(titleText).width > W - PAD * 2 - 220 && titleFontSize > 52) {
+  let titleFontSize = 96;
+  ctx.font = `900 ${titleFontSize}px -apple-system,sans-serif`;
+  while (ctx.measureText(titleText).width > W - 300 && titleFontSize > 56) {
     titleFontSize -= 4;
-    ctx.font = `italic 900 ${titleFontSize}px Georgia,serif`;
+    ctx.font = `900 ${titleFontSize}px -apple-system,sans-serif`;
   }
-  const titleY = bottomBlockTop + 80;
-  // Draw title left-aligned relative to centre block, leaving room for streak badge on right
-  const titleMaxW = W - PAD * 2 - 220;
-  const titleMeasured = ctx.measureText(titleText).width;
-  const titleStartX = (W - titleMaxW) / 2;
+
+  // Measure title to position streak pill beside it
+  const titleW = Math.min(ctx.measureText(titleText).width, W - 300);
+  const streakPillW = streakNum > 0 ? 210 : 0;
+  const streakGap = streakNum > 0 ? 30 : 0;
+  const titleBlockW = titleW + streakPillW + streakGap;
+  const titleStartX = (W - titleBlockW) / 2;
+  const titleY = bottomBlockTop + 90;
+
+  ctx.save();
+  ctx.font = `900 ${titleFontSize}px -apple-system,sans-serif`;
+  ctx.fillStyle = 'white';
   ctx.textAlign = 'left';
-  ctx.fillText(titleText, titleStartX, titleY, titleMaxW);
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 24;
+  ctx.fillText(titleText, titleStartX, titleY, W - 300);
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // Streak badge — pose icon + number, right of title
+  // Streak pill — 🔥 emoji + number in a frosted glass rounded rect
   if (streakNum > 0) {
-    const streakIcon = await loadImage(STREAK_ICON_URL);
-    const iconSz = 110;
-    const badgeX = titleStartX + Math.min(titleMeasured, titleMaxW) + 24;
-    const badgeY = titleY - iconSz + 18;
-    if (streakIcon) {
-      ctx.drawImage(streakIcon, badgeX, badgeY, iconSz, iconSz);
+    const pillRx = 44;
+    const pillPH = 88;
+    const pillPW = streakPillW;
+    const pillPX = titleStartX + titleW + streakGap;
+    const pillPY = titleY - pillPH + 16;
+
+    // Frosted glass pill background
+    ctx.save(); ctx.beginPath(); ctx.roundRect(pillPX, pillPY, pillPW, pillPH, pillRx);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.32)'; ctx.lineWidth = 2; ctx.stroke();
+    // Inner highlight
+    ctx.beginPath(); ctx.roundRect(pillPX + 2, pillPY + 2, pillPW - 4, 32, [pillRx, pillRx, 0, 0]);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill();
+    ctx.restore();
+
+    // Streak pose icon
+    const streakImg = await loadImage(STREAK_ICON_URL);
+    const iconSz = 72;
+    const iconX = pillPX + 18;
+    const iconY = pillPY + (pillPH - iconSz) / 2;
+    if (streakImg) {
+      ctx.drawImage(streakImg, iconX, iconY, iconSz, iconSz);
     }
+
+    // Number
     ctx.font = '900 52px -apple-system,sans-serif';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'left';
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10;
-    ctx.fillText(String(streakNum), badgeX + iconSz - 8, titleY + 2);
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 8;
+    ctx.fillText(String(streakNum), iconX + iconSz + 8, pillPY + 57);
     ctx.shadowBlur = 0;
   }
 
@@ -379,7 +397,7 @@ async function drawCleanCard(post, gymName) {
   return canvas;
 }
 
-// ─── React Preview: Stats card (redesigned luxury) ────────────────────────────
+// ─── React Preview: Stats card ───────────────────────────────────────────────
 function StatsPreview({ post, gymName, streakNum = 0 }) {
   const exercises = post.workout_exercises || [];
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -396,38 +414,46 @@ function StatsPreview({ post, gymName, streakNum = 0 }) {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a0d16 0%,#111827 50%,#0d1320 100%)' }} />
       )}
 
-      {/* TOP: CoStride logo + wordmark centred */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '11px 10px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <img src={LOGO_URL} alt="" style={{ width: 17, height: 17, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
-          <span style={{ color: 'rgba(255,255,255,0.96)', fontSize: 13, fontWeight: 800, textShadow: '0 1px 8px rgba(0,0,0,0.9)', letterSpacing: '-0.02em' }}>CoStride</span>
-        </div>
-        {/* Thin separator */}
-        <div style={{ width: '60%', height: 0.5, background: 'rgba(255,255,255,0.18)' }} />
+      {/* TOP: CoStride logo + wordmark centred — no separator line */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '11px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+        <img src={LOGO_URL} alt="" style={{ width: 17, height: 17, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+        <span style={{ color: 'rgba(255,255,255,0.96)', fontSize: 13, fontWeight: 800, textShadow: '0 1px 8px rgba(0,0,0,0.9)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
 
       {/* BOTTOM BLOCK */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 8px' }}>
 
-        {/* Workout title (serif italic) + streak badge */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 7 }}>
+        {/* Workout title — bold clean sans + streak pill badge on the right */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 7 }}>
           <div style={{
             color: 'white',
-            fontSize: 18,
+            fontSize: 19,
             fontWeight: 900,
-            fontFamily: 'Georgia,serif',
-            fontStyle: 'italic',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.1,
+            fontFamily: "'SF Pro Display',-apple-system,sans-serif",
+            letterSpacing: '-0.03em',
+            lineHeight: 1.05,
             textShadow: '0 2px 12px rgba(0,0,0,0.7)',
             textAlign: 'center',
           }}>
             {post.workout_name || 'Workout'}
           </div>
+          {/* Streak pill — pose icon + number in a frosted badge */}
           {streakNum > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginBottom: 1 }}>
-              <img src={STREAK_ICON_URL} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} />
-              <span style={{ color: 'white', fontSize: 13, fontWeight: 900, marginLeft: -4, textShadow: '0 1px 6px rgba(0,0,0,0.9)', lineHeight: 1 }}>{streakNum}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              flexShrink: 0,
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.30)',
+              borderRadius: 20,
+              padding: '2px 8px 2px 2px',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)',
+            }}>
+              <img src={STREAK_ICON_URL} alt="streak" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
+              <span style={{ color: 'white', fontSize: 12, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.01em' }}>{streakNum}</span>
             </div>
           )}
         </div>
