@@ -1,110 +1,18 @@
 /**
- * TabMembers — Redesigned Color System & Visual Hierarchy
+ * TabMembers — coach dashboard card shell applied
  *
- * ══════════════════════════════════════════════════════════════════
- * DESIGN SYSTEM — identical tokens to TabAnalytics + TabOverview
- * ══════════════════════════════════════════════════════════════════
+ * CARD SHELL CHANGES (identical to TabOverview update):
+ *   background    → #0a0f1e  (T.surface)
+ *   border        → rgba(255,255,255,.04)  (T.border)
+ *   borderRadius  → 16px  (T.r3)
+ *   boxShadow     → 0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)
+ *   inner shimmer → CardShimmer top-gradient div
+ *   inner surface → #0d1225
+ *   divider       → rgba(255,255,255,.04)
  *
- * PHILOSOPHY: "Color = Meaning. Silence = Safety."
- *
- * ── WHAT CHANGED ON THIS PAGE ────────────────────────────────────
- *
- * SEGMENT SUMMARY CARDS (top row)
- *   Before: Each card had a gradient accent top strip in its own
- *           color. Large value number in that same color. Label
- *           in uppercase with color. 5 different colors competing.
- *   After:  No gradient strip. Value is t1 unless it represents
- *           a threshold (At Risk → danger, Super Active → success).
- *           Active/Casual/New → t1 (neutral — they're fine).
- *           Active card border is the only color signal on selected.
- *
- * ACTIVITY CHIP (inline member status badge)
- *   Before: 5 different background+border+text colors simultaneously
- *           (green, blue, amber, amber-dim, purple, red, t3).
- *           Every row had a competing colored chip.
- *   After:  Strict 3-tier:
- *           - Danger states (banned, 14+ days absent) → danger
- *           - Positive threshold (15+/mo) → success
- *           - Everything else → neutral (t3 text, border only)
- *           "Just joined" no longer gets purple — it's not alarming
- *           or requiring action. It gets a neutral chip.
- *
- * RISK BADGE
- *   Before: Low=green, Medium=amber, High=red — all visible always.
- *   After:  Low → neutral (t4 text, no bg) — low risk is invisible.
- *           Medium → warn (subtle).
- *           High → danger only. The badge disappears unless urgent.
- *
- * ALERTS PANEL
- *   Before: Red panel for at-risk, amber panel for early droppers,
- *           amber panel for frequency droppers — 3 colored surfaces
- *           stacked together.
- *   After:  All panels are surfaceEl (neutral).
- *           A 3px left border is the ONLY color per alert block.
- *           Icon and count number carry semantic color.
- *           Action buttons: neutral surface, not colored.
- *
- * SEGMENT SUMMARY CARDS (sidebar)
- *   Before: Top gradient strip per card with unique color.
- *   After:  Removed. Border highlights on selected state only.
- *
- * DROP-OFF WIDGET bars
- *   Before: Each bar had its own color (red/amber/amber/t3).
- *   After:  Week 1 → danger. Others → accent at 40% opacity.
- *           The one that requires action stands out.
- *
- * WEEK-1 RETURN WIDGET
- *   Before: "Returned" cell in green bg. "Didn't return" in red bg.
- *   After:  Both cells are surfaceEl. Numbers get semantic color
- *           only at threshold. One color at a time.
- *
- * ROW SELECTION STATE
- *   Before: Selected row had blue-tinted bg + blue left border.
- *           Bulk bar had blue-tinted bg.
- *   After:  Selected row: surfaceEl bg + accent left border (kept,
- *           it's functional). Bulk bar: same surfaceEl + borderEl.
- *
- * PAGINATION
- *   Before: Active page button in blue.
- *   After:  Active page button in surfaceEl + borderEl (neutral tab).
- *           The page number itself is t1 weight 700.
- *
- * FILTER TABS
- *   Before: Active filter: blue bg + border. "At Risk" active: red.
- *   After:  Active filter: surfaceEl + borderEl (neutral tab style).
- *           "At Risk" active still gets danger color — it IS semantic.
- *           The tab background itself never gets colored.
- *
- * STAT NUDGE
- *   Before: Colored background + colored border.
- *   After:  surfaceEl bg + neutral border + 2px left border only.
- *
- * MEMBER PUSH PANEL
- *   Before: Blue-tinted background on the whole panel.
- *   After:  surfaceEl background. Blue left border only.
- *
- * INVITE STAFF PANEL
- *   Before: Purple gradient strip, purple icon container.
- *   After:  No gradient strip. Icon container: surfaceEl neutral.
- *           Role toggle: neutral tab style.
- *
- * EXPANDED ROW DETAIL
- *   Before: Stats strip had 4 different colors per stat.
- *   After:  All stats are t1. Only the engagement score uses
- *           semantic color (it's the one threshold metric).
- *
- * ── ELEMENTS THAT NEVER GET COLOR ON THIS PAGE ───────────────────
- *   - Card / panel backgrounds
- *   - All border lines (border/borderEl/divider)
- *   - Row hover backgrounds
- *   - Avatar containers
- *   - Column header text
- *   - Filter tab backgrounds (only text/border changes)
- *   - Pagination button backgrounds
- *   - All label text (always t2/t3)
- * ══════════════════════════════════════════════════════════════════
+ * Coloured left-border strips on alert/signal blocks are preserved.
+ * All logic, layout, and props are unchanged.
  */
-
 import React, { useMemo, useState } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import {
@@ -118,21 +26,38 @@ import {
 import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
 import { base44 } from '@/api/base44Client';
 import LeaderboardSection from '../leaderboard/LeaderboardSection';
-
 import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
-/* ── Shared card ─────────────────────────────────────────────────── */
+// ─── LOCAL CARD SHELL — matches TabCoachToday ─────────────────────────────────
+const CARD_BG    = '#0a0f1e';
+const CARD_BDR   = 'rgba(255,255,255,.04)';
+const CARD_BDR_H = 'rgba(255,255,255,.07)';
+const CARD_R     = 16;
+const CARD_SH    = '0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)';
+const INNER_BG   = '#0d1225';
+const DIVIDER    = 'rgba(255,255,255,.04)';
+
+function CardShimmer() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit',
+      background: 'linear-gradient(180deg, rgba(255,255,255,.015) 0%, transparent 40%)',
+    }} />
+  );
+}
+
 function Card({ children, style = {} }) {
   return (
     <div style={{
-      background:   C.surface,
-      border:       `1px solid ${C.border}`,
-      borderRadius: CARD_RADIUS,
-      boxShadow:    CARD_SHADOW,
-      overflow:     'hidden',
       position:     'relative',
+      background:   CARD_BG,
+      border:       `1px solid ${CARD_BDR}`,
+      borderRadius: CARD_R,
+      boxShadow:    CARD_SH,
+      overflow:     'hidden',
       ...style,
     }}>
+      <CardShimmer />
       {children}
     </div>
   );
@@ -151,7 +76,6 @@ function SectionLabel({ children }) {
 ══════════════════════════════════════════════════════════════════ */
 function ActivityChip({ m }) {
   let label, color, bg, border;
-
   if (m.isBanned || m.daysSince >= 14) {
     label  = m.isBanned ? 'Banned' : m.daysSince >= 999 ? 'No visits' : `${m.daysSince}d absent`;
     color  = C.danger; bg = C.dangerSub; border = C.dangerBrd;
@@ -163,30 +87,23 @@ function ActivityChip({ m }) {
     color  = C.accent; bg = C.accentSub; border = C.accentBrd;
   } else if (m.visits30 >= 4) {
     label  = `${m.visits30}/mo`;
-    color  = C.accent; bg = 'transparent'; border = C.border;
+    color  = C.accent; bg = 'transparent'; border = CARD_BDR;
   } else if (m.visits30 >= 1) {
     label  = `${m.visits30}/mo · low`;
-    color  = C.t2; bg = 'transparent'; border = C.border;
+    color  = C.t2; bg = 'transparent'; border = CARD_BDR;
   } else if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 7) {
     label  = 'Just joined';
-    color  = C.t2; bg = 'transparent'; border = C.border;
+    color  = C.t2; bg = 'transparent'; border = CARD_BDR;
   } else {
     label  = 'No visits';
-    color  = C.t3; bg = 'transparent'; border = C.border;
+    color  = C.t3; bg = 'transparent'; border = CARD_BDR;
   }
-
   return (
     <span style={{
-      display:     'inline-flex',
-      alignItems:  'center',
-      fontSize:    10,
-      fontWeight:  600,
-      padding:     '3px 8px',
-      borderRadius: 6,
-      background:  bg,
-      color,
-      border:      `1px solid ${border}`,
-      whiteSpace:  'nowrap',
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 10, fontWeight: 600, padding: '3px 8px',
+      borderRadius: 6, background: bg, color, border: `1px solid ${border}`,
+      whiteSpace: 'nowrap',
     }}>
       {label}
     </span>
@@ -197,23 +114,16 @@ function ActivityChip({ m }) {
    RISK BADGE
 ══════════════════════════════════════════════════════════════════ */
 function RiskBadge({ risk }) {
-  if (risk === 'Low') {
-    return (
-      <span style={{ fontSize: 10, color: C.t4, fontWeight: 500 }}>Low</span>
-    );
-  }
+  if (risk === 'Low') return <span style={{ fontSize: 10, color: C.t4, fontWeight: 500 }}>Low</span>;
   const isHigh = risk === 'High';
   return (
     <span style={{
-      display:     'inline-flex',
-      alignItems:  'center',
-      fontSize:    10,
-      fontWeight:  600,
-      padding:     '3px 8px',
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 10, fontWeight: 600, padding: '3px 8px',
       borderRadius: 6,
-      background:  isHigh ? C.dangerSub : C.warnSub,
-      color:       isHigh ? C.danger    : C.warn,
-      border:      `1px solid ${isHigh ? C.dangerBrd : C.warnBrd}`,
+      background: isHigh ? C.dangerSub : C.warnSub,
+      color:      isHigh ? C.danger    : C.warn,
+      border:     `1px solid ${isHigh ? C.dangerBrd : C.warnBrd}`,
     }}>
       {risk}
     </span>
@@ -222,42 +132,34 @@ function RiskBadge({ risk }) {
 
 const HealthScore = FitnessScore;
 
-/* ── Milestone badge ─────────────────────────────────────────────── */
 function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
   let label = null;
-  if      (visitsTotal === 1)                             label = '1st visit';
-  else if (visitsTotal === 10)                            label = '10 visits';
-  else if (visitsTotal === 25)                            label = '25 visits';
-  else if (visitsTotal === 50)                            label = '50 visits';
-  else if (visitsTotal === 100)                           label = '100 visits';
-  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7)  label = 'New';
+  if      (visitsTotal === 1)                            label = '1st visit';
+  else if (visitsTotal === 10)                           label = '10 visits';
+  else if (visitsTotal === 25)                           label = '25 visits';
+  else if (visitsTotal === 50)                           label = '50 visits';
+  else if (visitsTotal === 100)                          label = '100 visits';
+  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7) label = 'New';
   if (!label) return null;
   return (
     <span style={{
-      fontSize:    9,
-      fontWeight:  600,
-      color:       C.warn,
-      background:  C.warnSub,
-      border:      `1px solid ${C.warnBrd}`,
-      padding:     '2px 6px',
-      borderRadius: 5,
+      fontSize: 9, fontWeight: 600, color: C.warn,
+      background: C.warnSub, border: `1px solid ${C.warnBrd}`,
+      padding: '2px 6px', borderRadius: 5,
     }}>
       {label}
     </span>
   );
 }
 
-/* ── Frequency insight ───────────────────────────────────────────── */
 function FrequencyInsight({ m }) {
   const prev  = m.prevVisits30 || 0;
   const curr  = m.visits30;
-  const hasComparison = prev >= 3; // only compare if prev month had meaningful data
+  const hasComparison = prev >= 3;
   const pct   = hasComparison ? Math.round(((curr - prev) / prev) * 100) : 0;
   const dropped = hasComparison && pct <= -30;
-  const surged  = hasComparison && pct >= 30 && pct <= 300; // cap to avoid absurd %
-
+  const surged  = hasComparison && pct >= 30 && pct <= 300;
   const valueColor = m.daysSince === 0 ? C.success : m.daysSince >= 14 ? C.danger : C.t1;
-
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -272,20 +174,12 @@ function FrequencyInsight({ m }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
         <span style={{ fontSize: 10, color: C.t3 }}>{m.lastVisitDisplay}</span>
         {dropped && (
-          <span style={{
-            fontSize: 9, fontWeight: 600, color: C.danger,
-            background: C.dangerSub, border: `1px solid ${C.dangerBrd}`,
-            borderRadius: 4, padding: '1px 5px',
-          }}>
+          <span style={{ fontSize: 9, fontWeight: 600, color: C.danger, background: C.dangerSub, border: `1px solid ${C.dangerBrd}`, borderRadius: 4, padding: '1px 5px' }}>
             -{Math.abs(pct)}% vs usual
           </span>
         )}
         {surged && (
-          <span style={{
-            fontSize: 9, fontWeight: 600, color: C.success,
-            background: C.successSub, border: `1px solid ${C.successBrd}`,
-            borderRadius: 4, padding: '1px 5px',
-          }}>
+          <span style={{ fontSize: 9, fontWeight: 600, color: C.success, background: C.successSub, border: `1px solid ${C.successBrd}`, borderRadius: 4, padding: '1px 5px' }}>
             +{pct}% vs usual
           </span>
         )}
@@ -294,36 +188,33 @@ function FrequencyInsight({ m }) {
   );
 }
 
-/* ── Row action menu ─────────────────────────────────────────────── */
 function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4 }}>
       <button
         onClick={e => { e.stopPropagation(); openModal('message', m); }}
-        title="Send notification"
         style={{
           width: 26, height: 26, borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${C.border}`,
+          background: 'transparent', border: `1px solid ${CARD_BDR}`,
           cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
         }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+        onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
+        onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
       >
         <Bell style={{ width: 11, height: 11, color: C.accent }} />
       </button>
       <button
         onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
-        title="More actions"
         style={{
           width: 26, height: 26, borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${C.border}`,
+          background: 'transparent', border: `1px solid ${CARD_BDR}`,
           cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
         }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+        onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
+        onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
       >
         <MoreHorizontal style={{ width: 11, height: 11, color: C.t3 }} />
       </button>
@@ -331,10 +222,10 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            position:  'absolute', right: 0, top: 30, zIndex: 999,
-            background: C.surface, border: `1px solid ${C.borderEl}`,
+            position: 'absolute', right: 0, top: 30, zIndex: 999,
+            background: CARD_BG, border: `1px solid ${CARD_BDR_H}`,
             borderRadius: 10, boxShadow: '0 8px 28px rgba(0,0,0,0.55)',
-            minWidth:  152, overflow: 'hidden',
+            minWidth: 152, overflow: 'hidden',
           }}
         >
           {[
@@ -342,15 +233,14 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
             { icon: Flag,    label: 'Mark at risk',     fn: () => { onMarkAtRisk(m); setOpen(false); } },
           ].map((a, i) => (
             <button
-              key={i}
-              onClick={a.fn}
+              key={i} onClick={a.fn}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 9,
                 padding: '9px 14px', fontSize: 12, fontWeight: 500, color: C.t2,
                 background: 'none', border: 'none', cursor: 'pointer',
                 textAlign: 'left', fontFamily: 'inherit', transition: 'background .1s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = C.surfaceEl}
+              onMouseEnter={e => e.currentTarget.style.background = INNER_BG}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}
             >
               <a.icon style={{ width: 12, height: 12, color: C.t3 }} /> {a.label}
@@ -362,7 +252,6 @@ function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
   );
 }
 
-/* ── Message templates ──────────────────────────────────────────── */
 const PRESET_MESSAGES = [
   { id: 'miss',      label: 'We miss you',      sublabel: 'Re-engagement',    body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.` },
   { id: 'offer',     label: 'Bring a guest',     sublabel: 'Special offer',    body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.` },
@@ -372,27 +261,18 @@ const PRESET_MESSAGES = [
   { id: 'welcome',   label: 'Welcome back',      sublabel: 'Week-1 follow-up', body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
 ];
 
-/* ── Mode toggle ────────────────────────────────────────────────── */
 function ModeToggle({ mode, setMode }) {
   return (
-    <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
+    <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: INNER_BG, borderRadius: 8, border: `1px solid ${CARD_BDR}`, marginBottom: 12 }}>
       {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
-        <button
-          key={m.id}
-          onClick={() => setMode(m.id)}
-          style={{
-            padding:     '4px 12px',
-            borderRadius: 6,
-            fontSize:    11,
-            fontWeight:  mode === m.id ? 600 : 400,
-            cursor:      'pointer',
-            background:  mode === m.id ? C.surface : 'transparent',
-            border:      `1px solid ${mode === m.id ? C.borderEl : 'transparent'}`,
-            color:       mode === m.id ? C.t1 : C.t3,
-            fontFamily:  'inherit',
-            transition:  'all .15s',
-          }}
-        >
+        <button key={m.id} onClick={() => setMode(m.id)} style={{
+          padding: '4px 12px', borderRadius: 6, fontSize: 11,
+          fontWeight: mode === m.id ? 600 : 400, cursor: 'pointer',
+          background: mode === m.id ? CARD_BG : 'transparent',
+          border: `1px solid ${mode === m.id ? CARD_BDR_H : 'transparent'}`,
+          color: mode === m.id ? C.t1 : C.t3,
+          fontFamily: 'inherit', transition: 'all .15s',
+        }}>
           {m.label}
         </button>
       ))}
@@ -400,25 +280,16 @@ function ModeToggle({ mode, setMode }) {
   );
 }
 
-/* ── Preset grid ────────────────────────────────────────────────── */
 function PresetGrid({ preset, setPreset }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
       {PRESET_MESSAGES.map(p => (
-        <button
-          key={p.id}
-          onClick={() => setPreset(p.id)}
-          style={{
-            padding:     '8px 10px',
-            borderRadius: 8,
-            cursor:      'pointer',
-            textAlign:   'left',
-            background:  preset === p.id ? C.surfaceEl : 'transparent',
-            border:      `1px solid ${preset === p.id ? C.borderEl : C.border}`,
-            transition:  'all .15s',
-            fontFamily:  'inherit',
-          }}
-        >
+        <button key={p.id} onClick={() => setPreset(p.id)} style={{
+          padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+          background: preset === p.id ? INNER_BG : 'transparent',
+          border: `1px solid ${preset === p.id ? CARD_BDR_H : CARD_BDR}`,
+          transition: 'all .15s', fontFamily: 'inherit',
+        }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: preset === p.id ? C.t1 : C.t2, marginBottom: 2 }}>{p.label}</div>
           <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{p.sublabel}</div>
         </button>
@@ -427,33 +298,20 @@ function PresetGrid({ preset, setPreset }) {
   );
 }
 
-/* ── Send button ────────────────────────────────────────────────── */
 function SendBtn({ onClick, disabled, sending, sent, label }) {
   const ready = !disabled && !sending && !sent;
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled || sending || sent}
-      style={{
-        width:          '100%',
-        padding:        '9px',
-        borderRadius:   8,
-        border:         `1px solid ${sent ? C.successBrd : ready ? C.accentBrd : C.border}`,
-        cursor:         ready ? 'pointer' : 'default',
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        gap:            6,
-        fontSize:       12,
-        fontWeight:     600,
-        background:     sent ? C.successSub : ready ? C.accentSub : 'transparent',
-        color:          sent ? C.success    : ready ? C.accent    : C.t3,
-        transition:     'all .15s',
-        fontFamily:     'inherit',
-      }}
-    >
-      {sent
-        ? <><Check style={{ width: 12, height: 12 }} /> Sent</>
+    <button onClick={onClick} disabled={disabled || sending || sent} style={{
+      width: '100%', padding: '9px', borderRadius: 8,
+      border: `1px solid ${sent ? C.successBrd : ready ? C.accentBrd : CARD_BDR}`,
+      cursor: ready ? 'pointer' : 'default',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      fontSize: 12, fontWeight: 600,
+      background: sent ? C.successSub : ready ? C.accentSub : 'transparent',
+      color:      sent ? C.success    : ready ? C.accent    : C.t3,
+      transition: 'all .15s', fontFamily: 'inherit',
+    }}>
+      {sent ? <><Check style={{ width: 12, height: 12 }} /> Sent</>
         : sending ? 'Sending…'
         : <><Send style={{ width: 12, height: 12 }} /> {label}</>}
     </button>
@@ -466,15 +324,11 @@ function SendBtn({ onClick, disabled, sending, sent, label }) {
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
     <div style={{
-      marginTop:   10,
-      display:     'flex',
-      alignItems:  'flex-start',
-      gap:         9,
-      padding:     '9px 11px',
-      borderRadius: 8,
-      background:  C.surfaceEl,
-      border:      `1px solid ${C.border}`,
-      borderLeft:  `2px solid ${color}`,
+      marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 9,
+      padding: '9px 11px', borderRadius: 8,
+      background: INNER_BG,
+      border: `1px solid ${CARD_BDR}`,
+      borderLeft: `2px solid ${color}`,
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -482,24 +336,12 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
         <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</span>
       </div>
       {action && onAction && (
-        <button
-          onClick={e => { e.stopPropagation(); onAction(); }}
-          style={{
-            flexShrink:  0,
-            fontSize:    10,
-            fontWeight:  600,
-            color,
-            background:  'transparent',
-            border:      'none',
-            cursor:      'pointer',
-            fontFamily:  'inherit',
-            whiteSpace:  'nowrap',
-            display:     'flex',
-            alignItems:  'center',
-            gap:         2,
-            padding:     0,
-          }}
-        >
+        <button onClick={e => { e.stopPropagation(); onAction(); }} style={{
+          flexShrink: 0, fontSize: 10, fontWeight: 600, color,
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          fontFamily: 'inherit', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 2, padding: 0,
+        }}>
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
       )}
@@ -518,7 +360,6 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
   const [sent,    setSent]    = useState(false);
   const firstName = member.name.split(' ')[0];
   const message   = mode === 'preset' ? PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, firstName) || '' : custom;
-
   const handleSend = async () => {
     if (!message.trim() || sending) return;
     setSending(true);
@@ -531,13 +372,12 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
       setTimeout(() => { setSent(false); onClose(); }, 2000);
     } catch { } finally { setSending(false); }
   };
-
   return (
     <div style={{
-      padding:      '14px 16px 16px',
-      background:   C.surfaceEl,
-      borderBottom: `1px solid ${C.divider}`,
-      borderLeft:   `3px solid ${C.accent}`,
+      padding: '14px 16px 16px',
+      background: INNER_BG,
+      borderBottom: `1px solid ${DIVIDER}`,
+      borderLeft: `3px solid ${C.accent}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -547,45 +387,34 @@ function MemberPushPanel({ member, gymName, gymId, onClose }) {
             <div style={{ fontSize: 10, color: C.t3 }}>Sending to {firstName}</div>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          style={{
-            width: 24, height: 24, borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'transparent', border: `1px solid ${C.border}`, cursor: 'pointer',
-          }}
-        >
+        <button onClick={onClose} style={{
+          width: 24, height: 24, borderRadius: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'transparent', border: `1px solid ${CARD_BDR}`, cursor: 'pointer',
+        }}>
           <X style={{ width: 10, height: 10, color: C.t3 }} />
         </button>
       </div>
       <ModeToggle mode={mode} setMode={setMode} />
       {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-        <textarea
-          value={custom}
-          onChange={e => setCustom(e.target.value)}
-          placeholder={`Write a message to ${firstName}…`}
-          rows={3}
+        <textarea value={custom} onChange={e => setCustom(e.target.value)}
+          placeholder={`Write a message to ${firstName}…`} rows={3}
           style={{
             width: '100%', boxSizing: 'border-box', marginBottom: 10,
-            background: C.surface, border: `1px solid ${C.border}`,
+            background: CARD_BG, border: `1px solid ${CARD_BDR}`,
             borderRadius: 8, padding: '8px 10px', fontSize: 11,
             color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
           }}
           onFocus={e => e.target.style.borderColor = C.accentBrd}
-          onBlur={e => e.target.style.borderColor = C.border}
+          onBlur={e => e.target.style.borderColor = CARD_BDR}
         />
       )}
       {message && (
         <div style={{
-          margin:       '10px 0',
-          padding:      '9px 11px',
-          borderRadius: 8,
-          background:   C.surface,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `2px solid ${C.accent}`,
-          fontSize:     11,
-          color:        C.t2,
-          lineHeight:   1.6,
+          margin: '10px 0', padding: '9px 11px', borderRadius: 8,
+          background: CARD_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `2px solid ${C.accent}`,
+          fontSize: 11, color: C.t2, lineHeight: 1.6,
         }}>
           {message}
         </div>
@@ -604,12 +433,10 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
   const [mode,    setMode]    = useState('preset');
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
-
   const members     = memberRows.filter(m => selectedRows.has(m.id));
   const memberCount = members.length;
   const buildMsg    = (p, name) => PRESET_MESSAGES.find(x => x.id === p)?.body(gymName, name) || '';
   const preview     = mode === 'preset' ? buildMsg(preset, members[0]?.name.split(' ')[0] || 'there') : custom;
-
   const handleSend = async () => {
     if (!preview.trim() || sending) return;
     setSending(true);
@@ -629,13 +456,12 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
       setTimeout(() => { setSent(false); onSuccess(); onClose(); }, 2200);
     } catch { } finally { setSending(false); }
   };
-
   return (
     <div style={{
-      padding:      '14px 16px 16px',
-      background:   C.surfaceEl,
-      borderBottom: `1px solid ${C.divider}`,
-      borderLeft:   `3px solid ${C.accent}`,
+      padding: '14px 16px 16px',
+      background: INNER_BG,
+      borderBottom: `1px solid ${DIVIDER}`,
+      borderLeft: `3px solid ${C.accent}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -648,66 +474,54 @@ function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSu
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <div style={{ display: 'flex' }}>
             {members.slice(0, 4).map((m, i) => (
-              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: `2px solid ${C.surface}`, borderRadius: '50%' }}>
+              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: `2px solid ${CARD_BG}`, borderRadius: '50%' }}>
                 <Avatar name={m.name} size={20} src={m.avatar_url} />
               </div>
             ))}
             {memberCount > 4 && (
               <div style={{
                 marginLeft: -6, width: 20, height: 20, borderRadius: '50%',
-                background: C.surfaceEl, border: `2px solid ${C.surface}`,
+                background: INNER_BG, border: `2px solid ${CARD_BG}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ fontSize: 8, fontWeight: 700, color: C.t2 }}>+{memberCount - 4}</span>
               </div>
             )}
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: 24, height: 24, borderRadius: 6,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'transparent', border: `1px solid ${C.border}`, cursor: 'pointer',
-            }}
-          >
+          <button onClick={onClose} style={{
+            width: 24, height: 24, borderRadius: 6,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'transparent', border: `1px solid ${CARD_BDR}`, cursor: 'pointer',
+          }}>
             <X style={{ width: 10, height: 10, color: C.t3 }} />
           </button>
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div>
           <ModeToggle mode={mode} setMode={setMode} />
           {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-            <textarea
-              value={custom}
-              onChange={e => setCustom(e.target.value)}
-              placeholder={`Write a message to all ${memberCount} members…`}
-              rows={4}
+            <textarea value={custom} onChange={e => setCustom(e.target.value)}
+              placeholder={`Write a message to all ${memberCount} members…`} rows={4}
               style={{
                 width: '100%', boxSizing: 'border-box',
-                background: C.surface, border: `1px solid ${C.border}`,
+                background: CARD_BG, border: `1px solid ${CARD_BDR}`,
                 borderRadius: 8, padding: '8px 10px', fontSize: 11,
                 color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
               }}
               onFocus={e => e.target.style.borderColor = C.accentBrd}
-              onBlur={e => e.target.style.borderColor = C.border}
+              onBlur={e => e.target.style.borderColor = CARD_BDR}
             />
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <SectionLabel>Preview</SectionLabel>
           <div style={{
-            flex:         1,
-            padding:      '9px 11px',
-            borderRadius: 8,
-            background:   C.surface,
-            border:       `1px solid ${C.border}`,
-            borderLeft:   `2px solid ${preview ? C.accent : C.border}`,
-            fontSize:     11,
-            color:        preview ? C.t2 : C.t3,
-            lineHeight:   1.6,
-            fontStyle:    preview ? 'normal' : 'italic',
+            flex: 1, padding: '9px 11px', borderRadius: 8,
+            background: CARD_BG, border: `1px solid ${CARD_BDR}`,
+            borderLeft: `2px solid ${preview ? C.accent : CARD_BDR}`,
+            fontSize: 11, color: preview ? C.t2 : C.t3,
+            lineHeight: 1.6, fontStyle: preview ? 'normal' : 'italic',
           }}>
             {preview || 'Select a template…'}
           </div>
@@ -729,14 +543,13 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
     const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
     const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
     return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  valueColor: C.t1, filter: 'active' },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', valueColor: C.t1, filter: 'active' },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  valueColor: C.t1, filter: 'active' },
-      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   valueColor: C.t1, filter: 'atRisk' },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   valueColor: C.t1, filter: 'new'    },
+      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  filter: 'active' },
+      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', filter: 'active' },
+      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  filter: 'active' },
+      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   filter: 'atRisk' },
+      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   filter: 'new'    },
     ];
   }, [memberRows]);
-
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
       {segs.map(s => {
@@ -746,26 +559,18 @@ function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
             key={s.id}
             onClick={() => setMemberFilter(selected ? 'all' : s.filter)}
             style={{
-              padding:      '14px 14px',
-              borderRadius: CARD_RADIUS,
-              cursor:       'pointer',
-              background:   C.surface,
-              border:       `1px solid ${selected ? C.borderEl : C.border}`,
-              boxShadow:    CARD_SHADOW,
-              transition:   'all .15s',
+              position: 'relative', overflow: 'hidden',
+              padding: '14px 14px', borderRadius: CARD_R, cursor: 'pointer',
+              background: CARD_BG,
+              border: `1px solid ${selected ? CARD_BDR_H : CARD_BDR}`,
+              boxShadow: CARD_SH, transition: 'all .15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderEl; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = selected ? C.borderEl : C.border; e.currentTarget.style.transform = ''; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = CARD_BDR_H; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = selected ? CARD_BDR_H : CARD_BDR; e.currentTarget.style.transform = ''; }}
           >
+            <CardShimmer />
             <SectionLabel>{s.label}</SectionLabel>
-            <div style={{
-              fontSize:      28,
-              fontWeight:    700,
-              color:         s.val > 0 ? s.valueColor : C.t4,
-              letterSpacing: '-0.04em',
-              lineHeight:    1,
-              marginBottom:  5,
-            }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: s.val > 0 ? C.t1 : C.t4, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>
               {s.val}
             </div>
             <div style={{ fontSize: 11, color: C.t3 }}>{s.sub}</div>
@@ -783,45 +588,34 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
   const criticalMembers = memberRows.filter(m => m.risk === 'High').length > 0
     ? memberRows.filter(m => m.risk === 'High').slice(0, 3)
     : (atRiskMembersList || []).slice(0, 3).map(m => ({
-        name:     m.user_name || m.name,
+        name: m.user_name || m.name,
         daysSince: m.days_since || m.daysSince || 14,
-        risk:     'High',
+        risk: 'High',
       }));
   const earlyDroppers     = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.daysSince >= 7).slice(0, 2);
   const frequencyDroppers = memberRows.filter(m => m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5 && m.visits30 < 4).slice(0, 2);
   const noAlerts          = criticalMembers.length === 0 && earlyDroppers.length === 0 && frequencyDroppers.length === 0;
-
   return (
     <Card style={{ padding: 18 }}>
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Alerts</div>
         <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{noAlerts ? 'All clear' : 'Members needing attention'}</div>
       </div>
-
       {noAlerts && (
         <div style={{
-          display:     'flex',
-          alignItems:  'center',
-          gap:         8,
-          padding:     '10px 12px',
-          borderRadius: 8,
-          background:  C.surfaceEl,
-          border:      `1px solid ${C.border}`,
-          borderLeft:  `3px solid ${C.success}`,
+          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
+          borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `3px solid ${C.success}`,
         }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: C.t2 }}>All members are active</span>
         </div>
       )}
-
       {criticalMembers.length > 0 && (
         <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.danger}`,
-          marginBottom: 8,
+          padding: '10px 12px', borderRadius: 9,
+          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `3px solid ${C.danger}`, marginBottom: 8,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
             <AlertTriangle style={{ width: 11, height: 11, color: C.danger, flexShrink: 0 }} />
@@ -839,9 +633,9 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
           <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${C.border}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${CARD_BDR}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
+              onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
             >
               View all
             </button>
@@ -854,15 +648,11 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
           </div>
         </div>
       )}
-
       {earlyDroppers.length > 0 && (
         <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.warn}`,
-          marginBottom: 8,
+          padding: '10px 12px', borderRadius: 9,
+          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `3px solid ${C.warn}`, marginBottom: 8,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <Zap style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
@@ -879,14 +669,11 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
           </button>
         </div>
       )}
-
       {frequencyDroppers.length > 0 && (
         <div style={{
-          padding:      '10px 12px',
-          borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.warn}`,
+          padding: '10px 12px', borderRadius: 9,
+          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `3px solid ${C.warn}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <TrendingDown style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
@@ -897,13 +684,10 @@ function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilt
               <span style={{ fontWeight: 600, color: C.t2 }}>{m.name}</span> — was {m.prevVisits30}/mo, now {m.visits30}/mo
             </div>
           ))}
-          <StatNudge
-            color={C.warn}
-            icon={TrendingDown}
+          <StatNudge color={C.warn} icon={TrendingDown}
             stat={`${frequencyDroppers.length} member${frequencyDroppers.length > 1 ? 's' : ''} visited much less than usual.`}
             detail="A drop in frequency is an early churn signal — reaching out now is more effective than waiting."
-            action="Message them →"
-            onAction={() => openModal('message')}
+            action="Message them →" onAction={() => openModal('message')}
           />
         </div>
       )}
@@ -921,31 +705,24 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
     const m2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 30   && m.joinedDaysAgo <= 90  && m.daysSince >= 14).length;
     const old = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 90   && m.daysSince >= 21).length;
     return [
-      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,        valueColor: w1 > 0 ? C.danger : C.t4 },
-      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`, valueColor: w2 > 0 ? C.t2 : C.t4    },
-      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`, valueColor: m2 > 0 ? C.t2 : C.t4    },
-      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`, valueColor: old > 0 ? C.t3 : C.t4   },
+      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,        valueColor: w1  > 0 ? C.danger : C.t4 },
+      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`, valueColor: w2  > 0 ? C.t2    : C.t4 },
+      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`, valueColor: m2  > 0 ? C.t2    : C.t4 },
+      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`, valueColor: old > 0 ? C.t3    : C.t4 },
     ];
   }, [memberRows]);
   const total = buckets.reduce((a, b) => a + b.val, 0);
-
   return (
     <Card style={{ padding: 18 }}>
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Drop-off Patterns</div>
         <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Where members typically go quiet</div>
       </div>
-
       {total === 0 ? (
         <div style={{
-          display:     'flex',
-          alignItems:  'center',
-          gap:         8,
-          padding:     '10px 12px',
-          borderRadius: 8,
-          background:  C.surfaceEl,
-          border:      `1px solid ${C.border}`,
-          borderLeft:  `3px solid ${C.success}`,
+          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
+          borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+          borderLeft: `3px solid ${C.success}`,
         }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: C.t2 }}>No drop-off patterns detected</span>
@@ -961,13 +738,10 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 700, color: b.valueColor }}>{b.val}</span>
               </div>
-              <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden' }}>
+              <div style={{ height: 2, borderRadius: 99, background: DIVIDER, overflow: 'hidden' }}>
                 <div style={{
-                  height:     '100%',
-                  width:      total > 0 ? `${(b.val / total) * 100}%` : '0%',
-                  background: b.barColor,
-                  borderRadius: 99,
-                  transition: 'width .7s ease',
+                  height: '100%', width: total > 0 ? `${(b.val / total) * 100}%` : '0%',
+                  background: b.barColor, borderRadius: 99, transition: 'width .7s ease',
                 }} />
               </div>
             </div>
@@ -975,21 +749,10 @@ function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
           <button
             onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
             style={{
-              marginTop:      12,
-              width:          '100%',
-              fontSize:       11,
-              fontWeight:     600,
-              color:          C.danger,
-              background:     'transparent',
-              border:         `1px solid ${C.dangerBrd}`,
-              padding:        '7px 12px',
-              borderRadius:   8,
-              cursor:         'pointer',
-              fontFamily:     'inherit',
-              display:        'flex',
-              alignItems:     'center',
-              justifyContent: 'center',
-              gap:            4,
+              marginTop: 12, width: '100%', fontSize: 11, fontWeight: 600, color: C.danger,
+              background: 'transparent', border: `1px solid ${C.dangerBrd}`,
+              padding: '7px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
             }}
           >
             View all at-risk members <ChevronRight style={{ width: 10, height: 10 }} />
@@ -1014,11 +777,9 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
     });
     return { returned, didnt, names };
   }, [memberRows]);
-
   const total = returned + didnt;
   const pct   = total > 0 ? Math.round((returned / total) * 100) : 0;
   const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
-
   return (
     <Card style={{ padding: 18 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -1030,34 +791,29 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
           {total === 0 ? '—' : `${pct}%`}
         </div>
       </div>
-
       {total === 0 ? (
         <p style={{ fontSize: 12, color: C.t3, margin: '10px 0 0' }}>No members in this window yet.</p>
       ) : (
         <>
-          <div style={{ height: 2, borderRadius: 99, background: C.divider, overflow: 'hidden', margin: '12px 0' }}>
+          <div style={{ height: 2, borderRadius: 99, background: DIVIDER, overflow: 'hidden', margin: '12px 0' }}>
             <div style={{ height: '100%', width: `${pct}%`, background: pctColor === C.t1 ? C.accent : pctColor, borderRadius: 99, transition: 'width .7s ease' }} />
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: returned > 0 ? C.success : C.t4, letterSpacing: '-0.03em' }}>{returned}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Returned</div>
-            </div>
-            <div style={{ padding: '8px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: didnt > 0 ? C.danger : C.t4, letterSpacing: '-0.03em' }}>{didnt}</div>
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>Didn't return</div>
-            </div>
+            {[
+              { count: returned, label: 'Returned',      color: returned > 0 ? C.success : C.t4 },
+              { count: didnt,    label: "Didn't return", color: didnt > 0    ? C.danger  : C.t4 },
+            ].map((cell, i) => (
+              <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`, textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: cell.color, letterSpacing: '-0.03em' }}>{cell.count}</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>{cell.label}</div>
+              </div>
+            ))}
           </div>
-
           {didnt > 0 && names.length > 0 && (
             <div style={{
-              marginTop:    10,
-              padding:      '9px 11px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${C.border}`,
-              borderLeft:   `3px solid ${C.danger}`,
+              marginTop: 10, padding: '9px 11px', borderRadius: 8,
+              background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+              borderLeft: `3px solid ${C.danger}`,
             }}>
               <div style={{ fontSize: 11, color: C.t2, marginBottom: 5, lineHeight: 1.5 }}>
                 {names.join(', ')}{didnt > 3 ? ` +${didnt - 3} more` : ''} — no return visit yet
@@ -1070,19 +826,11 @@ function WeekOneFollowUp({ memberRows, setMemberFilter }) {
               </button>
             </div>
           )}
-
           <StatNudge
             color={pctColor === C.t1 ? C.accent : pctColor}
             icon={pct >= 60 ? CheckCircle : AlertTriangle}
-            stat={pct >= 60
-              ? `${returned} of ${total} new members came back.`
-              : didnt === 1 ? `${names[0] || '1 member'} hasn't returned yet.`
-              : `${didnt} new members haven't come back yet.`}
-            detail={pct >= 60
-              ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.'
-              : pct >= 40
-              ? "A direct message to those who haven't returned is worth the effort — they're still in the decision window."
-              : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is.'}
+            stat={pct >= 60 ? `${returned} of ${total} new members came back.` : didnt === 1 ? `${names[0] || '1 member'} hasn't returned yet.` : `${didnt} new members haven't come back yet.`}
+            detail={pct >= 60 ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.' : pct >= 40 ? "A direct message to those who haven't returned is worth the effort — they're still in the decision window." : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is.'}
             action={didnt > 0 ? 'Message them' : undefined}
             onAction={didnt > 0 ? () => setMemberFilter('new') : undefined}
           />
@@ -1102,7 +850,6 @@ function InviteStaffPanel({ gym }) {
   const [sent,    setSent]    = useState(false);
   const [error,   setError]   = useState('');
   const [copied,  setCopied]  = useState(false);
-
   const handleInvite = async () => {
     if (!email.trim() || sending) return;
     setSending(true); setError('');
@@ -1114,12 +861,10 @@ function InviteStaffPanel({ gym }) {
       setError(e?.message || 'Failed to send invite');
     } finally { setSending(false); }
   };
-
   const joinUrl = gym?.join_code ? `${window.location.origin}/GymSignup?code=${gym.join_code}` : null;
   const handleCopy = () => {
     if (joinUrl) { navigator.clipboard.writeText(joinUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
   };
-
   return (
     <Card style={{ padding: 18 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -1129,109 +874,65 @@ function InviteStaffPanel({ gym }) {
           <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Add coaches and employees</div>
         </div>
       </div>
-
-      <div style={{ display: 'flex', gap: 2, padding: 3, background: C.surfaceEl, borderRadius: 8, border: `1px solid ${C.border}`, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 2, padding: 3, background: INNER_BG, borderRadius: 8, border: `1px solid ${CARD_BDR}`, marginBottom: 12 }}>
         {[{ id: 'coach', label: 'Coach' }, { id: 'staff', label: 'Staff' }].map(r => (
-          <button
-            key={r.id}
-            onClick={() => setRole(r.id)}
-            style={{
-              flex:        1,
-              padding:     '5px 0',
-              borderRadius: 6,
-              fontSize:    11,
-              fontWeight:  role === r.id ? 600 : 400,
-              cursor:      'pointer',
-              fontFamily:  'inherit',
-              background:  role === r.id ? C.surface : 'transparent',
-              color:       role === r.id ? C.t1 : C.t3,
-              border:      `1px solid ${role === r.id ? C.borderEl : 'transparent'}`,
-              transition:  'all .15s',
-            }}
-          >
+          <button key={r.id} onClick={() => setRole(r.id)} style={{
+            flex: 1, padding: '5px 0', borderRadius: 6, fontSize: 11,
+            fontWeight: role === r.id ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit',
+            background: role === r.id ? CARD_BG : 'transparent',
+            color: role === r.id ? C.t1 : C.t3,
+            border: `1px solid ${role === r.id ? CARD_BDR_H : 'transparent'}`,
+            transition: 'all .15s',
+          }}>
             {r.label}
           </button>
         ))}
       </div>
-
       <div style={{ display: 'flex', gap: 6, marginBottom: error ? 6 : 10 }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <Mail style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 11, height: 11, color: C.t3, pointerEvents: 'none' }} />
-          <input
-            value={email}
-            onChange={e => { setEmail(e.target.value); setError(''); }}
+          <input value={email} onChange={e => { setEmail(e.target.value); setError(''); }}
             onKeyDown={e => e.key === 'Enter' && handleInvite()}
             placeholder="Email address"
             style={{
-              width:        '100%',
-              boxSizing:    'border-box',
-              padding:      '7px 10px 7px 28px',
-              borderRadius: 8,
-              background:   C.surfaceEl,
-              border:       `1px solid ${error ? C.dangerBrd : C.border}`,
-              color:        C.t1,
-              fontSize:     12,
-              outline:      'none',
-              fontFamily:   'inherit',
+              width: '100%', boxSizing: 'border-box', padding: '7px 10px 7px 28px',
+              borderRadius: 8, background: INNER_BG,
+              border: `1px solid ${error ? C.dangerBrd : CARD_BDR}`,
+              color: C.t1, fontSize: 12, outline: 'none', fontFamily: 'inherit',
             }}
-            onFocus={e => e.target.style.borderColor = C.borderEl}
-            onBlur={e => e.target.style.borderColor = error ? C.dangerBrd : C.border}
+            onFocus={e => e.target.style.borderColor = CARD_BDR_H}
+            onBlur={e => e.target.style.borderColor = error ? C.dangerBrd : CARD_BDR}
           />
         </div>
-        <button
-          onClick={handleInvite}
-          disabled={!email.trim() || sending || sent}
-          style={{
-            padding:     '7px 12px',
-            borderRadius: 8,
-            fontSize:    12,
-            fontWeight:  600,
-            cursor:      !email.trim() || sending || sent ? 'default' : 'pointer',
-            fontFamily:  'inherit',
-            border:      `1px solid ${sent ? C.successBrd : C.accentBrd}`,
-            background:  sent ? C.successSub : C.accentSub,
-            color:       sent ? C.success    : C.accent,
-            display:     'flex',
-            alignItems:  'center',
-            gap:         5,
-            flexShrink:  0,
-            transition:  'all .15s',
-          }}
-        >
+        <button onClick={handleInvite} disabled={!email.trim() || sending || sent} style={{
+          padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+          cursor: !email.trim() || sending || sent ? 'default' : 'pointer', fontFamily: 'inherit',
+          border: `1px solid ${sent ? C.successBrd : C.accentBrd}`,
+          background: sent ? C.successSub : C.accentSub,
+          color: sent ? C.success : C.accent,
+          display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, transition: 'all .15s',
+        }}>
           {sent ? <><Check style={{ width: 11, height: 11 }} /> Sent</> : sending ? '…' : <><Send style={{ width: 11, height: 11 }} /> Send</>}
         </button>
       </div>
-
       {error && <div style={{ fontSize: 11, color: C.danger, marginBottom: 8 }}>{error}</div>}
       <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.5, marginBottom: joinUrl ? 10 : 0 }}>
         They'll receive an email invite and be added as a <span style={{ fontWeight: 600, color: C.t2 }}>{role}</span>.
       </div>
-
       {joinUrl && (
         <>
-          <div style={{ height: 1, background: C.divider, margin: '10px 0' }} />
+          <div style={{ height: 1, background: DIVIDER, margin: '10px 0' }} />
           <SectionLabel>Or share gym link</SectionLabel>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}` }}>
             <span style={{ flex: 1, fontSize: 10, color: C.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{joinUrl}</span>
-            <button
-              onClick={handleCopy}
-              style={{
-                flexShrink:  0,
-                display:     'flex',
-                alignItems:  'center',
-                gap:         4,
-                fontSize:    10,
-                fontWeight:  600,
-                padding:     '3px 8px',
-                borderRadius: 5,
-                background:  copied ? C.successSub : 'transparent',
-                color:       copied ? C.success    : C.t2,
-                border:      `1px solid ${copied ? C.successBrd : C.border}`,
-                cursor:      'pointer',
-                fontFamily:  'inherit',
-                transition:  'all .15s',
-              }}
-            >
+            <button onClick={handleCopy} style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
+              fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 5,
+              background: copied ? C.successSub : 'transparent',
+              color: copied ? C.success : C.t2,
+              border: `1px solid ${copied ? C.successBrd : CARD_BDR}`,
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
+            }}>
               {copied ? <><Check style={{ width: 9, height: 9 }} /> Copied</> : <><Copy style={{ width: 9, height: 9 }} /> Copy</>}
             </button>
           </div>
@@ -1248,17 +949,12 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
   const recentPosts = (posts || []).filter(p => p.user_id === m.user_id && differenceInDays(now, new Date(p.created_at)) <= 30).length;
   const engScore    = Math.min(100, Math.round((m.visits30 / 20) * 70 + (recentPosts / 5) * 30));
   const engColor    = engScore >= 70 ? C.success : engScore >= 40 ? C.warn : C.danger;
-
   return (
     <>
       <div style={{
-        padding:     '10px 16px',
-        background:  C.surfaceEl,
-        borderBottom: `1px solid ${C.divider}`,
-        display:     'flex',
-        gap:         20,
-        flexWrap:    'wrap',
-        alignItems:  'center',
+        padding: '10px 16px', background: INNER_BG,
+        borderBottom: `1px solid ${DIVIDER}`,
+        display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
       }}>
         {[
           { label: 'Total Visits', val: m.visitsTotal,         color: C.t1     },
@@ -1272,18 +968,16 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
           </div>
         ))}
       </div>
-
       {m.user_email && (
-        <div style={{ padding: '8px 16px', background: C.surfaceEl, borderBottom: `1px solid ${C.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ padding: '8px 16px', background: INNER_BG, borderBottom: `1px solid ${DIVIDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.06em' }}>Email</span>
           <a href={`mailto:${m.user_email}`} style={{ fontSize: 12, fontWeight: 500, color: C.accent, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>
             {m.user_email}
           </a>
         </div>
       )}
-
       {(() => {
-        const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.divider}` }}>{node}</div>;
+        const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${DIVIDER}` }}>{node}</div>;
         const fn = m.name.split(' ')[0];
         if (m.daysSince >= 21)
           return wrap(<StatNudge color={C.danger} icon={AlertTriangle} stat={`${m.daysSince} days since last visit.`} detail={`${fn} was visiting ${m.prevVisits30 > 0 ? `${m.prevVisits30}/mo before — now inactive.` : 'regularly before going quiet.'} This is the window to reach out.`} />);
@@ -1299,7 +993,6 @@ function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose
           return wrap(<StatNudge color={C.warn} icon={Zap} stat="Only 1 visit so far." detail={`First impressions matter — reach out to ${fn} to make sure their experience was good.`} />);
         return null;
       })()}
-
       <MemberPushPanel member={m} gymName={gymName} gymId={gymId} onClose={onClose} />
     </>
   );
@@ -1319,23 +1012,18 @@ export default function TabMembers({
   const [expandedMember, setExpandedMember] = useState(null);
   const [showBulkPanel,  setShowBulkPanel]  = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-
   React.useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
-
   const gymName = selectedGym?.name || 'Your Gym';
-
-  // ── FIX: use nameMap (same source as ActivityFeed in TabOverview) ──
   const memberRows = useMemo(() => {
     const bannedSet = new Set(selectedGym?.banned_members || []);
     return allMemberships.map(m => {
       const lastVisit     = m.lastCheckIn || null;
       const daysSince     = m.daysSince != null ? m.daysSince : 999;
       const isBanned      = bannedSet.has(m.user_id);
-      // nameMap[user_id] is the resolved display name (same as Recent Activity feed)
       const name          = nameMap[m.user_id] || m.user_name || 'Member';
       const joinDate      = m.join_date || m.created_date || m.created_at;
       const joinedDaysAgo = joinDate ? Math.floor((now - new Date(joinDate)) / 86400000) : null;
@@ -1353,12 +1041,11 @@ export default function TabMembers({
       }
       return {
         ...m, name,
-        visits30:     m.ci30Count     || 0,
-        prevVisits30: m.prevCi30Count || 0,
-        visitsTotal:  m.visitsTotal   || 0,
+        visits30: m.ci30Count || 0, prevVisits30: m.prevCi30Count || 0,
+        visitsTotal: m.visitsTotal || 0,
         lastVisit, daysSince, risk, lastVisitDisplay,
-        plan:         m.plan || m.membership_type || m.type || 'Standard',
-        isBanned,     avatar_url: avatarMap[m.user_id] || null,
+        plan: m.plan || m.membership_type || m.type || 'Standard',
+        isBanned, avatar_url: avatarMap[m.user_id] || null,
         joinedDaysAgo, streak: m.streak || 0,
       };
     });
@@ -1384,7 +1071,6 @@ export default function TabMembers({
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
   const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
-
   const filterCounts = {
     all:      memberRows.length,
     active:   memberRows.filter(m => m.daysSince < 7).length,
@@ -1392,13 +1078,11 @@ export default function TabMembers({
     atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
     new:      memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length,
   };
-
   const toggleAll       = () => { if (selectedRows.size === paginated.length) { setSelectedRows(new Set()); setShowBulkPanel(false); } else setSelectedRows(new Set(paginated.map(m => m.id))); };
   const handleToggleRow = id  => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); if (s.size === 0) setShowBulkPanel(false); };
   const handleFilter    = f   => { setMemberFilter(f); setMemberPage(1); };
   const handleSearch    = v   => { setMemberSearch(v); setMemberPage(1); };
   const handleMarkAtRisk = m  => openModal('message', m);
-
   const weekAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const weeklyCI  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
   const checkInLB = Object.values(weeklyCI.reduce((acc, c) => {
@@ -1406,54 +1090,29 @@ export default function TabMembers({
     acc[c.user_id].count++;
     return acc;
   }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-
   const streakLB = memberRows.map(m => ({ userId: m.user_id, userName: m.name, userAvatar: m.avatar_url, streak: m.streak })).sort((a, b) => b.streak - a.streak).slice(0, 10);
   const COLS = '32px 2.2fr 1.1fr 1fr 1fr 1fr';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
       {!isMobile && <SegmentSummary memberRows={memberRows} setMemberFilter={handleFilter} activeFilter={memberFilter} />}
-
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 272px', gap: 14, alignItems: 'start' }}>
-
-        {/* ── Main member table ──────────────────────────────────── */}
+        {/* ── Main member table ── */}
         <Card style={{ overflow: 'hidden' }}>
-
           {/* Filter bar */}
           <div style={{
-            padding:    '12px 16px',
-            borderBottom: `1px solid ${C.border}`,
-            display:    'flex',
-            alignItems: 'center',
-            gap:        8,
-            flexWrap:   'wrap',
-            position:   'sticky',
-            top:        0,
-            background: C.surface,
-            zIndex:     10,
+            padding: '12px 16px', borderBottom: `1px solid ${CARD_BDR}`,
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            position: 'sticky', top: 0, background: CARD_BG, zIndex: 10,
           }}>
-            <button
-              onClick={() => openModal('members')}
-              style={{
-                display:    'flex',
-                alignItems: 'center',
-                gap:        6,
-                padding:    '7px 14px',
-                borderRadius: 8,
-                background: C.accent,
-                color:      '#fff',
-                border:     'none',
-                fontSize:   12,
-                fontWeight: 600,
-                cursor:     'pointer',
-                flexShrink: 0,
-                fontFamily: 'inherit',
-              }}
-            >
+            <button onClick={() => openModal('members')} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 14px', borderRadius: 8,
+              background: C.accent, color: '#fff', border: 'none',
+              fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+            }}>
               <Plus style={{ width: 12, height: 12 }} /> Add Member
             </button>
-
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {[
                 { id: 'all',      label: 'All',      count: filterCounts.all      },
@@ -1464,34 +1123,21 @@ export default function TabMembers({
               ].map(f => {
                 const on = memberFilter === f.id;
                 return (
-                  <button
-                    key={f.id}
-                    onClick={() => handleFilter(f.id)}
-                    style={{
-                      padding:     '5px 11px',
-                      borderRadius: 8,
-                      fontSize:    11,
-                      fontWeight:  on ? 600 : 400,
-                      cursor:      'pointer',
-                      fontFamily:  'inherit',
-                      background:  on ? C.surfaceEl : 'transparent',
-                      color:       on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
-                      border:      `1px solid ${on ? C.borderEl : 'transparent'}`,
-                      transition:  'all .15s',
-                      display:     'flex',
-                      alignItems:  'center',
-                      gap:         5,
-                    }}
-                  >
+                  <button key={f.id} onClick={() => handleFilter(f.id)} style={{
+                    padding: '5px 11px', borderRadius: 8, fontSize: 11,
+                    fontWeight: on ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit',
+                    background: on ? INNER_BG : 'transparent',
+                    color: on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
+                    border: `1px solid ${on ? CARD_BDR_H : 'transparent'}`,
+                    transition: 'all .15s',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}>
                     {f.label}
                     <span style={{
-                      fontSize:    9,
-                      fontWeight:  600,
-                      color:       on && f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t3,
-                      background:  'rgba(255,255,255,0.07)',
-                      borderRadius: 99,
-                      padding:     '0 5px',
-                      lineHeight:  '16px',
+                      fontSize: 9, fontWeight: 600,
+                      color: on && f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t3,
+                      background: 'rgba(255,255,255,0.07)',
+                      borderRadius: 99, padding: '0 5px', lineHeight: '16px',
                     }}>
                       {f.count}
                     </span>
@@ -1499,24 +1145,12 @@ export default function TabMembers({
                 );
               })}
             </div>
-
             <div style={{ flex: 1 }} />
-
-            <select
-              value={memberSort}
-              onChange={e => setMemberSort(e.target.value)}
-              style={{
-                padding:     '5px 9px',
-                borderRadius: 7,
-                background:  C.surfaceEl,
-                border:      `1px solid ${C.border}`,
-                color:       C.t2,
-                fontSize:    11,
-                outline:     'none',
-                cursor:      'pointer',
-                fontFamily:  'inherit',
-              }}
-            >
+            <select value={memberSort} onChange={e => setMemberSort(e.target.value)} style={{
+              padding: '5px 9px', borderRadius: 7,
+              background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+              color: C.t2, fontSize: 11, outline: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            }}>
               <option value="recentlyActive">Recently Active</option>
               <option value="mostVisits">Most Visits</option>
               <option value="newest">Newest First</option>
@@ -1524,27 +1158,16 @@ export default function TabMembers({
               <option value="streak">Longest Streak</option>
               <option value="name">Name A–Z</option>
             </select>
-
             <div style={{ position: 'relative' }}>
               <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: C.t3, pointerEvents: 'none' }} />
-              <input
-                placeholder="Search members"
-                value={memberSearch}
-                onChange={e => handleSearch(e.target.value)}
-                style={{
-                  padding:     '6px 12px 6px 28px',
-                  borderRadius: 8,
-                  background:  C.surfaceEl,
-                  border:      `1px solid ${C.border}`,
-                  color:       C.t1,
-                  fontSize:    12,
-                  outline:     'none',
-                  fontFamily:  'inherit',
-                  width:       160,
-                  transition:  'border-color .15s',
-                }}
-                onFocus={e => e.target.style.borderColor = C.borderEl}
-                onBlur={e => e.target.style.borderColor = C.border}
+              <input placeholder="Search members" value={memberSearch} onChange={e => handleSearch(e.target.value)} style={{
+                padding: '6px 12px 6px 28px', borderRadius: 8,
+                background: INNER_BG, border: `1px solid ${CARD_BDR}`,
+                color: C.t1, fontSize: 12, outline: 'none', fontFamily: 'inherit',
+                width: 160, transition: 'border-color .15s',
+              }}
+                onFocus={e => e.target.style.borderColor = CARD_BDR_H}
+                onBlur={e => e.target.style.borderColor = CARD_BDR}
               />
             </div>
           </div>
@@ -1552,16 +1175,13 @@ export default function TabMembers({
           {/* Bulk selection bar */}
           {selectedRows.size > 0 && (
             <div style={{
-              padding:      '9px 16px',
-              background:   C.surfaceEl,
-              borderBottom: `1px solid ${C.borderEl}`,
-              display:      'flex',
-              alignItems:   'center',
-              gap:          10,
+              padding: '9px 16px', background: INNER_BG,
+              borderBottom: `1px solid ${CARD_BDR_H}`,
+              display: 'flex', alignItems: 'center', gap: 10,
             }}>
               <div style={{ display: 'flex' }}>
                 {memberRows.filter(m => selectedRows.has(m.id)).slice(0, 3).map((m, i) => (
-                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: `2px solid ${C.surface}`, borderRadius: '50%' }}>
+                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: `2px solid ${CARD_BG}`, borderRadius: '50%' }}>
                     <Avatar name={m.name} size={20} src={m.avatar_url} />
                   </div>
                 ))}
@@ -1570,30 +1190,17 @@ export default function TabMembers({
                 {selectedRows.size} {selectedRows.size === 1 ? 'member' : 'members'} selected
               </span>
               <div style={{ flex: 1 }} />
-              <button
-                onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }}
-                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: `1px solid ${C.border}`, color: C.t3, fontFamily: 'inherit' }}
-              >
+              <button onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }} style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: `1px solid ${CARD_BDR}`, color: C.t3, fontFamily: 'inherit' }}>
                 Clear
               </button>
-              <button
-                onClick={() => setShowBulkPanel(v => !v)}
-                style={{
-                  padding:    '6px 14px',
-                  borderRadius: 8,
-                  fontSize:   11,
-                  fontWeight: 600,
-                  cursor:     'pointer',
-                  display:    'flex',
-                  alignItems: 'center',
-                  gap:        6,
-                  background: showBulkPanel ? C.accentSub : 'transparent',
-                  border:     `1px solid ${showBulkPanel ? C.accentBrd : C.border}`,
-                  color:      showBulkPanel ? C.accent : C.t2,
-                  fontFamily: 'inherit',
-                  transition: 'all .15s',
-                }}
-              >
+              <button onClick={() => setShowBulkPanel(v => !v)} style={{
+                padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                background: showBulkPanel ? C.accentSub : 'transparent',
+                border: `1px solid ${showBulkPanel ? C.accentBrd : CARD_BDR}`,
+                color: showBulkPanel ? C.accent : C.t2,
+                fontFamily: 'inherit', transition: 'all .15s',
+              }}>
                 <Bell style={{ width: 10, height: 10 }} />
                 {showBulkPanel ? 'Hide panel' : `Notify ${selectedRows.size}`}
               </button>
@@ -1606,12 +1213,9 @@ export default function TabMembers({
           {/* Column headers */}
           {!isMobile && (
             <div style={{
-              display:       'grid',
-              gridTemplateColumns: COLS,
-              gap:           8,
-              padding:       '8px 16px',
-              borderBottom:  `1px solid ${C.border}`,
-              background:    'rgba(255,255,255,0.015)',
+              display: 'grid', gridTemplateColumns: COLS, gap: 8,
+              padding: '8px 16px', borderBottom: `1px solid ${CARD_BDR}`,
+              background: 'rgba(255,255,255,0.015)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
@@ -1638,52 +1242,36 @@ export default function TabMembers({
                   <div
                     onClick={() => { setExpandedMember(isExp ? null : m.id); if (showBulkPanel) setShowBulkPanel(false); }}
                     style={{
-                      display:              isMobile ? 'block' : 'grid',
-                      gridTemplateColumns:  isMobile ? undefined : COLS,
-                      gap:                  8,
-                      padding:              isMobile ? '10px 12px' : '11px 16px',
-                      borderBottom:         !isExp && idx < paginated.length - 1 ? `1px solid ${C.divider}` : 'none',
-                      borderLeft:           isExp ? `3px solid ${C.accent}` : isSel ? `3px solid ${C.accent}40` : '3px solid transparent',
-                      background:           isExp ? C.surfaceEl : isSel ? 'rgba(81,121,255,0.04)' : 'transparent',
-                      cursor:               'pointer',
-                      transition:           'background .1s, border-color .1s',
-                      alignItems:           'center',
+                      display: isMobile ? 'block' : 'grid',
+                      gridTemplateColumns: isMobile ? undefined : COLS,
+                      gap: 8, padding: isMobile ? '10px 12px' : '11px 16px',
+                      borderBottom: !isExp && idx < paginated.length - 1 ? `1px solid ${DIVIDER}` : 'none',
+                      borderLeft: isExp ? `3px solid ${C.accent}` : isSel ? `3px solid ${C.accent}40` : '3px solid transparent',
+                      background: isExp ? INNER_BG : isSel ? 'rgba(81,121,255,0.04)' : 'transparent',
+                      cursor: 'pointer', transition: 'background .1s, border-color .1s', alignItems: 'center',
                     }}
                     onMouseEnter={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; }}
                     onMouseLeave={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'transparent'; }}
                   >
-                    {/* Checkbox */}
-                    <div
-                      style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}
-                    >
+                    <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
                       <input type="checkbox" checked={isSel} onChange={() => handleToggleRow(m.id)} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
                     </div>
-
-                    {/* Member name + avatar */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginBottom: isMobile ? 8 : 0 }}>
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <Avatar name={m.name} size={32} src={m.avatar_url} />
                         {m.daysSince >= 14 && (
-                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: C.danger, border: `2px solid ${C.surface}` }} />
+                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: C.danger, border: `2px solid ${CARD_BG}` }} />
                         )}
                         {m.streak >= 7 && (
-                          <div style={{ position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: '50%', background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: '50%', background: INNER_BG, border: `1px solid ${CARD_BDR}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Flame style={{ width: 7, height: 7, color: C.warn }} />
                           </div>
                         )}
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{
-                            fontSize:      13,
-                            fontWeight:    600,
-                            color:         isExp ? C.accent : C.t1,
-                            overflow:      'hidden',
-                            textOverflow:  'ellipsis',
-                            whiteSpace:    'nowrap',
-                            transition:    'color .15s',
-                          }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: isExp ? C.accent : C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color .15s' }}>
                             {m.name}
                           </span>
                           <MilestoneBadge visitsTotal={m.visitsTotal} joinedDaysAgo={m.joinedDaysAgo} />
@@ -1697,28 +1285,23 @@ export default function TabMembers({
                         </div>
                       </div>
                     </div>
-
                     <div onClick={e => e.stopPropagation()}><ActivityChip m={m} /></div>
-
                     {!isMobile && <div onClick={e => e.stopPropagation()}><FrequencyInsight m={m} /></div>}
-
                     {!isMobile && (
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
                         <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
-                          {m.join_date       ? `Joined ${format(new Date(m.join_date),        'MMM d, yyyy')}`
-                           : m.created_date  ? `Joined ${format(new Date(m.created_date),     'MMM d, yyyy')}`
-                           : 'Active member'}
+                          {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}`
+                            : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}`
+                            : 'Active member'}
                         </div>
                       </div>
                     )}
-
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
                       <RiskBadge risk={m.risk} />
                       <RowActions m={m} gymName={gymName} gymId={selectedGym?.id} openModal={openModal} onMarkAtRisk={handleMarkAtRisk} />
                     </div>
                   </div>
-
                   {isExp && (
                     <ExpandedMemberDetail m={m} gymName={gymName} gymId={selectedGym?.id} checkIns={checkIns} posts={posts} now={now} onClose={() => setExpandedMember(null)} />
                   )}
@@ -1728,42 +1311,23 @@ export default function TabMembers({
           </div>
 
           {/* Pagination */}
-          <div style={{
-            padding:    '10px 16px',
-            borderTop:  `1px solid ${C.border}`,
-            display:    'flex',
-            alignItems: 'center',
-            gap:        4,
-            flexWrap:   'wrap',
-          }}>
+          <div style={{ padding: '10px 16px', borderTop: `1px solid ${CARD_BDR}`, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: 3 }}>
               {[
                 { icon: ChevronLeft,  disabled: memberPage <= 1,         action: () => setMemberPage(p => Math.max(1, p - 1)) },
                 { icon: ChevronRight, disabled: memberPage >= totalPages, action: () => setMemberPage(p => Math.min(totalPages, p + 1)) },
               ].map(({ icon: Icon, disabled, action }, i) => (
-                <button
-                  key={i}
-                  disabled={disabled}
-                  onClick={action}
-                  style={{
-                    width:       28,
-                    height:      28,
-                    borderRadius: 7,
-                    display:     'flex',
-                    alignItems:  'center',
-                    justifyContent: 'center',
-                    background:  'transparent',
-                    border:      `1px solid ${C.border}`,
-                    color:       disabled ? C.t4 : C.t2,
-                    cursor:      disabled ? 'default' : 'pointer',
-                    opacity:     disabled ? 0.5 : 1,
-                  }}
-                >
+                <button key={i} disabled={disabled} onClick={action} style={{
+                  width: 28, height: 28, borderRadius: 7,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'transparent', border: `1px solid ${CARD_BDR}`,
+                  color: disabled ? C.t4 : C.t2,
+                  cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1,
+                }}>
                   <Icon style={{ width: 12, height: 12 }} />
                 </button>
               ))}
             </div>
-
             {!isMobile && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let page = i + 1;
               if (totalPages > 5) {
@@ -1773,53 +1337,35 @@ export default function TabMembers({
               }
               const isCurrent = memberPage === page;
               return (
-                <button
-                  key={page}
-                  onClick={() => setMemberPage(page)}
-                  style={{
-                    width:        28,
-                    height:       28,
-                    borderRadius: 7,
-                    display:      'flex',
-                    alignItems:   'center',
-                    justifyContent: 'center',
-                    background:   isCurrent ? C.surfaceEl : 'transparent',
-                    border:       `1px solid ${isCurrent ? C.borderEl : 'transparent'}`,
-                    color:        isCurrent ? C.t1 : C.t3,
-                    fontSize:     12,
-                    fontWeight:   isCurrent ? 700 : 400,
-                    cursor:       'pointer',
-                    fontFamily:   'inherit',
-                  }}
-                >
+                <button key={page} onClick={() => setMemberPage(page)} style={{
+                  width: 28, height: 28, borderRadius: 7,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isCurrent ? INNER_BG : 'transparent',
+                  border: `1px solid ${isCurrent ? CARD_BDR_H : 'transparent'}`,
+                  color: isCurrent ? C.t1 : C.t3,
+                  fontSize: 12, fontWeight: isCurrent ? 700 : 400,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>
                   {page}
                 </button>
               );
             })}
-
             <div style={{ flex: 1 }} />
             <span style={{ fontSize: 11, color: C.t3 }}>{sorted.length} members · Page {memberPage} of {totalPages}</span>
           </div>
         </Card>
 
-        {/* ── Right sidebar ───────────────────────────────────────── */}
+        {/* ── Right sidebar ── */}
         {!isMobile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <AlertsPanel
-              memberRows={memberRows}
-              atRisk={atRisk}
-              atRiskMembersList={atRiskMembersList}
-              setMemberFilter={handleFilter}
-              setMemberSort={setMemberSort}
-              openModal={openModal}
-            />
+            <AlertsPanel memberRows={memberRows} atRisk={atRisk} atRiskMembersList={atRiskMembersList} setMemberFilter={handleFilter} setMemberSort={setMemberSort} openModal={openModal} />
             <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
             <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
           </div>
         )}
       </div>
 
-      {/* ── Leaderboards ──────────────────────────────────────── */}
+      {/* ── Leaderboards ── */}
       {!isMobile && (
         <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
       )}
