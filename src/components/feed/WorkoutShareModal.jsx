@@ -22,7 +22,6 @@ function canvasToBlob(canvas) {
 }
 
 // ─── Stats Card Canvas ────────────────────────────────────────────────────────
-// Layout: bg image, CoStride logo top-left, workout name + stats pills + gym·date at bottom
 async function drawStatsCard(post, gymName) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
@@ -30,7 +29,6 @@ async function drawStatsCard(post, gymName) {
   const ctx = canvas.getContext('2d');
   const exercises = post.workout_exercises || [];
 
-  // Background
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
@@ -39,7 +37,7 @@ async function drawStatsCard(post, gymName) {
     }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, 'rgba(0,0,0,0.35)');
-    g.addColorStop(0.25, 'rgba(0,0,0,0.05)');
+    g.addColorStop(0.25, 'rgba(0,0,0,0.10)');
     g.addColorStop(0.55, 'rgba(0,0,0,0.55)');
     g.addColorStop(1, 'rgba(0,0,0,0.97)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -51,39 +49,27 @@ async function drawStatsCard(post, gymName) {
 
   const PAD = 72;
 
-  // TOP LEFT: CoStride logo + wordmark
-  const logo = await loadImage(LOGO_URL);
-  const logoSize = 64;
-  const logoTopX = PAD;
-  const logoTopY = 80;
-  if (logo) {
-    ctx.save(); ctx.beginPath();
-    ctx.roundRect(logoTopX, logoTopY, logoSize, logoSize, 14);
-    ctx.clip(); ctx.drawImage(logo, logoTopX, logoTopY, logoSize, logoSize); ctx.restore();
-  }
-  ctx.font = '800 52px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
-  ctx.textAlign = 'left';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
-  ctx.fillText('CoStride', logoTopX + logoSize + 16, logoTopY + 46);
-  ctx.shadowBlur = 0;
-
-  // BOTTOM: workout name, stats pills, gym·date
-  const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
-  const bottomPad = 80;
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const bottomLine = gymName ? `${gymName.toUpperCase()}  ·  ${dateStr.toUpperCase()}` : dateStr.toUpperCase();
-
-  // Date line at very bottom
-  ctx.font = '600 34px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
+  ctx.font = '600 36px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.72)';
   ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8;
-  ctx.fillText(bottomLine, W / 2, H - bottomPad);
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
+  ctx.fillText(topLine, W / 2, 110);
   ctx.shadowBlur = 0;
 
-  // Pills just above date
-  const pillY = H - bottomPad - 30 - pillH;
+  const brandingY = H - 90;
+  const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
+  const pillY = brandingY - pillH - 60;
+  const titleY = pillY - 40;
+
+  ctx.font = '900 74px -apple-system,sans-serif';
+  ctx.fillStyle = 'white';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
+  ctx.textAlign = 'center';
+  ctx.fillText(post.workout_name || 'Workout', W / 2, titleY, W - PAD * 2);
+  ctx.shadowBlur = 0;
+
   const stats = [
     { l: 'EXERCISES', v: String(exercises.length || '—') },
     { l: 'DURATION', v: post.workout_duration || '—' },
@@ -102,14 +88,26 @@ async function drawStatsCard(post, gymName) {
     ctx.fillText(s.l, px + pillW / 2, pillY + 92);
   });
 
-  // Workout name above pills
-  const titleY = pillY - 36;
-  ctx.font = '900 74px -apple-system,sans-serif';
-  ctx.fillStyle = 'white';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
-  ctx.textAlign = 'center';
-  ctx.fillText(post.workout_name || 'Workout', W / 2, titleY, W - PAD * 2);
-  ctx.shadowBlur = 0;
+  const logo = await loadImage(LOGO_URL);
+  const logoSize = 60;
+  const wordmark = 'CoStride';
+  ctx.font = '800 48px -apple-system,sans-serif';
+  const wm = ctx.measureText(wordmark);
+  const totalW = logoSize + 14 + wm.width;
+  const logoX = (W - totalW) / 2;
+  const bottomY = H - 90;
+
+  if (logo) {
+    ctx.save(); ctx.beginPath();
+    ctx.roundRect(logoX, bottomY - logoSize + 10, logoSize, logoSize, 14);
+    ctx.clip(); ctx.drawImage(logo, logoX, bottomY - logoSize + 10, logoSize, logoSize); ctx.restore();
+  }
+  ctx.font = '800 48px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.90)';
+  ctx.textAlign = 'left';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10;
+  ctx.fillText(wordmark, logoX + logoSize + 14, bottomY);
+  ctx.shadowBlur = 0; ctx.textAlign = 'left';
 
   return canvas;
 }
@@ -147,6 +145,7 @@ async function drawBreakdownCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 90);
   ctx.textAlign = 'left';
 
+  // Workout name — centred
   const pTop = 130;
   ctx.font = '900 68px -apple-system,sans-serif';
   ctx.fillStyle = 'white';
@@ -156,6 +155,7 @@ async function drawBreakdownCard(post, gymName) {
   ctx.shadowBlur = 0;
   ctx.textAlign = 'left';
 
+  // Stats pills (same style as stats card)
   const pillTop = pTop + 100;
   const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
   const mS = [
@@ -176,11 +176,13 @@ async function drawBreakdownCard(post, gymName) {
     ctx.fillText(s.l, px + pillW / 2, pillTop + 92);
   });
 
+  // Exercise rows — TodayWorkout style
   const tTop = pillTop + pillH + 60;
   const colW = [W - PAD * 2 - 320, 100, 50, 100, 160];
   const colX = [PAD + 20];
   colW.slice(0, -1).forEach((w, i) => colX.push(colX[i] + colW[i] + 10));
 
+  // Column headers
   ctx.font = '700 26px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ['EXERCISE', 'SETS', '', 'REPS', 'WEIGHT'].forEach((h, i) => {
@@ -197,26 +199,32 @@ async function drawBreakdownCard(post, gymName) {
     const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
       .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+    // Row background — subtle like TodayWorkout
     ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, ry, W - PAD * 2, rH, 18);
     ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
 
+    // Exercise name
     ctx.font = '700 36px -apple-system,sans-serif'; ctx.fillStyle = 'white';
     ctx.fillText(name, colX[0], ry + 58, colW[0] - 10);
 
+    // Sets pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[1], ry + 18, colW[1], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.textAlign = 'center'; ctx.fillText(String(ex.sets || ex.set_count || '—'), colX[1] + colW[1] / 2, ry + 56);
 
+    // × separator
     ctx.font = '700 30px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.28)';
     ctx.fillText('×', colX[2] + colW[2] / 2, ry + 56);
 
+    // Reps pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[3], ry + 18, colW[3], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fillText(String(ex.reps || ex.rep_count || '—'), colX[3] + colW[3] / 2, ry + 56);
 
+    // Weight pill — blue gradient
     const wG = ctx.createLinearGradient(colX[4], ry, colX[4] + colW[4], ry);
     wG.addColorStop(0, 'rgba(29,78,216,0.9)');
     wG.addColorStop(1, 'rgba(59,130,246,0.9)');
@@ -234,7 +242,7 @@ async function drawBreakdownCard(post, gymName) {
     ctx.textAlign = 'left';
   }
 
-  // CoStride logo + wordmark bottom centre
+  // CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
   const logoSize = 54;
   const wordmark = 'CoStride';
@@ -253,13 +261,12 @@ async function drawBreakdownCard(post, gymName) {
   ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.textAlign = 'left';
   ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8;
   ctx.fillText(wordmark, logoX + logoSize + 12, bottomY);
-  ctx.shadowBlur = 0;
+  ctx.shadowBlur = 0; ctx.textAlign = 'left';
 
   return canvas;
 }
 
 // ─── Clean Card Canvas ────────────────────────────────────────────────────────
-// Layout: full bleed image, CoStride top-centre, workout name + gym + date bottom-centre
 async function drawCleanCard(post, gymName) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
@@ -274,9 +281,9 @@ async function drawCleanCard(post, gymName) {
     }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, 'rgba(0,0,0,0.55)');
-    g.addColorStop(0.25, 'rgba(0,0,0,0.10)');
-    g.addColorStop(0.75, 'rgba(0,0,0,0.10)');
-    g.addColorStop(1, 'rgba(0,0,0,0.80)');
+    g.addColorStop(0.3, 'rgba(0,0,0,0.15)');
+    g.addColorStop(0.7, 'rgba(0,0,0,0.15)');
+    g.addColorStop(1, 'rgba(0,0,0,0.75)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   } else {
     const g = ctx.createLinearGradient(0, 0, W, H);
@@ -284,98 +291,92 @@ async function drawCleanCard(post, gymName) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  // TOP CENTRE: CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
-  const logoSize = 72;
+  const logoSize = 80;
   const wordmark = 'CoStride';
-  ctx.font = '900 62px -apple-system,sans-serif';
+  ctx.font = '900 64px -apple-system,sans-serif';
   const wm = ctx.measureText(wordmark);
-  const totalW = logoSize + 18 + wm.width;
+  const totalW = logoSize + 20 + wm.width;
   const logoX = (W - totalW) / 2;
   const brandY = 130;
 
   if (logo) {
     ctx.save(); ctx.beginPath();
-    ctx.roundRect(logoX, brandY - logoSize + 14, logoSize, logoSize, 16);
-    ctx.clip(); ctx.drawImage(logo, logoX, brandY - logoSize + 14, logoSize, logoSize); ctx.restore();
+    ctx.roundRect(logoX, brandY - logoSize + 16, logoSize, logoSize, 18);
+    ctx.clip(); ctx.drawImage(logo, logoX, brandY - logoSize + 16, logoSize, logoSize); ctx.restore();
   }
-  ctx.font = '900 62px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.97)';
+  ctx.font = '900 64px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
   ctx.textAlign = 'left';
-  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 16;
-  ctx.fillText(wordmark, logoX + logoSize + 18, brandY);
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 14;
+  ctx.fillText(wordmark, logoX + logoSize + 20, brandY);
   ctx.shadowBlur = 0;
 
-  // BOTTOM: workout name, gym, date
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  // Workout name
-  ctx.font = '900 74px -apple-system,sans-serif';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 18;
-  ctx.fillText(post.workout_name || 'Workout', W / 2, H - 200, W - 144);
-  ctx.shadowBlur = 0;
-
   if (gymName) {
     ctx.font = '700 44px -apple-system,sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.textAlign = 'center';
     ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
-    ctx.fillText(gymName, W / 2, H - 130);
+    ctx.fillText(gymName, W / 2, H - 160);
+    ctx.shadowBlur = 0;
+    ctx.font = '600 36px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText(dateStr, W / 2, H - 100);
+  } else {
+    ctx.font = '700 44px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
+    ctx.fillText(dateStr, W / 2, H - 120);
     ctx.shadowBlur = 0;
   }
-
-  ctx.font = '600 36px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8;
-  ctx.fillText(dateStr, W / 2, gymName ? H - 76 : H - 120);
-  ctx.shadowBlur = 0;
 
   return canvas;
 }
 
 // ─── React Preview: Stats card ────────────────────────────────────────────────
-// Logo top-left, workout name + pills + gym·date at bottom
 function StatsPreview({ post, gymName }) {
   const exercises = post.workout_exercises || [];
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const bottomLine = gymName ? `${gymName.toUpperCase()}  ·  ${dateStr.toUpperCase()}` : dateStr.toUpperCase();
+  const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
 
   return (
-    <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
+    <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif", display: 'flex', flexDirection: 'column' }}>
       {post.image_url ? (<>
         <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.30) 0%,rgba(0,0,0,0.04) 22%,rgba(0,0,0,0.50) 55%,rgba(0,0,0,0.96) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.52) 55%,rgba(0,0,0,0.96) 100%)' }} />
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
 
-      {/* TOP LEFT: CoStride logo + wordmark */}
-      <div style={{ position: 'absolute', top: 0, left: 0, padding: '10px 10px 0', display: 'flex', alignItems: 'center', gap: 5 }}>
-        <img src={LOGO_URL} alt="" style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
-        <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 11, fontWeight: 800, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 10px 0', textAlign: 'center' }}>
+        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>
+          {topLine}
+        </span>
       </div>
 
-      {/* BOTTOM: workout name + pills + gym·date */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 10px' }}>
-        <div style={{ color: 'white', fontSize: 14, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 7, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>
+      <div style={{ position: 'absolute', bottom: '13%', left: 0, right: 0, padding: '0 10px' }}>
+        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>
           {post.workout_name || 'Workout'}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 7 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
           {[
-            { label: 'EXERCISES', value: exercises.length || '—' },
-            { label: 'DURATION', value: post.workout_duration || '—' },
-            { label: 'VOLUME', value: post.workout_volume || '—' },
+            { label: 'Exercises', value: exercises.length || '—' },
+            { label: 'Duration', value: post.workout_duration || '—' },
+            { label: 'Volume', value: post.workout_volume || '—' },
           ].map(({ label, value }) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 7, padding: '5px 3px', textAlign: 'center' }}>
-              <div style={{ color: 'white', fontSize: 10, fontWeight: 900, lineHeight: 1 }}>{value}</div>
-              <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 5.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+            <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, padding: '6px 3px', textAlign: 'center' }}>
+              <div style={{ color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 }}>{value}</div>
+              <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
             </div>
           ))}
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.50)', fontSize: 6.5, fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>
-          {bottomLine}
-        </div>
+      </div>
+
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+        <img src={LOGO_URL} alt="" style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover' }} />
+        <span style={{ color: 'rgba(255,255,255,0.88)', fontSize: 11, fontWeight: 800, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>CoStride</span>
       </div>
     </div>
   );
@@ -397,12 +398,19 @@ function BreakdownPreview({ post, gymName }) {
       )}
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '8px 10px 8px' }}>
+        {/* TOP: gym · date — centred */}
         <div style={{ textAlign: 'center', marginBottom: 5 }}>
-          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{topLine}</span>
+          <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {topLine}
+          </span>
         </div>
+
+        {/* Workout title — centred */}
         <div style={{ color: 'white', fontSize: 13, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>
           {post.workout_name || 'Workout'}
         </div>
+
+        {/* Stats pills — same style as StatsPreview */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 7 }}>
           {[
             { label: 'Exercises', value: exercises.length || '—' },
@@ -415,17 +423,27 @@ function BreakdownPreview({ post, gymName }) {
             </div>
           ))}
         </div>
+
+        {/* Exercise column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, paddingLeft: 4, marginBottom: 3 }}>
           {['Exercise', 'Sets', '', 'Reps', 'Wt'].map((h, i) => (
             <div key={i} style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', textAlign: i > 0 ? 'center' : 'left' }}>{h}</div>
           ))}
         </div>
+
+        {/* Exercise rows — TodayWorkout style */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {exercises.slice(0, 8).map((ex, idx) => {
             const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
               .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             return (
-              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 6, padding: '3px 4px 3px 6px' }}>
+              <div key={idx} style={{
+                display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.09)',
+                borderRadius: 6,
+                padding: '3px 4px 3px 6px'
+              }}>
                 <div style={{ color: 'white', fontSize: 7.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
                 <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.sets || ex.set_count || '—'}</div>
                 <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, textAlign: 'center', fontWeight: 700 }}>×</div>
@@ -438,6 +456,8 @@ function BreakdownPreview({ post, gymName }) {
           })}
           {exercises.length > 8 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 7.5, textAlign: 'center', paddingTop: 2 }}>+{exercises.length - 8} more</div>}
         </div>
+
+        {/* BOTTOM: CoStride logo — centred */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, paddingTop: 6 }}>
           <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3, objectFit: 'cover' }} />
           <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: 800 }}>CoStride</span>
@@ -448,7 +468,6 @@ function BreakdownPreview({ post, gymName }) {
 }
 
 // ─── React Preview: Clean card ────────────────────────────────────────────────
-// CoStride top-centre, workout name + gym + date bottom-centre
 function CleanPreview({ post, gymName }) {
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -456,26 +475,21 @@ function CleanPreview({ post, gymName }) {
     <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
       {post.image_url ? (<>
         <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.52) 0%,rgba(0,0,0,0.06) 28%,rgba(0,0,0,0.06) 68%,rgba(0,0,0,0.78) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.50) 0%,rgba(0,0,0,0.08) 25%,rgba(0,0,0,0.08) 70%,rgba(0,0,0,0.65) 100%)' }} />
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
 
-      {/* TOP CENTRE: logo + wordmark */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '11px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <img src={LOGO_URL} alt="" style={{ width: 18, height: 18, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
-        <span style={{ color: 'rgba(255,255,255,0.97)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 8px rgba(0,0,0,0.9)', letterSpacing: '-0.02em' }}>CoStride</span>
+        <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
 
-      {/* BOTTOM: workout name + gym + date */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 12px', textAlign: 'center' }}>
-        <div style={{ color: 'white', fontSize: 13, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 5, textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}>
-          {post.workout_name || 'Workout'}
-        </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px', textAlign: 'center' }}>
         {gymName && (
-          <div style={{ color: 'rgba(255,255,255,0.88)', fontSize: 9.5, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
+          <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
         )}
-        <div style={{ color: 'rgba(255,255,255,0.52)', fontSize: 8, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{dateStr}</div>
+        <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{dateStr}</div>
       </div>
     </div>
   );
@@ -799,7 +813,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               </div>
             </div>
 
-            {/* Dots + label */}
+            {/* Dots */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, flexShrink: 0 }}>
               {cards.map((card, i) => (
                 <button key={i} onClick={() => setActiveCard(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
@@ -807,12 +821,9 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                 </button>
               ))}
             </div>
-            <div style={{ textAlign: 'center', marginTop: 2, flexShrink: 0 }}>
-              <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, fontWeight: 600 }}>{cards[activeCard].label}</span>
-            </div>
 
             {/* Share to */}
-            <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
+            <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
               <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0' }}>Share to</p>
               <div style={{ display: 'flex', gap: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 }}>
                 {APP_BUTTONS.map((btn) => (
