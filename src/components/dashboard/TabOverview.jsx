@@ -617,21 +617,7 @@ function SidebarNav({ active, setActive }) {
         </div>
       </div>
       {/* Nav */}
-      <nav style={{ flex:1, padding:"14px 10px", overflowY:"auto" }}>
-        <SectionLabel style={{ padding:"0 8px 6px" }}>Navigation</SectionLabel>
-        {navItems.map(n=>{
-          const on = active===n.id;
-          return (
-            <div key={n.id} onClick={()=>setActive(n.id)}
-              style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:8, marginBottom:2, cursor:"pointer", background:on?`${T.accent}18`:"transparent", color:on?T.accent:T.t4, fontSize:13, fontWeight:on?700:500, borderLeft:`2px solid ${on?T.accent:"transparent"}`, transition:"all .15s" }}
-              onMouseEnter={e=>{ if(!on){ e.currentTarget.style.background="rgba(255,255,255,0.03)"; e.currentTarget.style.color=T.t3; }}}
-              onMouseLeave={e=>{ if(!on){ e.currentTarget.style.background="transparent"; e.currentTarget.style.color=T.t4; }}}
-            >
-              <span style={{ fontSize:14, flexShrink:0 }}>{n.icon}</span>{n.label}
-            </div>
-          );
-        })}
-      </nav>
+
       {/* Links */}
       <div style={{ padding:"12px 18px 16px", borderTop:`1px solid ${T.border}` }}>
         <SectionLabel style={{ marginBottom:6 }}>Links</SectionLabel>
