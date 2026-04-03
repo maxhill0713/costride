@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
@@ -14,116 +13,230 @@ async function loadImage(src) {
     img.src = src;
   });
 }
-
 function canvasToBlob(canvas) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
-  });
+  return new Promise((res, rej) =>
+    canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png')
+  );
 }
 
-// Simplified post card: CoStride logo top-centre, photo fills middle, date bottom-centre
+// ─── Canvas render ────────────────────────────────────────────────────────────
+// Matches the Summary card vibe: photo bg, very light top tint, heavier bottom
+// fade, CoStride top-left, caption + date bottom-left Strava-style.
 async function drawPostCard(post) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
+  const PAD = 72;
 
-  // Background
+  // ── Background ──
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
-      const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-      const sw = img.naturalWidth * scale, sh = img.naturalHeight * scale;
-      ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
+      const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      ctx.drawImage(img,
+        (W - img.naturalWidth * s) / 2,
+        (H - img.naturalHeight * s) / 2,
+        img.naturalWidth * s, img.naturalHeight * s);
     }
-    // Gradient: dark top for logo, clear mid, dark bottom for date
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, 'rgba(0,0,0,0.70)');
-    grad.addColorStop(0.20, 'rgba(0,0,0,0.15)');
-    grad.addColorStop(0.75, 'rgba(0,0,0,0.15)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.75)');
-    ctx.fillStyle = grad;
+    // Subtle top tint (just enough for logo legibility), clear mid, heavier bottom
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0,    'rgba(0,0,0,0.28)');
+    g.addColorStop(0.12, 'rgba(0,0,0,0.0)');
+    g.addColorStop(0.58, 'rgba(0,0,0,0.0)');
+    g.addColorStop(0.74, 'rgba(0,0,0,0.72)');
+    g.addColorStop(1,    'rgba(0,0,0,0.96)');
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   } else {
-    const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, '#0d1117');
-    grad.addColorStop(1, '#111827');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#0a0d16'); g.addColorStop(0.5, '#111827'); g.addColorStop(1, '#0d1320');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  const PAD = 72;
-
-  // TOP: CoStride logo + wordmark centred
+  // ── TOP LEFT: CoStride logo + wordmark ──
   const logo = await loadImage(LOGO_URL);
-  const logoSize = 80;
-  const wordmark = 'CoStride';
-  ctx.font = '900 64px -apple-system, sans-serif';
-  const wmWidth = ctx.measureText(wordmark).width;
-  const totalBrandW = logoSize + 20 + wmWidth;
-  const logoX = (W - totalBrandW) / 2;
-  const brandY = 140;
-
+  const logoSz = 60, fontSz = 54;
   if (logo) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(logoX, brandY - logoSize + 16, logoSize, logoSize, 18);
-    ctx.clip();
-    ctx.drawImage(logo, logoX, brandY - logoSize + 16, logoSize, logoSize);
+    ctx.save(); ctx.beginPath();
+    ctx.roundRect(PAD, 136 - logoSz + Math.round(logoSz * 0.14), logoSz, logoSz, Math.round(logoSz * 0.22));
+    ctx.clip(); ctx.drawImage(logo, PAD, 136 - logoSz + Math.round(logoSz * 0.14), logoSz, logoSz);
     ctx.restore();
   }
-  ctx.font = '900 64px -apple-system, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
-  ctx.textAlign = 'left';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 14;
-  ctx.fillText(wordmark, logoX + logoSize + 20, brandY);
-  ctx.shadowBlur = 0;
+  ctx.font = `800 ${fontSz}px -apple-system,sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.textAlign = 'left';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 14;
+  ctx.fillText('CoStride', PAD + logoSz + 16, 136); ctx.shadowBlur = 0;
 
-  // BOTTOM: date centred
-  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  ctx.font = '600 44px -apple-system, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.72)';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
-  ctx.fillText(dateStr, W / 2, H - 100);
-  ctx.shadowBlur = 0;
+  // ── BOTTOM BLOCK — left-aligned, Strava style ──
+  const bottomY = H - 160;
+
+  // Footer: date — muted, uppercase
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+  ctx.font = '500 28px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.38)';
+  ctx.textAlign = 'left';
+  ctx.letterSpacing = '0.05em';
+  ctx.fillText(dateStr.toUpperCase(), PAD, bottomY + 36);
+  ctx.letterSpacing = '0';
+
+  // Thin divider
+  const dividerY = bottomY - 28;
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(PAD, dividerY); ctx.lineTo(W - PAD, dividerY); ctx.stroke();
+
+  // Caption — large, bold, above divider
+  if (post.content) {
+    // Strip any auto-generated workout lines
+    const lines = post.content.split('\n').filter(l => {
+      const t = l.trim();
+      if (!t) return false;
+      if (t.includes('Just finished')) return false;
+      if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
+      if (/[0-9]+(kg|lbs)/i.test(t)) return false;
+      return true;
+    });
+    const caption = lines.join(' ').trim();
+
+    if (caption) {
+      let capFontSize = 88;
+      ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
+      // Wrap to max 2 lines
+      const maxW = W - PAD * 2;
+      const words = caption.split(' ');
+      let line1 = '', line2 = '';
+      let onLine2 = false;
+      for (const word of words) {
+        const test = (onLine2 ? line2 : line1) + (line1 && !onLine2 ? ' ' : '') + word;
+        if (!onLine2 && ctx.measureText(test).width > maxW) {
+          onLine2 = true;
+          line2 = word;
+        } else if (onLine2) {
+          const test2 = line2 + (line2 ? ' ' : '') + word;
+          if (ctx.measureText(test2).width > maxW) {
+            line2 = line2 + '…';
+            break;
+          }
+          line2 = test2;
+        } else {
+          line1 = test;
+        }
+      }
+
+      const lineH = Math.round(capFontSize * 1.15);
+      const numLines = line2 ? 2 : 1;
+      const textBlockH = numLines * lineH;
+      const textTop = dividerY - 36 - textBlockH;
+
+      ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
+      ctx.fillStyle = 'white'; ctx.textAlign = 'left';
+      ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 28;
+      ctx.fillText(line1, PAD, textTop + lineH);
+      if (line2) ctx.fillText(line2, PAD, textTop + lineH * 2);
+      ctx.shadowBlur = 0;
+    }
+  } else {
+    // No caption — just a clean large date above divider
+    let dateFontSize = 96;
+    ctx.font = `900 ${dateFontSize}px -apple-system,sans-serif`;
+    ctx.fillStyle = 'white'; ctx.textAlign = 'left';
+    ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 28;
+    ctx.fillText(dateStr, PAD, dividerY - 52);
+    ctx.shadowBlur = 0;
+    // Reset the small date footer since it's now the big element
+    ctx.clearRect(PAD, bottomY + 10, W - PAD, 50);
+  }
 
   return canvas;
 }
 
 // ─── React Preview ────────────────────────────────────────────────────────────
 function PostCardPreview({ post }) {
-  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  const caption = (() => {
+    if (!post.content) return null;
+    const lines = post.content.split('\n').filter(l => {
+      const t = l.trim();
+      if (!t) return false;
+      if (t.includes('Just finished')) return false;
+      if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
+      if (/[0-9]+(kg|lbs)/i.test(t)) return false;
+      return true;
+    });
+    return lines.join(' ').trim() || null;
+  })();
 
   return (
     <div style={{
       width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden',
-      borderRadius: 16, background: '#0a0a0f',
-      fontFamily: "'SF Pro Display',-apple-system,sans-serif"
+      borderRadius: 16, background: '#0a0d16',
+      fontFamily: "'SF Pro Display',-apple-system,sans-serif",
     }}>
       {/* Background */}
       {post.image_url ? (<>
-        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.08) 20%,rgba(0,0,0,0.08) 72%,rgba(0,0,0,0.70) 100%)' }} />
+        <img src={post.image_url} alt="" style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+        }} />
+        {/* Very light top tint, clear middle, heavier bottom — matching canvas */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom,rgba(0,0,0,0.26) 0%,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 58%,rgba(0,0,0,0.74) 74%,rgba(0,0,0,0.96) 100%)',
+        }} />
       </>) : (
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a0d16,#111827,#0d1320)' }} />
       )}
 
-      {/* TOP: CoStride logo + wordmark centred */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '14px 12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-        <img src={LOGO_URL} alt="" style={{ width: 20, height: 20, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
-        <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 14, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
+      {/* TOP LEFT: CoStride */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0,
+        padding: '10px 11px 0',
+        display: 'flex', alignItems: 'center', gap: 4,
+      }}>
+        <img src={LOGO_URL} alt="" style={{ width: 14, height: 14, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
+        <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>CoStride</span>
       </div>
 
-      {/* BOTTOM: date centred */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 14px', textAlign: 'center' }}>
-        <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9.5, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{dateStr}</div>
+      {/* BOTTOM BLOCK — left-aligned, Strava style */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 11px 18px' }}>
+
+        {/* Caption — large bold, max 2 lines */}
+        {caption && (
+          <div style={{
+            color: 'white', fontSize: 18, fontWeight: 900,
+            letterSpacing: '-0.03em', lineHeight: 1.08,
+            textShadow: '0 2px 16px rgba(0,0,0,0.7)',
+            marginBottom: 7,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}>
+            {caption}
+          </div>
+        )}
+
+        {/* Thin divider */}
+        <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.14)', marginBottom: 5 }} />
+
+        {/* Date — small, muted, uppercase */}
+        <div style={{
+          color: 'rgba(255,255,255,0.38)', fontSize: 6.5, fontWeight: 600,
+          letterSpacing: '0.07em', textTransform: 'uppercase',
+        }}>
+          {dateStr}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Share buttons same as WorkoutShareModal ──────────────────────────────────
+// ─── Share buttons ────────────────────────────────────────────────────────────
 const APP_BUTTONS = [
   {
     id: 'instagram_story',
@@ -206,6 +319,7 @@ const APP_BUTTONS = [
   },
 ];
 
+// ─── Modal ────────────────────────────────────────────────────────────────────
 export default function PostShareModal({ open, onClose, post }) {
   const [loadingId, setLoadingId] = useState(null);
 
@@ -253,12 +367,18 @@ export default function PostShareModal({ open, onClose, post }) {
     <AnimatePresence>
       {open && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{ position: 'fixed', inset: 0, zIndex: 10010, background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 10010,
+              background: 'rgba(0,0,0,0.82)',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            }}
           />
 
+          {/* Sheet */}
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
@@ -266,37 +386,42 @@ export default function PostShareModal({ open, onClose, post }) {
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011,
               maxHeight: 'calc(100dvh - 80px)',
               display: 'flex', flexDirection: 'column',
-              background: 'rgba(12,12,20,0.98)',
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-              borderTopLeftRadius: 26, borderTopRightRadius: 26,
+              background: 'rgba(10,10,18,0.98)',
+              borderTop: '1px solid rgba(255,255,255,0.09)',
+              borderTopLeftRadius: 28, borderTopRightRadius: 28,
               paddingBottom: 'max(env(safe-area-inset-bottom,0px),12px)',
               fontFamily: "'SF Pro Display',-apple-system,sans-serif",
               overflow: 'hidden',
             }}
           >
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 18px 8px', flexShrink: 0, position: 'relative' }}>
-              <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Post</span>
-              <button
-                onClick={onClose}
-                style={{ position: 'absolute', right: 18, background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: 4 }}
-              >
-                <X size={18} />
-              </button>
+            {/* Drag handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.22)' }} />
             </div>
 
-            {/* Preview card — centred, same width as workout carousel */}
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px 18px 8px', flexShrink: 0 }}>
+              <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Post</span>
+            </div>
+
+            {/* Preview card — same width/style as workout share carousel */}
             <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ width: 'min(57.2vw, 242px)', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{
+                  width: 'min(57.2vw, 242px)', borderRadius: 14, overflow: 'hidden',
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)',
+                }}>
                   <PostCardPreview post={post} />
                 </div>
               </div>
             </div>
 
             {/* Share to */}
-            <div style={{ padding: '14px 18px 0', flexShrink: 0 }}>
-              <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0' }}>Share to</p>
+            <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
+              <p style={{
+                color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0',
+              }}>Share to</p>
               <div style={{ display: 'flex', gap: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 }}>
                 {APP_BUTTONS.map((btn) => (
                   <button
@@ -307,21 +432,30 @@ export default function PostShareModal({ open, onClose, post }) {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                       background: 'none', border: 'none',
                       cursor: loadingId ? 'default' : 'pointer',
-                      opacity: loadingId && loadingId !== btn.id ? 0.3 : 1,
-                      flexShrink: 0, padding: 0,
-                      transition: 'opacity 0.15s',
+                      opacity: loadingId && loadingId !== btn.id ? 0.28 : 1,
+                      flexShrink: 0, padding: 0, transition: 'opacity 0.15s',
                     }}
                   >
                     <div style={{ position: 'relative', width: 60, height: 60 }}>
-                      {loadingId === btn.id
-                        ? <div style={{ width: 60, height: 60, borderRadius: 14, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: 22, height: 22, border: '2.5px solid rgba(255,255,255,0.2)', borderTopColor: 'white', borderRadius: '50%', animation: 'ps-spin 0.65s linear infinite' }} />
-                          </div>
-                        : btn.icon}
+                      {loadingId === btn.id ? (
+                        <div style={{
+                          width: 60, height: 60, borderRadius: 14,
+                          background: 'rgba(255,255,255,0.07)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <div style={{
+                            width: 22, height: 22,
+                            border: '2.5px solid rgba(255,255,255,0.18)',
+                            borderTopColor: 'white', borderRadius: '50%',
+                            animation: 'ps-spin 0.65s linear infinite',
+                          }} />
+                        </div>
+                      ) : btn.icon}
                     </div>
-                    <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.2, maxWidth: 64 }}>
-                      {btn.label}
-                    </span>
+                    <span style={{
+                      color: 'rgba(255,255,255,0.58)', fontSize: 10, fontWeight: 600,
+                      textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.2, maxWidth: 64,
+                    }}>{btn.label}</span>
                   </button>
                 ))}
               </div>
@@ -334,12 +468,13 @@ export default function PostShareModal({ open, onClose, post }) {
                 disabled={!!loadingId}
                 style={{
                   width: '100%', padding: '14px 0', borderRadius: 14,
-                  background: 'rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.08)',
                   border: '1px solid rgba(255,255,255,0.12)',
-                  color: loadingId === 'save' ? 'rgba(255,255,255,0.3)' : 'white',
+                  color: loadingId === 'save' ? 'rgba(255,255,255,0.28)' : 'white',
                   fontSize: 14, fontWeight: 700,
                   cursor: loadingId ? 'default' : 'pointer',
                   transition: 'all 0.15s',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
                 }}
               >
                 {loadingId === 'save' ? 'Saving…' : 'Save Image'}
@@ -347,7 +482,7 @@ export default function PostShareModal({ open, onClose, post }) {
             </div>
           </motion.div>
 
-          <style>{`@keyframes ps-spin{to{transform:rotate(360deg)}}`}</style>
+          <style>{`@keyframes ps-spin { to { transform: rotate(360deg) } }`}</style>
         </>
       )}
     </AnimatePresence>
