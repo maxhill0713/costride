@@ -349,6 +349,100 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   PRIORITY ITEM — extracted so useState works correctly
+══════════════════════════════════════════════════════════════════ */
+function PriorityItem({ p }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display:      'flex',
+        alignItems:   'flex-start',
+        gap:          12,
+        padding:      '12px 14px',
+        borderRadius: 10,
+        background:   hov ? C.surfaceEl : 'rgba(255,255,255,0.015)',
+        border:       `1px solid ${hov ? C.borderEl : C.border}`,
+        borderLeft:   `3px solid ${p.color}`,
+        cursor:       p.onAction ? 'pointer' : 'default',
+        transition:   'all .15s',
+      }}
+      onClick={p.onAction}
+    >
+      {/* Icon container */}
+      <div style={{
+        width:          30,
+        height:         30,
+        borderRadius:   8,
+        background:     C.surfaceEl,
+        border:         `1px solid ${C.border}`,
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'center',
+        flexShrink:     0,
+      }}>
+        {p.icon && <p.icon style={{ width: 13, height: 13, color: p.color }} />}
+      </div>
+
+      {/* Text */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, lineHeight: 1.3 }}>{p.title}</span>
+        </div>
+        <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>
+          {p.detail}
+        </div>
+        {p.impact && (
+          <div style={{
+            display:    'inline-flex',
+            alignItems: 'center',
+            gap:        4,
+            marginTop:  5,
+            fontSize:   10,
+            fontWeight: 600,
+            color:      p.color,
+            background: `${p.color}10`,
+            border:     `1px solid ${p.color}22`,
+            borderRadius: 5,
+            padding:    '2px 7px',
+          }}>
+            {p.impact}
+          </div>
+        )}
+      </div>
+
+      {/* CTA */}
+      {p.cta && (
+        <button
+          onClick={(e) => { e.stopPropagation(); p.onAction?.(); }}
+          style={{
+            flexShrink:   0,
+            fontSize:     10.5,
+            fontWeight:   600,
+            color:        p.color,
+            background:   `${p.color}10`,
+            border:       `1px solid ${p.color}22`,
+            borderRadius: 7,
+            padding:      '5px 12px',
+            cursor:       'pointer',
+            fontFamily:   'inherit',
+            display:      'flex',
+            alignItems:   'center',
+            gap:          4,
+            whiteSpace:   'nowrap',
+            transition:   'all .15s',
+          }}
+        >
+          {p.cta} <ChevronRight style={{ width: 9, height: 9 }} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
    PRIORITY ACTION PANEL — hero card with ranked, actionable tasks
    Each item: icon, title, explanation, impact, CTA button
 ══════════════════════════════════════════════════════════════════ */
@@ -388,97 +482,9 @@ function PriorityActionPanel({ priorities = [], now }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {priorities.map((p, i) => {
-          const [hov, setHov] = useState(false);
-          return (
-            <div
-              key={i}
-              onMouseEnter={() => setHov(true)}
-              onMouseLeave={() => setHov(false)}
-              style={{
-                display:      'flex',
-                alignItems:   'flex-start',
-                gap:          12,
-                padding:      '12px 14px',
-                borderRadius: 10,
-                background:   hov ? C.surfaceEl : 'rgba(255,255,255,0.015)',
-                border:       `1px solid ${hov ? C.borderEl : C.border}`,
-                borderLeft:   `3px solid ${p.color}`,
-                cursor:       p.onAction ? 'pointer' : 'default',
-                transition:   'all .15s',
-              }}
-              onClick={p.onAction}
-            >
-              {/* Icon container */}
-              <div style={{
-                width:          30,
-                height:         30,
-                borderRadius:   8,
-                background:     C.surfaceEl,
-                border:         `1px solid ${C.border}`,
-                display:        'flex',
-                alignItems:     'center',
-                justifyContent: 'center',
-                flexShrink:     0,
-              }}>
-                {p.icon && <p.icon style={{ width: 13, height: 13, color: p.color }} />}
-              </div>
-
-              {/* Text */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, lineHeight: 1.3 }}>{p.title}</span>
-                </div>
-                <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>
-                  {p.detail}
-                </div>
-                {p.impact && (
-                  <div style={{
-                    display:    'inline-flex',
-                    alignItems: 'center',
-                    gap:        4,
-                    marginTop:  5,
-                    fontSize:   10,
-                    fontWeight: 600,
-                    color:      p.color,
-                    background: `${p.color}10`,
-                    border:     `1px solid ${p.color}22`,
-                    borderRadius: 5,
-                    padding:    '2px 7px',
-                  }}>
-                    {p.impact}
-                  </div>
-                )}
-              </div>
-
-              {/* CTA */}
-              {p.cta && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); p.onAction?.(); }}
-                  style={{
-                    flexShrink:   0,
-                    fontSize:     10.5,
-                    fontWeight:   600,
-                    color:        p.color,
-                    background:   `${p.color}10`,
-                    border:       `1px solid ${p.color}22`,
-                    borderRadius: 7,
-                    padding:      '5px 12px',
-                    cursor:       'pointer',
-                    fontFamily:   'inherit',
-                    display:      'flex',
-                    alignItems:   'center',
-                    gap:          4,
-                    whiteSpace:   'nowrap',
-                    transition:   'all .15s',
-                  }}
-                >
-                  {p.cta} <ChevronRight style={{ width: 9, height: 9 }} />
-                </button>
-              )}
-            </div>
-          );
-        })}
+        {priorities.map((p, i) => (
+          <PriorityItem key={i} p={p} />
+        ))}
       </div>
     </div>
   );
