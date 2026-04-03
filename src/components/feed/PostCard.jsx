@@ -214,12 +214,18 @@ function formatPostDate(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now - date;
+  const diffMins = diffMs / (1000 * 60);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
+  if (diffMins < 5) return 'Just now';
+  if (diffMins < 60) {
+    const m = Math.floor(diffMins);
+    return m === 1 ? '1 minute ago' : `${m} minutes ago`;
+  }
   if (diffHours < 24) {
     const h = Math.floor(diffHours);
-    return h <= 0 ? 'Just now' : h === 1 ? '1 hour ago' : `${h} hours ago`;
+    return h === 1 ? '1 hour ago' : `${h} hours ago`;
   }
   if (diffDays < 4) {
     const d = Math.floor(diffDays);
