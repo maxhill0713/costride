@@ -1,29 +1,24 @@
 /**
- * TabOverview — Restyled to match TabEngagement card system
+ * TabOverview — Enhanced with Priority Action Panel & Actionable Intelligence
  *
- * WHAT CHANGED (tokens + card shell only — hierarchy rules preserved):
+ * WHAT'S NEW (keeping exact UI system — tokens, card shell, hierarchy rules):
  *
- * TOKENS
- *   bg         #090e1a  → #080e18
- *   surface    #0d1525  → #0c1422
- *   surfaceEl  #111c2e  → #101929
- *   border     rgba(255,255,255,0.065) → rgba(255,255,255,0.07)
- *   borderEl   rgba(255,255,255,0.11)  → rgba(255,255,255,0.12)
- *   t1         #dde3ed  → #f1f5f9  (crisper white)
- *   t2         #7a8ea8  → #94a3b8
- *   t3         #3f5068  → #475569
- *   t4         #243040  → #2d3f55
- *   accent     #5179ff  → #3b82f6
- *   danger     #e0524a  → #ef4444
- *   success    #38b27a  → #10b981
- *   warn       #d4893a  → #f59e0b
- *
- * CARD SHELL (every surface container)
- *   borderRadius  12 → 14
- *   boxShadow  added: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)
+ * 1. PRIORITY ACTION PANEL — top-center hero card with 3–5 ranked tasks,
+ *    each with icon, title, explanation, impact estimate, and CTA.
+ * 2. KPI CARDS — richer subtexts: contextual labels ("Lowest this week",
+ *    "Above average"), vs-yesterday deltas, weekly avg context, inline CTAs.
+ * 3. AT-RISK MEMBER PREVIEW — expanded inline preview showing member names,
+ *    last-seen info, risk tags, and direct message / view buttons.
+ * 4. GREETING HEADER — personalized "Good evening, Max — here's what to
+ *    focus on today" with date display.
+ * 5. SMARTER EMPTY STATES — encouraging language instead of blank panels.
+ * 6. DYNAMIC INSIGHTS — detect drops, spikes, inactivity patterns and
+ *    surface them contextually inside each card.
  *
  * All visual-hierarchy rules (Color = Meaning, left-border signals,
- * threshold-only color, neutral icon containers, flat fills) are unchanged.
+ * threshold-only color, neutral icon containers, flat fills) are UNCHANGED.
+ * Token palette, CARD_SHADOW, CARD_RADIUS — all identical.
+ * No revenue sections included per user request.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -37,7 +32,8 @@ import {
   CheckCircle, Trophy, UserPlus, QrCode, MessageSquarePlus,
   Pencil, Calendar, Activity, Users, AlertTriangle,
   ChevronRight, Minus, TrendingUp,
-  Clock, Flame, BarChart2, Shield,
+  Clock, Flame, BarChart2, Shield, Send, Eye, Heart,
+  Sun, Moon, Sunrise, Coffee,
 } from 'lucide-react';
 import { RingChart, Avatar } from './DashboardPrimitives';
 
@@ -45,6 +41,14 @@ import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
 /* ── Axis tick — always muted ──────────────────────────────────── */
 const tick = { fill: C.t3, fontSize: 10, fontFamily: 'inherit' };
+
+/* ── Greeting helper ───────────────────────────────────────────── */
+function getGreeting(hour) {
+  if (hour < 5)  return { text: 'Good night',      icon: Moon };
+  if (hour < 12) return { text: 'Good morning',    icon: Sunrise };
+  if (hour < 17) return { text: 'Good afternoon',  icon: Sun };
+  return               { text: 'Good evening',     icon: Coffee };
+}
 
 /* ══════════════════════════════════════════════════════════════════
    CHART TOOLTIP
@@ -93,11 +97,9 @@ function MiniSpark({ data = [], width = 64, height = 26 }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   KPI CARD
-   Color rule: value is always t1. Only trend badge gets semantic
-   color. valueColor passed only when threshold is crossed.
+   KPI CARD — enhanced with richer subtexts, contextual insights, CTAs
 ══════════════════════════════════════════════════════════════════ */
-function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkData, ring, ringColor, icon: Icon, valueColor, cta, onCta }) {
+function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkData, ring, ringColor, icon: Icon, valueColor, cta, onCta, insight }) {
   const trendColor = subTrend === 'up' ? C.success : subTrend === 'down' ? C.danger : C.t3;
   const TrendIcon  = subTrend === 'up' ? ArrowUpRight : subTrend === 'down' ? TrendingDown : Minus;
   const showRing   = ring != null && ring > 5 && ring < 98;
@@ -139,6 +141,21 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
           : null
         }
       </div>
+
+      {/* Contextual insight nudge */}
+      {insight && (
+        <div style={{
+          fontSize:     10,
+          color:        C.t3,
+          lineHeight:   1.45,
+          padding:      '6px 0 2px',
+          borderTop:    `1px solid ${C.divider}`,
+          marginTop:    'auto',
+          fontStyle:    'italic',
+        }}>
+          {insight}
+        </div>
+      )}
 
       {cta && onCta && (
         <button onClick={onCta} style={{
@@ -256,7 +273,7 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
         marginBottom: last ? 0 : 6,
         cursor:       onAction ? 'pointer' : 'default',
         transition:   'background .15s',
-        }}
+      }}
       onClick={onAction}
       onMouseEnter={() => onAction && setHov(true)}
       onMouseLeave={() => onAction && setHov(false)}
@@ -327,6 +344,283 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
       )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PRIORITY ACTION PANEL — hero card with ranked, actionable tasks
+   Each item: icon, title, explanation, impact, CTA button
+══════════════════════════════════════════════════════════════════ */
+function PriorityActionPanel({ priorities = [], now }) {
+  if (!priorities || priorities.length === 0) return null;
+
+  return (
+    <div style={{
+      padding:      '20px 22px',
+      borderRadius: CARD_RADIUS,
+      background:   C.surface,
+      border:       `1px solid ${C.border}`,
+      boxShadow:    CARD_SHADOW,
+    }}>
+      <div style={{
+        display:     'flex',
+        alignItems:  'center',
+        gap:         8,
+        marginBottom: 16,
+      }}>
+        <Zap style={{ width: 13, height: 13, color: C.accent }} />
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>
+          Today's Priorities
+        </span>
+        <span style={{
+          marginLeft:   'auto',
+          fontSize:     10,
+          fontWeight:   600,
+          color:        C.t3,
+          background:   C.surfaceEl,
+          border:       `1px solid ${C.border}`,
+          borderRadius: 6,
+          padding:      '2px 8px',
+        }}>
+          {priorities.length} action{priorities.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {priorities.map((p, i) => {
+          const [hov, setHov] = useState(false);
+          return (
+            <div
+              key={i}
+              onMouseEnter={() => setHov(true)}
+              onMouseLeave={() => setHov(false)}
+              style={{
+                display:      'flex',
+                alignItems:   'flex-start',
+                gap:          12,
+                padding:      '12px 14px',
+                borderRadius: 10,
+                background:   hov ? C.surfaceEl : 'rgba(255,255,255,0.015)',
+                border:       `1px solid ${hov ? C.borderEl : C.border}`,
+                borderLeft:   `3px solid ${p.color}`,
+                cursor:       p.onAction ? 'pointer' : 'default',
+                transition:   'all .15s',
+              }}
+              onClick={p.onAction}
+            >
+              {/* Icon container */}
+              <div style={{
+                width:          30,
+                height:         30,
+                borderRadius:   8,
+                background:     C.surfaceEl,
+                border:         `1px solid ${C.border}`,
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                flexShrink:     0,
+              }}>
+                {p.icon && <p.icon style={{ width: 13, height: 13, color: p.color }} />}
+              </div>
+
+              {/* Text */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, lineHeight: 1.3 }}>{p.title}</span>
+                </div>
+                <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>
+                  {p.detail}
+                </div>
+                {p.impact && (
+                  <div style={{
+                    display:    'inline-flex',
+                    alignItems: 'center',
+                    gap:        4,
+                    marginTop:  5,
+                    fontSize:   10,
+                    fontWeight: 600,
+                    color:      p.color,
+                    background: `${p.color}10`,
+                    border:     `1px solid ${p.color}22`,
+                    borderRadius: 5,
+                    padding:    '2px 7px',
+                  }}>
+                    {p.impact}
+                  </div>
+                )}
+              </div>
+
+              {/* CTA */}
+              {p.cta && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); p.onAction?.(); }}
+                  style={{
+                    flexShrink:   0,
+                    fontSize:     10.5,
+                    fontWeight:   600,
+                    color:        p.color,
+                    background:   `${p.color}10`,
+                    border:       `1px solid ${p.color}22`,
+                    borderRadius: 7,
+                    padding:      '5px 12px',
+                    cursor:       'pointer',
+                    fontFamily:   'inherit',
+                    display:      'flex',
+                    alignItems:   'center',
+                    gap:          4,
+                    whiteSpace:   'nowrap',
+                    transition:   'all .15s',
+                  }}
+                >
+                  {p.cta} <ChevronRight style={{ width: 9, height: 9 }} />
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AT-RISK MEMBER PREVIEW — expanded inline preview
+══════════════════════════════════════════════════════════════════ */
+function AtRiskPreview({ atRiskMembers = [], openModal, setTab, avatarMap = {} }) {
+  if (!atRiskMembers || atRiskMembers.length === 0) return null;
+
+  const shown = atRiskMembers.slice(0, 4);
+  const remaining = atRiskMembers.length - shown.length;
+
+  return (
+    <div style={{
+      padding:      20,
+      borderRadius: CARD_RADIUS,
+      background:   C.surface,
+      border:       `1px solid ${C.border}`,
+      boxShadow:    CARD_SHADOW,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>
+            At-Risk Members
+          </div>
+          <div style={{ fontSize: 11, color: C.t3 }}>No visit in 14+ days</div>
+        </div>
+        <button
+          onClick={() => setTab('members')}
+          style={{
+            fontSize: 11, fontWeight: 500, color: C.t3,
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit',
+          }}
+        >
+          View all <ChevronRight style={{ width: 11, height: 11 }} />
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {shown.map((m, i) => {
+          const daysSince = m.daysSinceVisit || 0;
+          const riskLevel = daysSince >= 21 ? 'High' : 'Medium';
+          const riskColor = daysSince >= 21 ? C.danger : C.warn;
+          const displayName = m.name || m.full_name || 'Unknown';
+
+          return (
+            <div key={i} style={{
+              display:      'flex',
+              alignItems:   'center',
+              gap:          10,
+              padding:      '9px 12px',
+              borderRadius: 9,
+              background:   C.surfaceEl,
+              border:       `1px solid ${C.border}`,
+            }}>
+              <Avatar name={displayName} size={28} src={avatarMap?.[m.user_id] || null} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {displayName}
+                </div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
+                  Last visit {daysSince} day{daysSince !== 1 ? 's' : ''} ago
+                </div>
+              </div>
+              <span style={{
+                fontSize:     9,
+                fontWeight:   700,
+                color:        riskColor,
+                background:   `${riskColor}10`,
+                border:       `1px solid ${riskColor}22`,
+                borderRadius: 5,
+                padding:      '2px 7px',
+                flexShrink:   0,
+                textTransform: 'uppercase',
+                letterSpacing: '.05em',
+              }}>
+                {riskLevel}
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); openModal?.('message', m); }}
+                style={{
+                  flexShrink: 0,
+                  padding:    '4px 9px',
+                  borderRadius: 6,
+                  background: 'transparent',
+                  border:     `1px solid ${C.borderEl}`,
+                  color:      C.t2,
+                  fontSize:   10,
+                  fontWeight: 600,
+                  cursor:     'pointer',
+                  fontFamily: 'inherit',
+                  display:    'flex',
+                  alignItems: 'center',
+                  gap:        3,
+                  transition: 'all .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.t1; e.currentTarget.style.borderColor = C.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.t2; e.currentTarget.style.borderColor = C.borderEl; }}
+              >
+                <Send style={{ width: 9, height: 9 }} /> Message
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {remaining > 0 && (
+        <button
+          onClick={() => setTab('members')}
+          style={{
+            marginTop:    8,
+            width:        '100%',
+            padding:      '7px 10px',
+            borderRadius: 8,
+            background:   C.surfaceEl,
+            border:       `1px solid ${C.borderEl}`,
+            color:        C.t2,
+            fontSize:     11,
+            fontWeight:   600,
+            cursor:       'pointer',
+            fontFamily:   'inherit',
+            display:      'flex',
+            alignItems:   'center',
+            justifyContent: 'center',
+            gap:          4,
+            transition:   'color .15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = C.t1}
+          onMouseLeave={e => e.currentTarget.style.color = C.t2}
+        >
+          +{remaining} more at-risk member{remaining !== 1 ? 's' : ''} <ChevronRight style={{ width: 10, height: 10 }} />
+        </button>
+      )}
+
+      <StatNudge color={C.danger} icon={Heart}
+        stat="Direct outreach works."
+        detail="A personal message is the most effective way to bring back lapsed members — members who receive one are significantly more likely to return."
+        action="Send messages" onAction={() => openModal?.('message')}
+      />
     </div>
   );
 }
@@ -447,7 +741,6 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
 
 /* ══════════════════════════════════════════════════════════════════
    RETENTION BREAKDOWN
-   week1 only gets danger. Zero values are ghost.
 ══════════════════════════════════════════════════════════════════ */
 function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
   const computed = {
@@ -514,7 +807,6 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
 
 /* ══════════════════════════════════════════════════════════════════
    WEEK-1 RETURN RATE
-   Both cells neutral. Numbers inside get semantic color at threshold.
 ══════════════════════════════════════════════════════════════════ */
 function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
   const { returned = 0, didnt = 0, names = [] } = week1ReturnRate;
@@ -580,7 +872,6 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
 
 /* ══════════════════════════════════════════════════════════════════
    ENGAGEMENT BREAKDOWN
-   Strict 3-tier: success / t3 / danger. No other colors.
 ══════════════════════════════════════════════════════════════════ */
 function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   const rows = [
@@ -674,9 +965,7 @@ function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MEMBER GROWTH CARD
-   Net: t1. Negative net: danger. Bar: flat accent, no gradient.
-   Retention badge: success only at ≥70% threshold.
+   MEMBER GROWTH CARD (no revenue)
 ══════════════════════════════════════════════════════════════════ */
 function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowthData }) {
   const hasEnoughData = (monthGrowthData || []).filter(d => d.value > 0).length >= 2;
@@ -765,8 +1054,6 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
 
 /* ══════════════════════════════════════════════════════════════════
    CHECK-IN ACTIVITY CHART
-   Today bar: flat accent at 0.85. Past: 0.3. Reference line: t4.
-   Range toggles: neutral active tab.
 ══════════════════════════════════════════════════════════════════ */
 function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWeek }) {
   const todayLabel = format(now, chartRange <= 7 ? 'EEE' : 'MMM d');
@@ -779,6 +1066,13 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
 
   const todayVal = (chartDays || []).find(d => d.day === todayLabel)?.value ?? 0;
   const chartMax = Math.max(...(chartDays || []).map(d => d.value), 1);
+
+  // Detect if today is lowest this week
+  const weekVals = (chartDays || []).map(d => d.value);
+  const isLowest = todayVal > 0 && weekVals.length > 1 && todayVal <= Math.min(...weekVals.filter(v => v > 0));
+  const isHighest = todayVal > 0 && weekVals.length > 1 && todayVal >= Math.max(...weekVals);
+
+  const peakHour = now.getHours() >= 17 && now.getHours() <= 19;
   const RANGES   = [{ val: 7, label: '7D' }, { val: 30, label: '30D' }];
 
   return (
@@ -786,7 +1080,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Check-in Activity</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
             <div style={{ fontSize: 11, color: C.t3 }}>
               Daily avg <span style={{ fontWeight: 600, color: C.t2 }}>{weeklyAvg}</span>
             </div>
@@ -798,13 +1092,18 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
                 </div>
               </>
             )}
+            {peakHour && (
+              <>
+                <div style={{ width: 3, height: 3, borderRadius: '50%', background: C.t4 }} />
+                <div style={{ fontSize: 10, color: C.warn, fontWeight: 500 }}>Peak activity 5–7pm</div>
+              </>
+            )}
             {todayVal === 0 && now.getHours() < 10 && (
               <div style={{ fontSize: 10, color: C.t3, fontStyle: 'italic' }}>Peak usually 5–7pm</div>
             )}
           </div>
         </div>
 
-        {/* Range toggle — neutral tab style matching TabEngagement button pattern */}
         <div style={{ display: 'flex', gap: 4 }}>
           {RANGES.map(r => (
             <button key={r.val} onClick={() => setChartRange(r.val)} style={{
@@ -880,8 +1179,8 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
+      {/* Legend + dynamic insight */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}`, flexWrap: 'wrap' }}>
         {[
           { op: 0.85, label: 'Today' },
           { op: 0.30, label: 'Past days' },
@@ -896,22 +1195,32 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
           <span style={{ fontSize: 10, color: C.t3 }}>Daily avg</span>
         </div>
       </div>
+
+      {/* Dynamic insight below chart */}
+      {isLowest && todayVal > 0 && (
+        <StatNudge color={C.warn} icon={TrendingDown}
+          stat="Lowest day this week."
+          detail="Consider sending a reminder or posting a motivational update to boost tomorrow's attendance." />
+      )}
+      {isHighest && todayVal > 2 && (
+        <StatNudge color={C.success} icon={TrendingUp}
+          stat="Best day this week!"
+          detail="Great momentum — capitalize on it with a community post celebrating the energy." />
+      )}
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    QUICK ACTIONS GRID
-   All hover states: same surfaceEl + borderEl (no per-button color).
-   Icon glyphs retain semantic color (small enough not to compete).
 ══════════════════════════════════════════════════════════════════ */
 function QuickActionsGrid({ openModal }) {
-   const actions = [
+  const actions = [
     { icon: Trophy,            label: 'New Challenge', color: C.accent, fn: () => openModal('challenge') },
     { icon: Calendar,          label: 'New Event',     color: C.accent, fn: () => openModal('event')     },
     { icon: MessageSquarePlus, label: 'Post Update',   color: C.accent, fn: () => openModal('post')      },
     { icon: Pencil,            label: 'New Poll',      color: C.accent, fn: () => openModal('poll')      },
-   ];
+  ];
 
   return (
     <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
@@ -947,6 +1256,34 @@ function QuickActionButton({ icon: Icon, label, color, onClick }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   GREETING HEADER
+══════════════════════════════════════════════════════════════════ */
+function GreetingHeader({ now, selectedGym, ownerName }) {
+  const greeting = getGreeting(now.getHours());
+  const name = ownerName || selectedGym?.owner_name || '';
+  const dateStr = format(now, 'EEEE, MMMM d');
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <greeting.icon style={{ width: 16, height: 16, color: C.warn, opacity: 0.7 }} />
+        <span style={{ fontSize: 11, fontWeight: 500, color: C.t3, letterSpacing: '.02em' }}>{dateStr}</span>
+      </div>
+      <h1 style={{
+        fontSize:      22,
+        fontWeight:    700,
+        color:         C.t1,
+        margin:        0,
+        letterSpacing: '-0.02em',
+        lineHeight:    1.3,
+      }}>
+        {greeting.text}{name ? `, ${name}` : ''} <span style={{ fontWeight: 400, color: C.t2 }}>— here's what to focus on today</span>
+      </h1>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
    MAIN EXPORT
 ══════════════════════════════════════════════════════════════════ */
 export default function TabOverview({
@@ -958,6 +1295,7 @@ export default function TabOverview({
   priorities, selectedGym, now,
   openModal, setTab,
   retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
+  atRiskMembers = [], ownerName,
 }) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   useEffect(() => {
@@ -971,6 +1309,86 @@ export default function TabOverview({
     return diff >= 0 && diff <= 120;
   }).length;
 
+  /* ── Build priority actions dynamically ── */
+  const computedPriorities = useMemo(() => {
+    if (priorities && priorities.length > 0) return priorities;
+
+    const items = [];
+
+    // 1. At-risk members
+    if (atRisk > 0) {
+      items.push({
+        color:    C.danger,
+        icon:     Heart,
+        title:    `Message ${atRisk} at-risk member${atRisk > 1 ? 's' : ''}`,
+        detail:   `${atRisk} member${atRisk > 1 ? 's haven\'t' : ' hasn\'t'} visited in 14+ days. Personal outreach is the most effective retention tool.`,
+        impact:   `Could retain ${atRisk} member${atRisk > 1 ? 's' : ''}`,
+        cta:      'Send messages',
+        onAction: () => setTab('members'),
+      });
+    }
+
+    // 2. New members not returning
+    if (newNoReturnCount > 0) {
+      items.push({
+        color:    C.danger,
+        icon:     UserPlus,
+        title:    `Follow up with ${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''}`,
+        detail:   'Joined recently but haven\'t returned. Week-1 follow-ups have the highest retention impact.',
+        impact:   'Highest retention impact',
+        cta:      'Follow up',
+        onAction: () => openModal('message'),
+      });
+    }
+
+    // 3. No-shows today
+    const todayCount = checkIns.filter(c => {
+      const d = new Date(c.check_in_date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    }).length;
+    if (todayCount === 0 && now.getHours() >= 10) {
+      items.push({
+        color:    C.warn,
+        icon:     Clock,
+        title:    'Remind today\'s no-shows',
+        detail:   'No check-ins recorded yet today. A quick reminder can boost this week\'s attendance.',
+        impact:   'Boost this week\'s check-ins',
+        cta:      'Send reminder',
+        onAction: () => openModal('message'),
+      });
+    }
+
+    // 4. No active challenge
+    const hasChallenge = (challenges || []).some(c => !c.ended_at);
+    if (!hasChallenge && totalMembers >= 3) {
+      items.push({
+        color:    C.warn,
+        icon:     Trophy,
+        title:    'Launch a challenge',
+        detail:   'No active challenge running. Members with goals visit more consistently.',
+        impact:   'Boost weekly visits',
+        cta:      'Create challenge',
+        onAction: () => openModal('challenge'),
+      });
+    }
+
+    // 5. Community engagement
+    const recentPost = (posts || []).find(p => differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 7);
+    if (!recentPost) {
+      items.push({
+        color:    C.accent,
+        icon:     MessageSquarePlus,
+        title:    'Post a community update',
+        detail:   'Regular posts lift engagement. Try a motivational post, poll, or class promo.',
+        impact:   'Improve engagement',
+        cta:      'Post now',
+        onAction: () => openModal('post'),
+      });
+    }
+
+    return items.slice(0, 5);
+  }, [atRisk, newNoReturnCount, checkIns, challenges, posts, totalMembers, now, priorities]);
+
   const ciSub = useMemo(() => {
     if (yesterdayCI === 0) return todayCI > 0 ? 'No data for yesterday' : 'No check-ins yet today';
     if (todayVsYest > 0)  return `↑ ${todayVsYest}% vs yesterday`;
@@ -983,110 +1401,148 @@ export default function TabOverview({
     return (chartDays.reduce((a, b) => a + b.value, 0) / chartDays.length).toFixed(1);
   }, [chartDays]);
 
+  // Detect if today is lowest/highest this week for insight
+  const weekVals = (chartDays || []).map(d => d.value).filter(v => v > 0);
+  const todayIsLowest = todayCI > 0 && weekVals.length > 1 && todayCI <= Math.min(...weekVals);
+  const todayIsAboveAvg = weeklyAvgCI && todayCI > parseFloat(weeklyAvgCI);
+
   const ciTrend  = yesterdayCI > 0 && todayVsYest > 0 ? 'up' : yesterdayCI > 0 && todayVsYest < 0 ? 'down' : null;
   const showRing = retentionRate > 5 && retentionRate < 98;
 
+  // Dynamic insight for check-in KPI
+  const ciInsight = useMemo(() => {
+    if (todayIsLowest) return 'Lowest this week — consider sending a reminder';
+    if (todayIsAboveAvg) return 'Above average — great momentum today';
+    if (todayCI === 0 && now.getHours() < 10) return 'Mornings are usually quiet — peak at 5–7pm';
+    return null;
+  }, [todayCI, todayIsLowest, todayIsAboveAvg, now]);
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 292px', gap: 20, alignItems: 'start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ── LEFT COLUMN ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      {/* ── GREETING HEADER ── */}
+      <GreetingHeader now={now} selectedGym={selectedGym} ownerName={ownerName} />
 
-        {/* KPI Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
-          <KpiCard
-            label="Today's Check-ins"
-            value={todayCI}
-            sub={ciSub}
-            subTrend={ciTrend}
-            subContext={weeklyAvgCI ? `Avg: ${weeklyAvgCI}/day` : undefined}
-            sparkData={sparkData}
-            icon={Activity}
+      {/* ── PRIORITY ACTION PANEL (top center — most important) ── */}
+      <PriorityActionPanel priorities={computedPriorities} now={now} />
+
+      {/* ── TWO-COLUMN LAYOUT ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 292px', gap: 20, alignItems: 'start' }}>
+
+        {/* ── LEFT COLUMN ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+          {/* KPI Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12 }}>
+            <KpiCard
+              label="Today's Check-ins"
+              value={todayCI}
+              sub={ciSub}
+              subTrend={ciTrend}
+              subContext={weeklyAvgCI ? `Avg: ${weeklyAvgCI}/day` : undefined}
+              sparkData={sparkData}
+              icon={Activity}
+              insight={ciInsight}
+              cta={todayCI === 0 && now.getHours() >= 10 ? 'Send reminder' : undefined}
+              onCta={todayCI === 0 && now.getHours() >= 10 ? () => openModal('message') : undefined}
+            />
+            <KpiCard
+              label="Active This Week"
+              value={activeThisWeek}
+              valueSuffix={`of ${totalMembers}`}
+              sub={`${retentionRate}% retention`}
+              subTrend={retentionRate >= 70 ? 'up' : retentionRate < 50 ? 'down' : null}
+              subContext={retentionRate < 60 ? 'Below 70% target' : retentionRate >= 80 ? 'Top 20% — excellent' : retentionRate >= 70 ? 'Steady' : undefined}
+              ring={showRing ? retentionRate : null}
+              ringColor={retentionRate >= 70 ? C.success : retentionRate >= 50 ? C.warn : C.danger}
+              sparkData={!showRing ? sparkData : null}
+              icon={Users}
+            />
+            <KpiCard
+              label="Current In Gym"
+              value={inGymNow}
+              sub={inGymNow === 0
+                ? (now.getHours() < 10 ? 'Early — peak at 5–7pm' : now.getHours() < 17 ? 'Quiet midday period' : 'No recent check-ins')
+                : `${inGymNow === 1 ? 'Member' : 'Members'} in last 2h`}
+              subTrend={inGymNow > 0 ? 'up' : null}
+              sparkData={sparkData}
+              icon={Users}
+              insight={now.getHours() >= 17 && now.getHours() <= 19 ? 'Peak hours right now' : null}
+            />
+            <KpiCard
+              label="At-Risk Members"
+              value={atRisk}
+              sub={atRisk > 0
+                ? `${Math.round((atRisk / Math.max(totalMembers, 1)) * 100)}% of gym inactive`
+                : 'All members active'}
+              subTrend={atRisk > 0 ? 'down' : 'up'}
+              subContext={atRisk > 0 ? '14+ days without a visit' : undefined}
+              sparkData={sparkData}
+              icon={Zap}
+              valueColor={atRisk > 0 ? C.danger : undefined}
+              cta={atRisk > 0 ? 'View & message' : undefined}
+              onCta={atRisk > 0 ? () => setTab('members') : undefined}
+              insight={atRisk > 0 ? 'Direct outreach is the most effective method' : null}
+            />
+          </div>
+
+          {/* At-Risk Member Preview (NEW — expanded inline) */}
+          {atRisk > 0 && atRiskMembers && atRiskMembers.length > 0 && (
+            <AtRiskPreview
+              atRiskMembers={atRiskMembers}
+              openModal={openModal}
+              setTab={setTab}
+              avatarMap={avatarMap}
+            />
+          )}
+
+          <CheckInChart
+            chartDays={chartDays}
+            chartRange={chartRange}
+            setChartRange={setChartRange}
+            now={now}
+            activeThisWeek={activeThisWeek}
           />
-          <KpiCard
-            label="Active Members"
-            value={activeThisWeek}
-            valueSuffix={`/ ${totalMembers}`}
-            sub={`${retentionRate}% retention`}
-            subTrend={retentionRate >= 70 ? 'up' : retentionRate < 50 ? 'down' : null}
-            subContext={retentionRate < 60 ? 'Below 70% target' : retentionRate >= 80 ? 'Top 20% — excellent' : undefined}
-            ring={showRing ? retentionRate : null}
-            ringColor={retentionRate >= 70 ? C.success : retentionRate >= 50 ? C.warn : C.danger}
-            sparkData={!showRing ? sparkData : null}
-            icon={Users}
+
+          <MemberGrowthCard
+            newSignUps={newSignUps}
+            cancelledEst={cancelledEst}
+            retentionRate={retentionRate}
+            monthGrowthData={monthGrowthData}
           />
-          <KpiCard
-            label="In Gym Now"
-            value={inGymNow}
-            sub={inGymNow === 0
-              ? (now.getHours() < 10 ? 'Early — peak at 5–7pm' : now.getHours() < 17 ? 'Quiet midday period' : 'No recent check-ins')
-              : `${inGymNow === 1 ? 'Member' : 'Members'} in last 2h`}
-            subTrend={inGymNow > 0 ? 'up' : null}
-            sparkData={sparkData}
-            icon={Users}
+
+          <EngagementBreakdown
+            monthCiPer={monthCiPer}
+            totalMembers={totalMembers}
+            atRisk={atRisk}
+            setTab={setTab}
           />
-          <KpiCard
-            label="At-Risk Members"
-            value={atRisk}
-            sub={atRisk > 0
-              ? `${Math.round((atRisk / Math.max(totalMembers, 1)) * 100)}% of gym inactive`
-              : 'All members active'}
-            subTrend={atRisk > 0 ? 'down' : 'up'}
-            subContext={atRisk > 0 ? '14+ days without a visit' : undefined}
-            sparkData={sparkData}
-            icon={Zap}
-            valueColor={atRisk > 0 ? C.danger : undefined}
-            cta={atRisk > 0 ? 'View & message' : undefined}
-            onCta={atRisk > 0 ? () => setTab('members') : undefined}
+
+          <ActivityFeed
+            recentActivity={recentActivity}
+            now={now}
+            avatarMap={avatarMap}
+            nameMap={nameMap}
           />
         </div>
 
-        <CheckInChart
-          chartDays={chartDays}
-          chartRange={chartRange}
-          setChartRange={setChartRange}
-          now={now}
-          activeThisWeek={activeThisWeek}
-        />
-
-        <MemberGrowthCard
-          newSignUps={newSignUps}
-          cancelledEst={cancelledEst}
-          retentionRate={retentionRate}
-          monthGrowthData={monthGrowthData}
-        />
-
-        <EngagementBreakdown
-          monthCiPer={monthCiPer}
-          totalMembers={totalMembers}
-          atRisk={atRisk}
-          setTab={setTab}
-        />
-
-        <ActivityFeed
-          recentActivity={recentActivity}
-          now={now}
-          avatarMap={avatarMap}
-          nameMap={nameMap}
-        />
-      </div>
-
-      {/* ── RIGHT SIDEBAR ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <TodayActions
-          atRisk={atRisk}
-          checkIns={checkIns}
-          allMemberships={allMemberships}
-          posts={posts}
-          challenges={challenges}
-          now={now}
-          openModal={openModal}
-          setTab={setTab}
-          newNoReturnCount={newNoReturnCount}
-        />
-        <QuickActionsGrid openModal={openModal} />
-        <RetentionBreakdown retentionBreakdown={retentionBreakdown} setTab={setTab} />
-        <WeekOneReturn week1ReturnRate={week1ReturnRate} openModal={openModal} />
+        {/* ── RIGHT SIDEBAR ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <TodayActions
+            atRisk={atRisk}
+            checkIns={checkIns}
+            allMemberships={allMemberships}
+            posts={posts}
+            challenges={challenges}
+            now={now}
+            openModal={openModal}
+            setTab={setTab}
+            newNoReturnCount={newNoReturnCount}
+          />
+          <QuickActionsGrid openModal={openModal} />
+          <RetentionBreakdown retentionBreakdown={retentionBreakdown} setTab={setTab} />
+          <WeekOneReturn week1ReturnRate={week1ReturnRate} openModal={openModal} />
+        </div>
       </div>
     </div>
   );
