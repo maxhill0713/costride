@@ -1,29 +1,25 @@
 /**
- * TabOverview — Restyled to match TabEngagement card system
+ * TabOverview — card shell updated to match TabCoachToday aesthetic.
  *
- * WHAT CHANGED (tokens + card shell only — hierarchy rules preserved):
+ * CHANGES (card shell only — all logic/hierarchy/layout preserved):
  *
- * TOKENS
- *   bg         #090e1a  → #080e18
- *   surface    #0d1525  → #0c1422
- *   surfaceEl  #111c2e  → #101929
- *   border     rgba(255,255,255,0.065) → rgba(255,255,255,0.07)
- *   borderEl   rgba(255,255,255,0.11)  → rgba(255,255,255,0.12)
- *   t1         #dde3ed  → #f1f5f9  (crisper white)
- *   t2         #7a8ea8  → #94a3b8
- *   t3         #3f5068  → #475569
- *   t4         #243040  → #2d3f55
- *   accent     #5179ff  → #3b82f6
- *   danger     #e0524a  → #ef4444
- *   success    #38b27a  → #10b981
- *   warn       #d4893a  → #f59e0b
+ *  CARD SHELL
+ *    background    C.surface  → #0a0f1e  (matches T.surface)
+ *    border        0.07 alpha → rgba(255,255,255,.04)  (T.border)
+ *    borderRadius  14         → 16px  (T.r3)
+ *    boxShadow     →  0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)  (T.shadowMd)
+ *    inner shimmer → absolute top-gradient div (T.card::before equivalent)
  *
- * CARD SHELL (every surface container)
- *   borderRadius  12 → 14
- *   boxShadow  added: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)
+ *  INNER SURFACES
+ *    surfaceEl  → #0d1225  (T.surfaceUp)
+ *    divider    → rgba(255,255,255,.04)
  *
- * All visual-hierarchy rules (Color = Meaning, left-border signals,
- * threshold-only color, neutral icon containers, flat fills) are unchanged.
+ *  REMOVED
+ *    borderLeft coloured accent lines from Signal + StatNudge (no coloured left rails anywhere)
+ *
+ *  UNCHANGED
+ *    All C.* semantic colours (danger/success/warn/accent/t1-t4)
+ *    All logic, layout, props, data-flow
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -40,8 +36,44 @@ import {
   Clock, Flame, BarChart2, Shield,
 } from 'lucide-react';
 import { RingChart, Avatar } from './DashboardPrimitives';
-
 import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
+
+// ─── LOCAL CARD SHELL — matches TabCoachToday ─────────────────────────────────
+const CARD_BG      = '#0a0f1e';
+const CARD_BDR     = 'rgba(255,255,255,.04)';
+const CARD_BDR_H   = 'rgba(255,255,255,.07)';
+const CARD_R       = 16;
+const CARD_SH      = '0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)';
+const INNER_BG     = '#0d1225';
+const DIVIDER      = 'rgba(255,255,255,.04)';
+
+/** Subtle top-gradient shimmer — equivalent of .tct-card::before */
+function CardShimmer() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit',
+      background: 'linear-gradient(180deg, rgba(255,255,255,.015) 0%, transparent 40%)',
+    }} />
+  );
+}
+
+/** Unified card container */
+function Card({ children, style }) {
+  return (
+    <div style={{
+      position:     'relative',
+      background:   CARD_BG,
+      border:       `1px solid ${CARD_BDR}`,
+      borderRadius: CARD_R,
+      boxShadow:    CARD_SH,
+      overflow:     'hidden',
+      ...style,
+    }}>
+      <CardShimmer />
+      {children}
+    </div>
+  );
+}
 
 /* ── Axis tick — always muted ──────────────────────────────────── */
 const tick = { fill: C.t3, fontSize: 10, fontFamily: 'inherit' };
@@ -54,7 +86,7 @@ function Tip({ active, payload, label, unit = '' }) {
   return (
     <div style={{
       background:   '#060c18',
-      border:       `1px solid ${C.borderEl}`,
+      border:       `1px solid ${CARD_BDR_H}`,
       borderRadius: 8,
       padding:      '7px 11px',
       boxShadow:    '0 6px 20px rgba(0,0,0,0.5)',
@@ -79,23 +111,23 @@ function MiniSpark({ data = [], width = 64, height = 26 }) {
   const first = pts.split(' ')[0], last = pts.split(' ').slice(-1)[0];
   const area = `${first.split(',')[0]},${height} ${pts} ${last.split(',')[0]},${height}`;
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+      style={{ display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
       <defs>
         <linearGradient id="spark-ov" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={C.accent} stopOpacity="0.18" />
+          <stop offset="0%"   stopColor={C.accent} stopOpacity="0.18" />
           <stop offset="100%" stopColor={C.accent} stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon points={area} fill="url(#spark-ov)" />
-      <polyline points={pts} fill="none" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={pts} fill="none" stroke={C.accent} strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    KPI CARD
-   Color rule: value is always t1. Only trend badge gets semantic
-   color. valueColor passed only when threshold is crossed.
 ══════════════════════════════════════════════════════════════════ */
 function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkData, ring, ringColor, icon: Icon, valueColor, cta, onCta }) {
   const trendColor = subTrend === 'up' ? C.success : subTrend === 'down' ? C.danger : C.t3;
@@ -103,15 +135,7 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
   const showRing   = ring != null && ring > 5 && ring < 98;
 
   return (
-    <div style={{
-      borderRadius:  CARD_RADIUS,
-      padding:       '16px 18px',
-      background:    C.surface,
-      border:        `1px solid ${C.border}`,
-      boxShadow:     CARD_SHADOW,
-      display:       'flex',
-      flexDirection: 'column',
-    }}>
+    <Card style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>{label}</span>
       </div>
@@ -146,8 +170,8 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
           width:          '100%',
           padding:        '6px 10px',
           borderRadius:   8,
-          background:     C.surfaceEl,
-          border:         `1px solid ${C.borderEl}`,
+          background:     INNER_BG,
+          border:         `1px solid ${CARD_BDR_H}`,
           color:          C.t1,
           fontSize:       11,
           fontWeight:     600,
@@ -158,14 +182,11 @@ function KpiCard({ label, value, valueSuffix, sub, subTrend, subContext, sparkDa
           gap:            5,
           fontFamily:     'inherit',
           transition:     'border-color .15s',
-        }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = C.borderEl}
-          onMouseLeave={e => e.currentTarget.style.borderColor = C.borderEl}
-        >
+        }}>
           {cta} <ChevronRight style={{ width: 10, height: 10 }} />
         </button>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -179,7 +200,7 @@ function StatRow({ label, value, valueColor, last, badge }) {
       alignItems:     'center',
       justifyContent: 'space-between',
       padding:        '8px 0',
-      borderBottom:   last ? 'none' : `1px solid ${C.divider}`,
+      borderBottom:   last ? 'none' : `1px solid ${DIVIDER}`,
     }}>
       <span style={{ fontSize: 12, color: C.t2 }}>{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -203,7 +224,7 @@ function StatRow({ label, value, valueColor, last, badge }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ACTION ROW — icon container neutral, glyph carries semantic color
+   ACTION ROW
 ══════════════════════════════════════════════════════════════════ */
 function ActionRow({ icon: Icon, label, action, color, onClick, last }) {
   const [hov, setHov] = useState(false);
@@ -214,15 +235,15 @@ function ActionRow({ icon: Icon, label, action, color, onClick, last }) {
         alignItems:   'center',
         gap:          10,
         padding:      '9px 0',
-        borderBottom: last ? 'none' : `1px solid ${C.divider}`,
+        borderBottom: last ? 'none' : `1px solid ${DIVIDER}`,
         cursor:       'pointer',
       }}>
       <div style={{
         width:          28,
         height:         28,
         borderRadius:   7,
-        background:     C.surfaceEl,
-        border:         `1px solid ${C.border}`,
+        background:     INNER_BG,
+        border:         `1px solid ${CARD_BDR}`,
         display:        'flex',
         alignItems:     'center',
         justifyContent: 'center',
@@ -241,7 +262,7 @@ function ActionRow({ icon: Icon, label, action, color, onClick, last }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIGNAL — 3px left border is the ONLY color. Surface always neutral.
+   SIGNAL — no coloured left border; icon glyph carries meaning
 ══════════════════════════════════════════════════════════════════ */
 function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
   const [hov, setHov] = useState(false);
@@ -250,13 +271,12 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
       style={{
         padding:      '10px 12px',
         borderRadius: 9,
-        background:   hov && onAction ? C.surfaceEl : C.surface,
-        border:       `1px solid ${C.border}`,
-        borderLeft:   `3px solid ${color}`,
+        background:   hov && onAction ? INNER_BG : CARD_BG,
+        border:       `1px solid ${hov && onAction ? CARD_BDR_H : CARD_BDR}`,
         marginBottom: last ? 0 : 6,
         cursor:       onAction ? 'pointer' : 'default',
-        transition:   'background .15s',
-        }}
+        transition:   'background .15s, border-color .15s',
+      }}
       onClick={onAction}
       onMouseEnter={() => onAction && setHov(true)}
       onMouseLeave={() => onAction && setHov(false)}
@@ -288,7 +308,7 @@ function Signal({ color, icon: Icon, title, detail, action, onAction, last }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   STAT NUDGE — surfaceEl bg, 2px left border is only color
+   STAT NUDGE — no coloured left border
 ══════════════════════════════════════════════════════════════════ */
 function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
   return (
@@ -299,9 +319,8 @@ function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onActio
       gap:          9,
       padding:      '9px 11px',
       borderRadius: 8,
-      background:   C.surfaceEl,
-      border:       `1px solid ${C.border}`,
-      borderLeft:   `2px solid ${color}`,
+      background:   INNER_BG,
+      border:       `1px solid ${CARD_BDR}`,
     }}>
       {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -381,13 +400,7 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
   const urgentCount = signals.filter(s => s.color === C.danger).length;
 
   return (
-    <div style={{
-      padding:      20,
-      borderRadius: CARD_RADIUS,
-      background:   C.surface,
-      border:       `1px solid ${C.border}`,
-      boxShadow:    CARD_SHADOW,
-    }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, letterSpacing: '.13em', textTransform: 'uppercase' }}>Action Items</div>
         {signals.length > 0 && (
@@ -396,7 +409,7 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
             fontWeight:   700,
             color:        urgentCount > 0 ? C.danger : C.t3,
             background:   urgentCount > 0 ? C.dangerSub : 'transparent',
-            border:       `1px solid ${urgentCount > 0 ? C.dangerBrd : C.border}`,
+            border:       `1px solid ${urgentCount > 0 ? C.dangerBrd : CARD_BDR}`,
             borderRadius: 6,
             padding:      '1px 7px',
           }}>
@@ -410,9 +423,8 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
         <div style={{
           padding:      '11px 13px',
           borderRadius: 9,
-          background:   C.surfaceEl,
-          border:       `1px solid ${C.border}`,
-          borderLeft:   `3px solid ${C.success}`,
+          background:   INNER_BG,
+          border:       `1px solid ${CARD_BDR}`,
           display:      'flex',
           alignItems:   'center',
           gap:          8,
@@ -432,7 +444,7 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
       )}
 
       {positives.length > 0 && (
-        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${DIVIDER}` }}>
           {positives.map((p, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: i < positives.length - 1 ? 4 : 0 }}>
               <CheckCircle style={{ width: 10, height: 10, color: C.success, flexShrink: 0 }} />
@@ -441,13 +453,12 @@ function TodayActions({ atRisk, checkIns, allMemberships, posts, challenges, now
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    RETENTION BREAKDOWN
-   week1 only gets danger. Zero values are ghost.
 ══════════════════════════════════════════════════════════════════ */
 function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
   const computed = {
@@ -465,7 +476,7 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
   const total = rows.reduce((s, r) => s + r.val, 0);
 
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Drop-off Risk</div>
@@ -477,7 +488,7 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
       </div>
 
       {total === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.success}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 9, background: INNER_BG, border: `1px solid ${CARD_BDR}` }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: C.t2 }}>No drop-off risks detected</span>
         </div>
@@ -487,7 +498,7 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           justifyContent: 'space-between',
           alignItems:     'center',
           padding:        '8px 0',
-          borderBottom:   i < rows.length - 1 ? `1px solid ${C.divider}` : 'none',
+          borderBottom:   i < rows.length - 1 ? `1px solid ${DIVIDER}` : 'none',
         }}>
           <div>
             <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3 }}>{r.label}</span>
@@ -508,13 +519,12 @@ function RetentionBreakdown({ retentionBreakdown: risks = {}, setTab }) {
           stat="No immediate drop-offs."
           detail="Keep it up — the month 2–3 window is the next common drop-off point to watch." />
       )}
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    WEEK-1 RETURN RATE
-   Both cells neutral. Numbers inside get semantic color at threshold.
 ══════════════════════════════════════════════════════════════════ */
 function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
   const { returned = 0, didnt = 0, names = [] } = week1ReturnRate;
@@ -523,7 +533,7 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
   const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
 
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 2 }}>Week-1 Return Rate</div>
@@ -543,7 +553,7 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
               { count: returned, label: 'Came back',    color: returned > 0 ? C.success : C.t4 },
               { count: didnt,    label: "Didn't return", color: didnt > 0    ? C.danger  : C.t4 },
             ].map((cell, i) => (
-              <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'center' }}>
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: INNER_BG, border: `1px solid ${CARD_BDR}`, textAlign: 'center' }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: cell.color, letterSpacing: '-0.03em' }}>{cell.count}</div>
                 <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{cell.label}</div>
               </div>
@@ -551,7 +561,7 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
           </div>
 
           {didnt > 0 && names.length > 0 && (
-            <div style={{ marginBottom: 0, padding: '9px 11px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.danger}` }}>
+            <div style={{ marginBottom: 0, padding: '9px 11px', borderRadius: 9, background: INNER_BG, border: `1px solid ${CARD_BDR}` }}>
               <div style={{ fontSize: 11, color: C.t2, marginBottom: 5, lineHeight: 1.5 }}>
                 {names.join(', ')}{didnt > 3 ? ` +${didnt - 3} more` : ''} — no return visit yet
               </div>
@@ -574,13 +584,12 @@ function WeekOneReturn({ week1ReturnRate = {}, openModal }) {
           />
         </>
       )}
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    ENGAGEMENT BREAKDOWN
-   Strict 3-tier: success / t3 / danger. No other colors.
 ══════════════════════════════════════════════════════════════════ */
 function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   const rows = [
@@ -591,7 +600,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
   ];
 
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Engagement Split</div>
         <button onClick={() => setTab('members')} style={{ fontSize: 11, fontWeight: 500, color: C.t3, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
@@ -607,7 +616,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
             alignItems:   'center',
             gap:          10,
             padding:      '8px 0',
-            borderBottom: i < rows.length - 1 ? `1px solid ${C.divider}` : 'none',
+            borderBottom: i < rows.length - 1 ? `1px solid ${DIVIDER}` : 'none',
           }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: r.val > 0 ? r.dotColor : C.t4, flexShrink: 0 }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: r.val > 0 ? C.t1 : C.t3, flex: 1 }}>{r.label}</span>
@@ -629,7 +638,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
           stat="All members active."
           detail="Active gyms maintain this by running a challenge every 6–8 weeks." />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -638,7 +647,7 @@ function EngagementBreakdown({ monthCiPer, totalMembers, atRisk, setTab }) {
 ══════════════════════════════════════════════════════════════════ */
 function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 16 }}>Recent Activity</div>
       {!recentActivity || recentActivity.length === 0 ? (
         <div style={{ padding: '20px 0', textAlign: 'center' }}>
@@ -656,7 +665,7 @@ function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
             alignItems:   'center',
             gap:          10,
             padding:      '8px 0',
-            borderBottom: i < Math.min(recentActivity.length, 6) - 1 ? `1px solid ${C.divider}` : 'none',
+            borderBottom: i < Math.min(recentActivity.length, 6) - 1 ? `1px solid ${DIVIDER}` : 'none',
           }}>
             <Avatar name={displayName} size={26} src={avatarMap?.[a.user_id] || null} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -669,14 +678,12 @@ function ActivityFeed({ recentActivity, now, avatarMap, nameMap = {} }) {
           </div>
         );
       })}
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    MEMBER GROWTH CARD
-   Net: t1. Negative net: danger. Bar: flat accent, no gradient.
-   Retention badge: success only at ≥70% threshold.
 ══════════════════════════════════════════════════════════════════ */
 function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowthData }) {
   const hasEnoughData = (monthGrowthData || []).filter(d => d.value > 0).length >= 2;
@@ -685,7 +692,7 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
   const retColor      = retentionRate >= 70 ? C.success : retentionRate < 50 ? C.danger : C.t2;
 
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 4 }}>Member Growth</div>
@@ -700,8 +707,8 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           <div style={{
             padding:      '3px 9px',
             borderRadius: 6,
-            background:   retentionRate >= 70 ? C.successSub : C.surfaceEl,
-            border:       `1px solid ${retentionRate >= 70 ? C.successBrd : C.border}`,
+            background:   retentionRate >= 70 ? C.successSub : INNER_BG,
+            border:       `1px solid ${retentionRate >= 70 ? C.successBrd : CARD_BDR}`,
             fontSize:     11,
             fontWeight:   600,
             color:        retColor,
@@ -719,7 +726,7 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
       {hasEnoughData ? (
         <ResponsiveContainer width="100%" height={110}>
           <BarChart data={monthGrowthData} barSize={18} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={DIVIDER} vertical={false} />
             <XAxis dataKey="label" tick={tick} axisLine={false} tickLine={false} />
             <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
             <Tooltip content={<Tip unit=" members" />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
@@ -727,19 +734,19 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div style={{ height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 9, background: C.surfaceEl, gap: 5 }}>
+        <div style={{ height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 9, background: INNER_BG, gap: 5 }}>
           <div style={{ fontSize: 12, color: C.t3 }}>Chart populates as data grows</div>
           <div style={{ fontSize: 11, color: C.t3, opacity: 0.7 }}>Check back next month for trends</div>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.divider}` }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${DIVIDER}` }}>
         {[
           { label: 'New',       value: newSignUps,   color: newSignUps > 0 ? C.success : C.t1 },
           { label: 'Cancelled', value: cancelledEst, color: cancelledEst > 0 ? C.danger : C.t4 },
           { label: 'Net',       value: `${net >= 0 ? '+' : ''}${net}`, color: netColor },
         ].map((s, i) => (
-          <div key={i} style={{ textAlign: 'center', padding: '0 8px', borderRight: i < 2 ? `1px solid ${C.divider}` : 'none' }}>
+          <div key={i} style={{ textAlign: 'center', padding: '0 8px', borderRight: i < 2 ? `1px solid ${DIVIDER}` : 'none' }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</div>
             <div style={{ fontSize: 10, color: C.t3, marginTop: 3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{s.label}</div>
           </div>
@@ -759,14 +766,12 @@ function MemberGrowthCard({ newSignUps, cancelledEst, retentionRate, monthGrowth
           stat={`+${newSignUps} new member${newSignUps > 1 ? 's' : ''} this month.`}
           detail="Early habit formation matters — new members who visit frequently in their first weeks are far more likely to stick." />
       ) : null}
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    CHECK-IN ACTIVITY CHART
-   Today bar: flat accent at 0.85. Past: 0.3. Reference line: t4.
-   Range toggles: neutral active tab.
 ══════════════════════════════════════════════════════════════════ */
 function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWeek }) {
   const todayLabel = format(now, chartRange <= 7 ? 'EEE' : 'MMM d');
@@ -782,7 +787,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
   const RANGES   = [{ val: 7, label: '7D' }, { val: 30, label: '30D' }];
 
   return (
-    <div style={{ padding: '20px 20px 16px', borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: '20px 20px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Check-in Activity</div>
@@ -804,7 +809,6 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
           </div>
         </div>
 
-        {/* Range toggle — neutral tab style matching TabEngagement button pattern */}
         <div style={{ display: 'flex', gap: 4 }}>
           {RANGES.map(r => (
             <button key={r.val} onClick={() => setChartRange(r.val)} style={{
@@ -813,9 +817,9 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
               padding:      '4px 12px',
               borderRadius: 7,
               cursor:       'pointer',
-              background:   chartRange === r.val ? C.accentSub : 'rgba(255,255,255,0.03)',
+              background:   chartRange === r.val ? C.accentSub : INNER_BG,
               color:        chartRange === r.val ? C.accent : C.t3,
-              border:       `1px solid ${chartRange === r.val ? C.accentBrd : C.border}`,
+              border:       `1px solid ${chartRange === r.val ? C.accentBrd : CARD_BDR}`,
               fontFamily:   'inherit',
               transition:   'all .15s',
             }}>
@@ -827,7 +831,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
 
       <ResponsiveContainer width="100%" height={184}>
         <BarChart data={chartDays || []} margin={{ top: 4, right: 4, left: -8, bottom: 0 }} barSize={chartRange <= 7 ? 20 : 8}>
-          <CartesianGrid strokeDasharray="3 3" stroke={C.divider} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={DIVIDER} vertical={false} />
           <XAxis dataKey="day" tick={tick} axisLine={false} tickLine={false} interval={chartRange <= 7 ? 0 : 4} />
           <YAxis tick={tick} axisLine={false} tickLine={false} width={28} allowDecimals={false} domain={[0, Math.max(chartMax + 1, 5)]} />
           <Tooltip
@@ -838,7 +842,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
               const avg     = parseFloat(weeklyAvg);
               const vsAvg   = avg > 0 ? Math.round(((val - avg) / avg) * 100) : 0;
               return (
-                <div style={{ background: '#060c18', border: `1px solid ${C.borderEl}`, borderRadius: 9, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 120 }}>
+                <div style={{ background: '#060c18', border: `1px solid ${CARD_BDR_H}`, borderRadius: 9, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 120 }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: isToday ? C.accent : C.t3, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: 4 }}>
                     {isToday ? 'Today' : label}
                   </div>
@@ -880,8 +884,7 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${DIVIDER}` }}>
         {[
           { op: 0.85, label: 'Today' },
           { op: 0.30, label: 'Past days' },
@@ -896,32 +899,30 @@ function CheckInChart({ chartDays, chartRange, setChartRange, now, activeThisWee
           <span style={{ fontSize: 10, color: C.t3 }}>Daily avg</span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
    QUICK ACTIONS GRID
-   All hover states: same surfaceEl + borderEl (no per-button color).
-   Icon glyphs retain semantic color (small enough not to compete).
 ══════════════════════════════════════════════════════════════════ */
 function QuickActionsGrid({ openModal }) {
-   const actions = [
+  const actions = [
     { icon: Trophy,            label: 'New Challenge', color: C.accent, fn: () => openModal('challenge') },
     { icon: Calendar,          label: 'New Event',     color: C.accent, fn: () => openModal('event')     },
     { icon: MessageSquarePlus, label: 'Post Update',   color: C.accent, fn: () => openModal('post')      },
     { icon: Pencil,            label: 'New Poll',      color: C.accent, fn: () => openModal('poll')      },
-   ];
+  ];
 
   return (
-    <div style={{ padding: 20, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
+    <Card style={{ padding: 20 }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>Quick Actions</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         {actions.map(({ icon: Icon, label, color, fn }, i) => (
           <QuickActionButton key={i} icon={Icon} label={label} color={color} onClick={fn} />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -934,8 +935,8 @@ function QuickActionButton({ icon: Icon, label, color, onClick }) {
       gap:          8,
       padding:      '8px 10px',
       borderRadius: 8,
-      background:   hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
-      border:       `1px solid ${hov ? C.borderEl : C.border}`,
+      background:   hov ? INNER_BG : 'rgba(255,255,255,0.025)',
+      border:       `1px solid ${hov ? CARD_BDR_H : CARD_BDR}`,
       cursor:       'pointer',
       transition:   'all .15s',
       fontFamily:   'inherit',
@@ -947,7 +948,7 @@ function QuickActionButton({ icon: Icon, label, color, onClick }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MAIN EXPORT
+   MAIN EXPORT — layout and props unchanged
 ══════════════════════════════════════════════════════════════════ */
 export default function TabOverview({
   todayCI, yesterdayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate,
