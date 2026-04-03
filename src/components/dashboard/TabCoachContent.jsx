@@ -37,15 +37,14 @@ if (typeof document !== 'undefined' && !document.getElementById('wps-css')) {
     .wps-btn:active { transform: scale(.97); }
 
     .wps-card { transition: all .18s cubic-bezier(.4,0,.2,1); cursor: pointer; position: relative; }
-    .wps-card:hover { border-color: rgba(99,102,241,.25) !important; transform: translateY(-1px); }
+    .wps-card:hover { border-color: rgba(255,255,255,.12) !important; transform: translateY(-1px); }
     .wps-card:hover .wps-card-actions { opacity: 1; pointer-events: auto; }
     .wps-card-actions { opacity: 0; pointer-events: none; transition: opacity .15s; }
 
     .wps-input { width: 100%; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
                  color: #e2e8f0; font-size: 13px; font-family: 'Instrument Sans', sans-serif;
                  outline: none; border-radius: 10px; padding: 10px 14px; transition: all .15s; }
-    .wps-input:focus { border-color: rgba(99,102,241,.4); background: rgba(255,255,255,.04);
-                       box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+    .wps-input:focus { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.04); }
     .wps-input::placeholder { color: rgba(148,163,184,.4); }
 
     .wps-select { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
@@ -54,7 +53,7 @@ if (typeof document !== 'undefined' && !document.getElementById('wps-css')) {
 
     .wps-tooltip { position: relative; }
     .wps-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px);
-      left: 50%; transform: translateX(-50%); background: #1e293b; color: #e2e8f0;
+      left: 50%; transform: translateX(-50%); background: #18181b; color: #fafafa;
       font-size: 11px; padding: 5px 10px; border-radius: 6px; white-space: nowrap;
       opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 50;
       border: 1px solid rgba(255,255,255,.08); }
@@ -79,43 +78,44 @@ if (typeof document !== 'undefined' && !document.getElementById('wps-css')) {
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
-  bg:       '#06090f',
-  surface:  '#0b1121',
-  surfaceH: '#0e1528',
-  card:     '#0d1424',
-  border:   'rgba(255,255,255,.05)',
-  borderH:  'rgba(255,255,255,.09)',
-  borderA:  'rgba(255,255,255,.12)',
+  bg:       '#09090b',
+  surface:  '#111113',
+  surfaceH: '#18181b',
+  card:     '#111113',
+  border:   'rgba(255,255,255,.07)',
+  borderH:  'rgba(255,255,255,.12)',
+  borderA:  'rgba(255,255,255,.15)',
 
-  t1: '#f1f5f9',
-  t2: '#94a3b8',
-  t3: '#475569',
-  t4: '#1e293b',
+  t1: '#fafafa',
+  t2: '#a1a1aa',
+  t3: '#52525b',
+  t4: '#3f3f46',
 
   emerald:    '#10b981',
   emeraldDim: 'rgba(16,185,129,.08)',
-  emeraldBdr: 'rgba(16,185,129,.18)',
+  emeraldBdr: 'rgba(16,185,129,.22)',
 
-  indigo:    '#6366f1',
-  indigoDim: 'rgba(99,102,241,.08)',
-  indigoBdr: 'rgba(99,102,241,.18)',
+  indigo:    '#3b82f6',
+  indigoDim: 'rgba(59,130,246,.09)',
+  indigoBdr: 'rgba(59,130,246,.25)',
 
   amber:    '#f59e0b',
-  amberDim: 'rgba(245,158,11,.07)',
-  amberBdr: 'rgba(245,158,11,.16)',
+  amberDim: 'rgba(245,158,11,.08)',
+  amberBdr: 'rgba(245,158,11,.22)',
 
   red:      '#ef4444',
-  redDim:   'rgba(239,68,68,.07)',
-  redBdr:   'rgba(239,68,68,.16)',
+  redDim:   'rgba(239,68,68,.08)',
+  redBdr:   'rgba(239,68,68,.22)',
 
-  sky:      '#38bdf8',
-  skyDim:   'rgba(56,189,248,.07)',
-  skyBdr:   'rgba(56,189,248,.16)',
+  sky:      '#a1a1aa',
+  skyDim:   'rgba(255,255,255,.04)',
+  skyBdr:   'rgba(255,255,255,.09)',
 
-  violet:   '#a78bfa',
-  violetDim:'rgba(167,139,250,.08)',
-  violetBdr:'rgba(167,139,250,.18)',
+  violet:   '#a1a1aa',
+  violetDim:'rgba(255,255,255,.04)',
+  violetBdr:'rgba(255,255,255,.09)',
 
+  shadow: '0 4px 16px rgba(0,0,0,.35)',
   mono: "'JetBrains Mono', monospace",
 };
 
@@ -286,11 +286,9 @@ function PerformanceOverview({ workouts, workoutStats }) {
         {/* Library size */}
         <div style={{
           padding: '18px 20px', borderRadius: 14,
-          background: `linear-gradient(135deg, ${T.surface}, ${T.card})`,
-          border: `1px solid ${T.border}`, position: 'relative', overflow: 'hidden',
+          background: T.card,
+          border: `1px solid ${T.border}`,
         }}>
-          <div style={{ position: 'absolute', top: 0, right: 0, width: 100, height: 100,
-            background: `radial-gradient(circle at top right, ${T.indigo}06, transparent 70%)` }} />
           <div style={{ fontSize: 10, color: T.t3, fontWeight: 600, letterSpacing: '.06em',
             textTransform: 'uppercase', marginBottom: 12 }}>Workout Library</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -336,8 +334,9 @@ function PerformanceOverview({ workouts, workoutStats }) {
         {/* Needs Attention */}
         <div style={{
           padding: '18px 20px', borderRadius: 14,
-          background: needsAttention > 0 ? T.amberDim : T.surface,
-          border: `1px solid ${needsAttention > 0 ? T.amberBdr : T.border}`,
+          background: T.card,
+          border: `1px solid ${T.border}`,
+          borderLeft: needsAttention > 0 ? `3px solid ${T.amber}` : `1px solid ${T.border}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: needsAttention > 0 ? T.amber : T.t3 }} />
@@ -384,6 +383,122 @@ function PerformanceOverview({ workouts, workoutStats }) {
   );
 }
 
+// ─── CONTENT INSIGHTS STRIP ──────────────────────────────────────────────────
+function ContentInsights({ workouts, workoutStats, posts, polls, upcomingEvents, engagementScore, allMemberships, checkIns, openModal, now }) {
+  const actions = useMemo(() => {
+    const result = [];
+    const nowMs = +new Date(now);
+
+    // Unassigned workouts
+    const unassigned = workouts.filter(wo => (workoutStats[wo.id]?.assignedCount || 0) === 0);
+    if (unassigned.length > 0) {
+      const wo = unassigned[0];
+      const newMember = allMemberships.find(m => {
+        const joined = m.joined_date || m.start_date;
+        return joined && (nowMs - new Date(joined)) / 864e5 <= 30;
+      });
+      result.push({
+        severity: 'high',
+        color: T.indigo,
+        colorDim: T.indigoDim,
+        colorBrd: T.indigoBdr,
+        title: `"${wo.name}" isn't assigned to anyone`,
+        reason: `${unassigned.length} workout${unassigned.length > 1 ? 's' : ''} in your library have no clients. Assign them now to drive consistency.`,
+        context: `${unassigned.length} unassigned workout${unassigned.length > 1 ? 's' : ''}`,
+        cta: 'Assign Workout',
+        fn: () => newMember
+          ? openModal?.('assignWorkout', { id: newMember.user_id, full_name: newMember.user_name })
+          : openModal?.('assignWorkout'),
+      });
+    }
+
+    // Low completion workout
+    const lowCompletion = workouts.find(wo => {
+      const s = workoutStats[wo.id];
+      return s && s.assignedCount > 0 && s.completionRate < 40;
+    });
+    if (lowCompletion) {
+      const s = workoutStats[lowCompletion.id];
+      result.push({
+        severity: 'med',
+        color: T.amber,
+        colorDim: T.amberDim,
+        colorBrd: T.amberBdr,
+        title: `"${lowCompletion.name}" has ${s.completionRate}% completion`,
+        reason: `Less than 40% of assigned clients are completing this workout. A follow-up message can unblock them.`,
+        context: `${s.assignedCount} client${s.assignedCount > 1 ? 's' : ''} assigned`,
+        cta: 'Follow Up',
+        fn: () => openModal?.('post'),
+      });
+    }
+
+    // Content engagement low
+    if (posts.length > 0 && engagementScore < 5) {
+      result.push({
+        severity: 'med',
+        color: T.sky,
+        colorDim: T.skyDim,
+        colorBrd: T.skyBdr,
+        title: 'Low content engagement this week',
+        reason: `Posts and polls are getting minimal interaction. A targeted shoutout or challenge prompt can boost visibility.`,
+        context: `${engagementScore} total interactions`,
+        cta: 'Post Update',
+        fn: () => openModal?.('post'),
+      });
+    }
+
+    // No upcoming events
+    if (upcomingEvents.length === 0 && allMemberships.length > 0) {
+      result.push({
+        severity: 'low',
+        color: T.emerald,
+        colorDim: T.emeraldDim,
+        colorBrd: T.emeraldBdr,
+        title: 'No upcoming events scheduled',
+        reason: `Events keep members engaged and give them something to look forward to. Even a weekly check-in counts.`,
+        context: 'No events on calendar',
+        cta: 'Create Event',
+        fn: () => openModal?.('createEvent'),
+      });
+    }
+
+    return result.slice(0, 3);
+  }, [workouts, workoutStats, posts, polls, upcomingEvents, engagementScore, allMemberships, openModal, now]);
+
+  if (actions.length === 0) return null;
+
+  const urgentCount = actions.filter(a => a.severity === 'high').length;
+
+  return (
+    <div className="wps-fade" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+        <Zap style={{ width: 13, height: 13, color: T.amber }} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em' }}>
+          Next Best Actions
+        </span>
+        {urgentCount > 0 && (
+          <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: T.indigo, borderRadius: 99, padding: '1px 7px' }}>
+            {urgentCount} ACTION{urgentCount > 1 ? 'S' : ''}
+          </span>
+        )}
+      </div>
+      {actions.map((a, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`, borderLeft: `3px solid ${a.color}`, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: a.color, borderRadius: '12px 0 0 12px' }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.t1, marginBottom: 2 }}>{a.title}</div>
+            <div style={{ fontSize: 11, color: T.t2, lineHeight: 1.5 }}>{a.reason}</div>
+            <div style={{ fontSize: 10, color: T.t3, marginTop: 3 }}>{a.context}</div>
+          </div>
+          <button onClick={a.fn} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 8, background: 'rgba(255,255,255,.06)', color: a.color, fontSize: 11, fontWeight: 700, border: `1px solid rgba(255,255,255,.09)`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+            {a.cta}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── NEEDS ATTENTION SECTION ──────────────────────────────────────────────────
 function NeedsAttention({ workouts, workoutStats, onAssign, onEdit, openModal }) {
   const alerts = useMemo(() => {
@@ -410,12 +525,12 @@ function NeedsAttention({ workouts, workoutStats, onAssign, onEdit, openModal })
     <div className="wps-fade" style={{ marginBottom: 20, animationDelay: '.05s' }}>
       <div style={{
         borderRadius: 14, overflow: 'hidden',
-        border: `1px solid ${T.amberBdr}`,
-        background: `linear-gradient(135deg, ${T.amberDim}, ${T.surface})`,
+        border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.amber}`,
+        background: T.card,
       }}>
         <div style={{
           padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${T.amberBdr}`,
+          borderBottom: `1px solid ${T.border}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="wps-glow" style={{ width: 8, height: 8, borderRadius: '50%', background: T.amber }} />
@@ -452,7 +567,7 @@ function NeedsAttention({ workouts, workoutStats, onAssign, onEdit, openModal })
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '7px 14px', borderRadius: 8,
-                    background: `${alert.color}12`, border: `1px solid ${alert.color}22`,
+                    background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                     color: alert.color, fontSize: 11, fontWeight: 700, flexShrink: 0,
                   }}>
                   {alert.actionLabel}
@@ -475,11 +590,11 @@ function WorkoutCard({ workout, stats, isSelected, onSelect, onEdit, onDelete, o
     <div className="wps-card" onClick={() => onSelect(workout)}
       style={{
         borderRadius: 14, overflow: 'hidden',
-        background: isSelected ? `${tc.color}04` : T.surface,
-        border: `1px solid ${isSelected ? `${tc.color}30` : T.border}`,
+        background: T.card,
+        border: `1px solid ${isSelected ? T.borderH : T.border}`,
       }}>
       {/* Color strip */}
-      <div style={{ height: 3, background: `linear-gradient(90deg, ${tc.color}, ${tc.color}44)` }} />
+      <div style={{ height: 3, background: tc.color, opacity: .7 }} />
 
       <div style={{ padding: '16px 18px' }}>
         {/* Header */}
@@ -514,7 +629,7 @@ function WorkoutCard({ workout, stats, isSelected, onSelect, onEdit, onDelete, o
           background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
         }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: T.mono, fontSize: 16, fontWeight: 700, color: T.sky, lineHeight: 1 }}>{stats.assignedCount}</div>
+            <div style={{ fontFamily: T.mono, fontSize: 16, fontWeight: 700, color: T.t2, lineHeight: 1 }}>{stats.assignedCount}</div>
             <div style={{ fontSize: 8, color: T.t3, textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 3 }}>Clients</div>
           </div>
           <div style={{ textAlign: 'center', borderLeft: `1px solid ${T.border}`, borderRight: `1px solid ${T.border}` }}>
@@ -525,7 +640,7 @@ function WorkoutCard({ workout, stats, isSelected, onSelect, onEdit, onDelete, o
             <div style={{ fontSize: 8, color: T.t3, textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 3 }}>Done</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: T.mono, fontSize: 16, fontWeight: 700, color: T.violet, lineHeight: 1 }}>
+            <div style={{ fontFamily: T.mono, fontSize: 16, fontWeight: 700, color: T.t2, lineHeight: 1 }}>
               {stats.daysSinceUpdate === null ? '—' : stats.daysSinceUpdate === 0 ? 'Now' : `${stats.daysSinceUpdate}d`}
             </div>
             <div style={{ fontSize: 8, color: T.t3, textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 3 }}>Updated</div>
@@ -561,11 +676,11 @@ function WorkoutCard({ workout, stats, isSelected, onSelect, onEdit, onDelete, o
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '9px', borderRadius: 10,
-            background: `${tc.color}0a`, border: `1px solid ${tc.color}1a`,
+            background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
             color: tc.color, fontSize: 12, fontWeight: 700,
           }}
-          onMouseEnter={e => e.currentTarget.style.background = `${tc.color}18`}
-          onMouseLeave={e => e.currentTarget.style.background = `${tc.color}0a`}>
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.07)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,.04)'}>
           <Play style={{ width: 12, height: 12 }} /> Assign
         </button>
       </div>
@@ -603,12 +718,12 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
   return (
     <div className="wps-slide" style={{
       borderRadius: 14, overflow: 'hidden',
-      background: T.surface, border: `1px solid ${tc.color}25`,
+      background: T.card, border: `1px solid ${T.border}`,
     }}>
       {/* Header */}
       <div style={{
         padding: '16px 20px 14px',
-        background: `${tc.color}04`, borderBottom: `1px solid ${tc.color}15`,
+        background: T.card, borderBottom: `1px solid ${T.border}`,
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -630,16 +745,15 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
             <button className="wps-btn" onClick={() => onEdit(workout)} style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 9,
-              background: `${tc.color}0a`, border: `1px solid ${tc.color}20`,
-              color: tc.color, fontSize: 12, fontWeight: 700,
+              background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
+              color: T.t2, fontSize: 12, fontWeight: 700,
             }}>
               <Edit2 style={{ width: 12, height: 12 }} /> Edit
             </button>
             <button className="wps-btn" onClick={() => onAssign(workout)} style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 9,
-              background: tc.color, border: 'none',
+              background: T.indigo, border: 'none',
               color: '#fff', fontSize: 12, fontWeight: 700,
-              boxShadow: `0 2px 12px ${tc.color}30`,
             }}>
               <UserPlus style={{ width: 12, height: 12 }} /> Assign
             </button>
@@ -656,10 +770,10 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
         {/* Quick stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
           {[
-            { label: 'Clients', value: stats.assignedCount, color: T.sky },
+            { label: 'Clients', value: stats.assignedCount, color: T.t2 },
             { label: 'Completion', value: stats.assignedCount === 0 ? '—' : `${stats.completionRate}%`, color: stats.assignedCount > 0 ? completionColor(stats.completionRate) : T.t3 },
             { label: 'Last activity', value: stats.daysSinceActivity >= 999 ? 'Never' : `${stats.daysSinceActivity}d ago`, color: stats.daysSinceActivity > 14 ? T.red : T.emerald },
-            { label: 'Updated', value: stats.daysSinceUpdate === null ? '—' : stats.daysSinceUpdate === 0 ? 'Today' : `${stats.daysSinceUpdate}d ago`, color: T.violet },
+            { label: 'Updated', value: stats.daysSinceUpdate === null ? '—' : stats.daysSinceUpdate === 0 ? 'Today' : `${stats.daysSinceUpdate}d ago`, color: T.t2 },
           ].map((s, i) => (
             <div key={i} style={{
               padding: '10px 12px', borderRadius: 10, textAlign: 'center',
@@ -704,8 +818,8 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
               <Users style={{ width: 22, height: 22, color: T.t3, margin: '0 auto 10px' }} />
               <p style={{ fontSize: 13, color: T.t2, fontWeight: 600, margin: '0 0 12px' }}>No clients assigned yet</p>
               <button className="wps-btn" onClick={() => onAssign(workout)} style={{
-                fontSize: 12, fontWeight: 700, color: tc.color,
-                background: `${tc.color}0d`, border: `1px solid ${tc.color}20`,
+                fontSize: 12, fontWeight: 700, color: T.indigo,
+                background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                 borderRadius: 9, padding: '9px 18px',
               }}>Assign to clients</button>
             </div>
@@ -722,9 +836,9 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
                   onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,.02)'}>
                   <div style={{
                     width: 34, height: 34, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
-                    background: `${m.engColor}0d`, border: `1px solid ${m.engColor}20`,
+                    background: 'rgba(255,255,255,.05)', border: `1px solid ${T.border}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 700, color: m.engColor,
+                    fontSize: 13, fontWeight: 700, color: T.t2,
                   }}>
                     {avatarMap?.[m.user_id]
                       ? <img src={avatarMap[m.user_id]} alt={m.user_name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.currentTarget.style.display = 'none'} />
@@ -740,7 +854,7 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
                     </div>
                   </div>
                   {m.engStatus !== 'active' && (
-                    <button className="wps-btn" onClick={() => openModal('post', { memberId: m.user_id })} style={{
+                    <button className="wps-btn" onClick={() => openModal('post', { id: m.user_id, full_name: m.user_name })} style={{
                       fontSize: 10, fontWeight: 700, color: T.sky,
                       background: T.skyDim, border: `1px solid ${T.skyBdr}`,
                       borderRadius: 7, padding: '5px 10px', flexShrink: 0,
@@ -761,7 +875,7 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
             ].map((sec, si) => (
               <div key={si} style={{
                 borderRadius: 12, padding: '14px',
-                background: `${sec.accent}04`, border: `1px solid ${sec.accent}12`,
+                background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: sec.accent, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>
                   {sec.emoji} {sec.title}
@@ -808,9 +922,9 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
                     }}>
                       <div style={{
                         width: 34, height: 34, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
-                        background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`,
+                        background: 'rgba(255,255,255,.05)', border: `1px solid ${T.border}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 13, fontWeight: 700, color: T.emerald,
+                        fontSize: 13, fontWeight: 700, color: T.t2,
                       }}>
                         {avatarMap?.[m.user_id]
                           ? <img src={avatarMap[m.user_id]} alt={m.user_name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.currentTarget.style.display = 'none'} />
@@ -821,8 +935,8 @@ function WorkoutDetailPanel({ workout, stats, allMemberships, checkIns, now, ava
                         <div style={{ fontSize: 10, color: T.t3 }}>{r30} visits this month</div>
                       </div>
                       <button className="wps-btn" onClick={() => onAssign(workout)} style={{
-                        fontSize: 10, fontWeight: 700, color: tc.color,
-                        background: `${tc.color}0d`, border: `1px solid ${tc.color}20`,
+                        fontSize: 10, fontWeight: 700, color: T.indigo,
+                        background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                         borderRadius: 7, padding: '5px 10px', flexShrink: 0,
                       }}>Assign</button>
                     </div>
@@ -906,7 +1020,7 @@ function InsightsPanel({ workouts, workoutStats, onSortBy }) {
               <div style={{
                 width: 24, height: 24, borderRadius: 7, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: `${ins.color}0d`, border: `1px solid ${ins.color}1a`,
+                background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
               }}>
                 <Ic style={{ width: 11, height: 11, color: ins.color }} />
               </div>
@@ -1003,12 +1117,12 @@ function SectionBlock({ title, accent, exercises, onChange, icon: Icon }) {
   return (
     <div style={{
       borderRadius: 12, padding: '14px', marginBottom: 10,
-      background: `${accent}04`, border: `1px solid ${accent}12`,
+      background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
         <div style={{
           width: 26, height: 26, borderRadius: 8,
-          background: `${accent}12`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Icon style={{ width: 12, height: 12, color: accent }} />
         </div>
@@ -1021,7 +1135,7 @@ function SectionBlock({ title, accent, exercises, onChange, icon: Icon }) {
       <button className="wps-btn" onClick={addEx} style={{
         display: 'flex', alignItems: 'center', gap: 5,
         fontSize: 11, fontWeight: 700, color: accent,
-        background: `${accent}08`, border: `1px solid ${accent}18`,
+        background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
         borderRadius: 8, padding: '6px 12px', marginTop: 4,
       }}>
         <Plus style={{ width: 10, height: 10 }} /> Add exercise
@@ -1042,11 +1156,11 @@ function WorkoutEditor({ workout, onSave, onCancel }) {
   return (
     <div style={{
       borderRadius: 14, overflow: 'hidden',
-      background: T.surface, border: `1px solid ${tc.color}25`,
+      background: T.card, border: `1px solid ${T.border}`,
     }}>
       <div style={{
         padding: '16px 20px 14px',
-        background: `${tc.color}04`, borderBottom: `1px solid ${tc.color}15`,
+        background: T.card, borderBottom: `1px solid ${T.border}`,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1084,9 +1198,9 @@ function WorkoutEditor({ workout, onSave, onCancel }) {
             <button key={key} className="wps-btn" onClick={() => setDraft(p => ({ ...p, type: key }))}
               style={{
                 padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                background: draft.type === key ? t.bg : 'transparent',
-                border: `1px solid ${draft.type === key ? t.border : T.border}`,
-                color: draft.type === key ? t.color : T.t3,
+                background: draft.type === key ? 'rgba(255,255,255,.07)' : 'transparent',
+                border: `1px solid ${draft.type === key ? T.borderH : T.border}`,
+                color: draft.type === key ? T.t1 : T.t3,
               }}>
               {t.emoji} {t.label}
             </button>
@@ -1119,11 +1233,10 @@ function WorkoutEditor({ workout, onSave, onCancel }) {
           <button className="wps-btn" onClick={() => onSave(draft)} disabled={!draft.name.trim()}
             style={{
               flex: 2, padding: '10px', borderRadius: 10,
-              background: draft.name.trim() ? tc.color : 'rgba(255,255,255,.03)',
+              background: draft.name.trim() ? T.indigo : 'rgba(255,255,255,.03)',
               border: 'none',
               color: draft.name.trim() ? '#fff' : T.t3,
               fontSize: 12, fontWeight: 700,
-              boxShadow: draft.name.trim() ? `0 2px 12px ${tc.color}30` : 'none',
               cursor: draft.name.trim() ? 'pointer' : 'not-allowed',
             }}>
             {workout ? '✓ Save Changes' : '✓ Add to Library'}
@@ -1187,9 +1300,9 @@ function AssignModal({ workout, allMemberships, myClasses, avatarMap, onClose, o
               <button key={t.id} className="wps-btn" onClick={() => setTab(t.id)} style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                 padding: '8px', borderRadius: 10,
-                border: `1px solid ${tab === t.id ? `${t.color}30` : T.border}`,
-                background: tab === t.id ? `${t.color}0d` : 'transparent',
-                color: tab === t.id ? t.color : T.t3,
+                border: `1px solid ${tab === t.id ? T.borderH : T.border}`,
+                background: tab === t.id ? 'rgba(255,255,255,.07)' : 'transparent',
+                color: tab === t.id ? T.t1 : T.t3,
                 fontSize: 11, fontWeight: tab === t.id ? 700 : 500,
               }}>
                 <t.icon style={{ width: 11, height: 11 }} /> {t.label}
@@ -1215,14 +1328,14 @@ function AssignModal({ workout, allMemberships, myClasses, avatarMap, onClose, o
                   <div key={id || i} onClick={() => toggle(id)} style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 12px', borderRadius: 11, marginBottom: 6,
-                    background: isChosen ? `${T.violet}08` : 'rgba(255,255,255,.02)',
-                    border: `1px solid ${isChosen ? T.violetBdr : T.border}`,
+                    background: isChosen ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.02)',
+                    border: `1px solid ${isChosen ? T.borderH : T.border}`,
                     cursor: 'pointer', transition: 'all .12s',
                   }}>
                     <div style={{
                       width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                      border: `1.5px solid ${isChosen ? T.violet : 'rgba(255,255,255,.15)'}`,
-                      background: isChosen ? T.violet : 'transparent',
+                      border: `1.5px solid ${isChosen ? T.indigo : 'rgba(255,255,255,.15)'}`,
+                      background: isChosen ? T.indigo : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {isChosen && <Check style={{ width: 10, height: 10, color: '#fff' }} />}
@@ -1231,7 +1344,7 @@ function AssignModal({ workout, allMemberships, myClasses, avatarMap, onClose, o
                     {tab === 'class' && (
                       <div style={{
                         width: 28, height: 28, borderRadius: 8,
-                        background: T.violetDim, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,255,255,.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         <Dumbbell style={{ width: 12, height: 12, color: T.violet }} />
                       </div>
@@ -1257,7 +1370,6 @@ function AssignModal({ workout, allMemberships, myClasses, avatarMap, onClose, o
                   padding: '10px 22px', borderRadius: 10,
                   background: T.amber, border: 'none',
                   color: '#000', fontSize: 12, fontWeight: 700,
-                  boxShadow: `0 2px 12px ${T.amber}30`,
                 }}>
                 Create Challenge
               </button>
@@ -1268,9 +1380,8 @@ function AssignModal({ workout, allMemberships, myClasses, avatarMap, onClose, o
             <button className="wps-btn" onClick={() => { openModal('assignWorkout', { workoutId: workout.id, workoutName: workout.name, assignTo: tab, ids: assigned }); onClose(); }}
               style={{
                 width: '100%', marginTop: 14, padding: '12px', borderRadius: 12,
-                background: tc.color, border: 'none',
+                background: T.indigo, border: 'none',
                 color: '#fff', fontSize: 13, fontWeight: 700,
-                boxShadow: `0 2px 12px ${tc.color}30`,
               }}>
               Assign to {assigned.length} {tab === 'class' ? (assigned.length === 1 ? 'Class' : 'Classes') : (assigned.length === 1 ? 'Member' : 'Members')}
             </button>
@@ -1292,7 +1403,7 @@ function EmptyState({ onCreateNew }) {
   return (
     <div className="wps-fade" style={{
       padding: '48px 32px', textAlign: 'center', borderRadius: 16,
-      background: `linear-gradient(180deg, ${T.surface}, ${T.bg})`,
+      background: T.card,
       border: `1px solid ${T.border}`,
     }}>
       <div style={{
@@ -1320,11 +1431,11 @@ function EmptyState({ onCreateNew }) {
               animationDelay: `${i * .08}s`, cursor: 'pointer',
               transition: 'border-color .15s, background .15s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = `${tc.color}30`; e.currentTarget.style.background = `${tc.color}06`; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = T.borderH; e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, margin: '0 auto 12px',
-                background: tc.bg, border: `1px solid ${tc.border}`,
+                background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
               }}>{t.emoji}</div>
               <div style={{ fontSize: 12, fontWeight: 700, color: T.t1, marginBottom: 4 }}>{t.name}</div>
@@ -1339,7 +1450,6 @@ function EmptyState({ onCreateNew }) {
         padding: '12px 24px', borderRadius: 12,
         background: T.indigo, color: '#fff',
         fontSize: 13, fontWeight: 700,
-        boxShadow: '0 2px 16px rgba(99,102,241,.25)',
       }}>
         <Plus style={{ width: 14, height: 14 }} /> Create Your First Workout
       </button>
@@ -1471,7 +1581,6 @@ export default function TabCoachContent({
         <button className="wps-btn" onClick={handleNew} style={{
           display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 10,
           background: T.indigo, color: '#fff', fontSize: 13, fontWeight: 700,
-          boxShadow: '0 2px 12px rgba(99,102,241,.25)',
         }}>
           <Plus style={{ width: 14, height: 14 }} /> New Workout
         </button>
@@ -1491,6 +1600,15 @@ export default function TabCoachContent({
 
           {!editorOpen && (
             <>
+              {/* Content Insights */}
+              <ContentInsights
+                workouts={workouts} workoutStats={workoutStats}
+                posts={posts} polls={polls}
+                upcomingEvents={upcomingEvents} engagementScore={engagementScore}
+                allMemberships={allMemberships} checkIns={checkIns}
+                openModal={openModal} now={now}
+              />
+
               {/* Performance Overview */}
               <PerformanceOverview workouts={workouts} workoutStats={workoutStats} />
 
@@ -1524,8 +1642,8 @@ export default function TabCoachContent({
                   <button className="wps-btn" onClick={() => setShowSort(o => !o)} style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px',
                     borderRadius: 10, background: 'rgba(255,255,255,.03)',
-                    border: `1px solid ${showSort ? T.indigoBdr : T.border}`,
-                    color: showSort ? T.indigo : T.t2, fontSize: 12, fontWeight: 600,
+                    border: `1px solid ${T.border}`,
+                    color: T.t2, fontSize: 12, fontWeight: 600,
                   }}>
                     <ArrowUpDown style={{ width: 12, height: 12 }} /> {currentSort?.label || 'Sort'}
                   </button>
@@ -1541,8 +1659,8 @@ export default function TabCoachContent({
                           style={{
                             width: '100%', padding: '10px 14px', fontSize: 12,
                             fontWeight: sortBy === opt.id ? 700 : 500,
-                            color: sortBy === opt.id ? T.indigo : T.t1,
-                            background: sortBy === opt.id ? T.indigoDim : 'transparent',
+                            color: sortBy === opt.id ? T.t1 : T.t2,
+                            background: sortBy === opt.id ? 'rgba(255,255,255,.06)' : 'transparent',
                             textAlign: 'left', display: 'flex', alignItems: 'center', gap: 7,
                           }}
                           onMouseEnter={e => { if (sortBy !== opt.id) e.currentTarget.style.background = 'rgba(255,255,255,.03)'; }}
@@ -1588,7 +1706,7 @@ export default function TabCoachContent({
                       </p>
                       <button className="wps-btn" onClick={handleNew} style={{
                         fontSize: 12, fontWeight: 700, color: T.indigo,
-                        background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
+                        background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                         borderRadius: 9, padding: '8px 16px',
                       }}>Create a workout</button>
                     </div>
@@ -1651,11 +1769,11 @@ export default function TabCoachContent({
                           background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`,
                           textAlign: 'left', transition: 'all .12s',
                         }}
-                          onMouseEnter={e => { e.currentTarget.style.background = `${color}06`; e.currentTarget.style.borderColor = `${color}20`; }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.borderColor = T.borderH; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.02)'; e.currentTarget.style.borderColor = T.border; }}>
                           <div style={{
                             width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                            background: `${color}0d`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'rgba(255,255,255,.04)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}>
                             <Ic style={{ width: 12, height: 12, color }} />
                           </div>
@@ -1703,7 +1821,7 @@ export default function TabCoachContent({
                         <span style={{ fontSize: 11, fontWeight: 700, color: T.t1 }}>Upcoming Events</span>
                         <button className="wps-btn" onClick={() => openModal('event')} style={{
                           fontSize: 9, fontWeight: 700, color: T.emerald,
-                          background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`,
+                          background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`,
                           borderRadius: 6, padding: '3px 8px',
                         }}>+ New</button>
                       </div>
@@ -1721,7 +1839,7 @@ export default function TabCoachContent({
                             onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                             <div style={{
                               flexShrink: 0, borderRadius: 8, padding: '4px 8px', textAlign: 'center',
-                              background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, minWidth: 32,
+                              background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`, minWidth: 32,
                             }}>
                               <div style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: T.emerald, lineHeight: 1 }}>{format(d, 'd')}</div>
                               <div style={{ fontSize: 8, color: T.t3, textTransform: 'uppercase' }}>{format(d, 'MMM')}</div>
