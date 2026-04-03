@@ -20,93 +20,150 @@ function canvasToBlob(canvas) {
   );
 }
 
-// ─── Stats Card Canvas ────────────────────────────────────────────────────────
-async function drawStatsCard(post, gymName) {
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
+
+// ─── Stats Card Canvas (redesigned) ──────────────────────────────────────────
+async function drawStatsCard(post, gymName, streakNum = 0) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const exercises = post.workout_exercises || [];
+  const PAD = 80;
 
+  // ── Background photo + gradient ──
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
       const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
       ctx.drawImage(img, (W - img.naturalWidth * s) / 2, (H - img.naturalHeight * s) / 2, img.naturalWidth * s, img.naturalHeight * s);
     }
+    // Stronger bottom fade for luxury feel, very light top tint for logo
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, 'rgba(0,0,0,0.35)');
-    g.addColorStop(0.25, 'rgba(0,0,0,0.10)');
-    g.addColorStop(0.55, 'rgba(0,0,0,0.55)');
-    g.addColorStop(1, 'rgba(0,0,0,0.97)');
+    g.addColorStop(0, 'rgba(0,0,0,0.55)');
+    g.addColorStop(0.18, 'rgba(0,0,0,0.08)');
+    g.addColorStop(0.52, 'rgba(0,0,0,0.08)');
+    g.addColorStop(0.72, 'rgba(0,0,0,0.72)');
+    g.addColorStop(1, 'rgba(0,0,0,0.98)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   } else {
     const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, '#0d1117'); g.addColorStop(0.45, '#111827'); g.addColorStop(1, '#0f172a');
+    g.addColorStop(0, '#0a0d16'); g.addColorStop(0.5, '#111827'); g.addColorStop(1, '#0d1320');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  const PAD = 72;
-
-  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
-  ctx.font = '600 36px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.72)';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 10;
-  ctx.fillText(topLine, W / 2, 110);
-  ctx.shadowBlur = 0;
-
-  const brandingY = H - 90;
-  const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
-  const pillY = brandingY - pillH - 60;
-  const titleY = pillY - 40;
-
-  ctx.font = '900 74px -apple-system,sans-serif';
-  ctx.fillStyle = 'white';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
-  ctx.textAlign = 'center';
-  ctx.fillText(post.workout_name || 'Workout', W / 2, titleY, W - PAD * 2);
-  ctx.shadowBlur = 0;
-
-  const stats = [
-    { l: 'EXERCISES', v: String(exercises.length || '—') },
-    { l: 'DURATION', v: post.workout_duration || '—' },
-    { l: 'VOLUME', v: post.workout_volume || '—' },
-  ];
-  stats.forEach((s, i) => {
-    const px = PAD + i * (pillW + pillG);
-    ctx.save(); ctx.beginPath(); ctx.roundRect(px, pillY, pillW, pillH, 24);
-    ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.20)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
-    ctx.font = '900 48px -apple-system,sans-serif';
-    ctx.fillStyle = 'white'; ctx.textAlign = 'center';
-    ctx.fillText(s.v, px + pillW / 2, pillY + 58, pillW - 20);
-    ctx.font = '700 24px -apple-system,sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.50)';
-    ctx.fillText(s.l, px + pillW / 2, pillY + 92);
-  });
-
+  // ── TOP: CoStride logo + wordmark centred ──
   const logo = await loadImage(LOGO_URL);
-  const logoSize = 60;
+  const logoSize = 72;
   const wordmark = 'CoStride';
-  ctx.font = '800 48px -apple-system,sans-serif';
-  const wm = ctx.measureText(wordmark);
-  const totalW = logoSize + 14 + wm.width;
-  const logoX = (W - totalW) / 2;
-  const bottomY = H - 90;
+  ctx.font = '800 58px -apple-system,sans-serif';
+  const wmW = ctx.measureText(wordmark).width;
+  const brandTotalW = logoSize + 18 + wmW;
+  const brandX = (W - brandTotalW) / 2;
+  const brandY = 148;
 
   if (logo) {
     ctx.save(); ctx.beginPath();
-    ctx.roundRect(logoX, bottomY - logoSize + 10, logoSize, logoSize, 14);
-    ctx.clip(); ctx.drawImage(logo, logoX, bottomY - logoSize + 10, logoSize, logoSize); ctx.restore();
+    ctx.roundRect(brandX, brandY - logoSize + 14, logoSize, logoSize, 16);
+    ctx.clip(); ctx.drawImage(logo, brandX, brandY - logoSize + 14, logoSize, logoSize); ctx.restore();
   }
-  ctx.font = '800 48px -apple-system,sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.90)';
+  ctx.font = '800 58px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
   ctx.textAlign = 'left';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10;
-  ctx.fillText(wordmark, logoX + logoSize + 14, bottomY);
-  ctx.shadowBlur = 0; ctx.textAlign = 'left';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 16;
+  ctx.fillText(wordmark, brandX + logoSize + 18, brandY);
+  ctx.shadowBlur = 0;
+
+  // Thin separator line beneath branding
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(PAD, brandY + 24); ctx.lineTo(W - PAD, brandY + 24); ctx.stroke();
+
+  // ── BOTTOM BLOCK: title + streak + pills + location ──
+  const bottomBlockTop = H * 0.68;
+
+  // Workout title — serif, italic-style via transform
+  const titleText = post.workout_name || 'Workout';
+  ctx.save();
+  ctx.font = 'italic 900 88px Georgia,serif';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 24;
+  // Measure to check if we need to shrink
+  let titleFontSize = 88;
+  while (ctx.measureText(titleText).width > W - PAD * 2 - 220 && titleFontSize > 52) {
+    titleFontSize -= 4;
+    ctx.font = `italic 900 ${titleFontSize}px Georgia,serif`;
+  }
+  const titleY = bottomBlockTop + 80;
+  // Draw title left-aligned relative to centre block, leaving room for streak badge on right
+  const titleMaxW = W - PAD * 2 - 220;
+  const titleMeasured = ctx.measureText(titleText).width;
+  const titleStartX = (W - titleMaxW) / 2;
+  ctx.textAlign = 'left';
+  ctx.fillText(titleText, titleStartX, titleY, titleMaxW);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Streak badge — pose icon + number, right of title
+  if (streakNum > 0) {
+    const streakIcon = await loadImage(STREAK_ICON_URL);
+    const iconSz = 110;
+    const badgeX = titleStartX + Math.min(titleMeasured, titleMaxW) + 24;
+    const badgeY = titleY - iconSz + 18;
+    if (streakIcon) {
+      ctx.drawImage(streakIcon, badgeX, badgeY, iconSz, iconSz);
+    }
+    ctx.font = '900 52px -apple-system,sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'left';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10;
+    ctx.fillText(String(streakNum), badgeX + iconSz - 8, titleY + 2);
+    ctx.shadowBlur = 0;
+  }
+
+  // ── Glass pills: Exercises + Duration only, centred with large gap ──
+  const pillH = 128, pillW = 380, pillGap = 40;
+  const pillY = titleY + 52;
+  const pillsTotalW = pillW * 2 + pillGap;
+  const pillsStartX = (W - pillsTotalW) / 2;
+  const stats2 = [
+    { l: 'EXERCISES', v: String(exercises.length || '—') },
+    { l: 'DURATION', v: post.workout_duration || '—' },
+  ];
+  stats2.forEach((s, i) => {
+    const px = pillsStartX + i * (pillW + pillGap);
+    // Glass fill
+    ctx.save(); ctx.beginPath(); ctx.roundRect(px, pillY, pillW, pillH, 28);
+    // Lighter fill = more glass-like
+    ctx.fillStyle = 'rgba(255,255,255,0.11)'; ctx.fill();
+    // Border with slight top highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2; ctx.stroke();
+    // Inner top highlight shimmer
+    ctx.beginPath(); ctx.roundRect(px + 2, pillY + 2, pillW - 4, 40, [26, 26, 0, 0]);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
+    ctx.restore();
+    // Value
+    ctx.font = '800 62px -apple-system,sans-serif';
+    ctx.fillStyle = 'white'; ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8;
+    ctx.fillText(s.v, px + pillW / 2, pillY + 76, pillW - 30);
+    ctx.shadowBlur = 0;
+    // Label
+    ctx.font = '600 26px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.52)';
+    ctx.fillText(s.l, px + pillW / 2, pillY + 108);
+  });
+
+  // ── Bottom: location · date ──
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const footerLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
+  ctx.font = '500 32px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.42)';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '0.06em';
+  ctx.fillText(footerLine.toUpperCase(), W / 2, H - 80);
+  ctx.letterSpacing = '0';
 
   return canvas;
 }
@@ -322,37 +379,85 @@ async function drawCleanCard(post, gymName) {
   return canvas;
 }
 
-// ─── React Preview: Stats card ────────────────────────────────────────────────
-function StatsPreview({ post, gymName }) {
+// ─── React Preview: Stats card (redesigned luxury) ────────────────────────────
+function StatsPreview({ post, gymName, streakNum = 0 }) {
   const exercises = post.workout_exercises || [];
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
+  const footerLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
 
   return (
-    <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0a0f', fontFamily: "'SF Pro Display',-apple-system,sans-serif", display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden', borderRadius: 16, background: '#0a0d16', fontFamily: "'SF Pro Display',-apple-system,sans-serif" }}>
+
+      {/* Background */}
       {post.image_url ? (<>
-        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.52) 55%,rgba(0,0,0,0.96) 100%)' }} />
+        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.52) 0%,rgba(0,0,0,0.06) 18%,rgba(0,0,0,0.06) 52%,rgba(0,0,0,0.72) 72%,rgba(0,0,0,0.98) 100%)' }} />
       </>) : (
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a0d16 0%,#111827 50%,#0d1320 100%)' }} />
       )}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 10px 0', textAlign: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.7)', letterSpacing: '0.02em' }}>{topLine}</span>
+
+      {/* TOP: CoStride logo + wordmark centred */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '11px 10px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <img src={LOGO_URL} alt="" style={{ width: 17, height: 17, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+          <span style={{ color: 'rgba(255,255,255,0.96)', fontSize: 13, fontWeight: 800, textShadow: '0 1px 8px rgba(0,0,0,0.9)', letterSpacing: '-0.02em' }}>CoStride</span>
+        </div>
+        {/* Thin separator */}
+        <div style={{ width: '60%', height: 0.5, background: 'rgba(255,255,255,0.18)' }} />
       </div>
-      <div style={{ position: 'absolute', bottom: '13%', left: 0, right: 0, padding: '0 10px' }}>
-        <div style={{ color: 'white', fontSize: 15, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, textShadow: '0 2px 8px rgba(0,0,0,0.55)', textAlign: 'center' }}>{post.workout_name || 'Workout'}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
-          {[{ label: 'Exercises', value: exercises.length || '—' }, { label: 'Duration', value: post.workout_duration || '—' }, { label: 'Volume', value: post.workout_volume || '—' }].map(({ label, value }) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, padding: '6px 3px', textAlign: 'center' }}>
-              <div style={{ color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 }}>{value}</div>
-              <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+
+      {/* BOTTOM BLOCK */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 8px' }}>
+
+        {/* Workout title (serif italic) + streak badge */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 7 }}>
+          <div style={{
+            color: 'white',
+            fontSize: 18,
+            fontWeight: 900,
+            fontFamily: 'Georgia,serif',
+            fontStyle: 'italic',
+            letterSpacing: '-0.01em',
+            lineHeight: 1.1,
+            textShadow: '0 2px 12px rgba(0,0,0,0.7)',
+            textAlign: 'center',
+          }}>
+            {post.workout_name || 'Workout'}
+          </div>
+          {streakNum > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginBottom: 1 }}>
+              <img src={STREAK_ICON_URL} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+              <span style={{ color: 'white', fontSize: 13, fontWeight: 900, marginLeft: -4, textShadow: '0 1px 6px rgba(0,0,0,0.9)', lineHeight: 1 }}>{streakNum}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Glass pills — Exercises + Duration only */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 7 }}>
+          {[
+            { label: 'Exercises', value: exercises.length || '—' },
+            { label: 'Duration', value: post.workout_duration || '—' },
+          ].map(({ label, value }) => (
+            <div key={label} style={{
+              background: 'rgba(255,255,255,0.11)',
+              border: '1px solid rgba(255,255,255,0.28)',
+              borderRadius: 10,
+              padding: '7px 4px 6px',
+              textAlign: 'center',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14)',
+            }}>
+              <div style={{ color: 'white', fontSize: 14, fontWeight: 800, lineHeight: 1, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{value}</div>
+              <div style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', marginTop: 3 }}>{label}</div>
             </div>
           ))}
         </div>
-      </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-        <img src={LOGO_URL} alt="" style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover' }} />
-        <span style={{ color: 'rgba(255,255,255,0.88)', fontSize: 11, fontWeight: 800, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>CoStride</span>
+
+        {/* Footer: location · date */}
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.38)', fontSize: 7, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase' }}>
+          {footerLine}
+        </div>
       </div>
     </div>
   );
@@ -507,7 +612,7 @@ const APP_BUTTONS = [
 ];
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
-export default function WorkoutShareModal({ open, onClose, post, gymName }) {
+export default function WorkoutShareModal({ open, onClose, post, gymName, streakNum = 0, streakVariant = 'default' }) {
   const [activeCard, setActiveCard] = useState(0);
   const [loadingId, setLoadingId] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -519,12 +624,12 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
   useEffect(() => { if (open) setActiveCard(0); }, [open]);
 
   const cards = [
-    { label: 'Summary', drawFn: drawStatsCard, node: <StatsPreview post={post || {}} gymName={gymName} /> },
+    { label: 'Summary', drawFn: (p, g) => drawStatsCard(p, g, streakNum), node: <StatsPreview post={post || {}} gymName={gymName} streakNum={streakNum} /> },
     { label: 'Breakdown', drawFn: drawBreakdownCard, node: <BreakdownPreview post={post || {}} gymName={gymName} /> },
     { label: 'Clean', drawFn: drawCleanCard, node: <CleanPreview post={post || {}} gymName={gymName} /> },
   ];
 
-  const getCanvas = useCallback(() => cards[activeCard].drawFn(post, gymName), [activeCard, post, gymName]);
+  const getCanvas = useCallback(() => cards[activeCard].drawFn(post, gymName), [activeCard, post, gymName, streakNum]);
 
   const handleBtn = useCallback(async (btn) => {
     if (loadingId) return;
