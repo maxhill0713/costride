@@ -631,32 +631,8 @@ function TopNav({ active, setActive, date, atRiskCount }) {
     <header style={{ background:"rgba(8,14,24,0.96)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${T.border}`, position:"sticky", top:0, zIndex:100 }}>
      
 
-      {/* Nav tabs */}
-      <div style={{ display:"flex", alignItems:"center", padding:"0 32px", borderTop:`1px solid ${T.border}` }}>
-        {navItems.map(n => {
-          const on = active === n.id;
-          return (
-            <button key={n.id} onClick={() => setActive(n.id)} style={{
-              padding:      "9px 16px",
-              fontSize:     12,
-              fontWeight:   on ? 600 : 400,
-              color:        on ? T.t1 : T.t3,
-              background:   "transparent",
-              border:       "none",
-              borderBottom: `2px solid ${on ? T.accent : "transparent"}`,
-              cursor:       "pointer",
-              transition:   "all .15s",
-            }}
-              onMouseEnter={e => { if (!on) e.currentTarget.style.color = T.t2; }}
-              onMouseLeave={e => { if (!on) e.currentTarget.style.color = T.t3; }}
-            >
-              {n.label}
-            </button>
-          );
-        })}
-        <div style={{ flex:1 }}/>
-        <span style={{ fontSize:10, color:T.t4, fontFamily:T.mono }}>{date}</span>
-      </div>
+     
+
     </header>
   );
 }
