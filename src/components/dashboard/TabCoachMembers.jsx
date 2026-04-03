@@ -623,7 +623,7 @@ function HealthOverview({ clients }) {
 }
 
 // ─── PRIORITY CLIENTS ────────────────────────────────────────────────────────
-function PriorityClients({ clients, onSelect, openModal }) {
+function PriorityClients({ clients, onSelect }) {
   const priority = clients
     .filter(c => c.status === 'at_risk' || (c.status === 'paused' && c.lastVisit > 14))
     .sort((a, b) => a.retentionScore - b.retentionScore)
@@ -677,7 +677,7 @@ function PriorityClients({ clients, onSelect, openModal }) {
                   <Mono style={{ fontSize: 20, fontWeight: 700,
                     color: scoreColor(client.retentionScore) }}>{client.retentionScore}</Mono>
                 </div>
-                <button className="cis-btn" onClick={e => { e.stopPropagation(); openModal?.('post', { memberId: client.id }); }}
+                <button className="cis-btn" onClick={e => { e.stopPropagation(); }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '8px 16px', borderRadius: 8,
@@ -698,7 +698,7 @@ function PriorityClients({ clients, onSelect, openModal }) {
 }
 
 // ─── INSIGHTS PANEL ──────────────────────────────────────────────────────────
-function InsightsPanel({ clients, onFilterChange }) {
+function InsightsPanel({ clients }) {
   const atRiskCount = clients.filter(c => c.status === 'at_risk').length;
   const avgSessions = clients.length > 0
     ? (clients.reduce((s,c) => s + c.sessionsThisMonth, 0) / clients.length).toFixed(1) : 0;
@@ -709,7 +709,6 @@ function InsightsPanel({ clients, onFilterChange }) {
     atRiskCount > 0 && {
       icon: AlertTriangle, color: T.red,
       text: `${atRiskCount} client${atRiskCount > 1 ? 's' : ''} at risk of churning this week`,
-      filter: 'at_risk',
     },
     avgSessions > 0 && {
       icon: BarChart3, color: T.indigo,
@@ -735,12 +734,11 @@ function InsightsPanel({ clients, onFilterChange }) {
       <div style={{ padding: '6px 8px' }}>
         {insights.map((ins, i) => {
           const Ic = ins.icon;
-          const isClickable = !!ins.filter;
           return (
-            <div key={i} onClick={() => isClickable && onFilterChange?.(ins.filter)} style={{
+            <div key={i} style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 10px', borderRadius: 10,
-              transition: 'background .15s', cursor: isClickable ? 'pointer' : 'default',
+              transition: 'background .15s', cursor: 'default',
             }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.015)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -753,7 +751,6 @@ function InsightsPanel({ clients, onFilterChange }) {
                 <Ic style={{ width: 11, height: 11, color: ins.color }} />
               </div>
               <span style={{ fontSize: 12, color: T.t2, lineHeight: 1.55, flex: 1 }}>{ins.text}</span>
-              {isClickable && <ChevronRight style={{ width: 11, height: 11, color: T.t4, flexShrink: 0, marginTop: 3 }} />}
             </div>
           );
         })}
@@ -850,7 +847,7 @@ function TopPerformers({ clients, onSelect }) {
 // ─── DROP PANEL ──────────────────────────────────────────────────────────────
 const DROP_TABS = ['Overview','Performance','Notes','Injuries','Schedule','Actions'];
 
-function DropPanel({ client, onClose, openModal }) {
+function DropPanel({ client, onClose }) {
   const [tab,setTab] = useState('Overview');
   const [noteVal,setNoteVal] = useState(client.notes);
   const [noteSaved,setNoteSaved] = useState(false);
@@ -1229,7 +1226,7 @@ function DropPanel({ client, onClose, openModal }) {
                 </div>
               ))}
             </div>
-            <button className="cis-btn" onClick={() => openModal?.('bookIntoClass', { memberId: client.id })} style={{
+            <button className="cis-btn" style={{
               width: '100%', padding: '11px', borderRadius: 10,
               background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
               color: T.indigo, fontSize: 12, fontWeight: 600,
@@ -1245,11 +1242,11 @@ function DropPanel({ client, onClose, openModal }) {
           <div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
               {[
-                { icon: Phone,    label: 'Call',    color: T.emerald, fn: () => openModal?.('post', { memberId: client.id }) },
-                { icon: Calendar, label: 'Book',    color: T.indigo,  fn: () => openModal?.('bookAppointment', { id: client.id, full_name: client.name }) },
-                { icon: Dumbbell, label: 'Workout', color: T.amber,   fn: () => openModal?.('assignWorkout', { id: client.id, full_name: client.name }) },
-              ].map(({ icon: Ic, label, color, fn }, i) => (
-                <button key={i} className="cis-btn" onClick={fn} style={{
+                { icon: Phone,    label: 'Call',    color: T.emerald },
+                { icon: Calendar, label: 'Book',    color: T.indigo },
+                { icon: Dumbbell, label: 'Workout', color: T.amber },
+              ].map(({ icon: Ic, label, color }, i) => (
+                <button key={i} className="cis-btn" style={{
                   flex: '1 1 auto', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', gap: 7, padding: '11px 16px', borderRadius: 10,
                   background: `linear-gradient(135deg, ${color}08, transparent)`,
@@ -1308,7 +1305,7 @@ function DropPanel({ client, onClose, openModal }) {
 }
 
 // ─── CLIENT ROW ───────────────────────────────────────────────────────────────
-function ClientRow({ client, isOpen, onToggle, openModal }) {
+function ClientRow({ client, isOpen, onToggle }) {
   const isRisk   = client.status === 'at_risk';
   const isPaused = client.status === 'paused';
   const sc       = scoreColor(client.retentionScore);
@@ -1396,12 +1393,12 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
 
         <div className="cis-row-actions" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {[
-            { icon: MessageCircle, tip: 'Message', color: T.indigo,  fn: () => openModal?.('post', { memberId: client.id }) },
-            { icon: Calendar,      tip: 'Book',    color: T.emerald, fn: () => openModal?.('bookAppointment', { id: client.id, full_name: client.name }) },
-            { icon: Dumbbell,      tip: 'Workout', color: T.amber,   fn: () => openModal?.('assignWorkout', { id: client.id, full_name: client.name }) },
-          ].map(({ icon: Ic, tip, color, fn }, i) => (
+            { icon: MessageCircle, tip: 'Message', color: T.indigo },
+            { icon: Calendar,      tip: 'Book',    color: T.emerald },
+            { icon: Dumbbell,      tip: 'Workout', color: T.amber },
+          ].map(({ icon: Ic, tip, color }, i) => (
             <button key={i} className="cis-btn cis-tooltip" data-tip={tip}
-              onClick={e => { e.stopPropagation(); fn(); }}
+              onClick={e => e.stopPropagation()}
               style={{
                 width: 32, height: 32, borderRadius: 8, display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
@@ -1421,7 +1418,7 @@ function ClientRow({ client, isOpen, onToggle, openModal }) {
         }} />
       </div>
 
-      {isOpen && <DropPanel client={client} onClose={onToggle} openModal={openModal} />}
+      {isOpen && <DropPanel client={client} onClose={onToggle} />}
     </div>
   );
 }
@@ -1674,7 +1671,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
         ) : (
           <>
             <HealthOverview clients={allClients} />
-            <PriorityClients clients={allClients} onSelect={openClient} openModal={openModal} />
+            <PriorityClients clients={allClients} onSelect={openClient} />
 
             {/* Controls Row */}
             <div className="cis-controls c-fu c-d3" style={{
@@ -1787,7 +1784,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
                     {visible.map((c, i) => (
                       <div key={c.id} id={`cr-${c.id}`} className="c-fu" style={{ animationDelay: `${Math.min(i * .04, .3)}s` }}>
                         <ClientRow client={c} isOpen={openId === c.id}
-                          onToggle={() => setOpenId(p => p === c.id ? null : c.id)} openModal={openModal} />
+                          onToggle={() => setOpenId(p => p === c.id ? null : c.id)} />
                       </div>
                     ))}
                     <p style={{ textAlign: 'center', fontSize: 11, color: T.t3, margin: '12px 0 0', paddingBottom: 24 }}>
@@ -1800,7 +1797,7 @@ export default function TabCoachMembers({ openModal = () => {}, coach = null, bo
 
               {/* Sidebar */}
               <div className="cis-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 16 }}>
-                <InsightsPanel clients={allClients} onFilterChange={setFilter} />
+                <InsightsPanel clients={allClients} />
                 <RetentionBreakdown clients={visible.length > 0 ? visible : allClients} />
                 <TopPerformers clients={allClients} onSelect={openClient} />
               </div>

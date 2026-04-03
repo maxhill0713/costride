@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
  X, Upload, Tag, Link2, Calendar, Sparkles,
  CheckCircle, Pin, Image as ImageIcon, Megaphone,
@@ -185,17 +185,10 @@ function FieldLabel({ children, required }) {
 }
 
 // Main modal 
-export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess, targetMember }) {
+export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess }) {
  const [content, setContent] = useState('');
  const [imageUrl, setImageUrl] = useState('');
  const [postType, setPostType] = useState('update');
-
- useEffect(() => {
-   if (open && targetMember) {
-     const name = targetMember.user_name || targetMember.name || targetMember.full_name;
-     if (name) setContent(`@${name} `);
-   }
- }, [open, targetMember]);
  const [tags, setTags] = useState([]);
  const [newTag, setNewTag] = useState('');
  const [isPinned, setIsPinned] = useState(false);
@@ -294,12 +287,8 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess,
  <activeType.icon style={{ width: 17, height: 17, color: activeType.color, transition: 'color 0.2s' }} />
  </div>
  <div>
- <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>
-   {targetMember ? `Message ${targetMember.user_name || targetMember.name || 'Member'}` : 'New Post'}
- </div>
- <div style={{ fontSize: 11, color: T.text3, marginTop: 1, fontWeight: 500 }}>
-   {targetMember ? `via ${gym?.name}` : gym?.name}
- </div>
+ <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>New Post</div>
+ <div style={{ fontSize: 11, color: T.text3, marginTop: 1, fontWeight: 500 }}>{gym?.name}</div>
  </div>
  </div>
  <button onClick={handleClose}

@@ -274,9 +274,9 @@ export default function WorkoutDaysCelebration({
         backdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
         WebkitBackdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
         transition: `background ${BACKDROP_FADE}ms ease-in-out, backdrop-filter ${BACKDROP_FADE}ms ease-in-out`,
-        // Circles sit at the same vertical position as the home screen circles
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        paddingTop: '42vh', // aligns with weekly circles on home screen
+        // Circles sit below centre — matching home screen position after workout card collapses
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        paddingTop: '20vh', // push circles into lower-middle of screen
         pointerEvents: 'none',
       }}
     >

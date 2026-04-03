@@ -122,6 +122,7 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
           {/* Exercises — mirrors TodayWorkout card exactly */}
           {exercises.length > 0 && (
             <div className="space-y-2 mb-4">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Exercises</p>
 
               {/* Column headers — same as TodayWorkout */}
               <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto' }}>
@@ -187,25 +188,15 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
           {/* Cardio */}
           {cardio.length > 0 && (
             <div className="space-y-2 mb-4">
-              {/* Cardio column headers — aligned with exercise columns */}
-              <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto' }}>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-3">Rounds</div>
-                <div />
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-3">Time</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2">Rest</div>
-              </div>
-
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Cardio</p>
               <div className="space-y-2 -mx-2">
                 {cardio.map((c, idx) => (
-                  <div key={idx} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl border border-white/10 grid items-center" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto', gap: '4px' }}>
+                  <div key={idx} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl border border-white/10 grid items-center" style={{ gridTemplateColumns: '1fr 44px 12px 44px 44px', gap: '4px' }}>
                     <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
-                    <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{c.rounds || '—'}</div>
-                    <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                    <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-1 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20" style={{ width: '36px' }}>{c.time ? fmtTime(c.time) : '—'}</div>
-                    <div className="ml-1 mr-2">
-                      <div className="bg-white/10 text-slate-300 py-1 text-xs font-semibold text-center rounded-2xl min-w-[55px] flex items-center justify-center">{parseInt(c.rounds) > 1 && c.rest ? fmtTime(c.rest) : '—'}</div>
-                    </div>
+                    <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-5" style={{ width: '36px' }}>{c.rounds || '—'}</div>
+                    <div />
+                    <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-3">{c.time ? fmtTime(c.time) : '—'}</div>
+                    <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{parseInt(c.rounds) > 1 && c.rest ? fmtTime(c.rest) : '—'}</div>
                   </div>
                 ))}
               </div>

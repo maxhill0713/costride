@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   X, Calendar, Clock, MapPin, Image as ImageIcon,
   Upload, CheckCircle, Zap, Users, AlignLeft,
@@ -163,27 +163,11 @@ function EventPreview({ form, gym }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-export default function CreateEventModal({ open, onClose, onSave, gym, isLoading, initialEvent }) {
+export default function CreateEventModal({ open, onClose, onSave, gym, isLoading }) {
   const [form, setForm] = useState({ title: '', description: '', event_date: '', image_url: '' });
   const [uploading, setUploading] = useState(false);
   const [dragOver,  setDragOver]  = useState(false);
   const fileRef = useRef();
-
-  const isEditing = !!initialEvent?.id;
-
-  useEffect(() => {
-    if (open && initialEvent) {
-      setForm({
-        id:          initialEvent.id,
-        title:       initialEvent.title       || '',
-        description: initialEvent.description || '',
-        event_date:  initialEvent.event_date  || '',
-        image_url:   initialEvent.image_url   || '',
-      });
-    } else if (open) {
-      setForm({ title: '', description: '', event_date: '', image_url: '' });
-    }
-  }, [open, initialEvent?.id]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const canSubmit = form.title.trim() && form.event_date && !isLoading;
@@ -244,7 +228,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                 <Calendar style={{ width: 17, height: 17, color: T.green }} />
               </div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>{isEditing ? 'Edit Event' : 'Create Event'}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>Create Event</div>
                 <div style={{ fontSize: 11, color: T.text3, marginTop: 1, fontWeight: 500 }}>{gym?.name || 'Your Gym'}</div>
               </div>
             </div>
@@ -360,8 +344,8 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             <button type="submit" form="" className="ev-submit" onClick={handleSubmit} disabled={!canSubmit}
               style={{ padding: '10px 24px', borderRadius: 10, background: canSubmit ? `linear-gradient(135deg,${T.green},#059669)` : 'rgba(255,255,255,0.06)', color: canSubmit ? '#fff' : T.text3, border: 'none', fontSize: 12, fontWeight: 800, cursor: canSubmit ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.2s', letterSpacing: '-0.01em', boxShadow: canSubmit ? `0 4px 16px ${T.green}35` : 'none', minWidth: 148, justifyContent: 'center' }}>
               {isLoading
-                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> {isEditing ? 'Saving…' : 'Creating…'}</>
-                : <><Calendar style={{ width: 13, height: 13 }} /> {isEditing ? 'Save Changes' : 'Create Event'}</>
+                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</>
+                : <><Calendar style={{ width: 13, height: 13 }} /> Create Event</>
               }
             </button>
           </div>

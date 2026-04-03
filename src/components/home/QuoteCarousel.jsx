@@ -4,19 +4,19 @@ import { ChevronDown } from 'lucide-react';
 
 const quotes = [
 {
-  text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-  author: "Winston Churchill",
-  context: "True progress is found in the unwavering persistence to keep pushing forward, regardless of whether you are celebrating a victory or recovering from a setback.",
+  text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+  author: "Aristotle",
+  context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
 },
 {
-  text: "Action is the foundational key to all success.",
-  author: "Pablo Picasso",
-  context: "True success is born not from the brilliance of an idea, but from the physical manifestation of effort that bridges the gap between imagination and reality.",
+  text: "I am changing the things I cannot accept.",
+  author: "Angela Davis",
+  context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
 },
 {
-  text: "Winning isn't everything, but wanting to win is.",
-  author: "Vince Lombardi",
-  context: "While the final result is often outside of one's control, the relentless hunger for excellence serves as the vital fuel that sustains the grueling, daily hard work required to reach your peak.",
+  text: "The only thing we have to fear is fear itself.",
+  author: "Franklin D. Roosevelt",
+  context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
 }];
 
 // Reduced by ~5%: 212 → 201. Dots and chevron slightly tightened to match.

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2, Flag, ChevronRight, Check } from 'lucide-react';
@@ -214,18 +214,12 @@ function formatPostDate(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now - date;
-  const diffMins = diffMs / (1000 * 60);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-  if (diffMins < 5) return 'Just now';
-  if (diffMins < 60) {
-    const m = Math.floor(diffMins);
-    return m === 1 ? '1 minute ago' : `${m} minutes ago`;
-  }
   if (diffHours < 24) {
     const h = Math.floor(diffHours);
-    return h === 1 ? '1 hour ago' : `${h} hours ago`;
+    return h <= 0 ? 'Just now' : h === 1 ? '1 hour ago' : `${h} hours ago`;
   }
   if (diffDays < 4) {
     const d = Math.floor(diffDays);
@@ -253,89 +247,6 @@ function PostMeta({ post, gymName }) {
     );
   }
   return <p className="text-[11px] text-white/70 font-medium">{timeStr}</p>;
-}
-
-// ── Caption with Instagram-style fade + more/less ─────────────────────────────
-// Measures whether the text overflows a single line, and if so shows a fade
-// gradient with a "more" button. Tapping "more" expands the post box naturally;
-// "less" collapses it. No other spacing is affected.
-function ExpandableCaption({ text, className = '' }) {
-  const containerRef = useRef(null);
-  const textRef = useRef(null);
-  const [needsTruncation, setNeedsTruncation] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    const el = textRef.current;
-    if (!el) return;
-    // scrollHeight > clientHeight means it would overflow its clamped height
-    setNeedsTruncation(el.scrollHeight > el.clientHeight + 2);
-  }, [text]);
-
-  if (!text) return null;
-
-  // Collapsed: clamp to 1 line, fade + "more" overlaid at end
-  // Expanded: full height, "less" at the very end inline
-  return (
-    <div ref={containerRef} className={`relative mt-3 ${className}`}>
-      {!expanded ? (
-        <div className="relative">
-          {/* Text clamped to 1 line */}
-          <p
-            ref={textRef}
-            className="text-sm text-slate-300 leading-relaxed"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 1,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              // Reserve just enough space for the fade + "more" word
-              paddingRight: needsTruncation ? '42px' : '0',
-            }}
-          >
-            {text}
-          </p>
-          {needsTruncation && (
-            // Narrow fade so more text is visible; "more" matches caption colour
-            <div
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                // Shorter gradient — only 22% opaque zone so less text is hidden
-                background: 'linear-gradient(to right, transparent 0%, rgba(10,12,28,0.92) 22%)',
-                paddingLeft: '14px',
-                paddingRight: '2px',
-              }}
-            >
-              <button
-                onClick={() => setExpanded(true)}
-                className="text-sm font-semibold text-slate-300 transition-colors whitespace-nowrap flex-shrink-0"
-                style={{ lineHeight: 'inherit' }}
-              >
-                more
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        // Expanded: full text, "less" inline at the very end
-        <p className="text-sm text-slate-300 leading-relaxed">
-          {text}
-          {' '}
-          <button
-            onClick={() => setExpanded(false)}
-            className="text-sm font-semibold text-slate-300 transition-colors"
-          >
-            less
-          </button>
-        </p>
-      )}
-    </div>
-  );
 }
 
 function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
@@ -636,8 +547,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
     const SUMMARY_WIDTH = '92%';
-    // ↑ Image panel height increased by 10%: 346px → 380px, 78vw → 85.8vw
-    const PANEL_HEIGHT = 'min(85.8vw, 380px)';
+    const PANEL_HEIGHT = 'min(78vw, 346px)';
 
     const userComment = (() => {
       if (!post.content) return null;
@@ -679,7 +589,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     return (
       <>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-1 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+          className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
           style={{ background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
 
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
@@ -723,8 +633,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
               </div>
             </div>
-            {/* Expandable caption for workout posts */}
-            {userComment && <ExpandableCaption text={userComment} />}
+            {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
           </div>
 
           {hasPhoto ? (
@@ -753,7 +662,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             exercises.length > 0 && <div style={{ width: SUMMARY_WIDTH }}>{exerciseSummaryJSX}</div>
           )}
 
-          {/* Action bar */}
+          {/* Action bar — share only shown for owner */}
           <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
             <div className="flex items-center gap-1">
               {currentUser && (
@@ -763,6 +672,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                     : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
                 </motion.button>
               )}
+              {/* Share button — only visible for post owner */}
               {isOwner && (
                 <motion.button onClick={(e) => { e.stopPropagation(); setShowWorkoutShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
                   <Send className="w-5 h-5" />
@@ -819,7 +729,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="mb-1 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
         style={{ background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
 
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
@@ -838,15 +748,20 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             </Link>
             {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
           </div>
-          {/* Expandable caption for standard posts */}
-          {post.content && <ExpandableCaption text={post.content} />}
-          {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
+          {post.content && (
+            <div className="mt-3">
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {post.content.length > 120 && !showFullContent
+                  ? <>{post.content.substring(0, 120)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
+                  : post.content}
+              </p>
+              {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
+            </div>
+          )}
         </div>
 
         {hasMedia && (
-          // ↑ Standard post image height increased by 10%: 410px → 451px, 92.3vw → 101.5vw
-          // capped at 100vw on the vw side to avoid horizontal scroll on very small screens
-          <div className="relative w-full overflow-hidden" style={{ height: 'min(100vw, 451px)' }}>
+          <div className="relative w-full overflow-hidden" style={{ height: 'min(92.3vw, 410px)' }}>
             {post.video_url
               ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
               : <img src={post.image_url} alt="Post" className="w-full h-full object-cover" loading="lazy" decoding="async" style={{ objectPosition: 'center center' }} />}
@@ -862,7 +777,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           </div>
         )}
 
-        {/* Action bar */}
+        {/* Action bar — share only shown for post owner */}
         <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
           <div className="flex items-center gap-1">
             {currentUser && (
@@ -872,6 +787,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                   : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
               </motion.button>
             )}
+            {/* Share button — only visible for post owner */}
             {isOwner && (
               <motion.button onClick={(e) => { e.stopPropagation(); setShowPostShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
                 <Send className="w-5 h-5" />

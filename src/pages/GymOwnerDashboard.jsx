@@ -1,1374 +1,1026 @@
-/**
- * TabMembers — coach dashboard card shell applied
- *
- * CARD SHELL CHANGES (identical to TabOverview update):
- *   background    → #0a0f1e  (T.surface)
- *   border        → rgba(255,255,255,.04)  (T.border)
- *   borderRadius  → 16px  (T.r3)
- *   boxShadow     → 0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)
- *   inner shimmer → CardShimmer top-gradient div
- *   inner surface → #0d1225
- *   divider       → rgba(255,255,255,.04)
- *
- * Coloured left-border strips on alert/signal blocks are preserved.
- * All logic, layout, and props are unchanged.
- */
-import React, { useMemo, useState } from 'react';
-import { format, differenceInDays } from 'date-fns';
-import {
-  Plus, Search, ChevronLeft, ChevronRight,
-  Users, AlertTriangle, CheckCircle, TrendingUp, TrendingDown,
-  UserPlus, Bell, X, Check,
-  Zap, History, Flag,
-  MoreHorizontal, Mail, GraduationCap, Copy,
-  Flame, Send, Clock, Trophy,
-} from 'lucide-react';
-import { Avatar, FitnessScore, Empty } from './DashboardPrimitives';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import LeaderboardSection from '../leaderboard/LeaderboardSection';
-import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  TrendingDown, Users, Trophy, AlertCircle, BarChart2,
+  Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
+  LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
+  Plus, Dumbbell, Clock, Crown, Trash2, X, Download, Send,
+  Sun, Zap, TrendingUp, Activity, Calendar, CheckCircle,
+  MessageCircle, Star, UserCheck, Flame, ChevronRight, Pencil, Gift } from
+'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { format } from 'date-fns';
+import ProfileDropdown from '../components/dashboard/ProfileDropdown';
+import MemberChatPanel from '../components/dashboard/MemberChatPanel';
+import ManageRewardsModal from '../components/gym/ManageRewardsModal';
+import ManageClassesModal from '../components/gym/ManageClassesModal';
+import ManageCoachesModal from '../components/gym/ManageCoachesModal';
+import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
+import EditGymPhotoModal from '../components/gym/EditGymPhotoModal';
+import ManageMembersModal from '../components/gym/ManageMembersModal';
+import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
+import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
+import ManageAmenitiesModal from '../components/gym/ManageAmenitiesModal';
+import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
+import CreateEventModal from '../components/events/CreateEventModal';
+import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import QRScanner from '../components/gym/QRScanner';
+import CreatePollModal from '../components/polls/CreatePollModal';
+import GymJoinPoster from '../components/dashboard/GymJoinPoster';
+import EditGymLogoModal from '../components/gym/EditGymLogoModal';
+import EditPricingModal from '../components/gym/EditPricingModal';
+import QRCode from 'react-qr-code';
 
-// ─── LOCAL CARD SHELL — matches TabCoachToday ─────────────────────────────────
-const CARD_BG    = '#0a0f1e';
-const CARD_BDR   = 'rgba(255,255,255,.04)';
-const CARD_BDR_H = 'rgba(255,255,255,.07)';
-const CARD_R     = 16;
-const CARD_SH    = '0 4px 12px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.2)';
-const INNER_BG   = '#0d1225';
-const DIVIDER    = 'rgba(255,255,255,.04)';
+import { lazy, Suspense } from 'react';
 
-function CardShimmer() {
+const TabOverview = lazy(() => import('../components/dashboard/TabOverview'));
+const TabMembersComponent = lazy(() => import('../components/dashboard/TabMembers'));
+const TabContentComponent = lazy(() => import('../components/dashboard/TabContent'));
+const TabAnalyticsComponent = lazy(() => import('../components/dashboard/TabAnalytics'));
+const TabGym = lazy(() => import('../components/dashboard/TabGym'));
+const TabCoachSchedule = lazy(() => import('../components/dashboard/TabCoachSchedule'));
+const TabCoachMembers = lazy(() => import('../components/dashboard/TabCoachMembers'));
+const TabCoachContent = lazy(() => import('../components/dashboard/TabCoachContent'));
+const TabCoachAnalytics = lazy(() => import('../components/dashboard/TabCoachAnalytics'));
+const TabCoachProfile = lazy(() => import('../components/dashboard/TabCoachProfile'));
+const TabEngagement = lazy(() => import('../components/dashboard/TabEngagement'));
+const TabRewards = lazy(() => import('../components/dashboard/TabRewards'));
+const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday'));
+
+function TabLoader() {
   return (
-    <div style={{
-      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit',
-      background: 'linear-gradient(180deg, rgba(255,255,255,.015) 0%, transparent 40%)',
-    }} />
-  );
+    <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+      <style>{`@keyframes _tab-spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: '_tab-spin 0.7s linear infinite' }} />
+    </div>);
 }
 
-function Card({ children, style = {} }) {
+const D = {
+  bgBase: '#080e18',
+  bgSidebar: '#070c16',
+  bgSurface: '#0c1422',
+  bgHover: 'rgba(255,255,255,0.03)',
+  border: 'rgba(255,255,255,0.07)',
+  borderHi: 'rgba(255,255,255,0.12)',
+  divider: 'rgba(255,255,255,0.05)',
+  blue: '#3b82f6',
+  blueDim: 'rgba(59,130,246,0.10)',
+  blueBrd: 'rgba(59,130,246,0.22)',
+  red: '#ef4444',
+  redDim: 'rgba(239,68,68,0.08)',
+  redBrd: 'rgba(239,68,68,0.22)',
+  amber: '#f59e0b',
+  amberDim: 'rgba(245,158,11,0.08)',
+  amberBrd: 'rgba(245,158,11,0.22)',
+  green: '#10b981',
+  greenDim: 'rgba(16,185,129,0.08)',
+  greenBrd: 'rgba(16,185,129,0.20)',
+  t1: '#f1f5f9',
+  t2: '#94a3b8',
+  t3: '#475569',
+  t4: '#2d3f55'
+};
+
+const ALL_NAV = [
+{ id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['gym_owner'] },
+{ id: 'today', label: 'Today', icon: Sun, roles: ['coach'] },
+{ id: 'members', label: 'Members', coachLabel: 'Clients', icon: Users, roles: ['gym_owner', 'coach'] },
+{ id: 'schedule', label: 'Schedule', icon: Calendar, roles: ['coach'] },
+{ id: 'content', label: 'Content', icon: FileText, roles: ['gym_owner', 'coach'] },
+{ id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['gym_owner'] },
+{ id: 'profile', label: 'Profile', icon: Crown, roles: ['coach'] },
+{ id: 'engagement', label: 'Automations', icon: Zap, roles: ['gym_owner'] },
+{ id: 'gym', label: 'Settings', icon: Settings, roles: ['gym_owner'] }];
+
+
+function injectDashCSS() {
+  if (typeof document === 'undefined' || document.getElementById('dash-root-css')) return;
+  const el = document.createElement('style');
+  el.id = 'dash-root-css';
+  el.textContent = DASH_CSS_TEXT;
+  document.head.appendChild(el);
+}
+
+const DASH_CSS_TEXT = `
+  .dash-root, .dash-root * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; box-sizing: border-box; }
+  .dash-root {
+    --bg:       #080e18;
+    --sidebar:  #070c16;
+    --surface:  #0c1422;
+    --border:   rgba(255,255,255,0.07);
+    --border-hi:rgba(255,255,255,0.12);
+    --blue:     #3b82f6;
+    --text1:    #f1f5f9;
+    --text2:    #94a3b8;
+    --text3:    #475569;
+    --red:      #ef4444;
+    --amber:    #f59e0b;
+    --green:    #10b981;
+  }
+
+  .dash-root ::-webkit-scrollbar { width: 3px; height: 3px; }
+  .dash-root ::-webkit-scrollbar-track { background: transparent; }
+  .dash-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 99px; }
+
+  .dash-root .nav-item {
+    display: flex; align-items: center; width: 100%;
+    border: none; background: transparent; cursor: pointer;
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+    color: #475569;
+    font-size: 13px; font-weight: 500;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .dash-root .nav-item:hover {
+    background: rgba(255,255,255,0.03);
+    color: #94a3b8;
+  }
+  .dash-root .nav-item.active {
+    background: rgba(59,130,246,0.08);
+    color: #3b82f6;
+    border-left-color: #3b82f6;
+    font-weight: 700;
+  }
+
+  .dash-root .stat-card {
+    background: #0c1422;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 20px 20px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .dash-root .stat-card:hover { border-color: rgba(255,255,255,0.12); }
+  .dash-root .stat-num {
+    font-size: 32px; font-weight: 800;
+    letter-spacing: -0.04em; line-height: 1;
+    color: #f1f5f9; margin: 8px 0 5px;
+  }
+  .dash-root .stat-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.10em; color: #475569;
+  }
+  .dash-root .stat-sub {
+    font-size: 11px; color: #475569;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .dash-root .member-row { transition: background 0.10s; cursor: pointer; }
+  .dash-root .member-row:hover { background: rgba(255,255,255,0.02); }
+
+  .dash-root .priority-row {
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .dash-root .priority-row:hover {
+    background: rgba(255,255,255,0.025);
+    border-left-color: rgba(239,68,68,0.4);
+  }
+
+  .dash-root .filter-tab {
+    color: #475569; border-radius: 7px; border: 1px solid transparent;
+    transition: all 0.12s; cursor: pointer; background: none;
+    font-family: inherit;
+  }
+  .dash-root .filter-tab:hover { color: #94a3b8; background: rgba(255,255,255,0.03); }
+  .dash-root .filter-tab.active {
+    color: #3b82f6;
+    background: rgba(59,130,246,0.08);
+    border-color: rgba(59,130,246,0.20);
+  }
+
+  @keyframes dashFadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .dash-root .fade-up { animation: dashFadeUp 0.28s ease both; }
+
+  .dash-root .pill         { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; border: 1px solid; }
+  .dash-root .pill-blue    { color: #3b82f6;  background: rgba(59,130,246,0.10);  border-color: rgba(59,130,246,0.22);  }
+  .dash-root .pill-green   { color: #10b981; background: rgba(16,185,129,0.08);  border-color: rgba(16,185,129,0.20);  }
+  .dash-root .pill-red     { color: #ef4444;   background: rgba(239,68,68,0.08);   border-color: rgba(239,68,68,0.22);   }
+  .dash-root .pill-amber   { color: #f59e0b; background: rgba(245,158,11,0.08);  border-color: rgba(245,158,11,0.22);  }
+  .dash-root .pill-neutral { color: #475569;   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+`;
+injectDashCSS();
+
+const Spark = ({ data = [], color = D.blue, height = 32 }) => {
+  if (!data.length) return null;
+  const w = 100,h = height;
+  const max = Math.max(...data, 1);
+  const pts = data.map((v, i) => {
+    const x = i / (data.length - 1) * w;
+    const y = h - v / max * (h - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  const area = `${pts} ${w},${h} 0,${h}`;
+  const id = `sp-${color.replace(/[^a-z0-9]/gi, '')}`;
   return (
-    <div style={{
-      position:     'relative',
-      background:   CARD_BG,
-      border:       `1px solid ${CARD_BDR}`,
-      borderRadius: CARD_R,
-      boxShadow:    CARD_SH,
-      overflow:     'hidden',
-      ...style,
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
+    style={{ width: '100%', height, display: 'block', marginTop: 8 }}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.6"
+      strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points={area} fill={`url(#${id})`} />
+    </svg>);
+};
+
+const Delta = ({ val }) => {
+  const up = val > 0;
+  const flat = val === 0;
+  const color = flat ? D.t3 : up ? D.green : D.red;
+  const bg = flat ? 'rgba(255,255,255,0.05)' : up ? D.greenDim : D.redDim;
+  const brd = flat ? D.border : up ? D.greenBrd : D.redBrd;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 2,
+      fontSize: 10, fontWeight: 700, padding: '2px 6px',
+      borderRadius: 5, background: bg, color,
+      border: `1px solid ${brd}`
     }}>
-      <CardShimmer />
-      {children}
-    </div>
-  );
-}
+      {flat ? '—' : up ? '+' : ''}{val}%
+    </span>);
+};
 
-function SectionLabel({ children }) {
+function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, footerColor, trend }) {
+  const valColor = valueColor || D.t1;
+  const barColor = footerColor || D.blue;
   return (
-    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 8 }}>
-      {children}
-    </div>
-  );
+    <div className="stat-card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span className="stat-label">{label}</span>
+        <div style={{
+          width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+          background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <Icon style={{ width: 12, height: 12, color: D.t3 }} />
+        </div>
+      </div>
+      <div className="stat-num" style={{ color: valColor }}>{value}</div>
+      <div className="stat-sub" style={{ color: subColor || D.t3 }}>
+        <span>{sub}</span>
+        {trend != null && <Delta val={trend} />}
+      </div>
+      {footerBar != null &&
+      <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+          <div style={{
+          height: '100%', width: `${Math.min(100, footerBar)}%`,
+          background: barColor, borderRadius: 99, transition: 'width 0.7s ease'
+        }} />
+        </div>
+      }
+    </div>);
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ACTIVITY CHIP
-══════════════════════════════════════════════════════════════════ */
-function ActivityChip({ m }) {
-  let label, color, bg, border;
-  if (m.isBanned || m.daysSince >= 14) {
-    label  = m.isBanned ? 'Banned' : m.daysSince >= 999 ? 'No visits' : `${m.daysSince}d absent`;
-    color  = C.danger; bg = C.dangerSub; border = C.dangerBrd;
-  } else if (m.visits30 >= 15) {
-    label  = `${m.visits30}/mo · high`;
-    color  = C.success; bg = C.successSub; border = C.successBrd;
-  } else if (m.visits30 >= 8) {
-    label  = `${m.visits30}/mo · active`;
-    color  = C.accent; bg = C.accentSub; border = C.accentBrd;
-  } else if (m.visits30 >= 4) {
-    label  = `${m.visits30}/mo`;
-    color  = C.accent; bg = 'transparent'; border = CARD_BDR;
-  } else if (m.visits30 >= 1) {
-    label  = `${m.visits30}/mo · low`;
-    color  = C.t2; bg = 'transparent'; border = CARD_BDR;
-  } else if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 7) {
-    label  = 'Just joined';
-    color  = C.t2; bg = 'transparent'; border = CARD_BDR;
+function CoachKpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, trend }) {
+  return <KpiCard icon={Icon} label={label} value={value} sub={sub} subColor={subColor} valueColor={valueColor} footerBar={footerBar} trend={trend} />;
+}
+
+function DashCard({ children, style = {}, accentColor, title, action, onAction }) {
+  return (
+    <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 12, position: 'relative', overflow: 'hidden', ...style }}>
+      {accentColor &&
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1.5, background: `linear-gradient(90deg, ${accentColor}50 0%, ${accentColor}18 60%, transparent 100%)`, pointerEvents: 'none' }} />
+      }
+      {title &&
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>{title}</span>
+          {onAction &&
+        <button onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: D.blue, background: D.blueDim, border: `1px solid ${D.blueBrd}`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              {action || 'View all'}
+            </button>
+        }
+        </div>
+      }
+      {children}
+    </div>);
+}
+
+const CoachCard = DashCard;
+
+function MiniAvatar({ name, src, size = 30 }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: src ? 'transparent' : 'rgba(255,255,255,0.08)', border: `1.5px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, color: D.t2, overflow: 'hidden' }}>
+      {src ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (name || '?').charAt(0).toUpperCase()}
+    </div>);
+}
+
+const CLASS_TYPE_COLORS = { hiit: D.red, yoga: D.green, strength: D.blue, spin: D.blue, boxing: D.red, cardio: D.amber, pilates: D.green, default: D.blue };
+function classColor(cls) {
+  const n = (cls?.class_type || cls?.name || '').toLowerCase();
+  return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
+}
+
+function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
+  const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
+  let items;
+  if (tab === 'overview') {
+    items = [{ label: 'TODAY', value: todayCI, color: D.blue }, { label: 'WEEK', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }, { label: 'MEMBERS', value: totalMembers, color: null }];
+  } else if (tab === 'members') {
+    items = [{ label: 'TOTAL', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }, { label: 'NEW', value: newSignUps, color: newSignUps > 0 ? D.green : null }];
+  } else if (tab === 'content') {
+    items = [{ label: 'POSTS', value: posts.length, color: null }, { label: 'EVENTS', value: events.length, color: null }, { label: 'CHALLENGES', value: challenges.length, color: null }, { label: 'POLLS', value: polls.length, color: null }];
+  } else if (tab === 'analytics') {
+    items = [{ label: 'RETENTION', value: retentionRate + '%', color: retentionRate >= 70 ? D.green : retentionRate >= 40 ? D.amber : D.red }, { label: '30-DAY Δ', value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? D.green : monthChangePct < 0 ? D.red : null }, { label: 'ACTIVE', value: activeThisMonth, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }];
+  } else if (tab === 'engagement') {
+    items = [{ label: 'MEMBERS', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }];
+  } else if (tab === 'gym') {
+    items = [{ label: 'COACHES', value: coaches.length, color: null }, { label: 'CLASSES', value: classes.length, color: null }, { label: 'MEMBERS', value: totalMembers, color: null }];
+  } else if ((tab === 'today' || tab === 'schedule') && isCoach) {
+    items = [{ label: 'CLASSES', value: myClasses.length, color: null }, { label: 'CLIENTS', value: allMemberships.length, color: null }];
   } else {
-    label  = 'No visits';
-    color  = C.t3; bg = 'transparent'; border = CARD_BDR;
+    return null;
   }
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      fontSize: 10, fontWeight: 600, padding: '3px 8px',
-      borderRadius: 6, background: bg, color, border: `1px solid ${border}`,
-      whiteSpace: 'nowrap',
-    }}>
-      {label}
-    </span>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   RISK BADGE
-══════════════════════════════════════════════════════════════════ */
-function RiskBadge({ risk }) {
-  if (risk === 'Low') return <span style={{ fontSize: 10, color: C.t4, fontWeight: 500 }}>Low</span>;
-  const isHigh = risk === 'High';
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      fontSize: 10, fontWeight: 600, padding: '3px 8px',
-      borderRadius: 6,
-      background: isHigh ? C.dangerSub : C.warnSub,
-      color:      isHigh ? C.danger    : C.warn,
-      border:     `1px solid ${isHigh ? C.dangerBrd : C.warnBrd}`,
-    }}>
-      {risk}
-    </span>
-  );
-}
-
-const HealthScore = FitnessScore;
-
-function MilestoneBadge({ visitsTotal, joinedDaysAgo }) {
-  let label = null;
-  if      (visitsTotal === 1)                            label = '1st visit';
-  else if (visitsTotal === 10)                           label = '10 visits';
-  else if (visitsTotal === 25)                           label = '25 visits';
-  else if (visitsTotal === 50)                           label = '50 visits';
-  else if (visitsTotal === 100)                          label = '100 visits';
-  else if (joinedDaysAgo !== null && joinedDaysAgo <= 7) label = 'New';
-  if (!label) return null;
-  return (
-    <span style={{
-      fontSize: 9, fontWeight: 600, color: C.warn,
-      background: C.warnSub, border: `1px solid ${C.warnBrd}`,
-      padding: '2px 6px', borderRadius: 5,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-function FrequencyInsight({ m }) {
-  const prev  = m.prevVisits30 || 0;
-  const curr  = m.visits30;
-  const hasComparison = prev >= 3;
-  const pct   = hasComparison ? Math.round(((curr - prev) / prev) * 100) : 0;
-  const dropped = hasComparison && pct <= -30;
-  const surged  = hasComparison && pct >= 30 && pct <= 300;
-  const valueColor = m.daysSince === 0 ? C.success : m.daysSince >= 14 ? C.danger : C.t1;
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: valueColor }}>
-          {curr > 0
-            ? <>{curr} <span style={{ fontWeight: 400, fontSize: 11, color: C.t3 }}>visits</span></>
-            : <span style={{ color: C.t4 }}>—</span>}
-        </span>
-        {dropped && <TrendingDown style={{ width: 10, height: 10, color: C.danger }} />}
-        {surged  && <TrendingUp   style={{ width: 10, height: 10, color: C.success }} />}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-        <span style={{ fontSize: 10, color: C.t3 }}>{m.lastVisitDisplay}</span>
-        {dropped && (
-          <span style={{ fontSize: 9, fontWeight: 600, color: C.danger, background: C.dangerSub, border: `1px solid ${C.dangerBrd}`, borderRadius: 4, padding: '1px 5px' }}>
-            -{Math.abs(pct)}% vs usual
-          </span>
-        )}
-        {surged && (
-          <span style={{ fontSize: 9, fontWeight: 600, color: C.success, background: C.successSub, border: `1px solid ${C.successBrd}`, borderRadius: 4, padding: '1px 5px' }}>
-            +{pct}% vs usual
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function RowActions({ m, gymName, gymId, openModal, onMarkAtRisk }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4 }}>
-      <button
-        onClick={e => { e.stopPropagation(); openModal('message', m); }}
-        style={{
-          width: 26, height: 26, borderRadius: 6,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${CARD_BDR}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
-        onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
-      >
-        <Bell style={{ width: 11, height: 11, color: C.accent }} />
-      </button>
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
-        style={{
-          width: 26, height: 26, borderRadius: 6,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${CARD_BDR}`,
-          cursor: 'pointer', flexShrink: 0, transition: 'border-color .15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
-        onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
-      >
-        <MoreHorizontal style={{ width: 11, height: 11, color: C.t3 }} />
-      </button>
-      {open && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', right: 0, top: 30, zIndex: 999,
-            background: CARD_BG, border: `1px solid ${CARD_BDR_H}`,
-            borderRadius: 10, boxShadow: '0 8px 28px rgba(0,0,0,0.55)',
-            minWidth: 152, overflow: 'hidden',
-          }}
-        >
-          {[
-            { icon: History, label: 'Check-in history', fn: () => { openModal('memberHistory', m); setOpen(false); } },
-            { icon: Flag,    label: 'Mark at risk',     fn: () => { onMarkAtRisk(m); setOpen(false); } },
-          ].map((a, i) => (
-            <button
-              key={i} onClick={a.fn}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-                padding: '9px 14px', fontSize: 12, fontWeight: 500, color: C.t2,
-                background: 'none', border: 'none', cursor: 'pointer',
-                textAlign: 'left', fontFamily: 'inherit', transition: 'background .1s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = INNER_BG}
-              onMouseLeave={e => e.currentTarget.style.background = 'none'}
-            >
-              <a.icon style={{ width: 12, height: 12, color: C.t3 }} /> {a.label}
-            </button>
-          ))}
-        </div>
+    <div style={{ flexShrink: 0, background: D.bgSurface, borderBottom: `1px solid ${D.border}`, display: 'flex' }}>
+      {items.map((item, i) =>
+      <React.Fragment key={item.label}>
+          {i > 0 && <div style={{ width: 1, background: D.divider, alignSelf: 'stretch', margin: '7px 0' }} />}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '9px 2px' }}>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: item.color || D.t1 }}>{item.value}</div>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: D.t4, marginTop: 3 }}>{item.label}</div>
+          </div>
+        </React.Fragment>
       )}
-    </div>
-  );
+    </div>);
 }
 
-const PRESET_MESSAGES = [
-  { id: 'miss',      label: 'We miss you',      sublabel: 'Re-engagement',    body: (g, n) => `Hey ${n}, it's been a while since we've seen you at ${g}. Your progress is waiting — come back and pick up where you left off.` },
-  { id: 'offer',     label: 'Bring a guest',     sublabel: 'Special offer',    body: (g, n) => `${n}, this week you can bring a guest to ${g} for free. A great time to train with someone you know.` },
-  { id: 'challenge', label: 'New challenge',     sublabel: 'Motivation',       body: (g, n) => `${n}, a new challenge has just launched at ${g}. It's a great chance to push yourself and hit a new personal best.` },
-  { id: 'nudge',     label: 'Friendly reminder', sublabel: 'Check-in nudge',   body: (g, n) => `Just checking in, ${n}. Your spot at ${g} is ready whenever you are — consistency is everything.` },
-  { id: 'streak',    label: 'Keep it going',     sublabel: 'Streak recovery',  body: (g, n) => `${n}, don't break your streak! Pop in to ${g} today and keep the momentum alive.` },
-  { id: 'welcome',   label: 'Welcome back',      sublabel: 'Week-1 follow-up', body: (g, n) => `Great to have you at ${g}, ${n}! How's everything going? We'd love to see you again this week.` },
-];
-
-function ModeToggle({ mode, setMode }) {
-  return (
-    <div style={{ display: 'inline-flex', gap: 2, padding: 3, background: INNER_BG, borderRadius: 8, border: `1px solid ${CARD_BDR}`, marginBottom: 12 }}>
-      {[{ id: 'preset', label: 'Templates' }, { id: 'custom', label: 'Custom' }].map(m => (
-        <button key={m.id} onClick={() => setMode(m.id)} style={{
-          padding: '4px 12px', borderRadius: 6, fontSize: 11,
-          fontWeight: mode === m.id ? 600 : 400, cursor: 'pointer',
-          background: mode === m.id ? CARD_BG : 'transparent',
-          border: `1px solid ${mode === m.id ? CARD_BDR_H : 'transparent'}`,
-          color: mode === m.id ? C.t1 : C.t3,
-          fontFamily: 'inherit', transition: 'all .15s',
-        }}>
-          {m.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function PresetGrid({ preset, setPreset }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-      {PRESET_MESSAGES.map(p => (
-        <button key={p.id} onClick={() => setPreset(p.id)} style={{
-          padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
-          background: preset === p.id ? INNER_BG : 'transparent',
-          border: `1px solid ${preset === p.id ? CARD_BDR_H : CARD_BDR}`,
-          transition: 'all .15s', fontFamily: 'inherit',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: preset === p.id ? C.t1 : C.t2, marginBottom: 2 }}>{p.label}</div>
-          <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', letterSpacing: '.05em' }}>{p.sublabel}</div>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function SendBtn({ onClick, disabled, sending, sent, label }) {
-  const ready = !disabled && !sending && !sent;
-  return (
-    <button onClick={onClick} disabled={disabled || sending || sent} style={{
-      width: '100%', padding: '9px', borderRadius: 8,
-      border: `1px solid ${sent ? C.successBrd : ready ? C.accentBrd : CARD_BDR}`,
-      cursor: ready ? 'pointer' : 'default',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-      fontSize: 12, fontWeight: 600,
-      background: sent ? C.successSub : ready ? C.accentSub : 'transparent',
-      color:      sent ? C.success    : ready ? C.accent    : C.t3,
-      transition: 'all .15s', fontFamily: 'inherit',
-    }}>
-      {sent ? <><Check style={{ width: 12, height: 12 }} /> Sent</>
-        : sending ? 'Sending…'
-        : <><Send style={{ width: 12, height: 12 }} /> {label}</>}
-    </button>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   STAT NUDGE
-══════════════════════════════════════════════════════════════════ */
-function StatNudge({ color = C.accent, icon: Icon, stat, detail, action, onAction }) {
-  return (
-    <div style={{
-      marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 9,
-      padding: '9px 11px', borderRadius: 8,
-      background: INNER_BG,
-      border: `1px solid ${CARD_BDR}`,
-      borderLeft: `2px solid ${color}`,
-    }}>
-      {Icon && <Icon style={{ width: 11, height: 11, color, flexShrink: 0, marginTop: 1 }} />}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: C.t1 }}>{stat} </span>
-        <span style={{ fontSize: 11, color: C.t3, lineHeight: 1.45 }}>{detail}</span>
-      </div>
-      {action && onAction && (
-        <button onClick={e => { e.stopPropagation(); onAction(); }} style={{
-          flexShrink: 0, fontSize: 10, fontWeight: 600, color,
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          fontFamily: 'inherit', whiteSpace: 'nowrap',
-          display: 'flex', alignItems: 'center', gap: 2, padding: 0,
-        }}>
-          {action} <ChevronRight style={{ width: 9, height: 9 }} />
-        </button>
-      )}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   MEMBER PUSH PANEL
-══════════════════════════════════════════════════════════════════ */
-function MemberPushPanel({ member, gymName, gymId, onClose }) {
-  const [preset,  setPreset]  = useState('miss');
-  const [custom,  setCustom]  = useState('');
-  const [mode,    setMode]    = useState('preset');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const firstName = member.name.split(' ')[0];
-  const message   = mode === 'preset' ? PRESET_MESSAGES.find(p => p.id === preset)?.body(gymName, firstName) || '' : custom;
-  const handleSend = async () => {
-    if (!message.trim() || sending) return;
-    setSending(true);
-    try {
-      await base44.functions.invoke('sendPushNotification', {
-        gym_id: gymId, gym_name: gymName, target: 'specific',
-        message: message.trim(), member_ids: [member.user_id],
-      });
-      setSent(true);
-      setTimeout(() => { setSent(false); onClose(); }, 2000);
-    } catch { } finally { setSending(false); }
-  };
-  return (
-    <div style={{
-      padding: '14px 16px 16px',
-      background: INNER_BG,
-      borderBottom: `1px solid ${DIVIDER}`,
-      borderLeft: `3px solid ${C.accent}`,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Bell style={{ width: 12, height: 12, color: C.t3 }} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Push Notification</div>
-            <div style={{ fontSize: 10, color: C.t3 }}>Sending to {firstName}</div>
-          </div>
-        </div>
-        <button onClick={onClose} style={{
-          width: 24, height: 24, borderRadius: 6,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: `1px solid ${CARD_BDR}`, cursor: 'pointer',
-        }}>
-          <X style={{ width: 10, height: 10, color: C.t3 }} />
-        </button>
-      </div>
-      <ModeToggle mode={mode} setMode={setMode} />
-      {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-        <textarea value={custom} onChange={e => setCustom(e.target.value)}
-          placeholder={`Write a message to ${firstName}…`} rows={3}
-          style={{
-            width: '100%', boxSizing: 'border-box', marginBottom: 10,
-            background: CARD_BG, border: `1px solid ${CARD_BDR}`,
-            borderRadius: 8, padding: '8px 10px', fontSize: 11,
-            color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
-          }}
-          onFocus={e => e.target.style.borderColor = C.accentBrd}
-          onBlur={e => e.target.style.borderColor = CARD_BDR}
-        />
-      )}
-      {message && (
-        <div style={{
-          margin: '10px 0', padding: '9px 11px', borderRadius: 8,
-          background: CARD_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `2px solid ${C.accent}`,
-          fontSize: 11, color: C.t2, lineHeight: 1.6,
-        }}>
-          {message}
-        </div>
-      )}
-      <SendBtn onClick={handleSend} disabled={!message.trim()} sending={sending} sent={sent} label={`Send to ${firstName}`} />
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   BULK PUSH PANEL
-══════════════════════════════════════════════════════════════════ */
-function BulkPushPanel({ selectedRows, memberRows, gymName, gymId, onClose, onSuccess }) {
-  const [preset,  setPreset]  = useState('miss');
-  const [custom,  setCustom]  = useState('');
-  const [mode,    setMode]    = useState('preset');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const members     = memberRows.filter(m => selectedRows.has(m.id));
-  const memberCount = members.length;
-  const buildMsg    = (p, name) => PRESET_MESSAGES.find(x => x.id === p)?.body(gymName, name) || '';
-  const preview     = mode === 'preset' ? buildMsg(preset, members[0]?.name.split(' ')[0] || 'there') : custom;
-  const handleSend = async () => {
-    if (!preview.trim() || sending) return;
-    setSending(true);
-    try {
-      if (mode === 'preset') {
-        await Promise.all(members.map(m => base44.functions.invoke('sendPushNotification', {
-          gym_id: gymId, gym_name: gymName, target: 'specific',
-          message: buildMsg(preset, m.name.split(' ')[0]), member_ids: [m.user_id],
-        })));
-      } else {
-        await base44.functions.invoke('sendPushNotification', {
-          gym_id: gymId, gym_name: gymName, target: 'specific',
-          message: preview.trim(), member_ids: members.map(m => m.user_id),
-        });
-      }
-      setSent(true);
-      setTimeout(() => { setSent(false); onSuccess(); onClose(); }, 2200);
-    } catch { } finally { setSending(false); }
-  };
-  return (
-    <div style={{
-      padding: '14px 16px 16px',
-      background: INNER_BG,
-      borderBottom: `1px solid ${DIVIDER}`,
-      borderLeft: `3px solid ${C.accent}`,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Users style={{ width: 12, height: 12, color: C.t3 }} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Bulk Notification</div>
-            <div style={{ fontSize: 10, color: C.t3 }}>{memberCount} members{mode === 'preset' && ' · personalised per name'}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ display: 'flex' }}>
-            {members.slice(0, 4).map((m, i) => (
-              <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 4 - i, border: `2px solid ${CARD_BG}`, borderRadius: '50%' }}>
-                <Avatar name={m.name} size={20} src={m.avatar_url} />
-              </div>
-            ))}
-            {memberCount > 4 && (
-              <div style={{
-                marginLeft: -6, width: 20, height: 20, borderRadius: '50%',
-                background: INNER_BG, border: `2px solid ${CARD_BG}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontSize: 8, fontWeight: 700, color: C.t2 }}>+{memberCount - 4}</span>
-              </div>
-            )}
-          </div>
-          <button onClick={onClose} style={{
-            width: 24, height: 24, borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'transparent', border: `1px solid ${CARD_BDR}`, cursor: 'pointer',
-          }}>
-            <X style={{ width: 10, height: 10, color: C.t3 }} />
-          </button>
-        </div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <div>
-          <ModeToggle mode={mode} setMode={setMode} />
-          {mode === 'preset' ? <PresetGrid preset={preset} setPreset={setPreset} /> : (
-            <textarea value={custom} onChange={e => setCustom(e.target.value)}
-              placeholder={`Write a message to all ${memberCount} members…`} rows={4}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                background: CARD_BG, border: `1px solid ${CARD_BDR}`,
-                borderRadius: 8, padding: '8px 10px', fontSize: 11,
-                color: C.t1, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
-              }}
-              onFocus={e => e.target.style.borderColor = C.accentBrd}
-              onBlur={e => e.target.style.borderColor = CARD_BDR}
-            />
-          )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <SectionLabel>Preview</SectionLabel>
-          <div style={{
-            flex: 1, padding: '9px 11px', borderRadius: 8,
-            background: CARD_BG, border: `1px solid ${CARD_BDR}`,
-            borderLeft: `2px solid ${preview ? C.accent : CARD_BDR}`,
-            fontSize: 11, color: preview ? C.t2 : C.t3,
-            lineHeight: 1.6, fontStyle: preview ? 'normal' : 'italic',
-          }}>
-            {preview || 'Select a template…'}
-          </div>
-          <SendBtn onClick={handleSend} disabled={!preview.trim()} sending={sending} sent={sent} label={`Send to ${memberCount}`} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   SEGMENT SUMMARY CARDS
-══════════════════════════════════════════════════════════════════ */
-function SegmentSummary({ memberRows, setMemberFilter, activeFilter }) {
-  const segs = useMemo(() => {
-    const superActive = memberRows.filter(m => m.visits30 >= 15).length;
-    const active      = memberRows.filter(m => m.visits30 >= 4 && m.visits30 < 15 && m.daysSince < 14).length;
-    const casual      = memberRows.filter(m => m.visits30 >= 1 && m.visits30 < 4  && m.daysSince < 14).length;
-    const atRisk      = memberRows.filter(m => m.risk !== 'Low').length;
-    const newM        = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length;
-    return [
-      { id: 'superActive', label: 'Super Active', val: superActive, sub: '15+ visits/mo',  filter: 'active' },
-      { id: 'active',      label: 'Active',        val: active,      sub: '4–14 visits/mo', filter: 'active' },
-      { id: 'casual',      label: 'Casual',        val: casual,      sub: '1–3 visits/mo',  filter: 'active' },
-      { id: 'atRisk',      label: 'At Risk',        val: atRisk,      sub: '14+ days out',   filter: 'atRisk' },
-      { id: 'new',         label: 'New',            val: newM,        sub: 'Last 30 days',   filter: 'new'    },
-    ];
-  }, [memberRows]);
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 16 }}>
-      {segs.map(s => {
-        const selected = activeFilter === s.filter;
-        return (
-          <div
-            key={s.id}
-            onClick={() => setMemberFilter(selected ? 'all' : s.filter)}
-            style={{
-              position: 'relative', overflow: 'hidden',
-              padding: '14px 14px', borderRadius: CARD_R, cursor: 'pointer',
-              background: CARD_BG,
-              border: `1px solid ${selected ? CARD_BDR_H : CARD_BDR}`,
-              boxShadow: CARD_SH, transition: 'all .15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = CARD_BDR_H; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = selected ? CARD_BDR_H : CARD_BDR; e.currentTarget.style.transform = ''; }}
-          >
-            <CardShimmer />
-            <SectionLabel>{s.label}</SectionLabel>
-            <div style={{ fontSize: 28, fontWeight: 700, color: s.val > 0 ? C.t1 : C.t4, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5 }}>
-              {s.val}
-            </div>
-            <div style={{ fontSize: 11, color: C.t3 }}>{s.sub}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ALERTS PANEL
-══════════════════════════════════════════════════════════════════ */
-function AlertsPanel({ memberRows, atRisk, atRiskMembersList = [], setMemberFilter, setMemberSort, openModal }) {
-  const criticalMembers = memberRows.filter(m => m.risk === 'High').length > 0
-    ? memberRows.filter(m => m.risk === 'High').slice(0, 3)
-    : (atRiskMembersList || []).slice(0, 3).map(m => ({
-        name: m.user_name || m.name,
-        daysSince: m.days_since || m.daysSince || 14,
-        risk: 'High',
-      }));
-  const earlyDroppers     = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.daysSince >= 7).slice(0, 2);
-  const frequencyDroppers = memberRows.filter(m => m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5 && m.visits30 < 4).slice(0, 2);
-  const noAlerts          = criticalMembers.length === 0 && earlyDroppers.length === 0 && frequencyDroppers.length === 0;
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Alerts</div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{noAlerts ? 'All clear' : 'Members needing attention'}</div>
-      </div>
-      {noAlerts && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-          borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `3px solid ${C.success}`,
-        }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: C.t2 }}>All members are active</span>
-        </div>
-      )}
-      {criticalMembers.length > 0 && (
-        <div style={{
-          padding: '10px 12px', borderRadius: 9,
-          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `3px solid ${C.danger}`, marginBottom: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-            <AlertTriangle style={{ width: 11, height: 11, color: C.danger, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{atRisk} members inactive 14+ days</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
-            {criticalMembers.map((m, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: C.t2 }}>{m.name}</span>
-                <span style={{ fontSize: 10, color: C.danger, fontWeight: 600 }}>{m.daysSince}d absent</span>
-              </div>
-            ))}
-            {atRisk > 3 && <div style={{ fontSize: 10, color: C.t3 }}>+{atRisk - 3} more</div>}
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.t2, border: `1px solid ${CARD_BDR}`, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = CARD_BDR_H}
-              onMouseLeave={e => e.currentTarget.style.borderColor = CARD_BDR}
-            >
-              View all
-            </button>
-            <button
-              onClick={() => openModal('post')}
-              style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'transparent', color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              Message them
-            </button>
-          </div>
-        </div>
-      )}
-      {earlyDroppers.length > 0 && (
-        <div style={{
-          padding: '10px 12px', borderRadius: 9,
-          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `3px solid ${C.warn}`, marginBottom: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <Zap style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>New members going quiet</span>
-          </div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 8, lineHeight: 1.5 }}>
-            {earlyDroppers.map(m => m.name.split(' ')[0]).join(', ')} {earlyDroppers.length === 1 ? 'is' : 'are'} in the typical 7-day drop-off window.
-          </div>
-          <button
-            onClick={() => setMemberFilter('new')}
-            style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: `${C.warn}10`, color: C.warn, border: `1px solid ${C.warnBrd}`, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            View new members
-          </button>
-        </div>
-      )}
-      {frequencyDroppers.length > 0 && (
-        <div style={{
-          padding: '10px 12px', borderRadius: 9,
-          background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `3px solid ${C.warn}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <TrendingDown style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Frequency dropping</span>
-          </div>
-          {frequencyDroppers.map((m, i) => (
-            <div key={i} style={{ fontSize: 11, color: C.t3, marginBottom: 3 }}>
-              <span style={{ fontWeight: 600, color: C.t2 }}>{m.name}</span> — was {m.prevVisits30}/mo, now {m.visits30}/mo
-            </div>
-          ))}
-          <StatNudge color={C.warn} icon={TrendingDown}
-            stat={`${frequencyDroppers.length} member${frequencyDroppers.length > 1 ? 's' : ''} visited much less than usual.`}
-            detail="A drop in frequency is an early churn signal — reaching out now is more effective than waiting."
-            action="Message them →" onAction={() => openModal('message')}
-          />
-        </div>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   DROP-OFF WIDGET
-══════════════════════════════════════════════════════════════════ */
-function DropOffWidget({ memberRows, setMemberFilter, setMemberSort }) {
-  const buckets = useMemo(() => {
-    const w1  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14  && m.daysSince >= 7).length;
-    const w2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 14   && m.joinedDaysAgo <= 30  && m.daysSince >= 7).length;
-    const m2  = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 30   && m.joinedDaysAgo <= 90  && m.daysSince >= 14).length;
-    const old = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo > 90   && m.daysSince >= 21).length;
-    return [
-      { label: 'Week 1 gone quiet',  sub: 'No return after joining', val: w1,  barColor: C.danger,        valueColor: w1  > 0 ? C.danger : C.t4 },
-      { label: 'Month 1 drift',      sub: 'Slipped in first month',  val: w2,  barColor: `${C.accent}55`, valueColor: w2  > 0 ? C.t2    : C.t4 },
-      { label: 'Month 2–3 slip',     sub: 'Common churn window',     val: m2,  barColor: `${C.accent}44`, valueColor: m2  > 0 ? C.t2    : C.t4 },
-      { label: 'Long-term inactive', sub: '90+ day members, quiet',  val: old, barColor: `${C.accent}28`, valueColor: old > 0 ? C.t3    : C.t4 },
-    ];
-  }, [memberRows]);
-  const total = buckets.reduce((a, b) => a + b.val, 0);
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Drop-off Patterns</div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Where members typically go quiet</div>
-      </div>
-      {total === 0 ? (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-          borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-          borderLeft: `3px solid ${C.success}`,
-        }}>
-          <CheckCircle style={{ width: 12, height: 12, color: C.success, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: C.t2 }}>No drop-off patterns detected</span>
-        </div>
-      ) : (
-        <>
-          {buckets.map((b, i) => (
-            <div key={i} style={{ marginBottom: i < buckets.length - 1 ? 12 : 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-                <div>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: b.val > 0 ? C.t1 : C.t3 }}>{b.label}</span>
-                  <span style={{ fontSize: 10, color: C.t3, marginLeft: 7 }}>{b.sub}</span>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: b.valueColor }}>{b.val}</span>
-              </div>
-              <div style={{ height: 2, borderRadius: 99, background: DIVIDER, overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%', width: total > 0 ? `${(b.val / total) * 100}%` : '0%',
-                  background: b.barColor, borderRadius: 99, transition: 'width .7s ease',
-                }} />
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={() => { setMemberFilter('atRisk'); setMemberSort('highRisk'); }}
-            style={{
-              marginTop: 12, width: '100%', fontSize: 11, fontWeight: 600, color: C.danger,
-              background: 'transparent', border: `1px solid ${C.dangerBrd}`,
-              padding: '7px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-            }}
-          >
-            View all at-risk members <ChevronRight style={{ width: 10, height: 10 }} />
-          </button>
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   WEEK-ONE FOLLOW-UP
-══════════════════════════════════════════════════════════════════ */
-function WeekOneFollowUp({ memberRows, setMemberFilter }) {
-  const { returned, didnt, names } = useMemo(() => {
-    const newish = memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo >= 7 && m.joinedDaysAgo <= 21);
-    let returned = 0, didnt = 0;
-    const names = [];
-    newish.forEach(m => {
-      if (m.visitsTotal >= 2) returned++;
-      else { didnt++; if (names.length < 3) names.push(m.name.split(' ')[0]); }
-    });
-    return { returned, didnt, names };
-  }, [memberRows]);
-  const total = returned + didnt;
-  const pct   = total > 0 ? Math.round((returned / total) * 100) : 0;
-  const pctColor = total === 0 ? C.t3 : pct >= 60 ? C.success : pct >= 40 ? C.t1 : C.danger;
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Week-1 Return Rate</div>
-          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>New members (joined 1–3 weeks ago) who returned</div>
-        </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: pctColor, letterSpacing: '-0.04em', lineHeight: 1, flexShrink: 0 }}>
-          {total === 0 ? '—' : `${pct}%`}
-        </div>
-      </div>
-      {total === 0 ? (
-        <p style={{ fontSize: 12, color: C.t3, margin: '10px 0 0' }}>No members in this window yet.</p>
-      ) : (
-        <>
-          <div style={{ height: 2, borderRadius: 99, background: DIVIDER, overflow: 'hidden', margin: '12px 0' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: pctColor === C.t1 ? C.accent : pctColor, borderRadius: 99, transition: 'width .7s ease' }} />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {[
-              { count: returned, label: 'Returned',      color: returned > 0 ? C.success : C.t4 },
-              { count: didnt,    label: "Didn't return", color: didnt > 0    ? C.danger  : C.t4 },
-            ].map((cell, i) => (
-              <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}`, textAlign: 'center' }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: cell.color, letterSpacing: '-0.03em' }}>{cell.count}</div>
-                <div style={{ fontSize: 10, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>{cell.label}</div>
-              </div>
-            ))}
-          </div>
-          {didnt > 0 && names.length > 0 && (
-            <div style={{
-              marginTop: 10, padding: '9px 11px', borderRadius: 8,
-              background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-              borderLeft: `3px solid ${C.danger}`,
-            }}>
-              <div style={{ fontSize: 11, color: C.t2, marginBottom: 5, lineHeight: 1.5 }}>
-                {names.join(', ')}{didnt > 3 ? ` +${didnt - 3} more` : ''} — no return visit yet
-              </div>
-              <button
-                onClick={() => setMemberFilter('new')}
-                style={{ fontSize: 11, fontWeight: 600, color: C.warn, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}
-              >
-                View new members <ChevronRight style={{ width: 10, height: 10 }} />
-              </button>
-            </div>
-          )}
-          <StatNudge
-            color={pctColor === C.t1 ? C.accent : pctColor}
-            icon={pct >= 60 ? CheckCircle : AlertTriangle}
-            stat={pct >= 60 ? `${returned} of ${total} new members came back.` : didnt === 1 ? `${names[0] || '1 member'} hasn't returned yet.` : `${didnt} new members haven't come back yet.`}
-            detail={pct >= 60 ? 'Good retention in week 1. Keep engaging them — the habit takes a few weeks to stick.' : pct >= 40 ? "A direct message to those who haven't returned is worth the effort — they're still in the decision window." : 'Week 1 is the highest-leverage moment to reach out. The longer you wait, the harder it is.'}
-            action={didnt > 0 ? 'Message them' : undefined}
-            onAction={didnt > 0 ? () => setMemberFilter('new') : undefined}
-          />
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   INVITE STAFF PANEL
-══════════════════════════════════════════════════════════════════ */
-function InviteStaffPanel({ gym }) {
-  const [email,   setEmail]   = useState('');
-  const [role,    setRole]    = useState('coach');
-  const [sending, setSending] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const [error,   setError]   = useState('');
-  const [copied,  setCopied]  = useState(false);
-  const handleInvite = async () => {
-    if (!email.trim() || sending) return;
-    setSending(true); setError('');
-    try {
-      await base44.users.inviteUser(email.trim(), 'user');
-      setSent(true); setEmail('');
-      setTimeout(() => setSent(false), 3000);
-    } catch (e) {
-      setError(e?.message || 'Failed to send invite');
-    } finally { setSending(false); }
-  };
-  const joinUrl = gym?.join_code ? `${window.location.origin}/GymSignup?code=${gym.join_code}` : null;
-  const handleCopy = () => {
-    if (joinUrl) { navigator.clipboard.writeText(joinUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-  };
-  return (
-    <Card style={{ padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <GraduationCap style={{ width: 13, height: 13, color: C.t3 }} />
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Invite Staff</div>
-          <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Add coaches and employees</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 2, padding: 3, background: INNER_BG, borderRadius: 8, border: `1px solid ${CARD_BDR}`, marginBottom: 12 }}>
-        {[{ id: 'coach', label: 'Coach' }, { id: 'staff', label: 'Staff' }].map(r => (
-          <button key={r.id} onClick={() => setRole(r.id)} style={{
-            flex: 1, padding: '5px 0', borderRadius: 6, fontSize: 11,
-            fontWeight: role === r.id ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit',
-            background: role === r.id ? CARD_BG : 'transparent',
-            color: role === r.id ? C.t1 : C.t3,
-            border: `1px solid ${role === r.id ? CARD_BDR_H : 'transparent'}`,
-            transition: 'all .15s',
-          }}>
-            {r.label}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 6, marginBottom: error ? 6 : 10 }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Mail style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 11, height: 11, color: C.t3, pointerEvents: 'none' }} />
-          <input value={email} onChange={e => { setEmail(e.target.value); setError(''); }}
-            onKeyDown={e => e.key === 'Enter' && handleInvite()}
-            placeholder="Email address"
-            style={{
-              width: '100%', boxSizing: 'border-box', padding: '7px 10px 7px 28px',
-              borderRadius: 8, background: INNER_BG,
-              border: `1px solid ${error ? C.dangerBrd : CARD_BDR}`,
-              color: C.t1, fontSize: 12, outline: 'none', fontFamily: 'inherit',
-            }}
-            onFocus={e => e.target.style.borderColor = CARD_BDR_H}
-            onBlur={e => e.target.style.borderColor = error ? C.dangerBrd : CARD_BDR}
-          />
-        </div>
-        <button onClick={handleInvite} disabled={!email.trim() || sending || sent} style={{
-          padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-          cursor: !email.trim() || sending || sent ? 'default' : 'pointer', fontFamily: 'inherit',
-          border: `1px solid ${sent ? C.successBrd : C.accentBrd}`,
-          background: sent ? C.successSub : C.accentSub,
-          color: sent ? C.success : C.accent,
-          display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, transition: 'all .15s',
-        }}>
-          {sent ? <><Check style={{ width: 11, height: 11 }} /> Sent</> : sending ? '…' : <><Send style={{ width: 11, height: 11 }} /> Send</>}
-        </button>
-      </div>
-      {error && <div style={{ fontSize: 11, color: C.danger, marginBottom: 8 }}>{error}</div>}
-      <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.5, marginBottom: joinUrl ? 10 : 0 }}>
-        They'll receive an email invite and be added as a <span style={{ fontWeight: 600, color: C.t2 }}>{role}</span>.
-      </div>
-      {joinUrl && (
-        <>
-          <div style={{ height: 1, background: DIVIDER, margin: '10px 0' }} />
-          <SectionLabel>Or share gym link</SectionLabel>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, background: INNER_BG, border: `1px solid ${CARD_BDR}` }}>
-            <span style={{ flex: 1, fontSize: 10, color: C.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{joinUrl}</span>
-            <button onClick={handleCopy} style={{
-              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 5,
-              background: copied ? C.successSub : 'transparent',
-              color: copied ? C.success : C.t2,
-              border: `1px solid ${copied ? C.successBrd : CARD_BDR}`,
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
-            }}>
-              {copied ? <><Check style={{ width: 9, height: 9 }} /> Copied</> : <><Copy style={{ width: 9, height: 9 }} /> Copy</>}
-            </button>
-          </div>
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   EXPANDED MEMBER DETAIL
-══════════════════════════════════════════════════════════════════ */
-function ExpandedMemberDetail({ m, gymName, gymId, checkIns, posts, now, onClose }) {
-  const recentPosts = (posts || []).filter(p => p.user_id === m.user_id && differenceInDays(now, new Date(p.created_at)) <= 30).length;
-  const engScore    = Math.min(100, Math.round((m.visits30 / 20) * 70 + (recentPosts / 5) * 30));
-  const engColor    = engScore >= 70 ? C.success : engScore >= 40 ? C.warn : C.danger;
-  return (
-    <>
-      <div style={{
-        padding: '10px 16px', background: INNER_BG,
-        borderBottom: `1px solid ${DIVIDER}`,
-        display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
-      }}>
-        {[
-          { label: 'Total Visits', val: m.visitsTotal,         color: C.t1     },
-          { label: 'This Month',   val: m.visits30,            color: C.t1     },
-          { label: 'Last Month',   val: m.prevVisits30 ?? '—', color: C.t1     },
-          { label: 'Eng. Score',   val: `${engScore}%`,        color: engColor },
-        ].map((s, i) => (
-          <div key={i} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: s.color, letterSpacing: '-0.03em' }}>{s.val}</div>
-            <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', marginTop: 2, letterSpacing: '.06em' }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-      {m.user_email && (
-        <div style={{ padding: '8px 16px', background: INNER_BG, borderBottom: `1px solid ${DIVIDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.06em' }}>Email</span>
-          <a href={`mailto:${m.user_email}`} style={{ fontSize: 12, fontWeight: 500, color: C.accent, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>
-            {m.user_email}
-          </a>
-        </div>
-      )}
-      {(() => {
-        const wrap = node => <div style={{ padding: '8px 16px', borderBottom: `1px solid ${DIVIDER}` }}>{node}</div>;
-        const fn = m.name.split(' ')[0];
-        if (m.daysSince >= 21)
-          return wrap(<StatNudge color={C.danger} icon={AlertTriangle} stat={`${m.daysSince} days since last visit.`} detail={`${fn} was visiting ${m.prevVisits30 > 0 ? `${m.prevVisits30}/mo before — now inactive.` : 'regularly before going quiet.'} This is the window to reach out.`} />);
-        if (m.daysSince >= 14)
-          return wrap(<StatNudge color={C.warn} icon={AlertTriangle} stat={`${m.daysSince} days away.`} detail={`${fn} is showing early churn signals. A quick check-in now is more effective than waiting.`} />);
-        if (m.joinedDaysAgo !== null && m.joinedDaysAgo <= 14 && m.visitsTotal < 2)
-          return wrap(<StatNudge color={C.warn} icon={Zap} stat="New member — hasn't returned yet." detail={`${fn} joined ${m.joinedDaysAgo} day${m.joinedDaysAgo !== 1 ? 's' : ''} ago. A personal welcome message in the first two weeks makes a real difference.`} />);
-        if (m.prevVisits30 >= 4 && m.visits30 <= m.prevVisits30 * 0.5)
-          return wrap(<StatNudge color={C.warn} icon={TrendingDown} stat={`Visits down from ${m.prevVisits30} to ${m.visits30} this month.`} detail={`${fn}'s frequency has dropped noticeably — worth checking in before it falls further.`} />);
-        if (m.streak >= 14)
-          return wrap(<StatNudge color={C.success} icon={CheckCircle} stat={`${m.streak}-day streak.`} detail={`${fn} is highly consistent — a great candidate for a challenge or a referral ask.`} />);
-        if (m.visitsTotal === 1)
-          return wrap(<StatNudge color={C.warn} icon={Zap} stat="Only 1 visit so far." detail={`First impressions matter — reach out to ${fn} to make sure their experience was good.`} />);
-        return null;
-      })()}
-      <MemberPushPanel member={m} gymName={gymName} gymId={gymId} onClose={onClose} />
-    </>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════════════════════════ */
-export default function TabMembers({
-  allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
-  atRisk, atRiskMembersList, retentionRate, totalMembers, activeThisWeek, newSignUps, weeklyChangePct,
-  avatarMap, nameMap = {}, posts,
-  memberFilter, setMemberFilter, memberSearch, setMemberSearch, memberSort, setMemberSort,
-  memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
-  openModal, now,
-}) {
-  const [expandedMember, setExpandedMember] = useState(null);
-  const [showBulkPanel,  setShowBulkPanel]  = useState(false);
+export default function GymOwnerDashboard() {
+  const [tab, setTab] = useState('overview');
+  const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  React.useEffect(() => {
+
+  useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
-  const gymName = selectedGym?.name || 'Your Gym';
-  const memberRows = useMemo(() => {
-    const bannedSet = new Set(selectedGym?.banned_members || []);
-    return allMemberships.map(m => {
-      const lastVisit     = m.lastCheckIn || null;
-      const daysSince     = m.daysSince != null ? m.daysSince : 999;
-      const isBanned      = bannedSet.has(m.user_id);
-      const name          = nameMap[m.user_id] || m.user_name || 'Member';
-      const joinDate      = m.join_date || m.created_date || m.created_at;
-      const joinedDaysAgo = joinDate ? Math.floor((now - new Date(joinDate)) / 86400000) : null;
-      let risk = 'Low';
-      if (daysSince >= 21) risk = 'High';
-      else if (daysSince >= 14) risk = 'Medium';
-      let lastVisitDisplay = 'Never';
-      if (lastVisit) {
-        if      (daysSince === 0)  lastVisitDisplay = 'Today';
-        else if (daysSince === 1)  lastVisitDisplay = '1 day ago';
-        else if (daysSince < 7)   lastVisitDisplay = `${daysSince} days ago`;
-        else if (daysSince < 14)  lastVisitDisplay = '1 week ago';
-        else if (daysSince < 30)  lastVisitDisplay = `${Math.floor(daysSince / 7)} weeks ago`;
-        else                      lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
+
+  const [selectedGym, setSelectedGym] = useState(null);
+  const [gymOpen, setGymOpen] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [showPoster, setShowPoster] = useState(false);
+  const [chartRange, setChartRange] = useState(7);
+  const [leaderboardView, setLeaderboardView] = useState('checkins');
+  const [atRiskDays, setAtRiskDays] = useState(14);
+  const [memberFilter, setMemberFilter] = useState('all');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberSort, setMemberSort] = useState('recentlyActive');
+  const [memberPage, setMemberPage] = useState(1);
+  const [memberPageSize] = useState(10);
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [showChat, setShowChat] = useState(false);
+
+  const openModal = useCallback((name) => {if (name === 'message') {setTab('members');return;}setModal(name);}, []);
+  const closeModal = useCallback(() => setModal(null), []);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
+  const [selectedCoachId, setSelectedCoachId] = useState(null);
+
+  const effectiveAccountType = selectedCoachId ? 'coach' : currentUser?.account_type;
+  const isCoach = effectiveAccountType === 'coach';
+  const isGymOwner = effectiveAccountType === 'gym_owner';
+  const dashRole = isCoach ? 'coach' : 'gym_owner';
+  const roleLabel = isCoach ? 'Coach' : 'Gym Owner';
+
+  const tabInitialised = React.useRef(false);
+  useEffect(() => {
+    if (!tabInitialised.current && currentUser) {
+      setTab(isCoach ? 'today' : 'overview');
+      tabInitialised.current = true;
+    }
+  }, [currentUser, isCoach]);
+
+  useEffect(() => {
+    const h = () => base44.auth.logout();
+    document.addEventListener('dash-logout', h);
+    return () => document.removeEventListener('dash-logout', h);
+  }, []);
+
+  // Handle coach quick actions from the top bar
+  useEffect(() => {
+    const h = (e) => {
+      if (e.detail === 'addClient') {
+        setTab('members');
+        setTimeout(() => window.dispatchEvent(new CustomEvent('coachOpenAddClient')), 100);
+      } else if (e.detail === 'bookClient') {
+        openModal('classes');
       }
-      return {
-        ...m, name,
-        visits30: m.ci30Count || 0, prevVisits30: m.prevCi30Count || 0,
-        visitsTotal: m.visitsTotal || 0,
-        lastVisit, daysSince, risk, lastVisitDisplay,
-        plan: m.plan || m.membership_type || m.type || 'Standard',
-        isBanned, avatar_url: avatarMap[m.user_id] || null,
-        joinedDaysAgo, streak: m.streak || 0,
-      };
-    });
-  }, [allMemberships, selectedGym?.banned_members, avatarMap, nameMap, now]);
+    };
+    window.addEventListener('coachAction', h);
+    return () => window.removeEventListener('coachAction', h);
+  }, [openModal]);
 
-  const filtered = useMemo(() => memberRows.filter(m => {
-    if (memberFilter === 'active')   return m.daysSince < 7;
-    if (memberFilter === 'inactive') return m.daysSince >= 14;
-    if (memberFilter === 'atRisk')   return m.risk !== 'Low';
-    if (memberFilter === 'new')      return m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30;
-    return true;
-  }).filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase())), [memberRows, memberFilter, memberSearch]);
-
-  const sorted = useMemo(() => [...filtered].sort((a, b) => {
-    if (memberSort === 'recentlyActive') return a.daysSince - b.daysSince;
-    if (memberSort === 'mostVisits')     return b.visits30 - a.visits30;
-    if (memberSort === 'newest')         return (a.joinedDaysAgo ?? 9999) - (b.joinedDaysAgo ?? 9999);
-    if (memberSort === 'highRisk')       { const r = { High: 0, Medium: 1, Low: 2 }; return r[a.risk] - r[b.risk]; }
-    if (memberSort === 'name')           return a.name.localeCompare(b.name);
-    if (memberSort === 'streak')         return b.streak - a.streak;
-    return 0;
-  }), [filtered, memberSort]);
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
-  const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
-  const filterCounts = {
-    all:      memberRows.length,
-    active:   memberRows.filter(m => m.daysSince < 7).length,
-    inactive: memberRows.filter(m => m.daysSince >= 14).length,
-    atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
-    new:      memberRows.filter(m => m.joinedDaysAgo !== null && m.joinedDaysAgo <= 30).length,
+  const handleRoleSelect = (roleId) => {
+    if (roleId === 'gym_owner') {setSelectedCoachId(null);} else {setSelectedCoachId(roleId);}
+    setTab(roleId === 'gym_owner' ? 'overview' : 'today');
   };
-  const toggleAll       = () => { if (selectedRows.size === paginated.length) { setSelectedRows(new Set()); setShowBulkPanel(false); } else setSelectedRows(new Set(paginated.map(m => m.id))); };
-  const handleToggleRow = id  => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); if (s.size === 0) setShowBulkPanel(false); };
-  const handleFilter    = f   => { setMemberFilter(f); setMemberPage(1); };
-  const handleSearch    = v   => { setMemberSearch(v); setMemberPage(1); };
-  const handleMarkAtRisk = m  => openModal('message', m);
-  const weekAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCI  = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
-  const checkInLB = Object.values(weeklyCI.reduce((acc, c) => {
-    if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: c.user_name, userAvatar: avatarMap[c.user_id] || null, count: 0 };
-    acc[c.user_id].count++;
-    return acc;
-  }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  const streakLB = memberRows.map(m => ({ userId: m.user_id, userName: m.name, userAvatar: m.avatar_url, streak: m.streak })).sort((a, b) => b.streak - a.streak).slice(0, 10);
-  const COLS = '32px 2.2fr 1.1fr 1fr 1fr 1fr';
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {!isMobile && <SegmentSummary memberRows={memberRows} setMemberFilter={handleFilter} activeFilter={memberFilter} />}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 272px', gap: 14, alignItems: 'start' }}>
-        {/* ── Main member table ── */}
-        <Card style={{ overflow: 'hidden' }}>
-          {/* Filter bar */}
-          <div style={{
-            padding: '12px 16px', borderBottom: `1px solid ${CARD_BDR}`,
-            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
-            position: 'sticky', top: 0, background: CARD_BG, zIndex: 10,
-          }}>
-            <button onClick={() => openModal('members')} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 14px', borderRadius: 8,
-              background: C.accent, color: '#fff', border: 'none',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
-            }}>
-              <Plus style={{ width: 12, height: 12 }} /> Add Member
+  const NAV = ALL_NAV.filter((item) => item.roles.includes(dashRole)).map((item) => ({
+    ...item, label: isCoach && item.coachLabel ? item.coachLabel : item.label
+  }));
+
+  const { data: gyms = [], error: gymsError } = useQuery({
+    queryKey: ['ownerGyms', currentUser?.email],
+    queryFn: async () => {
+      if (isCoach) {
+        const coachRecords = await base44.entities.Coach.filter({ user_email: currentUser.email });
+        if (!coachRecords.length) return [];
+        const gymIds = [...new Set(coachRecords.map((c) => c.gym_id))];
+        return base44.entities.Gym.filter({ id: { $in: gymIds } });
+      }
+      return base44.entities.Gym.filter({ owner_email: currentUser.email });
+    },
+    enabled: !!currentUser?.email, retry: 3, staleTime: 60 * 1000, refetchInterval: 60 * 1000, refetchIntervalInBackground: false
+  });
+
+  const myGyms = isCoach ? gyms : gyms.filter((g) => g.owner_email === currentUser?.email);
+  const approvedGyms = myGyms.filter((g) => g.status === 'approved');
+  const pendingGyms = isCoach ? [] : myGyms.filter((g) => g.status === 'pending');
+
+  useEffect(() => {if (approvedGyms.length > 0 && !selectedGym) setSelectedGym(approvedGyms[0]);}, [approvedGyms, selectedGym]);
+
+  const qo = { staleTime: 3 * 60 * 1000, placeholderData: (p) => p };
+  const on = !!selectedGym;
+
+  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }, 'title', 50), enabled: on, ...qo });
+  const { data: classes = [] } = useQuery({ queryKey: ['classes', selectedGym?.id], queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
+  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', selectedGym?.id], queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
+  const { data: events = [] } = useQuery({ queryKey: ['events', selectedGym?.id], queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date', 50), enabled: on, ...qo });
+  const { data: posts = [] } = useQuery({ queryKey: ['posts', selectedGym?.id], queryFn: () => base44.entities.Post.filter({ gym_id: selectedGym.id }, '-created_date', 20), enabled: on, ...qo });
+  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
+  const { data: polls = [] } = useQuery({ queryKey: ['polls', selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
+
+  const { data: coachBookings = [] } = useQuery({ queryKey: ['coachBookings', selectedGym?.id], queryFn: () => base44.entities.Booking.filter({ gym_id: selectedGym.id }, '-session_date', 300), enabled: on && isCoach, staleTime: 2 * 60 * 1000 });
+  const { data: coachAssignedWorkouts = [] } = useQuery({
+    queryKey: ['coachAssignedWorkouts', selectedGym?.id, selectedCoachId],
+    queryFn: async () => {
+      const coachList = await base44.entities.Coach.filter({ gym_id: selectedGym.id });
+      const me = coachList.find((c) => selectedCoachId ? c.id === selectedCoachId : c.user_email === currentUser?.email);
+      if (!me) return [];
+      return base44.entities.AssignedWorkout.filter({ coach_id: me.id }, '-assigned_date', 300);
+    },
+    enabled: on && isCoach, staleTime: 2 * 60 * 1000
+  });
+
+  const { data: stats = {} } = useQuery({
+    queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
+    queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then((r) => r.data),
+    enabled: on, staleTime: 3 * 60 * 1000, placeholderData: (p) => p
+  });
+
+  const checkIns = stats.recentCheckIns || [];
+  const recentActivity = stats.recentActivity || [];
+  const allMemberships = stats.membersWithActivity || [];
+  const effectiveMemberships = allMemberships;
+
+  const inv = useCallback((...keys) => {keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] }));queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] });}, [queryClient, selectedGym?.id]);
+  const invGyms = useCallback(() => queryClient.invalidateQueries({ queryKey: ['gyms'] }), [queryClient]);
+  const onErr = useCallback((e) => toast.error(e?.message || 'Something went wrong'), []);
+
+  const createRewardM = useMutation({ mutationFn: (d) => base44.entities.Reward.create(d), onSuccess: () => inv('rewards'), onError: onErr });
+  const deleteRewardM = useMutation({ mutationFn: (id) => base44.entities.Reward.delete(id), onSuccess: () => inv('rewards'), onError: onErr });
+  const createClassM = useMutation({ mutationFn: (d) => base44.entities.GymClass.create(d), onSuccess: () => inv('classes'), onError: onErr });
+  const deleteClassM = useMutation({ mutationFn: (id) => base44.entities.GymClass.delete(id), onSuccess: () => inv('classes'), onError: onErr });
+  const updateClassM = useMutation({ mutationFn: ({ id, data }) => base44.entities.GymClass.update(id, data), onSuccess: () => inv('classes'), onError: onErr });
+  const createCoachM = useMutation({ mutationFn: (d) => base44.entities.Coach.create(d), onSuccess: () => inv('coaches'), onError: onErr });
+  const deleteCoachM = useMutation({ mutationFn: (id) => base44.entities.Coach.delete(id), onSuccess: () => inv('coaches'), onError: onErr });
+  const updateCoachM = useMutation({ mutationFn: ({ id, data }) => base44.entities.Coach.update(id, data), onSuccess: () => inv('coaches'), onError: onErr });
+  const updateGalleryM = useMutation({ mutationFn: (g) => base44.entities.Gym.update(selectedGym.id, { gallery: g }), onSuccess: () => {invGyms();closeModal();}, onError: onErr });
+  const updateGymM = useMutation({ mutationFn: (d) => base44.entities.Gym.update(selectedGym.id, d), onSuccess: () => {invGyms();closeModal();}, onError: onErr });
+  const createEventM = useMutation({ mutationFn: (d) => base44.entities.Event.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, attendees: 0 }), onSuccess: () => {inv('events');closeModal();}, onError: onErr });
+  const createChallengeM = useMutation({ mutationFn: (d) => base44.entities.Challenge.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, participants: [], status: 'upcoming' }), onSuccess: () => {inv('challenges');closeModal();}, onError: onErr });
+  const banMemberM = useMutation({ mutationFn: (uid) => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'ban' }), onSuccess: invGyms, onError: onErr });
+  const unbanMemberM = useMutation({ mutationFn: (uid) => base44.functions.invoke('manageMember', { memberId: uid, gymId: selectedGym.id, action: 'unban' }), onSuccess: invGyms, onError: onErr });
+  const deleteGymM = useMutation({ mutationFn: () => base44.functions.invoke('deleteGym', { gymId: selectedGym.id }), onSuccess: () => {invGyms();closeModal();window.location.href = createPageUrl('Gyms');}, onError: onErr });
+  const deleteAccountM = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => {closeModal();base44.auth.logout();}, onError: onErr });
+  const createPollM = useMutation({ mutationFn: (d) => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => {inv('polls');closeModal();}, onError: onErr });
+  const deletePostM = useMutation({ mutationFn: (id) => base44.entities.Post.delete(id), onSuccess: () => inv('posts'), onError: onErr });
+  const deleteEventM = useMutation({ mutationFn: (id) => base44.entities.Event.delete(id), onSuccess: () => inv('events'), onError: onErr });
+  const deleteChallengeM = useMutation({ mutationFn: (id) => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges'), onError: onErr });
+  const deletePollM = useMutation({ mutationFn: (id) => base44.entities.Poll.delete(id), onSuccess: () => inv('polls'), onError: onErr });
+
+  const now = new Date();
+
+  const memberUserIds = useMemo(() => {
+    const ids = new Set();
+    (allMemberships || []).forEach((m) => {if (m.user_id) ids.add(m.user_id);});
+    checkIns.forEach((c) => {if (c.user_id) ids.add(c.user_id);});
+    recentActivity.forEach((a) => {if (a.user_id) ids.add(a.user_id);});
+    return [...ids].slice(0, 100);
+  }, [allMemberships, checkIns, recentActivity]);
+
+  const { data: memberUserRecords = [] } = useQuery({
+    queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
+    queryFn: () => base44.entities.User.filter({ id: { $in: memberUserIds } }),
+    enabled: !!selectedGym && memberUserIds.length > 0,
+    staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000
+  });
+
+  const memberAvatarMapResolved = useMemo(() => {
+    const map = {};
+    (allMemberships || []).forEach((m) => {if (m.user_id && m.avatar_url) map[m.user_id] = m.avatar_url;});
+    memberUserRecords.forEach((u) => {if (u.id && u.avatar_url) map[u.id] = u.avatar_url;});
+    if (currentUser?.id && currentUser.avatar_url) map[currentUser.id] = currentUser.avatar_url;
+    return map;
+  }, [allMemberships, memberUserRecords, currentUser]);
+
+  const memberNameMap = useMemo(() => {
+    const map = {};
+    (allMemberships || []).forEach((m) => {if (m.user_id && m.user_name) map[m.user_id] = m.user_name;});
+    checkIns.forEach((c) => {if (c.user_id && c.user_name) map[c.user_id] = c.user_name;});
+    recentActivity.forEach((a) => {if (a.user_id && a.name) map[a.user_id] = a.name;});
+    memberUserRecords.forEach((u) => {if (u.id) {const name = u.display_name || (u.username ? u.username : null) || u.full_name;if (name) map[u.id] = name;}});
+    if (currentUser?.id) {const name = currentUser.display_name || currentUser.username || currentUser.full_name;if (name) map[currentUser.id] = name;}
+    return map;
+  }, [allMemberships, checkIns, recentActivity, memberUserRecords, currentUser]);
+
+  const {
+    todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
+    activeThisWeek = 0, weeklyChangePct = 0,
+    activeThisMonth = 0, totalMembers = 0, retentionRate = 0,
+    monthChangePct = 0, monthCiPer = [],
+    newSignUps = 0, cancelledEst = 0,
+    atRisk = 0, atRiskMembersData: atRiskMembersList = [],
+    memberLastCheckIn = {},
+    sparkData7 = [], monthGrowthData = [],
+    peakLabel = null, peakEndLabel = null, peakEntry = null,
+    satVsAvg = 0, chartDays = [], streaks = [],
+    avatarMap = {},
+    weekTrend = [], peakHours = [], busiestDays = [],
+    returnRate = 0, dailyAvg = 0, engagementSegments = {},
+    retentionFunnel = [], dropOffBuckets = [], churnSignals = [], week1ReturnTrend = [],
+    retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
+    ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0, monthlyTrendCoach = 0,
+    returningCount = 0, newMembersThis30 = 0,
+    weeklyChart = [], monthlyChart = [],
+    engagementSegmentsCoach = {}, weekSpark = []
+  } = stats;
+
+  const ci30 = [];
+  // Use the resolved avatar map (fetched from User entity) as the primary source
+  // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
+  const avatarMapFull = useMemo(() => {
+    return { ...avatarMap, ...memberAvatarMapResolved };
+  }, [avatarMap, memberAvatarMapResolved]);
+
+  const activeCoachRecord = useMemo(() => {
+    if (!isCoach) return null;
+    if (selectedCoachId) return coaches.find((c) => c.id === selectedCoachId) || null;
+    return coaches.find((c) => c.user_email === currentUser?.email) || null;
+  }, [isCoach, selectedCoachId, coaches, currentUser]);
+
+  const myClasses = useMemo(() => {
+    if (!isCoach) return classes;
+    if (activeCoachRecord) return classes.filter((c) => c.coach_id === activeCoachRecord.id || c.instructor === activeCoachRecord.name || c.coach_name === activeCoachRecord.name || c.coach_email === activeCoachRecord.user_email);
+    return classes.filter((c) => c.instructor === currentUser?.full_name || c.instructor === currentUser?.email || c.coach_name === currentUser?.full_name || c.coach_email === currentUser?.email || c.coach_id === currentUser?.id);
+  }, [classes, currentUser, isCoach, activeCoachRecord]);
+
+  const coachMemberships = useMemo(() => {
+    if (!isCoach) return allMemberships;
+    // Include members who have a booking with this coach
+    const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
+    if (bookedClientIds.size > 0) {
+      return allMemberships.filter(m => bookedClientIds.has(m.user_id));
+    }
+    // Fallback: filter by client_notes if available
+    if (activeCoachRecord?.client_notes) {
+      const ids = Object.keys(activeCoachRecord.client_notes);
+      if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
+    }
+    return allMemberships;
+  }, [isCoach, activeCoachRecord, allMemberships, coachBookings]);
+
+  const coachCheckIns = useMemo(() => {
+    if (!isCoach || !activeCoachRecord) return checkIns;
+    const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
+    if (clientIds && clientIds.length > 0) return checkIns.filter((c) => clientIds.includes(c.user_id));
+    return checkIns;
+  }, [isCoach, activeCoachRecord, checkIns]);
+
+  const coachCi30 = [];
+  const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
+  const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
+  const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
+  const coachChallenges = isCoach ? challenges.filter((c) => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
+  const coachPolls = isCoach ? polls.filter((p) => p.created_by === coachUserId || !p.created_by) : polls;
+
+  const priorities = [
+  atRisk > 0 && { icon: AlertCircle, color: D.red, label: `${atRisk} members inactive 14+ days`, action: 'View members', fn: () => setTab('members') },
+  !challenges.some((c) => c.status === 'active') && { icon: Trophy, color: D.amber, label: 'No active challenge running', action: 'Create one', fn: () => openModal('challenge') },
+  polls.length === 0 && { icon: BarChart2, color: D.amber, label: 'No active polls', action: 'Create poll', fn: () => openModal('poll') },
+  monthChangePct < 0 && { icon: TrendingDown, color: D.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') }].
+  filter(Boolean).slice(0, 4);
+
+  const tabPanels = NAV.map((item) => {
+    let content = null;
+    if (item.id === 'overview' && !isCoach) {
+      content = <TabOverview todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest} activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate} newSignUps={newSignUps} monthChangePct={monthChangePct} ciPrev30={[]} atRisk={atRisk} sparkData={sparkData7} monthGrowthData={monthGrowthData} cancelledEst={cancelledEst} peakLabel={peakLabel} peakEndLabel={peakEndLabel} peakEntry={peakEntry} satVsAvg={satVsAvg} monthCiPer={monthCiPer} checkIns={checkIns} allMemberships={effectiveMemberships} challenges={challenges} posts={posts} polls={polls} classes={classes} coaches={coaches} streaks={streaks} recentActivity={recentActivity} chartDays={chartDays} chartRange={chartRange} setChartRange={setChartRange} avatarMap={memberAvatarMapResolved} nameMap={memberNameMap} priorities={priorities} selectedGym={selectedGym} now={now} openModal={openModal} setTab={setTab} Spark={Spark} Delta={Delta} retentionBreakdown={retentionBreakdown} week1ReturnRate={week1ReturnRate} newNoReturnCount={newNoReturnCount} />;
+    } else if (item.id === 'today' && isCoach) {
+      content = <TabCoachToday allMemberships={coachMemberships} checkIns={coachCheckIns} myClasses={myClasses} currentUser={currentUser} openModal={openModal} setTab={setTab} now={now} />;
+    } else if (item.id === 'schedule' && isCoach) {
+      content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
+    } else if (item.id === 'members') {
+      content = isCoach ?
+      <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
+      <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
+    } else if (item.id === 'content') {
+      content = isCoach ?
+      <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
+      <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
+    } else if (item.id === 'analytics') {
+      content = isCoach ?
+      <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
+      <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />;
+    } else if (item.id === 'profile' && isCoach) {
+      content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
+    } else if (item.id === 'engagement') {
+      content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
+    } else if (item.id === 'gym') {
+      content = <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={(d) => createRewardM.mutate(d)} onDeleteReward={(id) => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />;
+    }
+    return { id: item.id, content };
+  }).filter((p) => p.content !== null);
+
+  const Splash = ({ children }) =>
+  <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.bgBase }}>
+      <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 16, padding: 36, maxWidth: 380, width: '100%', textAlign: 'center' }}>
+        {children}
+      </div>
+    </div>;
+
+  if (gymsError) return (
+    <Splash>
+      <X style={{ width: 26, height: 26, color: D.red, margin: '0 auto 12px' }} />
+      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>Connection Error</h2>
+      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>{gymsError.message}</p>
+      <button onClick={() => window.location.reload()} style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
+    </Splash>);
+
+  if (approvedGyms.length === 0 && pendingGyms.length > 0) return (
+    <Splash>
+      <Clock style={{ width: 26, height: 26, color: D.amber, margin: '0 auto 12px' }} />
+      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>Pending Approval</h2>
+      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Your gym <strong style={{ color: D.t1 }}>{pendingGyms[0].name}</strong> is under review. We'll notify you once it's approved.</p>
+      <Link to={createPageUrl('Home')}><button style={{ background: 'rgba(255,255,255,0.06)', color: D.t1, border: `1px solid ${D.border}`, borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Home</button></Link>
+    </Splash>);
+
+  if (myGyms.length === 0 && !isCoach) return (
+    <Splash>
+      <Dumbbell style={{ width: 26, height: 26, color: D.blue, margin: '0 auto 12px' }} />
+      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>No Gyms Yet</h2>
+      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Register your gym to get started with the dashboard.</p>
+      <Link to={createPageUrl('GymSignup')}><button style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Register Your Gym</button></Link>
+    </Splash>);
+
+  const sharedModals =
+  <>
+      <ManageClassesModal open={modal === 'classes'} onClose={closeModal} classes={classes} onCreateClass={(d) => createClassM.mutate(d)} onUpdateClass={(id, data) => updateClassM.mutate({ id, data })} onDeleteClass={(id) => deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending || updateClassM.isPending} />
+      <CreateGymOwnerPostModal open={modal === 'post'} onClose={closeModal} gym={selectedGym} onSuccess={() => inv('posts')} />
+      <CreateEventModal open={modal === 'event'} onClose={closeModal} onSave={(d) => createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending} />
+      <CreateChallengeModal open={modal === 'challenge'} onClose={closeModal} gyms={gyms} onSave={(d) => createChallengeM.mutate(d)} isLoading={createChallengeM.isPending} />
+      <QRScanner open={modal === 'qrScanner'} onClose={closeModal} />
+      <CreatePollModal open={modal === 'poll'} onClose={closeModal} onSave={(d) => createPollM.mutate(d)} isLoading={createPollM.isPending} />
+      <ManageRewardsModal open={modal === 'rewards'} onClose={closeModal} rewards={rewards} onCreateReward={(d) => createRewardM.mutate(d)} onDeleteReward={(id) => deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending} />
+      <ManageCoachesModal open={modal === 'coaches'} onClose={closeModal} coaches={coaches} onCreateCoach={(d) => createCoachM.mutate(d)} onDeleteCoach={(id) => deleteCoachM.mutate(id)} onUpdateCoach={(id, data) => updateCoachM.mutate({ id, data })} gym={selectedGym} isLoading={createCoachM.isPending} allMemberships={allMemberships} classes={classes} />
+      <EditGymPhotoModal open={modal === 'heroPhoto'} onClose={closeModal} gym={selectedGym} onSave={(url) => updateGymM.mutate({ image_url: url })} isLoading={updateGymM.isPending} />
+      <ManageGymPhotosModal open={modal === 'photos'} onClose={closeModal} gallery={selectedGym?.gallery || []} onSave={(g) => updateGalleryM.mutate(g)} isLoading={updateGalleryM.isPending} />
+      <ManageMembersModal open={modal === 'members'} onClose={closeModal} gym={selectedGym} onBanMember={(id) => banMemberM.mutate(id)} onUnbanMember={(id) => unbanMemberM.mutate(id)} />
+      <ManageEquipmentModal open={modal === 'equipment'} onClose={closeModal} equipment={selectedGym?.equipment || []} onSave={(e) => updateGymM.mutate({ equipment: e })} isLoading={updateGymM.isPending} />
+      <ManageAmenitiesModal open={modal === 'amenities'} onClose={closeModal} amenities={selectedGym?.amenities || []} onSave={(a) => updateGymM.mutate({ amenities: a })} isLoading={updateGymM.isPending} />
+      <EditBasicInfoModal open={modal === 'editInfo'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
+      <EditGymLogoModal open={modal === 'logo'} onClose={closeModal} currentLogoUrl={selectedGym?.logo_url} onSave={(url) => updateGymM.mutate({ logo_url: url })} isLoading={updateGymM.isPending} />
+      <EditPricingModal open={modal === 'pricing'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
+
+      <AlertDialog open={modal === 'deleteGym'} onOpenChange={(v) => !v && closeModal()}>
+        <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: D.t1, display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800 }}>
+              <Trash2 style={{ width: 16, height: 16, color: D.red }} /> Delete Gym Permanently?
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ color: D.t3, fontSize: 13 }}>
+              Deletes <strong style={{ color: D.t1 }}>{selectedGym?.name}</strong> and all its data. <span style={{ color: D.red, fontWeight: 700 }}>This cannot be undone.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: 'rgba(255,255,255,0.05)', color: D.t1, border: `1px solid ${D.border}` }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteGymM.mutate()} disabled={deleteGymM.isPending} style={{ background: D.red, color: '#fff', border: 'none' }}>
+              {deleteGymM.isPending ? 'Deleting…' : 'Delete Permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={modal === 'deleteAccount'} onOpenChange={(v) => !v && closeModal()}>
+        <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: D.t1, display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800 }}>
+              <Trash2 style={{ width: 16, height: 16, color: D.red }} /> Delete Account?
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ color: D.t3, fontSize: 13 }}>
+              Deletes your account, all gyms, and personal data. <span style={{ color: D.red, fontWeight: 700 }}>This cannot be undone.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: 'rgba(255,255,255,0.05)', color: D.t1, border: `1px solid ${D.border}` }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteAccountM.mutate()} disabled={deleteAccountM.isPending} style={{ background: D.red, color: '#fff', border: 'none' }}>
+              {deleteAccountM.isPending ? 'Deleting…' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)} />
+      <MemberChatPanel open={showChat} onClose={() => setShowChat(false)} allMemberships={allMemberships} currentUser={currentUser} avatarMap={memberAvatarMapResolved} />
+    </>;
+
+  // ── MOBILE ────────────────────────────────────────────────────────────────
+  if (isMobile) return (
+    <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: D.bgBase, overflow: 'hidden' }}>
+      <header style={{ flexShrink: 0, background: D.bgSidebar, borderBottom: `1px solid ${D.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: D.t1, letterSpacing: '-0.02em', lineHeight: 1 }}>{selectedGym?.name || 'Dashboard'}</div>
+            <div style={{ fontSize: 9, color: D.t3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 1 }}>{roleLabel}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {atRisk > 0 &&
+          <button onClick={() => setTab('members')} style={{ background: D.redDim, color: D.red, border: `1px solid ${D.redBrd}`, borderRadius: 99, fontSize: 10, fontWeight: 700, padding: '4px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <AlertTriangle style={{ width: 9, height: 9 }} />{atRisk}
             </button>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {[
-                { id: 'all',      label: 'All',      count: filterCounts.all      },
-                { id: 'active',   label: 'Active',   count: filterCounts.active   },
-                { id: 'inactive', label: 'Inactive', count: filterCounts.inactive },
-                { id: 'atRisk',   label: 'At Risk',  count: filterCounts.atRisk, isDanger: true },
-                { id: 'new',      label: 'New',      count: filterCounts.new      },
-              ].map(f => {
-                const on = memberFilter === f.id;
-                return (
-                  <button key={f.id} onClick={() => handleFilter(f.id)} style={{
-                    padding: '5px 11px', borderRadius: 8, fontSize: 11,
-                    fontWeight: on ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit',
-                    background: on ? INNER_BG : 'transparent',
-                    color: on ? (f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t1) : C.t3,
-                    border: `1px solid ${on ? CARD_BDR_H : 'transparent'}`,
-                    transition: 'all .15s',
-                    display: 'flex', alignItems: 'center', gap: 5,
-                  }}>
-                    {f.label}
-                    <span style={{
-                      fontSize: 9, fontWeight: 600,
-                      color: on && f.isDanger && filterCounts.atRisk > 0 ? C.danger : C.t3,
-                      background: 'rgba(255,255,255,0.07)',
-                      borderRadius: 99, padding: '0 5px', lineHeight: '16px',
-                    }}>
-                      {f.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ flex: 1 }} />
-            <select value={memberSort} onChange={e => setMemberSort(e.target.value)} style={{
-              padding: '5px 9px', borderRadius: 7,
-              background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-              color: C.t2, fontSize: 11, outline: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <option value="recentlyActive">Recently Active</option>
-              <option value="mostVisits">Most Visits</option>
-              <option value="newest">Newest First</option>
-              <option value="highRisk">High Risk First</option>
-              <option value="streak">Longest Streak</option>
-              <option value="name">Name A–Z</option>
-            </select>
-            <div style={{ position: 'relative' }}>
-              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: C.t3, pointerEvents: 'none' }} />
-              <input placeholder="Search members" value={memberSearch} onChange={e => handleSearch(e.target.value)} style={{
-                padding: '6px 12px 6px 28px', borderRadius: 8,
-                background: INNER_BG, border: `1px solid ${CARD_BDR}`,
-                color: C.t1, fontSize: 12, outline: 'none', fontFamily: 'inherit',
-                width: 160, transition: 'border-color .15s',
-              }}
-                onFocus={e => e.target.style.borderColor = CARD_BDR_H}
-                onBlur={e => e.target.style.borderColor = CARD_BDR}
-              />
-            </div>
-          </div>
+          }
+          <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer' }}>
+            <QrCode style={{ width: 14, height: 14 }} />
+          </button>
+          <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.blue, border: 'none', color: '#fff', cursor: 'pointer' }}>
+            <Plus style={{ width: 14, height: 14 }} />
+          </button>
+        </div>
+      </header>
 
-          {/* Bulk selection bar */}
-          {selectedRows.size > 0 && (
-            <div style={{
-              padding: '9px 16px', background: INNER_BG,
-              borderBottom: `1px solid ${CARD_BDR_H}`,
-              display: 'flex', alignItems: 'center', gap: 10,
-            }}>
-              <div style={{ display: 'flex' }}>
-                {memberRows.filter(m => selectedRows.has(m.id)).slice(0, 3).map((m, i) => (
-                  <div key={m.id} style={{ marginLeft: i > 0 ? -6 : 0, zIndex: 3 - i, border: `2px solid ${CARD_BG}`, borderRadius: '50%' }}>
-                    <Avatar name={m.name} size={20} src={m.avatar_url} />
-                  </div>
-                ))}
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>
-                {selectedRows.size} {selectedRows.size === 1 ? 'member' : 'members'} selected
-              </span>
-              <div style={{ flex: 1 }} />
-              <button onClick={() => { setSelectedRows(new Set()); setShowBulkPanel(false); }} style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: `1px solid ${CARD_BDR}`, color: C.t3, fontFamily: 'inherit' }}>
-                Clear
+      <MobileKpiStrip tab={tab} isCoach={isCoach} stats={stats} posts={posts} events={events} challenges={challenges} polls={polls} coaches={coaches} classes={classes} myClasses={myClasses} allMemberships={effectiveMemberships} />
+
+      <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
+        <div style={{ maxWidth: '100%' }}>
+          <Suspense fallback={<TabLoader />}>
+            {tabPanels.map((p) =>
+            <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
+            )}
+          </Suspense>
+        </div>
+      </main>
+
+      <nav style={{ flexShrink: 0, background: D.bgSidebar, borderTop: `1px solid ${D.border}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {NAV.map((item) => {
+          const active = tab === item.id;
+          return (
+            <button key={item.id} onClick={() => setTab(item.id)}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '11px 4px 9px', border: 'none', background: active ? 'rgba(59,130,246,0.06)' : 'transparent', cursor: 'pointer', color: active ? D.blue : D.t4, transition: 'color 0.15s, background 0.15s', fontFamily: 'inherit', position: 'relative' }}>
+              {active && <div style={{ position: 'absolute', top: 0, left: '25%', right: '25%', height: 2, background: D.blue, borderRadius: '0 0 2px 2px' }} />}
+              <item.icon style={{ width: 18, height: 18 }} />
+              <span style={{ fontSize: 9, fontWeight: active ? 700 : 500, letterSpacing: '0.03em' }}>{item.label}</span>
+            </button>);
+        })}
+      </nav>
+      {sharedModals}
+    </div>);
+
+  // ── DESKTOP ───────────────────────────────────────────────────────────────
+  return (
+    <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: D.bgBase }}>
+
+      {/* ── SIDEBAR ── */}
+      <aside style={{
+        width: collapsed ? 56 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
+        background: D.bgSidebar, borderRight: `1px solid ${D.border}`,
+        display: 'flex', flexDirection: 'column',
+        transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)'
+      }}>
+
+        <div style={{ padding: collapsed ? '13px 0' : '13px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
+          {collapsed ?
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+              onClick={() => setCollapsed(false)}
+              style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
+              onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
+                <Menu style={{ width: 16, height: 16 }} />
               </button>
-              <button onClick={() => setShowBulkPanel(v => !v)} style={{
-                padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                background: showBulkPanel ? C.accentSub : 'transparent',
-                border: `1px solid ${showBulkPanel ? C.accentBrd : CARD_BDR}`,
-                color: showBulkPanel ? C.accent : C.t2,
-                fontFamily: 'inherit', transition: 'all .15s',
-              }}>
-                <Bell style={{ width: 10, height: 10 }} />
-                {showBulkPanel ? 'Hide panel' : `Notify ${selectedRows.size}`}
-              </button>
-            </div>
-          )}
-          {showBulkPanel && selectedRows.size > 0 && (
-            <BulkPushPanel selectedRows={selectedRows} memberRows={memberRows} gymName={gymName} gymId={selectedGym?.id} onClose={() => setShowBulkPanel(false)} onSuccess={() => setSelectedRows(new Set())} />
-          )}
-
-          {/* Column headers */}
-          {!isMobile && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: COLS, gap: 8,
-              padding: '8px 16px', borderBottom: `1px solid ${CARD_BDR}`,
-              background: 'rgba(255,255,255,0.015)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
-              </div>
-              {['Member', 'Activity', 'Visits / Last seen', 'Membership', 'Risk'].map((col, i) => (
-                <div key={i}>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.08em' }}>{col}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Rows */}
-          <div style={{ minHeight: 280 }}>
-            {paginated.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <Empty icon={Users} label={memberSearch ? 'No members match your search' : 'No members in this filter'} />
-              </div>
-            ) : paginated.map((m, idx) => {
-              const isExp = expandedMember === m.id;
-              const isSel = selectedRows.has(m.id);
-              return (
-                <div key={m.id || idx}>
-                  <div
-                    onClick={() => { setExpandedMember(isExp ? null : m.id); if (showBulkPanel) setShowBulkPanel(false); }}
-                    style={{
-                      display: isMobile ? 'block' : 'grid',
-                      gridTemplateColumns: isMobile ? undefined : COLS,
-                      gap: 8, padding: isMobile ? '10px 12px' : '11px 16px',
-                      borderBottom: !isExp && idx < paginated.length - 1 ? `1px solid ${DIVIDER}` : 'none',
-                      borderLeft: isExp ? `3px solid ${C.accent}` : isSel ? `3px solid ${C.accent}40` : '3px solid transparent',
-                      background: isExp ? INNER_BG : isSel ? 'rgba(81,121,255,0.04)' : 'transparent',
-                      cursor: 'pointer', transition: 'background .1s, border-color .1s', alignItems: 'center',
-                    }}
-                    onMouseEnter={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; }}
-                    onMouseLeave={e => { if (!isExp && !isSel) e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    <div style={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onClick={e => { e.stopPropagation(); handleToggleRow(m.id); }}>
-                      <input type="checkbox" checked={isSel} onChange={() => handleToggleRow(m.id)} style={{ width: 13, height: 13, accentColor: C.accent, cursor: 'pointer' }} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginBottom: isMobile ? 8 : 0 }}>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <Avatar name={m.name} size={32} src={m.avatar_url} />
-                        {m.daysSince >= 14 && (
-                          <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: C.danger, border: `2px solid ${CARD_BG}` }} />
-                        )}
-                        {m.streak >= 7 && (
-                          <div style={{ position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: '50%', background: INNER_BG, border: `1px solid ${CARD_BDR}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Flame style={{ width: 7, height: 7, color: C.warn }} />
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: isExp ? C.accent : C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color .15s' }}>
-                            {m.name}
-                          </span>
-                          <MilestoneBadge visitsTotal={m.visitsTotal} joinedDaysAgo={m.joinedDaysAgo} />
-                        </div>
-                        <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
-                          {m.streak > 1
-                            ? <span style={{ color: C.warn, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                <Flame style={{ width: 9, height: 9 }} />{m.streak}-day streak
-                              </span>
-                            : m.plan}
-                        </div>
-                      </div>
-                    </div>
-                    <div onClick={e => e.stopPropagation()}><ActivityChip m={m} /></div>
-                    {!isMobile && <div onClick={e => e.stopPropagation()}><FrequencyInsight m={m} /></div>}
-                    {!isMobile && (
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
-                        <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>
-                          {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}`
-                            : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}`
-                            : 'Active member'}
-                        </div>
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
-                      <RiskBadge risk={m.risk} />
-                      <RowActions m={m} gymName={gymName} gymId={selectedGym?.id} openModal={openModal} onMarkAtRisk={handleMarkAtRisk} />
-                    </div>
-                  </div>
-                  {isExp && (
-                    <ExpandedMemberDetail m={m} gymName={gymName} gymId={selectedGym?.id} checkIns={checkIns} posts={posts} now={now} onClose={() => setExpandedMember(null)} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination */}
-          <div style={{ padding: '10px 16px', borderTop: `1px solid ${CARD_BDR}`, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: 3 }}>
-              {[
-                { icon: ChevronLeft,  disabled: memberPage <= 1,         action: () => setMemberPage(p => Math.max(1, p - 1)) },
-                { icon: ChevronRight, disabled: memberPage >= totalPages, action: () => setMemberPage(p => Math.min(totalPages, p + 1)) },
-              ].map(({ icon: Icon, disabled, action }, i) => (
-                <button key={i} disabled={disabled} onClick={action} style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'transparent', border: `1px solid ${CARD_BDR}`,
-                  color: disabled ? C.t4 : C.t2,
-                  cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1,
-                }}>
-                  <Icon style={{ width: 12, height: 12 }} />
-                </button>
-              ))}
-            </div>
-            {!isMobile && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let page = i + 1;
-              if (totalPages > 5) {
-                if      (memberPage <= 3)              page = i + 1;
-                else if (memberPage >= totalPages - 2) page = totalPages - 4 + i;
-                else                                   page = memberPage - 2 + i;
+            </div> :
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: D.bgSurface, border: `2px solid ${D.blue}`, boxShadow: '0 0 8px rgba(59,130,246,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {selectedGym?.logo_url || selectedGym?.image_url ?
+              <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
+              <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
               }
-              const isCurrent = memberPage === page;
-              return (
-                <button key={page} onClick={() => setMemberPage(page)} style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isCurrent ? INNER_BG : 'transparent',
-                  border: `1px solid ${isCurrent ? CARD_BDR_H : 'transparent'}`,
-                  color: isCurrent ? C.t1 : C.t3,
-                  fontSize: 12, fontWeight: isCurrent ? 700 : 400,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}>
-                  {page}
-                </button>
-              );
-            })}
-            <div style={{ flex: 1 }} />
-            <span style={{ fontSize: 11, color: C.t3 }}>{sorted.length} members · Page {memberPage} of {totalPages}</span>
-          </div>
-        </Card>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: D.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>
+                  {selectedGym?.name || 'Dashboard'}
+                </div>
+                <div style={{ fontSize: 9, color: D.t3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 1 }}>
+                  {roleLabel}
+                </div>
+              </div>
+              <button
+              onClick={() => setCollapsed(true)}
+              style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
+              onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
+                <Menu style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          }
 
-        {/* ── Right sidebar ── */}
-        {!isMobile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <AlertsPanel memberRows={memberRows} atRisk={atRisk} atRiskMembersList={atRiskMembersList} setMemberFilter={handleFilter} setMemberSort={setMemberSort} openModal={openModal} />
-            <DropOffWidget memberRows={memberRows} setMemberFilter={handleFilter} setMemberSort={setMemberSort} />
-            <WeekOneFollowUp memberRows={memberRows} setMemberFilter={handleFilter} />
+          {!collapsed && approvedGyms.length > 1 &&
+          <div style={{ position: 'relative', marginTop: 10 }}>
+              <button onClick={() => setGymOpen((o) => !o)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedGym?.name}</span>
+                <ChevronDown style={{ width: 11, height: 11, flexShrink: 0, transform: gymOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }} />
+              </button>
+              {gymOpen &&
+            <div style={{ position: 'absolute', left: 0, right: 0, top: '110%', borderRadius: 10, overflow: 'hidden', background: '#060c18', border: `1px solid ${D.borderHi}`, zIndex: 20, boxShadow: '0 12px 32px rgba(0,0,0,0.6)' }}>
+                  {approvedGyms.map((g) =>
+              <button key={g.id} onClick={() => {setSelectedGym(g);setGymOpen(false);}}
+              style={{ width: '100%', textAlign: 'left', padding: '9px 12px', fontSize: 12, fontWeight: 600, background: selectedGym?.id === g.id ? D.blueDim : 'transparent', color: selectedGym?.id === g.id ? D.blue : D.t2, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      {g.name}
+                    </button>
+              )}
+                </div>
+            }
+            </div>
+          }
+        </div>
+
+        {/* Navigation */}
+        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
+          {!collapsed &&
+          <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, letterSpacing: '0.10em', textTransform: 'uppercase', padding: '0 16px', marginBottom: 4 }}>
+              Navigation
+            </div>
+          }
+          {NAV.map((item) => {
+            const active = tab === item.id;
+            return (
+              <button key={item.id} onClick={() => setTab(item.id)}
+              className={`nav-item ${active ? 'active' : ''}`}
+              style={{ gap: collapsed ? 0 : 9, padding: collapsed ? '10px 0' : '8px 14px', justifyContent: collapsed ? 'center' : 'flex-start', marginBottom: 1 }}>
+                <item.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
+                {!collapsed && <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>}
+              </button>);
+          })}
+        </nav>
+
+        {/* Upgrade prompt */}
+        {!collapsed && isGymOwner &&
+        <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
+            <Link to={createPageUrl('Plus')}>
+              <div style={{ padding: '11px 13px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+            onMouseEnter={(e) => e.currentTarget.style.borderColor = D.borderHi}
+            onMouseLeave={(e) => e.currentTarget.style.borderColor = D.border}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                  <Crown style={{ width: 11, height: 11, color: D.t3 }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: D.t2 }}>Retention Pro</span>
+                </div>
+                <div style={{ fontSize: 10, color: D.t4 }}>Advanced analytics · From £49.99/mo</div>
+              </div>
+            </Link>
           </div>
-        )}
+        }
+
+        {/* Footer */}
+        <div style={{ flexShrink: 0, borderTop: `1px solid ${D.border}` }}>
+          {!collapsed &&
+          <div style={{ padding: '10px 10px 4px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, paddingLeft: 4 }}>Links</div>
+              {[
+            { icon: Eye, label: 'View Gym Page', to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
+            { icon: Users, label: 'Member View', to: createPageUrl('Home') }].
+            map((l, i) =>
+            <Link key={i} to={l.to}>
+                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', border: 'none', background: 'transparent', color: D.t4, fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 7, marginBottom: 1, transition: 'color 0.12s', fontFamily: 'inherit' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = D.t2}
+              onMouseLeave={(e) => e.currentTarget.style.color = D.t4}>
+                    <l.icon style={{ width: 12, height: 12 }} /><span>{l.label}</span>
+                  </button>
+                </Link>
+            )}
+            </div>
+          }
+          {collapsed &&
+          <div style={{ padding: '8px 0' }}>
+              {[
+            { icon: Eye, to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
+            { icon: Users, to: createPageUrl('Home') }].
+            map((l, i) =>
+            <Link key={i} to={l.to}>
+                  <button style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '9px 0', border: 'none', background: 'transparent', color: D.t4, cursor: 'pointer', transition: 'color 0.12s', fontFamily: 'inherit' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = D.t2}
+              onMouseLeave={(e) => e.currentTarget.style.color = D.t4}>
+                    <l.icon style={{ width: 13, height: 13 }} />
+                  </button>
+                </Link>
+            )}
+            </div>
+          }
+          <div style={{ padding: collapsed ? '4px 0 14px' : '0 10px 14px' }}>
+            <button onClick={() => base44.auth.logout()}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: collapsed ? '9px 0' : '7px 8px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: D.red, fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 7, opacity: 0.6, transition: 'opacity 0.12s', fontFamily: 'inherit' }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}>
+              <LogOut style={{ width: 13, height: 13 }} />
+              {!collapsed && <span>Log Out</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+
+        {/* ── TOP BAR — date on the left, actions on the right ── */}
+        <header style={{ height: 54, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: D.bgSidebar, borderBottom: `1px solid ${D.border}` }}>
+
+          {/* LEFT: live date, shown on every tab */}
+          <div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
+            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </div>
+
+          {/* RIGHT: action buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {isGymOwner && selectedGym?.join_code &&
+            <button onClick={() => setShowPoster(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'border-color 0.12s', fontFamily: 'inherit' }}
+            onMouseEnter={(e) => e.currentTarget.style.borderColor = D.borderHi}
+            onMouseLeave={(e) => e.currentTarget.style.borderColor = D.border}>
+                <QrCode style={{ width: 11, height: 11 }} />
+                <span style={{ fontFamily: 'monospace', letterSpacing: '0.10em' }}>{selectedGym.join_code}</span>
+              </button>
+            }
+
+            {atRisk > 0 &&
+            <button onClick={() => setTab('members')}
+            style={{ background: D.redDim, color: D.red, border: `1px solid ${D.redBrd}`, borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
+                <AlertTriangle style={{ width: 11, height: 11 }} />{atRisk} at risk
+              </button>
+            }
+
+            <button onClick={() => openModal('qrScanner')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: D.t2, border: `1px solid ${D.border}`, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.12s', fontFamily: 'inherit' }}
+            onMouseEnter={(e) => {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}
+            onMouseLeave={(e) => {e.currentTarget.style.color = D.t2;e.currentTarget.style.borderColor = D.border;}}>
+              <QrCode style={{ width: 12, height: 12 }} /> Scan QR
+            </button>
+
+            <button onClick={() => openModal('post')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: D.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.12s', fontFamily: 'inherit' }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.88'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
+              <Plus style={{ width: 12, height: 12 }} /> New Post
+            </button>
+
+            <ProfileDropdown currentUser={currentUser} coaches={coaches} currentRole={selectedCoachId || (isCoach ? 'coach' : 'gym_owner')} onRoleSelect={handleRoleSelect} />
+
+            <button
+              onClick={() => setShowChat((o) => !o)}
+              style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showChat ? D.blueDim : 'rgba(255,255,255,0.03)', border: `1px solid ${showChat ? D.blueBrd : D.border}`, color: showChat ? D.blue : D.t3, cursor: 'pointer', position: 'relative', transition: 'all 0.12s', fontFamily: 'inherit' }}
+              onMouseEnter={(e) => {if (!showChat) {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}}
+              onMouseLeave={(e) => {if (!showChat) {e.currentTarget.style.color = D.t3;e.currentTarget.style.borderColor = D.border;}}}>
+              <MessageCircle style={{ width: 13, height: 13 }} />
+            </button>
+          </div>
+        </header>
+
+        <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
+            <Suspense fallback={<TabLoader />}>
+              {tabPanels.map((p) =>
+              <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
+              )}
+            </Suspense>
+          </div>
+        </main>
       </div>
 
-      {/* ── Leaderboards ── */}
-      {!isMobile && (
-        <LeaderboardSection checkInLeaderboard={checkInLB} streakLeaderboard={streakLB} progressLeaderboard={[]} />
-      )}
-    </div>
-  );
+      {sharedModals}
+    </div>);
 }

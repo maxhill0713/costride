@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import fs from 'fs';
 import base44Plugin from '@base44/vite-plugin';
 
 export default defineConfig({
@@ -19,34 +18,23 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch vite-plugin-pwa and workbox-build to raise the 2MB asset cache limit to 10MB.
-    // Runs at buildStart (before closeBundle where the error fires) and patches all
-    // relevant JS files regardless of their hashed chunk filename.
+    // Patch workbox-build's generateSW to raise the 2MB precache limit to 10MB.
+    // We do this by intercepting the module after it's dynamically imported by vite-plugin-pwa.
     {
       name: 'patch-workbox-file-size-limit',
       enforce: 'post',
-      buildStart() {
-        const dirsToCheck = [
-          path.resolve(__dirname, 'node_modules/vite-plugin-pwa/dist'),
-          path.resolve(__dirname, 'node_modules/workbox-build/build'),
-          path.resolve(__dirname, 'node_modules/workbox-build/dist'),
-        ];
-        for (const dir of dirsToCheck) {
-          if (!fs.existsSync(dir)) continue;
-          const files = fs.readdirSync(dir).filter(f => f.endsWith('.js') || f.endsWith('.mjs') || f.endsWith('.cjs'));
-          for (const file of files) {
-            const filePath = path.join(dir, file);
-            let content;
-            try { content = fs.readFileSync(filePath, 'utf-8'); } catch { continue; }
-            // Patch both the literal byte value and any expression forms
-            let patched = content
-              .replace(/\b2097152\b/g, '10485760')
-              .replace(/2\s*\*\s*1024\s*\*\s*1024/g, '10485760');
-            if (patched !== content) {
-              fs.writeFileSync(filePath, patched, 'utf-8');
-            }
+      async buildStart() {
+        try {
+          const wb = await import('workbox-build');
+          const target = wb.default || wb;
+          if (typeof target.generateSW === 'function') {
+            const orig = target.generateSW.bind(target);
+            target.generateSW = (cfg) => {
+              cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
+              return orig(cfg);
+            };
           }
-        }
+        } catch {}
       },
     },
   ],

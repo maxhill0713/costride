@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut, SlidersHorizontal } from 'lucide-react';
@@ -260,32 +259,23 @@ const [showConfirmJoin, setShowConfirmJoin] = useState(false);
 const [pendingGymData, setPendingGymData] = useState(null);
 const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      let gym; let existed = false;
-      if (existingGyms.length > 0) { gym = existingGyms[0]; existed = true; }
-      else { gym = await base44.entities.Gym.create({ ...gymData, status: 'pending' }); }
-      const existingMemberships = await base44.entities.GymMembership.filter({ gym_id: gym.id, user_id: currentUser?.id });
-      if (existingMemberships.length === 0) {
-        await base44.entities.GymMembership.create({
-          gym_id: gym.id, user_id: currentUser?.id, status: 'active',
-          role: gymData.admin_id === currentUser?.id ? 'owner' : 'member',
-        });
+const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
+if (existingGyms.length > 0) {
+return { exists: true, gym: existingGyms[0] };
       }
-      return { existed, gym };
+const newGym = await base44.entities.Gym.create(gymData);
+return { exists: false, gym: newGym };
     },
-    onSuccess: ({ existed, gym }) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['memberGyms'] });
-      toast.success(existed ? `Joined ${gym.name}!` : `${gym.name} added — we'll review it within 24 hours.`);
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-    },
-    onError: (err) => { toast.error(err?.message || 'Failed to add gym. Please try again.'); },
+    }
   });
 const handleCreateGym = async () => {
 if (!selectedPlaceGym) return;
@@ -316,7 +306,7 @@ const gymData = {
       admin_id: isOwner ? currentUser?.id : null,
       owner_email: isOwner ? currentUser?.email : null,
       verified: isOwner,
-      status: 'pending',
+      status: 'approved',
       members_count: 0,
       image_url: selectedPlaceGym.photo_url || null
     };

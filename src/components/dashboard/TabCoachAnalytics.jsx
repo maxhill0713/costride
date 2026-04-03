@@ -15,25 +15,23 @@ import {
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg:      '#09090b',
-  surface: '#111113',
-  card:    '#111113',
+  bg:      '#060d18',
+  surface: '#0c1422',
+  card:    '#0f1928',
   border:  'rgba(255,255,255,0.07)',
-  borderH: 'rgba(255,255,255,0.12)',
   b2:      'rgba(255,255,255,0.04)',
-  t1: '#fafafa',
-  t2: '#a1a1aa',
-  t3: '#52525b',
-  t4: '#3f3f46',
+  t1: '#f0f4f8',
+  t2: '#94a3b8',
+  t3: '#64748b',
+  t4: '#3a5070',
   red:    '#ef4444',
   amber:  '#f59e0b',
   green:  '#10b981',
-  blue:   '#3b82f6',
-  purple: '#a1a1aa',
-  pink:   '#a1a1aa',
+  blue:   '#38bdf8',
+  purple: '#a78bfa',
+  pink:   '#f472b6',
   teal:   '#2dd4bf',
   orange: '#f97316',
-  shadow: '0 4px 16px rgba(0,0,0,.35)',
 };
 
 const card = {
@@ -52,7 +50,7 @@ const fmt$ = v => v >= 1000 ? `£${(v / 1000).toFixed(1)}k` : `£${Math.round(v)
 function ChartTip({ active, payload, label, prefix = '', suffix = '' }) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: 'rgba(9,9,11,0.97)', border: `1px solid ${C.border}`, borderRadius: 10, padding: '9px 13px' }}>
+    <div style={{ background: 'rgba(6,12,24,0.97)', border: `1px solid ${C.purple}33`, borderRadius: 10, padding: '9px 13px' }}>
       <p style={{ color: C.t3, marginBottom: 3, fontSize: 10, fontWeight: 600 }}>{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color || C.purple, fontWeight: 800, fontSize: 13, margin: '2px 0' }}>
@@ -67,7 +65,7 @@ function SectionLabel({ children, accent = C.purple, icon: Icon }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
       {Icon ? (
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${accent}18`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 13, height: 13, color: accent }} />
         </div>
       ) : (
@@ -81,8 +79,10 @@ function SectionLabel({ children, accent = C.purple, icon: Icon }) {
 function KpiCard({ icon: Icon, label, value, sub, color, trend, bar }) {
   return (
     <div style={{ ...card, padding: '16px 18px' }}>
+      <div style={{ position: 'absolute', bottom: -18, right: -18, width: 72, height: 72, borderRadius: '50%', background: color, opacity: 0.07, filter: 'blur(24px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(90deg,transparent,${color}55,transparent)`, pointerEvents: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}18`, border: `1px solid ${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon style={{ width: 13, height: 13, color }} />
         </div>
         {trend != null && (
@@ -96,7 +96,7 @@ function KpiCard({ icon: Icon, label, value, sub, color, trend, bar }) {
       <div style={{ fontSize: 10, color: C.t3, fontWeight: 500 }}>{sub}</div>
       {bar != null && (
         <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: `${color}14`, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: color, borderRadius: 99, transition: 'width 0.8s ease' }} />
+          <div style={{ height: '100%', width: `${Math.min(100, bar)}%`, background: `linear-gradient(90deg,${color},${color}bb)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
         </div>
       )}
     </div>
@@ -160,8 +160,9 @@ function RevenueDashboard({ payments = [], now }) {
 
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${C.green},${C.teal})`, borderRadius: '16px 16px 0 0' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.green}18`, border: `1px solid ${C.green}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DollarSign style={{ width: 13, height: 13, color: C.green }} />
         </div>
         <div>
@@ -171,7 +172,7 @@ function RevenueDashboard({ payments = [], now }) {
       </div>
 
       {/* MRR hero */}
-      <div style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.green}`, marginBottom: 14 }}>
+      <div style={{ padding: '14px 16px', borderRadius: 12, background: `${C.green}0d`, border: `1px solid ${C.green}22`, marginBottom: 14 }}>
         <div style={{ fontSize: 9, color: C.green, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Monthly Recurring Revenue</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <span style={{ fontSize: 32, fontWeight: 900, color: C.green, letterSpacing: '-0.04em' }}>{fmt$(data.mrr)}</span>
@@ -214,7 +215,7 @@ function RevenueDashboard({ payments = [], now }) {
       </ResponsiveContainer>
 
       {data.refunds > 0 && (
-        <div style={{ marginTop: 10, padding: '7px 10px', borderRadius: 8, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.red}`, display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: 10, padding: '7px 10px', borderRadius: 8, background: `${C.red}0a`, border: `1px solid ${C.red}18`, display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 10, color: C.red }}>Refunds this month</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: C.red }}>–{fmt$(data.refunds)}</span>
         </div>
@@ -256,7 +257,7 @@ function RevenueForecast({ payments = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.purple}18`, border: `1px solid ${C.purple}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <TrendingUp style={{ width: 13, height: 13, color: C.purple }} />
         </div>
         <div>
@@ -322,7 +323,7 @@ function MembershipGrowth({ membershipEvents = [], totalMembers = 0, now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.blue}18`, border: `1px solid ${C.blue}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Users style={{ width: 13, height: 13, color: C.blue }} />
         </div>
         <div>
@@ -399,7 +400,7 @@ function RetentionCohorts({ membershipEvents = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.teal}18`, border: `1px solid ${C.teal}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Layers style={{ width: 13, height: 13, color: C.teal }} />
         </div>
         <div>
@@ -506,7 +507,7 @@ function HeatmapChart({ gymId }) {
         </div>
         <div style={{ display: 'flex', gap: 5 }}>
           {[{ label: '4W', val: 4 }, { label: '12W', val: 12 }, { label: 'All', val: 0 }].map(o => (
-            <button key={o.val} onClick={() => setWeeks(o.val)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, cursor: 'pointer', background: weeks === o.val ? 'rgba(255,255,255,.07)' : C.b2, color: weeks === o.val ? C.t1 : C.t3, border: `1px solid ${weeks === o.val ? C.borderH : C.border}`, transition: 'all 0.15s' }}>
+            <button key={o.val} onClick={() => setWeeks(o.val)} style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 99, cursor: 'pointer', background: weeks === o.val ? `${C.purple}22` : C.b2, color: weeks === o.val ? C.purple : C.t3, border: `1px solid ${weeks === o.val ? `${C.purple}44` : C.border}`, transition: 'all 0.15s' }}>
               {o.label}
             </button>
           ))}
@@ -522,7 +523,7 @@ function HeatmapChart({ gymId }) {
             <div style={{ fontSize: 11, fontWeight: 600, color: C.t2 }}>{day}</div>
             {grid[di].map((val, si) => {
               const p = val / maxVal;
-              const bg = val === 0 ? C.b2 : p < 0.25 ? 'rgba(255,255,255,.08)' : p < 0.5 ? 'rgba(255,255,255,.18)' : p < 0.75 ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.6)';
+              const bg = val === 0 ? C.b2 : p < 0.25 ? `${C.purple}22` : p < 0.5 ? `${C.purple}44` : p < 0.75 ? `${C.purple}70` : `${C.purple}cc`;
               return (
                 <div key={si} title={val > 0 ? `${day} ${slots[si].label}: ${val}` : undefined}
                   style={{ height: 30, borderRadius: 6, background: bg, border: `1px solid ${C.b2}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -563,7 +564,7 @@ function ClassPerformance({ classPerf = [], bookings = [], classes = [] }) {
       {/* No-show callout */}
       <div style={{ ...card, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.amber}18`, border: `1px solid ${C.amber}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AlertTriangle style={{ width: 13, height: 13, color: C.amber }} />
           </div>
           <div>
@@ -588,10 +589,10 @@ function ClassPerformance({ classPerf = [], bookings = [], classes = [] }) {
             const fc = fillColor(cls.fill);
             return (
               <div key={i} style={{ ...card, padding: '14px 18px' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: fc, opacity: 0.7, borderRadius: '16px 16px 0 0' }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${fc},${fc}66)`, borderRadius: '16px 16px 0 0' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: `${fc}14`, border: `1px solid ${fc}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <DumbbellIcon style={{ width: 13, height: 13, color: fc }} />
                     </div>
                     <div>
@@ -601,17 +602,17 @@ function ClassPerformance({ classPerf = [], bookings = [], classes = [] }) {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 22, fontWeight: 900, color: fc, letterSpacing: '-0.04em' }}>{cls.fill}%</div>
-                    <div style={{ fontSize: 9, fontWeight: 700, color: fc, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 5, padding: '1px 7px', marginTop: 3 }}>{fillLabel(cls.fill)}</div>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: fc, background: `${fc}12`, border: `1px solid ${fc}25`, borderRadius: 5, padding: '1px 7px', marginTop: 3 }}>{fillLabel(cls.fill)}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ flex: 1, height: 6, borderRadius: 99, background: C.b2, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${cls.fill}%`, background: fc, borderRadius: 99, transition: 'width 0.8s ease' }} />
+                    <div style={{ height: '100%', width: `${cls.fill}%`, background: `linear-gradient(90deg,${fc},${fc}88)`, borderRadius: 99, transition: 'width 0.8s ease' }} />
                   </div>
                   <span style={{ fontSize: 10, color: C.t3, flexShrink: 0 }}>{cls.attended}/{cls.capacity}</span>
                 </div>
                 {i === 0 && (
-                  <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: C.amber, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 6, padding: '2px 9px' }}>
+                  <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: C.amber, background: `${C.amber}12`, border: `1px solid ${C.amber}25`, borderRadius: 6, padding: '2px 9px' }}>
                     <Star style={{ width: 9, height: 9 }} /> Most Popular
                   </div>
                 )}
@@ -626,7 +627,7 @@ function ClassPerformance({ classPerf = [], bookings = [], classes = [] }) {
                   <CartesianGrid strokeDasharray="3 3" stroke={C.b2} vertical={false} />
                   <XAxis dataKey="name" tick={tick} axisLine={false} tickLine={false} />
                   <YAxis tick={tick} axisLine={false} tickLine={false} width={24} domain={[0, 100]} unit="%" />
-                  <Tooltip formatter={v => [`${v}%`, 'Fill rate']} contentStyle={{ background: 'rgba(9,9,11,0.97)', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 12 }} labelStyle={{ color: C.t3 }} />
+                  <Tooltip formatter={v => [`${v}%`, 'Fill rate']} contentStyle={{ background: 'rgba(6,12,24,0.97)', border: `1px solid ${C.purple}33`, borderRadius: 10, fontSize: 12 }} labelStyle={{ color: C.t3 }} />
                   <Bar dataKey="fill" radius={[5, 5, 2, 2]}>
                     {classPerf.map((cls, i) => <Cell key={i} fill={fillColor(cls.fill)} />)}
                   </Bar>
@@ -672,7 +673,7 @@ function MemberEngagement({ totalMembers, superActive, active, casual, inactive,
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: t.color, flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{t.label} <span style={{ fontSize: 9, color: C.t3, fontWeight: 400 }}>{t.sub}</span></span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#d4e4f4' }}>{t.label} <span style={{ fontSize: 9, color: C.t3, fontWeight: 400 }}>{t.sub}</span></span>
                   <span style={{ fontSize: 11, fontWeight: 800, color: t.color }}>{t.val}</span>
                 </div>
                 <MiniBar pct={pct} color={t.color} />
@@ -720,7 +721,7 @@ function MemberEngagement({ totalMembers, superActive, active, casual, inactive,
         </div>
         <div style={{ padding: '10px 12px', borderRadius: 10, background: C.b2, border: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 11, color: C.t2 }}>Avg visits / member (30d)</span>
-          <span style={{ fontSize: 15, fontWeight: 900, color: C.t2 }}>{totalMembers > 0 ? (ci30Count / totalMembers).toFixed(1) : '—'}</span>
+          <span style={{ fontSize: 15, fontWeight: 900, color: C.purple }}>{totalMembers > 0 ? (ci30Count / totalMembers).toFixed(1) : '—'}</span>
         </div>
       </div>
     </div>
@@ -756,7 +757,7 @@ function ChurnRiskScorer({ memberships = [], checkIns = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.red}18`, border: `1px solid ${C.red}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <AlertCircle style={{ width: 13, height: 13, color: C.red }} />
         </div>
         <div>
@@ -765,7 +766,7 @@ function ChurnRiskScorer({ memberships = [], checkIns = [], now }) {
         </div>
       </div>
       {risks.length === 0 ? (
-        <div style={{ padding: '12px', borderRadius: 9, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ padding: '12px', borderRadius: 9, background: `${C.green}0d`, border: `1px solid ${C.green}20`, display: 'flex', alignItems: 'center', gap: 8 }}>
           <CheckCircle style={{ width: 12, height: 12, color: C.green }} />
           <span style={{ fontSize: 11, color: C.green }}>All member engagement is healthy</span>
         </div>
@@ -775,7 +776,7 @@ function ChurnRiskScorer({ memberships = [], checkIns = [], now }) {
             <div key={r.user_id} style={{ padding: '9px 11px', borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${r.score > 75 ? C.red : C.amber}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: C.t1 }}>{r.user_name}</span>
-                <span style={{ fontSize: 10, fontWeight: 800, color: r.score > 75 ? C.red : C.amber, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 5, padding: '1px 7px' }}>{r.score}%</span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: r.score > 75 ? C.red : C.amber, background: r.score > 75 ? `${C.red}15` : `${C.amber}15`, borderRadius: 5, padding: '1px 7px' }}>{r.score}%</span>
               </div>
               <div style={{ fontSize: 9, color: C.t3 }}>
                 {r.reason} · {r.daysAgo === 999 ? 'never visited' : `${r.daysAgo}d since last visit`} · {r.recent30} visits/mo
@@ -810,7 +811,7 @@ function TopClientsLeaderboard({ memberships = [], checkIns = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.amber}18`, border: `1px solid ${C.amber}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Award style={{ width: 13, height: 13, color: C.amber }} />
         </div>
         <div>
@@ -820,7 +821,7 @@ function TopClientsLeaderboard({ memberships = [], checkIns = [], now }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {leaders.map((m, i) => (
-          <div key={m.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, background: C.card, border: `1px solid ${C.border}` }}>
+          <div key={m.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, background: i === 0 ? `${C.amber}0a` : C.card, border: `1px solid ${i === 0 ? `${C.amber}22` : C.border}` }}>
             <span style={{ fontSize: 12, width: 20, textAlign: 'center' }}>{medals[i] || i + 1}</span>
             <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: C.t1 }}>{m.user_name}</span>
             <div style={{ textAlign: 'right' }}>
@@ -859,7 +860,7 @@ function ClientLifetimeValue({ memberships = [], payments = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.amber}18`, border: `1px solid ${C.amber}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DollarSign style={{ width: 13, height: 13, color: C.amber }} />
         </div>
         <div>
@@ -915,7 +916,7 @@ function LeadFunnel({ leads = [] }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.blue}18`, border: `1px solid ${C.blue}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Zap style={{ width: 13, height: 13, color: C.blue }} />
         </div>
         <div>
@@ -926,7 +927,7 @@ function LeadFunnel({ leads = [] }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
         {stages.map((s, i) => (
           <div key={s.label} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: `${100 - i * 14}%`, padding: '9px 14px', borderRadius: 9, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, borderLeft: `3px solid ${s.color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ width: `${100 - i * 14}%`, padding: '9px 14px', borderRadius: 9, background: `${s.color}12`, border: `1px solid ${s.color}28`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.label}</span>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: 15, fontWeight: 900, color: C.t1 }}>{s.count}</span>
@@ -937,7 +938,7 @@ function LeadFunnel({ leads = [] }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: `${C.green}0d`, border: `1px solid ${C.green}20`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 10, color: C.t2 }}>Overall conversion</span>
         <span style={{ fontSize: 12, fontWeight: 800, color: C.green }}>{overall}%</span>
       </div>
@@ -969,7 +970,7 @@ function ReferralAnalytics({ leads = [] }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.green}18`, border: `1px solid ${C.green}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <GitBranch style={{ width: 13, height: 13, color: C.green }} />
         </div>
         <div>
@@ -1030,7 +1031,7 @@ function PTUtilisation({ ptSlots = [], now }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.pink}18`, border: `1px solid ${C.pink}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <UserCheck style={{ width: 13, height: 13, color: C.pink }} />
         </div>
         <div>
@@ -1079,7 +1080,7 @@ function GoalCompletion({ goals = [] }) {
   return (
     <div style={{ ...card, padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.green}18`, border: `1px solid ${C.green}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Target style={{ width: 13, height: 13, color: C.green }} />
         </div>
         <div>
@@ -1087,13 +1088,13 @@ function GoalCompletion({ goals = [] }) {
           <div style={{ fontSize: 10, color: C.t3 }}>% of clients hitting their set goals</div>
         </div>
       </div>
-      <div style={{ padding: '12px 14px', borderRadius: 10, marginBottom: 14, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '12px 14px', borderRadius: 10, marginBottom: 14, background: `${C.green}0d`, border: `1px solid ${C.green}20`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: 28, fontWeight: 900, color: C.green, letterSpacing: '-0.04em' }}>{data.rate}%</div>
           <div style={{ fontSize: 9, color: C.t3 }}>{data.completed}/{data.total} goals achieved</div>
         </div>
         <svg viewBox="0 0 52 52" width={52} height={52} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+          <circle cx="26" cy="26" r="22" fill="none" stroke={`${C.green}18`} strokeWidth="5" />
           <circle cx="26" cy="26" r="22" fill="none" stroke={C.green} strokeWidth="5"
             strokeDasharray={2 * Math.PI * 22}
             strokeDashoffset={2 * Math.PI * 22 * (1 - data.rate / 100)}
@@ -1108,104 +1109,6 @@ function GoalCompletion({ goals = [] }) {
             <span style={{ fontSize: 10, fontWeight: 700, color: g.pct >= 100 ? C.green : C.blue }}>{g.pct}%</span>
           </div>
           <MiniBar pct={g.pct} color={g.pct >= 100 ? C.green : C.blue} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── Analytics Insights Strip ────────────────────────────────────────────────
-function AnalyticsInsights({ atRisk, churnRate, avgFill, inactive, classPerf, memberships, checkIns, openModal, now }) {
-  const actions = useMemo(() => {
-    const result = [];
-    const nowMs = +new Date(now);
-
-    // High churn risk
-    if (atRisk > 0 && churnRate >= 15) {
-      const atRiskMember = memberships.find(m => {
-        const last = checkIns.filter(c => c.user_id === m.user_id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-        return last ? (nowMs - new Date(last.check_in_date)) / 864e5 >= 14 : true;
-      });
-      result.push({
-        severity: 'high',
-        color: C.red,
-        colorDim: 'rgba(239,68,68,0.08)',
-        colorBrd: 'rgba(239,68,68,0.2)',
-        title: `${atRisk} member${atRisk > 1 ? 's' : ''} at churn risk`,
-        reason: `Churn rate is ${churnRate}% — above the 15% threshold. Proactive outreach now is far cheaper than re-acquisition later.`,
-        context: `${atRisk} members absent 14+ days`,
-        cta: 'Message At-Risk',
-        fn: () => atRiskMember
-          ? openModal?.('post', { id: atRiskMember.user_id, full_name: atRiskMember.user_name })
-          : openModal?.('post'),
-      });
-    }
-
-    // Under-filled classes
-    const underbookedClass = classPerf.find(c => c.fill < 50);
-    if (underbookedClass) {
-      result.push({
-        severity: avgFill < 40 ? 'high' : 'med',
-        color: C.amber,
-        colorDim: 'rgba(245,158,11,0.08)',
-        colorBrd: 'rgba(245,158,11,0.2)',
-        title: `${underbookedClass.name} is only ${underbookedClass.fill}% full`,
-        reason: `Classes below 50% fill are losing revenue and may signal poor scheduling or awareness. A targeted post can fill open spots quickly.`,
-        context: `Avg fill ${avgFill}% across all classes`,
-        cta: 'Promote Class',
-        fn: () => openModal?.('post'),
-      });
-    }
-
-    // Inactive segment alert
-    if (inactive > 0) {
-      const inactivePct = memberships.length > 0 ? Math.round((inactive / memberships.length) * 100) : 0;
-      if (inactivePct >= 20) {
-        result.push({
-          severity: 'med',
-          color: C.blue,
-          colorDim: 'rgba(59,130,246,0.08)',
-          colorBrd: 'rgba(59,130,246,0.2)',
-          title: `${inactivePct}% of members are inactive`,
-          reason: `${inactive} members haven't checked in recently. A group re-engagement post or challenge can win them back before they churn.`,
-          context: `${inactive} members in inactive segment`,
-          cta: 'Re-engage Group',
-          fn: () => openModal?.('post'),
-        });
-      }
-    }
-
-    return result.slice(0, 3);
-  }, [atRisk, churnRate, avgFill, inactive, classPerf, memberships, checkIns, openModal, now]);
-
-  if (actions.length === 0) return null;
-
-  const urgentCount = actions.filter(a => a.severity === 'high').length;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
-        <AlertTriangle style={{ width: 13, height: 13, color: C.amber }} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: C.t2, textTransform: 'uppercase', letterSpacing: '.1em' }}>
-          Next Best Actions
-        </span>
-        {urgentCount > 0 && (
-          <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: C.red, borderRadius: 99, padding: '1px 7px', letterSpacing: '.04em' }}>
-            {urgentCount} URGENT
-          </span>
-        )}
-      </div>
-      {actions.map((a, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: a.color, borderRadius: '12px 0 0 12px' }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 2 }}>{a.title}</div>
-            <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.5 }}>{a.reason}</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{a.context}</div>
-          </div>
-          <button onClick={a.fn} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 8, background: 'rgba(255,255,255,.06)', color: a.color, fontSize: 11, fontWeight: 700, border: `1px solid ${C.border}`, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-            {a.cta}
-          </button>
         </div>
       ))}
     </div>
@@ -1236,7 +1139,6 @@ export default function TabCoachAnalytics({
   ptSlots = [],        // { id, coach_name, datetime, booked, attended }
   bookings = [],       // { class_id, user_id, attended, no_show }
   now = new Date(),
-  openModal,
 }) {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   useEffect(() => {
@@ -1270,12 +1172,6 @@ export default function TabCoachAnalytics({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-
-      <AnalyticsInsights
-        atRisk={atRisk} churnRate={churnRate} avgFill={avgFill} inactive={inactive}
-        classPerf={classPerf} memberships={memberships} checkIns={checkIns}
-        openModal={openModal} now={now}
-      />
 
       {/* ══ 1. FINANCIAL OVERVIEW ═══════════════════════════════════════════ */}
       <section>

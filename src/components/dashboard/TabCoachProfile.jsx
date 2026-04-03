@@ -127,6 +127,7 @@ const GLOBAL_CSS = `
 
 .action-primary {
   background: ${C.accent};
+  box-shadow: 0 4px 20px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -138,6 +139,7 @@ const GLOBAL_CSS = `
 }
 .action-primary:hover {
   background: #4f92ff;
+  box-shadow: 0 6px 28px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
   transform: translateY(-1px);
 }
 .action-primary:active { transform: scale(.97); }
@@ -164,6 +166,7 @@ const GLOBAL_CSS = `
   content: '';
   position: absolute;
   inset: 0;
+  background: linear-gradient(135deg, rgba(59,130,246,0.04) 0%, rgba(139,92,246,0.04) 100%);
   pointer-events: none;
 }
 
@@ -208,7 +211,7 @@ function CardHead({ label, icon: Icon, iconColor, sub, action, onAction }) {
         {sub && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{sub}</div>}
       </div>
       {action && onAction && (
-        <button className="ccc-btn" onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: C.accent, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 7, padding: '5px 11px', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <button className="ccc-btn" onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: C.accent, background: C.accentSub, border: `1px solid ${C.accentBrd}`, borderRadius: 7, padding: '5px 11px', display: 'flex', alignItems: 'center', gap: 4 }}>
           {action} <ChevronRight style={{ width: 9, height: 9 }} />
         </button>
       )}
@@ -264,7 +267,7 @@ function CommandBar({ cl, onMessage, onBook, onAssign, onEdit }) {
         {/* Identity */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 20, flexShrink: 0 }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,.06)', border: `2px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: C.t2, overflow: 'hidden' }}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${C.accent}18`, border: `2px solid ${C.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: C.accent, overflow: 'hidden' }}>
               {cl.avatar_url ? <img src={cl.avatar_url} alt={cl.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(cl.name)}
             </div>
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', background: retention.color, border: `2px solid ${C.bg}`, animation: cl.retention_status === 'at_risk' ? 'pulse-dot 2s ease-in-out infinite' : 'none' }} />
@@ -311,16 +314,11 @@ function CommandBar({ cl, onMessage, onBook, onAssign, onEdit }) {
 // ─── Next Best Action ─────────────────────────────────────────────────────────
 function NextBestAction({ cl, insights, onAction }) {
   const nba = useMemo(() => {
-    const fn = cl.name?.split(' ')[0] || 'This client';
-    const lastVisit = cl.last_visit || 'Unknown';
-    const sessions = cl.total_sessions || 0;
-    const streak = cl.streak || 0;
-
     if (cl.retention_status === 'at_risk') return {
       priority: 'urgent',
       icon: Flame,
-      title: `${fn} is at risk of churning`,
-      body: `Last visit: ${lastVisit}. No upcoming sessions booked. ${sessions > 0 ? `They've attended ${sessions} session${sessions !== 1 ? 's' : ''} total — don't let that investment go.` : 'A first personal message can turn a cold lead into a committed client.'} Re-engagement drops 4% per extra day without contact.`,
+      title: `${cl.name?.split(' ')[0] || 'This client'} is at risk of churning`,
+      body: `No activity in over a week and no upcoming sessions booked. A personal message now is 3× more likely to re-engage them than waiting.`,
       cta: 'Send Re-engagement Message',
       ctaKey: 'message',
       color: C.danger,
@@ -330,8 +328,8 @@ function NextBestAction({ cl, insights, onAction }) {
     if (!cl.next_session) return {
       priority: 'high',
       icon: Calendar,
-      title: `${fn} has no upcoming sessions booked`,
-      body: `${sessions > 0 ? `${fn} has attended ${sessions} session${sessions !== 1 ? 's' : ''}.` : `${fn} hasn't booked yet.`} Clients with sessions booked in advance are 60% more consistent. Locking in the next slot now prevents drop-off.`,
+      title: `Book ${cl.name?.split(' ')[0] || 'this client'}'s next session`,
+      body: `No upcoming sessions scheduled. Clients with sessions booked in advance are 60% more consistent. Lock in their next slot.`,
       cta: 'Book a Session',
       ctaKey: 'book',
       color: C.warn,
@@ -341,8 +339,8 @@ function NextBestAction({ cl, insights, onAction }) {
     if (cl.completion_pct < 50) return {
       priority: 'medium',
       icon: Dumbbell,
-      title: `Workout completion is low — ${cl.completion_pct}%`,
-      body: `Less than half of assigned workouts are being completed. ${streak > 0 ? `${fn} has a ${streak}-day check-in streak, so they're showing up — ` : ''}Consider simplifying the program or checking if the schedule still works.`,
+      title: `Workout completion is low (${cl.completion_pct}%)`,
+      body: `Less than half of assigned workouts are being completed. Consider simplifying the program or checking if it still fits their schedule.`,
       cta: 'Reassign Workout',
       ctaKey: 'assign',
       color: C.accent,
@@ -352,8 +350,8 @@ function NextBestAction({ cl, insights, onAction }) {
     return {
       priority: 'low',
       icon: Check,
-      title: `${fn} is on track — maintain momentum`,
-      body: `${streak >= 7 ? `${fn} is on a ${streak}-day streak. ` : `Last visit: ${lastVisit}. `}${sessions > 0 ? `${sessions} session${sessions !== 1 ? 's' : ''} total. ` : ''}Keep the consistency going with a check-in message or scheduling their next milestone session.`,
+      title: `${cl.name?.split(' ')[0] || 'Client'} is on track — maintain momentum`,
+      body: `Everything looks healthy. Keep the consistency going with a check-in message or scheduling their next milestone session.`,
       cta: 'Send Check-in',
       ctaKey: 'message',
       color: C.success,
@@ -365,17 +363,17 @@ function NextBestAction({ cl, insights, onAction }) {
   const IconComp = nba.icon;
 
   return (
-    <div className="nba-glow" style={{ borderRadius: RADIUS, background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${nba.color}`, boxShadow: CARD_SHADOW, overflow: 'hidden', animation: 'fade-up .3s ease both' }}>
+    <div className="nba-glow" style={{ borderRadius: RADIUS, background: C.surface, border: `1px solid ${nba.colorBrd}`, boxShadow: CARD_SHADOW, overflow: 'hidden', animation: 'fade-up .3s ease both' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px' }}>
         {/* Icon */}
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: `${nba.color}12`, border: `1px solid ${nba.colorBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <IconComp style={{ width: 20, height: 20, color: nba.color }} />
         </div>
 
         {/* Copy */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, color: nba.color, textTransform: 'uppercase', letterSpacing: '.14em', background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 99, padding: '2px 8px' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, color: nba.color, textTransform: 'uppercase', letterSpacing: '.14em', background: `${nba.color}12`, border: `1px solid ${nba.colorBrd}`, borderRadius: 99, padding: '2px 8px' }}>
               Next Best Action
             </span>
           </div>
@@ -384,7 +382,7 @@ function NextBestAction({ cl, insights, onAction }) {
         </div>
 
         {/* CTA */}
-        <button className="ccc-btn" onClick={() => onAction(nba.ctaKey)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '11px 20px', borderRadius: 10, background: nba.color, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', fontFamily: 'inherit' }}>
+        <button className="ccc-btn" onClick={() => onAction(nba.ctaKey)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '11px 20px', borderRadius: 10, background: nba.color, color: nba.priority === 'low' ? '#052' : '#fff', fontSize: 13, fontWeight: 700, boxShadow: `0 4px 18px ${nba.color}30`, border: 'none', fontFamily: 'inherit' }}>
           {nba.cta} <ArrowRight style={{ width: 13, height: 13 }} />
         </button>
       </div>
@@ -424,7 +422,7 @@ function CriticalInsights({ cl, clientBookings, clientCheckIns, onAction }) {
   if (!insights.length) return (
     <Card label="Insights" icon={Brain} iconColor={C.success}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: C.successSub, border: `1px solid ${C.successBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Check style={{ width: 13, height: 13, color: C.success }} />
         </div>
         <div>
@@ -442,7 +440,7 @@ function CriticalInsights({ cl, clientBookings, clientCheckIns, onAction }) {
         {insights.map((ins, i) => {
           const Ic = ins.icon;
           return (
-            <div key={ins.id} className="signal-bar" style={{ padding: '10px 12px', background: 'transparent', borderLeft: `2.5px solid ${ins.color}`, borderRadius: RADIUS, marginLeft: 0 }}>
+            <div key={ins.id} className="signal-bar" style={{ padding: '10px 12px', background: i === 0 ? `${ins.color}06` : 'transparent', borderLeft: `2.5px solid ${ins.color}`, borderRadius: RADIUS, marginLeft: 0 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
                 <Ic style={{ width: 12, height: 12, color: ins.color, flexShrink: 0, marginTop: 2 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -450,7 +448,7 @@ function CriticalInsights({ cl, clientBookings, clientCheckIns, onAction }) {
                   <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.5 }}>{ins.body}</div>
                 </div>
                 {ins.cta && (
-                  <button className="ccc-btn" onClick={() => onAction(ins.key)} style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: ins.color, background: 'rgba(255,255,255,.05)', border: `1px solid ${C.border}`, borderRadius: 7, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
+                  <button className="ccc-btn" onClick={() => onAction(ins.key)} style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: ins.color, background: `${ins.color}10`, border: `1px solid ${ins.color}25`, borderRadius: 7, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
                     {ins.cta} <ArrowRight style={{ width: 9, height: 9 }} />
                   </button>
                 )}
@@ -582,7 +580,7 @@ function AttendanceHeatmap({ clientCheckIns }) {
                       key={di}
                       className="heatmap-cell"
                       title={`${cell.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}${cell.checked ? ' ✓' : ''}`}
-                      style={{ width: 14, height: 14, background: bg, border, opacity: cell.future ? 0.2 : cell.checked ? 1 : 0.7 }}
+                      style={{ width: 14, height: 14, background: bg, border, opacity: cell.future ? 0.2 : cell.checked ? 1 : 0.7, boxShadow: cell.checked ? `0 0 6px ${C.accent}40` : 'none' }}
                     />
                   );
                 })}
@@ -649,7 +647,7 @@ function EngagementTimeline({ clientBookings, clientCheckIns }) {
               <div key={i} style={{ display: 'flex', gap: 12, paddingBottom: isLast ? 0 : 2 }}>
                 {/* Timeline rail */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 20 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,.04)', border: `1.5px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: cfg.color, fontWeight: 700, marginTop: 6, flexShrink: 0 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${cfg.color}14`, border: `1.5px solid ${cfg.color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: cfg.color, fontWeight: 700, marginTop: 6, flexShrink: 0 }}>
                     {cfg.icon}
                   </div>
                   {!isLast && <div style={{ width: 1, flex: 1, minHeight: 14, background: C.divider, margin: '3px 0' }} />}
@@ -719,7 +717,7 @@ function SessionHistory({ clientBookings, onBook }) {
                   <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
                   <div className="mono" style={{ fontSize: 10, color: C.t3 }}>{s.date} · {s.time}</div>
                 </div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: statusCfg[s.status]?.color, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 99, padding: '2px 9px', flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: statusCfg[s.status]?.color, background: `${statusCfg[s.status]?.color}10`, border: `1px solid ${statusCfg[s.status]?.color}20`, borderRadius: 99, padding: '2px 9px', flexShrink: 0 }}>
                   {statusCfg[s.status]?.label}
                 </span>
               </div>
@@ -821,7 +819,7 @@ function ClientInfo({ cl }) {
         {cl.tags?.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 4 }}>
             {cl.tags.map(t => (
-              <span key={t} className="tag-pill" style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, color: C.accent }}>{t}</span>
+              <span key={t} className="tag-pill" style={{ background: C.accentSub, border: `1px solid ${C.accentBrd}`, color: C.accent }}>{t}</span>
             ))}
           </div>
         )}
@@ -873,7 +871,8 @@ function RetentionRisk({ cl }) {
             <path d={arcPath(startAngle, endAngle, r)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={strokeW} strokeLinecap="round" />
             {/* Fill */}
             <path d={arcPath(startAngle, endAngle, r)} fill="none" stroke={color} strokeWidth={strokeW} strokeLinecap="round"
-              strokeDasharray={`${dashFill} ${dashTotal - dashFill}`} />
+              strokeDasharray={`${dashFill} ${dashTotal - dashFill}`}
+              style={{ filter: `drop-shadow(0 0 6px ${color}60)` }} />
             {/* Score */}
             <text x={cx} y={cy + 6} textAnchor="middle" fill={color} fontSize={20} fontWeight={700} fontFamily="DM Mono,monospace">{score}</text>
           </svg>
@@ -889,7 +888,7 @@ function RetentionRisk({ cl }) {
             {factors.map(({ label: fl, sev }) => (
               <div key={fl} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 11, color: C.t2 }}>{fl}</span>
-                <span style={{ fontSize: 9, fontWeight: 800, color: sev === 'H' ? C.danger : C.warn, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, borderRadius: 99, padding: '2px 8px', letterSpacing: '.06em' }}>{sev}</span>
+                <span style={{ fontSize: 9, fontWeight: 800, color: sev === 'H' ? C.danger : C.warn, background: sev === 'H' ? C.dangerSub : C.warnSub, border: `1px solid ${sev === 'H' ? C.dangerBrd : C.warnBrd}`, borderRadius: 99, padding: '2px 8px', letterSpacing: '.06em' }}>{sev}</span>
               </div>
             ))}
           </div>
@@ -980,13 +979,12 @@ function FrequencyBars({ clientCheckIns }) {
   );
 }
 
-// ─── Main Display ─────────────────────────────────────────────────────────────
-function ClientCommandCenter({
+// ─── Main Export ──────────────────────────────────────────────────────────────
+export default function ClientCommandCenter({
   client:         cl             = EMPTY_CLIENT,
   onMessage,
   onBook,
   onAssign,
-  openModal,
   selectedGym,
   currentUser,
   clientCheckIns  = [],
@@ -996,12 +994,7 @@ function ClientCommandCenter({
   const [toast_, setToast] = useState(null);
 
   const act = key => {
-    // Use explicit handlers if provided, otherwise fall back to openModal
-    const map = {
-      message: onMessage ?? (() => openModal?.('post', { id: cl.id, full_name: cl.name })),
-      book:    onBook    ?? (() => openModal?.('bookAppointment', { id: cl.id, full_name: cl.name })),
-      assign:  onAssign  ?? (() => openModal?.('assignWorkout', { id: cl.id, full_name: cl.name })),
-    };
+    const map = { message: onMessage, book: onBook, assign: onAssign };
     map[key]?.();
     const labels = { message: 'Opening messages…', book: 'Opening booking…', assign: 'Opening workouts…' };
     setToast(labels[key] || 'Action triggered');
@@ -1061,206 +1054,6 @@ function ClientCommandCenter({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ─── Client Picker + Data Wrapper (default export) ────────────────────────────
-export default function TabCoachProfile({ selectedGym, currentUser, openModal, coach, bookings = [], checkIns = [], avatarMap = {} }) {
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [search, setSearch] = useState('');
-
-  // Build deduplicated client list from bookings
-  const clientMap = useMemo(() => {
-    const map = {};
-    bookings.forEach(b => {
-      if (!b.client_id) return;
-      if (!map[b.client_id]) map[b.client_id] = { id: b.client_id, name: b.client_name || 'Client', bookings: [] };
-      map[b.client_id].bookings.push(b);
-    });
-    return map;
-  }, [bookings]);
-
-  const clients = useMemo(() => {
-    const list = Object.values(clientMap);
-    if (!search.trim()) return list;
-    const q = search.toLowerCase();
-    return list.filter(c => c.name.toLowerCase().includes(q));
-  }, [clientMap, search]);
-
-  // Fetch selected client's check-ins and assigned workouts
-  const { data: clientCheckIns = [] } = useQuery({
-    queryKey: ['clientCheckIns', selectedClientId],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: selectedClientId }, '-check_in_date', 120),
-    enabled: !!selectedClientId,
-    staleTime: 3 * 60 * 1000,
-  });
-
-  const { data: clientWorkouts = [] } = useQuery({
-    queryKey: ['clientWorkouts', selectedClientId],
-    queryFn: () => base44.entities.AssignedWorkout.filter({ member_id: selectedClientId }, '-assigned_date', 50),
-    enabled: !!selectedClientId,
-    staleTime: 3 * 60 * 1000,
-  });
-
-  const clientBookings = useMemo(() => bookings.filter(b => b.client_id === selectedClientId), [bookings, selectedClientId]);
-
-  // Build a client shape that ClientCommandCenter expects
-  const clientObj = useMemo(() => {
-    const c = selectedClientId ? clientMap[selectedClientId] : null;
-    if (!c) return EMPTY_CLIENT;
-    const lastCI = clientCheckIns[0];
-    const lastVisitDays = lastCI ? Math.floor((Date.now() - new Date(lastCI.check_in_date)) / 86400000) : 999;
-    const weeklyVisits = clientCheckIns.filter(ci => (Date.now() - new Date(ci.check_in_date)) < 7 * 86400000).length;
-    return {
-      ...EMPTY_CLIENT,
-      name:             c.name,
-      avatar_url:       avatarMap[selectedClientId] || null,
-      last_visit:       lastVisitDays === 0 ? 'Today' : lastVisitDays === 999 ? 'Never' : `${lastVisitDays}d ago`,
-      total_sessions:   clientBookings.length,
-      visits_per_week:  weeklyVisits,
-      retention_status: lastVisitDays > 14 ? 'at_risk' : lastVisitDays > 7 ? 'declining' : 'healthy',
-      trend:            lastVisitDays > 14 ? 'declining' : 'stable',
-      streak: clientCheckIns.reduce((n, _, i) => {
-        if (i === 0) return 1;
-        const diff = (new Date(clientCheckIns[i-1].check_in_date) - new Date(clientCheckIns[i].check_in_date)) / 86400000;
-        return diff <= 2 ? n + 1 : n;
-      }, clientCheckIns.length > 0 ? 1 : 0),
-    };
-  }, [selectedClientId, clientMap, clientCheckIns, clientBookings, avatarMap]);
-
-  // ── Empty state ──────────────────────────────────────────────────────────────
-  if (!bookings.length) {
-    return (
-      <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-        <style>{GLOBAL_CSS}</style>
-        <div className="ccc" style={{ textAlign: 'center', maxWidth: 320 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>👥</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: C.t1, marginBottom: 8 }}>No clients yet</div>
-          <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6, marginBottom: 20 }}>Book clients into your classes to see their performance here.</div>
-          <button className="action-primary" onClick={() => openModal?.('classes')}>Manage Classes</button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Client picker ────────────────────────────────────────────────────────────
-  if (!selectedClientId) {
-    // Compute coach-level KPIs from bookings + checkIns
-    const coachKPIs = (() => {
-      const nowMs = Date.now();
-      const msDay = 86400000;
-      const ms30 = 30 * msDay;
-      const ms14 = 14 * msDay;
-      const totalClients = Object.keys(clientMap).length;
-      const totalSessions = bookings.length;
-      const attended = bookings.filter(b => b.status === 'attended').length;
-      const attendanceRate = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
-      const atRiskCount = Object.keys(clientMap).filter(id => {
-        const lastCI = checkIns.filter(c => c.user_id === id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-        return !lastCI || (nowMs - new Date(lastCI.check_in_date)) > ms14;
-      }).length;
-      const retentionRate = totalClients > 0 ? Math.round(((totalClients - atRiskCount) / totalClients) * 100) : 100;
-      const recentBookings = bookings.filter(b => b.session_date && (nowMs - new Date(b.session_date)) < ms30).length;
-      return { totalClients, attendanceRate, retentionRate, atRiskCount, recentBookings };
-    })();
-
-    return (
-      <div style={{ background: C.bg, minHeight: '100vh', padding: '28px 28px 80px' }}>
-        <style>{GLOBAL_CSS}</style>
-        <div className="ccc" style={{ maxWidth: 520, margin: '0 auto' }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em', marginBottom: 4 }}>Client Profile</div>
-            <div style={{ fontSize: 13, color: C.t2 }}>Select a client to view their full performance dashboard.</div>
-          </div>
-
-          {/* Coach Performance KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 20 }}>
-            {[
-              { label: 'Total Clients', value: coachKPIs.totalClients, color: C.accent, sub: 'in your roster' },
-              { label: 'Attendance Rate', value: `${coachKPIs.attendanceRate}%`, color: coachKPIs.attendanceRate >= 70 ? C.success : coachKPIs.attendanceRate >= 50 ? C.warn : C.danger, sub: 'of booked sessions' },
-              { label: 'Retention Rate', value: `${coachKPIs.retentionRate}%`, color: coachKPIs.retentionRate >= 80 ? C.success : coachKPIs.retentionRate >= 60 ? C.warn : C.danger, sub: 'active last 14 days' },
-              { label: 'At Risk', value: coachKPIs.atRiskCount, color: coachKPIs.atRiskCount > 0 ? C.danger : C.success, sub: 'clients 14+ days absent' },
-            ].map((k, i) => (
-              <div key={i} style={{ padding: '14px 16px', borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>{k.label}</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: k.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{k.value}</div>
-                <div style={{ fontSize: 10, color: C.t3, marginTop: 4 }}>{k.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {coachKPIs.atRiskCount > 0 && (
-            <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.danger}`, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ flex: 1, fontSize: 12, color: C.t2, lineHeight: 1.5 }}>
-                <strong style={{ color: C.danger }}>{coachKPIs.atRiskCount} client{coachKPIs.atRiskCount > 1 ? 's' : ''}</strong> haven't visited in 14+ days. Select them to see what action to take.
-              </div>
-              <button className="action-primary" onClick={() => openModal?.('post')} style={{ fontSize: 11, padding: '7px 14px', whiteSpace: 'nowrap', background: C.danger }}>
-                Message All
-              </button>
-            </div>
-          )}
-
-          <div style={{ position: 'relative', marginBottom: 14 }}>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients…"
-              style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px 10px 38px', borderRadius: 10, background: C.surfaceEl, border: `1px solid ${C.border}`, color: C.t1, fontSize: 13, outline: 'none', fontFamily: 'inherit' }} />
-            <svg style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: C.t3 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {clients.map(c => {
-              const lastB = c.bookings.sort((a, b) => new Date(b.session_date) - new Date(a.session_date))[0];
-              const lastDate = lastB?.session_date ? new Date(lastB.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-              const lastCI = checkIns.filter(ci => ci.user_id === c.id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-              const daysSince = lastCI ? Math.floor((Date.now() - new Date(lastCI.check_in_date)) / 86400000) : 999;
-              const isAtRisk = daysSince >= 14;
-              const riskColor = daysSince >= 21 ? C.danger : C.warn;
-              return (
-                <button key={c.id} onClick={() => setSelectedClientId(c.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: C.surface, border: `1px solid ${isAtRisk ? riskColor + '30' : C.border}`, cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.15s', fontFamily: 'inherit' }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = isAtRisk ? riskColor + '60' : C.borderEl}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = isAtRisk ? riskColor + '30' : C.border}
-                >
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,.04)', border: `1px solid ${C.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: isAtRisk ? riskColor : C.t2, overflow: 'hidden' }}>
-                    {avatarMap[c.id] ? <img src={avatarMap[c.id]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ini(c.name)}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: isAtRisk ? riskColor : C.t3, marginTop: 2 }}>
-                      {c.bookings.length} session{c.bookings.length !== 1 ? 's' : ''} · Last: {lastDate}
-                      {isAtRisk && <span style={{ marginLeft: 6, fontWeight: 700 }}>· {daysSince >= 999 ? 'Never visited' : `${daysSince}d inactive`}</span>}
-                    </div>
-                  </div>
-                  <ChevronRight style={{ width: 14, height: 14, color: C.t3, flexShrink: 0 }} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Client detail ────────────────────────────────────────────────────────────
-  return (
-    <div>
-      <div style={{ background: C.bg, padding: '8px 28px 0', borderBottom: `1px solid ${C.border}` }}>
-        <button onClick={() => setSelectedClientId(null)}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: C.t2, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0', fontFamily: 'inherit', transition: 'color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.color = C.t1}
-          onMouseLeave={e => e.currentTarget.style.color = C.t2}
-        >
-          <ChevronRight style={{ width: 13, height: 13, transform: 'rotate(180deg)' }} /> All Clients
-        </button>
-      </div>
-      <ClientCommandCenter
-        client={clientObj}
-        openModal={openModal}
-        selectedGym={selectedGym}
-        currentUser={currentUser}
-        clientCheckIns={clientCheckIns}
-        clientBookings={clientBookings}
-        clientWorkouts={clientWorkouts}
-      />
     </div>
   );
 }
