@@ -50,61 +50,95 @@ const CSS = `
     min-height: 600px;
     overflow: hidden;
   }
-  .fg-metrics {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    border-bottom: 1px solid ${T.border};
-    flex-shrink: 0;
-    background: ${T.surface};
-  }
-  .fg-met {
-    padding: 14px 20px 15px;
-    border-right: 1px solid ${T.border};
-    position: relative;
-    cursor: default;
-    transition: background .12s;
-  }
+
+  /* METRICS */
+  .fg-metrics { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid ${T.border}; flex-shrink: 0; background: ${T.surface}; }
+  .fg-met { padding: 14px 20px 15px; border-right: 1px solid ${T.border}; position: relative; cursor: default; transition: background .12s; }
   .fg-met:last-child { border-right: none; }
   .fg-met:hover { background: ${T.surfaceEl}; }
+
+  /* BODY */
   .fg-body   { display: grid; grid-template-columns: 1fr 292px; flex: 1; overflow: hidden; min-height: 0; }
-  .fg-center { padding: 20px 20px 48px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-  .fg-right  { padding: 16px 15px 40px; overflow-y: auto; border-left: 1px solid ${T.border}; display: flex; flex-direction: column; gap: 12px; background: ${T.surface}; }
+  .fg-center { padding: 20px 22px 48px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .fg-right  { padding: 16px 15px 40px; overflow-y: auto; border-left: 1px solid ${T.border}; display: flex; flex-direction: column; gap: 13px; background: ${T.surface}; }
   .fg-center::-webkit-scrollbar, .fg-right::-webkit-scrollbar { width: 3px; }
   .fg-center::-webkit-scrollbar-track, .fg-right::-webkit-scrollbar-track { background: transparent; }
   .fg-center::-webkit-scrollbar-thumb, .fg-right::-webkit-scrollbar-thumb { background: ${T.t4}; border-radius: 99px; }
+
+  /* TOGGLE */
   .fg-toggle { display: inline-flex; gap: 2px; background: ${T.surfaceEl}; border: 1px solid ${T.border}; border-radius: 7px; padding: 2px; }
-  .fg-tgl { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .1s; }
+  .fg-tgl { display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 5px; font-size: 11.5px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .12s; letter-spacing: .005em; }
   .fg-tgl.on { background: ${T.accent}; color: #fff; }
   .fg-tgl:not(.on) { background: transparent; color: ${T.t3}; }
   .fg-tgl:not(.on):hover { color: ${T.t2}; }
+
+  /* TABS */
   .fg-tabs { display: flex; align-items: center; border-bottom: 1px solid ${T.border}; overflow-x: auto; scrollbar-width: none; }
   .fg-tabs::-webkit-scrollbar { display: none; }
-  .fg-tab { padding: 8px 14px; font-size: 12px; font-family: inherit; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .1s; color: ${T.t3}; font-weight: 500; margin-bottom: -1px; white-space: nowrap; }
+  .fg-tab { padding: 8px 14px; font-size: 12.5px; font-family: inherit; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .1s; color: ${T.t3}; font-weight: 500; margin-bottom: -1px; white-space: nowrap; }
   .fg-tab.on { color: ${T.t1}; border-bottom-color: ${T.accent}; font-weight: 700; }
   .fg-tab:hover:not(.on) { color: ${T.t2}; }
+
+  /* FEED CARD */
   .fg-fc { background: ${T.surfaceEl}; border: 1px solid ${T.border}; border-radius: ${T.radiusLg}px; overflow: hidden; transition: border-color .1s; position: relative; }
   .fg-fc:hover { border-color: ${T.borderEl}; }
   .fg-fc.top { border-color: ${T.accentBrd}; }
   .fg-fc.top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,${T.accent},transparent 75%); }
-  .fg-ic { background: ${T.surfaceEl}; border: 1px solid ${T.border}; border-radius: ${T.radius}px; padding: 14px; cursor: pointer; transition: all .15s; }
-  .fg-ic:hover { border-color: ${T.accentBrd}; background: ${T.surfaceHov}; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
-  .fg-ac { background: ${T.bg}; border: 1px solid ${T.border}; border-radius: ${T.radius}px; padding: 11px; cursor: pointer; transition: all .1s; }
+
+  /* QUICK IDEA CARDS */
+  .fg-ic {
+    background: ${T.surfaceEl};
+    border: 1px solid ${T.border};
+    border-radius: ${T.radius}px;
+    padding: 16px 15px 14px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fg-ic:hover { border-color: ${T.accentBrd}; background: ${T.surfaceHov}; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+
+  /* AI SUGGESTION CARD */
+  .fg-ac { background: ${T.bg}; border: 1px solid ${T.border}; border-radius: ${T.radius}px; padding: 11px 12px; cursor: pointer; transition: all .1s; }
   .fg-ac:hover { border-color: ${T.accentBrd}; background: ${T.surfaceEl}; }
+
+  /* PROGRESS */
   .fg-prog { height: 2px; border-radius: 99px; background: ${T.divider}; overflow: hidden; }
   .fg-prog-fill { height: 100%; border-radius: 99px; background: ${T.accent}; }
-  .btn-p { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: ${T.radius}px; background: ${T.accent}; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .1s; letter-spacing: .01em; }
+
+  /* BUTTONS */
+  .btn-p { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: ${T.radius}px; background: ${T.accent}; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .12s; letter-spacing: .01em; }
   .btn-p:hover { background: ${T.accentHov}; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.3); }
-  .btn-s { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: ${T.radius}px; background: transparent; color: ${T.t2}; border: 1px solid ${T.border}; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .1s; }
+  .btn-s { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: ${T.radius}px; background: transparent; color: ${T.t2}; border: 1px solid ${T.border}; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .12s; }
   .btn-s:hover { border-color: ${T.borderEl}; color: ${T.t1}; background: ${T.surfaceEl}; }
-  .cbtn-a { font-size: 10.5px; font-weight: 700; padding: 4px 9px; border-radius: 5px; cursor: pointer; font-family: inherit; background: ${T.accentGlow}; border: 1px solid ${T.accentBrd}; color: ${T.accent}; transition: all .1s; }
+  .cbtn-a { font-size: 10.5px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; background: ${T.accentGlow}; border: 1px solid ${T.accentBrd}; color: ${T.accent}; transition: all .1s; }
   .cbtn-a:hover { background: ${T.accent}; color: #fff; }
-  .cbtn-b { font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 5px; cursor: pointer; font-family: inherit; background: transparent; border: 1px solid ${T.border}; color: ${T.t2}; transition: all .1s; }
+  .cbtn-b { font-size: 10.5px; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; background: transparent; border: 1px solid ${T.border}; color: ${T.t2}; transition: all .1s; }
   .cbtn-b:hover { border-color: ${T.borderEl}; color: ${T.t1}; }
+
+  /* CALENDAR */
   .fg-cal-g { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
-  .fg-cd { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10.5px; border-radius: 5px; position: relative; color: ${T.t2}; font-weight: 500; cursor: default; }
+  /* Fixed small height — no aspect-ratio so it doesn't balloon */
+  .fg-cd {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    border-radius: 5px;
+    position: relative;
+    color: ${T.t2};
+    font-weight: 500;
+    cursor: default;
+    transition: background .1s;
+  }
   .fg-cd.today { background: ${T.accent}; color: #fff; font-weight: 800; }
   .fg-cd:not(.today):hover { background: ${T.surfaceEl}; }
+
+  /* DELETE MENU */
   .fg-dm { position: absolute; top: 26px; right: 0; z-index: 9999; background: #060d1c; border: 1px solid ${T.borderEl}; border-radius: 9px; box-shadow: 0 8px 28px rgba(0,0,0,.75); min-width: 100px; overflow: hidden; }
+
   @media(max-width:860px){
     .fg-body    { grid-template-columns: 1fr; }
     .fg-right   { display: none; }
@@ -130,7 +164,7 @@ function Pill({ label, color = T.accent, bg = T.accentGlow, bdr = T.accentBrd })
 
 function IBadge({ icon: Icon, color = T.accent, size = 26 }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: 7, background: `${color}10`, border: `1px solid ${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: 7, background: `${color}15`, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <Icon style={{ width: size * 0.44, height: size * 0.44, color }} />
     </div>
   );
@@ -198,20 +232,20 @@ function MetricsBar({ allPosts, allMemberships, now }) {
     <div className="fg-metrics">
       {metrics.map((m, i) => (
         <div key={i} className="fg-met">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
             <m.icon style={{ width: 11, height: 11, color: m.iconColor }} />
             <span style={{ fontSize: 10.5, fontWeight: 600, color: T.t3, letterSpacing: '.01em' }}>{m.label}</span>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
               {m.dot && <div style={{ width: 5, height: 5, borderRadius: '50%', background: m.dot }} />}
               {m.isDonut && (
-                <svg viewBox="0 0 34 34" style={{ width: 30, height: 30, transform: 'rotate(-90deg)' }}>
+                <svg viewBox="0 0 34 34" style={{ width: 28, height: 28, transform: 'rotate(-90deg)' }}>
                   <circle cx="17" cy="17" r="12" fill="none" stroke={T.divider} strokeWidth="4" />
                   <circle cx="17" cy="17" r="12" fill="none" stroke={T.teal}    strokeWidth="4" strokeDasharray="46 75" strokeLinecap="round" />
                 </svg>
               )}
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: T.t1, letterSpacing: '-0.035em', lineHeight: 1, marginBottom: 5 }}>
+          <div style={{ fontSize: 28, fontWeight: 800, color: T.t1, letterSpacing: '-0.035em', lineHeight: 1, marginBottom: 5 }}>
             {m.display}
             {m.suffix && <span style={{ fontSize: 14, fontWeight: 600, color: T.t2, marginLeft: 3 }}>{m.suffix}</span>}
           </div>
@@ -232,24 +266,45 @@ const QUICK_IDEAS = [
 function QuickIdeas({ openModal }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+      {/* Label row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 11 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>Quick post ideas</span>
         <HelpCircle style={{ width: 12, height: 12, color: T.t3 }} />
       </div>
+
+      {/* 3-column card grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
         {QUICK_IDEAS.map((c, i) => (
           <div key={i} className="fg-ic" onClick={() => openModal(c.modal)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 9, background: `${c.color}10`, border: `1px solid ${c.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <c.icon style={{ width: 14, height: 14, color: c.color }} />
+            {/* Icon + Title + Desc */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 9, flexShrink: 0, marginTop: 1,
+                background: `${c.color}14`, border: `1px solid ${c.color}22`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <c.icon style={{ width: 15, height: 15, color: c.color }} />
               </div>
-              <div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: T.t1, lineHeight: 1.3 }}>{c.title}</div>
-                <div style={{ fontSize: 10, color: T.t3, marginTop: 2 }}>{c.desc}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.t1, lineHeight: 1.3, marginBottom: 3 }}>{c.title}</div>
+                <div style={{ fontSize: 10.5, color: T.t3, lineHeight: 1.4 }}>{c.desc}</div>
               </div>
             </div>
+
+            {/* CTA Button — full width, colored text on subtle tinted bg */}
             <button
-              style={{ width: '100%', padding: '6px 0', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', background: `${c.color}10`, border: `1px solid ${c.color}20`, color: c.color, transition: 'all .1s' }}
+              style={{
+                width: '100%', padding: '7px 0',
+                borderRadius: 6, fontSize: 11.5, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                background: `${c.color}12`,
+                border: `1px solid ${c.color}22`,
+                color: c.color,
+                transition: 'all .12s',
+                letterSpacing: '.01em',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = `${c.color}22`; }}
+              onMouseLeave={e => { e.currentTarget.style.background = `${c.color}12`; }}
               onClick={e => { e.stopPropagation(); openModal(c.modal); }}>
               {c.cta}
             </button>
@@ -407,14 +462,14 @@ function ClassCard({ gymClass, onDelete }) {
 /* ─── EMPTY STATE ─── */
 function EmptyState({ openModal, label }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '50px 20px', gap: 14, textAlign: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '52px 20px', gap: 14, textAlign: 'center' }}>
       <div style={{ width: 50, height: 50, borderRadius: 14, background: T.accentGlow, border: `1px solid ${T.accentBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Flame style={{ width: 22, height: 22, color: T.accent }} />
       </div>
       <div>
         <p style={{ fontSize: 15, fontWeight: 800, color: T.t1, margin: '0 0 6px' }}>🔥 Let's get your members engaged!</p>
         <p style={{ fontSize: 12, color: T.t3, margin: 0, lineHeight: 1.6 }}>
-          {label ? `No ${label} yet.` : 'Your feed is empty.'} Create your first piece of content.
+          {label ? `No ${label} yet.` : 'Your feed is empty. Create your first piece of content.'}
         </p>
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -426,29 +481,36 @@ function EmptyState({ openModal, label }) {
   );
 }
 
-/* ─── CALENDAR VIEW ─── */
+/* ─── CALENDAR VIEW (compact) ─── */
 function CalendarView({ allPosts, events, now, openModal }) {
   const [viewMonth, setViewMonth] = useState(now);
   const ms   = startOfMonth(viewMonth), me = endOfMonth(viewMonth);
   const days   = eachDayOfInterval({ start: ms, end: me });
   const blanks = Array(getDay(ms)).fill(null);
-  const DOW    = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DOW    = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   const postDates = new Set(allPosts.map(p => format(new Date(p.created_date || 0), 'yyyy-MM-dd')));
   const evDates   = new Set(events.map(e => format(new Date(e.event_date    || 0), 'yyyy-MM-dd')));
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button onClick={() => setViewMonth(subDays(ms, 1))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: T.t2, display: 'flex', transition: 'all .1s' }}>
-          <ChevronLeft style={{ width: 13, height: 13 }} />
+      {/* Month nav */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <button onClick={() => setViewMonth(subDays(ms, 1))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: 5, padding: '4px 7px', cursor: 'pointer', color: T.t2, display: 'flex' }}>
+          <ChevronLeft style={{ width: 12, height: 12 }} />
         </button>
-        <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>{format(viewMonth, 'MMMM yyyy')}</span>
-        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: T.t2, display: 'flex', transition: 'all .1s' }}>
-          <ChevronRight style={{ width: 13, height: 13 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: T.t1 }}>{format(viewMonth, 'MMMM yyyy')}</span>
+        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: 5, padding: '4px 7px', cursor: 'pointer', color: T.t2, display: 'flex' }}>
+          <ChevronRight style={{ width: 12, height: 12 }} />
         </button>
       </div>
-      <div className="fg-cal-g" style={{ marginBottom: 3 }}>
-        {DOW.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 9.5, fontWeight: 700, color: T.t3, padding: '2px 0', letterSpacing: '.04em' }}>{d}</div>)}
+
+      {/* Day-of-week headers */}
+      <div className="fg-cal-g" style={{ marginBottom: 2 }}>
+        {DOW.map(d => (
+          <div key={d} style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, color: T.t3, padding: '2px 0', letterSpacing: '.05em' }}>{d}</div>
+        ))}
       </div>
+
+      {/* Day cells — fixed 26px height, no aspect-ratio */}
       <div className="fg-cal-g">
         {blanks.map((_, i) => <div key={`b${i}`} />)}
         {days.map(day => {
@@ -460,7 +522,7 @@ function CalendarView({ allPosts, events, now, openModal }) {
             <div key={key} className={`fg-cd${today ? ' today' : ''}`}>
               {format(day, 'd')}
               {(hasPost || hasEv) && !today && (
-                <div style={{ position: 'absolute', bottom: 2, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 2 }}>
+                <div style={{ position: 'absolute', bottom: 1, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 2 }}>
                   {hasPost && <div style={{ width: 3, height: 3, borderRadius: '50%', background: T.accent }} />}
                   {hasEv   && <div style={{ width: 3, height: 3, borderRadius: '50%', background: T.orange }} />}
                 </div>
@@ -469,17 +531,20 @@ function CalendarView({ allPosts, events, now, openModal }) {
           );
         })}
       </div>
-      <div style={{ marginTop: 14, padding: 13, borderRadius: 8, background: T.surfaceEl, border: `1px solid ${T.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 7 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.t3, marginTop: 4, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: T.t3, lineHeight: 1.5 }}>No content scheduled. Filling your calendar keeps members engaged.</span>
+
+      {/* Hints */}
+      <div style={{ marginTop: 12, padding: 11, borderRadius: 7, background: T.surfaceEl, border: `1px solid ${T.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6 }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.t3, marginTop: 4, flexShrink: 0 }} />
+          <span style={{ fontSize: 10.5, color: T.t3, lineHeight: 1.5 }}>No content scheduled. Filling your calendar keeps members engaged.</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <CheckCircle style={{ width: 10, height: 10, color: T.success, flexShrink: 0 }} />
-          <span style={{ fontSize: 10.5, color: T.t3 }}>Best engagement time: <span style={{ color: T.success, fontWeight: 700 }}>5–7pm</span></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <CheckCircle style={{ width: 9, height: 9, color: T.success, flexShrink: 0 }} />
+          <span style={{ fontSize: 10, color: T.t3 }}>Best engagement time: <span style={{ color: T.success, fontWeight: 700 }}>5–7pm</span></span>
         </div>
       </div>
-      <button className="btn-p" style={{ width: '100%', justifyContent: 'center', marginTop: 11, fontSize: 12 }} onClick={() => openModal('post')}>
+
+      <button className="btn-p" style={{ width: '100%', justifyContent: 'center', marginTop: 10, fontSize: 11.5 }} onClick={() => openModal('post')}>
         <Plus style={{ width: 12, height: 12 }} /> Schedule a Post
       </button>
     </div>
@@ -493,9 +558,21 @@ const SUGG_IMGS = [
   'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=120&q=80',
 ];
 const AI_SUGGS = [
-  { color: T.accent,  label: 'Motivation Monday',      sub: 'Share a motivating quote · Drives comments',            btns: [{ label: 'Generate post',   p: true, modal: 'post' },      { label: 'Make it →',  p: false, modal: 'post'      }] },
-  { color: T.success, label: 'Post a member spotlight', sub: 'Feature a dedicated member from your community',        btns: [{ label: 'Create',          p: true, modal: 'post' },      { label: 'Refine',     p: false, modal: 'post'      }] },
-  { color: T.yellow,  label: 'Start a weekend challenge',sub: 'Clearly repeat a signature event',                    btns: [{ label: 'Start challenge', p: true, modal: 'challenge' }, { label: 'Goals',      p: false, modal: 'challenge' }] },
+  {
+    dot: T.accent, label: 'Motivation Monday',
+    sub: 'Share a motivating quote · Drives comments',
+    btns: [{ label: 'Generate post', p: true, modal: 'post' }, { label: 'Make it →', p: false, modal: 'post' }],
+  },
+  {
+    dot: T.success, label: 'Post a member spotlight',
+    sub: 'Feature a dedicated member from your community',
+    btns: [{ label: 'Create', p: true, modal: 'post' }, { label: 'Refine', p: false, modal: 'post' }],
+  },
+  {
+    dot: T.yellow, label: 'Start a weekend challenge',
+    sub: 'Clearly repeat a signature event',
+    btns: [{ label: 'Start challenge', p: true, modal: 'challenge' }, { label: 'Goals', p: false, modal: 'challenge' }],
+  },
 ];
 
 function AISuggestions({ openModal }) {
@@ -505,13 +582,14 @@ function AISuggestions({ openModal }) {
         <Flame style={{ width: 12, height: 12, color: T.orange }} />
         <span style={{ fontSize: 12, fontWeight: 700, color: T.t1 }}>What should you post today?</span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         {AI_SUGGS.map((s, i) => (
           <div key={i} className="fg-ac" onClick={() => openModal(s.btns[0].modal)}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+              {/* Text side */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
                   <div style={{ fontSize: 11.5, fontWeight: 700, color: T.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</div>
                 </div>
                 <div style={{ fontSize: 9.5, color: T.t3, marginBottom: 8, paddingLeft: 10, lineHeight: 1.4 }}>{s.sub}</div>
@@ -521,7 +599,8 @@ function AISuggestions({ openModal }) {
                   ))}
                 </div>
               </div>
-              <div style={{ width: 42, height: 42, borderRadius: 7, overflow: 'hidden', flexShrink: 0 }}>
+              {/* Thumbnail */}
+              <div style={{ width: 44, height: 44, borderRadius: 7, overflow: 'hidden', flexShrink: 0 }}>
                 <img src={SUGG_IMGS[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.currentTarget.parentElement.style.display = 'none'} />
               </div>
             </div>
@@ -538,17 +617,18 @@ function EngagementScore({ allPosts, polls, activeChallenges, now, openModal }) 
       .reduce((a, x) => a + (x.likes?.length || 0) + (x.comments?.length || 0), 0) +
     polls.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
       .reduce((a, x) => a + (x.voters?.length || 0), 0);
-  const thisW  = score(subDays(now, 7), now);
-  const lastW  = score(subDays(now, 14), subDays(now, 7));
-  const chg    = lastW === 0 ? 0 : Math.round(((thisW - lastW) / lastW) * 100);
-  const up     = chg >= 0;
-  const total  = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0) +
-                 polls.reduce((s, p) => s + (p.voters?.length || 0), 0) +
-                 activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
+  const thisW = score(subDays(now, 7), now);
+  const lastW = score(subDays(now, 14), subDays(now, 7));
+  const chg   = lastW === 0 ? 0 : Math.round(((thisW - lastW) / lastW) * 100);
+  const up    = chg >= 0;
+  const total = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0) +
+                polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0) +
+                activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
   const likes    = allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0);
   const comments = allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0);
   const challP   = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
   const pollV    = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
@@ -591,6 +671,7 @@ function RightPanel({ allPosts, polls, challenges, events, activeChallenges, all
   const [view, setView] = useState('feed');
   return (
     <>
+      {/* Feed / Calendar toggle */}
       <div className="fg-toggle">
         <button className={`fg-tgl${view === 'feed' ? ' on' : ''}`} onClick={() => setView('feed')}>
           <Flame style={{ width: 10, height: 10 }} /> Feed
@@ -599,7 +680,9 @@ function RightPanel({ allPosts, polls, challenges, events, activeChallenges, all
           <Calendar style={{ width: 10, height: 10 }} /> Calendar
         </button>
       </div>
+
       <div style={{ height: 1, background: T.divider }} />
+
       {view === 'feed' ? (
         <>
           <AISuggestions openModal={openModal} />
@@ -684,27 +767,37 @@ export default function TabContent({
       <style>{CSS}</style>
       <div className="fg-wrap">
 
-        {/* METRICS */}
+        {/* ── METRICS BAR ── */}
         <MetricsBar allPosts={allPosts} allMemberships={allMemberships} now={now} />
 
-        {/* BODY */}
+        {/* ── BODY ── */}
         <div className="fg-body">
 
-          {/* CENTER */}
+          {/* ══ CENTER ══ */}
           <div className="fg-center">
+
+            {/* Header row — title LEFT, buttons RIGHT, all on one line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: T.t1, letterSpacing: '-0.025em', flex: 1, minWidth: 160 }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: T.t1, letterSpacing: '-0.025em', flex: 1, minWidth: 160, whiteSpace: 'nowrap' }}>
                 🔥 Let's get your members engaged!
               </h2>
-              <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-                <button className="btn-p" style={{ fontSize: 12 }} onClick={() => openModal('post')}><Plus style={{ width: 13, height: 13 }} /> Create first post</button>
-                <button className="btn-s" style={{ fontSize: 12 }} onClick={() => openModal('challenge')}><Trophy style={{ width: 13, height: 13 }} /> Start a challenge</button>
-                <button className="btn-s" style={{ fontSize: 12 }} onClick={() => openModal('poll')}><HelpCircle style={{ width: 13, height: 13 }} /> Ask a question</button>
+              <div style={{ display: 'flex', gap: 7, flexShrink: 0 }}>
+                <button className="btn-p" style={{ fontSize: 12 }} onClick={() => openModal('post')}>
+                  <Plus style={{ width: 13, height: 13 }} /> Create first post
+                </button>
+                <button className="btn-s" style={{ fontSize: 12 }} onClick={() => openModal('challenge')}>
+                  <Trophy style={{ width: 13, height: 13 }} /> Start a challenge
+                </button>
+                <button className="btn-s" style={{ fontSize: 12 }} onClick={() => openModal('poll')}>
+                  <HelpCircle style={{ width: 13, height: 13 }} /> Ask a question
+                </button>
               </div>
             </div>
 
+            {/* Quick post ideas */}
             <QuickIdeas openModal={openModal} />
 
+            {/* Feed / Calendar toggle */}
             <div className="fg-toggle" style={{ alignSelf: 'flex-start' }}>
               <button className={`fg-tgl${viewMode === 'feed' ? ' on' : ''}`} onClick={() => setViewMode('feed')}>
                 <List style={{ width: 10, height: 10 }} /> Feed
@@ -714,15 +807,21 @@ export default function TabContent({
               </button>
             </div>
 
+            {/* Calendar or Feed */}
             {viewMode === 'calendar' ? (
               <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
             ) : (
               <>
-                <div className="fg-tabs" style={{ marginTop: -4 }}>
+                {/* Filter tabs */}
+                <div className="fg-tabs" style={{ marginTop: -6 }}>
                   {FILTERS.map(f => (
-                    <button key={f.id} className={`fg-tab${activeFilter === f.id ? ' on' : ''}`} onClick={() => setActiveFilter(f.id)}>{f.label}</button>
+                    <button key={f.id} className={`fg-tab${activeFilter === f.id ? ' on' : ''}`} onClick={() => setActiveFilter(f.id)}>
+                      {f.label}
+                    </button>
                   ))}
                 </div>
+
+                {/* Feed items or empty state */}
                 {feedItems.length > 0
                   ? <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>{feedItems.map(renderItem)}</div>
                   : <EmptyState openModal={openModal} label={currentLabel !== 'Feed' ? currentLabel : null} />
@@ -731,7 +830,7 @@ export default function TabContent({
             )}
           </div>
 
-          {/* RIGHT PANEL */}
+          {/* ══ RIGHT PANEL ══ */}
           <div className="fg-right">
             <RightPanel
               allPosts={allPosts} polls={polls} challenges={challenges}
@@ -739,6 +838,7 @@ export default function TabContent({
               allMemberships={allMemberships} now={now} openModal={openModal}
             />
           </div>
+
         </div>
       </div>
     </>
