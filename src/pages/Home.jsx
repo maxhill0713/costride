@@ -270,6 +270,8 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
+  const dotsRowRef = useRef(null);
+  const [arrowTop, setArrowTop] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -379,6 +381,21 @@ export default function Home() {
     checkMissedWorkouts();
     checkStreakLoss();
   }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (!dotsRowRef.current) return;
+    const measure = () => {
+      const rect = dotsRowRef.current?.getBoundingClientRect();
+      if (rect) setArrowTop(rect.top + rect.height / 2);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, { passive: true });
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure);
+    };
+  }, [dotsRowRef.current]);
 
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
@@ -1117,10 +1134,15 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              // Breakout wrapper: cancel the parent px-4 (16px) padding on both sides so
-              // the arrow containers are truly symmetrical relative to the screen edge.
-              <div style={{ marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16 }}>
-              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div
+                ref={dotsRowRef}
+                onLayout={() => {
+                  if (dotsRowRef.current) {
+                    const rect = dotsRowRef.current.getBoundingClientRect();
+                    setArrowTop(rect.top + rect.height / 2);
+                  }
+                }}
+                style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1132,39 +1154,53 @@ export default function Home() {
                   />
                 )}
 
-                {/* ── Left arrow — absolute, flush to left edge ── */}
-                <div style={{
-                  position: 'absolute', left: -24, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', zIndex: 10,
-                }}>
-                  <ArrowButton
-                    direction="left"
-                    disabled={weekOffset <= -1}
-                    onPress={() => {
-                      setSlideDirection(-1);
-                      setWeekOffset(w => w - 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }}
-                  />
-                </div>
+                {/* ── Left arrow — fixed, flush to left screen edge ── */}
+                {arrowTop !== null && (
+                  <div style={{
+                    position: 'fixed',
+                    left: 0,
+                    top: arrowTop - 26,
+                    width: 36,
+                    height: 52,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 202,
+                  }}>
+                    <ArrowButton
+                      direction="left"
+                      disabled={weekOffset <= -1}
+                      onPress={() => {
+                        setSlideDirection(-1);
+                        setWeekOffset(w => w - 1);
+                        setActiveCircleDay(null);
+                        setBubblePos(null);
+                      }}
+                    />
+                  </div>
+                )}
 
-                {/* ── Right arrow — absolute, flush to right edge ── */}
-                <div style={{
-                  position: 'absolute', right: -24, top: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', zIndex: 10,
-                }}>
-                  <ArrowButton
-                    direction="right"
-                    disabled={weekOffset >= 1}
-                    onPress={() => {
-                      setSlideDirection(1);
-                      setWeekOffset(w => w + 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }}
-                  />
-                </div>
+                {/* ── Right arrow — fixed, flush to right screen edge ── */}
+                {arrowTop !== null && (
+                  <div style={{
+                    position: 'fixed',
+                    right: 0,
+                    top: arrowTop - 26,
+                    width: 36,
+                    height: 52,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 202,
+                  }}>
+                    <ArrowButton
+                      direction="right"
+                      disabled={weekOffset >= 1}
+                      onPress={() => {
+                        setSlideDirection(1);
+                        setWeekOffset(w => w + 1);
+                        setActiveCircleDay(null);
+                        setBubblePos(null);
+                      }}
+                    />
+                  </div>
+                )}
 
                 {/* ── Sliding dots track ── */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1348,7 +1384,6 @@ export default function Home() {
                     </motion.div>
                   </AnimatePresence>
                 </div>
-              </div>
               </div>
             );
           })()}
