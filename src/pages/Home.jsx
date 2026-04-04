@@ -907,7 +907,7 @@ export default function Home() {
         onPointerLeave={() => setPressed(false)}
         onPointerCancel={() => setPressed(false)}
         style={{
-          width: '100%',
+          width: 20,
           height: 52,
           background: 'none',
           border: 'none',
@@ -915,8 +915,7 @@ export default function Home() {
           cursor: disabled ? 'default' : 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: direction === 'left' ? 'flex-start' : 'flex-end',
-          flexShrink: 0,
+          justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',
           touchAction: 'manipulation',
           outline: 'none',
@@ -1116,7 +1115,7 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto', overflow: 'visible' }}>
+              <div style={{ position: 'relative', width: '100%', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1128,41 +1127,29 @@ export default function Home() {
                   />
                 )}
 
-                {/* ── Left arrow — hit area extends to left screen edge ── */}
+                {/* ── Left arrow ── */}
                 <div style={{
-                  position: 'absolute', left: -16, top: 0, bottom: 0,
-                  width: 48,
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
+                  position: 'absolute', left: -14, top: 0, bottom: 0,
+                  width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
                   <ArrowButton
                     direction="left"
                     disabled={weekOffset <= -1}
-                    onPress={() => {
-                      setSlideDirection(-1);
-                      setWeekOffset(w => w - 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }}
+                    onPress={() => { setSlideDirection(-1); setWeekOffset(w => w - 1); setActiveCircleDay(null); setBubblePos(null); }}
                   />
                 </div>
 
-                {/* ── Right arrow — hit area extends to right screen edge ── */}
+                {/* ── Right arrow ── */}
                 <div style={{
-                  position: 'absolute', right: -16, top: 0, bottom: 0,
-                  width: 48,
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                  position: 'absolute', right: -14, top: 0, bottom: 0,
+                  width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
                   <ArrowButton
                     direction="right"
                     disabled={weekOffset >= 1}
-                    onPress={() => {
-                      setSlideDirection(1);
-                      setWeekOffset(w => w + 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }}
+                    onPress={() => { setSlideDirection(1); setWeekOffset(w => w + 1); setActiveCircleDay(null); setBubblePos(null); }}
                   />
                 </div>
 
