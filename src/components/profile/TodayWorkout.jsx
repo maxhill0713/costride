@@ -650,25 +650,34 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </div>
 
         {/* COLLAPSED STATE */}
-        {!isExpanded &&
-        <div className="flex flex-col items-center gap-2 pb-1">
-            {alreadyLoggedToday &&
-          <Button
-            onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
-            size="sm"
-            className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                View Summary
-              </Button>
-          }
-            <motion.button
-            onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
-            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-            animate={{ y: [0, 4, 0] }}
-            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-              <ChevronDown className="w-5 h-5" />
-            </motion.button>
-          </div>
-        }
+        {/* COLLAPSED STATE — always mounted, fades out to prevent height jump on expand */}
+<AnimatePresence initial={false}>
+  {!isExpanded && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="flex flex-col items-center gap-2 pb-1"
+    >
+      {alreadyLoggedToday &&
+        <Button
+          onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
+          size="sm"
+          className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            View Summary
+          </Button>
+      }
+      <motion.button
+        onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
+        className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+        animate={{ y: [0, 4, 0] }}
+        transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+        <ChevronDown className="w-5 h-5" />
+      </motion.button>
+    </motion.div>
+  )}
+</AnimatePresence>
 
         {/* EXPANDED STATE — spring animation matching QuoteCarousel */}
         <AnimatePresence>
