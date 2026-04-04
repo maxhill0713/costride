@@ -1117,7 +1117,9 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              // Outer wrapper: full width, position relative so arrows sit at true edges
+              // Breakout wrapper: cancel the parent px-4 (16px) padding on both sides so
+              // the arrow containers are truly symmetrical relative to the screen edge.
+              <div style={{ marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16 }}>
               <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
@@ -1346,6 +1348,7 @@ export default function Home() {
                     </motion.div>
                   </AnimatePresence>
                 </div>
+              </div>
               </div>
             );
           })()}
