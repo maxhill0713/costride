@@ -9,7 +9,7 @@ const quotes = [
   context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
 },
 {
-  text: "I am changing the things I cannot accept.",
+  text: "I am testing code here.",
   author: "Angela Davis",
   context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
 },
