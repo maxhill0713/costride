@@ -1129,7 +1129,7 @@ export default function Home() {
 
                 {/* ── Left arrow ── */}
                 <div style={{
-                  position: 'absolute', left: -14, top: 0, bottom: 0,
+                  position: 'absolute', left: -12, top: 0, bottom: 0,
                   width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
@@ -1142,7 +1142,7 @@ export default function Home() {
 
                 {/* ── Right arrow ── */}
                 <div style={{
-                  position: 'absolute', right: -14, top: 0, bottom: 0,
+                  position: 'absolute', right: -12, top: 0, bottom: 0,
                   width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
