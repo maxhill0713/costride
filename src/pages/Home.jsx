@@ -271,7 +271,8 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
   const dotsRowRef = useRef(null);
-  const [arrowTop, setArrowTop] = useState(null);
+  const leftArrowRef = useRef(null);
+  const rightArrowRef = useRef(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -383,17 +384,27 @@ export default function Home() {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    if (!dotsRowRef.current) return;
-    const measure = () => {
-      const rect = dotsRowRef.current?.getBoundingClientRect();
-      if (rect) setArrowTop(rect.top + rect.height / 2);
+    const positionArrows = () => {
+      if (!dotsRowRef.current) return;
+      // Get document-relative offsetTop by walking offsetParent chain
+      let el = dotsRowRef.current;
+      let docOffsetTop = 0;
+      while (el) {
+        docOffsetTop += el.offsetTop;
+        el = el.offsetParent;
+      }
+      const midY = docOffsetTop + dotsRowRef.current.offsetHeight / 2;
+      // Convert to viewport-relative for position:fixed
+      const fixedTop = midY - window.scrollY - 26;
+      if (leftArrowRef.current) leftArrowRef.current.style.top = `${fixedTop}px`;
+      if (rightArrowRef.current) rightArrowRef.current.style.top = `${fixedTop}px`;
     };
-    measure();
-    window.addEventListener('resize', measure);
-    window.addEventListener('scroll', measure, { passive: true });
+
+    const t = setTimeout(positionArrows, 80);
+    window.addEventListener('resize', positionArrows);
     return () => {
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('scroll', measure);
+      clearTimeout(t);
+      window.removeEventListener('resize', positionArrows);
     };
   }, [dotsRowRef.current]);
 
@@ -1155,52 +1166,52 @@ export default function Home() {
                 )}
 
                 {/* ── Left arrow — fixed, flush to left screen edge ── */}
-                {arrowTop !== null && (
-                  <div style={{
+                <div
+                  ref={leftArrowRef}
+                  style={{
                     position: 'fixed',
                     left: 0,
-                    top: arrowTop - 26,
+                    top: 0,
                     width: 22,
                     height: 52,
                     display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
                     zIndex: 202,
                   }}>
-                    <ArrowButton
-                      direction="left"
-                      disabled={weekOffset <= -1}
-                      onPress={() => {
-                        setSlideDirection(-1);
-                        setWeekOffset(w => w - 1);
-                        setActiveCircleDay(null);
-                        setBubblePos(null);
-                      }}
-                    />
-                  </div>
-                )}
+                  <ArrowButton
+                    direction="left"
+                    disabled={weekOffset <= -1}
+                    onPress={() => {
+                      setSlideDirection(-1);
+                      setWeekOffset(w => w - 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
+                    }}
+                  />
+                </div>
 
                 {/* ── Right arrow — fixed, flush to right screen edge ── */}
-                {arrowTop !== null && (
-                  <div style={{
+                <div
+                  ref={rightArrowRef}
+                  style={{
                     position: 'fixed',
                     right: 0,
-                    top: arrowTop - 26,
+                    top: 0,
                     width: 22,
                     height: 52,
                     display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                     zIndex: 202,
                   }}>
-                    <ArrowButton
-                      direction="right"
-                      disabled={weekOffset >= 1}
-                      onPress={() => {
-                        setSlideDirection(1);
-                        setWeekOffset(w => w + 1);
-                        setActiveCircleDay(null);
-                        setBubblePos(null);
-                      }}
-                    />
-                  </div>
-                )}
+                  <ArrowButton
+                    direction="right"
+                    disabled={weekOffset >= 1}
+                    onPress={() => {
+                      setSlideDirection(1);
+                      setWeekOffset(w => w + 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
+                    }}
+                  />
+                </div>
 
                 {/* ── Sliding dots track ── */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
