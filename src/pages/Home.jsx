@@ -232,7 +232,6 @@ export default function Home() {
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [confirmRemoveFriend, setConfirmRemoveFriend] = useState(null);
   const [friendMenuOpen, setFriendMenuOpen] = useState(null);
-  // ── Pending request 3-dots menu ──────────────────────────────────────────
   const [pendingMenuOpen, setPendingMenuOpen] = useState(null);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [debouncedFriendSearch, setDebouncedFriendSearch] = useState('');
@@ -264,6 +263,7 @@ export default function Home() {
   const [summaryLog, setSummaryLog] = useState(null);
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
+  const [weekOffset, setWeekOffset] = useState(0);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
   // ── Header scroll behaviour ──────────────────────────────────────────────
@@ -333,7 +333,6 @@ export default function Home() {
     if (!currentUser) return;
     const todayDow = new Date().getDay();
     const todayAdjustedDay = todayDow === 0 ? 7 : todayDow;
-    // Don't show freeze/streak loss popups on rest days — rest days have no impact on streak
     const trainingDaysForCheck = currentUser?.training_days || [];
     const isTodayRestDay = trainingDaysForCheck.length > 0 && !trainingDaysForCheck.includes(todayAdjustedDay);
     if (isTodayRestDay) return;
@@ -527,12 +526,18 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
   });
   const { data: weeklyWorkoutLogs = [] } = useQuery({
-    queryKey: ['weeklyWorkoutLogs', currentUser?.id],
+    queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
     queryFn: () => {
-      const monday = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
-      return base44.entities.WorkoutLog.filter(
-        { user_id: currentUser?.id, completed_date: { $gte: monday } }
-      );
+      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+      base.setDate(base.getDate() + weekOffset * 7);
+      const monday = base.toISOString().split('T')[0];
+      const sunday = new Date(base);
+      sunday.setDate(base.getDate() + 6);
+      const sundayStr = sunday.toISOString().split('T')[0];
+      return base44.entities.WorkoutLog.filter({
+        user_id: currentUser?.id,
+        completed_date: { $gte: monday, $lte: sundayStr },
+      });
     },
     enabled: !!currentUser?.id,
     staleTime: 1 * 60 * 1000,
@@ -558,7 +563,6 @@ export default function Home() {
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        {/* Header skeleton */}
         <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <div className="w-12 h-12 rounded-full bg-slate-700/60 animate-pulse" />
@@ -568,9 +572,7 @@ export default function Home() {
           <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
         </div>
         <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
-          {/* Check-in card skeleton */}
           <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
-          {/* Friends row skeleton */}
           <div className="flex gap-3 overflow-hidden">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
@@ -579,7 +581,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-          {/* Feed card skeletons */}
           {[...Array(3)].map((_, i) => (
             <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
               <div className="flex items-center gap-3">
@@ -702,7 +703,6 @@ export default function Home() {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
     setJustLoggedDay(todayAdjusted);
-    // Calculate duration: prefer workoutStartTime (timer), fallback to today's check-in time
     const nowMs = Date.now();
     let durationMins = 0;
     if (workoutStartTime) {
@@ -912,7 +912,7 @@ export default function Home() {
               )}
             </div>
           )}
-          {/* ── Community card — static, no entrance animations ── */}
+          {/* ── Community card ── */}
           {memberGym?.id && (
             <div
               className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100"
@@ -960,11 +960,12 @@ export default function Home() {
               </Link>
             </div>
           )}
-          {/* ── Weekly workout circles ── */}
+          {/* ── Weekly workout circles with week navigation ── */}
           {memberGym?.id && (() => {
             const trainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
             if (trainingDays.length === 0) return null;
-            const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+            const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
+            mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
             weeklyWorkoutLogs.forEach((l) => {
               const d = new Date(l.completed_date).getDay();
@@ -973,11 +974,31 @@ export default function Home() {
             });
             const loggedDays = new Set(Object.keys(logsByDay).map(Number));
             const allDays = [1, 2, 3, 4, 5, 6, 7];
-            const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
+            const isFutureWeek = weekOffset > 0;
+            const arrowBtnStyle = {
+              width: 28, height: 28, borderRadius: 6,
+              border: '1px solid rgba(255,255,255,0.14)',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.09) 40%, rgba(255,255,255,0.04) 100%)',
+              boxShadow: '0 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.2)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, marginTop: 6,
+              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
+              outline: 'none',
+            };
+            const onArrowDown = (e) => {
+              e.currentTarget.style.transform = 'scale(0.82) translateY(2px)';
+              e.currentTarget.style.opacity = '0.65';
+              e.currentTarget.style.boxShadow = '0 0px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+            };
+            const onArrowReset = (e) => {
+              e.currentTarget.style.transform = '';
+              e.currentTarget.style.opacity = '';
+              e.currentTarget.style.boxShadow = '0 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.2)';
+            };
             return (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '12px 0', height: 88, overflow: 'visible', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -988,162 +1009,227 @@ export default function Home() {
                     style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
                 )}
-                {allDays.map((day, i) => {
-                  const done = loggedDays.has(day) || (MOCK_MODE && trainingDays.includes(day));
-                  const bounce = justLoggedDay === day;
-                  const isTodayCircle = day === todayDay;
-                  const joinDate = currentUser?.created_date || currentUser?.created_at || null;
-                  const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-                  const joinedThisWeek = joinDate && new Date(joinDate) >= mondayThisWeek;
-                  const joinDayNum = joinedThisWeek ? (() => { const d = new Date(joinDate).getDay(); return d === 0 ? 7 : d; })() : null;
-                  const isPast = day < todayDay;
-                  const isPreJoin = joinDayNum !== null && day < joinDayNum;
-                  const isInCurrentSplit = trainingDays.includes(day);
-                  const isRestDay = done ? false : !isInCurrentSplit;
-                  const isMissed = !isRestDay && !done && isPast && !isPreJoin;
-                  const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
-                  const size = isTodayCircle ? 49 : 40;
-                  const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
-                  const workoutLog = logsByDay[day];
-                  const showViewWorkout = !done && !isRestDay && !isMissed && (day > todayDay || isTodayCircle);
-                  const hasBubbleBtn = done && !isRestDay && workoutLog || showViewWorkout;
-                  const getBg = () => {
-                    if (isRestDay) {
-                      if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
-                      return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+
+                {/* ── Left arrow ── */}
+                <button
+                  onPointerDown={onArrowDown}
+                  onPointerUp={(e) => {
+                    onArrowReset(e);
+                    if (weekOffset > -1) {
+                      setWeekOffset(w => w - 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
                     }
-                    if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
-                    if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
-                    return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-                  };
-                  const getBorder = () => {
-                    if (isRestDay) {
-                      if (isPastOrTodayRestDay) return '1px solid rgba(74,222,128,0.5)';
-                      return '1px solid rgba(71,85,105,0.7)';
-                    }
-                    if (done) return '1px solid rgba(147,197,253,0.5)';
-                    if (isMissed) return '1px solid rgba(248,113,113,0.5)';
-                    return '1px solid rgba(71,85,105,0.7)';
-                  };
-                  const getBoxShadow = () => {
-                    if (isRestDay) {
-                      if (isPastOrTodayRestDay) return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
-                      return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
-                    }
-                    if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
-                    if (isMissed) return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
-                    return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
-                  };
-                  const getAnimation = () => {
-                    if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) 0s 1 normal forwards';
-                    if (isRestDay || done || isPreJoin) return 'none';
-                    return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
-                  };
-                  return (
-                    <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
-                      {isTodayCircle && (
-                        <div style={{ position: 'absolute', width: size + 14, height: size + 14, borderRadius: '50%', border: '3px solid rgba(148,163,184,0.45)', background: 'rgba(148,163,184,0.08)', animation: 'todayRingPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
-                      )}
-                      <button
-                        data-circle-btn="true"
-                        onPointerDown={(e) => {
-                          setPressedDay(day);
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setBubblePos({
-                            buttonCenterX: rect.left + rect.width / 2,
-                            buttonBottom: rect.bottom,
-                            day,
-                            workoutLog: workoutLog || null,
-                            done,
-                            isRestDay,
-                            isMissed,
-                            isPastOrTodayRestDay,
-                            isTodayCircle,
-                            showViewWorkout,
-                            hasBubbleBtn,
-                            popupLabel: (() => {
-                              if (isRestDay) return 'Rest Day';
-                              if (isMissed) return 'No Workout';
-                              if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
-                              if (done) return 'Workout';
-                              const customTypes = currentUser?.custom_workout_types;
-                              const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
-                              return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
-                            })(),
-                            dateLabel: done && workoutLog?.completed_date
-                              ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
-                              : (() => { const mon = startOfWeek(new Date(), { weekStartsOn: 1 }); const sd = new Date(mon); sd.setDate(mon.getDate() + (day - 1)); return sd.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }); })(),
-                            solidColor: isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535',
-                          });
-                        }}
-                        onPointerUp={() => {
-                          if (pressedDay === day) {
-                            setActiveCircleDay((prev) => {
-                              if (prev === day) { setBubblePos(null); return null; }
-                              return day;
-                            });
+                  }}
+                  onPointerLeave={onArrowReset}
+                  onPointerCancel={onArrowReset}
+                  style={{
+                    ...arrowBtnStyle,
+                    visibility: weekOffset <= -1 ? 'hidden' : 'visible',
+                    pointerEvents: weekOffset <= -1 ? 'none' : 'auto',
+                  }}>
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <path d="M8 1L2 6L8 11" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {/* ── Sliding dots track ── */}
+                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 88 }}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={weekOffset}
+                      initial={{ x: weekOffset > 0 ? 44 : -44, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: weekOffset > 0 ? -44 : 44, opacity: 0 }}
+                      transition={{ duration: 0.32, ease: [0.34, 1.2, 0.64, 1] }}
+                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%' }}>
+                      {allDays.map((day, i) => {
+                        const done = loggedDays.has(day);
+                        const bounce = justLoggedDay === day && weekOffset === 0;
+                        const isTodayCircle = day === todayDay && weekOffset === 0;
+                        const joinDate = currentUser?.created_date || currentUser?.created_at || null;
+                        const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+                        const joinedThisWeek = joinDate && new Date(joinDate) >= mondayThisWeek;
+                        const joinDayNum = joinedThisWeek ? (() => { const d = new Date(joinDate).getDay(); return d === 0 ? 7 : d; })() : null;
+                        const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
+                        const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
+                        const isInCurrentSplit = trainingDays.includes(day);
+                        const isRestDay = done ? false : !isInCurrentSplit;
+                        const isMissed = !isRestDay && !done && isPast && !isPreJoin && !isFutureWeek;
+                        const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
+                        const size = isTodayCircle ? 49 : 40;
+                        const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
+                        const workoutLog = logsByDay[day];
+                        const showViewWorkout = !done && !isRestDay && !isMissed && (isFutureWeek || day > todayDay || isTodayCircle);
+                        const hasBubbleBtn = (done && !isRestDay && workoutLog) || showViewWorkout;
+                        const getBg = () => {
+                          if (isRestDay) {
+                            if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
+                            return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                           }
-                          setPressedDay(null);
-                        }}
-                        onPointerLeave={() => setPressedDay(null)}
-                        onPointerCancel={() => setPressedDay(null)}
-                        style={{
-                          width: size, height: size, borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
-                          transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
-                          animation: pressedDay === day ? 'none' : getAnimation(),
-                          opacity: pressedDay === day ? 0.65 : 1,
-                          transform: pressedDay === day ? 'scale(0.82) translateY(3px)' : 'none',
-                          willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
-                          WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                          touchAction: 'manipulation',
-                        }}>
-                        {isRestDay ? (
-                          isPastOrTodayRestDay ? (
-                            <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
-                              <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-                              <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-                              <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-                              <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-                              <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-                              <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-                              <line x1="50" y1="30" x2="36" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="30" x2="64" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="50" x2="32" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
-                            </svg>
-                          ) : (
-                            <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
-                              <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-                              <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                              <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                              <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                              <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                              <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-                              <line x1="50" y1="30" x2="36" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="30" x2="64" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="50" x2="32" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
-                              <line x1="50" y1="50" x2="68" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
-                            </svg>
-                          )
-                        ) : done ? (
-                          <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
-                            <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : isMissed ? (
-                          <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
-                            <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" />
-                          </svg>
-                        ) : (
-                          <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
-                        )}
-                      </button>
-                      <AnimatePresence>
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
+                          if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
+                          if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
+                          return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+                        };
+                        const getBorder = () => {
+                          if (isRestDay) {
+                            if (isPastOrTodayRestDay) return '1px solid rgba(74,222,128,0.5)';
+                            return '1px solid rgba(71,85,105,0.7)';
+                          }
+                          if (done) return '1px solid rgba(147,197,253,0.5)';
+                          if (isMissed) return '1px solid rgba(248,113,113,0.5)';
+                          return '1px solid rgba(71,85,105,0.7)';
+                        };
+                        const getBoxShadow = () => {
+                          if (isRestDay) {
+                            if (isPastOrTodayRestDay) return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
+                            return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                          }
+                          if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                          if (isMissed) return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                          return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                        };
+                        const getAnimation = () => {
+                          if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) 0s 1 normal forwards';
+                          if (isRestDay || done || isPreJoin) return 'none';
+                          if (weekOffset !== 0) return 'none';
+                          return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
+                        };
+                        return (
+                          <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
+                            {isTodayCircle && (
+                              <div style={{ position: 'absolute', width: size + 14, height: size + 14, borderRadius: '50%', border: '3px solid rgba(148,163,184,0.45)', background: 'rgba(148,163,184,0.08)', animation: 'todayRingPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
+                            )}
+                            <button
+                              data-circle-btn="true"
+                              onPointerDown={(e) => {
+                                setPressedDay(day);
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setBubblePos({
+                                  buttonCenterX: rect.left + rect.width / 2,
+                                  buttonBottom: rect.bottom,
+                                  day,
+                                  workoutLog: workoutLog || null,
+                                  done,
+                                  isRestDay,
+                                  isMissed,
+                                  isPastOrTodayRestDay,
+                                  isTodayCircle,
+                                  showViewWorkout,
+                                  hasBubbleBtn,
+                                  popupLabel: (() => {
+                                    if (isRestDay) return 'Rest Day';
+                                    if (isMissed) return 'No Workout';
+                                    if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
+                                    if (done) return 'Workout';
+                                    const customTypes = currentUser?.custom_workout_types;
+                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
+                                    return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
+                                  })(),
+                                  dateLabel: done && workoutLog?.completed_date
+                                    ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
+                                    : (() => {
+                                        const sd = new Date(mondayBase);
+                                        sd.setDate(mondayBase.getDate() + (day - 1));
+                                        return sd.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+                                      })(),
+                                  solidColor: isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535',
+                                });
+                              }}
+                              onPointerUp={() => {
+                                if (pressedDay === day) {
+                                  setActiveCircleDay((prev) => {
+                                    if (prev === day) { setBubblePos(null); return null; }
+                                    return day;
+                                  });
+                                }
+                                setPressedDay(null);
+                              }}
+                              onPointerLeave={() => setPressedDay(null)}
+                              onPointerCancel={() => setPressedDay(null)}
+                              style={{
+                                width: size, height: size, borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
+                                transition: 'opacity 0.1s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
+                                animation: pressedDay === day ? 'none' : getAnimation(),
+                                opacity: pressedDay === day ? 0.65 : 1,
+                                transform: pressedDay === day ? 'scale(0.82) translateY(3px)' : 'none',
+                                willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
+                                WebkitTapHighlightColor: 'transparent', userSelect: 'none',
+                                touchAction: 'manipulation',
+                              }}>
+                              {isRestDay ? (
+                                isPastOrTodayRestDay ? (
+                                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                    <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+                                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <line x1="50" y1="30" x2="36" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="30" x2="64" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="32" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                  </svg>
+                                ) : (
+                                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                    <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+                                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <line x1="50" y1="30" x2="36" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="30" x2="64" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="32" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="68" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                  </svg>
+                                )
+                              ) : done ? (
+                                <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
+                                  <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              ) : isMissed ? (
+                                <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
+                                  <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" />
+                                </svg>
+                              ) : (
+                                <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
+                              )}
+                            </button>
+                            <AnimatePresence>
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* ── Right arrow ── */}
+                <button
+                  onPointerDown={onArrowDown}
+                  onPointerUp={(e) => {
+                    onArrowReset(e);
+                    if (weekOffset < 1) {
+                      setWeekOffset(w => w + 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
+                    }
+                  }}
+                  onPointerLeave={onArrowReset}
+                  onPointerCancel={onArrowReset}
+                  style={{
+                    ...arrowBtnStyle,
+                    visibility: weekOffset >= 1 ? 'hidden' : 'visible',
+                    pointerEvents: weekOffset >= 1 ? 'none' : 'auto',
+                  }}>
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <path d="M2 1L8 6L2 11" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
               </div>
             );
           })()}
@@ -1340,7 +1426,6 @@ export default function Home() {
                   <p className="text-sm text-slate-400 font-medium mt-2">{formattedDate}</p>
                 </div>
                 {exercises.length > 0 ? (() => {
-                  // Group exercises by name — same logic as TodayWorkout
                   const groups = [];
                   const nameToGroupIdx = {};
                   exercises.forEach((ex, index) => {
@@ -1396,7 +1481,6 @@ export default function Home() {
                             );
                           }
 
-                          // Grouped (multi-set) — sort heaviest first = Set 1
                           const sorted = [...group.items].sort(
                             (a, b) => (parseFloat(b.ex.weight_kg ?? b.ex.weight_lbs ?? b.ex.weight) || 0) - (parseFloat(a.ex.weight_kg ?? a.ex.weight_lbs ?? a.ex.weight) || 0)
                           );
