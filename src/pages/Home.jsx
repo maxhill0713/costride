@@ -1115,7 +1115,7 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div style={{ position: 'relative', width: '100%', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div style={{ margin: '0 -16px', position: 'relative', width: 'calc(100% + 32px)', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1129,7 +1129,7 @@ export default function Home() {
 
                 {/* ── Left arrow ── */}
                 <div style={{
-                  position: 'absolute', left: -12, top: 0, bottom: 0,
+                  position: 'absolute', left: 0, top: 0, bottom: 0,
                   width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
@@ -1142,7 +1142,7 @@ export default function Home() {
 
                 {/* ── Right arrow ── */}
                 <div style={{
-                  position: 'absolute', right: -12, top: 0, bottom: 0,
+                  position: 'absolute', right: 0, top: 0, bottom: 0,
                   width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 10,
                 }}>
