@@ -907,7 +907,7 @@ export default function Home() {
         onPointerLeave={() => setPressed(false)}
         onPointerCancel={() => setPressed(false)}
         style={{
-          width: 22,
+          width: '100%',
           height: 52,
           background: 'none',
           border: 'none',
@@ -915,14 +915,13 @@ export default function Home() {
           cursor: disabled ? 'default' : 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: direction === 'left' ? 'flex-start' : 'flex-end',
           flexShrink: 0,
           WebkitTapHighlightColor: 'transparent',
           touchAction: 'manipulation',
           outline: 'none',
           opacity: disabled ? 0 : pressed ? 0.5 : 1,
-          transform: pressed ? 'scale(0.78) translateY(2px)' : 'scale(1)',
-          transition: 'opacity 0.1s ease, transform 0.1s ease',
+          transition: 'opacity 0.1s ease',
           pointerEvents: disabled ? 'none' : 'auto',
         }}>
         <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
@@ -1117,8 +1116,7 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div style={{ marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', paddingLeft: 'calc(50vw - 50%)', paddingRight: 'calc(50vw - 50%)' }}>
-              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto', overflow: 'visible' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1130,10 +1128,10 @@ export default function Home() {
                   />
                 )}
 
-                {/* ── Left arrow — absolute, left edge of breakout wrapper ── */}
+                {/* ── Left arrow — hit area extends to left screen edge ── */}
                 <div style={{
-                  position: 'absolute', left: 0, top: 0, bottom: 0,
-                  width: 22,
+                  position: 'absolute', left: -16, top: 0, bottom: 0,
+                  width: 48,
                   display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
                   zIndex: 10,
                 }}>
@@ -1149,10 +1147,10 @@ export default function Home() {
                   />
                 </div>
 
-                {/* ── Right arrow — absolute, right edge of breakout wrapper ── */}
+                {/* ── Right arrow — hit area extends to right screen edge ── */}
                 <div style={{
-                  position: 'absolute', right: 0, top: 0, bottom: 0,
-                  width: 22,
+                  position: 'absolute', right: -16, top: 0, bottom: 0,
+                  width: 48,
                   display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                   zIndex: 10,
                 }}>
@@ -1350,7 +1348,6 @@ export default function Home() {
                     </motion.div>
                   </AnimatePresence>
                 </div>
-              </div>
               </div>
             );
           })()}
