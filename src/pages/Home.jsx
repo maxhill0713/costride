@@ -1158,7 +1158,7 @@ export default function Home() {
                 {arrowTop !== null && (
                   <div style={{
                     position: 'fixed',
-                    left: 1,
+                    left: 0,
                     top: arrowTop - 26,
                     width: 36,
                     height: 52,
@@ -1182,7 +1182,7 @@ export default function Home() {
                 {arrowTop !== null && (
                   <div style={{
                     position: 'fixed',
-                    right: 1,
+                    right: 0,
                     top: arrowTop - 26,
                     width: 36,
                     height: 52,
