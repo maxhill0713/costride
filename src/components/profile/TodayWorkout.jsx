@@ -650,44 +650,68 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </div>
 
         {/* COLLAPSED STATE */}
-        {/* COLLAPSED STATE — always mounted, fades out to prevent height jump on expand */}
-<AnimatePresence initial={false}>
-  {!isExpanded && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-      className="flex flex-col items-center gap-2 pb-1"
-    >
-      {alreadyLoggedToday &&
-        <Button
-          onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
-          size="sm"
-          className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-            View Summary
-          </Button>
-      }
-      <motion.button
-        onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
-        className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-        animate={{ y: [0, 4, 0] }}
-        transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-        <ChevronDown className="w-5 h-5" />
-      </motion.button>
-    </motion.div>
-  )}
-</AnimatePresence>
+        <AnimatePresence initial={false}>
+          {!isExpanded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col items-center gap-2 pb-1"
+            >
+              {alreadyLoggedToday &&
+                <Button
+                  onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
+                  size="sm"
+                  className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                  View Summary
+                </Button>
+              }
+              <motion.button
+                onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
+                className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+                animate={{ y: [0, 4, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+                <ChevronDown className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* EXPANDED STATE — spring animation matching QuoteCarousel */}
+        {/* EXPANDED STATE
+            KEY FIX: overflow is kept hidden during the spring so the card
+            grows cleanly. A counter-translate on the inner wrapper cancels
+            the perceived upward jump — the content starts shifted DOWN by
+            the same amount the spring overshoots, then settles to 0 in sync,
+            so from the user's perspective it never moves. */}
         <AnimatePresence>
-          {isExpanded &&
-<motion.div
-  initial={{ opacity: 0, y: -6 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: -6 }}
-  transition={{ duration: 0.18, ease: 'easeOut' }}
-  style={{ transformOrigin: 'top' }}>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 200,
+                damping: 26,
+                mass: 1.1,
+                opacity: { duration: 0.2 }
+              }}
+              style={{ overflow: 'hidden', transformOrigin: 'top' }}
+            >
+              {/* Inner wrapper: slides down slightly as the outer clips up,
+                  so the content appears stationary relative to the viewport */}
+              <motion.div
+                initial={{ y: -12 }}
+                animate={{ y: 0 }}
+                exit={{ y: -12 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 200,
+                  damping: 26,
+                  mass: 1.1
+                }}
+              >
 
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
@@ -1074,8 +1098,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </div>
             </div>)
             }
+
+              </motion.div>{/* end inner counter-translate wrapper */}
             </motion.div>
-          }
+          )}
         </AnimatePresence>
 
         <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
