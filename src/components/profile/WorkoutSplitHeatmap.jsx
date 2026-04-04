@@ -81,6 +81,7 @@ function DayBubble({ bubbleInfo, onViewSummary, onViewWorkout, onClose }) {
     solidColor,
     dayType,      // 'done' | 'rest' | 'missed' | 'upcoming'
     workoutLog,
+    hasExercises,
     containerRef,
   } = bubbleInfo;
 
@@ -89,9 +90,12 @@ function DayBubble({ bubbleInfo, onViewSummary, onViewWorkout, onClose }) {
   const RADIUS = 14;
   const BUBBLE_W = 274;
 
-  const hasSummaryBtn = dayType === 'done' && workoutLog;
-  const hasWorkoutBtn = dayType === 'upcoming';
-  const BUBBLE_H = (hasSummaryBtn || hasWorkoutBtn) ? 118 : 78;
+  // Mirror Home page exactly:
+  // View Summary: checked-in (done) AND a workoutLog was found for that day
+  const hasSummaryBtn = dayType === 'done' && !!workoutLog;
+  // View Workout: not done, not rest, not missed — i.e. a future/today training day with exercises
+  const hasWorkoutBtn = dayType === 'upcoming' && hasExercises;
+  const BUBBLE_H = (hasSummaryBtn || hasWorkoutBtn) ? 112 : 76;
   const SVG_H = BUBBLE_H + ARROW_H;
 
   // Position relative to the scroll container
@@ -519,16 +523,20 @@ export default function WorkoutSplitHeatmap({
     const isRestDay   = expected === 'Rest';
     const isMissed    = isPast && !isCheckedIn && !isRestDay && !(joinDay && day < joinDay);
     const workoutMeta = getWorkoutMeta(day);
-    const workoutLog  = isCheckedIn ? getWorkoutLogForDay(day) : null;
+    // Always try to find a workout log for this day regardless of check-in state
+    const workoutLog  = getWorkoutLogForDay(day);
     const dow         = day.getDay() === 0 ? 7 : day.getDay();
     const isPastOrTodayRestDay = isRestDay && (isPast || isToday);
 
     // Determine day type for bubble
     let dayType = 'upcoming';
-    if (isRestDay)    dayType = 'rest';
-    else if (isMissed) dayType = 'missed';
-    else if (isCheckedIn) dayType = 'done';
+    if (isRestDay)         dayType = 'rest';
+    else if (isMissed)     dayType = 'missed';
+    else if (isCheckedIn)  dayType = 'done';
     else if (isFuture || isToday) dayType = 'upcoming';
+
+    // Whether this day has exercises configured (enables View Workout button)
+    const hasExercises = !!(customWorkoutTypes?.[dow]?.exercises?.length > 0);
 
     // Popup label
     let popupLabel = 'Training Day';
@@ -574,6 +582,7 @@ export default function WorkoutSplitHeatmap({
       workoutLog,
       workoutMeta,
       dayOfWeek: dow,
+      hasExercises,
       containerRef,
     });
   }, [bubbleInfo, hasCheckIn, today, joinDay, dayWorkoutMap, workoutLogs]);
