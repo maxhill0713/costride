@@ -264,6 +264,8 @@ export default function Home() {
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
+  // Track slide direction: -1 = sliding left (going to past), +1 = sliding right (going to future)
+  const [slideDirection, setSlideDirection] = useState(0);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
   // ── Header scroll behaviour ──────────────────────────────────────────────
@@ -977,28 +979,57 @@ export default function Home() {
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
             const isFutureWeek = weekOffset > 0;
-            const arrowBtnStyle = {
-              width: 28, height: 28, borderRadius: 6,
-              border: '1px solid rgba(255,255,255,0.14)',
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.09) 40%, rgba(255,255,255,0.04) 100%)',
-              boxShadow: '0 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.2)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, marginTop: 6,
-              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
-              outline: 'none',
+
+            // ── Arrow button: tiny transparent triangle, no background ──
+            const ArrowButton = ({ direction, disabled, onPress }) => {
+              const [pressed, setPressed] = useState(false);
+              // direction: 'left' | 'right'
+              // Points left = chevron facing left; points right = chevron facing right
+              const points = direction === 'left'
+                ? '8,2 2,6 8,10'   // left-pointing triangle
+                : '2,2 8,6 2,10';  // right-pointing triangle
+              return (
+                <button
+                  onPointerDown={() => { if (!disabled) setPressed(true); }}
+                  onPointerUp={() => { if (!disabled && pressed) { setPressed(false); onPress(); } }}
+                  onPointerLeave={() => setPressed(false)}
+                  onPointerCancel={() => setPressed(false)}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: disabled ? 'default' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: 6,
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    outline: 'none',
+                    opacity: disabled ? 0 : pressed ? 0.4 : 0.45,
+                    transform: pressed ? 'scale(0.8)' : 'scale(1)',
+                    transition: 'opacity 0.1s ease, transform 0.1s ease',
+                    pointerEvents: disabled ? 'none' : 'auto',
+                  }}>
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                    <polyline
+                      points={points}
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              );
             };
-            const onArrowDown = (e) => {
-              e.currentTarget.style.transform = 'scale(0.82) translateY(2px)';
-              e.currentTarget.style.opacity = '0.65';
-              e.currentTarget.style.boxShadow = '0 0px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-            };
-            const onArrowReset = (e) => {
-              e.currentTarget.style.transform = '';
-              e.currentTarget.style.opacity = '';
-              e.currentTarget.style.boxShadow = '0 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.2)';
-            };
+
             return (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '12px 0', height: 88, overflow: 'visible', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '12px 0', height: 88, overflow: 'hidden', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1011,37 +1042,36 @@ export default function Home() {
                 )}
 
                 {/* ── Left arrow ── */}
-                <button
-                  onPointerDown={onArrowDown}
-                  onPointerUp={(e) => {
-                    onArrowReset(e);
-                    if (weekOffset > -1) {
-                      setWeekOffset(w => w - 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }
+                <ArrowButton
+                  direction="left"
+                  disabled={weekOffset <= -1}
+                  onPress={() => {
+                    setSlideDirection(-1);
+                    setWeekOffset(w => w - 1);
+                    setActiveCircleDay(null);
+                    setBubblePos(null);
                   }}
-                  onPointerLeave={onArrowReset}
-                  onPointerCancel={onArrowReset}
-                  style={{
-                    ...arrowBtnStyle,
-                    visibility: weekOffset <= -1 ? 'hidden' : 'visible',
-                    pointerEvents: weekOffset <= -1 ? 'none' : 'auto',
-                  }}>
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-                    <path d="M8 1L2 6L8 11" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                />
 
                 {/* ── Sliding dots track ── */}
+                {/* overflow:hidden clips the sliding motion so dots visibly slide in/out */}
                 <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 88 }}>
-                  <AnimatePresence mode="wait" initial={false}>
+                  <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
                       key={weekOffset}
-                      initial={{ x: weekOffset > 0 ? 44 : -44, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: weekOffset > 0 ? -44 : 44, opacity: 0 }}
-                      transition={{ duration: 0.32, ease: [0.34, 1.2, 0.64, 1] }}
+                      custom={slideDirection}
+                      variants={{
+                        // enter from the direction of travel:
+                        // going left (past) → new week enters from left (negative x)
+                        // going right (future) → new week enters from right (positive x)
+                        enter: (dir) => ({ x: dir < 0 ? '-100%' : '100%', opacity: 1 }),
+                        center: { x: 0, opacity: 1 },
+                        exit: (dir) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 1 }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
                       style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%' }}>
                       {allDays.map((day, i) => {
                         const done = loggedDays.has(day);
@@ -1209,27 +1239,16 @@ export default function Home() {
                 </div>
 
                 {/* ── Right arrow ── */}
-                <button
-                  onPointerDown={onArrowDown}
-                  onPointerUp={(e) => {
-                    onArrowReset(e);
-                    if (weekOffset < 1) {
-                      setWeekOffset(w => w + 1);
-                      setActiveCircleDay(null);
-                      setBubblePos(null);
-                    }
+                <ArrowButton
+                  direction="right"
+                  disabled={weekOffset >= 1}
+                  onPress={() => {
+                    setSlideDirection(1);
+                    setWeekOffset(w => w + 1);
+                    setActiveCircleDay(null);
+                    setBubblePos(null);
                   }}
-                  onPointerLeave={onArrowReset}
-                  onPointerCancel={onArrowReset}
-                  style={{
-                    ...arrowBtnStyle,
-                    visibility: weekOffset >= 1 ? 'hidden' : 'visible',
-                    pointerEvents: weekOffset >= 1 ? 'none' : 'auto',
-                  }}>
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-                    <path d="M2 1L8 6L2 11" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                />
               </div>
             );
           })()}
