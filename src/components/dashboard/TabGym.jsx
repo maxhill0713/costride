@@ -1,166 +1,958 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
+/**
+ * GymControlCenter.jsx
+ *
+ * Drop-in replacement for TabGym — the "Gym Control Center" redesign.
+ * Accepts the same props as TabGym; mock data is used as fallback so
+ * the component works standalone without a real backend.
+ *
+ * Prop interface (same as original TabGym):
+ *   selectedGym, classes, coaches, openModal,
+ *   checkIns, allMemberships, atRisk, retentionRate,
+ *   rewards, onCreateReward, onDeleteReward, isLoading
+ */
+
+import { useState, useMemo, useEffect } from 'react';
 import {
   Dumbbell, Calendar, Users, Star, Image as ImageIcon,
   MapPin, Tag, ShieldCheck, ChevronRight, ExternalLink,
   Settings, Camera, AlertTriangle, Copy, Check,
   Sparkles, CheckCircle, Info, Activity, TrendingUp,
   Bell, Lock, CreditCard, Plus, Edit2, Zap,
-  ArrowUpRight, BarChart2, Clock, Shield, Gift, Trash2, ToggleLeft, ToggleRight,
+  ArrowRight, BarChart2, Clock, Shield, Gift, Trash2,
+  MessageSquare, Mail, Eye, Layers,
+  Power, AlertCircle, Pencil, UserCheck,
 } from 'lucide-react';
-import InviteStaffPanel from './InviteStaffPanel';
-import { C, CARD_SHADOW, CARD_RADIUS } from '@/lib/dashboard-tokens';
 
-function SCard({ children, style = {}, noPad }) {
+// ─────────────────────────────────────────────
+// Design tokens — keep in sync with dashboard-tokens
+// ─────────────────────────────────────────────
+const C = {
+  bg:        '#07090f',
+  surface:   '#0c1220',
+  raised:    '#101828',
+  elevated:  '#141f33',
+  border:    'rgba(255,255,255,0.056)',
+  borderHi:  'rgba(255,255,255,0.10)',
+  accent:    '#3b82f6',
+  success:   '#10b981',
+  warn:      '#f59e0b',
+  danger:    '#ef4444',
+  t1:        '#e8f0ff',
+  t2:        '#6b80a4',
+  t3:        '#2f3f5c',
+  divider:   'rgba(255,255,255,0.04)',
+};
+const R = 12; // base border-radius
+const SHADOW = '0 1px 3px rgba(0,0,0,0.35)';
+
+// ─────────────────────────────────────────────
+// Mock data (used when real props not provided)
+// ─────────────────────────────────────────────
+const MOCK = {
+  gym: {
+    name: 'Iron & Oak Fitness',
+    type: 'CrossFit Box',
+    city: 'Manchester',
+    address: '12 Canal Street',
+    postcode: 'M1 4PH',
+    price: 65,
+    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=80',
+    logo_url: null,
+    verified: false,
+    owner_email: 'owner@ironoak.com',
+    id: 'gym_01jwkx9b3a',
+    amenities: ['Free Parking', 'Changing Rooms'],
+    equipment: ['Barbells', 'Kettlebells', 'Rowers', 'Pull-up Rigs'],
+    membership_tiers: [{ name: 'Monthly', price: 65, description: 'Rolling, cancel anytime' }],
+    description: 'The premier CrossFit experience in Manchester city centre.',
+  },
+  classes: [
+    { name: 'Morning WOD',      coach: 'Sam T',  time: '06:30' },
+    { name: 'Lunchtime HIIT',   coach: 'Sam T',  time: '12:00' },
+    { name: 'Evening CrossFit', coach: 'Alex R', time: '18:30' },
+  ],
+  coaches: [
+    { name: 'Sam Thompson', role: 'Head Coach',     active: true },
+    { name: 'Alex Rivera',  role: 'CrossFit Coach', active: true },
+  ],
+  members: 38,
+  retentionRate: 74,
+  atRisk: 3,
+  checkIns30: 142,
+};
+
+// ─────────────────────────────────────────────
+// Base UI components
+// ─────────────────────────────────────────────
+
+function Card({ children, style = {}, leftAccent, noPad }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW, position: 'relative', overflow: 'hidden', ...(noPad ? {} : { padding: 20 }), ...style }}>
+    <div style={{
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: R,
+      boxShadow: SHADOW,
+      position: 'relative',
+      overflow: 'hidden',
+      ...(noPad ? {} : { padding: '20px 22px' }),
+      ...(leftAccent ? { borderLeft: `3px solid ${leftAccent}` } : {}),
+      ...style,
+    }}>
       {children}
     </div>
   );
 }
 
-function Toggle({ value, onChange, color = C.accent }) {
+function IconBox({ icon: Icon, color = C.t2, bg, size = 30, iconSize = 13 }) {
   return (
-    <button onClick={() => onChange(!value)}
-      style={{ flexShrink: 0, width: 40, height: 22, borderRadius: 99, border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', background: value ? color : 'rgba(255,255,255,0.1)', fontFamily: 'inherit' }}>
-      <div style={{ position: 'absolute', top: 3, left: value ? 20 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+    <div style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.27),
+      background: bg || C.elevated,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      <Icon style={{ width: iconSize, height: iconSize, color }} />
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    complete: { c: C.success, label: 'Complete',    bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.18)'  },
+    missing:  { c: C.warn,    label: 'Incomplete',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.18)'  },
+    critical: { c: C.danger,  label: 'Critical',    bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.18)'   },
+    active:   { c: C.accent,  label: 'Active',      bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.18)'  },
+    inactive: { c: C.t2,      label: 'Not set',     bg: 'rgba(107,128,164,0.06)', border: 'rgba(107,128,164,0.14)' },
+  };
+  const s = map[status] || map.inactive;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '3px 8px', borderRadius: 6,
+      background: s.bg, border: `1px solid ${s.border}`,
+      fontSize: 10, fontWeight: 700, color: s.c, fontFamily: 'inherit',
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.c, flexShrink: 0 }} />
+      {s.label}
+    </span>
+  );
+}
+
+function Toggle({ value, onChange }) {
+  return (
+    <button onClick={() => onChange(!value)} style={{
+      flexShrink: 0, width: 38, height: 21, borderRadius: 99,
+      border: 'none', cursor: 'pointer', position: 'relative',
+      transition: 'background 0.2s', fontFamily: 'inherit',
+      background: value ? C.accent : 'rgba(255,255,255,0.08)',
+    }}>
+      <div style={{
+        position: 'absolute', top: 2.5,
+        left: value ? 19 : 2.5, width: 16, height: 16,
+        borderRadius: '50%', background: '#fff',
+        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      }} />
     </button>
   );
 }
 
-function CopyButton({ value }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => { navigator.clipboard.writeText(value || ''); setCopied(true); setTimeout(() => setCopied(false), 1800); };
+function ActionBtn({ label, icon: Icon, onClick, variant = 'ghost' }) {
+  const [hov, setHov] = useState(false);
+  const styles = {
+    ghost:   { bg: hov ? C.divider : 'transparent', color: C.t2,    border: `1px solid ${hov ? C.border : 'transparent'}` },
+    outline: { bg: hov ? `${C.accent}18` : `${C.accent}0a`, color: C.accent, border: `1px solid ${C.accent}28`           },
+    soft:    { bg: hov ? 'rgba(255,255,255,0.07)' : C.elevated, color: C.t1, border: `1px solid ${C.border}`             },
+    danger:  { bg: hov ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.07)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.18)' },
+  };
+  const s = styles[variant] || styles.ghost;
   return (
-    <button onClick={handleCopy}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: copied ? `${C.success}14` : C.divider, border: `1px solid ${copied ? C.success + '28' : C.border}`, color: copied ? C.success : C.t3, fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit' }}>
-      {copied ? <Check style={{ width: 9, height: 9 }} /> : <Copy style={{ width: 9, height: 9 }} />}
-      {copied ? 'Copied' : 'Copy'}
+    <button onClick={onClick}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        padding: '6px 12px', borderRadius: 8,
+        cursor: 'pointer', fontFamily: 'inherit',
+        transition: 'all .15s', fontSize: 11, fontWeight: 700,
+        ...s,
+      }}>
+      {Icon && <Icon style={{ width: 10, height: 10 }} />}
+      {label}
     </button>
   );
 }
 
-// Circular SVG health gauge
-function HealthGauge({ score, color }) {
-  const r = 48, cx = 58, cy = 58, circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const tier = score >= 80 ? 'Top 20%' : score >= 65 ? 'Above avg' : score >= 50 ? 'Needs work' : 'Starting';
+function SectionHeader({ id, label, purpose }) {
   return (
-    <div style={{ position: 'relative', width: 116, height: 116, flexShrink: 0 }}>
-      <svg width="116" height="116" viewBox="0 0 116 116">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.divider} strokeWidth={7} />
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={7}
+    <div id={id} style={{ marginBottom: 16, scrollMarginTop: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
+          {label}
+        </span>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+      </div>
+      {purpose && (
+        <p style={{ margin: 0, fontSize: 12, color: C.t2, lineHeight: 1.6 }}>{purpose}</p>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Health gauge
+// ─────────────────────────────────────────────
+function HealthGauge({ score, size = 100, color }) {
+  const r = size / 2 - 7, cx = size / 2, cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  const dash  = (score / 100) * circ;
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.elevated} strokeWidth={6} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={6}
           strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ / 4}
-          strokeLinecap="round" style={{ transition: 'stroke-dasharray 1s ease', filter: `drop-shadow(0 0 5px ${color}55)` }} />
-        {[25, 50, 75].map(v => {
-          const angle = (v / 100) * 360 - 90;
-          const rad = (angle * Math.PI) / 180;
-          const x1 = cx + (r - 11) * Math.cos(rad), y1 = cy + (r - 11) * Math.sin(rad);
-          const x2 = cx + (r - 6)  * Math.cos(rad), y2 = cy + (r - 6)  * Math.sin(rad);
-          return <line key={v} x1={x1} y1={y1} x2={x2} y2={y2} stroke={C.border} strokeWidth={1.5} />;
-        })}
+          strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.8s ease' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 26, fontWeight: 800, color: C.t1, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
-        <div style={{ fontSize: 9, fontWeight: 700, color, marginTop: 3 }}>{tier}</div>
+        <span style={{ fontSize: size * 0.22, fontWeight: 800, color: C.t1, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</span>
+        <span style={{ fontSize: size * 0.085, fontWeight: 700, color, marginTop: 2 }}>/ 100</span>
       </div>
     </div>
   );
 }
 
-function GymHealthCard({ selectedGym, classes, coaches, checkIns, allMemberships, atRisk, retentionRate, now, openModal }) {
-  const totalMembers = allMemberships?.length || 0;
-  const ci30 = (checkIns || []).filter(c => {
-    const d = new Date(c.check_in_date), cutoff = new Date(now);
-    cutoff.setDate(cutoff.getDate() - 30); return d >= cutoff;
-  });
-  const checks = useMemo(() => [
-    { label: 'Hero photo',         done: !!selectedGym?.image_url,   cta: 'Add photo',  action: 'heroPhoto' },
-    { label: 'Class added',        done: (classes?.length||0) > 0,   cta: 'Add class',  action: 'classes'   },
-    { label: 'Coach added',        done: (coaches?.length||0) > 0,   cta: 'Add coach',  action: 'coaches'   },
-    { label: 'Members joined',     done: totalMembers > 0,           cta: 'Add member', action: 'members'   },
-    { label: 'Retention ≥ 70%',    done: retentionRate >= 70,        cta: null,         action: null        },
-    { label: 'No at-risk members', done: atRisk === 0,               cta: 'Message',    action: 'message'   },
-    { label: 'Check-ins recorded', done: ci30.length > 0,            cta: 'Scan QR',    action: 'qrScanner' },
-    { label: 'Gym verified',       done: !!selectedGym?.verified,    cta: null,         action: null        },
-  ], [selectedGym, classes, coaches, totalMembers, retentionRate, atRisk, ci30]);
-
+// ─────────────────────────────────────────────
+// Section 1 — Business Health
+// ─────────────────────────────────────────────
+function HealthSection({ gym, classes, coaches, members, retentionRate, atRisk, openModal }) {
   const score = useMemo(() => {
     let s = 0;
-    if (selectedGym?.image_url) s += 10; if (selectedGym?.logo_url) s += 5;
-    if (classes?.length > 0)    s += 15; if (coaches?.length > 0)   s += 15;
-    if (totalMembers > 0)       s += 20; if (retentionRate >= 70)    s += 20;
-    if (atRisk === 0)           s += 10; if (ci30.length > 0)        s += 5;
+    if (gym.image_url)      s += 10;
+    if (gym.description)    s += 5;
+    if (gym.logo_url)       s += 5;
+    if (classes.length > 0) s += 15;
+    if (coaches.length > 0) s += 15;
+    if (members > 0)        s += 20;
+    if (retentionRate >= 70) s += 15;
+    if (atRisk === 0)       s += 5;
+    if (gym.verified)       s += 10;
     return Math.min(100, s);
-  }, [selectedGym, classes, coaches, totalMembers, retentionRate, atRisk, ci30]);
+  }, [gym, classes, coaches, members, retentionRate, atRisk]);
 
-  const scoreColor = score >= 75 ? C.success : score >= 50 ? C.accent : C.danger;
-  const done = checks.filter(c => c.done).length;
+  const scoreColor = score >= 75 ? C.success : score >= 50 ? C.warn : C.danger;
+
+  const checks = [
+    { label: 'Hero photo uploaded',      done: !!gym.image_url,       cta: 'Add photo',   action: 'heroPhoto', priority: 'high'    },
+    { label: 'Gym description written',  done: !!gym.description,     cta: 'Write it',    action: 'editInfo',  priority: 'medium'  },
+    { label: 'Classes on schedule',      done: classes.length > 0,    cta: 'Add class',   action: 'classes',   priority: 'high'    },
+    { label: 'At least one coach added', done: coaches.length > 0,    cta: 'Add coach',   action: 'coaches',   priority: 'high'    },
+    { label: 'Pricing set',              done: !!gym.price,           cta: 'Set price',   action: 'pricing',   priority: 'critical'},
+    { label: 'Members enrolled',         done: members > 0,           cta: 'Add member',  action: 'members',   priority: 'medium'  },
+    { label: 'Retention ≥ 70 %',         done: retentionRate >= 70,   cta: null,          action: null,        priority: 'medium'  },
+    { label: 'Gym verified',             done: !!gym.verified,        cta: null,          action: null,        priority: 'low'     },
+  ];
+  const doneCount = checks.filter(c => c.done).length;
+  const missing   = checks.filter(c => !c.done);
+
+  const dotColor = (priority) => ({
+    critical: C.danger, high: C.warn, medium: C.accent, low: C.t3,
+  }[priority] || C.t3);
 
   return (
-    <SCard accent={scoreColor}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 18 }}>
-        <HealthGauge score={score} color={scoreColor} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, marginBottom: 3 }}>Gym Health Score</div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Setup completion & live performance</div>
-          <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
-            {checks.map((c, i) => (
-              <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: c.done ? C.success : C.divider, transition: 'background 0.4s' }} />
-            ))}
+    <div style={{ marginBottom: 36 }}>
+      {/* ── Hero banner ── */}
+      <div style={{ borderRadius: R + 2, overflow: 'hidden', background: C.surface, border: `1px solid ${C.border}`, marginBottom: 16, boxShadow: SHADOW }}>
+        <div style={{ height: 130, position: 'relative', background: 'linear-gradient(135deg,#060d1c 0%,#0c1934 50%,#060d1c 100%)', overflow: 'hidden' }}>
+          {gym.image_url && (
+            <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+          )}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 0%, rgba(10,18,32,0.92) 100%)' }} />
+          <button onClick={() => openModal('heroPhoto')} style={{
+            position: 'absolute', top: 10, right: 10,
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 11px', borderRadius: 7,
+            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          }}>
+            <Camera style={{ width: 10, height: 10 }} />
+            {gym.image_url ? 'Change hero' : 'Add hero photo'}
+          </button>
+        </div>
+
+        <div style={{ padding: '0 22px 20px', marginTop: -18, position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div onClick={() => openModal('logo')} style={{
+              width: 56, height: 56, borderRadius: '50%', background: C.elevated,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: `2px solid ${C.accent}`, cursor: 'pointer', overflow: 'hidden', flexShrink: 0,
+              boxShadow: `0 0 0 4px rgba(59,130,246,0.1)`,
+            }}>
+              {gym.logo_url
+                ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <Dumbbell style={{ width: 22, height: 22, color: '#fff' }} />
+              }
+            </div>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1, letterSpacing: '-0.03em' }}>
+                {gym.name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                {gym.type && <span style={{ fontSize: 11, color: C.t2 }}>{gym.type}</span>}
+                {gym.city && (
+                  <>
+                    <span style={{ width: 3, height: 3, borderRadius: '50%', background: C.t3, display: 'inline-block' }} />
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.t2 }}>
+                      <MapPin style={{ width: 9, height: 9 }} />{gym.city}
+                    </span>
+                  </>
+                )}
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5,
+                  background: gym.verified ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)',
+                  border: `1px solid ${gym.verified ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)'}`,
+                  fontSize: 9, fontWeight: 800, color: gym.verified ? C.success : C.accent,
+                }}>
+                  <ShieldCheck style={{ width: 9, height: 9 }} />
+                  {gym.verified ? 'Verified' : 'Pending'}
+                </span>
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 10, color: C.t3 }}>{done}/{checks.length} complete</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: scoreColor }}>
-              {score >= 75 ? '✓ Fully configured' : `${checks.length - done} remaining`}
-            </span>
-          </div>
+          <ActionBtn label="Edit info" icon={Settings} onClick={() => openModal('editInfo')} variant="soft" />
+        </div>
+
+        {/* Quick info strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, padding: '0 22px 18px' }}>
+          {[
+            { label: 'Price',    value: gym.price ? `£${gym.price}/mo` : 'Not set', icon: Tag       },
+            { label: 'Address',  value: gym.address || '—',                          icon: MapPin    },
+            { label: 'Postcode', value: gym.postcode || '—',                         icon: MapPin    },
+            { label: 'Owner',    value: gym.owner_email || '—',                      icon: Shield    },
+          ].map((f, i) => (
+            <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                <f.icon style={{ width: 9, height: 9, color: C.t3 }} />
+                <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.t3 }}>{f.label}</span>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.value}</div>
+            </div>
+          ))}
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-        {checks.map((c, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: C.divider, border: `1px solid ${C.border}` }}>
-            {c.done
-              ? <CheckCircle style={{ width: 11, height: 11, color: C.success, flexShrink: 0 }} />
-              : <div style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${C.border}`, flexShrink: 0 }} />
-            }
-            <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: c.done ? C.t2 : C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.label}</span>
-            {!c.done && c.action && (
-              <button onClick={() => openModal(c.action)}
-                style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, color: C.accent, background: `${C.accent}12`, border: `1px solid ${C.accent}25`, borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                {c.cta}
-              </button>
-            )}
+
+      {/* ── Health card ── */}
+      <Card>
+        <div style={{ display: 'flex', gap: 22, alignItems: 'flex-start' }}>
+          <HealthGauge score={score} size={104} color={scoreColor} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 3 }}>Business health</div>
+            <div style={{ fontSize: 12, color: C.t2, marginBottom: 18, lineHeight: 1.6 }}>
+              {score >= 75
+                ? 'Your gym is fully configured and ready to grow.'
+                : `${checks.length - doneCount} items need attention before your gym is fully operational.`
+              }
+            </div>
+            <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>
+              {checks.map((c, i) => (
+                <div key={i} style={{
+                  flex: 1, height: 3, borderRadius: 99,
+                  background: c.done ? C.success : C.elevated,
+                  transition: 'background 0.3s',
+                }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 10, color: C.t2 }}>{doneCount} of {checks.length} complete</span>
+              {missing.length > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 700, color: scoreColor }}>
+                  {missing.length} remaining
+                </span>
+              )}
+            </div>
           </div>
-        ))}
-      </div>
-    </SCard>
+        </div>
+
+        {missing.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Action required
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {missing.map((c, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '9px 12px', borderRadius: 9,
+                  background: C.elevated, border: `1px solid ${C.border}`,
+                }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor(c.priority), flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 12, color: C.t1, fontWeight: 500 }}>{c.label}</span>
+                  {c.cta && c.action && (
+                    <button onClick={() => openModal(c.action)} style={{
+                      fontSize: 10, fontWeight: 700, color: C.accent,
+                      background: `${C.accent}10`, border: `1px solid ${C.accent}20`,
+                      borderRadius: 6, padding: '3px 9px', cursor: 'pointer', fontFamily: 'inherit',
+                    }}>
+                      {c.cta}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>
   );
 }
 
-function LiveStatsStrip({ allMemberships, checkIns, atRisk, retentionRate, now }) {
-  const totalMembers = allMemberships?.length || 0;
-  const ci30 = (checkIns || []).filter(c => { const d = new Date(c.check_in_date), cut = new Date(now); cut.setDate(cut.getDate() - 30); return d >= cut; }).length;
-  const weekSet = new Set((checkIns || []).filter(c => { const d = new Date(c.check_in_date), cut = new Date(now); cut.setDate(cut.getDate() - 7); return d >= cut; }).map(c => c.user_id));
-  const stats = [
-    { label: 'Members',       value: totalMembers,        color: C.t1,                                icon: Users,     sub: 'enrolled',                                   semantic: false },
-    { label: 'Active / week', value: weekSet.size,         color: C.t1,                                icon: Activity,  sub: 'last 7 days',                                semantic: false },
-    { label: 'Check-ins',     value: ci30,                 color: C.t1,                                icon: BarChart2, sub: 'this month',                                 semantic: false },
-    { label: 'Retention',     value: `${retentionRate}%`,  color: retentionRate >= 70 ? C.success : C.warn, icon: TrendingUp, sub: retentionRate >= 70 ? 'Healthy' : 'Below target', semantic: true },
-    { label: 'At Risk',       value: atRisk,               color: atRisk > 0 ? C.danger : C.success,           icon: Zap,       sub: atRisk > 0 ? '14+ days out' : 'All clear',    semantic: true },
+// ─────────────────────────────────────────────
+// Section 2 — Business Setup
+// ─────────────────────────────────────────────
+function SetupCard({ icon: Icon, title, status, meta, description, cta, onCta }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <Card
+      style={{ cursor: onCta ? 'pointer' : 'default', transition: 'border-color 0.15s', borderColor: hov && onCta ? C.borderHi : C.border }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <IconBox icon={Icon} />
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{title}</div>
+            {meta && <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{meta}</div>}
+          </div>
+        </div>
+        <StatusBadge status={status} />
+      </div>
+      <p style={{ margin: '0 0 14px', fontSize: 12, color: C.t2, lineHeight: 1.6 }}>{description}</p>
+      {cta && (
+        <button onClick={onCta} style={{
+          display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700,
+          color: C.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+        }}>
+          {cta} <ChevronRight style={{ width: 11, height: 11 }} />
+        </button>
+      )}
+    </Card>
+  );
+}
+
+function SetupSection({ gym, openModal }) {
+  const hasPhoto     = !!gym.image_url;
+  const hasDesc      = !!gym.description;
+  const hasAmenities = (gym.amenities || []).length > 0;
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="setup" label="Business setup" purpose="How your gym appears to prospective members on FitFinder." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <SetupCard
+          icon={Settings} title="Gym information"
+          status={hasDesc ? 'complete' : 'missing'}
+          meta={[gym.address, gym.postcode].filter(Boolean).join(' · ') || 'No address set'}
+          description="Name, description, address, and contact details shown on your public profile."
+          cta="Edit details" onCta={() => openModal('editInfo')}
+        />
+        <SetupCard
+          icon={Camera} title="Photos & branding"
+          status={hasPhoto ? 'complete' : 'missing'}
+          meta={hasPhoto ? 'Hero photo set' : 'No photos uploaded'}
+          description="Your hero image is the first thing members see. Gyms with photos get 40% more profile visits."
+          cta="Manage photos" onCta={() => openModal('photos')}
+        />
+        <SetupCard
+          icon={Star} title="Amenities"
+          status={hasAmenities ? 'complete' : 'missing'}
+          meta={`${(gym.amenities || []).length} listed`}
+          description="Parking, showers, café — highlight what makes your gym stand out from competitors."
+          cta="Update amenities" onCta={() => openModal('amenities')}
+        />
+        <SetupCard
+          icon={Eye} title="Public profile"
+          status={gym.verified ? 'active' : 'inactive'}
+          meta={gym.verified ? 'Live & discoverable' : 'Pending verification'}
+          description="Preview exactly how your gym appears to members searching FitFinder."
+          cta="View profile" onCta={() => openModal('publicPage')}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Section 3 — Operations
+// ─────────────────────────────────────────────
+function MiniStat({ label, value, sub, color = C.t1 }) {
+  return (
+    <div style={{ padding: '10px 12px', borderRadius: 9, background: C.elevated, border: `1px solid ${C.border}`, flex: 1 }}>
+      <div style={{ fontSize: 20, fontWeight: 800, color, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 3 }}>{value}</div>
+      <div style={{ fontSize: 10, fontWeight: 600, color: C.t1, marginBottom: 1 }}>{label}</div>
+      {sub && <div style={{ fontSize: 9, color: C.t3 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function OpsCard({ icon: Icon, title, description, status, stats = [], insight, cta, onCta }) {
+  return (
+    <Card>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <IconBox icon={Icon} />
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{title}</div>
+        </div>
+        <StatusBadge status={status} />
+      </div>
+      <p style={{ margin: '0 0 14px', fontSize: 12, color: C.t2, lineHeight: 1.6 }}>{description}</p>
+      {stats.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          {stats.map((s, i) => <MiniStat key={i} {...s} />)}
+        </div>
+      )}
+      {insight && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '8px 10px', borderRadius: 8, background: `${C.accent}08`, border: `1px solid ${C.accent}14`, marginBottom: 14 }}>
+          <Sparkles style={{ width: 10, height: 10, color: C.accent, flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 10, color: C.t2, lineHeight: 1.5 }}>{insight}</span>
+        </div>
+      )}
+      {cta && (
+        <button onClick={onCta} style={{
+          display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700,
+          color: C.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+        }}>
+          {cta} <ChevronRight style={{ width: 11, height: 11 }} />
+        </button>
+      )}
+    </Card>
+  );
+}
+
+function OpsSection({ gym, classes, coaches, openModal }) {
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="ops" label="Operations" purpose="The day-to-day systems that keep your gym running smoothly." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <OpsCard
+          icon={Calendar} title="Classes & schedule"
+          status={classes.length > 0 ? 'complete' : 'missing'}
+          description="Your timetable, capacity limits, and coach assignments — visible to members on your profile."
+          stats={[
+            { label: 'Classes',   value: classes.length, sub: 'scheduled' },
+            { label: 'Coaches',   value: coaches.length, sub: 'assigned'  },
+          ]}
+          insight={classes.length === 0 ? 'Gyms with 3+ classes see 2× faster member growth.' : undefined}
+          cta="Manage schedule" onCta={() => openModal('classes')}
+        />
+        <OpsCard
+          icon={Users} title="Coaches"
+          status={coaches.length > 0 ? 'complete' : 'missing'}
+          description="Active coaches, specialities, and class coverage. Each coach can manage their own sessions."
+          stats={[
+            { label: 'Active',  value: coaches.length, sub: 'coaches' },
+            { label: 'Classes', value: classes.length, sub: 'covered' },
+          ]}
+          cta="Manage coaches" onCta={() => openModal('coaches')}
+        />
+        <OpsCard
+          icon={Dumbbell} title="Equipment"
+          status={(gym.equipment || []).length > 0 ? 'complete' : 'missing'}
+          description="Keep your equipment inventory current. Members check this before signing up or visiting."
+          stats={[
+            { label: 'Items', value: (gym.equipment || []).length, sub: 'in inventory' },
+          ]}
+          cta="Update inventory" onCta={() => openModal('equipment')}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Section 4 — Revenue & Membership
+// ─────────────────────────────────────────────
+function RevenueSection({ gym, openModal }) {
+  const tiers       = gym.membership_tiers || [];
+  const hasPricing  = tiers.length > 0 || !!gym.price;
+  const defaultTiers = [
+    { name: 'Monthly',  price: gym.price, description: 'Rolling, cancel anytime' },
+    { name: 'Annual',   price: null,      description: 'Save 2 months'           },
+    { name: 'Day pass', price: null,      description: 'Pay-per-visit'           },
+  ];
+  const display = tiers.length > 0 ? tiers : defaultTiers;
+
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="revenue" label="Revenue & membership" purpose="How your gym earns — pricing, plans, and payment structure." />
+
+      <Card leftAccent={!hasPricing ? C.danger : undefined} style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <IconBox icon={CreditCard} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Pricing plans</div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Displayed on your public profile</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <StatusBadge status={hasPricing ? 'complete' : 'critical'} />
+            <ActionBtn label="Edit pricing" icon={Edit2} onClick={() => openModal('pricing')} variant="outline" />
+          </div>
+        </div>
+
+        {!hasPricing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 9, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.14)', marginBottom: 20 }}>
+            <AlertTriangle style={{ width: 13, height: 13, color: C.danger, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.danger }}>No pricing set</div>
+              <div style={{ fontSize: 10, color: C.t2, marginTop: 1 }}>Prospects can't see what you charge. Add at least one plan to start accepting members.</div>
+            </div>
+            <button onClick={() => openModal('pricing')} style={{ padding: '6px 14px', borderRadius: 7, background: C.danger, color: '#fff', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+              Set pricing
+            </button>
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+          {display.map((tier, i) => (
+            <div key={i} style={{ padding: '16px 14px', borderRadius: 10, background: tier.price ? 'rgba(255,255,255,0.025)' : C.elevated, border: `1px solid ${C.border}` }}>
+              <div style={{ fontSize: 9, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
+                {tier.name}
+              </div>
+              {tier.price ? (
+                <>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>
+                    £{tier.price}<span style={{ fontSize: 11, fontWeight: 500, color: C.t3 }}>/mo</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.t3 }}>{tier.description}</div>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => openModal('pricing')} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: C.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', marginBottom: 4 }}>
+                    <Plus style={{ width: 10, height: 10 }} /> Set price
+                  </button>
+                  <div style={{ fontSize: 10, color: C.t3 }}>{tier.description}</div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Rewards */}
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <IconBox icon={Gift} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Rewards catalogue</div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Incentives for check-ins, referrals, and milestones</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: C.t2 }}>0 rewards</span>
+            <ActionBtn label="Add reward" icon={Plus} onClick={() => openModal('rewards')} variant="soft" />
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Section 5 — Team & Permissions
+// ─────────────────────────────────────────────
+function TeamSection({ gym, coaches, openModal }) {
+  const roles = [
+    { label: 'Admin',      desc: 'Full access — settings, members, and billing'      },
+    { label: 'Coach',      desc: 'Manage their own classes, see member check-ins'    },
+    { label: 'Front desk', desc: 'Check in members, view the daily schedule'         },
   ];
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="team" label="Team & permissions" purpose="Invite staff and control what each role can see and do." />
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 12 }}>
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Active staff</div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{coaches.length} coach{coaches.length !== 1 ? 'es' : ''} added</div>
+            </div>
+            <ActionBtn label="Invite staff" icon={Plus} onClick={() => openModal('inviteStaff')} variant="outline" />
+          </div>
+          {coaches.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {coaches.map((c, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 9, background: C.elevated, border: `1px solid ${C.border}` }}>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: C.accent, flexShrink: 0 }}>
+                    {c.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{c.name}</div>
+                    <div style={{ fontSize: 10, color: C.t3 }}>{c.role}</div>
+                  </div>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.active ? C.success : C.t3 }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '22px', textAlign: 'center', border: `2px dashed ${C.border}`, borderRadius: 10 }}>
+              <Users style={{ width: 20, height: 20, color: C.t3, margin: '0 auto 8px', display: 'block', opacity: 0.35 }} />
+              <div style={{ fontSize: 12, color: C.t3 }}>No staff yet — invite your first coach</div>
+            </div>
+          )}
+        </Card>
+        <Card>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 14 }}>Access levels</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {roles.map((r, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderRadius: 9, background: C.elevated, border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.t1, marginBottom: 3 }}>{r.label}</div>
+                <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.4 }}>{r.desc}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Section 6 — Automations
+// ─────────────────────────────────────────────
+function AutomationsSection({ openModal }) {
+  const [automations, setAutomations] = useState([
+    { id: 'welcome',   icon: Mail,       title: 'Welcome message',    desc: 'Sent the moment someone joins your gym.',              impact: 'Improves week-1 activation',      active: false },
+    { id: 'churn',     icon: TrendingUp, title: 'Churn prevention',   desc: 'Nudges members inactive for 10+ days.',                impact: 'Reduces cancellations up to 30 %', active: false },
+    { id: 'reminder',  icon: Bell,       title: 'Class reminders',    desc: 'Reminds members 1 hour before their booked class.',    impact: 'Reduces no-shows significantly',   active: true  },
+    { id: 'milestone', icon: Sparkles,   title: 'Milestone messages', desc: '10th check-in, 30-day streak, first anniversary.',     impact: 'Drives loyalty & word-of-mouth',  active: false },
+  ]);
+  const toggle = (id) => setAutomations(a => a.map(x => x.id === id ? { ...x, active: !x.active } : x));
+  const activeCount = automations.filter(a => a.active).length;
+
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="automations" label="Automations" purpose="Messages and workflows that run without you — keeping members engaged while you focus on coaching." />
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Smart automations</div>
+            <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{activeCount} of {automations.length} active</div>
+          </div>
+          <StatusBadge status={activeCount === 0 ? 'inactive' : activeCount === automations.length ? 'complete' : 'missing'} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {automations.map((a) => (
+            <div key={a.id} style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '13px 14px', borderRadius: 10,
+              background: a.active ? `${C.accent}05` : C.elevated,
+              border: `1px solid ${a.active ? C.accent + '18' : C.border}`,
+              transition: 'all 0.2s',
+            }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: a.active ? `${C.accent}14` : C.raised, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
+                <a.icon style={{ width: 13, height: 13, color: a.active ? C.accent : C.t3 }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 2 }}>{a.title}</div>
+                <div style={{ fontSize: 10, color: C.t3 }}>{a.desc}</div>
+                {a.active && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 5 }}>
+                    <Zap style={{ width: 9, height: 9, color: C.success }} />
+                    <span style={{ fontSize: 9, color: C.success, fontWeight: 600 }}>{a.impact}</span>
+                  </div>
+                )}
+              </div>
+              <Toggle value={a.active} onChange={() => toggle(a.id)} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'flex-start', gap: 7, padding: '9px 12px', borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}` }}>
+          <Info style={{ width: 10, height: 10, color: C.t3, flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 10, color: C.t3, lineHeight: 1.5 }}>Toggling an automation takes effect immediately. Existing message history is preserved.</span>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Smart Suggestions strip
+// ─────────────────────────────────────────────
+function SuggestionsStrip({ gym, classes, members }) {
+  const suggestions = [
+    !gym.image_url      && { icon: Camera,     text: 'Gyms with hero photos see 40% more profile visits. Add yours now.' },
+    classes.length === 0 && { icon: Calendar,  text: 'Add your first class to start onboarding members and show your schedule.' },
+    !gym.price          && { icon: CreditCard, text: 'Set a membership price so prospects know what to expect before reaching out.' },
+    members < 10        && { icon: Users,      text: 'Invite your first 10 members — early adopters become your best advocates.' },
+                           { icon: Sparkles,   text: 'Enable churn prevention automations to stop losing members before they cancel.' },
+  ].filter(Boolean).slice(0, 3);
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="suggestions" label="Smart suggestions" purpose="Personalised recommendations based on your gym's current setup." />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {suggestions.map((s, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 10, background: `${C.accent}06`, border: `1px solid ${C.accent}14` }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.accent}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <s.icon style={{ width: 12, height: 12, color: C.accent }} />
+            </div>
+            <span style={{ fontSize: 12, color: C.t2, lineHeight: 1.5, flex: 1 }}>{s.text}</span>
+            <ArrowRight style={{ width: 12, height: 12, color: C.t3, flexShrink: 0 }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Section 7 — Admin (de-emphasized)
+// ─────────────────────────────────────────────
+function AdminSection({ gym, openModal }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(gym.id || '');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <SectionHeader id="admin" label="Admin" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+        <Card style={{ padding: '14px 16px' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 7 }}>Gym ID</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <code style={{ flex: 1, fontSize: 10, color: C.t2, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gym.id || '—'}</code>
+            <button onClick={handleCopy} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 8px', borderRadius: 5, background: copied ? 'rgba(16,185,129,0.08)' : C.elevated, border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : C.border}`, color: copied ? C.success : C.t3, fontSize: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {copied ? <><Check style={{ width: 9, height: 9 }} /> Copied</> : <><Copy style={{ width: 9, height: 9 }} /> Copy</>}
+            </button>
+          </div>
+        </Card>
+        <Card style={{ padding: '14px 16px' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 7 }}>Verification</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <ShieldCheck style={{ width: 13, height: 13, color: gym.verified ? C.success : C.t3 }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: gym.verified ? C.success : C.t2 }}>
+              {gym.verified ? 'Verified & live' : 'Pending — 1–2 business days'}
+            </span>
+          </div>
+        </Card>
+      </div>
+
+      <div style={{ borderRadius: 11, border: '1px solid rgba(239,68,68,0.1)', background: 'rgba(239,68,68,0.025)', padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+          <AlertTriangle style={{ width: 11, height: 11, color: C.danger, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.t2 }}>Danger zone</span>
+          <span style={{ fontSize: 10, color: C.t3 }}>— irreversible actions</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { label: 'Delete gym',     fn: () => openModal('deleteGym')     },
+            { label: 'Delete account', fn: () => openModal('deleteAccount') },
+          ].map((d, i) => (
+            <ActionBtn key={i} label={d.label} onClick={d.fn} variant="danger" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Left sidebar nav
+// ─────────────────────────────────────────────
+const NAV_ITEMS = [
+  { id: 'health',      label: 'Business health',   icon: Activity   },
+  { id: 'setup',       label: 'Business setup',    icon: Layers     },
+  { id: 'ops',         label: 'Operations',        icon: Calendar   },
+  { id: 'revenue',     label: 'Revenue',           icon: CreditCard },
+  { id: 'team',        label: 'Team',              icon: Users      },
+  { id: 'automations', label: 'Automations',       icon: Zap        },
+  { id: 'suggestions', label: 'Suggestions',       icon: Sparkles   },
+  { id: 'admin',       label: 'Admin',             icon: Shield     },
+];
+
+function SideNav({ active, onNav, score, scoreColor }) {
+  return (
+    <div style={{
+      width: 210, flexShrink: 0,
+      position: 'sticky', top: 0, height: '100vh',
+      overflowY: 'auto', padding: '16px 8px',
+      display: 'flex', flexDirection: 'column',
+      borderRight: `1px solid ${C.border}`,
+    }}>
+      {/* Mini health indicator */}
+      <div style={{ padding: '10px 10px 16px', marginBottom: 8, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <HealthGauge score={score} size={42} color={scoreColor} />
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.t2 }}>Health score</div>
+            <div style={{ fontSize: 9, color: C.t3, marginTop: 2 }}>
+              {score >= 75 ? 'Fully configured' : score >= 50 ? 'Needs attention' : 'Getting started'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        const isActive = active === id;
+        return (
+          <button key={id} onClick={() => onNav(id)} style={{
+            display: 'flex', alignItems: 'center', gap: 9,
+            padding: '8px 12px', borderRadius: 8, width: '100%',
+            background: isActive ? `${C.accent}12` : 'transparent',
+            border: `1px solid ${isActive ? C.accent + '28' : 'transparent'}`,
+            cursor: 'pointer', fontFamily: 'inherit',
+            transition: 'all .15s', textAlign: 'left',
+            marginBottom: 2,
+          }}>
+            <Icon style={{ width: 13, height: 13, color: isActive ? C.accent : C.t3, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? C.t1 : C.t2 }}>
+              {label}
+            </span>
+          </button>
+        );
+      })}
+
+      {/* Bottom: view public page */}
+      <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+        <button style={{
+          display: 'flex', alignItems: 'center', gap: 7, width: '100%',
+          padding: '8px 12px', borderRadius: 8,
+          background: C.elevated, border: `1px solid ${C.border}`,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          <ExternalLink style={{ width: 11, height: 11, color: C.t3 }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: C.t2 }}>View public page</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Live stats strip (replaces top bar from original)
+// ─────────────────────────────────────────────
+function LiveStatsStrip({ members, checkIns30, retentionRate, atRisk }) {
+  const stats = [
+    { label: 'Members',     value: members,       sub: 'enrolled',    icon: Users,      color: C.t1 },
+    { label: 'Check-ins',   value: checkIns30,    sub: 'this month',  icon: BarChart2,  color: C.t1 },
+    { label: 'Retention',   value: `${retentionRate}%`, sub: retentionRate >= 70 ? 'Healthy' : 'Below target', icon: TrendingUp, color: retentionRate >= 70 ? C.success : C.warn },
+    { label: 'At risk',     value: atRisk,        sub: atRisk > 0 ? '14+ days out' : 'All clear', icon: Zap, color: atRisk > 0 ? C.danger : C.success },
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 28 }}>
       {stats.map((s, i) => (
-        <div key={i} style={{ padding: '14px 14px 12px', borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+        <div key={i} style={{ padding: '14px 16px 12px', borderRadius: R, background: C.surface, border: `1px solid ${C.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</span>
-            <div style={{ width: 22, height: 22, borderRadius: 6, background: C.divider, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>{s.label}</span>
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: C.elevated, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <s.icon style={{ width: 10, height: 10, color: C.t3 }} />
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: s.color, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
           <div style={{ fontSize: 9, color: C.t3, fontWeight: 500 }}>{s.sub}</div>
         </div>
       ))}
@@ -168,533 +960,90 @@ function LiveStatsStrip({ allMemberships, checkIns, atRisk, retentionRate, now }
   );
 }
 
-function ManageGrid({ classes, coaches, selectedGym, openModal }) {
-  const items = [
-    { icon: Calendar, label: 'Classes',   count: classes.length,                      unit: 'on schedule',  color: C.accent, fn: () => openModal('classes'),   desc: 'Manage your class timetable and capacity'  },
-    { icon: Users,    label: 'Coaches',   count: coaches.length,                      unit: 'active',       color: C.accent, fn: () => openModal('coaches'),   desc: 'Assign coaches to classes and members'     },
-    { icon: Dumbbell, label: 'Equipment', count: selectedGym?.equipment?.length || 0, unit: 'items',        color: C.accent, fn: () => openModal('equipment'), desc: 'Keep your equipment inventory current'     },
-    { icon: Star,     label: 'Amenities', count: selectedGym?.amenities?.length || 0, unit: 'listed',       color: C.accent, fn: () => openModal('amenities'), desc: 'Highlight what makes your gym stand out'   },
-  ];
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
-      {items.map(({ icon: Icon, label, count, unit, fn, desc }, i) => (
-        <button key={i} onClick={fn}
-          style={{ padding: '16px 16px 14px', borderRadius: 11, cursor: 'pointer', background: C.surfaceEl, border: `1px solid ${C.border}`, textAlign: 'left', position: 'relative', fontFamily: 'inherit', transition: 'all .15s' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderEl; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surfaceEl; e.currentTarget.style.transform = ''; }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: C.divider, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon style={{ width: 15, height: 15, color: C.t3 }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: C.divider, border: `1px solid ${C.border}` }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: C.t1 }}>{count}</span>
-              <span style={{ fontSize: 9, color: C.t3 }}>{unit}</span>
-            </div>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 4 }}>{label}</div>
-          <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.4, marginBottom: 10 }}>{desc}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>Manage</span>
-            <ChevronRight style={{ width: 11, height: 11, color: C.accent }} />
-          </div>
-        </button>
-      ))}
-    </div>
-  );
-}
+// ─────────────────────────────────────────────
+// Main export — GymControlCenter
+// ─────────────────────────────────────────────
+export default function GymControlCenter({
+  selectedGym,
+  classes      = [],
+  coaches      = [],
+  openModal    = () => {},
+  checkIns     = [],
+  allMemberships = [],
+  atRisk       = 0,
+  retentionRate = 0,
+  rewards      = [],
+  onCreateReward,
+  onDeleteReward,
+  isLoading,
+}) {
+  // Fall back to mock data if props not provided (for dev preview)
+  const gym     = selectedGym || MOCK.gym;
+  const cls     = classes.length     > 0 ? classes     : MOCK.classes;
+  const coa     = coaches.length     > 0 ? coaches     : MOCK.coaches;
+  const members = allMemberships.length > 0 ? allMemberships.length : MOCK.members;
+  const ret     = retentionRate > 0 ? retentionRate : MOCK.retentionRate;
+  const risk    = atRisk;
+  const ci30    = checkIns.length  > 0 ? checkIns.length : MOCK.checkIns30;
 
-function PricingSection({ selectedGym, openModal }) {
-  const tiers = selectedGym?.membership_tiers || [];
-  const display = tiers.length > 0 ? tiers : [
-    { name: 'Monthly',  price: selectedGym?.price || null, description: 'Rolling monthly', color: C.accent   },
-    { name: 'Annual',   price: null,                       description: 'Save 2 months',   color: C.success  },
-    { name: 'Day Pass', price: null,                       description: 'Pay per visit',   color: C.accent },
-  ];
-  return (
-    <SCard accent={C.accent}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: C.divider, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CreditCard style={{ width: 13, height: 13, color: C.t3 }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Membership Pricing</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Shown to prospects on your public page</div>
-          </div>
-        </div>
-        <button onClick={() => openModal('pricing')}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: C.accent, background: `${C.accent}10`, border: `1px solid ${C.accent}28`, borderRadius: 7, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          <Edit2 style={{ width: 10, height: 10 }} /> Edit
-        </button>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-        {display.map((tier, i) => (
-          <div key={i} style={{ padding: '16px 14px', borderRadius: 10, background: tier.price ? 'rgba(255,255,255,0.03)' : C.divider, border: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: 9, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{tier.name}</div>
-            {tier.price ? (
-              <>
-                <div style={{ fontSize: 22, fontWeight: 800, color: C.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 4 }}>£{tier.price}<span style={{ fontSize: 11, fontWeight: 500, color: C.t3 }}>/mo</span></div>
-                <div style={{ fontSize: 10, color: C.t3 }}>{tier.description}</div>
-              </>
-            ) : (
-              <>
-                <button onClick={() => openModal('pricing')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: C.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', marginBottom: 4 }}>
-                  <Plus style={{ width: 11, height: 11 }} /> Set price
-                </button>
-                <div style={{ fontSize: 10, color: C.t3 }}>{tier.description}</div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      {tiers.length === 0 && (
-        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${C.warn}08`, border: `1px solid ${C.warn}18`, display: 'flex', alignItems: 'center', gap: 7 }}>
-          <AlertTriangle style={{ width: 11, height: 11, color: C.warn, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: C.warn, fontWeight: 600 }}>No pricing set — prospects can't see what you charge</span>
-        </div>
-      )}
-    </SCard>
-  );
-}
+  const score = useMemo(() => {
+    let s = 0;
+    if (gym.image_url)      s += 10;
+    if (gym.description)    s += 5;
+    if (gym.logo_url)       s += 5;
+    if (cls.length > 0)     s += 15;
+    if (coa.length > 0)     s += 15;
+    if (members > 0)        s += 20;
+    if (ret >= 70)          s += 15;
+    if (risk === 0)         s += 5;
+    if (gym.verified)       s += 10;
+    return Math.min(100, s);
+  }, [gym, cls, coa, members, ret, risk]);
 
-function NudgeSettings({ settings, onUpdate }) {
-  const update = (key, val) => onUpdate({ ...settings, [key]: val });
-  const sections = [
-    { label: 'Dashboard panels', rows: [
-      { key: 'showTodayPanel',         label: "Today's action panel",    sub: 'Daily priority actions on Overview',        color: C.accent   },
-      { key: 'showContentSuggestions', label: 'Content suggestions',     sub: 'When to post, run polls, start challenges', color: C.accent },
-      { key: 'showDropOffMap',         label: 'Drop-off risk map',       sub: 'Lifecycle churn breakdown',                 color: C.accent    },
-    ]},
-    { label: 'Member alerts', rows: [
-      { key: 'showStreakRecovery', label: 'Streak recovery prompts',   sub: 'Surface members who broke a streak',      color: C.accent  },
-      { key: 'showClassLoyalty',  label: 'Class dependency warnings', sub: 'Members attending only one coach/class',  color: C.accent },
-      { key: 'showReferrals',     label: 'Referral tracking',         sub: 'Track who brings in new sign-ups',        color: C.accent },
-    ]},
-  ];
-  return (
-    <SCard accent={C.accent}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: C.divider, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Bell style={{ width: 13, height: 13, color: C.t3 }} />
-        </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Notifications & Smart Nudges</div>
-          <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Customise what the dashboard surfaces and when</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {sections.map((section, si) => (
-          <div key={si}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${C.divider}` }}>{section.label}</div>
-            {section.rows.map((r, i) => (
-              <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0', borderBottom: i < section.rows.length - 1 ? `1px solid ${C.divider}` : 'none' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{r.label}</div>
-                  <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{r.sub}</div>
-                </div>
-                <Toggle value={settings[r.key]} onChange={v => update(r.key, v)} color={r.color} />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div style={{ marginTop: 14, padding: '9px 12px', borderRadius: 8, background: C.divider, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
-        <Info style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 1 }} />
-        <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.5 }}>Disabling a nudge hides it from the dashboard — it does not affect the underlying data or automations.</div>
-      </div>
-    </SCard>
-  );
-}
+  const scoreColor = score >= 75 ? C.success : score >= 50 ? C.warn : C.danger;
+  const [activeSection, setActiveSection] = useState('health');
 
-function AdminCard({ selectedGym, openModal }) {
-  const statusVerified = selectedGym?.verified;
-  return (
-    <SCard accent={C.accent} noPad>
-      <div style={{ padding: '16px 18px' }}>
-        <div style={{ fontSize: 10, fontWeight: 800, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Admin</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: `1px solid ${C.divider}` }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Shield style={{ width: 10, height: 10, color: C.t3 }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: C.t3, fontWeight: 600 }}>Owner email</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{selectedGym?.owner_email || '—'}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0', borderBottom: `1px solid ${C.divider}` }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Lock style={{ width: 10, height: 10, color: C.t3 }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: C.t3, fontWeight: 600 }}>Gym ID</div>
-            <div style={{ fontSize: 9, color: C.t3, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{selectedGym?.id || '—'}</div>
-          </div>
-          <CopyButton value={selectedGym?.id} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 0' }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: statusVerified ? `${C.success}14` : C.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <ShieldCheck style={{ width: 10, height: 10, color: statusVerified ? C.success : C.t3 }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 10, color: C.t3, fontWeight: 600 }}>Verification</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: statusVerified ? C.success : C.t2, marginTop: 1 }}>
-              {statusVerified ? '✓ Verified & live' : 'Pending — 1–2 business days'}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={{ height: 1, background: C.border }} />
-      <div style={{ padding: '12px 18px' }}>
-        <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-          <button style={{ width: '100%', padding: '9px 14px', borderRadius: 9, background: C.divider, color: C.t2, border: `1px solid ${C.border}`, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .15s', fontFamily: 'inherit' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = C.t1; }}
-            onMouseLeave={e => { e.currentTarget.style.background = C.divider; e.currentTarget.style.color = C.t2; }}>
-            <ExternalLink style={{ width: 11, height: 11 }} /> View Public Page
-          </button>
-        </Link>
-      </div>
-    </SCard>
-  );
-}
-
-function PhotosCard({ selectedGym, openModal }) {
-  return (
-    <SCard accent={C.accent}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Photos</div>
-          <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Hero image & gallery</div>
-        </div>
-        <button onClick={() => openModal('photos')}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: C.accent, background: `${C.accent}0a`, border: `1px solid ${C.accent}22`, borderRadius: 7, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          <Camera style={{ width: 10, height: 10 }} /> Manage
-        </button>
-      </div>
-      <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>Hero</div>
-      {selectedGym?.image_url ? (
-        <div style={{ borderRadius: 9, overflow: 'hidden', height: 96, cursor: 'pointer', border: `1px solid ${C.border}`, marginBottom: 10 }} onClick={() => openModal('heroPhoto')}>
-          <img src={selectedGym.image_url} alt="Hero" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      ) : (
-        <div onClick={() => openModal('heroPhoto')}
-          style={{ height: 96, borderRadius: 9, border: `2px dashed ${C.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer', transition: 'border-color 0.15s', marginBottom: 10 }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = `${C.accent}40`}
-          onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-          <ImageIcon style={{ width: 16, height: 16, color: `${C.accent}60` }} />
-          <span style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>Add hero photo</span>
-        </div>
-      )}
-      {selectedGym?.gallery?.length > 0 ? (
-        <>
-          <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>Gallery</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-            {selectedGym.gallery.slice(0, 6).map((url, i) => (
-              <div key={i} style={{ aspectRatio: '1', borderRadius: 7, overflow: 'hidden', border: `1px solid ${C.border}` }}>
-                <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div onClick={() => openModal('photos')}
-          style={{ height: 62, borderRadius: 8, border: `2px dashed ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer', transition: 'border-color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = `${C.accent}40`}
-          onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-          <Plus style={{ width: 11, height: 11, color: C.t3 }} />
-          <span style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>Add gallery photos</span>
-        </div>
-      )}
-    </SCard>
-  );
-}
-
-const REWARD_TYPES = { discount: 'Discount', free_class: 'Free Class', merchandise: 'Merchandise', free_day_pass: 'Day Pass', personal_training: 'PT Session', custom: 'Custom' };
-const REWARD_REQS  = { check_ins_10: '10 Check-ins', check_ins_50: '50 Check-ins', streak_30: '30-day Streak', challenge_winner: 'Challenge Winner', referral: 'Referral', points: 'Points', none: 'Always Available' };
-
-function RewardsCatalogueCard({ rewards = [], onCreateReward, onDeleteReward, isLoading }) {
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', type: 'discount', requirement: 'check_ins_10', value: '', points_required: 0, icon: '🎁', active: true });
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const handleAdd = () => {
-    if (!form.title.trim()) return;
-    onCreateReward(form);
-    setForm({ title: '', type: 'discount', requirement: 'check_ins_10', value: '', points_required: 0, icon: '🎁', active: true });
-    setShowForm(false);
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveSection(id);
   };
 
-  const inputStyle = { width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, color: C.t1, fontSize: 12, outline: 'none', fontFamily: 'inherit' };
-  const selStyle   = { ...inputStyle, appearance: 'none', cursor: 'pointer' };
+  // Update active section on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { threshold: 0.3 }
+    );
+    NAV_ITEMS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <SCard accent={C.accent}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: `${C.accent}14`, border: `1px solid ${C.accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Gift style={{ width: 13, height: 13, color: C.accent }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Rewards Catalogue</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{rewards.length} reward{rewards.length !== 1 ? 's' : ''} available to members</div>
-          </div>
-        </div>
-        <button onClick={() => setShowForm(v => !v)}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: showForm ? C.t3 : C.accent, background: showForm ? C.divider : `${C.accent}10`, border: `1px solid ${showForm ? C.border : C.accent + '28'}`, borderRadius: 7, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}>
-          <Plus style={{ width: 10, height: 10 }} /> {showForm ? 'Cancel' : 'Add Reward'}
-        </button>
+    <div style={{ display: 'flex', minHeight: '100vh', background: C.bg, fontFamily: 'inherit' }}>
+      <SideNav active={activeSection} onNav={scrollTo} score={score} scoreColor={scoreColor} />
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px', minWidth: 0 }}>
+        {/* Live stats */}
+        <LiveStatsStrip members={members} checkIns30={ci30} retentionRate={ret} atRisk={risk} />
+
+        {/* Sections */}
+        <HealthSection gym={gym} classes={cls} coaches={coa} members={members} retentionRate={ret} atRisk={risk} openModal={openModal} />
+        <SetupSection gym={gym} openModal={openModal} />
+        <OpsSection gym={gym} classes={cls} coaches={coa} openModal={openModal} />
+        <RevenueSection gym={gym} openModal={openModal} />
+        <TeamSection gym={gym} coaches={coa} openModal={openModal} />
+        <AutomationsSection openModal={openModal} />
+        <SuggestionsStrip gym={gym} classes={cls} members={members} />
+        <AdminSection gym={gym} openModal={openModal} />
       </div>
-
-      {/* Add form */}
-      {showForm && (
-        <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: `${C.accent}06`, border: `1px solid ${C.accent}18`, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Title *</div>
-              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Free Protein Shake" style={inputStyle} />
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Value</div>
-              <input value={form.value} onChange={e => set('value', e.target.value)} placeholder="e.g. £10 off, 1 free class" style={inputStyle} />
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Type</div>
-              <select value={form.type} onChange={e => set('type', e.target.value)} style={selStyle}>
-                {Object.entries(REWARD_TYPES).map(([k, v]) => <option key={k} value={k} style={{ background: '#0b1120' }}>{v}</option>)}
-              </select>
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Requirement</div>
-              <select value={form.requirement} onChange={e => set('requirement', e.target.value)} style={selStyle}>
-                {Object.entries(REWARD_REQS).map(([k, v]) => <option key={k} value={k} style={{ background: '#0b1120' }}>{v}</option>)}
-              </select>
-            </div>
-          </div>
-          <button onClick={handleAdd} disabled={!form.title.trim() || isLoading}
-            style={{ alignSelf: 'flex-end', padding: '7px 18px', borderRadius: 8, background: form.title.trim() ? C.accent : 'rgba(255,255,255,0.06)', color: form.title.trim() ? '#fff' : C.t3, border: 'none', fontSize: 12, fontWeight: 700, cursor: form.title.trim() ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all .15s' }}>
-            {isLoading ? 'Adding…' : 'Add Reward'}
-          </button>
-        </div>
-      )}
-
-      {/* Reward list */}
-      {rewards.length === 0 && !showForm ? (
-        <div style={{ padding: '20px', textAlign: 'center', border: `2px dashed ${C.border}`, borderRadius: 10 }}>
-          <Gift style={{ width: 20, height: 20, color: C.t3, margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
-          <div style={{ fontSize: 12, color: C.t3 }}>No rewards yet — add one to motivate members</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {rewards.map(r => (
-            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: r.active ? `${C.accent}06` : C.divider, border: `1px solid ${r.active ? C.accent + '18' : C.border}`, opacity: r.active ? 1 : 0.55 }}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon || '🎁'}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: C.accent, background: `${C.accent}12`, border: `1px solid ${C.accent}22`, borderRadius: 4, padding: '1px 5px' }}>{REWARD_TYPES[r.type] || r.type}</span>
-                  <span style={{ fontSize: 9, color: C.t3 }}>{REWARD_REQS[r.requirement] || r.requirement}</span>
-                  {r.value && <span style={{ fontSize: 9, color: C.success, fontWeight: 600 }}>{r.value}</span>}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-                <span style={{ fontSize: 10, color: C.t3 }}>{(r.claimed_by || []).length} claimed</span>
-                <button onClick={() => onDeleteReward(r.id)}
-                  style={{ width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer', color: C.danger }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.07)'}>
-                  <Trash2 style={{ width: 10, height: 10 }} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </SCard>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-export default function TabGym({
-  selectedGym, classes, coaches, openModal,
-  checkIns = [], allMemberships = [], atRisk = 0, retentionRate = 0,
-  rewards = [], onCreateReward, onDeleteReward, isLoading,
-  atRiskDays: atRiskDaysProp = 14, onAtRiskDaysChange,
-}) {
-  const now = new Date();
-  const statusVerified = selectedGym?.verified;
-  const [nudgeSettings, setNudgeSettings] = useState({
-    showTodayPanel: true, showContentSuggestions: true,
-    showStreakRecovery: true, showDropOffMap: true,
-    showReferrals: true, showClassLoyalty: true,
-  });
-  const [saved, setSaved] = useState(false);
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2200); };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-      {/* ── HERO ── */}
-      <div style={{ borderRadius: CARD_RADIUS, overflow: 'hidden', background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW, position: 'relative' }}>
-        <div style={{ height: 136, position: 'relative', background: 'linear-gradient(135deg,#070e1c 0%,#0d1a36 50%,#070e1c 100%)', overflow: 'hidden' }}>
-          {selectedGym?.image_url && <img src={selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />}
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,${C.surface}e0 100%)` }} />
-          <button onClick={() => openModal('heroPhoto')}
-            style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: `1px solid rgba(255,255,255,0.12)`, color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(8px)', fontFamily: 'inherit' }}>
-            <Camera style={{ width: 10, height: 10 }} /> Edit Hero
-          </button>
-        </div>
-        <div style={{ padding: '0 20px 18px', marginTop: -16, position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div onClick={() => openModal('logo')}
-                style={{ width: 56, height: 56, borderRadius: '50%', background: C.surfaceEl, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${C.accent}`, boxShadow: `0 0 10px rgba(59,130,246,0.45)`, flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
-                {selectedGym?.logo_url || selectedGym?.image_url
-                  ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <Dumbbell style={{ width: 22, height: 22, color: '#fff' }} />}
-              </div>
-              <div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>{selectedGym?.name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
-                  {selectedGym?.type && <span style={{ fontSize: 11, color: C.t3 }}>{selectedGym.type}</span>}
-                  {selectedGym?.city && (<><span style={{ width: 3, height: 3, borderRadius: '50%', background: C.t3, display: 'inline-block' }} /><span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: C.t3 }}><MapPin style={{ width: 10, height: 10 }} />{selectedGym.city}</span></>)}
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: statusVerified ? `${C.success}12` : `${C.accent}12`, border: `1px solid ${statusVerified ? C.success + '25' : C.accent + '25'}`, cursor: statusVerified ? 'default' : 'help' }}
-                    title={statusVerified ? 'Your gym is live and visible to members' : 'Your gym will be visible once verified — typically 1–2 business days'}>
-                    <ShieldCheck style={{ width: 9, height: 9, color: statusVerified ? C.success : C.accent }} />
-                    <span style={{ fontSize: 10, fontWeight: 800, color: statusVerified ? C.success : C.accent }}>{statusVerified ? 'Verified' : 'Pending'}</span>
-                    {!statusVerified && <Info style={{ width: 8, height: 8, color: C.accent, opacity: 0.7 }} />}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button onClick={() => openModal('editInfo')}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 9, background: `${C.accent}12`, color: C.accent, border: `1px solid ${C.accent}25`, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = `${C.accent}22`}
-              onMouseLeave={e => e.currentTarget.style.background = `${C.accent}12`}>
-              <Settings style={{ width: 11, height: 11 }} /> Edit Info
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginTop: 16 }}>
-            {[
-              { label: 'Monthly Price', value: selectedGym?.price ? `£${selectedGym.price}/mo` : 'Not set', icon: Tag,         color: C.t1 },
-              { label: 'Address',       value: selectedGym?.address || '—',                                  icon: MapPin,      color: C.t1 },
-              { label: 'Postcode',      value: selectedGym?.postcode || '—',                                 icon: MapPin,      color: C.t1 },
-              { label: 'Status',        value: statusVerified ? 'Verified' : 'Pending',                      icon: ShieldCheck, color: statusVerified ? C.success : C.t1 },
-            ].map((f, i) => (
-              <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: C.divider, border: `1px solid ${C.border}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                  <f.icon style={{ width: 9, height: 9, color: C.t3 }} />
-                  <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.t3 }}>{f.label}</span>
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: f.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── LIVE STATS ── */}
-      <LiveStatsStrip allMemberships={allMemberships} checkIns={checkIns} atRisk={atRisk} retentionRate={retentionRate} now={now} />
-
-      {/* ── TWO-COLUMN LAYOUT ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 14, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <GymHealthCard
-            selectedGym={selectedGym} classes={classes} coaches={coaches}
-            checkIns={checkIns} allMemberships={allMemberships}
-            atRisk={atRisk} retentionRate={retentionRate} now={now} openModal={openModal}
-          />
-          <SCard accent={C.accent} noPad style={{ padding: 0 }}>
-            <div style={{ padding: '16px 20px 10px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 1 }}>Manage</div>
-              <div style={{ fontSize: 10, color: C.t3 }}>Classes, coaches, equipment and amenities</div>
-            </div>
-            <div style={{ padding: '0 12px 12px' }}>
-              <ManageGrid classes={classes} coaches={coaches} selectedGym={selectedGym} openModal={openModal} />
-            </div>
-          </SCard>
-          <PricingSection selectedGym={selectedGym} openModal={openModal} />
-          <RewardsCatalogueCard rewards={rewards} onCreateReward={onCreateReward} onDeleteReward={onDeleteReward} isLoading={isLoading} />
-          {/* Danger Zone */}
-          <div style={{ borderRadius: 12, border: `1px solid ${C.danger}18`, background: `${C.danger}04`, padding: '16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: `${C.danger}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle style={{ width: 12, height: 12, color: C.danger }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Danger Zone</div>
-                <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>These actions are permanent and cannot be undone</div>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[
-                { title: 'Delete Gym',     desc: 'Remove all gym data permanently',  fn: () => openModal('deleteGym')     },
-                { title: 'Delete Account', desc: 'Remove account and all gyms',      fn: () => openModal('deleteAccount') },
-              ].map((d, i) => (
-                <div key={i} style={{ padding: '12px 14px', borderRadius: 9, background: C.divider, border: `1px solid ${C.danger}10`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 3 }}>{d.title}</div>
-                    <div style={{ fontSize: 10, color: C.t3 }}>{d.desc}</div>
-                  </div>
-                  <button onClick={d.fn}
-                    style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 7, background: `${C.danger}10`, color: '#ef4444', border: `1px solid ${C.danger}20`, fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'all .15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = `${C.danger}22`; e.currentTarget.style.color = C.danger; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = `${C.danger}10`; e.currentTarget.style.color = '#ef4444'; }}>
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <InviteStaffPanel gym={selectedGym} />
-          <PhotosCard selectedGym={selectedGym} openModal={openModal} />
-          <AdminCard selectedGym={selectedGym} openModal={openModal} />
-          <SCard accent={C.accent}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 12 }}>Quick Actions</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {[
-                { icon: Users,    label: 'Add a member',    color: C.accent, fn: () => openModal('members')   },
-                { icon: Calendar, label: 'Add a class',     color: C.accent, fn: () => openModal('classes')   },
-                { icon: Star,     label: 'Manage amenities',color: C.accent, fn: () => openModal('amenities') },
-                { icon: Camera,   label: 'Upload photos',   color: C.accent, fn: () => openModal('photos')    },
-              ].map(({ icon: Icon, label, color, fn }, i) => {
-                const [hov, setHov] = useState(false);
-                return (
-                  <button key={i} onClick={fn}
-                    onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 11px', borderRadius: 9, background: hov ? `${color}10` : C.divider, border: `1px solid ${hov ? color + '30' : C.border}`, cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit' }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 6, background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon style={{ width: 11, height: 11, color }} />
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, flex: 1, textAlign: 'left' }}>{label}</span>
-                    <ChevronRight style={{ width: 11, height: 11, color: hov ? color : C.t3 }} />
-                  </button>
-                );
-              })}
-            </div>
-          </SCard>
-        </div>
-      </div>
-
-      {/* ── SAVE BAR ── */}
-      <div style={{ position: 'sticky', bottom: 16, zIndex: 20 }}>
-        <div style={{ background: `${C.surface}f2`, backdropFilter: 'blur(20px)', border: `1px solid ${C.borderEl}`, borderRadius: 12, padding: '11px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>Settings updated</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Changes apply to your dashboard immediately</div>
-          </div>
-          <button onClick={handleSave}
-            style={{ padding: '8px 20px', borderRadius: 9, background: saved ? `${C.success}14` : `${C.accent}18`, color: saved ? C.success : C.t1, border: saved ? `1px solid ${C.success}30` : `1px solid ${C.accent}35`, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
-            {saved ? <><Check style={{ width: 12, height: 12 }} /> Saved</> : <><Settings style={{ width: 11, height: 11 }} /> Save Changes</>}
-          </button>
-        </div>
-      </div>
-
     </div>
   );
 }
