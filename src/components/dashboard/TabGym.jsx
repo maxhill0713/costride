@@ -874,63 +874,6 @@ const NAV_ITEMS = [
   { id: 'admin',       label: 'Admin',             icon: Shield     },
 ];
 
-function SideNav({ active, onNav, score, scoreColor }) {
-  return (
-    <div style={{
-      width: 210, flexShrink: 0,
-      position: 'sticky', top: 0, height: '100vh',
-      overflowY: 'auto', padding: '16px 8px',
-      display: 'flex', flexDirection: 'column',
-      borderRight: `1px solid ${C.border}`,
-    }}>
-      {/* Mini health indicator */}
-      <div style={{ padding: '10px 10px 16px', marginBottom: 8, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <HealthGauge score={score} size={42} color={scoreColor} />
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: C.t2 }}>Health score</div>
-            <div style={{ fontSize: 9, color: C.t3, marginTop: 2 }}>
-              {score >= 75 ? 'Fully configured' : score >= 50 ? 'Needs attention' : 'Getting started'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-        const isActive = active === id;
-        return (
-          <button key={id} onClick={() => onNav(id)} style={{
-            display: 'flex', alignItems: 'center', gap: 9,
-            padding: '8px 12px', borderRadius: 8, width: '100%',
-            background: isActive ? `${C.accent}12` : 'transparent',
-            border: `1px solid ${isActive ? C.accent + '28' : 'transparent'}`,
-            cursor: 'pointer', fontFamily: 'inherit',
-            transition: 'all .15s', textAlign: 'left',
-            marginBottom: 2,
-          }}>
-            <Icon style={{ width: 13, height: 13, color: isActive ? C.accent : C.t3, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? C.t1 : C.t2 }}>
-              {label}
-            </span>
-          </button>
-        );
-      })}
-
-      {/* Bottom: view public page */}
-      <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-        <button style={{
-          display: 'flex', alignItems: 'center', gap: 7, width: '100%',
-          padding: '8px 12px', borderRadius: 8,
-          background: C.elevated, border: `1px solid ${C.border}`,
-          cursor: 'pointer', fontFamily: 'inherit',
-        }}>
-          <ExternalLink style={{ width: 11, height: 11, color: C.t3 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: C.t2 }}>View public page</span>
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────
 // Live stats strip (replaces top bar from original)
