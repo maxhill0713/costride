@@ -88,16 +88,16 @@ const CSS = `
   /* QUICK IDEA CARDS */
   .fg-ic {
     background: ${T.surfaceEl};
-    border: 1px solid ${T.border};
-    border-radius: ${T.radius}px;
-    padding: 16px 15px 14px;
+    border: 1px solid ${T.borderEl};
+    border-radius: 11px;
+    padding: 18px 16px 16px;
     cursor: pointer;
     transition: all .15s;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
-  .fg-ic:hover { border-color: ${T.accentBrd}; background: ${T.surfaceHov}; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  .fg-ic:hover { border-color: rgba(255,255,255,0.14); background: ${T.surfaceHov}; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
 
   /* AI SUGGESTION CARD */
   .fg-ac { background: ${T.bg}; border: 1px solid ${T.border}; border-radius: ${T.radius}px; padding: 11px 12px; cursor: pointer; transition: all .1s; }
@@ -276,35 +276,37 @@ function QuickIdeas({ openModal }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
         {QUICK_IDEAS.map((c, i) => (
           <div key={i} className="fg-ic" onClick={() => openModal(c.modal)}>
-            {/* Icon + Title + Desc */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            {/* Icon + Title + Desc — large icon badge, left-aligned */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
+              {/* Icon badge — more opaque colour, bigger */}
               <div style={{
-                width: 32, height: 32, borderRadius: 9, flexShrink: 0, marginTop: 1,
-                background: `${c.color}14`, border: `1px solid ${c.color}22`,
+                width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                background: `${c.color}20`,
+                border: `1px solid ${c.color}30`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <c.icon style={{ width: 15, height: 15, color: c.color }} />
+                <c.icon style={{ width: 19, height: 19, color: c.color }} />
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: T.t1, lineHeight: 1.3, marginBottom: 3 }}>{c.title}</div>
-                <div style={{ fontSize: 10.5, color: T.t3, lineHeight: 1.4 }}>{c.desc}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: T.t1, lineHeight: 1.25, marginBottom: 4 }}>{c.title}</div>
+                <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.4 }}>{c.desc}</div>
               </div>
             </div>
 
-            {/* CTA Button — full width, colored text on subtle tinted bg */}
+            {/* CTA Button — dark fill (page bg), bold coloured text, full width */}
             <button
               style={{
-                width: '100%', padding: '7px 0',
-                borderRadius: 6, fontSize: 11.5, fontWeight: 700,
+                width: '100%', padding: '10px 0',
+                borderRadius: 7, fontSize: 13, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
-                background: `${c.color}12`,
-                border: `1px solid ${c.color}22`,
+                background: T.bg,
+                border: `1px solid rgba(255,255,255,0.07)`,
                 color: c.color,
                 transition: 'all .12s',
                 letterSpacing: '.01em',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = `${c.color}22`; }}
-              onMouseLeave={e => { e.currentTarget.style.background = `${c.color}12`; }}
+              onMouseEnter={e => { e.currentTarget.style.background = `${c.color}12`; e.currentTarget.style.borderColor = `${c.color}28`; }}
+              onMouseLeave={e => { e.currentTarget.style.background = T.bg;           e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}
               onClick={e => { e.stopPropagation(); openModal(c.modal); }}>
               {c.cta}
             </button>
