@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import {
   format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval,
   startOfWeek, endOfWeek, getMonth, getYear,
 } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const MONTH_NAMES = [
   'January','February','March','April','May','June',
@@ -79,8 +80,9 @@ function DayBubble({ bubbleInfo, onViewSummary, onViewWorkout, onClose }) {
     popupLabel,
     dateLabel,
     solidColor,
-    dayType,      // 'done' | 'rest' | 'missed' | 'upcoming'
+    dayType,
     workoutLog,
+    summaryData,
     hasExercises,
     containerRef,
   } = bubbleInfo;
@@ -91,9 +93,9 @@ function DayBubble({ bubbleInfo, onViewSummary, onViewWorkout, onClose }) {
   const BUBBLE_W = 274;
 
   // Mirror Home page exactly:
-  // View Summary: checked-in (done) AND a workoutLog was found for that day
-  const hasSummaryBtn = dayType === 'done' && !!workoutLog;
-  // View Workout: not done, not rest, not missed — i.e. a future/today training day with exercises
+  // View Summary: checked-in (done) AND we have either a workoutLog or checkIn record
+  const hasSummaryBtn = dayType === 'done' && !!summaryData;
+  // View Workout: not done, not rest, not missed — future/today training day with exercises
   const hasWorkoutBtn = dayType === 'upcoming' && hasExercises;
   const BUBBLE_H = (hasSummaryBtn || hasWorkoutBtn) ? 112 : 76;
   const SVG_H = BUBBLE_H + ARROW_H;
@@ -189,7 +191,7 @@ function DayBubble({ bubbleInfo, onViewSummary, onViewWorkout, onClose }) {
 
           {hasSummaryBtn && (
             <button
-              onClick={(e) => { e.stopPropagation(); onViewSummary(workoutLog); }}
+              onClick={(e) => { e.stopPropagation(); onViewSummary(summaryData); }}
               style={viewSummaryBtnStyle}
             >
               View Summary
@@ -387,9 +389,7 @@ function injectHeatmapStyles() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WorkoutSplitHeatmap({
   checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}, joinDate = null,
-  // Optional: pass workoutLogs (array of WorkoutLog objects) to enable "View Summary"
-  workoutLogs = [],
-  // Optional: callback when user taps "View Summary" — receives the workoutLog object
+  currentUser = null,
   onViewSummary,
 }) {
   const today = new Date();
@@ -398,6 +398,21 @@ export default function WorkoutSplitHeatmap({
   const [selectedMonth, setSelectedMonth] = useState(getMonth(today));
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [yearPickerOpen,  setYearPickerOpen]  = useState(false);
+
+  // Internally fetch WorkoutLogs for the displayed month
+  const [monthWorkoutLogs, setMonthWorkoutLogs] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const monthStart = startOfMonth(new Date(selectedYear, selectedMonth, 1));
+    const monthEnd   = endOfMonth(monthStart);
+    const from = format(monthStart, 'yyyy-MM-dd');
+    const to   = format(monthEnd,   'yyyy-MM-dd');
+    base44.entities.WorkoutLog.filter({
+      user_id: currentUser.id,
+      completed_date: { $gte: from, $lte: to },
+    }).then(logs => setMonthWorkoutLogs(logs || [])).catch(() => {});
+  }, [currentUser?.id, selectedYear, selectedMonth]);
 
   // Bubble state
   const [bubbleInfo, setBubbleInfo] = useState(null);
@@ -465,7 +480,7 @@ export default function WorkoutSplitHeatmap({
   };
 
   const getWorkoutLogForDay = (day) => {
-    return workoutLogs.find(log => {
+    return monthWorkoutLogs.find(log => {
       const logDate = new Date(log.completed_date || log.created_date);
       return isSameDay(logDate, day);
     }) || null;
@@ -523,8 +538,11 @@ export default function WorkoutSplitHeatmap({
     const isRestDay   = expected === 'Rest';
     const isMissed    = isPast && !isCheckedIn && !isRestDay && !(joinDay && day < joinDay);
     const workoutMeta = getWorkoutMeta(day);
-    // Always try to find a workout log for this day regardless of check-in state
-    const workoutLog  = getWorkoutLogForDay(day);
+    // Find matching checkIn record for this day (used as fallback for summary)
+    const checkInForDay = checkIns.find(c => isSameDay(new Date(c.check_in_date), day)) || null;
+    // workoutLog from internal fetch; fall back to checkIn so View Summary always shows for done days
+    const workoutLog = getWorkoutLogForDay(day);
+    const summaryData = workoutLog || checkInForDay;
     const dow         = day.getDay() === 0 ? 7 : day.getDay();
     const isPastOrTodayRestDay = isRestDay && (isPast || isToday);
 
@@ -561,9 +579,8 @@ export default function WorkoutSplitHeatmap({
     } else if (isMissed) {
       solidColor = '#7f1d1d';
     } else {
-      // upcoming training day — use workout colour if available
-      const stops = workoutMeta ? (COLOR_GRADIENTS[workoutMeta.colorKey] || COLOR_GRADIENTS.blue) : null;
-      solidColor = stops ? stops[1] : '#263244';
+      // upcoming training day — dark grey like Home page
+      solidColor = '#263244';
     }
 
     // Toggle: close if same day tapped again
@@ -580,12 +597,13 @@ export default function WorkoutSplitHeatmap({
       solidColor,
       dayType,
       workoutLog,
+      summaryData,
       workoutMeta,
       dayOfWeek: dow,
       hasExercises,
       containerRef,
     });
-  }, [bubbleInfo, hasCheckIn, today, joinDay, dayWorkoutMap, workoutLogs]);
+  }, [bubbleInfo, hasCheckIn, today, joinDay, dayWorkoutMap, monthWorkoutLogs, customWorkoutTypes]);
 
   const handleViewSummary = useCallback((log) => {
     setBubbleInfo(null);
