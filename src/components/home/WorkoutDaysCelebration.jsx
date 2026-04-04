@@ -109,9 +109,8 @@ export default function WorkoutDaysCelebration({
   const [circlesExiting, setCirclesExiting] = useState(false);
   const todayRef = useRef(null);
 
-  // Backdrop fades ~1000ms after the circle pops, circles fade shortly after
-  const BACKDROP_FADE = 1200; // backdrop fade duration
-  const CIRCLES_FADE  = 500;  // circles fade duration after backdrop gone
+  const BACKDROP_FADE = 1200;
+  const CIRCLES_FADE  = 500;
 
   useEffect(() => {
     injectStyles();
@@ -120,11 +119,8 @@ export default function WorkoutDaysCelebration({
       playCircleLevelUp();
       spawnBlueParticles(todayRef.current);
     }, 1230);
-    // Start fading backdrop ~900ms after the pop (lets particles finish)
     const t2 = setTimeout(() => setBackdropExiting(true), 2130);
-    // Start fading circles once backdrop is mostly gone
     const t3 = setTimeout(() => setCirclesExiting(true), 2130 + BACKDROP_FADE - 100);
-    // Unmount after everything has faded
     const t4 = setTimeout(() => { onDismiss?.(); }, 2130 + BACKDROP_FADE + CIRCLES_FADE);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
@@ -149,8 +145,6 @@ export default function WorkoutDaysCelebration({
   const getCircleProps = (day, i) => {
     const isToday        = day === todayDowAdjusted;
     const done           = loggedDays.has(day);
-    // A day is only a rest day if it's not in the training split AND hasn't been logged.
-    // Guard: if trainingDays is empty (split not set up yet) treat nothing as a rest day.
     const isRestDay      = trainingDays.length > 0 && !trainingDays.includes(day) && !done;
     const isPast         = day < todayDowAdjusted;
     const isMissed       = !isRestDay && !done && isPast;
@@ -204,7 +198,6 @@ export default function WorkoutDaysCelebration({
   const CircleIcon = ({ isToday, done, isRestDay, isMissed, isPastRest, size, isTodayPending }) => {
     const iconSize = isToday ? 20 : 16;
 
-    // Today's circle (pending → grey dot, animated → blue tick)
     if (isToday) {
       if (isTodayPending) return (
         <div style={{
@@ -226,14 +219,12 @@ export default function WorkoutDaysCelebration({
       );
     }
 
-    // Completed workout → blue tick (must come before rest-day check)
     if (done) return (
       <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="none">
         <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
 
-    // Rest day → leaf icon (only for non-done, non-today days not in split)
     if (isRestDay) {
       const col    = isPastRest ? '#4ade80'             : 'rgba(148,163,184,0.55)';
       const stroke = isPastRest ? '#15803d'             : 'rgba(148,163,184,0.3)';
@@ -255,7 +246,6 @@ export default function WorkoutDaysCelebration({
       </svg>
     );
 
-    // Upcoming training day → empty ring
     return (
       <div style={{
         width: 14, height: 14, borderRadius: '50%',
@@ -269,31 +259,29 @@ export default function WorkoutDaysCelebration({
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        // Backdrop fades first, independently of the circles
         background: `rgba(0,0,0,${backdropExiting ? 0 : 0.8})`,
         backdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
         WebkitBackdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
         transition: `background ${BACKDROP_FADE}ms ease-in-out, backdrop-filter ${BACKDROP_FADE}ms ease-in-out`,
-        // Circles sit below centre — matching home screen position after workout card collapses
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        paddingTop: '20vh', // push circles into lower-middle of screen
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        // ── Shifted up to align with home screen circles ──
+        paddingTop: 'calc(env(safe-area-inset-top) + 244px)',
         pointerEvents: 'none',
       }}
     >
       <div
         style={{
-          padding: '12px 24px 32px',
+          // ── No top/bottom padding so position is purely driven by paddingTop above ──
+          padding: '0 24px 0',
           width: 'min(340px, 90vw)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          // Circles enter with spring, then gently fade in place (no translate down)
           animation: !circlesExiting ? 'wdcCardEnter 0.55s cubic-bezier(0.34,1.15,0.64,1) forwards' : 'none',
           opacity: circlesExiting ? 0 : 1,
           transition: circlesExiting ? `opacity ${CIRCLES_FADE}ms ease-in` : 'none',
         }}
       >
-
           {/* Day circles row */}
           <div style={{
             position: 'relative',
@@ -377,7 +365,6 @@ export default function WorkoutDaysCelebration({
               );
             })}
           </div>
-
         </div>
       </div>
   );
