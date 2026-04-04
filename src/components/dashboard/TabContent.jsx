@@ -335,16 +335,7 @@ function Sidebar({ openModal }) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="fg-nav">
-        <span className="fg-nav-label">Navigation</span>
-        {navItems.map(n => (
-          <button key={n.id} className={`fg-nav-item${activeNav === n.id ? ' active' : ''}`} onClick={() => setActiveNav(n.id)}>
-            <n.icon style={{ width: 15, height: 15 }} />
-            {n.label}
-          </button>
-        ))}
-      </div>
+
 
       {/* Bottom links */}
       <div className="fg-nav-bottom">
