@@ -1008,23 +1008,35 @@ export default function Home() {
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation',
                     outline: 'none',
-                    opacity: disabled ? 0 : pressed ? 0.55 : 0.5,
+                    opacity: disabled ? 0 : pressed ? 0.6 : 1,
                     transform: pressed ? 'scale(0.82)' : 'scale(1)',
                     transition: 'opacity 0.1s ease, transform 0.1s ease',
                     pointerEvents: disabled ? 'none' : 'auto',
                   }}>
-                  <svg width="9" height="13" viewBox="0 0 9 13" fill="none" style={{ filter: pressed ? 'none' : 'drop-shadow(0 1.5px 1px rgba(0,0,0,0.55)) drop-shadow(0 0.5px 0 rgba(0,0,0,0.8))' }}>
-                    {/* Main filled triangle */}
+                  <svg width="9" height="13" viewBox="0 0 9 13" fill="none">
+                    <defs>
+                      <filter id={`tri-shadow-${direction}`} x="-40%" y="-40%" width="180%" height="180%">
+                        {/* bottom-right hard shadow for 3D press-out look */}
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="0.4" floodColor="rgba(0,0,0,0.7)" floodOpacity="1" />
+                      </filter>
+                    </defs>
+                    {/* Dark underside offset — gives the raised-face 3D illusion */}
+                    <polygon
+                      points={direction === 'left' ? '9,2 2,7.5 9,13' : '0,2 7,7.5 0,13'}
+                      fill="rgba(0,0,0,0.45)"
+                    />
+                    {/* Main face — pure white */}
                     <polygon
                       points={points}
-                      fill="white"
+                      fill="#ffffff"
+                      filter={`url(#tri-shadow-${direction})`}
                     />
-                    {/* Top-edge highlight for 3D effect */}
+                    {/* Top-left highlight edge for 3D bevel */}
                     <polygon
                       points={points}
                       fill="none"
-                      stroke="rgba(255,255,255,0.55)"
-                      strokeWidth="0.7"
+                      stroke="rgba(255,255,255,0.6)"
+                      strokeWidth="0.6"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -1035,7 +1047,8 @@ export default function Home() {
             return (
               // Outer wrapper: full width, position relative so arrows can sit at true edges
               // overflow:visible so circles aren't clipped; arrows positioned absolute outside dot area
-              <div style={{ position: 'relative', width: '100%', padding: '12px 0', height: 88, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              // 108px gives enough room for the sine wave amplitude + today ring without any clipping
+              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1048,7 +1061,7 @@ export default function Home() {
                 )}
 
                 {/* ── Left arrow — absolute, flush to left edge ── */}
-                <div style={{ position: 'absolute', left: -14, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                <div style={{ position: 'absolute', left: -18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
                   <ArrowButton
                     direction="left"
                     disabled={weekOffset <= -1}
@@ -1062,7 +1075,7 @@ export default function Home() {
                 </div>
 
                 {/* ── Right arrow — absolute, flush to right edge ── */}
-                <div style={{ position: 'absolute', right: -14, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                <div style={{ position: 'absolute', right: -18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
                   <ArrowButton
                     direction="right"
                     disabled={weekOffset >= 1}
@@ -1075,8 +1088,8 @@ export default function Home() {
                   />
                 </div>
 
-                {/* ── Sliding dots track: overflow hidden only on this inner div to clip slide animation ── */}
-                <div style={{ overflow: 'hidden', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* ── Sliding dots track: clip horizontally for slide anim, but open vertically so wave dots never cut ── */}
+                <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
                       key={weekOffset}
@@ -1090,7 +1103,7 @@ export default function Home() {
                       animate="center"
                       exit="exit"
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%' }}>
+                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%', paddingTop: 14, paddingBottom: 14 }}>
                       {allDays.map((day, i) => {
                         const done = loggedDays.has(day);
                         const bounce = justLoggedDay === day && weekOffset === 0;
