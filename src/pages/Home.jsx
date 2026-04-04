@@ -270,9 +270,6 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
-  const dotsRowRef = useRef(null);
-  const leftArrowRef = useRef(null);
-  const rightArrowRef = useRef(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -382,31 +379,6 @@ export default function Home() {
     checkMissedWorkouts();
     checkStreakLoss();
   }, [currentUser?.id]);
-
-  useEffect(() => {
-    const positionArrows = () => {
-      if (!dotsRowRef.current) return;
-      // Get document-relative offsetTop by walking offsetParent chain
-      let el = dotsRowRef.current;
-      let docOffsetTop = 0;
-      while (el) {
-        docOffsetTop += el.offsetTop;
-        el = el.offsetParent;
-      }
-      const midY = docOffsetTop + dotsRowRef.current.offsetHeight / 2;
-      // Convert to viewport-relative for position:fixed
-      const fixedTop = midY - window.scrollY - 26;
-      if (leftArrowRef.current) leftArrowRef.current.style.top = `${fixedTop}px`;
-      if (rightArrowRef.current) rightArrowRef.current.style.top = `${fixedTop}px`;
-    };
-
-    const t = setTimeout(positionArrows, 80);
-    window.addEventListener('resize', positionArrows);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener('resize', positionArrows);
-    };
-  }, [dotsRowRef.current]);
 
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
@@ -1145,15 +1117,8 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div
-                ref={dotsRowRef}
-                onLayout={() => {
-                  if (dotsRowRef.current) {
-                    const rect = dotsRowRef.current.getBoundingClientRect();
-                    setArrowTop(rect.top + rect.height / 2);
-                  }
-                }}
-                style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              <div style={{ marginLeft: -16, marginRight: -16 }}>
+              <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1165,18 +1130,13 @@ export default function Home() {
                   />
                 )}
 
-                {/* ── Left arrow — fixed, flush to left screen edge ── */}
-                <div
-                  ref={leftArrowRef}
-                  style={{
-                    position: 'fixed',
-                    left: 0,
-                    top: 0,
-                    width: 22,
-                    height: 52,
-                    display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
-                    zIndex: 202,
-                  }}>
+                {/* ── Left arrow — absolute, left edge of breakout wrapper ── */}
+                <div style={{
+                  position: 'absolute', left: 0, top: 0, bottom: 0,
+                  width: 22,
+                  display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
+                  zIndex: 10,
+                }}>
                   <ArrowButton
                     direction="left"
                     disabled={weekOffset <= -1}
@@ -1189,18 +1149,13 @@ export default function Home() {
                   />
                 </div>
 
-                {/* ── Right arrow — fixed, flush to right screen edge ── */}
-                <div
-                  ref={rightArrowRef}
-                  style={{
-                    position: 'fixed',
-                    right: 0,
-                    top: 0,
-                    width: 22,
-                    height: 52,
-                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                    zIndex: 202,
-                  }}>
+                {/* ── Right arrow — absolute, right edge of breakout wrapper ── */}
+                <div style={{
+                  position: 'absolute', right: 0, top: 0, bottom: 0,
+                  width: 22,
+                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                  zIndex: 10,
+                }}>
                   <ArrowButton
                     direction="right"
                     disabled={weekOffset >= 1}
@@ -1395,6 +1350,7 @@ export default function Home() {
                     </motion.div>
                   </AnimatePresence>
                 </div>
+              </div>
               </div>
             );
           })()}
