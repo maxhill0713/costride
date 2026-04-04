@@ -117,8 +117,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [summaryLog, setSummaryLog] = useState(null);
   const [overrideDayKey, setOverrideDayKey] = useState(null);
 
-  // ── New state for grouped-set editing ─────────────────────────────────────
-  const [editingGroupedSet, setEditingGroupedSet] = useState(null); // { index, setLabel }
+  const [editingGroupedSet, setEditingGroupedSet] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -279,7 +278,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const handleCancel = () => setEditingIndex(null);
 
-  // ── Grouped-set handlers ──────────────────────────────────────────────────
   const handleEditGroupedSet = (index, exercise, setLabel) => {
     setEditingIndex(null);
     setEditingGroupedSet({ index, setLabel });
@@ -376,7 +374,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const workout_notes = user?.workout_notes || {};
       const workoutNotes = workout_notes[todayWorkout.name] || '';
 
-      // Compute total volume: sum of sets × reps × weight for all exercises
       const totalVolume = (todayWorkout.exercises || []).reduce((sum, ex) => {
         const sets = parseFloat(ex.sets || ex.setsReps?.split('x')?.[0]) || 0;
         const reps = parseFloat(ex.reps || ex.setsReps?.split('x')?.[1]) || 0;
@@ -384,7 +381,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         return sum + sets * reps * weight;
       }, 0);
 
-      // Duration: use frozenDurationRef (seconds) if available, else fallback to today's check-in time
       let durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
       if (!durationSecs && currentUser?.id) {
         try {
@@ -399,7 +395,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       }
       const durationMins = durationSecs > 0 ? Math.round(durationSecs / 60) : undefined;
 
-      // Normalise exercises so sets + reps are always stored as top-level fields
       const normalisedExercises = (todayWorkout.exercises || []).map((ex) => {
         const setsRepsStr = String(ex.setsReps || '');
         const srParts = /[xX×]/.test(setsRepsStr) ? setsRepsStr.split(/[xX×]/) : [];
@@ -533,7 +528,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   '1fr 44px 12px 44px 44px' :
   '1fr 44px 12px 44px 44px auto';
 
-  // ── Info bullet points ────────────────────────────────────────────────────
   const infoBullets = [
   { label: 'Check in', text: "You must be physically at your gym for the check-in button to appear — tap it at the very start of your session to begin your timer and unlock workout logging." },
   { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
@@ -543,7 +537,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
   { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' }];
 
-  // ── Helper: build exercise groups ─────────────────────────────────────────
   const buildExerciseGroups = (exercises) => {
     const groups = [];
     const nameToGroupIdx = {};
@@ -562,8 +555,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     });
     return groups;
   };
-
-
 
   return (
     <>
@@ -585,7 +576,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
               <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-              {/* Info button — 15% larger than original size={13} → size≈15 */}
               <motion.button
                 onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
                 whileTap={{ scale: 0.78, y: 1 }}
@@ -614,14 +604,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </motion.button>
           </div>
 
-          {/* ── Info Box ── */}
+          {/* Info Box */}
           <AnimatePresence>
             {showInfo &&
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1, opacity: { duration: 0.2 } }}
               style={{ overflow: 'hidden' }}
               onClick={(e) => e.stopPropagation()}>
               
@@ -680,21 +670,20 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           </div>
         }
 
-        {/* EXPANDED STATE */}
+        {/* EXPANDED STATE — spring animation matching QuoteCarousel */}
         <AnimatePresence>
           {isExpanded &&
           <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ overflow: 'hidden', transformOrigin: 'top', visibility: isExpanded ? 'visible' : 'hidden' }}>
-              
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1, opacity: { duration: 0.2 } }}
+            style={{ overflow: 'hidden', transformOrigin: 'top' }}>
 
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
 
-                  {/* Column headers for normal exercises */}
+                  {/* Column headers */}
                   <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -709,11 +698,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     {!alreadyLoggedToday && <div className="w-6" />}
                   </motion.div>
 
-                  {/* ── Render exercise groups ── */}
+                  {/* Exercise groups */}
                   {buildExerciseGroups(todayWorkout.exercises).map((group) => {
                 const isGrouped = group.items.length > 1;
 
-                // ── NORMAL (single) exercise card ──────────────────────
                 if (!isGrouped) {
                   const { exercise, index } = group.items[0];
                   const isEditing = editingIndex === index;
@@ -810,11 +798,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                             </>
                       }
                         </motion.div>);
-
                 }
 
-                // ── GROUPED (multi-set) card ───────────────────────────
-                // Sort heaviest weight first → Set 1
                 const sorted = [...group.items].sort(
                   (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
                 );
@@ -826,7 +811,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{}}
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {/* ── Grouped rows — each row uses the same grid as the header ── */}
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
                       const isEditingThis = editingGroupedSet?.index === index;
@@ -834,7 +818,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       if (isEditingThis) {
                         return (
                           <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                {/* Exercise name + set label */}
                                 <div className="flex items-center gap-2 mb-3">
                                   <div className="text-sm font-bold text-white">{group.name}</div>
                                   <div className="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
@@ -844,63 +827,26 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 <div className="flex gap-2">
                                   <div className="flex-1">
                                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
-                                    <Input
-                                  type="text"
-                                  inputMode="numeric"
-                                  placeholder="10"
-                                  maxLength={3}
-                                  value={editReps}
-                                  onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                  style={{ fontSize: '16px' }}
-                                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
-                                
+                                    <Input type="text" inputMode="numeric" placeholder="10" maxLength={3} value={editReps} onChange={(e) => setEditReps(e.target.value.replace(/\D/g, '').slice(0, 3))} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                   </div>
                                   <div className="flex-1">
                                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
-                                    <Input
-                                  type="text"
-                                  inputMode="decimal"
-                                  placeholder="kg"
-                                  maxLength={6}
-                                  value={editWeight}
-                                  onChange={(e) => {
-                                    const v = e.target.value.replace(/[^\d.]/g, '');
-                                    const parts = v.split('.');
-                                    const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;
-                                    setEditWeight(sanitised.slice(0, 6));
-                                  }}
-                                  style={{ fontSize: '16px' }}
-                                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
-                                
+                                    <Input type="text" inputMode="decimal" placeholder="kg" maxLength={6} value={editWeight} onChange={(e) => {const v = e.target.value.replace(/[^\d.]/g, '');const parts = v.split('.');const sanitised = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : v;setEditWeight(sanitised.slice(0, 6));}} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                   </div>
                                 </div>
                                 <div className="flex gap-1 mt-3">
-                                  <Button
-                                onClick={handleSaveGroupedSet}
-                                size="sm"
-                                className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                  <Button onClick={handleSaveGroupedSet} size="sm" className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                                     <Check className="w-3 h-3" />
                                   </Button>
-                                  <Button
-                                onClick={() => setEditingGroupedSet(null)}
-                                size="sm"
-                                variant="ghost"
-                                className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                                  <Button onClick={() => setEditingGroupedSet(null)} size="sm" variant="ghost" className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                                     <X className="w-3 h-3" />
                                   </Button>
                                 </div>
                               </div>);
-
                       }
 
-                      // ── Normal grouped row — use the same grid as single exercise rows ──
                       return (
-                        <div
-                          key={index}
-                          className="grid gap-1 items-center pr-2 mb-1"
-                          style={{ gridTemplateColumns: exerciseGridCols }}>
-
-                              {/* Col 1: Exercise name (first row only) or empty spacer */}
+                        <div key={index} className="grid gap-1 items-center pr-2 mb-1" style={{ gridTemplateColumns: exerciseGridCols }}>
                               <div className="ml-1">
                                 {setIdx === 0 ? (
                                   <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
@@ -908,33 +854,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <div />
                                 )}
                               </div>
-
-                              {/* Col 2: Set label pill — sits under the "Sets" header */}
-                              <div
-                                className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center"
-                                style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {setLabel}
                               </div>
-
-                              {/* Col 3: × separator — sits under the spacer column */}
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-
-                              {/* Col 4: Reps — sits under the "Reps" header */}
-                              <div
-                                className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center"
-                                style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
-
-                              {/* Col 5: Weight + progress badge */}
                               <div className="flex items-center gap-1 ml-1">
                                 <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                               </div>
-
-                              {/* Col 6: Edit pencil (unlogged only) */}
                               {!alreadyLoggedToday && (
                                 <motion.button
                                   onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
@@ -945,13 +877,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 </motion.button>
                               )}
                             </div>);
-
                     })}
                       </motion.div>);
-
               })}
 
-                  {/* ── Cardio Rows ─────────────────────────────────────────── */}
+                  {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
               <div className="mt-3">
                       <motion.div
@@ -978,40 +908,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="flex gap-2">
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rounds</label>
-                                  <Input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={2}
-                          value={editCardioRounds}
-                          onChange={(e) => setEditCardioRounds(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                          style={{ fontSize: '16px' }}
-                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
-                        
+                                  <Input type="text" inputMode="numeric" maxLength={2} value={editCardioRounds} onChange={(e) => setEditCardioRounds(e.target.value.replace(/\D/g, '').slice(0, 2))} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Time/Round</label>
-                                  <Input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatTime(editCardioTime)}
-                          onChange={(e) => setEditCardioTime(sanitiseTimeInput(e.target.value))}
-                          placeholder="0:00"
-                          style={{ fontSize: '16px' }}
-                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
-                        
+                                  <Input type="text" inputMode="numeric" value={formatTime(editCardioTime)} onChange={(e) => setEditCardioTime(sanitiseTimeInput(e.target.value))} placeholder="0:00" style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                                 </div>
                                 <div className="flex-1">
                                   <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Rest</label>
-                                  <Input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatTime(editCardioRest)}
-                          onChange={(e) => setEditCardioRest(sanitiseTimeInput(e.target.value))}
-                          placeholder="0:00"
-                          disabled={parseInt(editCardioRounds) <= 1}
-                          style={{ fontSize: '16px' }}
-                          className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full disabled:opacity-40" />
-                        
+                                  <Input type="text" inputMode="numeric" value={formatTime(editCardioRest)} onChange={(e) => setEditCardioRest(sanitiseTimeInput(e.target.value))} placeholder="0:00" disabled={parseInt(editCardioRounds) <= 1} style={{ fontSize: '16px' }} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full disabled:opacity-40" />
                                 </div>
                               </div>
                               <div className="flex gap-1 mt-3">
@@ -1023,7 +928,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 </Button>
                               </div>
                             </div> :
-
                   <>
                               <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
                               <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-5" style={{ width: '36px' }}>
@@ -1033,14 +937,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-2 text-xs font-black text-center rounded-2xl flex items-center justify-center shadow-md shadow-blue-900/20 -ml-2">
                                 {c.time ? formatTime(c.time) : '—'}
                               </div>
-                              <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center " style={{ width: '36px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
                               {!alreadyLoggedToday &&
                     <motion.button
                       onClick={() => handleEditCardio(index, c)}
                       whileTap={{ scale: 0.78, y: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 22 }} className="inline-flex items-center justify-center w-8 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                      className="inline-flex items-center justify-center w-8 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                                 <Edit2 className="lucide lucide-pen w-4 h-3.5 -ml-6" />
                               </motion.button>
                     }
@@ -1089,7 +994,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </Button>
               }
 
-                  {/* ── Timer & Tools ── */}
+                  {/* Timer & Tools */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
                       <button
@@ -1176,10 +1081,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           onConfirm={() => {setShowSummary(false);logWorkoutMutation.mutate();}}
           onCancel={() => setShowSummary(false)}
           isLoading={logWorkoutMutation.isPending} />
-        
       </Card>
 
-      {/* ── Workout Summary Modal ── */}
       <HomeSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
 
       <WorkoutSwitcherModal
@@ -1193,6 +1096,5 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           setEditingIndex(null);
           onOverrideDayChange?.(newOverride);
         }} />
-      
     </>);
 }
