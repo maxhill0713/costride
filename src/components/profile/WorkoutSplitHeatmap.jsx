@@ -5,6 +5,7 @@ import {
 } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
 
 const MONTH_NAMES = [
   'January','February','March','April','May','June',
@@ -417,6 +418,7 @@ export default function WorkoutSplitHeatmap({
   // Bubble state
   const [bubbleInfo, setBubbleInfo] = useState(null);
   const [viewWorkoutInfo, setViewWorkoutInfo] = useState(null);
+  const [summaryLog, setSummaryLog] = useState(null);
   const containerRef = useRef(null);
 
   injectHeatmapStyles();
@@ -605,10 +607,21 @@ export default function WorkoutSplitHeatmap({
     });
   }, [bubbleInfo, hasCheckIn, today, joinDay, dayWorkoutMap, monthWorkoutLogs, customWorkoutTypes]);
 
-  const handleViewSummary = useCallback((log) => {
+  const handleViewSummary = useCallback(async (data) => {
     setBubbleInfo(null);
-    if (onViewSummary) onViewSummary(log);
-  }, [onViewSummary]);
+    if (!data) return;
+    // If it has an id, fetch the full WorkoutLog record — same as Home page does
+    if (data.id) {
+      try {
+        const logs = await base44.entities.WorkoutLog.filter({ id: data.id });
+        setSummaryLog(logs[0] || data);
+      } catch {
+        setSummaryLog(data);
+      }
+    } else {
+      setSummaryLog(data);
+    }
+  }, []);
 
   const handleViewWorkout = useCallback((info) => {
     setBubbleInfo(null);
@@ -812,6 +825,9 @@ export default function WorkoutSplitHeatmap({
           onClose={() => setViewWorkoutInfo(null)}
         />
       )}
+
+      {/* ── Workout summary modal — same as Home page ── */}
+      <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
     </>
   );
 }
