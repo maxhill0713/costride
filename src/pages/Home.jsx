@@ -1117,7 +1117,7 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div style={{ marginLeft: -16, marginRight: -16 }}>
+              <div style={{ marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', paddingLeft: 'calc(50vw - 50%)', paddingRight: 'calc(50vw - 50%)' }}>
               <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
