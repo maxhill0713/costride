@@ -136,6 +136,7 @@ async function drawBreakdownCard(post, gymName) {
 
   const PAD = 60;
 
+  // TOP: gym · date centred
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
   const topLine = gymName ? `${gymName}  ·  ${dateStr}` : dateStr;
   ctx.font = '700 34px -apple-system,sans-serif';
@@ -144,6 +145,7 @@ async function drawBreakdownCard(post, gymName) {
   ctx.fillText(topLine, W / 2, 90);
   ctx.textAlign = 'left';
 
+  // Workout name — centred
   const pTop = 130;
   ctx.font = '900 68px -apple-system,sans-serif';
   ctx.fillStyle = 'white';
@@ -153,6 +155,7 @@ async function drawBreakdownCard(post, gymName) {
   ctx.shadowBlur = 0;
   ctx.textAlign = 'left';
 
+  // Stats pills (same style as stats card)
   const pillTop = pTop + 100;
   const pillH = 112, pillG = 20, pillW = (W - PAD * 2 - pillG * 2) / 3;
   const mS = [
@@ -173,11 +176,13 @@ async function drawBreakdownCard(post, gymName) {
     ctx.fillText(s.l, px + pillW / 2, pillTop + 92);
   });
 
+  // Exercise rows — TodayWorkout style
   const tTop = pillTop + pillH + 60;
   const colW = [W - PAD * 2 - 320, 100, 50, 100, 160];
   const colX = [PAD + 20];
   colW.slice(0, -1).forEach((w, i) => colX.push(colX[i] + colW[i] + 10));
 
+  // Column headers
   ctx.font = '700 26px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ['EXERCISE', 'SETS', '', 'REPS', 'WEIGHT'].forEach((h, i) => {
@@ -194,26 +199,32 @@ async function drawBreakdownCard(post, gymName) {
     const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
       .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+    // Row background — subtle like TodayWorkout
     ctx.save(); ctx.beginPath(); ctx.roundRect(PAD, ry, W - PAD * 2, rH, 18);
     ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
 
+    // Exercise name
     ctx.font = '700 36px -apple-system,sans-serif'; ctx.fillStyle = 'white';
     ctx.fillText(name, colX[0], ry + 58, colW[0] - 10);
 
+    // Sets pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[1], ry + 18, colW[1], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.textAlign = 'center'; ctx.fillText(String(ex.sets || ex.set_count || '—'), colX[1] + colW[1] / 2, ry + 56);
 
+    // × separator
     ctx.font = '700 30px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.28)';
     ctx.fillText('×', colX[2] + colW[2] / 2, ry + 56);
 
+    // Reps pill
     ctx.save(); ctx.beginPath(); ctx.roundRect(colX[3], ry + 18, colW[3], 58, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill(); ctx.restore();
     ctx.font = '700 34px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fillText(String(ex.reps || ex.rep_count || '—'), colX[3] + colW[3] / 2, ry + 56);
 
+    // Weight pill — blue gradient
     const wG = ctx.createLinearGradient(colX[4], ry, colX[4] + colW[4], ry);
     wG.addColorStop(0, 'rgba(29,78,216,0.9)');
     wG.addColorStop(1, 'rgba(59,130,246,0.9)');
@@ -231,6 +242,7 @@ async function drawBreakdownCard(post, gymName) {
     ctx.textAlign = 'left';
   }
 
+  // CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
   const logoSize = 54;
   const wordmark = 'CoStride';
@@ -386,14 +398,19 @@ function BreakdownPreview({ post, gymName }) {
       )}
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '8px 10px 8px' }}>
+        {/* TOP: gym · date — centred */}
         <div style={{ textAlign: 'center', marginBottom: 5 }}>
           <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: 7.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {topLine}
           </span>
         </div>
+
+        {/* Workout title — centred */}
         <div style={{ color: 'white', fontSize: 13, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 6, textShadow: '0 2px 8px rgba(0,0,0,0.55)' }}>
           {post.workout_name || 'Workout'}
         </div>
+
+        {/* Stats pills — same style as StatsPreview */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 7 }}>
           {[
             { label: 'Exercises', value: exercises.length || '—' },
@@ -406,17 +423,27 @@ function BreakdownPreview({ post, gymName }) {
             </div>
           ))}
         </div>
+
+        {/* Exercise column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, paddingLeft: 4, marginBottom: 3 }}>
           {['Exercise', 'Sets', '', 'Reps', 'Wt'].map((h, i) => (
             <div key={i} style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, fontWeight: 700, textTransform: 'uppercase', textAlign: i > 0 ? 'center' : 'left' }}>{h}</div>
           ))}
         </div>
+
+        {/* Exercise rows — TodayWorkout style */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {exercises.slice(0, 8).map((ex, idx) => {
             const name = (ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`)
               .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             return (
-              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 6, padding: '3px 4px 3px 6px' }}>
+              <div key={idx} style={{
+                display: 'grid', gridTemplateColumns: '1fr 28px 8px 28px 42px', gap: 3, alignItems: 'center',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.09)',
+                borderRadius: 6,
+                padding: '3px 4px 3px 6px'
+              }}>
                 <div style={{ color: 'white', fontSize: 7.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
                 <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', fontSize: 7.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{ex.sets || ex.set_count || '—'}</div>
                 <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 6.5, textAlign: 'center', fontWeight: 700 }}>×</div>
@@ -429,6 +456,8 @@ function BreakdownPreview({ post, gymName }) {
           })}
           {exercises.length > 8 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 7.5, textAlign: 'center', paddingTop: 2 }}>+{exercises.length - 8} more</div>}
         </div>
+
+        {/* BOTTOM: CoStride logo — centred */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, paddingTop: 6 }}>
           <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3, objectFit: 'cover' }} />
           <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: 800 }}>CoStride</span>
@@ -450,10 +479,12 @@ function CleanPreview({ post, gymName }) {
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0d1117 0%,#111827 45%,#0f172a 100%)' }} />
       )}
+
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <img src={LOGO_URL} alt="" style={{ width: 18, height: 18, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
+
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px', textAlign: 'center' }}>
         {gymName && (
           <div style={{ color: 'rgba(255,255,255,0.90)', fontSize: 11, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.7)', marginBottom: 3 }}>{gymName}</div>
@@ -723,60 +754,44 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 10010,
-              background: 'rgba(0,0,0,0.78)',
-              backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 10010, background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
           />
 
-          {/* Sheet */}
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011,
-              maxHeight: 'calc(100dvh - 60px)',
+              maxHeight: 'calc(100dvh - 80px)',
               display: 'flex', flexDirection: 'column',
-              background: 'rgba(14,14,22,0.99)',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              borderTopLeftRadius: 28, borderTopRightRadius: 28,
-              paddingBottom: 'max(env(safe-area-inset-bottom,0px),16px)',
+              background: 'rgba(12,12,20,0.98)',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              borderTopLeftRadius: 26, borderTopRightRadius: 26,
+              paddingBottom: 'max(env(safe-area-inset-bottom,0px),12px)',
               fontFamily: "'SF Pro Display',-apple-system,sans-serif",
               overflow: 'hidden',
             }}
           >
-            {/* Drag handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
-            </div>
-
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 18px 10px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 18px 8px', flexShrink: 0, position: 'relative' }}>
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Activity</span>
               <button
                 onClick={onClose}
-                style={{
-                  width: 30, height: 30, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.10)',
-                  border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'rgba(255,255,255,0.70)', cursor: 'pointer', padding: 0,
-                }}
+                style={{ position: 'absolute', right: 18, background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: 4 }}
               >
-                <X size={15} />
+                <X size={18} />
               </button>
             </div>
 
-            {/* Card carousel */}
-            <div style={{ flexShrink: 0, padding: '0 18px' }}>
+            {/* Portrait card carousel */}
+            <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
                   ref={containerRef}
-                  style={{ width: 'min(54vw, 230px)', overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y' }}
+                  style={{ width: 'min(57.2vw, 242px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y' }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
@@ -785,7 +800,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                     display: 'flex',
                     width: `${cards.length * 100}%`,
                     transform: `translateX(${translateX})`,
-                    transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25,0.46,0.45,0.94)',
+                    transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                     willChange: 'transform',
                   }}>
                     {cards.map((card, i) => (
@@ -798,41 +813,29 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               </div>
             </div>
 
-            {/* Dots + label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, margin: '8px 0 2px', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {cards.map((_, i) => (
-                  <button key={i} onClick={() => setActiveCard(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    <div style={{
-                      width: activeCard === i ? 20 : 6, height: 6, borderRadius: 3,
-                      background: activeCard === i ? 'white' : 'rgba(255,255,255,0.18)',
-                      transition: 'all 0.22s cubic-bezier(0.34,1.56,0.64,1)',
-                    }} />
-                  </button>
-                ))}
-              </div>
-              <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 600 }}>
-                {cards[activeCard].label}
-              </span>
+            {/* Dots */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, flexShrink: 0 }}>
+              {cards.map((card, i) => (
+                <button key={i} onClick={() => setActiveCard(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
+                  <div style={{ width: activeCard === i ? 18 : 6, height: 6, borderRadius: 3, background: activeCard === i ? 'white' : 'rgba(255,255,255,0.2)', transition: 'all 0.24s cubic-bezier(0.34,1.56,0.64,1)' }} />
+                </button>
+              ))}
             </div>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '8px 18px 0', flexShrink: 0 }} />
 
             {/* Share to */}
             <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
-              <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', margin: '0 0 12px 0' }}>Share to</p>
-              <div style={{ display: 'flex', gap: 14, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
+              <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0' }}>Share to</p>
+              <div style={{ display: 'flex', gap: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 }}>
                 {APP_BUTTONS.map((btn) => (
                   <button
                     key={btn.id}
                     onClick={() => handleBtn(btn)}
                     disabled={!!loadingId}
                     style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                       background: 'none', border: 'none',
                       cursor: loadingId ? 'default' : 'pointer',
-                      opacity: loadingId && loadingId !== btn.id ? 0.25 : 1,
+                      opacity: loadingId && loadingId !== btn.id ? 0.3 : 1,
                       flexShrink: 0, padding: 0,
                       transition: 'opacity 0.15s',
                     }}
@@ -840,11 +843,11 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                     <div style={{ position: 'relative', width: 60, height: 60 }}>
                       {loadingId === btn.id
                         ? <div style={{ width: 60, height: 60, borderRadius: 14, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: 22, height: 22, border: '2.5px solid rgba(255,255,255,0.15)', borderTopColor: 'white', borderRadius: '50%', animation: 'cs-spin 0.65s linear infinite' }} />
+                            <div style={{ width: 22, height: 22, border: '2.5px solid rgba(255,255,255,0.2)', borderTopColor: 'white', borderRadius: '50%', animation: 'cs-spin 0.65s linear infinite' }} />
                           </div>
                         : btn.icon}
                     </div>
-                    <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.25, maxWidth: 64 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 600, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.2, maxWidth: 64 }}>
                       {btn.label}
                     </span>
                   </button>
@@ -853,19 +856,18 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
             </div>
 
             {/* Save Image */}
-            <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
+            <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
               <button
                 onClick={handleSave}
                 disabled={!!loadingId}
                 style={{
-                  width: '100%', padding: '15px 0', borderRadius: 16,
-                  background: loadingId === 'save' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.10)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: loadingId === 'save' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.90)',
-                  fontSize: 15, fontWeight: 700,
+                  width: '100%', padding: '14px 0', borderRadius: 14,
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: loadingId === 'save' ? 'rgba(255,255,255,0.3)' : 'white',
+                  fontSize: 14, fontWeight: 700,
                   cursor: loadingId ? 'default' : 'pointer',
                   transition: 'all 0.15s',
-                  letterSpacing: '-0.01em',
                 }}
               >
                 {loadingId === 'save' ? 'Saving…' : 'Save Image'}
@@ -873,7 +875,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
             </div>
           </motion.div>
 
-          <style>{`@keyframes cs-spin { to { transform: rotate(360deg) } }`}</style>
+          <style>{`@keyframes cs-spin{to{transform:rotate(360deg)}}`}</style>
         </>
       )}
     </AnimatePresence>
