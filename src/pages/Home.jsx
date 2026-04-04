@@ -22,19 +22,18 @@ import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-// ─────────────────────────────────────────────────────────────────────────────
-// Username / search query sanitisation
-// ─────────────────────────────────────────────────────────────────────────────
+
 const sanitiseUsernameQuery = (v) =>
   v
     .replace(/[^a-zA-Z0-9_.\- ]/g, '')
     .slice(0, 30);
-// ─────────────────────────────────────────────────────────────────────────────
+
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
-// ── MOCK MODE: set to true to force all training day buttons to appear blue for screenshots ──
 const MOCK_MODE = false;
+
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
+
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -92,6 +91,7 @@ function soundTransition(ctx) {
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
   osc.start(now); osc.stop(now + 0.35);
 }
+
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
     0%   { transform: scale(0.4) translateY(40px); opacity: 0; }
@@ -152,6 +152,7 @@ const STREAK_KEYFRAMES = `
     50%       { transform: scale(1.13); opacity: 0.2;  }
   }
 `;
+
 function injectStreakStyles() {
   if (document.getElementById('streak-keyframes')) return;
   const style = document.createElement('style');
@@ -159,12 +160,14 @@ function injectStreakStyles() {
   style.textContent = STREAK_KEYFRAMES;
   document.head.appendChild(style);
 }
+
 function trigAnim(el, name, dur, easing) {
   if (!el) return;
   el.style.animation = 'none';
   void el.offsetWidth;
   el.style.animation = `${name} ${dur}ms ${easing} forwards`;
 }
+
 function spawnParticles() {
   const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
   for (let i = 0; i < 18; i++) {
@@ -187,6 +190,7 @@ function spawnParticles() {
     setTimeout(() => p.remove(), 1200);
   }
 }
+
 function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const stage = document.getElementById('streak-anim-stage');
   const p1 = document.getElementById('streak-anim-p1');
@@ -222,6 +226,7 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   }, 2800);
   celebTimers.current = [t1, t2, t3, t4];
 }
+
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -264,14 +269,14 @@ export default function Home() {
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
-  // Track slide direction: -1 = sliding left (going to past), +1 = sliding right (going to future)
   const [slideDirection, setSlideDirection] = useState(0);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
-  // ── Header scroll behaviour ──────────────────────────────────────────────
+
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
+
   useEffect(() => {
     lastScrollY.current = window.scrollY;
     const handleScroll = () => {
@@ -294,6 +299,7 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
   useEffect(() => {
     const prev = document.body.style.backgroundColor;
     document.body.style.backgroundColor = '#020817';
@@ -303,6 +309,7 @@ export default function Home() {
       document.documentElement.style.backgroundColor = '';
     };
   }, []);
+
   const triggerRefresh = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
@@ -313,6 +320,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs'] }),
     ]);
   };
+
   useEffect(() => {
     const onHomeButtonClick = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -321,6 +329,7 @@ export default function Home() {
     window.addEventListener('homeButtonClicked', onHomeButtonClick);
     return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
   }, [queryClient]);
+
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -330,6 +339,7 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
   useEffect(() => {
     injectStreakStyles();
     if (!currentUser) return;
@@ -369,13 +379,16 @@ export default function Home() {
     checkMissedWorkouts();
     checkStreakLoss();
   }, [currentUser?.id]);
+
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedFriendSearch(sanitiseUsernameQuery(friendSearchQuery)), 300);
     return () => clearTimeout(t);
   }, [friendSearchQuery]);
+
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
@@ -384,7 +397,9 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
   const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
+
   const { data: allMemberGyms = [] } = useQuery({
     queryKey: ['memberGyms', gymMemberships.map(m => m.gym_id).join(',')],
     queryFn: () => {
@@ -398,6 +413,7 @@ export default function Home() {
   });
 
   const memberGymData = allMemberGyms.find(g => g.id === primaryGymIdForQuery) || allMemberGyms[0] || null;
+
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
@@ -406,6 +422,7 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
@@ -416,6 +433,7 @@ export default function Home() {
     refetchIntervalInBackground: false,
     placeholderData: (prev) => prev,
   });
+
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }, '-created_date', 200),
@@ -424,7 +442,9 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
   const friendIdList = friends.map((f) => f.friend_id);
+
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
     queryFn: () => {
@@ -440,6 +460,7 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
@@ -447,6 +468,7 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
   const { data: sentFriendRequests = [] } = useQuery({
     queryKey: ['sentFriendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
@@ -454,15 +476,19 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
   const POSTS_PER_PAGE = 4;
   const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
+
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
     queryFn: () => base44.entities.User.filter({ id: { $in: knownUserIds } }),
     enabled: knownUserIds.length > 0,
     staleTime: 2 * 60 * 1000,
   });
+
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data: allRecentCheckIns = [] } = useQuery({
     queryKey: ['checkIns', 'friendFeed', friendIdList.join(',')],
     queryFn: () => friendIdList.length === 0 ? [] : base44.entities.CheckIn.filter(
@@ -475,7 +501,9 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: prev => prev,
   });
+
   const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data: recentLifts = [] } = useQuery({
     queryKey: ['recentLifts', 'friends'],
     queryFn: () => base44.entities.Lift.filter({ is_pr: true, created_date: { $gte: sevenDaysAgoLifts } }, '-created_date', 50),
@@ -483,12 +511,14 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', debouncedFriendSearch],
     queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedFriendSearch.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
     enabled: debouncedFriendSearch.trim().length >= 2,
     staleTime: 30000,
   });
+
   const addFriendMutation = useMutation({
     mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
     onSuccess: () => {
@@ -498,6 +528,7 @@ export default function Home() {
       setFriendSearchQuery('');
     },
   });
+
   const acceptFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
     onSuccess: () => {
@@ -505,21 +536,26 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] });
     },
   });
+
   const rejectFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] }),
   });
+
   const removeFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] }),
   });
+
   const cancelFriendMutation = useMutation({
     mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
     onMutate: (friendId) => { queryClient.setQueryData(['sentFriendRequests', currentUser?.id], (old = []) => old.filter(r => r.friend_id !== friendId)); },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ['sentFriendRequests', currentUser?.id] }); },
   });
+
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
+
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
     queryFn: () => base44.entities.User.filter({ id: { $in: checkInUserIdsForQuery } }),
@@ -527,6 +563,7 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
+
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
     queryFn: () => {
@@ -546,6 +583,7 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed) {
       navigate(createPageUrl('Onboarding'), { replace: true });
@@ -562,6 +600,7 @@ export default function Home() {
       celebTimers.current.forEach(clearTimeout);
     };
   }, [showStreakCelebration]);
+
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -600,10 +639,12 @@ export default function Home() {
       </div>
     );
   }
+
   const memberGym = memberGymData || null;
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
+
   const friendPosts = allPosts.filter((post) =>
     friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
@@ -611,8 +652,10 @@ export default function Home() {
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
   );
+
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
+
   const effectiveToday = (() => {
     const now = new Date();
     if (now.getHours() < 3) {
@@ -622,10 +665,12 @@ export default function Home() {
     }
     return now.toISOString().split('T')[0];
   })();
+
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
+
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());
@@ -640,6 +685,7 @@ export default function Home() {
     }
     return streak;
   };
+
   const friendsWithActivity = friends.map(friend => {
     const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id);
     const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null;
@@ -658,6 +704,7 @@ export default function Home() {
     if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
+
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const socialFeedPosts = allPosts.filter(post =>
     (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
@@ -666,41 +713,46 @@ export default function Home() {
     !post.is_hidden &&
     new Date(post.created_date) >= threeDaysAgo
   );
+
   const activityFeed = (() => {
     const activities = [];
     const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
-    const exerciseNames = { bench_press:'Bench Press', squat:'Squat', deadlift:'Deadlift', overhead_press:'Overhead Press', barbell_row:'Barbell Row', power_clean:'Power Clean' };
+    const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' };
     friendPRs.forEach(lift => {
       const friend = friends.find(f => f.friend_id === lift.member_id);
       if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
-        activities.push({ id:`pr-${lift.id}`, type:'pr', friendId:lift.member_id, friendName:friend?.friend_name||lift.member_name, friendAvatar:friend?.friend_avatar, message:`hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise]||lift.exercise}`, timestamp:new Date(lift.created_date), emoji:'🏆' });
+        activities.push({ id: `pr-${lift.id}`, type: 'pr', friendId: lift.member_id, friendName: friend?.friend_name || lift.member_name, friendAvatar: friend?.friend_avatar, message: `hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`, timestamp: new Date(lift.created_date), emoji: '🏆' });
       }
     });
     notifications.forEach(n => {
-      const text = (n.message||n.title||'').toLowerCase();
+      const text = (n.message || n.title || '').toLowerCase();
       if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
-        activities.push({ id:`notif-${n.id}`, type:'notification', message:n.message||n.title, timestamp:new Date(n.created_date) });
+        activities.push({ id: `notif-${n.id}`, type: 'notification', message: n.message || n.title, timestamp: new Date(n.created_date) });
       }
     });
-    return activities.sort((a,b) => b.timestamp - a.timestamp);
+    return activities.sort((a, b) => b.timestamp - a.timestamp);
   })();
+
   const activityCards = (() => {
     const cards = [];
     const lastCI = allCheckIns.filter(c => c.user_id === currentUser?.id)[0];
     const daysSince = lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null;
-    if (daysSince && daysSince >= 3) cards.push({ id:'nudge-checkin', type:'nudge', title:'Time to Check In', message:`You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji:'⏰' });
+    if (daysSince && daysSince >= 3) cards.push({ id: 'nudge-checkin', type: 'nudge', title: 'Time to Check In', message: `You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji: '⏰' });
     friendsWithActivity.forEach(friend => {
-      if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id:`inactive-${friend.friend_id}`, type:'friend-inactive', title:`${friend.friend_name} Needs a Nudge`, message:`${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji:'👋' });
+      if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id: `inactive-${friend.friend_id}`, type: 'friend-inactive', title: `${friend.friend_name} Needs a Nudge`, message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji: '👋' });
     });
     return cards;
   })();
+
   const filteredActivityCards = activityCards.filter(c => !dismissedCardIds.has(c.id));
   const filteredSearchResults = searchResults.filter(u => !friendIdList.includes(u.id));
+
   const dismissCard = (id) => {
     const updated = new Set(dismissedCardIds).add(id);
     setDismissedCardIds(updated);
     localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
   };
+
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '', previousExercises = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -740,6 +792,7 @@ export default function Home() {
       }
     }, 3500);
   };
+
   const handleStreakVariantSelect = (variant) => {
     if (currentUser) {
       setShowStreakVariants(false);
@@ -747,6 +800,7 @@ export default function Home() {
       base44.auth.updateMe({ streak_variant: variant });
     }
   };
+
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const todayCount = todayCheckInsForQuery.length;
@@ -759,6 +813,7 @@ export default function Home() {
     ];
     return todayCount > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
   };
+
   const viewSummaryBtnStyle = {
     marginTop: 4, width: '100%',
     padding: '7px 0',
@@ -771,6 +826,7 @@ export default function Home() {
     transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
     touchAction: 'manipulation',
   };
+
   const viewWorkoutBtnStyle = {
     marginTop: 10, width: '100%',
     padding: '8px 0',
@@ -785,7 +841,9 @@ export default function Home() {
     WebkitTapHighlightColor: 'transparent',
     touchAction: 'manipulation',
   };
+
   const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
+
   const HeaderContent = ({ compact = false }) => (
     <div className={`max-w-4xl mx-auto flex items-center justify-center relative px-4 ${compact ? 'py-0' : ''}`}>
       <button
@@ -826,6 +884,80 @@ export default function Home() {
       </button>
     </div>
   );
+
+  // ── UPDATED ArrowButton with proper 3D bevel effect ──
+  const ArrowButton = ({ direction, disabled, onPress }) => {
+    const [pressed, setPressed] = useState(false);
+    const facePoints = direction === 'left'
+      ? '8,1 1,6.5 8,12'
+      : '1,1 8,6.5 1,12';
+    const shadowPoints = direction === 'left'
+      ? '9,2 2,7.5 9,13'
+      : '0,2 7,7.5 0,13';
+    const highlightPoints = direction === 'left'
+      ? '8,1 1,6.5'
+      : '1,1 8,6.5';
+    const shadowEdgePoints = direction === 'left'
+      ? '1,6.5 8,12'
+      : '8,6.5 1,12';
+    return (
+      <button
+        onPointerDown={() => { if (!disabled) setPressed(true); }}
+        onPointerUp={() => { if (!disabled && pressed) { setPressed(false); onPress(); } }}
+        onPointerLeave={() => setPressed(false)}
+        onPointerCancel={() => setPressed(false)}
+        style={{
+          width: 32,
+          height: 52,
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          cursor: disabled ? 'default' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          outline: 'none',
+          opacity: disabled ? 0 : pressed ? 0.5 : 1,
+          transform: pressed ? 'scale(0.78) translateY(2px)' : 'scale(1)',
+          transition: 'opacity 0.1s ease, transform 0.1s ease',
+          pointerEvents: disabled ? 'none' : 'auto',
+        }}>
+        <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
+          {/* Drop shadow underside — shifted down-right for 3D depth */}
+          <polygon
+            points={shadowPoints}
+            fill="rgba(0,0,0,0.55)"
+            transform="translate(0.6,1.4)"
+          />
+          {/* Main face */}
+          <polygon
+            points={facePoints}
+            fill="#dde4ef"
+          />
+          {/* Top highlight bevel — lighter edge, catches "light from above" */}
+          <polyline
+            points={highlightPoints}
+            stroke="rgba(255,255,255,0.9)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* Bottom shadow bevel — darker edge for depth */}
+          <polyline
+            points={shadowEdgePoints}
+            stroke="rgba(0,0,0,0.4)"
+            strokeWidth="1"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </button>
+    );
+  };
+
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -853,6 +985,7 @@ export default function Home() {
         <div className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={true} />
         </div>
+
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
             <>
@@ -896,6 +1029,7 @@ export default function Home() {
               </div>
             </>
           )}
+
           {memberGym && (
             <div className="space-y-3">
               {currentUser?.custom_workout_types ? (
@@ -914,6 +1048,7 @@ export default function Home() {
               )}
             </div>
           )}
+
           {/* ── Community card ── */}
           {memberGym?.id && (
             <div
@@ -962,6 +1097,7 @@ export default function Home() {
               </Link>
             </div>
           )}
+
           {/* ── Weekly workout circles with week navigation ── */}
           {memberGym?.id && (() => {
             const trainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
@@ -980,74 +1116,8 @@ export default function Home() {
             const todayDay = todayDow === 0 ? 7 : todayDow;
             const isFutureWeek = weekOffset > 0;
 
-            // ── Arrow button: small filled white triangle with subtle 3D shadow ──
-            const ArrowButton = ({ direction, disabled, onPress }) => {
-              const [pressed, setPressed] = useState(false);
-              // Filled triangle pointing left or right
-              // viewBox 0 0 9 13, triangle occupies most of it
-              const points = direction === 'left'
-                ? '8,1 1,6.5 8,12'   // left-pointing filled triangle
-                : '1,1 8,6.5 1,12';  // right-pointing filled triangle
-              return (
-                <button
-                  onPointerDown={() => { if (!disabled) setPressed(true); }}
-                  onPointerUp={() => { if (!disabled && pressed) { setPressed(false); onPress(); } }}
-                  onPointerLeave={() => setPressed(false)}
-                  onPointerCancel={() => setPressed(false)}
-                  style={{
-                    width: 24,
-                    height: 44,
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    cursor: disabled ? 'default' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation',
-                    outline: 'none',
-                    opacity: disabled ? 0 : pressed ? 0.6 : 1,
-                    transform: pressed ? 'scale(0.82)' : 'scale(1)',
-                    transition: 'opacity 0.1s ease, transform 0.1s ease',
-                    pointerEvents: disabled ? 'none' : 'auto',
-                  }}>
-                  <svg width="9" height="13" viewBox="0 0 9 13" fill="none">
-                    <defs>
-                      <filter id={`tri-shadow-${direction}`} x="-40%" y="-40%" width="180%" height="180%">
-                        {/* bottom-right hard shadow for 3D press-out look */}
-                        <feDropShadow dx="0" dy="1.5" stdDeviation="0.4" floodColor="rgba(0,0,0,0.7)" floodOpacity="1" />
-                      </filter>
-                    </defs>
-                    {/* Dark underside offset — gives the raised-face 3D illusion */}
-                    <polygon
-                      points={direction === 'left' ? '9,2 2,7.5 9,13' : '0,2 7,7.5 0,13'}
-                      fill="rgba(0,0,0,0.45)"
-                    />
-                    {/* Main face — pure white */}
-                    <polygon
-                      points={points}
-                      fill="#ffffff"
-                      filter={`url(#tri-shadow-${direction})`}
-                    />
-                    {/* Top-left highlight edge for 3D bevel */}
-                    <polygon
-                      points={points}
-                      fill="none"
-                      stroke="rgba(255,255,255,0.6)"
-                      strokeWidth="0.6"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              );
-            };
-
             return (
-              // Outer wrapper: full width, position relative so arrows can sit at true edges
-              // overflow:visible so circles aren't clipped; arrows positioned absolute outside dot area
-              // 108px gives enough room for the sine wave amplitude + today ring without any clipping
+              // Outer wrapper: full width, position relative so arrows sit at true edges
               <div style={{ position: 'relative', width: '100%', padding: '0', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
@@ -1061,7 +1131,10 @@ export default function Home() {
                 )}
 
                 {/* ── Left arrow — absolute, flush to left edge ── */}
-                <div style={{ position: 'absolute', left: -18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                <div style={{
+                  position: 'absolute', left: -24, top: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', zIndex: 10,
+                }}>
                   <ArrowButton
                     direction="left"
                     disabled={weekOffset <= -1}
@@ -1075,7 +1148,10 @@ export default function Home() {
                 </div>
 
                 {/* ── Right arrow — absolute, flush to right edge ── */}
-                <div style={{ position: 'absolute', right: -18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                <div style={{
+                  position: 'absolute', right: -24, top: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', zIndex: 10,
+                }}>
                   <ArrowButton
                     direction="right"
                     disabled={weekOffset >= 1}
@@ -1088,7 +1164,7 @@ export default function Home() {
                   />
                 </div>
 
-                {/* ── Sliding dots track: clip horizontally for slide anim, but open vertically so wave dots never cut ── */}
+                {/* ── Sliding dots track ── */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
@@ -1123,6 +1199,7 @@ export default function Home() {
                         const workoutLog = logsByDay[day];
                         const showViewWorkout = !done && !isRestDay && !isMissed && (isFutureWeek || day > todayDay || isTodayCircle);
                         const hasBubbleBtn = (done && !isRestDay && workoutLog) || showViewWorkout;
+
                         const getBg = () => {
                           if (isRestDay) {
                             if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
@@ -1156,6 +1233,7 @@ export default function Home() {
                           if (weekOffset !== 0) return 'none';
                           return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
                         };
+
                         return (
                           <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
                             {isTodayCircle && (
@@ -1267,10 +1345,11 @@ export default function Home() {
                       })}
                     </motion.div>
                   </AnimatePresence>
-                </div>{/* end overflow:hidden track */}
+                </div>
               </div>
             );
           })()}
+
           {/* ── Fixed bubble ── */}
           {activeCircleDay !== null && bubblePos && (() => {
             const ARROW_H = 7;
@@ -1345,7 +1424,9 @@ export default function Home() {
               </motion.div>
             );
           })()}
+
           {memberGym?.id && <QuoteCarousel />}
+
           {/* ── Social Feed ── */}
           <ActivityFeedSection
             friends={friends}
@@ -1356,6 +1437,7 @@ export default function Home() {
             queryClient={queryClient}
             dismissCard={dismissCard}
           />
+
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
               <div className="flex items-center justify-between gap-4">
@@ -1371,6 +1453,7 @@ export default function Home() {
           )}
         </div>
       </div>
+
       {/* Streak Freeze Animation */}
       <StreakFreezeAnimation
         isOpen={showFreezeAnimation}
@@ -1378,12 +1461,14 @@ export default function Home() {
         finalFreezeCount={freezeAnimationData.finalFreezeCount}
         onComplete={() => setShowFreezeAnimation(false)}
       />
+
       {/* Streak Loss Animation */}
       <StreakLossAnimation
         isOpen={showStreakLossAnimation}
         previousStreak={streakLossAnimationData.previousStreak}
         onComplete={() => setShowStreakLossAnimation(false)}
       />
+
       <StreakCelebration
         showStreakCelebration={showStreakCelebration}
         celebrationStreakNum={celebrationStreakNum}
@@ -1402,9 +1487,11 @@ export default function Home() {
         setShowDaysCelebration={setShowDaysCelebration}
         setJustLoggedDay={setJustLoggedDay}
       />
+
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} />
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} gymCount={gymMemberships.length} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
+
       <FriendsSection
         showFriendsModal={showFriendsModal}
         setShowFriendsModal={(val) => {
@@ -1435,8 +1522,10 @@ export default function Home() {
         cancelFriendMutation={cancelFriendMutation}
         addFriendMutation={addFriendMutation}
       />
+
       {/* ── Workout Summary Modal ── */}
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
+
       {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
@@ -1492,7 +1581,6 @@ export default function Home() {
                       <div className="space-y-2 -mx-2">
                         {groups.map((group) => {
                           const isGrouped = group.items.length > 1;
-
                           if (!isGrouped) {
                             const { ex, index } = group.items[0];
                             const exName = ex.exercise || ex.name || ex.title || `Exercise ${index + 1}`;
