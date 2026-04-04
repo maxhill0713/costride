@@ -878,9 +878,7 @@ export default function TabContent({
       </div>
 
       {/* FAB */}
-      <button className="fg-fab" onClick={() => openModal('post')}>
-        <Plus style={{ width: 14, height: 14 }} /> Create
-      </button>
+
     </>
   );
 }
