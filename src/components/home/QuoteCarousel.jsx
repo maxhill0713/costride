@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
 const quotes = [
-{
-  text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
-  author: "Aristotle",
-  context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
-},
-{
-  text: "I am testing code here.",
-  author: "Angela Davis",
-  context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
-},
-{
-  text: "The only thing we have to fear is fear itself.",
-  author: "Franklin D. Roosevelt",
-  context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
-}];
+  {
+    text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+    author: "Aristotle",
+    context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
+  },
+  {
+    text: "I am testing code here.",
+    author: "Angela Davis",
+    context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
+  },
+  {
+    text: "The only thing we have to fear is fear itself.",
+    author: "Franklin D. Roosevelt",
+    context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
+  }
+];
 
-// Reduced by ~5%: 212 → 201. Dots and chevron slightly tightened to match.
-const COLLAPSED_H  = 201;
+const COLLAPSED_H  = 175;
 const DOTS_H       = 26;
 const CHEVRON_H    = 30;
 const QUOTE_AREA_H = COLLAPSED_H - DOTS_H - CHEVRON_H;
@@ -71,7 +71,7 @@ export default function QuoteCarousel() {
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
       <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
-      {/* Dots — slightly tighter top padding */}
+      {/* Dots */}
       <div className="flex justify-center gap-2 pt-2.5 pb-1 relative z-10 flex-shrink-0" style={{ height: DOTS_H }}>
         <LayoutGroup>
           {quotes.map((_, i) =>
@@ -87,7 +87,7 @@ export default function QuoteCarousel() {
         </LayoutGroup>
       </div>
 
-      {/* Quote + author — fixed height */}
+      {/* Quote only — no author */}
       <div
         className="relative px-6 z-10 flex-shrink-0"
         style={{ height: QUOTE_AREA_H, overflow: 'hidden' }}>
@@ -112,17 +112,14 @@ export default function QuoteCarousel() {
               justifyContent: 'center',
               cursor: 'grab',
             }}>
-            <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
+            <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight" style={{ margin: 0 }}>
               "{quotes[current].text}"
-            </p>
-            <p className="mt-2 text-slate-300 text-sm font-medium tracking-widest opacity-90">
-              — {quotes[current].author}
             </p>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Context — expands dynamically */}
+      {/* Expanded context with author at top */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -133,14 +130,19 @@ export default function QuoteCarousel() {
             transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1 }}
             style={{ overflow: 'hidden' }}
             className="px-6 z-10 flex-shrink-0">
-            <p className="text-slate-400 text-sm text-center leading-relaxed font-light py-3">
-              {quotes[current].context}
-            </p>
+            <div style={{ paddingTop: '10px', paddingBottom: '12px', textAlign: 'center' }}>
+              <p className="text-slate-300 text-xs font-medium tracking-widest" style={{ margin: '0 0 6px 0' }}>
+                — {quotes[current].author}
+              </p>
+              <p className="text-slate-400 text-sm text-center leading-relaxed font-light" style={{ margin: 0 }}>
+                {quotes[current].context}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Chevron — slightly tighter */}
+      {/* Chevron */}
       <div className="flex justify-center pb-1.5 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
         <motion.button
           onClick={() => setExpanded(!expanded)}
