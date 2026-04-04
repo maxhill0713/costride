@@ -924,7 +924,7 @@ export default function Home() {
         onPointerLeave={() => setPressed(false)}
         onPointerCancel={() => setPressed(false)}
         style={{
-          width: 32,
+          width: 22,
           height: 52,
           background: 'none',
           border: 'none',
@@ -1160,9 +1160,9 @@ export default function Home() {
                     position: 'fixed',
                     left: 0,
                     top: arrowTop - 26,
-                    width: 36,
+                    width: 22,
                     height: 52,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
                     zIndex: 202,
                   }}>
                     <ArrowButton
@@ -1184,9 +1184,9 @@ export default function Home() {
                     position: 'fixed',
                     right: 0,
                     top: arrowTop - 26,
-                    width: 36,
+                    width: 22,
                     height: 52,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                     zIndex: 202,
                   }}>
                     <ArrowButton
