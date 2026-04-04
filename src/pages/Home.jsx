@@ -980,14 +980,14 @@ export default function Home() {
             const todayDay = todayDow === 0 ? 7 : todayDow;
             const isFutureWeek = weekOffset > 0;
 
-            // ── Arrow button: tiny transparent triangle, no background ──
+            // ── Arrow button: small filled white triangle with subtle 3D shadow ──
             const ArrowButton = ({ direction, disabled, onPress }) => {
               const [pressed, setPressed] = useState(false);
-              // direction: 'left' | 'right'
-              // Points left = chevron facing left; points right = chevron facing right
+              // Filled triangle pointing left or right
+              // viewBox 0 0 9 13, triangle occupies most of it
               const points = direction === 'left'
-                ? '8,2 2,6 8,10'   // left-pointing triangle
-                : '2,2 8,6 2,10';  // right-pointing triangle
+                ? '8,1 1,6.5 8,12'   // left-pointing filled triangle
+                : '1,1 8,6.5 1,12';  // right-pointing filled triangle
               return (
                 <button
                   onPointerDown={() => { if (!disabled) setPressed(true); }}
@@ -995,8 +995,8 @@ export default function Home() {
                   onPointerLeave={() => setPressed(false)}
                   onPointerCancel={() => setPressed(false)}
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 44,
                     background: 'none',
                     border: 'none',
                     padding: 0,
@@ -1005,22 +1005,26 @@ export default function Home() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    marginTop: 6,
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation',
                     outline: 'none',
-                    opacity: disabled ? 0 : pressed ? 0.4 : 0.45,
-                    transform: pressed ? 'scale(0.8)' : 'scale(1)',
+                    opacity: disabled ? 0 : pressed ? 0.55 : 0.5,
+                    transform: pressed ? 'scale(0.82)' : 'scale(1)',
                     transition: 'opacity 0.1s ease, transform 0.1s ease',
                     pointerEvents: disabled ? 'none' : 'auto',
                   }}>
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-                    <polyline
+                  <svg width="9" height="13" viewBox="0 0 9 13" fill="none" style={{ filter: pressed ? 'none' : 'drop-shadow(0 1.5px 1px rgba(0,0,0,0.55)) drop-shadow(0 0.5px 0 rgba(0,0,0,0.8))' }}>
+                    {/* Main filled triangle */}
+                    <polygon
+                      points={points}
+                      fill="white"
+                    />
+                    {/* Top-edge highlight for 3D effect */}
+                    <polygon
                       points={points}
                       fill="none"
-                      stroke="white"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
+                      stroke="rgba(255,255,255,0.55)"
+                      strokeWidth="0.7"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -1029,7 +1033,9 @@ export default function Home() {
             };
 
             return (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '12px 0', height: 88, overflow: 'hidden', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              // Outer wrapper: full width, position relative so arrows can sit at true edges
+              // overflow:visible so circles aren't clipped; arrows positioned absolute outside dot area
+              <div style={{ position: 'relative', width: '100%', padding: '12px 0', height: 88, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1041,29 +1047,41 @@ export default function Home() {
                   />
                 )}
 
-                {/* ── Left arrow ── */}
-                <ArrowButton
-                  direction="left"
-                  disabled={weekOffset <= -1}
-                  onPress={() => {
-                    setSlideDirection(-1);
-                    setWeekOffset(w => w - 1);
-                    setActiveCircleDay(null);
-                    setBubblePos(null);
-                  }}
-                />
+                {/* ── Left arrow — absolute, flush to left edge ── */}
+                <div style={{ position: 'absolute', left: -14, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                  <ArrowButton
+                    direction="left"
+                    disabled={weekOffset <= -1}
+                    onPress={() => {
+                      setSlideDirection(-1);
+                      setWeekOffset(w => w - 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
+                    }}
+                  />
+                </div>
 
-                {/* ── Sliding dots track ── */}
-                {/* overflow:hidden clips the sliding motion so dots visibly slide in/out */}
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 88 }}>
+                {/* ── Right arrow — absolute, flush to right edge ── */}
+                <div style={{ position: 'absolute', right: -14, top: 0, bottom: 0, display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                  <ArrowButton
+                    direction="right"
+                    disabled={weekOffset >= 1}
+                    onPress={() => {
+                      setSlideDirection(1);
+                      setWeekOffset(w => w + 1);
+                      setActiveCircleDay(null);
+                      setBubblePos(null);
+                    }}
+                  />
+                </div>
+
+                {/* ── Sliding dots track: overflow hidden only on this inner div to clip slide animation ── */}
+                <div style={{ overflow: 'hidden', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
                       key={weekOffset}
                       custom={slideDirection}
                       variants={{
-                        // enter from the direction of travel:
-                        // going left (past) → new week enters from left (negative x)
-                        // going right (future) → new week enters from right (positive x)
                         enter: (dir) => ({ x: dir < 0 ? '-100%' : '100%', opacity: 1 }),
                         center: { x: 0, opacity: 1 },
                         exit: (dir) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 1 }),
@@ -1236,19 +1254,7 @@ export default function Home() {
                       })}
                     </motion.div>
                   </AnimatePresence>
-                </div>
-
-                {/* ── Right arrow ── */}
-                <ArrowButton
-                  direction="right"
-                  disabled={weekOffset >= 1}
-                  onPress={() => {
-                    setSlideDirection(1);
-                    setWeekOffset(w => w + 1);
-                    setActiveCircleDay(null);
-                    setBubblePos(null);
-                  }}
-                />
+                </div>{/* end overflow:hidden track */}
               </div>
             );
           })()}
