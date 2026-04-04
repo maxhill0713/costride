@@ -682,12 +682,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         {/* EXPANDED STATE — spring animation matching QuoteCarousel */}
         <AnimatePresence>
           {isExpanded &&
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1, opacity: { duration: 0.2 } }}
-            style={{ overflow: 'hidden', transformOrigin: 'top' }}>
+<motion.div
+  initial={{ opacity: 0, y: -6 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -6 }}
+  transition={{ duration: 0.18, ease: 'easeOut' }}
+  style={{ transformOrigin: 'top' }}>
 
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
