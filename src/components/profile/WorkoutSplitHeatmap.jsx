@@ -5,7 +5,7 @@ import {
 } from 'date-fns';
 import { ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
+import WorkoutSummaryModal from '../home/WorkoutSummaryModal';
 
 const MONTH_NAMES = [
   'January','February','March','April','May','June',
