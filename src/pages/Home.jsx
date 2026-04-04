@@ -885,7 +885,7 @@ export default function Home() {
     </div>
   );
 
-  // ── UPDATED ArrowButton with proper 3D bevel effect ──
+  // ── ArrowButton — subtle slate-grey to match page chevrons ──
   const ArrowButton = ({ direction, disabled, onPress }) => {
     const [pressed, setPressed] = useState(false);
     const facePoints = direction === 'left'
@@ -919,34 +919,34 @@ export default function Home() {
           WebkitTapHighlightColor: 'transparent',
           touchAction: 'manipulation',
           outline: 'none',
-          opacity: disabled ? 0 : pressed ? 0.5 : 1,
+          opacity: disabled ? 0 : pressed ? 0.4 : 1,
           transition: 'opacity 0.1s ease',
           pointerEvents: disabled ? 'none' : 'auto',
         }}>
         <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
-          {/* Drop shadow underside — shifted down-right for 3D depth */}
+          {/* Drop shadow — shifted for 3D depth */}
           <polygon
             points={shadowPoints}
-            fill="rgba(0,0,0,0.55)"
+            fill="rgba(0,0,0,0.4)"
             transform="translate(0.6,1.4)"
           />
-          {/* Main face */}
+          {/* Main face — subtle slate grey matching page chevrons */}
           <polygon
             points={facePoints}
-            fill="#dde4ef"
+            fill="#64748b"
           />
-          {/* Top highlight bevel — lighter edge, catches "light from above" */}
+          {/* Top highlight bevel */}
           <polyline
             points={highlightPoints}
-            stroke="rgba(255,255,255,0.9)"
+            stroke="rgba(148,163,184,0.5)"
             strokeWidth="1.2"
             strokeLinecap="round"
             fill="none"
           />
-          {/* Bottom shadow bevel — darker edge for depth */}
+          {/* Bottom shadow bevel */}
           <polyline
             points={shadowEdgePoints}
-            stroke="rgba(0,0,0,0.4)"
+            stroke="rgba(0,0,0,0.35)"
             strokeWidth="1"
             strokeLinecap="round"
             fill="none"
