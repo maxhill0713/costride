@@ -1,44 +1,67 @@
 /**
- * GymRetentionDashboard.jsx
- * Retention Intelligence — premium redesign.
+ * GymRetentionDashboard.jsx — Refined · Premium · Calm
  *
- * Aesthetic: Obsidian Intelligence.
- * Near-monochrome. Typography carries hierarchy. Color is signal, not decoration.
- * Red appears once (revenue at risk). Amber appears once (retention rate). That's it.
- *
- * Compatible prop interface:
- *   selectedGym, allMemberships, atRisk, retentionRate, classes, isLoading
+ * Same token philosophy as MembersPageAI.jsx:
+ *  - Near-monochrome base. Typography carries hierarchy.
+ *  - Red:   revenue at risk + high-risk members only
+ *  - Amber: retention rate below target only
+ *  - Green: live indicator + positive trend only
+ *  - Color is a signal, never decoration.
  */
 
 import { useState } from 'react';
 import {
   TrendingDown, TrendingUp, Users, Activity, Zap,
-  Target, AlertTriangle, ChevronDown, ChevronUp,
-  Calendar, MessageSquare, Bell, ArrowRight, Info,
-  MapPin, Star, Award, Edit3,
+  AlertTriangle, ChevronDown, ChevronUp,
+  MessageSquare, Bell, ArrowRight, Info,
+  MapPin, Star, Award, Edit3, ArrowUpRight,
 } from 'lucide-react';
 
-// ─── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
-  bg:        '#050810',
-  surface:   '#0a0f1e',
-  raised:    '#0d1225',
-  elevated:  '#101929',
-  border:    'rgba(255,255,255,0.04)',
-  borderSub: 'rgba(255,255,255,0.03)',
-  borderHi:  'rgba(255,255,255,0.07)',
-  t1:  '#eef2ff',
-  t2:  '#8b95b3',
-  t3:  '#4b5578',
-  danger:  '#ef4444',
-  warn:    '#f59e0b',
-  ok:      '#10b981',
-  divider: 'rgba(255,255,255,0.03)',
+/* ── Design tokens ──────────────────────────────────────────────────
+   Identical system to MembersPageAI.jsx — drop-in compatible.
+──────────────────────────────────────────────────────────────────── */
+const T = {
+  bg:          '#08090e',
+  surface:     '#0f1016',
+  surfaceEl:   '#14151d',
+  surfaceHov:  '#191a24',
+  surfacePop:  '#1c1d28',
+  border:      '#1e2030',
+  borderEl:    '#262840',
+  borderFoc:   '#383c5c',
+  divider:     '#141520',
+
+  t1: '#ededf0',
+  t2: '#9191a4',
+  t3: '#525266',
+  t4: '#2e2e42',
+
+  accent:    '#4c6ef5',
+  accentDim: '#1a2048',
+  accentBrd: '#263070',
+
+  /* Desaturated — used sparingly */
+  red:      '#c0392b',
+  redDim:   '#160f0d',
+  redBrd:   '#2e1614',
+
+  amber:    '#b07b30',
+  amberDim: '#161008',
+  amberBrd: '#2a2010',
+
+  green:    '#2d8a62',
+  greenDim: '#091912',
+  greenBrd: '#132e20',
+
+  r:   '8px',
+  rsm: '6px',
+  sh:  '0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)',
+  shMd:'0 4px 16px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.025)',
 };
 
-const F = "'Manrope', 'DM Sans', system-ui, sans-serif";
+const F = "'Geist','DM Sans','Helvetica Neue',Arial,sans-serif";
 
-// ─── Mock data ─────────────────────────────────────────────────────────────────
+/* ── Mock data ──────────────────────────────────────────────────── */
 const MOCK = {
   gym: {
     name: 'Iron & Oak Fitness',
@@ -57,102 +80,136 @@ const MOCK = {
     engagementRate: 70, pricePerMember: 65, avgCheckInsWeek: 2.3,
   },
   focus: [
-    { urgent: true,  headline: "12 members haven't checked in for 14+ days",         sub: '£780 per month currently at risk of cancellation',              cta: 'View members'    },
-    { urgent: false, headline: '4 of 9 new members haven\'t returned after Week 1',  sub: 'Early drop-off is the leading churn indicator',                 cta: 'Review segment'  },
-    { urgent: false, headline: 'Thursday evening CrossFit is 43% below capacity',    sub: 'Consider promoting to at-risk members as a re-engagement hook', cta: null              },
+    { urgent: true,  headline: "12 members haven't checked in for 14+ days",        sub: '£780 per month currently at risk of cancellation',              cta: 'View members'   },
+    { urgent: false, headline: "4 of 9 new members haven't returned after Week 1",  sub: 'Early drop-off is the leading churn indicator.',                cta: 'Review segment' },
+    { urgent: false, headline: 'Thursday evening CrossFit is 43% below capacity',   sub: 'Consider promoting to at-risk members as a re-engagement hook.', cta: null             },
   ],
   atRiskMembers: [
-    { id: 1, name: 'Jamie L.',  initials: 'JL', lastSeen: '21 days', driver: 'No check-ins',           tier: 'Monthly', riskLevel: 'high'   },
-    { id: 2, name: 'Priya S.',  initials: 'PS', lastSeen: '18 days', driver: 'Booking frequency drop',  tier: 'Monthly', riskLevel: 'high'   },
-    { id: 3, name: 'Marcus D.', initials: 'MD', lastSeen: '17 days', driver: 'No check-ins',           tier: 'Monthly', riskLevel: 'high'   },
-    { id: 4, name: 'Ryan W.',   initials: 'RW', lastSeen: '22 days', driver: 'No check-ins',           tier: 'Monthly', riskLevel: 'high'   },
-    { id: 5, name: 'Sofia R.',  initials: 'SR', lastSeen: '15 days', driver: 'Streak broken',          tier: 'Monthly', riskLevel: 'medium' },
-    { id: 6, name: 'Tom K.',    initials: 'TK', lastSeen: '14 days', driver: 'Only 1 class / week',    tier: 'Monthly', riskLevel: 'medium' },
-    { id: 7, name: 'Aisha M.',  initials: 'AM', lastSeen: '14 days', driver: 'Booking frequency drop', tier: 'Monthly', riskLevel: 'medium' },
-    { id: 8, name: 'Leila H.',  initials: 'LH', lastSeen: '16 days', driver: 'Streak broken',         tier: 'Monthly', riskLevel: 'medium' },
+    { id:1, name:'Jamie L.',  initials:'JL', lastSeen:'21 days', driver:'No check-ins',            tier:'Monthly', riskLevel:'high'   },
+    { id:2, name:'Priya S.',  initials:'PS', lastSeen:'18 days', driver:'Booking frequency drop',  tier:'Monthly', riskLevel:'high'   },
+    { id:3, name:'Marcus D.', initials:'MD', lastSeen:'17 days', driver:'No check-ins',            tier:'Monthly', riskLevel:'high'   },
+    { id:4, name:'Ryan W.',   initials:'RW', lastSeen:'22 days', driver:'No check-ins',            tier:'Monthly', riskLevel:'high'   },
+    { id:5, name:'Sofia R.',  initials:'SR', lastSeen:'15 days', driver:'Streak broken',           tier:'Monthly', riskLevel:'medium' },
+    { id:6, name:'Tom K.',    initials:'TK', lastSeen:'14 days', driver:'Only 1 class / week',     tier:'Monthly', riskLevel:'medium' },
+    { id:7, name:'Aisha M.',  initials:'AM', lastSeen:'14 days', driver:'Booking frequency drop',  tier:'Monthly', riskLevel:'medium' },
+    { id:8, name:'Leila H.',  initials:'LH', lastSeen:'16 days', driver:'Streak broken',          tier:'Monthly', riskLevel:'medium' },
   ],
   riskDrivers: [
-    { label: 'No check-ins (14+ days)',    n: 5, pct: 42 },
-    { label: 'Booking frequency declined', n: 4, pct: 33 },
-    { label: 'Attendance streak broken',   n: 3, pct: 25 },
+    { label:'No check-ins (14+ days)',     n:5, pct:42 },
+    { label:'Booking frequency declined',  n:4, pct:33 },
+    { label:'Attendance streak broken',    n:3, pct:25 },
   ],
   dropOff: [
-    { label: 'Joined',  n: 87, pct: 100 },
-    { label: 'Week 1',  n: 79, pct: 91  },
-    { label: 'Week 2',  n: 68, pct: 78  },
-    { label: 'Month 1', n: 61, pct: 70  },
-    { label: 'Month 3', n: 52, pct: 60  },
+    { label:'Joined',  n:87, pct:100 },
+    { label:'Week 1',  n:79, pct:91  },
+    { label:'Week 2',  n:68, pct:78  },
+    { label:'Month 1', n:61, pct:70  },
+    { label:'Month 3', n:52, pct:60  },
   ],
   peakHeatmap: {
-    days:  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    slots: ['6am', '9am', '12pm', '3pm', '6pm', '8pm'],
+    days:  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    slots: ['6am','9am','12pm','3pm','6pm','8pm'],
     data: [
-      [7, 4, 3, 1, 8, 9, 2],
-      [5, 3, 2, 1, 4, 7, 3],
-      [4, 5, 6, 3, 4, 5, 2],
-      [2, 2, 2, 1, 2, 3, 4],
-      [9,10, 8, 5,10, 6, 3],
-      [3, 4, 3, 2, 3, 2, 1],
+      [7,4,3,1,8,9,2],
+      [5,3,2,1,4,7,3],
+      [4,5,6,3,4,5,2],
+      [2,2,2,1,2,3,4],
+      [9,10,8,5,10,6,3],
+      [3,4,3,2,3,2,1],
     ],
   },
   trends: {
-    months:     ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
-    members:    [71, 73, 77, 80, 84, 87],
-    checkIns:   [138, 130, 155, 148, 162, 158],
-    retention:  [72, 71, 69, 70, 69, 68],
-    engagement: [73, 71, 70, 71, 70, 70],
+    months:     ['Nov','Dec','Jan','Feb','Mar','Apr'],
+    members:    [71,73,77,80,84,87],
+    checkIns:   [138,130,155,148,162,158],
+    retention:  [72,71,69,70,69,68],
+    engagement: [73,71,70,71,70,70],
   },
   classes: [
-    { name: 'Morning WOD',       coach: 'Sam T',  avg: 13, cap: 15, trend:  1 },
-    { name: 'Lunchtime HIIT',    coach: 'Sam T',  avg: 8,  cap: 12, trend: -2 },
-    { name: 'Evening CrossFit',  coach: 'Alex R', avg: 9,  cap: 16, trend: -3 },
-    { name: 'Saturday Open Gym', coach: 'Alex R', avg: 11, cap: 20, trend:  2 },
+    { name:'Morning WOD',       coach:'Sam T',  avg:13, cap:15, trend: 1  },
+    { name:'Lunchtime HIIT',    coach:'Sam T',  avg:8,  cap:12, trend:-2  },
+    { name:'Evening CrossFit',  coach:'Alex R', avg:9,  cap:16, trend:-3  },
+    { name:'Saturday Open Gym', coach:'Alex R', avg:11, cap:20, trend: 2  },
   ],
   newMembers: [
-    { name: 'Nina B.',   initials: 'NB', days: 8,  checkIns: 3, status: 'active'   },
-    { name: 'Carl J.',   initials: 'CJ', days: 11, checkIns: 1, status: 'at-risk'  },
-    { name: 'Yasmin O.', initials: 'YO', days: 14, checkIns: 0, status: 'inactive' },
-    { name: 'Liam P.',   initials: 'LP', days: 6,  checkIns: 2, status: 'active'   },
-    { name: 'Rosa T.',   initials: 'RT', days: 9,  checkIns: 0, status: 'inactive' },
-    { name: 'Omar F.',   initials: 'OF', days: 5,  checkIns: 4, status: 'active'   },
-    { name: 'Ellie V.',  initials: 'EV', days: 12, checkIns: 0, status: 'inactive' },
-    { name: 'Ben C.',    initials: 'BC', days: 7,  checkIns: 1, status: 'at-risk'  },
-    { name: 'Zoe W.',    initials: 'ZW', days: 3,  checkIns: 2, status: 'active'   },
+    { name:'Nina B.',   initials:'NB', days:8,  checkIns:3, status:'active'   },
+    { name:'Carl J.',   initials:'CJ', days:11, checkIns:1, status:'at-risk'  },
+    { name:'Yasmin O.', initials:'YO', days:14, checkIns:0, status:'inactive' },
+    { name:'Liam P.',   initials:'LP', days:6,  checkIns:2, status:'active'   },
+    { name:'Rosa T.',   initials:'RT', days:9,  checkIns:0, status:'inactive' },
+    { name:'Omar F.',   initials:'OF', days:5,  checkIns:4, status:'active'   },
+    { name:'Ellie V.',  initials:'EV', days:12, checkIns:0, status:'inactive' },
+    { name:'Ben C.',    initials:'BC', days:7,  checkIns:1, status:'at-risk'  },
+    { name:'Zoe W.',    initials:'ZW', days:3,  checkIns:2, status:'active'   },
   ],
 };
 
-// ─── Primitives ─────────────────────────────────────────────────────────────────
+/* ── Primitives ─────────────────────────────────────────────────── */
 
-function Label({ children, style = {} }) {
+function SectionLabel({ children, style = {} }) {
   return (
-    <span style={{
-      fontSize: 9, fontWeight: 700, letterSpacing: '0.13em',
-      textTransform: 'uppercase', color: C.t3, fontFamily: F, ...style,
+    <div style={{
+      fontSize: 9, fontWeight: 600, letterSpacing: '.1em',
+      textTransform: 'uppercase', color: T.t3,
+      fontFamily: F, marginBottom: 10, ...style,
     }}>
       {children}
-    </span>
+    </div>
   );
 }
 
-function Divider({ style = {} }) {
-  return <div style={{ height: 1, background: C.border, ...style }} />;
+function ThinBar({ pct, color = T.t3, height = 2 }) {
+  return (
+    <div style={{ height, borderRadius: 99, background: T.divider, width: '100%' }}>
+      <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, borderRadius: 99, background: color, opacity: 0.75 }} />
+    </div>
+  );
+}
+
+function Dot({ color, glow = false }) {
+  return (
+    <span style={{
+      display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+      background: color, flexShrink: 0,
+      boxShadow: glow ? `0 0 6px ${color}90` : 'none',
+    }} />
+  );
+}
+
+/* Subtle status pill — text + optional dot, no bold fill */
+function StatusPill({ status }) {
+  const map = {
+    active:    { color: T.green, bg: T.greenDim, brd: T.greenBrd, label: 'Active'   },
+    'at-risk': { color: T.amber, bg: T.amberDim, brd: T.amberBrd, label: 'At risk'  },
+    inactive:  { color: T.t3,   bg: T.surfaceEl, brd: T.border,   label: 'Inactive' },
+  };
+  const s = map[status] || map.inactive;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '2px 7px', borderRadius: 20, fontSize: 10, fontWeight: 500,
+      color: s.color, background: s.bg, border: `1px solid ${s.brd}`,
+    }}>
+      {s.label}
+    </span>
+  );
 }
 
 function Avatar({ initials, size = 28 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      background: C.raised, border: `1px solid ${C.border}`,
+      background: T.surfaceEl, border: `1px solid ${T.border}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.32, fontWeight: 700, color: C.t2,
-      letterSpacing: '-0.01em', flexShrink: 0, fontFamily: F,
+      fontSize: size * 0.31, fontWeight: 600, color: T.t2,
+      letterSpacing: '0.02em', flexShrink: 0, fontFamily: 'monospace',
     }}>
       {initials}
     </div>
   );
 }
 
-function Sparkline({ data, color = C.t3, width = 100, height = 32 }) {
+function Sparkline({ data, color = T.t3, width = 100, height = 32 }) {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
   const pts = data.map((v, i) => {
@@ -160,293 +217,242 @@ function Sparkline({ data, color = C.t3, width = 100, height = 32 }) {
     const y = height - ((v - min) / range) * (height - 4) - 2;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
-  const id = `sp${color.replace(/[^a-z0-9]/gi, '')}${Math.random().toString(36).slice(2,6)}`;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible', display: 'block' }}>
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.12" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${id})`} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" opacity="0.7" />
+      {/* End dot */}
+      {(() => {
+        const lastPt = pts.split(' ').pop().split(',');
+        return <circle cx={lastPt[0]} cy={lastPt[1]} r="2.5" fill={color} opacity="0.9" />;
+      })()}
     </svg>
   );
 }
 
-// ─── Hero Section ───────────────────────────────────────────────────────────────
-function HeroSection({ gym, summary }) {
-  const HERO_H = 280;
-  const PROFILE_SIZE = 88;
-  const PROFILE_OFFSET = PROFILE_SIZE / 2;
-
+function GhostBtn({ children, onClick, style = {} }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div style={{ position: 'relative', marginBottom: 0 }}>
+    <button
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      onClick={onClick}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        padding: '5px 11px', borderRadius: T.rsm, fontSize: 11, fontWeight: 500,
+        cursor: 'pointer', fontFamily: F, border: '1px solid',
+        background: hov ? T.surfaceHov : T.surfaceEl,
+        borderColor: hov ? T.borderEl : T.border,
+        color: T.t2, transition: 'all .12s', ...style,
+      }}
+    >{children}</button>
+  );
+}
 
-      {/* ── Banner image ── */}
-      <div style={{
-        position: 'relative',
-        height: HERO_H,
-        overflow: 'hidden',
-        background: C.raised,
-      }}>
-        <img
-          src={gym.heroBg}
-          alt="Gym banner"
-          style={{
-            width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center 40%',
-            display: 'block',
-            filter: 'brightness(0.45) saturate(0.6)',
-          }}
-          onError={e => { e.currentTarget.style.display = 'none'; }}
-        />
+function Card({ children, style = {} }) {
+  return (
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderRadius: T.r, boxShadow: T.sh, overflow: 'hidden', ...style,
+    }}>{children}</div>
+  );
+}
 
-        {/* Dark gradient vignette — bottom fade into bg */}
+/* ── Sticky header ──────────────────────────────────────────────── */
+function Header({ gym }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '12px 32px',
+      borderBottom: `1px solid ${T.border}`,
+      background: `${T.bg}e0`,
+      backdropFilter: 'blur(12px)',
+      position: 'sticky', top: 0, zIndex: 50,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          position: 'absolute', inset: 0,
-          background: `linear-gradient(
-            to bottom,
-            rgba(8,9,15,0.18) 0%,
-            rgba(8,9,15,0.10) 35%,
-            rgba(8,9,15,0.55) 70%,
-            rgba(8,9,15,0.97) 100%
-          )`,
-        }} />
-
-        {/* Edit cover button — top right */}
-        <button style={{
-          position: 'absolute', top: 18, right: 24,
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '6px 14px',
-          background: 'rgba(8,9,15,0.55)',
-          backdropFilter: 'blur(8px)',
-          border: `1px solid ${C.borderHi}`,
-          borderRadius: 7,
-          fontSize: 10, fontWeight: 600, color: C.t2,
-          cursor: 'pointer', fontFamily: F,
-          letterSpacing: '0.04em',
+          width: 26, height: 26, borderRadius: T.rsm,
+          background: T.surfaceEl, border: `1px solid ${T.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Edit3 style={{ width: 10, height: 10 }} />
-          Edit cover
-        </button>
-
-        {/* Gym tagline — bottom left of banner */}
-        <div style={{
-          position: 'absolute', bottom: PROFILE_OFFSET + 24, left: 24 + PROFILE_SIZE + 20,
-        }}>
-          <div style={{
-            fontSize: 11, color: 'rgba(237,242,255,0.35)',
-            fontFamily: F, fontStyle: 'italic', letterSpacing: '0.03em',
-          }}>
-            {gym.tagline}
+          <Activity size={11} color={T.t3} />
+        </div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.t1, letterSpacing: '-0.02em', fontFamily: F }}>{gym.name}</div>
+          <div style={{ fontSize: 9, color: T.t3, fontFamily: F, marginTop: 1, letterSpacing: '.04em' }}>
+            {gym.type} · {gym.city} · Retention dashboard
           </div>
         </div>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Dot color={T.green} glow />
+        <span style={{ fontSize: 10, color: T.t3, fontFamily: F }}>Live · updated just now</span>
+      </div>
+    </div>
+  );
+}
 
-      {/* ── Profile row — overlaps banner bottom ── */}
-      <div style={{
-        maxWidth: 1280,
-        margin: '0 auto',
-        padding: '0 36px',
-        position: 'relative',
-        marginTop: -(PROFILE_OFFSET),
-      }}>
+/* ── Hero section ───────────────────────────────────────────────── */
+function HeroSection({ gym, summary }) {
+  const HERO_H = 260;
+  const PROFILE_SIZE = 84;
+
+  return (
+    <div style={{ position: 'relative', marginBottom: 0 }}>
+      {/* Banner */}
+      <div style={{ position: 'relative', height: HERO_H, overflow: 'hidden', background: T.surfaceEl }}>
+        <img
+          src={gym.heroBg} alt="Gym banner"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', display: 'block', filter: 'brightness(0.35) saturate(0.5)' }}
+          onError={e => { e.currentTarget.style.display = 'none'; }}
+        />
+        {/* Bottom fade */}
         <div style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: 20,
-          paddingBottom: 24,
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(to bottom, transparent 40%, ${T.bg} 100%)`,
+        }} />
+        {/* Edit button */}
+        <button style={{
+          position: 'absolute', top: 16, right: 24,
+          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
+          background: 'rgba(8,9,14,0.55)', border: `1px solid ${T.borderEl}`,
+          borderRadius: T.rsm, fontSize: 10, fontWeight: 500, color: T.t2,
+          cursor: 'pointer', fontFamily: F,
         }}>
+          <Edit3 size={9} /> Edit cover
+        </button>
+        {/* Tagline */}
+        <div style={{
+          position: 'absolute', bottom: PROFILE_SIZE / 2 + 22, left: 32 + PROFILE_SIZE + 18,
+          fontSize: 11, color: 'rgba(237,242,255,0.3)', fontFamily: F, fontStyle: 'italic', letterSpacing: '.03em',
+        }}>
+          {gym.tagline}
+        </div>
+      </div>
 
-          {/* Profile image ring */}
-          <div style={{
-            position: 'relative',
-            flexShrink: 0,
-            zIndex: 10,
-          }}>
-            {/* Outer glow ring */}
+      {/* Profile row — overlaps banner */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px', position: 'relative', marginTop: -(PROFILE_SIZE / 2) }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 18, paddingBottom: 20 }}>
+
+          {/* Profile image */}
+          <div style={{ flexShrink: 0, zIndex: 10, position: 'relative' }}>
             <div style={{
-              width: PROFILE_SIZE + 6,
-              height: PROFILE_SIZE + 6,
-              borderRadius: '50%',
-              background: `conic-gradient(from 180deg, rgba(237,242,255,0.12), rgba(237,242,255,0.04), rgba(237,242,255,0.12))`,
-              padding: 3,
+              width: PROFILE_SIZE + 4, height: PROFILE_SIZE + 4, borderRadius: '50%',
+              background: T.surfaceEl, padding: 2,
+              border: `2px solid ${T.bg}`,
               boxSizing: 'border-box',
             }}>
-              <div style={{
-                width: '100%', height: '100%',
-                borderRadius: '50%',
-                background: C.raised,
-                overflow: 'hidden',
-                border: `2px solid ${C.bg}`,
-              }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: T.surfaceEl }}>
                 <img
-                  src={gym.profileImg}
-                  alt={gym.name}
+                  src={gym.profileImg} alt={gym.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  onError={e => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#8b95b3;font-family:Manrope,system-ui">I&O</div>`;
-                  }}
+                  onError={e => { e.currentTarget.style.display = 'none'; }}
                 />
               </div>
             </div>
-
-            {/* Verified / live badge */}
+            {/* Live dot */}
             <div style={{
-              position: 'absolute', bottom: 4, right: 0,
-              width: 18, height: 18, borderRadius: '50%',
-              background: C.ok,
-              border: `2px solid ${C.bg}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
-            </div>
+              position: 'absolute', bottom: 4, right: 2,
+              width: 14, height: 14, borderRadius: '50%',
+              background: T.green, border: `2px solid ${T.bg}`,
+            }} />
           </div>
 
           {/* Name + meta */}
           <div style={{ flex: 1, paddingBottom: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-              <h1 style={{
-                fontSize: 26, fontWeight: 800, color: C.t1,
-                letterSpacing: '-0.035em', lineHeight: 1, fontFamily: F,
-                margin: 0,
-              }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: T.t1, letterSpacing: '-0.03em', lineHeight: 1, fontFamily: F, margin: 0 }}>
                 {gym.name}
               </h1>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: C.t3,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                fontFamily: F,
-                padding: '3px 8px',
-                border: `1px solid ${C.border}`,
-                borderRadius: 4,
+                fontSize: 9, fontWeight: 600, color: T.t3, letterSpacing: '.1em', textTransform: 'uppercase',
+                padding: '2px 7px', border: `1px solid ${T.border}`, borderRadius: 4, fontFamily: F,
               }}>
                 {gym.type}
               </span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MapPin style={{ width: 10, height: 10, color: C.t3 }} />
-                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>{gym.city}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Star style={{ width: 10, height: 10, color: C.t3 }} />
-                <span style={{ fontSize: 11, color: C.t2, fontFamily: F, fontWeight: 600 }}>{gym.rating}</span>
-                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>({gym.reviewCount} reviews)</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Award style={{ width: 10, height: 10, color: C.t3 }} />
-                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>Est. {gym.founded}</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 7, flexWrap: 'wrap' }}>
+              {[
+                { icon: MapPin, text: gym.city },
+                { icon: Star,   text: `${gym.rating} (${gym.reviewCount} reviews)` },
+                { icon: Award,  text: `Est. ${gym.founded}` },
+              ].map((m, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <m.icon size={9} color={T.t4} />
+                  <span style={{ fontSize: 11, color: T.t3, fontFamily: F }}>{m.text}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Quick-stat chips — right side */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingBottom: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {/* Quick stat chips */}
+          <div style={{ display: 'flex', gap: 7, alignItems: 'flex-end', paddingBottom: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {[
-              { label: 'Members',    value: summary.totalMembers,          suffix: '' },
-              { label: 'Active',     value: summary.activeMembers,          suffix: '' },
-              { label: 'Retention',  value: `${summary.retentionRate}%`,    suffix: '', warn: summary.retentionRate < 75 },
-              { label: 'At risk',    value: summary.atRiskCount,            suffix: '', danger: summary.atRiskCount > 0 },
+              { label: 'Members',   value: summary.totalMembers,          highlight: false },
+              { label: 'Active',    value: summary.activeMembers,          highlight: false },
+              { label: 'Retention', value: `${summary.retentionRate}%`,    highlight: summary.retentionRate < 75, amber: true },
+              { label: 'At risk',   value: summary.atRiskCount,            highlight: summary.atRiskCount > 0,   danger: true },
             ].map((chip, i) => (
               <div key={i} style={{
-                padding: '10px 16px',
-                background: C.surface,
-                border: `1px solid ${chip.danger ? 'rgba(239,68,68,0.22)' : chip.warn ? 'rgba(245,158,11,0.22)' : C.border}`,
-                borderRadius: 10,
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4,
-                minWidth: 70,
+                padding: '10px 14px', background: T.surface,
+                border: `1px solid ${chip.danger && chip.highlight ? T.redBrd : chip.amber && chip.highlight ? T.amberBrd : T.border}`,
+                borderRadius: T.r,
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, minWidth: 64,
               }}>
                 <span style={{
-                  fontSize: 20, fontWeight: 800, color: chip.danger ? C.danger : chip.warn ? C.warn : C.t1,
-                  letterSpacing: '-0.04em', lineHeight: 1, fontFamily: F,
-                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: 20, fontWeight: 700, lineHeight: 1, fontFamily: F, fontVariantNumeric: 'tabular-nums',
+                  color: chip.danger && chip.highlight ? T.red : chip.amber && chip.highlight ? T.amber : T.t1,
+                  letterSpacing: '-0.03em',
                 }}>
                   {chip.value}
                 </span>
-                <Label style={{ color: C.t3 }}>{chip.label}</Label>
+                <span style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.09em', fontFamily: F }}>
+                  {chip.label}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Thin separator */}
-        <div style={{ height: 1, background: C.border }} />
+        <div style={{ height: 1, background: T.border }} />
       </div>
     </div>
   );
 }
 
-// ─── Header ────────────────────────────────────────────────────────────────────
-function Header({ gym }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '14px 36px',
-      borderBottom: `1px solid ${C.border}`,
-      background: 'rgba(8,9,15,0.82)',
-      backdropFilter: 'blur(12px)',
-      position: 'sticky', top: 0, zIndex: 50,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 7,
-          background: C.raised, border: `1px solid ${C.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Activity style={{ width: 12, height: 12, color: C.t2 }} />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', fontFamily: F }}>
-            {gym.name}
-          </div>
-          <div style={{ fontSize: 9, color: C.t3, fontFamily: F, marginTop: 1 }}>
-            {gym.type} · {gym.city} · Retention dashboard
-          </div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.ok }} />
-        <span style={{ fontSize: 10, color: C.t3, fontFamily: F }}>Live · updated just now</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Today's Focus ──────────────────────────────────────────────────────────────
+/* ── Today's focus strip ────────────────────────────────────────── */
 function FocusStrip({ items }) {
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Today's focus</Label>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Today's focus</SectionLabel>
       <div style={{
         display: 'grid', gridTemplateColumns: '5fr 3fr 3fr',
-        border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden',
+        background: T.surface, border: `1px solid ${T.border}`,
+        borderRadius: T.r, overflow: 'hidden',
       }}>
         {items.map((item, i) => (
           <div key={i} style={{
-            padding: '22px 24px',
-            background: C.surface,
-            borderRight: i < items.length - 1 ? `1px solid ${C.border}` : 'none',
-            borderLeft: item.urgent ? `2px solid ${C.danger}` : 'none',
-            display: 'flex', flexDirection: 'column', gap: 10,
+            padding: '20px 22px',
+            borderRight: i < items.length - 1 ? `1px solid ${T.border}` : 'none',
+            /* Urgent: thin left accent only */
+            borderLeft: item.urgent ? `2px solid ${T.red}` : '2px solid transparent',
+            display: 'flex', flexDirection: 'column', gap: 8,
           }}>
             {item.urgent && (
-              <Label style={{ color: C.danger }}>Attention required</Label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Dot color={T.red} />
+                <span style={{ fontSize: 9, fontWeight: 600, color: T.red, textTransform: 'uppercase', letterSpacing: '.1em', fontFamily: F }}>
+                  Attention required
+                </span>
+              </div>
             )}
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, lineHeight: 1.5, fontFamily: F }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: T.t1, lineHeight: 1.55, fontFamily: F }}>
               {item.headline}
             </div>
-            <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.55, fontFamily: F, flex: 1 }}>
+            <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.6, fontFamily: F, flex: 1 }}>
               {item.sub}
             </div>
             {item.cta && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: C.t2, fontFamily: F, cursor: 'pointer', marginTop: 4 }}>
-                {item.cta}
-                <ArrowRight style={{ width: 10, height: 10 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 500, color: T.t2, fontFamily: F, cursor: 'pointer', marginTop: 2 }}>
+                {item.cta} <ArrowRight size={9} />
               </div>
             )}
           </div>
@@ -456,35 +462,38 @@ function FocusStrip({ items }) {
   );
 }
 
-// ─── Core Metrics ───────────────────────────────────────────────────────────────
+/* ── Core metrics row ───────────────────────────────────────────── */
 function MetricRow({ s }) {
   const items = [
-    { label: 'Total members',  value: s.totalMembers,         sub: `+${s.newThisMonth} this month`,                                              color: C.t1  },
-    { label: 'Active members', value: s.activeMembers,        sub: `${Math.round(s.activeMembers / s.totalMembers * 100)}% of total`,            color: C.t1  },
-    { label: 'Engagement',     value: `${s.engagementRate}%`,  sub: `${s.avgCheckInsWeek} check-ins / week avg`,                                 color: C.t1  },
-    { label: 'Retention',      value: `${s.retentionRate}%`,   sub: s.retentionRate >= 75 ? 'On target' : `${75 - s.retentionRate}pt below 75%`, color: s.retentionRate < 75 ? C.warn : C.t1 },
-    { label: 'At risk',        value: s.atRiskCount,           sub: '14+ days inactive',                                                          color: s.atRiskCount > 0 ? C.danger : C.t1  },
+    { label: 'Total members',  value: s.totalMembers,          sub: `+${s.newThisMonth} this month`                                                },
+    { label: 'Active members', value: s.activeMembers,          sub: `${Math.round(s.activeMembers / s.totalMembers * 100)}% of total`             },
+    { label: 'Engagement',     value: `${s.engagementRate}%`,   sub: `${s.avgCheckInsWeek} check-ins/week avg`                                     },
+    { label: 'Retention',      value: `${s.retentionRate}%`,    sub: s.retentionRate >= 75 ? 'On target' : `${75 - s.retentionRate}pt below 75%`,   amber: s.retentionRate < 75 },
+    { label: 'At risk',        value: s.atRiskCount,            sub: '14+ days inactive',                                                           danger: s.atRiskCount > 0   },
   ];
   return (
-    <section style={{ marginBottom: 32 }}>
+    <section style={{ marginBottom: 24 }}>
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(5,1fr)',
-        border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden',
+        background: T.surface, border: `1px solid ${T.border}`,
+        borderRadius: T.r, overflow: 'hidden',
       }}>
         {items.map((m, i) => (
           <div key={i} style={{
-            padding: '22px 24px', background: C.surface,
-            borderRight: i < items.length - 1 ? `1px solid ${C.border}` : 'none',
+            padding: '20px 22px',
+            borderRight: i < items.length - 1 ? `1px solid ${T.border}` : 'none',
           }}>
-            <Label style={{ display: 'block', marginBottom: 14 }}>{m.label}</Label>
+            <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 12, fontFamily: F }}>
+              {m.label}
+            </div>
             <div style={{
-              fontSize: 34, fontWeight: 800, color: m.color,
-              letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 8,
-              fontFamily: F, fontVariantNumeric: 'tabular-nums',
+              fontSize: 30, fontWeight: 700, lineHeight: 1, marginBottom: 7, fontFamily: F,
+              letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums',
+              color: m.danger ? T.red : m.amber ? T.amber : T.t1,
             }}>
               {m.value}
             </div>
-            <div style={{ fontSize: 10, color: C.t3, fontFamily: F }}>{m.sub}</div>
+            <div style={{ fontSize: 10, color: T.t3, fontFamily: F }}>{m.sub}</div>
           </div>
         ))}
       </div>
@@ -492,334 +501,283 @@ function MetricRow({ s }) {
   );
 }
 
-// ─── Retention Risk Panel (Primary) ────────────────────────────────────────────
+/* ── Retention risk panel ───────────────────────────────────────── */
 function RetentionRiskPanel({ data, summary }) {
   const revenue = summary.atRiskCount * summary.pricePerMember;
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? data.atRiskMembers : data.atRiskMembers.slice(0, 5);
 
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Churn & retention risk</Label>
-
-      <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 16,
-        overflow: 'hidden', background: C.surface,
-      }}>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Churn & retention risk</SectionLabel>
+      <Card>
+        {/* Top three-column panel */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
 
-          {/* Revenue at risk */}
-          <div style={{ padding: '32px', borderRight: `1px solid ${C.border}` }}>
-            <Label style={{ display: 'block', marginBottom: 16, color: C.danger }}>Revenue at risk</Label>
-            <div style={{
-              fontSize: 60, fontWeight: 800, color: C.t1,
-              letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 8,
-              fontFamily: F, fontVariantNumeric: 'tabular-nums',
-            }}>
+          {/* Revenue at risk — only place red is used large */}
+          <div style={{ padding: '28px 28px', borderRight: `1px solid ${T.border}` }}>
+            <div style={{ fontSize: 9, fontWeight: 600, color: T.red, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 16, fontFamily: F }}>
+              Revenue at risk
+            </div>
+            {/* Large number — no color fill, just text */}
+            <div style={{ fontSize: 52, fontWeight: 700, color: T.t1, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 8, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>
               £{revenue.toLocaleString()}
             </div>
-            <div style={{ fontSize: 12, color: C.t2, marginBottom: 28, fontFamily: F, lineHeight: 1.6 }}>
-              per month · {summary.atRiskCount} members at cancellation risk
+            <div style={{ fontSize: 11, color: T.t3, marginBottom: 24, fontFamily: F, lineHeight: 1.6 }}>
+              per month · {summary.atRiskCount} members at risk
             </div>
-            <button style={{
-              padding: '9px 18px', borderRadius: 8,
-              background: C.raised, border: `1px solid ${C.borderHi}`,
-              fontSize: 11, fontWeight: 700, color: C.t1,
-              cursor: 'pointer', fontFamily: F,
-            }}>
-              Contact all {summary.atRiskCount}
-            </button>
+            <GhostBtn>
+              <MessageSquare size={10} /> Contact all {summary.atRiskCount}
+            </GhostBtn>
           </div>
 
           {/* Retention rate */}
-          <div style={{ padding: '32px', borderRight: `1px solid ${C.border}` }}>
-            <Label style={{ display: 'block', marginBottom: 16 }}>Retention rate</Label>
+          <div style={{ padding: '28px 28px', borderRight: `1px solid ${T.border}` }}>
+            <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 16, fontFamily: F }}>
+              Retention rate
+            </div>
             <div style={{
-              fontSize: 60, fontWeight: 800,
-              color: summary.retentionRate < 75 ? C.warn : C.t1,
-              letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 8,
-              fontFamily: F, fontVariantNumeric: 'tabular-nums',
+              fontSize: 52, fontWeight: 700, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: 8, fontFamily: F, fontVariantNumeric: 'tabular-nums',
+              /* Amber only when below target */
+              color: summary.retentionRate < 75 ? T.amber : T.t1,
             }}>
               {summary.retentionRate}%
             </div>
-            <div style={{ fontSize: 12, color: C.t2, marginBottom: 24, fontFamily: F }}>
-              Target 75% · currently {75 - summary.retentionRate}pt below
+            <div style={{ fontSize: 11, color: T.t3, marginBottom: 20, fontFamily: F }}>
+              Target 75% · {75 - summary.retentionRate}pt below
             </div>
-            <div style={{ position: 'relative', height: 2, background: C.raised, borderRadius: 99, marginBottom: 10 }}>
-              <div style={{
-                position: 'absolute', top: 0, left: 0, height: '100%',
-                width: `${summary.retentionRate}%`, borderRadius: 99,
-                background: C.t3, transition: 'width 0.7s ease',
-              }} />
-              <div style={{
-                position: 'absolute', top: -4, left: '75%',
-                width: 1, height: 10, background: C.t3,
-              }} />
+            {/* Target bar */}
+            <div style={{ position: 'relative', marginBottom: 8 }}>
+              <ThinBar pct={summary.retentionRate} color={T.t3} height={3} />
+              {/* Target marker */}
+              <div style={{ position: 'absolute', top: -4, left: '75%', width: 1, height: 11, background: T.t4 }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-              <Label>0%</Label>
-              <Label style={{ color: C.t3 }}>Target 75%</Label>
-              <Label>100%</Label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+              <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>0%</span>
+              <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>Target 75%</span>
+              <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>100%</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: C.danger }}>
-              <TrendingDown style={{ width: 11, height: 11 }} />
-              <span style={{ fontSize: 11, fontWeight: 600, fontFamily: F }}>−2% month over month</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <TrendingDown size={11} color={T.red} />
+              <span style={{ fontSize: 11, color: T.red, fontWeight: 500, fontFamily: F }}>−2% month over month</span>
             </div>
           </div>
 
           {/* Churn drivers */}
-          <div style={{ padding: '32px' }}>
-            <Label style={{ display: 'block', marginBottom: 16 }}>Primary churn drivers</Label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ padding: '28px 28px' }}>
+            <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 16, fontFamily: F }}>
+              Primary churn drivers
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               {data.riskDrivers.map((d, i) => (
                 <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, color: C.t1, fontFamily: F, fontWeight: 500 }}>{d.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: C.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>
-                      {d.n}
-                    </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
+                    <span style={{ fontSize: 12, color: T.t1, fontFamily: F, fontWeight: 500 }}>{d.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{d.n}</span>
                   </div>
-                  <div style={{ height: 2, borderRadius: 99, background: C.raised }}>
-                    <div style={{
-                      height: '100%', borderRadius: 99,
-                      width: `${d.pct}%`,
-                      background: i === 0 ? C.t2 : C.t3,
-                      transition: 'width 0.5s ease',
-                    }} />
-                  </div>
+                  <ThinBar pct={d.pct} color={i === 0 ? T.t2 : T.t3} />
                 </div>
               ))}
             </div>
             <div style={{
-              marginTop: 28, padding: '12px 14px', borderRadius: 8,
-              background: C.raised, border: `1px solid ${C.border}`,
+              marginTop: 24, padding: '11px 13px', borderRadius: T.rsm,
+              background: T.surfaceEl, border: `1px solid ${T.border}`,
               display: 'flex', gap: 8, alignItems: 'flex-start',
             }}>
-              <Info style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 1 }} />
-              <span style={{ fontSize: 10, color: C.t3, fontFamily: F, lineHeight: 1.6 }}>
+              <Info size={10} color={T.t4} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontSize: 10, color: T.t3, fontFamily: F, lineHeight: 1.6 }}>
                 Members who don't book in their first 14 days have a 3× higher cancellation rate.
               </span>
             </div>
           </div>
         </div>
 
-        <Divider />
-
-        {/* Member list header */}
-        <div style={{
-          padding: '13px 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Label>At-risk members</Label>
-            <span style={{ fontSize: 10, color: C.t3, fontFamily: F }}>
-              — sorted by days since last check-in
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 10, color: C.t3, fontFamily: F }}>
-              {data.atRiskMembers.length} members · £{(data.atRiskMembers.length * summary.pricePerMember).toLocaleString()}/mo
-            </span>
-            <button style={{
-              padding: '5px 12px', borderRadius: 7,
-              background: C.raised, border: `1px solid ${C.border}`,
-              fontSize: 10, fontWeight: 600, color: C.t2,
-              cursor: 'pointer', fontFamily: F,
-              display: 'flex', alignItems: 'center', gap: 5,
-            }}>
-              <MessageSquare style={{ width: 10, height: 10 }} />
-              Message all
-            </button>
-          </div>
-        </div>
-
-        {/* Column headers */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 2fr 100px',
-          padding: '8px 24px', borderBottom: `1px solid ${C.borderSub}`,
-        }}>
-          {['Member', 'Last seen', 'Churn signal', 'Plan', ''].map((h, i) => (
-            <Label key={i} style={{ textAlign: i === 4 ? 'right' : 'left' }}>{h}</Label>
-          ))}
-        </div>
-
-        {visible.map((m, i) => (
-          <div key={m.id} style={{
-            display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 2fr 100px',
-            padding: '12px 24px', alignItems: 'center',
-            borderBottom: i < visible.length - 1 ? `1px solid ${C.borderSub}` : 'none',
-            transition: 'background 0.1s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = C.raised}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Avatar initials={m.initials} size={28} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, fontFamily: F }}>{m.name}</span>
+        {/* Member table */}
+        <div style={{ borderTop: `1px solid ${T.border}` }}>
+          {/* Table header */}
+          <div style={{
+            padding: '10px 20px', borderBottom: `1px solid ${T.border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: T.t2, fontFamily: F }}>At-risk members</span>
+              <span style={{ fontSize: 10, color: T.t3, fontFamily: F }}>sorted by days since last check-in</span>
             </div>
-            <span style={{
-              fontSize: 12, fontFamily: F,
-              color: m.riskLevel === 'high' ? C.danger : C.t2,
-              fontWeight: m.riskLevel === 'high' ? 500 : 400,
-              fontVariantNumeric: 'tabular-nums',
-            }}>
-              {m.lastSeen}
-            </span>
-            <span style={{ fontSize: 11, color: C.t2, fontFamily: F }}>{m.driver}</span>
-            <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>{m.tier} · £{summary.pricePerMember}/mo</span>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button style={{
-                padding: '5px 12px', borderRadius: 6,
-                background: 'transparent', border: `1px solid ${C.border}`,
-                fontSize: 10, fontWeight: 600, color: C.t2,
-                cursor: 'pointer', fontFamily: F,
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 10, color: T.t3, fontFamily: F }}>
+                {data.atRiskMembers.length} members · £{(data.atRiskMembers.length * summary.pricePerMember).toLocaleString()}/mo
+              </span>
+              <GhostBtn><MessageSquare size={9} /> Message all</GhostBtn>
+            </div>
+          </div>
+
+          {/* Column labels */}
+          <div style={{ display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 2fr 90px', padding: '7px 20px', borderBottom: `1px solid ${T.divider}` }}>
+            {['Member', 'Last seen', 'Churn signal', 'Plan', ''].map((h, i) => (
+              <span key={i} style={{
+                fontSize: 9, fontWeight: 600, color: T.t4, textTransform: 'uppercase',
+                letterSpacing: '.09em', fontFamily: F, textAlign: i === 4 ? 'right' : 'left',
+              }}>{h}</span>
+            ))}
+          </div>
+
+          {visible.map((m, i) => (
+            <div key={m.id}
+              onMouseEnter={e => e.currentTarget.style.background = T.surfaceHov}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              style={{
+                display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 2fr 90px',
+                padding: '10px 20px', alignItems: 'center', cursor: 'pointer',
+                borderBottom: i < visible.length - 1 ? `1px solid ${T.divider}` : 'none',
+                transition: 'background .1s',
               }}>
-                Reach out
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <Avatar initials={m.initials} size={26} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: T.t1, fontFamily: F }}>{m.name}</span>
+              </div>
+              {/* Last seen — red text for high risk, muted for medium */}
+              <span style={{
+                fontSize: 12, fontFamily: F, fontVariantNumeric: 'tabular-nums',
+                color: m.riskLevel === 'high' ? T.red : T.t2,
+                fontWeight: m.riskLevel === 'high' ? 500 : 400,
+              }}>
+                {m.lastSeen}
+              </span>
+              <span style={{ fontSize: 11, color: T.t2, fontFamily: F }}>{m.driver}</span>
+              <span style={{ fontSize: 11, color: T.t3, fontFamily: F }}>{m.tier} · £{summary.pricePerMember}/mo</span>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <GhostBtn style={{ fontSize: 10, padding: '3px 9px' }}>Reach out</GhostBtn>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {data.atRiskMembers.length > 5 && (
-          <div
-            onClick={() => setExpanded(!expanded)}
-            style={{
-              padding: '12px 24px', display: 'flex', alignItems: 'center',
-              gap: 5, cursor: 'pointer',
-              borderTop: `1px solid ${C.border}`,
-              fontSize: 11, fontWeight: 600, color: C.t3, fontFamily: F,
-            }}
-          >
-            {expanded
-              ? <><ChevronUp style={{ width: 11, height: 11 }} /> Show less</>
-              : <><ChevronDown style={{ width: 11, height: 11 }} /> {data.atRiskMembers.length - 5} more members</>
-            }
-          </div>
-        )}
-      </div>
+          {data.atRiskMembers.length > 5 && (
+            <div
+              onClick={() => setExpanded(!expanded)}
+              style={{
+                padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 5,
+                cursor: 'pointer', borderTop: `1px solid ${T.border}`,
+                fontSize: 11, color: T.t3, fontFamily: F, fontWeight: 500,
+                transition: 'background .1s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = T.surfaceHov}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {expanded
+                ? <><ChevronUp size={10} /> Show less</>
+                : <><ChevronDown size={10} /> {data.atRiskMembers.length - 5} more members</>
+              }
+            </div>
+          )}
+        </div>
+      </Card>
     </section>
   );
 }
 
-// ─── Trends ─────────────────────────────────────────────────────────────────────
+/* ── Trends ─────────────────────────────────────────────────────── */
 function TrendsSection({ trends }) {
   const items = [
-    { label: 'Members',    data: trends.members,    delta: '+3',   up: true,  color: C.t2 },
-    { label: 'Retention',  data: trends.retention,  delta: '−2%',  up: false, color: C.warn },
-    { label: 'Engagement', data: trends.engagement, delta: 'Flat', up: null,  color: C.t3 },
-    { label: 'Check-ins',  data: trends.checkIns,   delta: '+4%',  up: true,  color: C.t2 },
+    { label: 'Members',    data: trends.members,    delta: '+3',   up: true,  isAmt: false },
+    { label: 'Retention',  data: trends.retention,  delta: '−2%',  up: false, isAmt: false, isPct: true },
+    { label: 'Engagement', data: trends.engagement, delta: 'Flat', up: null,  isAmt: false, isPct: true },
+    { label: 'Check-ins',  data: trends.checkIns,   delta: '+4%',  up: true,  isAmt: false },
   ];
+
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Trends — last 6 months</Label>
-      <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 16,
-        overflow: 'hidden', background: C.surface,
-      }}>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Trends — last 6 months</SectionLabel>
+      <Card>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {items.map((s, i) => {
             const last = s.data[s.data.length - 1];
-            const display = (s.label === 'Retention' || s.label === 'Engagement') ? `${last}%` : last;
+            const display = s.isPct ? `${last}%` : last;
+            const deltaColor = s.up === true ? T.t2 : s.up === false ? T.red : T.t3;
             return (
-              <div key={i} style={{
-                padding: '24px',
-                borderRight: i < items.length - 1 ? `1px solid ${C.border}` : 'none',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <Label>{s.label}</Label>
-                  <span style={{
-                    fontSize: 10, fontWeight: 700, fontFamily: F,
-                    display: 'flex', alignItems: 'center', gap: 3,
-                    color: s.up === true ? C.t2 : s.up === false ? C.danger : C.t3,
-                  }}>
-                    {s.up === true  && <TrendingUp   style={{ width: 9, height: 9 }} />}
-                    {s.up === false && <TrendingDown  style={{ width: 9, height: 9 }} />}
+              <div key={i} style={{ padding: '22px', borderRight: i < items.length - 1 ? `1px solid ${T.border}` : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', fontFamily: F }}>
+                    {s.label}
+                  </span>
+                  <span style={{ fontSize: 10, fontWeight: 500, fontFamily: F, display: 'flex', alignItems: 'center', gap: 3, color: deltaColor }}>
+                    {s.up === true  && <TrendingUp  size={9} />}
+                    {s.up === false && <TrendingDown size={9} />}
                     {s.delta}
                   </span>
                 </div>
-                <div style={{
-                  fontSize: 28, fontWeight: 800, color: C.t1,
-                  letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 16,
-                  fontFamily: F, fontVariantNumeric: 'tabular-nums',
-                }}>
+                <div style={{ fontSize: 26, fontWeight: 700, color: T.t1, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 14, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>
                   {display}
                 </div>
-                <Sparkline data={s.data} color={s.color} width={130} height={36} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                  <Label style={{ color: C.t3 }}>{trends.months[0]}</Label>
-                  <Label style={{ color: C.t3 }}>{trends.months[trends.months.length - 1]}</Label>
+                <Sparkline data={s.data} color={s.up === false ? T.red : T.t2} width={120} height={34} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 7 }}>
+                  <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>{trends.months[0]}</span>
+                  <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>{trends.months[trends.months.length - 1]}</span>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
+      </Card>
     </section>
   );
 }
 
-// ─── Behaviour Insights ──────────────────────────────────────────────────────────
+/* ── Behaviour insights ─────────────────────────────────────────── */
 function BehaviourInsights({ data }) {
   const maxHeat = Math.max(...data.peakHeatmap.data.flat());
+
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Behaviour insights</Label>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Behaviour insights</SectionLabel>
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
-        border: `1px solid ${C.border}`, borderRadius: 16,
-        overflow: 'hidden', background: C.surface,
+        background: T.surface, border: `1px solid ${T.border}`,
+        borderRadius: T.r, overflow: 'hidden',
       }}>
-        {/* Drop-off */}
-        <div style={{ padding: '28px', borderRight: `1px solid ${C.border}` }}>
-          <Label style={{ display: 'block', marginBottom: 20 }}>Member drop-off</Label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Drop-off funnel */}
+        <div style={{ padding: '24px', borderRight: `1px solid ${T.border}` }}>
+          <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 18, fontFamily: F }}>
+            Member drop-off
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             {data.dropOff.map((s, i) => {
               const drop = i > 0 ? data.dropOff[i - 1].pct - s.pct : 0;
               return (
                 <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-                    <span style={{ fontSize: 12, color: C.t1, fontFamily: F, fontWeight: 500 }}>{s.label}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, color: T.t1, fontFamily: F, fontWeight: 500 }}>{s.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       {drop > 0 && (
-                        <span style={{ fontSize: 10, color: drop >= 10 ? C.danger : C.t3, fontWeight: 600, fontFamily: F }}>
+                        <span style={{ fontSize: 10, color: drop >= 10 ? T.red : T.t3, fontWeight: 500, fontFamily: F }}>
                           −{drop}%
                         </span>
                       )}
-                      <span style={{ fontSize: 12, fontWeight: 700, color: C.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums', width: 22, textAlign: 'right' }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: T.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums', width: 22, textAlign: 'right' }}>
                         {s.n}
                       </span>
                     </div>
                   </div>
-                  <div style={{ height: 2, borderRadius: 99, background: C.raised }}>
-                    <div style={{
-                      height: '100%', borderRadius: 99, width: `${s.pct}%`,
-                      background: C.t3, opacity: 0.4 + s.pct / 160,
-                      transition: 'width 0.5s ease',
-                    }} />
-                  </div>
+                  <ThinBar pct={s.pct} color={T.t3} />
                 </div>
               );
             })}
           </div>
-          <div style={{ marginTop: 20, fontSize: 10, color: C.t3, fontFamily: F, lineHeight: 1.65, borderTop: `1px solid ${C.borderSub}`, paddingTop: 16 }}>
+          <div style={{ marginTop: 18, fontSize: 10, color: T.t3, fontFamily: F, lineHeight: 1.65, borderTop: `1px solid ${T.divider}`, paddingTop: 14 }}>
             Week 2 is your highest drop-off point. Members who don't return after their second week have a 68% churn rate within 60 days.
           </div>
         </div>
 
         {/* Heatmap */}
-        <div style={{ padding: '28px' }}>
-          <Label style={{ display: 'block', marginBottom: 20 }}>Peak activity times</Label>
+        <div style={{ padding: '24px' }}>
+          <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 18, fontFamily: F }}>
+            Peak activity times
+          </div>
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '3px' }}>
             <thead>
               <tr>
-                <td style={{ width: 32 }} />
+                <td style={{ width: 30 }} />
                 {data.peakHeatmap.days.map(d => (
-                  <td key={d} style={{
-                    fontSize: 9, fontWeight: 700, color: C.t3,
-                    textAlign: 'center', paddingBottom: 6, fontFamily: F,
-                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                  }}>
+                  <td key={d} style={{ fontSize: 9, fontWeight: 600, color: T.t4, textAlign: 'center', paddingBottom: 6, fontFamily: F, textTransform: 'uppercase', letterSpacing: '.08em' }}>
                     {d}
                   </td>
                 ))}
@@ -828,17 +786,13 @@ function BehaviourInsights({ data }) {
             <tbody>
               {data.peakHeatmap.slots.map((slot, si) => (
                 <tr key={slot}>
-                  <td style={{ fontSize: 9, color: C.t3, paddingRight: 6, fontFamily: F, verticalAlign: 'middle', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                    {slot}
-                  </td>
+                  <td style={{ fontSize: 9, color: T.t3, paddingRight: 5, fontFamily: F, verticalAlign: 'middle', letterSpacing: '.04em', whiteSpace: 'nowrap' }}>{slot}</td>
                   {data.peakHeatmap.data[si].map((v, di) => {
                     const opacity = v / maxHeat;
                     return (
                       <td key={di} style={{
-                        height: 22, borderRadius: 3,
-                        background: opacity < 0.15
-                          ? C.raised
-                          : `rgba(237,242,255,${(opacity * 0.22).toFixed(2)})`,
+                        height: 20, borderRadius: 3,
+                        background: opacity < 0.15 ? T.surfaceEl : `rgba(237,242,255,${(opacity * 0.18).toFixed(2)})`,
                         border: `1px solid rgba(255,255,255,${(opacity * 0.04).toFixed(2)})`,
                       }} />
                     );
@@ -847,12 +801,12 @@ function BehaviourInsights({ data }) {
               ))}
             </tbody>
           </table>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 14, justifyContent: 'flex-end' }}>
-            <Label style={{ color: C.t3 }}>Low</Label>
-            {[0.06, 0.10, 0.14, 0.18, 0.22].map((a, i) => (
-              <div key={i} style={{ width: 12, height: 12, borderRadius: 2, background: `rgba(237,242,255,${a})`, border: `1px solid rgba(255,255,255,0.05)` }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 12, justifyContent: 'flex-end' }}>
+            <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>Low</span>
+            {[0.04, 0.07, 0.10, 0.14, 0.18].map((a, i) => (
+              <div key={i} style={{ width: 11, height: 11, borderRadius: 2, background: `rgba(237,242,255,${a})`, border: `1px solid rgba(255,255,255,0.04)` }} />
             ))}
-            <Label style={{ color: C.t3 }}>High</Label>
+            <span style={{ fontSize: 9, color: T.t4, fontFamily: F }}>High</span>
           </div>
         </div>
       </div>
@@ -860,23 +814,20 @@ function BehaviourInsights({ data }) {
   );
 }
 
-// ─── Class Performance ──────────────────────────────────────────────────────────
+/* ── Class performance table ────────────────────────────────────── */
 function ClassPerformance({ classes }) {
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Performance</Label>
-      <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 16,
-        overflow: 'hidden', background: C.surface,
-      }}>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Class performance</SectionLabel>
+      <Card>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
               {['Class', 'Coach', 'Avg attendance', 'Capacity', 'Fill rate', 'Trend'].map((h, i) => (
                 <th key={i} style={{
-                  padding: '12px 24px', textAlign: i === 0 ? 'left' : 'right',
-                  fontSize: 9, fontWeight: 700, color: C.t3,
-                  textTransform: 'uppercase', letterSpacing: '0.13em', fontFamily: F,
+                  padding: '10px 20px', textAlign: i === 0 ? 'left' : 'right',
+                  fontSize: 9, fontWeight: 600, color: T.t4,
+                  textTransform: 'uppercase', letterSpacing: '.09em', fontFamily: F,
                 }}>
                   {h}
                 </th>
@@ -889,31 +840,32 @@ function ClassPerformance({ classes }) {
               const lowFill = fill < 60;
               return (
                 <tr key={i}
-                  style={{ borderBottom: i < classes.length - 1 ? `1px solid ${C.borderSub}` : 'none', transition: 'background 0.1s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = C.raised}
+                  style={{ borderBottom: i < classes.length - 1 ? `1px solid ${T.divider}` : 'none', transition: 'background .1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.surfaceHov}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <td style={{ padding: '13px 24px', fontSize: 12, fontWeight: 600, color: C.t1, fontFamily: F }}>{c.name}</td>
-                  <td style={{ padding: '13px 24px', textAlign: 'right', fontSize: 11, color: C.t2, fontFamily: F }}>{c.coach}</td>
-                  <td style={{ padding: '13px 24px', textAlign: 'right', fontSize: 13, fontWeight: 700, color: C.t1, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{c.avg}</td>
-                  <td style={{ padding: '13px 24px', textAlign: 'right', fontSize: 11, color: C.t3, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{c.cap}</td>
-                  <td style={{ padding: '13px 24px', textAlign: 'right' }}>
+                  <td style={{ padding: '11px 20px', fontSize: 12, fontWeight: 600, color: T.t1, fontFamily: F }}>{c.name}</td>
+                  <td style={{ padding: '11px 20px', textAlign: 'right', fontSize: 11, color: T.t2, fontFamily: F }}>{c.coach}</td>
+                  <td style={{ padding: '11px 20px', textAlign: 'right', fontSize: 13, fontWeight: 700, color: T.t1, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{c.avg}</td>
+                  <td style={{ padding: '11px 20px', textAlign: 'right', fontSize: 11, color: T.t3, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{c.cap}</td>
+                  <td style={{ padding: '11px 20px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-                      <div style={{ width: 48, height: 2, borderRadius: 99, background: C.raised, overflow: 'hidden' }}>
-                        <div style={{ width: `${fill}%`, height: '100%', background: lowFill ? C.t3 : C.t2, borderRadius: 99 }} />
+                      <div style={{ width: 44, height: 2, borderRadius: 99, background: T.divider, overflow: 'hidden' }}>
+                        <div style={{ width: `${fill}%`, height: '100%', background: lowFill ? T.t4 : T.t3, borderRadius: 99 }} />
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: lowFill ? C.danger : C.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums', width: 32, textAlign: 'right' }}>
+                      {/* fill % — red only for seriously low */}
+                      <span style={{ fontSize: 11, fontWeight: 600, color: lowFill ? T.red : T.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums', width: 30, textAlign: 'right' }}>
                         {fill}%
                       </span>
                     </div>
                   </td>
-                  <td style={{ padding: '13px 24px', textAlign: 'right' }}>
+                  <td style={{ padding: '11px 20px', textAlign: 'right' }}>
                     <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 600,
-                      color: c.trend > 0 ? C.t2 : c.trend < 0 ? C.danger : C.t3, fontFamily: F,
+                      display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 500,
+                      color: c.trend > 0 ? T.green : c.trend < 0 ? T.red : T.t3, fontFamily: F,
                     }}>
-                      {c.trend > 0 && <TrendingUp style={{ width: 10, height: 10 }} />}
-                      {c.trend < 0 && <TrendingDown style={{ width: 10, height: 10 }} />}
+                      {c.trend > 0 && <TrendingUp  size={10} />}
+                      {c.trend < 0 && <TrendingDown size={10} />}
                       {c.trend > 0 ? '+' : ''}{c.trend}
                     </span>
                   </td>
@@ -922,15 +874,12 @@ function ClassPerformance({ classes }) {
             })}
           </tbody>
         </table>
-      </div>
+      </Card>
     </section>
   );
 }
 
-// ─── Segments ────────────────────────────────────────────────────────────────────
-const STATUS_COLOR = { active: C.t2, 'at-risk': C.danger, inactive: C.t3 };
-const STATUS_LABEL = { active: 'Active', 'at-risk': 'At risk', inactive: 'Inactive' };
-
+/* ── Member segments ────────────────────────────────────────────── */
 function Segments({ data, summary }) {
   const [tab, setTab] = useState('risk');
   const tabs = [
@@ -940,116 +889,112 @@ function Segments({ data, summary }) {
   ];
 
   return (
-    <section style={{ marginBottom: 32 }}>
-      <Label style={{ display: 'block', marginBottom: 12 }}>Member segments</Label>
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', background: C.surface }}>
-        <div style={{
-          display: 'flex', gap: 0, padding: '0 8px',
-          borderBottom: `1px solid ${C.border}`,
-        }}>
+    <section style={{ marginBottom: 24 }}>
+      <SectionLabel>Member segments</SectionLabel>
+      <Card>
+        {/* Tabs */}
+        <div style={{ display: 'flex', padding: '0 6px', borderBottom: `1px solid ${T.border}` }}>
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: '13px 16px', background: 'transparent', border: 'none',
-              borderBottom: tab === t.id ? `1px solid ${C.t2}` : '1px solid transparent',
-              fontSize: 11, fontWeight: tab === t.id ? 700 : 500,
-              color: tab === t.id ? C.t1 : C.t3,
-              cursor: 'pointer', fontFamily: F, marginBottom: -1,
-              transition: 'color 0.15s',
+              padding: '11px 14px', background: 'transparent', border: 'none',
+              borderBottom: `2px solid ${tab === t.id ? T.t2 : 'transparent'}`,
+              fontSize: 11, fontWeight: tab === t.id ? 600 : 400,
+              color: tab === t.id ? T.t1 : T.t3,
+              cursor: 'pointer', fontFamily: F, marginBottom: -1, transition: 'color .12s',
             }}>
               {t.label}
             </button>
           ))}
         </div>
 
+        {/* Column headers — risk + new tabs */}
         {(tab === 'risk' || tab === 'new') && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: tab === 'risk' ? '3fr 1.5fr 2fr 1.5fr' : '3fr 1.5fr 1.5fr 1.5fr',
-            padding: '9px 24px', borderBottom: `1px solid ${C.borderSub}`,
+            padding: '7px 20px', borderBottom: `1px solid ${T.divider}`,
           }}>
             {(tab === 'risk'
               ? ['Member', 'Last seen', 'Churn signal', 'Plan']
               : ['Member', 'Joined', 'Check-ins', 'Status']
-            ).map((h, i) => <Label key={i}>{h}</Label>)}
+            ).map((h, i) => (
+              <span key={i} style={{ fontSize: 9, fontWeight: 600, color: T.t4, textTransform: 'uppercase', letterSpacing: '.09em', fontFamily: F }}>{h}</span>
+            ))}
           </div>
         )}
 
+        {/* Risk rows */}
         {tab === 'risk' && data.atRiskMembers.map((m, i) => (
-          <div key={m.id} style={{
-            display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 1.5fr',
-            padding: '12px 24px', alignItems: 'center',
-            borderBottom: i < data.atRiskMembers.length - 1 ? `1px solid ${C.borderSub}` : 'none',
-            transition: 'background 0.1s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = C.raised}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div key={m.id}
+            onMouseEnter={e => e.currentTarget.style.background = T.surfaceHov}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            style={{
+              display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 1.5fr',
+              padding: '10px 20px', alignItems: 'center', cursor: 'pointer',
+              borderBottom: i < data.atRiskMembers.length - 1 ? `1px solid ${T.divider}` : 'none',
+              transition: 'background .1s',
+            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <Avatar initials={m.initials} size={26} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, fontFamily: F }}>{m.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.t1, fontFamily: F }}>{m.name}</span>
             </div>
-            <span style={{ fontSize: 11, color: m.riskLevel === 'high' ? C.danger : C.t2, fontFamily: F, fontWeight: m.riskLevel === 'high' ? 500 : 400 }}>
+            <span style={{ fontSize: 11, color: m.riskLevel === 'high' ? T.red : T.t2, fontFamily: F, fontWeight: m.riskLevel === 'high' ? 500 : 400 }}>
               {m.lastSeen}
             </span>
-            <span style={{ fontSize: 11, color: C.t2, fontFamily: F }}>{m.driver}</span>
-            <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>{m.tier}</span>
+            <span style={{ fontSize: 11, color: T.t2, fontFamily: F }}>{m.driver}</span>
+            <span style={{ fontSize: 11, color: T.t3, fontFamily: F }}>{m.tier}</span>
           </div>
         ))}
 
+        {/* New member rows */}
         {tab === 'new' && data.newMembers.map((m, i) => (
-          <div key={i} style={{
-            display: 'grid', gridTemplateColumns: '3fr 1.5fr 1.5fr 1.5fr',
-            padding: '12px 24px', alignItems: 'center',
-            borderBottom: i < data.newMembers.length - 1 ? `1px solid ${C.borderSub}` : 'none',
-            transition: 'background 0.1s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = C.raised}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div key={i}
+            onMouseEnter={e => e.currentTarget.style.background = T.surfaceHov}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            style={{
+              display: 'grid', gridTemplateColumns: '3fr 1.5fr 1.5fr 1.5fr',
+              padding: '10px 20px', alignItems: 'center', cursor: 'pointer',
+              borderBottom: i < data.newMembers.length - 1 ? `1px solid ${T.divider}` : 'none',
+              transition: 'background .1s',
+            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <Avatar initials={m.initials} size={26} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, fontFamily: F }}>{m.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.t1, fontFamily: F }}>{m.name}</span>
             </div>
-            <span style={{ fontSize: 11, color: C.t3, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{m.days}d ago</span>
-            <span style={{ fontSize: 11, color: C.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{m.checkIns} {m.checkIns === 1 ? 'visit' : 'visits'}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: STATUS_COLOR[m.status], fontFamily: F, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              {STATUS_LABEL[m.status]}
+            <span style={{ fontSize: 11, color: T.t3, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>{m.days}d ago</span>
+            <span style={{ fontSize: 11, color: T.t2, fontFamily: F, fontVariantNumeric: 'tabular-nums' }}>
+              {m.checkIns} {m.checkIns === 1 ? 'visit' : 'visits'}
             </span>
+            <StatusPill status={m.status} />
           </div>
         ))}
 
+        {/* Inactive empty state */}
         {tab === 'inactive' && (
-          <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: 56, fontWeight: 800, color: C.t3, fontFamily: F, letterSpacing: '-0.05em', marginBottom: 10, fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ padding: '44px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: 52, fontWeight: 700, color: T.t4, fontFamily: F, letterSpacing: '-0.05em', marginBottom: 10, fontVariantNumeric: 'tabular-nums' }}>
               {summary.inactiveMembers}
             </div>
-            <div style={{ fontSize: 12, color: C.t3, fontFamily: F, marginBottom: 24, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: T.t3, fontFamily: F, marginBottom: 20, lineHeight: 1.6 }}>
               Members with no recorded activity in the last 30 days
             </div>
-            <button style={{
-              padding: '9px 20px', borderRadius: 8,
-              background: C.raised, border: `1px solid ${C.border}`,
-              fontSize: 11, fontWeight: 600, color: C.t2,
-              cursor: 'pointer', fontFamily: F,
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-            }}>
-              <Bell style={{ width: 11, height: 11 }} />
-              Send re-engagement message
-            </button>
+            <GhostBtn style={{ margin: '0 auto' }}>
+              <Bell size={10} /> Send re-engagement message
+            </GhostBtn>
           </div>
         )}
-      </div>
+      </Card>
     </section>
   );
 }
 
-// ─── Root component ────────────────────────────────────────────────────────────
+/* ── Root component ─────────────────────────────────────────────── */
 export default function GymRetentionDashboard({
   selectedGym,
   allMemberships = [],
-  atRisk         = 0,
-  retentionRate  = 0,
-  classes        = [],
+  atRisk = 0,
+  retentionRate = 0,
+  classes = [],
   isLoading,
 }) {
   const gym = selectedGym || MOCK.gym;
@@ -1062,32 +1007,26 @@ export default function GymRetentionDashboard({
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 12, color: C.t3, fontFamily: F }}>Loading…</span>
+      <div style={{ minHeight: '100vh', background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 12, color: T.t3, fontFamily: F }}>Loading…</span>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: F, color: C.t1 }}>
+    <div style={{ minHeight: '100vh', background: T.bg, fontFamily: F, color: T.t1 }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
         button { font-family: inherit; }
-        button:hover { opacity: 0.75; }
-        td, th { font-family: 'Manrope', system-ui, sans-serif; }
+        td, th { font-family: '${F}'; }
       `}</style>
 
-      {/* Sticky top nav bar */}
       <Header gym={gym} />
-
-      {/* Hero — full-bleed banner + profile */}
       <HeroSection gym={gym} summary={summary} />
 
-      {/* Dashboard body */}
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 36px 80px' }}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '28px 32px 80px' }}>
         <FocusStrip       items={MOCK.focus} />
         <MetricRow        s={summary} />
         <RetentionRiskPanel data={MOCK} summary={summary} />
