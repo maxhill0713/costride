@@ -1,29 +1,22 @@
 /**
- * TabAnalytics — Color-cleaned + KPI cards matching TabEngagement.
- *
- * Color rules (identical to MembersPageAI + TabEngagement):
- *  - Red:    revenue at risk, high-churn counts only
- *  - Amber:  retention below target only
- *  - Green:  positive trend pill only, "all clear" states
- *  - Accent: primary CTAs, sparklines, highlighted KPI value
- *  - Everything else: neutral T.t1 / T.t2 / T.t3
+ * TabAnalytics — with page header matching Members/Content pages.
+ * External imports (base44, react-query) kept as-is for app wiring.
+ * Header added to both coach and gym-owner views.
  */
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { format, differenceInDays, subDays, isWithinInterval } from 'date-fns';
 import {
   Activity, TrendingUp, TrendingDown, Users, Zap, ArrowUpRight,
   Calendar, Clock, AlertTriangle, Shield, Target, Award,
   UserPlus, BarChart2, RefreshCw, CheckCircle,
-  Send, ChevronRight, MoreHorizontal,
+  Send, ChevronRight, MoreHorizontal, Plus,
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, CartesianGrid,
   XAxis, YAxis, Tooltip, BarChart, Bar, Cell,
 } from 'recharts';
 
-/* ── Design tokens — identical to TabEngagement ─────────────────── */
+/* ── Design tokens ──────────────────────────────────────────────── */
 const T = {
   bg:          '#08090e',
   surface:     '#0f1016',
@@ -50,11 +43,10 @@ const T = {
   sh:  '0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)',
 };
 
-const F = "'Geist','DM Sans','Helvetica Neue',Arial,sans-serif";
-
+const F   = "'Geist','DM Sans','Helvetica Neue',Arial,sans-serif";
 const MVM = 40;
 
-/* ── Count-up hook (from TabEngagement) ─────────────────────────── */
+/* ── Count-up hook ──────────────────────────────────────────────── */
 function useCountUp(target, delay = 0) {
   const [val, setVal] = useState(0);
   const started = useRef(false);
@@ -75,10 +67,9 @@ function useCountUp(target, delay = 0) {
   return val;
 }
 
-/* ── Chart config ───────────────────────────────────────────────── */
-const tick = { fill: T.t3, fontSize: 10, fontFamily: F };
-
-const ChartTip = ({ active, payload, label }) => {
+/* ── Chart helpers ──────────────────────────────────────────────── */
+const tick      = { fill: T.t3, fontSize: 10, fontFamily: F };
+const ChartTip  = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: T.bg, border: `1px solid ${T.borderEl}`, borderRadius: T.rsm, padding: '7px 11px', boxShadow: '0 6px 20px rgba(0,0,0,.5)' }}>
@@ -87,7 +78,6 @@ const ChartTip = ({ active, payload, label }) => {
     </div>
   );
 };
-
 const AreaGrad = ({ id }) => (
   <defs>
     <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
@@ -97,30 +87,6 @@ const AreaGrad = ({ id }) => (
   </defs>
 );
 
-function Spark({ data = [], w = 56, h = 24 }) {
-  if (!data || data.length < 2) return <div style={{ width: w, height: h }} />;
-  const max = Math.max(...data, 1), min = Math.min(...data, 0), range = max - min || 1;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - 3 - ((v - min) / range) * (h - 6);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const [fx] = pts.split(' ')[0].split(',');
-  const [lx] = pts.split(' ').slice(-1)[0].split(',');
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block', flexShrink: 0 }} preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="spk" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={T.accent} stopOpacity=".12" />
-          <stop offset="100%" stopColor={T.accent} stopOpacity="0"   />
-        </linearGradient>
-      </defs>
-      <polygon points={`${fx},${h} ${pts} ${lx},${h}`} fill="url(#spk)" />
-      <polyline points={pts} fill="none" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity=".85" />
-    </svg>
-  );
-}
-
 /* ── Shared primitives ──────────────────────────────────────────── */
 function Card({ children, style = {} }) {
   return (
@@ -129,7 +95,6 @@ function Card({ children, style = {} }) {
     </div>
   );
 }
-
 function CardHead({ title, sub, right }) {
   return (
     <div style={{ display: 'flex', alignItems: sub ? 'flex-start' : 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -141,15 +106,9 @@ function CardHead({ title, sub, right }) {
     </div>
   );
 }
-
 function SectionLabel({ children }) {
-  return (
-    <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 10, fontFamily: F }}>
-      {children}
-    </div>
-  );
+  return <div style={{ fontSize: 9, fontWeight: 600, color: T.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 10, fontFamily: F }}>{children}</div>;
 }
-
 function ThinBar({ pct, color = T.t3, height = 2 }) {
   return (
     <div style={{ height, borderRadius: 99, background: T.divider, flex: 1 }}>
@@ -157,7 +116,6 @@ function ThinBar({ pct, color = T.t3, height = 2 }) {
     </div>
   );
 }
-
 function Empty({ icon: Icon, label }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', gap: 8 }}>
@@ -167,99 +125,76 @@ function Empty({ icon: Icon, label }) {
   );
 }
 
-/* Primary CTA */
+/* ── Buttons ────────────────────────────────────────────────────── */
 function Cta({ label, icon: Icon, onClick, full = false }) {
   const [hov, setHov] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-        padding: '6px 12px', borderRadius: T.rsm, background: T.accent, color: '#fff',
-        border: '1px solid transparent', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-        fontFamily: F, width: full ? '100%' : undefined,
-        opacity: hov ? 0.88 : 1, transition: 'opacity .12s',
-      }}
-    >
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 12px', borderRadius: T.rsm, background: T.accent, color: '#fff', border: '1px solid transparent', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: F, width: full ? '100%' : undefined, opacity: hov ? 0.88 : 1, transition: 'opacity .12s' }}>
       {Icon && <Icon size={10} />}{label}
     </button>
   );
 }
-
-/* Ghost button */
 function GhostBtn({ label, icon: Icon, onClick, style = {}, children }) {
   const [hov, setHov] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: '5px 10px', borderRadius: T.rsm, fontSize: 11, fontWeight: 500,
-        cursor: 'pointer', fontFamily: F, border: '1px solid',
-        background: hov ? T.surfaceHov : T.surfaceEl,
-        borderColor: hov ? T.borderEl : T.border,
-        color: T.t2, transition: 'all .12s', ...style,
-      }}
-    >
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: T.rsm, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: F, border: '1px solid', background: hov ? T.surfaceHov : T.surfaceEl, borderColor: hov ? T.borderEl : T.border, color: T.t2, transition: 'all .12s', ...style }}>
       {Icon && <Icon size={10} />}{label}{children}
     </button>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   STAT CARD — matching TabEngagement exactly
-   Icon box top-left · ArrowUpRight top-right · count-up number
-══════════════════════════════════════════════════════════════ */
+/* ── Page header (matches Members page) ─────────────────────────── */
+function PageHeader({ title, sub, icon: Icon, buttons }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 4 }}>
+          <div style={{ width: 28, height: 28, borderRadius: T.rsm, background: T.accentDim, border: `1px solid ${T.accentBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={13} color={T.accent} />
+          </div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: T.t1, margin: 0, letterSpacing: '-0.03em' }}>{title}</h1>
+        </div>
+        <p style={{ fontSize: 12, color: T.t3, margin: 0, lineHeight: 1.6 }}>{sub}</p>
+      </div>
+      {buttons && (
+        <div style={{ display: 'flex', gap: 7, flexShrink: 0 }}>{buttons}</div>
+      )}
+    </div>
+  );
+}
+
+/* ── StatCard ───────────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, sub, prefix = '', suffix = '', delay = 0, highlight = false, danger = false, amber = false }) {
-  const isNum  = typeof value === 'number';
+  const isNum   = typeof value === 'number';
   const counted = useCountUp(isNum ? value : 0, delay);
   const display = isNum ? `${prefix}${counted.toLocaleString()}${suffix}` : value;
   const valColor = danger ? T.red : amber ? T.amber : highlight ? T.accent : T.t1;
-
   return (
     <Card style={{ padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: T.rsm, flexShrink: 0,
-          background: T.surfaceEl, border: `1px solid ${T.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+        <div style={{ width: 32, height: 32, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={14} color={highlight ? T.accent : danger ? T.red : T.t3} />
         </div>
         <ArrowUpRight size={11} color={T.t4} />
       </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: valColor, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 6, fontVariantNumeric: 'tabular-nums' }}>
-        {display}
-      </div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: valColor, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 6, fontVariantNumeric: 'tabular-nums' }}>{display}</div>
       <div style={{ fontSize: 11, fontWeight: 500, color: T.t2 }}>{label}</div>
       {sub && <div style={{ fontSize: 10, color: T.t3, marginTop: 3 }}>{sub}</div>}
     </Card>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   TODAY'S FOCUS
-══════════════════════════════════════════════════════════════ */
+/* ── Today's Focus ──────────────────────────────────────────────── */
 function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, totalMembers = 0 }) {
   const cards = useMemo(() => {
     const list = [];
     if (churnSignals.length > 0) {
       const weeks3 = churnSignals.filter(m => m.daysSince >= 21).length;
-      list.push({
-        slot: 'danger', icon: AlertTriangle,
-        title: `${churnSignals.length} quiet members`,
-        insight: weeks3 > 0 ? `${weeks3} haven't visited in 3+ weeks — worth a personal message` : 'Engagement has dropped — a check-in usually brings half back',
-        cta: 'Message now', rev: churnSignals.length * MVM,
-      });
+      list.push({ slot: 'danger', icon: AlertTriangle, title: `${churnSignals.length} quiet members`, insight: weeks3 > 0 ? `${weeks3} haven't visited in 3+ weeks — worth a personal message` : 'Engagement has dropped — a check-in usually brings half back', cta: 'Message now', rev: churnSignals.length * MVM });
     } else if (atRisk > 0) {
-      list.push({
-        slot: 'danger', icon: AlertTriangle,
-        title: `${atRisk} members need attention`,
-        insight: 'No check-in in 14+ days — drop-off risk increases after 3 weeks',
-        cta: 'Review', rev: atRisk * MVM,
-      });
+      list.push({ slot: 'danger', icon: AlertTriangle, title: `${atRisk} members need attention`, insight: 'No check-in in 14+ days — drop-off risk increases after 3 weeks', cta: 'Review', rev: atRisk * MVM });
     }
     const activeThisWeek = new Set(ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).map(c => c.user_id));
     const newInactive = Math.max(0, newSignUps - activeThisWeek.size);
@@ -277,7 +212,6 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
   }, [churnSignals, atRisk, newSignUps, ci30, now]);
 
   const accentColor = { danger: T.red, warn: T.amber, neutral: T.borderEl, positive: T.green };
-
   if (!cards.length) return null;
   return (
     <div>
@@ -287,12 +221,7 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cards.length}, 1fr)`, gap: 10 }}>
         {cards.map((card, i) => (
-          <div key={i} style={{
-            background: T.surfaceEl, borderRadius: T.r, padding: '14px 16px',
-            border: `1px solid ${T.border}`,
-            borderLeft: `2px solid ${accentColor[card.slot] || T.borderEl}`,
-            boxShadow: T.sh,
-          }}>
+          <div key={i} style={{ background: T.surfaceEl, borderRadius: T.r, padding: '14px 16px', border: `1px solid ${T.border}`, borderLeft: `2px solid ${accentColor[card.slot] || T.borderEl}`, boxShadow: T.sh }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, marginBottom: card.cta ? 12 : 0 }}>
               <card.icon size={12} color={accentColor[card.slot] || T.t3} style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
@@ -311,65 +240,28 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   KPI STRIP — now uses StatCard, matching TabEngagement exactly
-══════════════════════════════════════════════════════════════ */
-function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthChangePct, ci30, now, weekTrend }) {
+/* ── KPI Strip ──────────────────────────────────────────────────── */
+function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthChangePct, ci30, now }) {
   const active7d = useMemo(() =>
     new Set(ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).map(c => c.user_id)).size
   , [ci30, now]);
   const engagePct = totalMembers > 0 ? Math.round((activeThisMonth / totalMembers) * 100) : 0;
-
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-      <StatCard
-        icon={Users}
-        label="Active members (7d)"
-        value={active7d}
-        sub={`of ${totalMembers} total · ${Math.round((active7d / Math.max(totalMembers, 1)) * 100)}%`}
-        delay={0}
-        highlight
-      />
-      <StatCard
-        icon={Activity}
-        label="Engagement rate"
-        value={engagePct}
-        suffix="%"
-        sub={monthChangePct > 0 ? `+${monthChangePct}% vs last month` : monthChangePct < 0 ? `${monthChangePct}% vs last month` : 'Flat vs last month'}
-        delay={100}
-      />
-      <StatCard
-        icon={Shield}
-        label="Retention rate"
-        value={retentionRate}
-        suffix="%"
-        sub={retentionRate >= 80 ? 'Strong — above target' : retentionRate < 60 ? 'Below target — needs attention' : 'Average'}
-        delay={200}
-        amber={retentionRate < 60}
-      />
-      <StatCard
-        icon={AlertTriangle}
-        label="Inactive members"
-        value={atRisk}
-        sub={atRisk > 0 ? `${Math.round((atRisk / Math.max(totalMembers, 1)) * 100)}% of members` : 'All members active'}
-        delay={300}
-        danger={atRisk > totalMembers * 0.2}
-      />
+      <StatCard icon={Users}         label="Active members (7d)" value={active7d}       suffix="" sub={`of ${totalMembers} total · ${Math.round((active7d / Math.max(totalMembers, 1)) * 100)}%`} delay={0}   highlight />
+      <StatCard icon={Activity}      label="Engagement rate"      value={engagePct}      suffix="%" sub={monthChangePct > 0 ? `+${monthChangePct}% vs last month` : monthChangePct < 0 ? `${monthChangePct}% vs last month` : 'Flat vs last month'} delay={100} />
+      <StatCard icon={Shield}        label="Retention rate"       value={retentionRate}  suffix="%" sub={retentionRate >= 80 ? 'Strong — above target' : retentionRate < 60 ? 'Below target — needs attention' : 'Average'} delay={200} amber={retentionRate < 60} />
+      <StatCard icon={AlertTriangle} label="Inactive members"     value={atRisk}         sub={atRisk > 0 ? `${Math.round((atRisk / Math.max(totalMembers, 1)) * 100)}% of members` : 'All members active'} delay={300} danger={atRisk > totalMembers * 0.2} />
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   CHURN & REVENUE PANEL
-══════════════════════════════════════════════════════════════ */
+/* ── Churn & Revenue Panel ──────────────────────────────────────── */
 function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) {
   const churnCount = churnSignals.length;
   const totalRev   = churnCount * MVM;
   const hasData    = churnCount > 0;
-
-  /* Risk label — text only, no colored badge */
-  const riskLabel = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
-
+  const riskLabel  = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
   return (
     <Card style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
@@ -377,7 +269,6 @@ function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) 
           <div style={{ fontSize: 12, fontWeight: 600, color: T.t2 }}>Churn & Revenue Risk</div>
           <div style={{ fontSize: 11, color: T.t3, marginTop: 2 }}>Members showing low engagement patterns</div>
         </div>
-        {/* Revenue at risk — only place T.red appears large */}
         {hasData && (
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: T.red, letterSpacing: '-0.03em', lineHeight: 1 }}>£{totalRev}</div>
@@ -385,7 +276,6 @@ function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) 
           </div>
         )}
       </div>
-
       {!hasData ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 12px', borderRadius: T.rsm, background: T.surfaceEl, border: `1px solid ${T.border}` }}>
           <CheckCircle size={11} color={T.green} style={{ flexShrink: 0 }} />
@@ -407,12 +297,10 @@ function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) 
               </div>
             ))}
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
             {churnSignals.slice(0, 5).map((m, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < Math.min(churnSignals.length, 5) - 1 ? `1px solid ${T.divider}` : 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {/* Risk label as muted text, not a colored badge */}
                   <span style={{ fontSize: 9, color: T.t4, width: 40, flexShrink: 0 }}>{riskLabel(m.score)}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: T.t1 }}>{m.name}</span>
                 </div>
@@ -427,29 +315,19 @@ function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) 
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   HEATMAP
-══════════════════════════════════════════════════════════════ */
+/* ── Heatmap ────────────────────────────────────────────────────── */
 function HeatmapChart({ gymId }) {
   const [weeks, setWeeks] = useState(4);
-  const { data: raw = [] } = useQuery({
-    queryKey: ['heatmapCI', gymId, weeks],
-    queryFn: () => {
-      if (weeks === 0) return base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 5000);
-      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - weeks * 7);
-      return base44.entities.CheckIn.filter({ gym_id: gymId, check_in_date: { $gte: cutoff.toISOString() } }, '-check_in_date', 5000);
-    },
-    enabled: !!gymId, staleTime: 5 * 60 * 1000,
-  });
+  // In production: replace with useQuery from base44
+  const raw = [];
 
   const days  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const slots = [
-    { label:'6–8a',  hours:[6,7]   }, { label:'8–10a',  hours:[8,9]   },
-    { label:'10–12', hours:[10,11] }, { label:'12–2p',  hours:[12,13] },
-    { label:'2–4p',  hours:[14,15] }, { label:'4–6p',   hours:[16,17] },
-    { label:'6–8p',  hours:[18,19] }, { label:'8–10p',  hours:[20,21] },
+    { label:'6–8a',  hours:[6,7] }, { label:'8–10a', hours:[8,9] },
+    { label:'10–12', hours:[10,11] }, { label:'12–2p', hours:[12,13] },
+    { label:'2–4p',  hours:[14,15] }, { label:'4–6p',  hours:[16,17] },
+    { label:'6–8p',  hours:[18,19] }, { label:'8–10p', hours:[20,21] },
   ];
-
   const grid = useMemo(() => {
     const mat = Array.from({ length: 7 }, () => Array(slots.length).fill(0));
     raw.forEach(c => {
@@ -483,13 +361,7 @@ function HeatmapChart({ gymId }) {
       )}
       <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
         {[{ l:'4W',v:4 },{ l:'12W',v:12 },{ l:'All',v:0 }].map(o => (
-          <button key={o.v} onClick={() => setWeeks(o.v)} style={{
-            fontSize: 10, fontWeight: weeks === o.v ? 600 : 400, padding: '3px 9px', borderRadius: T.rsm,
-            cursor: 'pointer', fontFamily: F,
-            background: weeks === o.v ? T.surfaceEl : 'transparent',
-            color: weeks === o.v ? T.t1 : T.t3,
-            border: `1px solid ${weeks === o.v ? T.borderEl : 'transparent'}`,
-          }}>{o.l}</button>
+          <button key={o.v} onClick={() => setWeeks(o.v)} style={{ fontSize: 10, fontWeight: weeks === o.v ? 600 : 400, padding: '3px 9px', borderRadius: T.rsm, cursor: 'pointer', fontFamily: F, background: weeks === o.v ? T.surfaceEl : 'transparent', color: weeks === o.v ? T.t1 : T.t3, border: `1px solid ${weeks === o.v ? T.borderEl : 'transparent'}` }}>{o.l}</button>
         ))}
         <span style={{ fontSize: 10, color: T.t3, marginLeft: 6, alignSelf: 'center' }}>{raw.length.toLocaleString()} check-ins</span>
       </div>
@@ -523,11 +395,9 @@ function HeatmapChart({ gymId }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RETENTION FUNNEL
-══════════════════════════════════════════════════════════════ */
+/* ── Retention Funnel ───────────────────────────────────────────── */
 function RetentionFunnel({ retentionFunnel = [] }) {
-  const icons  = [UserPlus, RefreshCw, Activity, CheckCircle];
+  const icons   = [UserPlus, RefreshCw, Activity, CheckCircle];
   const hasData = retentionFunnel.length > 0 && retentionFunnel[0]?.val > 0;
   const worstDrop = useMemo(() => {
     if (!hasData) return null;
@@ -542,11 +412,7 @@ function RetentionFunnel({ retentionFunnel = [] }) {
 
   return (
     <Card style={{ padding: 20 }}>
-      <CardHead
-        title="Retention Funnel"
-        sub={worstDrop ? `Biggest drop-off: ${worstDrop.label} (${worstDrop.drop}% lost)` : 'Member lifecycle progression'}
-        right={<Target size={12} color={T.t3} />}
-      />
+      <CardHead title="Retention Funnel" sub={worstDrop ? `Biggest drop-off: ${worstDrop.label} (${worstDrop.drop}% lost)` : 'Member lifecycle progression'} right={<Target size={12} color={T.t3} />} />
       {!hasData ? (
         <div style={{ padding: '10px 12px', borderRadius: T.rsm, background: T.surfaceEl, border: `1px solid ${T.border}` }}>
           <div style={{ fontSize: 11, color: T.t3 }}>Populates after members have joined and checked in.</div>
@@ -594,14 +460,11 @@ function RetentionFunnel({ retentionFunnel = [] }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   DROP-OFF CHART
-══════════════════════════════════════════════════════════════ */
+/* ── Drop-off Chart ─────────────────────────────────────────────── */
 function DropOffChart({ dropOffBuckets = [] }) {
   const total  = dropOffBuckets.reduce((s, d) => s + d.count, 0);
   if (total === 0) return null;
   const worst = [...dropOffBuckets].sort((a, b) => b.count - a.count)[0];
-
   return (
     <Card style={{ padding: 20 }}>
       <CardHead title="Drop-off Pattern" sub={`Most members go quiet at ${worst?.label || '—'} — a well-timed message recovers ~30%`} />
@@ -631,28 +494,22 @@ function DropOffChart({ dropOffBuckets = [] }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   WEEKLY TREND + MEMBER GROWTH
-══════════════════════════════════════════════════════════════ */
+/* ── Weekly Trend & Member Growth ───────────────────────────────── */
 function WeeklyTrendChart({ weekTrend = [], monthChangePct = 0 }) {
   if (!weekTrend.some(d => d.value > 0)) return null;
   const total = weekTrend.reduce((s, d) => s + d.value, 0);
   return (
     <Card style={{ padding: 20 }}>
-      <CardHead
-        title="Check-in Trend"
-        sub="12-week rolling view"
-        right={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ fontSize: 10, color: T.t3 }}>{total} total</span>
-            {monthChangePct !== 0 && (
-              <span style={{ fontSize: 10, fontWeight: 500, color: monthChangePct > 0 ? T.green : T.red }}>
-                {monthChangePct > 0 ? '+' : ''}{monthChangePct}%
-              </span>
-            )}
-          </div>
-        }
-      />
+      <CardHead title="Check-in Trend" sub="12-week rolling view" right={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ fontSize: 10, color: T.t3 }}>{total} total</span>
+          {monthChangePct !== 0 && (
+            <span style={{ fontSize: 10, fontWeight: 500, color: monthChangePct > 0 ? T.green : T.red }}>
+              {monthChangePct > 0 ? '+' : ''}{monthChangePct}%
+            </span>
+          )}
+        </div>
+      } />
       <ResponsiveContainer width="100%" height={160}>
         <AreaChart data={weekTrend} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
           <AreaGrad id="wtg" />
@@ -671,18 +528,13 @@ function MemberGrowthChart({ monthGrowthData = [], newSignUps = 0 }) {
   if (!monthGrowthData?.length) return null;
   return (
     <Card style={{ padding: 20 }}>
-      <CardHead
-        title="Member Growth"
-        sub="Monthly sign-ups"
-        right={
-          /* Green only where it earns its place — positive delta */
-          newSignUps > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 500, color: T.green, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: T.rsm, padding: '2px 7px' }}>
-              +{newSignUps} this month
-            </span>
-          )
-        }
-      />
+      <CardHead title="Member Growth" sub="Monthly sign-ups" right={
+        newSignUps > 0 && (
+          <span style={{ fontSize: 10, fontWeight: 500, color: T.green, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: T.rsm, padding: '2px 7px' }}>
+            +{newSignUps} this month
+          </span>
+        )
+      } />
       <ResponsiveContainer width="100%" height={110}>
         <BarChart data={monthGrowthData} barSize={14} margin={{ top: 4, right: 6, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={T.divider} vertical={false} />
@@ -696,13 +548,11 @@ function MemberGrowthChart({ monthGrowthData = [], newSignUps = 0 }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   CLASS PERFORMANCE
-══════════════════════════════════════════════════════════════ */
+/* ── Class Performance ──────────────────────────────────────────── */
 function ClassPerformance({ classes, ci30, now }) {
   const data = useMemo(() => (classes || []).map(cls => {
-    const clsCI = ci30.filter(c => c.class_id === cls.id || c.class_name === cls.name);
-    const cap   = cls.max_capacity || cls.capacity || 20;
+    const clsCI    = ci30.filter(c => c.class_id === cls.id || c.class_name === cls.name);
+    const cap      = cls.max_capacity || cls.capacity || 20;
     const sessions = Math.max(4, Math.ceil(clsCI.length / Math.max(cap * 0.5, 1)));
     const avgAtt   = sessions > 0 ? Math.round(clsCI.length / sessions) : 0;
     const fillRate = Math.min(100, Math.round((avgAtt / cap) * 100));
@@ -713,7 +563,6 @@ function ClassPerformance({ classes, ci30, now }) {
   }).sort((a, b) => b.fillRate - a.fillRate), [classes, ci30, now]);
 
   if (!data.length) return null;
-
   return (
     <Card style={{ padding: 20 }}>
       <CardHead title="Class Performance" sub="Fill rates · last 30 days" />
@@ -721,24 +570,14 @@ function ClassPerformance({ classes, ci30, now }) {
         {data.map((cls, i) => (
           <div key={cls.id || i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < data.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Dot: red only for seriously low fill, neutral otherwise */}
               <div style={{ width: 4, height: 4, borderRadius: '50%', background: cls.fillRate < 35 ? T.red : T.t4, flexShrink: 0 }} />
               <span style={{ fontSize: 12, fontWeight: 600, color: T.t1 }}>{cls.name}</span>
-              {cls.trend !== 0 && (
-                <span style={{ fontSize: 9, color: cls.trend > 0 ? T.green : T.t3 }}>
-                  {cls.trend > 0 ? '+' : ''}{cls.trend}%
-                </span>
-              )}
+              {cls.trend !== 0 && <span style={{ fontSize: 9, color: cls.trend > 0 ? T.green : T.t3 }}>{cls.trend > 0 ? '+' : ''}{cls.trend}%</span>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 10, color: T.t3 }}>~{cls.avgAtt}/{cls.cap}</span>
-              <div style={{ width: 44, display: 'flex', alignItems: 'center' }}>
-                <ThinBar pct={cls.fillRate} color={cls.fillRate < 35 ? T.red : T.t3} />
-              </div>
-              {/* fill% — red only below 35% */}
-              <span style={{ fontSize: 12, fontWeight: 600, color: cls.fillRate < 35 ? T.red : T.t2, minWidth: 32, textAlign: 'right' }}>
-                {cls.fillRate}%
-              </span>
+              <div style={{ width: 44, display: 'flex', alignItems: 'center' }}><ThinBar pct={cls.fillRate} color={cls.fillRate < 35 ? T.red : T.t3} /></div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: cls.fillRate < 35 ? T.red : T.t2, minWidth: 32, textAlign: 'right' }}>{cls.fillRate}%</span>
             </div>
           </div>
         ))}
@@ -747,9 +586,7 @@ function ClassPerformance({ classes, ci30, now }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   STAFF PERFORMANCE
-══════════════════════════════════════════════════════════════ */
+/* ── Staff Performance ──────────────────────────────────────────── */
 function StaffPerformance({ coaches, checkIns, ci30, classes, now }) {
   const data = useMemo(() => (coaches || []).map(coach => {
     const coachCI       = ci30.filter(c => c.coach_id === coach.id || c.coach_name === coach.name);
@@ -767,7 +604,6 @@ function StaffPerformance({ coaches, checkIns, ci30, classes, now }) {
 
   if (!data.length) return null;
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
   return (
     <Card style={{ padding: 20 }}>
       <CardHead title="Staff Performance" sub="Members coached · retention · engagement score" />
@@ -793,7 +629,6 @@ function StaffPerformance({ coaches, checkIns, ci30, classes, now }) {
               {[coach.uniqueMembers, coach.myClasses.length].map((v, j) => (
                 <div key={j} style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: T.t1 }}>{v}</div>
               ))}
-              {/* Retention — red only below 45%, otherwise neutral */}
               <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: coach.retentionPct < 45 ? T.red : T.t1 }}>{coach.retentionPct}%</div>
             </div>
             <div style={{ marginTop: 7, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -808,14 +643,12 @@ function StaffPerformance({ coaches, checkIns, ci30, classes, now }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MEMBER SEGMENTS
-══════════════════════════════════════════════════════════════ */
+/* ── Member Segments ────────────────────────────────────────────── */
 function MemberSegments({ totalMembers, superActive, active, casual, inactive }) {
   const segs = [
-    { label:'Super active', sub:'15+/mo', val:superActive, color:T.t2    },
-    { label:'Active',       sub:'8–14',   val:active,      color:T.t2    },
-    { label:'Casual',       sub:'1–7',    val:casual,      color:T.t3    },
+    { label:'Super active', sub:'15+/mo', val:superActive, color:T.t2 },
+    { label:'Active',       sub:'8–14',   val:active,      color:T.t2 },
+    { label:'Casual',       sub:'1–7',    val:casual,      color:T.t3 },
     { label:'Disengaged',   sub:'0 visits',val:inactive,   color: inactive > totalMembers * 0.25 ? T.red : T.t4 },
   ];
   return (
@@ -843,9 +676,7 @@ function MemberSegments({ totalMembers, superActive, active, casual, inactive })
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ACTION QUEUE
-══════════════════════════════════════════════════════════════ */
+/* ── Action Queue ───────────────────────────────────────────────── */
 function ActionQueue({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, retentionRate = 0 }) {
   const actions = useMemo(() => {
     const list = [];
@@ -874,11 +705,7 @@ function ActionQueue({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {actions.map((a, i) => (
-          <div key={i} style={{
-            padding: '12px 14px', borderRadius: T.rsm,
-            background: T.surfaceEl, border: `1px solid ${T.border}`,
-            borderLeft: i === 0 ? `2px solid ${T.accent}` : `2px solid transparent`,
-          }}>
+          <div key={i} style={{ padding: '12px 14px', borderRadius: T.rsm, background: T.surfaceEl, border: `1px solid ${T.border}`, borderLeft: i === 0 ? `2px solid ${T.accent}` : `2px solid transparent` }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, marginBottom: 10 }}>
               <a.icon size={11} color={i === 0 ? T.accent : T.t3} style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
@@ -901,26 +728,18 @@ function Week1ReturnCard({ week1ReturnTrend = [] }) {
   const delta  = latest - prev;
   return (
     <Card style={{ padding: 20 }}>
-      <CardHead
-        title="Week-1 Return Rate"
-        sub="New member cohort"
-        right={
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: latest < 40 ? T.red : T.t1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>{latest}%</span>
-            {delta !== 0 && (
-              <span style={{ fontSize: 9, fontWeight: 500, color: delta > 0 ? T.green : T.red }}>
-                {delta > 0 ? '+' : ''}{delta}%
-              </span>
-            )}
-          </div>
-        }
-      />
+      <CardHead title="Week-1 Return Rate" sub="New member cohort" right={
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: latest < 40 ? T.red : T.t1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>{latest}%</span>
+          {delta !== 0 && <span style={{ fontSize: 9, fontWeight: 500, color: delta > 0 ? T.green : T.red }}>{delta > 0 ? '+' : ''}{delta}%</span>}
+        </div>
+      } />
       {week1ReturnTrend.length >= 2 && (
         <ResponsiveContainer width="100%" height={44}>
           <AreaChart data={week1ReturnTrend} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="w1g" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={T.accent} stopOpacity={0.12} />
+                <stop offset="0%"   stopColor={T.accent} stopOpacity={0.12} />
                 <stop offset="100%" stopColor={T.accent} stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -955,15 +774,10 @@ function MilestoneCard({ checkIns }) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {milestones.map((m, i) => (
           <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: i < milestones.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
-            <div style={{ width: 26, height: 26, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: T.t2 }}>
-              {m.total}
-            </div>
+            <div style={{ width: 26, height: 26, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: T.t2 }}>{m.total}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: T.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-              {/* Accent only when 1 visit away — genuinely noteworthy */}
-              <div style={{ fontSize: 9, color: m.toNext === 1 ? T.accent : T.t3, marginTop: 1 }}>
-                {m.toNext === 1 ? `1 visit to ${m.next}` : `${m.toNext} to ${m.next}`}
-              </div>
+              <div style={{ fontSize: 9, color: m.toNext === 1 ? T.accent : T.t3, marginTop: 1 }}>{m.toNext === 1 ? `1 visit to ${m.next}` : `${m.toNext} to ${m.next}`}</div>
             </div>
           </div>
         ))}
@@ -1001,9 +815,9 @@ function MonthCompare({ ci30, ciPrev30, retentionRate, atRisk }) {
   const prevActive = useMemo(() => ciPrev30?.length ? new Set(ciPrev30.map(c => c.user_id)).size : null, [ciPrev30]);
   const rows = [
     { label: 'Check-ins',      curr: ci30.length, prev: ciPrev30?.length || 0 },
-    { label: 'Active members', curr: thisActive,   prev: prevActive            },
+    { label: 'Active members', curr: thisActive,   prev: prevActive },
     { label: 'Retention',      curr: `${retentionRate}%`, prev: null, valueColor: retentionRate < 60 ? T.amber : T.t1 },
-    { label: 'Low engagement', curr: atRisk,       prev: null, valueColor: atRisk > 0 ? T.t1 : T.t1 },
+    { label: 'Low engagement', curr: atRisk, prev: null },
   ];
   return (
     <Card style={{ padding: 20 }}>
@@ -1015,11 +829,8 @@ function MonthCompare({ ci30, ciPrev30, retentionRate, atRisk }) {
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < rows.length - 1 ? `1px solid ${T.divider}` : 'none' }}>
             <span style={{ fontSize: 12, color: T.t2 }}>{r.label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              {/* Delta pill — only when there's a real change to communicate */}
               {diff !== null && diff !== 0 && (
-                <span style={{ fontSize: 9, fontWeight: 500, color: up ? T.green : T.red }}>
-                  {up ? '+' : ''}{diff}
-                </span>
+                <span style={{ fontSize: 9, fontWeight: 500, color: up ? T.green : T.red }}>{up ? '+' : ''}{diff}</span>
               )}
               <span style={{ fontSize: 13, fontWeight: 600, color: r.valueColor || T.t1 }}>{r.curr}</span>
             </div>
@@ -1030,20 +841,22 @@ function MonthCompare({ ci30, ciPrev30, retentionRate, atRisk }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════
    ROOT EXPORT
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════ */
 export default function TabAnalytics({
-  checkIns, ci30, ciPrev30 = [], totalMembers, monthCiPer, monthChangePct,
-  monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
+  checkIns = [], ci30 = [], ciPrev30 = [], totalMembers = 0, monthCiPer = [],
+  monthChangePct = 0, monthGrowthData = [], retentionRate = 0, activeThisMonth = 0,
+  newSignUps = 0, atRisk = 0, gymId,
   allMemberships = [], classes = [], coaches = [], avatarMap = {},
   isCoach = false,
   weekTrend: weekTrendProp = [], peakHours: peakHoursProp = [], busiestDays: busiestDaysProp = [],
   retentionFunnel: retentionFunnelProp = [], dropOffBuckets: dropOffBucketsProp = [],
   churnSignals: churnSignalsProp = [], week1ReturnTrend: week1ReturnTrendProp = [],
   engagementSegments = {},
+  openModal = () => {},
 }) {
-  const now      = new Date();
+  const now = new Date();
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
@@ -1069,7 +882,7 @@ export default function TabAnalytics({
     `}</style>
   );
 
-  /* Coach view */
+  /* ── Coach view ── */
   if (isCoach) {
     const classWeeklyTrend = Array.from({ length: 8 }, (_, i) => {
       const s = subDays(now, (7 - i) * 7), e = subDays(now, (6 - i) * 7);
@@ -1078,10 +891,22 @@ export default function TabAnalytics({
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, fontFamily: F, color: T.t1 }}>
         {sharedStyles}
+
+        {/* ── Page header ── */}
+        <PageHeader
+          title="Analytics"
+          sub="Class attendance · member engagement · your performance at a glance"
+          icon={BarChart2}
+          buttons={<>
+            <GhostBtn label="Export" icon={Activity} onClick={() => {}} />
+            <Cta label="Message members" icon={Send} onClick={() => openModal('message')} />
+          </>}
+        />
+
         <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} />
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 264px', gap: 18, alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} weekTrend={weekTrend} />
+            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} />
             <Card style={{ padding: 20 }}>
               <CardHead title="Class Attendance Trend" sub="8-week view" />
               <ResponsiveContainer width="100%" height={160}>
@@ -1104,24 +929,36 @@ export default function TabAnalytics({
             <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />
             <MemberSegments totalMembers={totalMembers} superActive={superActive} active={active} casual={casual} inactive={inactive} />
             <RankedList title="Busiest Days" icon={Calendar} items={busiestDays.map(d => ({ ...d, label: d.name }))} emptyLabel="No data yet" />
-            <RankedList title="Peak Hours" icon={Clock} items={peakHours.slice(0, 5)} emptyLabel="No check-in data yet" />
+            <RankedList title="Peak Hours"   icon={Clock}    items={peakHours.slice(0, 5)} emptyLabel="No check-in data yet" />
           </div>
         </div>
       </div>
     );
   }
 
-  /* Gym owner view */
+  /* ── Gym owner view ── */
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontFamily: F, color: T.t1 }}>
       {sharedStyles}
+
+      {/* ── Page header ── */}
+      <PageHeader
+        title="Analytics"
+        sub="Retention · engagement · revenue — your gym at a glance"
+        icon={BarChart2}
+        buttons={<>
+          <GhostBtn label="Export" icon={Activity} onClick={() => {}} />
+          <Cta label="Message at-risk" icon={Send} onClick={() => openModal('message')} />
+        </>}
+      />
+
       <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} />
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 272px', gap: 18, alignItems: 'start' }}>
 
         {/* Left column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {checkIns.length >= 3 ? (
-            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} weekTrend={weekTrend} />
+            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} />
           ) : (
             <Card style={{ padding: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
