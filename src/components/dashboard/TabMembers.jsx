@@ -121,7 +121,7 @@ function StatusPill({ m }) {
 function ThinBar({ pct, color }) {
   return (
     <div style={{ height: 2, borderRadius: 99, background: T.divider, width: "100%", marginTop: 6 }}>
-      <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: color, opacity: 0.6 }} />
+
     </div>
   );
 }
