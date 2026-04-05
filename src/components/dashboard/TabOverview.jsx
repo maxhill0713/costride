@@ -37,16 +37,6 @@ const tick = { fill: C.t3, fontSize: 10, fontFamily: 'inherit' };
 const fmtMoney = (n) =>
   n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${Math.round(n)}`;
 
-/**
- * cardBg — shared card background pattern (matches CIS stat cards).
- * 135° gradient: faint colour tint → plain surface, with a matching border.
- * Apply with spread: style={{ ...cardBg(C.danger), padding: 20, ... }}
- */
-const cardBg = (color) => ({
-  background: `linear-gradient(135deg, ${color}14, ${C.surface})`,
-  border:     `1px solid ${color}28`,
-});
-
 /* ─── Mini Sparkline ───────────────────────────────────────────── */
 function MiniSpark({ data = [], width = 56, height = 24, color }) {
   if (!data || data.length < 2) return <div style={{ width, height }} />;
@@ -105,6 +95,7 @@ function TodaysPlan({
 
   const actions = useMemo(() => {
     const list = [];
+
     if (atRisk > 0) {
       const top = atRiskMembers[0];
       const memberName = top ? (top.name || top.first_name || 'a member') : 'members';
@@ -119,6 +110,7 @@ function TodaysPlan({
         fn: () => openModal('message'),
       });
     }
+
     if (newNoReturnCount > 0) {
       list.push({
         priority: 2, color: C.warn,
@@ -131,6 +123,7 @@ function TodaysPlan({
         fn: () => openModal('message'),
       });
     }
+
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
     if (!hasChallenge && list.length < 3) {
       list.push({
@@ -144,10 +137,12 @@ function TodaysPlan({
         fn: () => openModal('challenge'),
       });
     }
+
     const todayCount = checkIns.filter(c => {
       const d = new Date(c.check_in_date);
       return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
     }).length;
+
     if (list.length < 3) {
       if (todayCount === 0 && hour >= 9) {
         list.push({
@@ -174,6 +169,7 @@ function TodaysPlan({
         });
       }
     }
+
     return list.slice(0, 3);
   }, [atRisk, atRiskMembers, newNoReturnCount, challenges, checkIns, now,
       revenueAtRisk, revenuePerMember, openModal]);
@@ -182,15 +178,15 @@ function TodaysPlan({
   const urgencyLabel = atRisk > 0 ? 'Action needed' : newNoReturnCount > 0 ? 'Watch closely' : 'On track';
 
   return (
-    /* cardBg: urgencyColor — danger/warn/success drives the whole card tint */
     <div style={{
-      borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW, overflow: 'hidden',
-      ...cardBg(urgencyColor),
+      borderRadius: CARD_RADIUS, background: C.surface,
+      border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW, overflow: 'hidden',
     }}>
       {/* Header */}
       <div style={{
         padding: '20px 22px 18px',
-        borderBottom: `1px solid ${urgencyColor}20`,
+        borderBottom: `1px solid ${C.divider}`,
+        background: `linear-gradient(135deg, ${C.surface} 0%, ${urgencyColor}07 100%)`,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -213,10 +209,12 @@ function TodaysPlan({
             <span style={{ fontSize: 10, fontWeight: 700, color: urgencyColor, letterSpacing: '.06em', textTransform: 'uppercase' }}>{urgencyLabel}</span>
           </div>
         </div>
+
         <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: '-0.025em', lineHeight: 1.2 }}>
           {greeting}, {ownerName}
         </h2>
         <p style={{ margin: 0, fontSize: 14, color: C.t2, lineHeight: 1.65, maxWidth: 640 }}>{summary}</p>
+
         {revenueAtRisk > 0 && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 7,
@@ -233,15 +231,17 @@ function TodaysPlan({
 
       {/* 3 Priority Actions */}
       <div style={{ padding: '16px 22px 20px' }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 12 }}>
+        <div style={{
+          fontSize: 10, fontWeight: 700, color: C.t3,
+          textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 12,
+        }}>
           Your 3 highest-impact actions today
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           {actions.map((act, i) => (
-            /* Each action card: cardBg keyed to its own colour */
             <div key={i} style={{
               padding: '14px 14px 12px', borderRadius: 10,
-              ...cardBg(act.color),
+              background: C.surfaceEl, border: `1px solid ${C.border}`,
               borderTop: `2px solid ${act.color}`,
               display: 'flex', flexDirection: 'column',
             }}>
@@ -260,7 +260,9 @@ function TodaysPlan({
               }}>
                 {act.impact}
               </div>
-              <div style={{ fontSize: 10.5, color: C.t3, marginBottom: 10, lineHeight: 1.4 }}>→ {act.action}</div>
+              <div style={{ fontSize: 10.5, color: C.t3, marginBottom: 10, lineHeight: 1.4 }}>
+                → {act.action}
+              </div>
               <button onClick={act.fn}
                 onMouseEnter={e => e.currentTarget.style.background = `${act.color}28`}
                 onMouseLeave={e => e.currentTarget.style.background = `${act.color}16`}
@@ -277,6 +279,7 @@ function TodaysPlan({
             </div>
           ))}
         </div>
+
         <button onClick={() => openModal('message')}
           onMouseEnter={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.color = C.t1; }}
           onMouseLeave={e => { e.currentTarget.style.background = C.surfaceEl; e.currentTarget.style.color = C.t2; }}
@@ -318,6 +321,7 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
           View all <ChevronRight style={{ width: 10, height: 10 }} />
         </button>
       </div>
+
       <div style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${Math.min(displayMembers.length, 2)}, 1fr)`,
@@ -337,12 +341,10 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
           if (signals.length < 2) signals.push('Engagement score declining');
 
           return (
-            /* cardBg: churnColor — danger for high risk, warn for medium */
             <div key={i} style={{
               padding: '16px 16px 14px', borderRadius: CARD_RADIUS,
-              boxShadow: CARD_SHADOW,
-              ...cardBg(churnColor),
-              borderLeft: `3px solid ${churnColor}`,
+              background: C.surface, border: `1px solid ${C.border}`,
+              borderLeft: `3px solid ${churnColor}`, boxShadow: CARD_SHADOW,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <Avatar name={name} size={32} src={avatarMap?.[member.user_id] || null} />
@@ -355,6 +357,7 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
                   <div style={{ fontSize: 9, color: C.t3, marginTop: 2, textTransform: 'uppercase', letterSpacing: '.04em' }}>churn risk</div>
                 </div>
               </div>
+
               <div style={{ marginBottom: 10 }}>
                 {signals.slice(0, 2).map((sig, si) => (
                   <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
@@ -363,6 +366,7 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
                   </div>
                 ))}
               </div>
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{
                   fontSize: 11, fontWeight: 700, color: C.danger,
@@ -371,6 +375,7 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
                   {fmtMoney(revenueRisk)}/mo at risk
                 </div>
               </div>
+
               <button onClick={() => openModal('message')} style={{
                 width: '100%', padding: '7px 10px', borderRadius: 7,
                 background: `${churnColor}14`, border: `1px solid ${churnColor}28`,
@@ -393,20 +398,19 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
    SECTION 3 — REVENUE AT RISK (prominent banner)
 ══════════════════════════════════════════════════════════════════ */
 function RevenueAtRiskBanner({ atRisk, mrr, totalMembers, newNoReturnCount, openModal }) {
-  const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
-  const atRiskRev        = Math.round(atRisk * revenuePerMember * 0.65);
-  const newRev           = Math.round(newNoReturnCount * revenuePerMember * 0.3);
-  const totalRisk        = atRiskRev + newRev;
-  const predictedCancel  = Math.max(atRisk > 0 ? 1 : 0, Math.round(atRisk * 0.4));
+  const revenuePerMember   = totalMembers > 0 ? mrr / totalMembers : 60;
+  const atRiskRev          = Math.round(atRisk * revenuePerMember * 0.65);
+  const newRev             = Math.round(newNoReturnCount * revenuePerMember * 0.3);
+  const totalRisk          = atRiskRev + newRev;
+  const predictedCancel    = Math.max(atRisk > 0 ? 1 : 0, Math.round(atRisk * 0.4));
 
   if (totalRisk === 0) {
     return (
-      /* cardBg: success — all clear */
       <div style={{
         padding: '14px 18px', borderRadius: CARD_RADIUS,
+        background: C.surface, border: `1px solid ${C.border}`,
         boxShadow: CARD_SHADOW, display: 'flex', alignItems: 'center',
         gap: 12, borderLeft: `3px solid ${C.success}`,
-        ...cardBg(C.success),
       }}>
         <CheckCircle style={{ width: 16, height: 16, color: C.success, flexShrink: 0 }} />
         <div>
@@ -418,11 +422,10 @@ function RevenueAtRiskBanner({ atRisk, mrr, totalMembers, newNoReturnCount, open
   }
 
   return (
-    /* cardBg: danger — revenue at risk */
     <div style={{
       padding: '18px 20px', borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.dangerBrd}`,
       boxShadow: CARD_SHADOW, borderLeft: `3px solid ${C.danger}`,
-      ...cardBg(C.danger),
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ flex: 1 }}>
@@ -480,43 +483,40 @@ function CoreMetrics({ activeThisWeek, totalMembers, retentionRate, mrr, atRisk,
 
   const metrics = [
     {
-      label:      'Active This Week',
-      value:      activeThisWeek,
-      suffix:     `/ ${totalMembers}`,
-      context:    `${activeRatio}% of all members`,
-      trend:      activeRatio > 50 ? 'up' : 'neutral',
+      label:     'Active This Week',
+      value:     activeThisWeek,
+      suffix:    `/ ${totalMembers}`,
+      context:   `${activeRatio}% of all members`,
+      trend:     activeRatio > 50 ? 'up' : 'neutral',
       valueColor: activeRatio > 50 ? C.success : C.t1,
       trendColor: activeRatio > 50 ? C.success : C.t3,
-      cardColor:  activeRatio > 50 ? C.success : C.accent,
-      spark:      sparkData,
-      action:     'View members',
-      onAction:   () => setTab('members'),
+      spark:     sparkData,
+      action:    'View members',
+      onAction:  () => setTab('members'),
     },
     {
-      label:      'Retention Rate',
-      value:      retentionRate + '%',
-      suffix:     null,
-      context:    retentionRate >= 70 ? 'Healthy — top benchmark' : retentionRate >= 50 ? 'Average — room to improve' : 'Below target — act now',
-      trend:      retentionRate >= 70 ? 'up' : retentionRate < 50 ? 'down' : null,
+      label:     'Retention Rate',
+      value:     retentionRate + '%',
+      suffix:    null,
+      context:   retentionRate >= 70 ? 'Healthy — top benchmark' : retentionRate >= 50 ? 'Average — room to improve' : 'Below target — act now',
+      trend:     retentionRate >= 70 ? 'up' : retentionRate < 50 ? 'down' : null,
       valueColor: retColor,
       trendColor: retColor,
-      cardColor:  retColor,
-      ring:       retentionRate,
-      ringColor:  retColor,
+      ring:      retentionRate,
+      ringColor: retColor,
     },
     {
-      label:      'Revenue at Risk',
-      value:      revenueAtRisk > 0 ? fmtMoney(revenueAtRisk) : '$0',
-      suffix:     null,
-      context:    revenueAtRisk > 0
+      label:     'Revenue at Risk',
+      value:     revenueAtRisk > 0 ? fmtMoney(revenueAtRisk) : '$0',
+      suffix:    null,
+      context:   revenueAtRisk > 0
         ? `From ${atRisk} member${atRisk > 1 ? 's' : ''} — protect it now`
         : 'No revenue at risk',
-      trend:      revenueAtRisk > 0 ? 'down' : 'up',
+      trend:     revenueAtRisk > 0 ? 'down' : 'up',
       valueColor: revenueAtRisk > 0 ? C.danger : C.success,
       trendColor: revenueAtRisk > 0 ? C.danger : C.success,
-      cardColor:  revenueAtRisk > 0 ? C.danger : C.success,
-      action:     revenueAtRisk > 0 ? 'Message at-risk members' : undefined,
-      onAction:   revenueAtRisk > 0 ? () => setTab('members') : undefined,
+      action:    revenueAtRisk > 0 ? 'Message at-risk members' : undefined,
+      onAction:  revenueAtRisk > 0 ? () => setTab('members') : undefined,
     },
   ];
 
@@ -526,11 +526,10 @@ function CoreMetrics({ activeThisWeek, totalMembers, retentionRate, mrr, atRisk,
         const TIcon = m.trend === 'up' ? TrendingUp : m.trend === 'down' ? TrendingDown : Minus;
         const showRing = m.ring != null && m.ring > 5 && m.ring < 98;
         return (
-          /* cardBg: m.cardColor — each metric card tinted by its semantic colour */
           <div key={i} style={{
             padding: '16px 16px 14px', borderRadius: CARD_RADIUS,
+            background: C.surface, border: `1px solid ${C.border}`,
             boxShadow: CARD_SHADOW, display: 'flex', flexDirection: 'column',
-            ...cardBg(m.cardColor),
           }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 10 }}>
               {m.label}
@@ -580,6 +579,7 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
 
   const items = useMemo(() => {
     const list = [];
+
     if (newNoReturnCount > 0) {
       list.push({
         color: C.warn, icon: UserPlus,
@@ -589,6 +589,7 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
         cta: 'Send welcome message', fn: () => openModal('message'),
       });
     }
+
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
     if (!hasChallenge) {
       list.push({
@@ -599,6 +600,7 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
         cta: 'Launch a challenge', fn: () => openModal('challenge'),
       });
     }
+
     list.push({
       color: C.accent, icon: MessageSquarePlus,
       title: 'Create a community post to boost engagement',
@@ -606,6 +608,7 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
       impact: 'Socially engaged members stay 2× longer',
       cta: 'Create a post', fn: () => openModal('post'),
     });
+
     list.push({
       color: C.success, icon: UserPlus,
       title: 'Referral momentum opportunity',
@@ -613,16 +616,14 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
       impact: `Each referral = ~${fmtMoney(Math.round(revenuePerMember))}/mo added MRR`,
       cta: 'Share referral link', fn: () => openModal('addMember'),
     });
+
     return list.slice(0, 4);
   }, [newNoReturnCount, challenges, revenuePerMember]);
 
-  const topColor = items[0]?.color || C.accent;
-
   return (
-    /* cardBg: topColor — warn if non-returns present, accent otherwise */
     <div style={{
-      padding: 20, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(topColor),
+      padding: 20, borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
     }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>
         Opportunities
@@ -672,6 +673,7 @@ function Opportunities({ newNoReturnCount, challenges, checkIns, now, openModal,
 function SmartInsights({ retentionBreakdown = {}, atRisk, totalMembers, openModal }) {
   const insights = useMemo(() => {
     const list = [];
+
     const week1 = retentionBreakdown.week1 || 0;
     if (week1 > 0) {
       list.push({
@@ -680,6 +682,7 @@ function SmartInsights({ retentionBreakdown = {}, atRisk, totalMembers, openModa
         action: 'Follow up now', fn: () => openModal('message'),
       });
     }
+
     const week2to4 = retentionBreakdown.week2to4 || 0;
     if (week2to4 > 0) {
       list.push({
@@ -688,11 +691,13 @@ function SmartInsights({ retentionBreakdown = {}, atRisk, totalMembers, openModa
         action: 'Send engagement boost', fn: () => openModal('message'),
       });
     }
+
     list.push({
       color: C.accent, icon: Activity,
       text: 'Your peak activity window is 5–7pm on weekdays — scheduling classes here maximises attendance',
       action: null,
     });
+
     if (atRisk > 0 && totalMembers > 0) {
       const pct = Math.round((atRisk / totalMembers) * 100);
       if (pct > 10) {
@@ -703,45 +708,47 @@ function SmartInsights({ retentionBreakdown = {}, atRisk, totalMembers, openModa
         });
       }
     }
+
     list.push({
       color: C.success, icon: CheckCircle,
       text: 'Members who return in week 1 are 5× more likely to stay beyond 3 months — this is your top lever',
       action: null,
     });
+
     return list.slice(0, 4);
   }, [retentionBreakdown, atRisk, totalMembers]);
 
-  const topColor = insights[0]?.color || C.accent;
-
   return (
-    /* cardBg: topColor — danger/warn if risks detected, accent if all fine */
     <div style={{
-      padding: 20, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(topColor),
+      padding: 20, borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
         <Star style={{ width: 11, height: 11, color: C.accent }} />
         <span style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em' }}>Smart Insights</span>
       </div>
-      {insights.map((ins, i) => (
-        <div key={i} style={{
-          display: 'flex', alignItems: 'flex-start', gap: 10,
-          padding: '10px 0',
-          borderBottom: i < insights.length - 1 ? `1px solid ${C.divider}` : 'none',
-        }}>
-          <div style={{ width: 4, height: 4, borderRadius: '50%', background: ins.color, flexShrink: 0, marginTop: 6 }} />
-          <div style={{ flex: 1, fontSize: 12, color: C.t2, lineHeight: 1.55 }}>{ins.text}</div>
-          {ins.action && ins.fn && (
-            <button onClick={ins.fn} style={{
-              padding: '4px 9px', borderRadius: 6, whiteSpace: 'nowrap', flexShrink: 0,
-              background: `${ins.color}10`, border: `1px solid ${ins.color}20`,
-              color: ins.color, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              {ins.action}
-            </button>
-          )}
-        </div>
-      ))}
+      {insights.map((ins, i) => {
+        const Icon = ins.icon;
+        return (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+            padding: '10px 0',
+            borderBottom: i < insights.length - 1 ? `1px solid ${C.divider}` : 'none',
+          }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: ins.color, flexShrink: 0, marginTop: 6 }} />
+            <div style={{ flex: 1, fontSize: 12, color: C.t2, lineHeight: 1.55 }}>{ins.text}</div>
+            {ins.action && ins.fn && (
+              <button onClick={ins.fn} style={{
+                padding: '4px 9px', borderRadius: 6, whiteSpace: 'nowrap', flexShrink: 0,
+                background: `${ins.color}10`, border: `1px solid ${ins.color}20`,
+                color: ins.color, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                {ins.action}
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -753,6 +760,7 @@ function WhatWorked({ recentActivity = [] }) {
   const outcomes = useMemo(() => {
     const returns = recentActivity.filter(a => a.action === 'checked in' || a.action === 'returned');
     const list = [];
+
     if (returns.length >= 2) {
       list.push({
         icon: RefreshCw, color: C.success,
@@ -761,26 +769,28 @@ function WhatWorked({ recentActivity = [] }) {
         result: `~${fmtMoney(Math.round(returns.length * 0.4 * 60))}/mo retained`,
       });
     }
+
     list.push({
       icon: Bot, color: C.accent,
       cause: 'Automated "14-day inactive" trigger sent to 2 members',
       effect: '1 member returned within 48 hours',
       result: '+$60/mo retained',
     });
+
     list.push({
       icon: Trophy, color: C.success,
       cause: 'Last challenge completed by 8 members',
       effect: 'Avg weekly visits increased 2.4× during the challenge',
       result: 'Engagement boost lasted 3 weeks after it ended',
     });
+
     return list.slice(0, 3);
   }, [recentActivity]);
 
   return (
-    /* cardBg: success — positive outcomes card */
     <div style={{
-      padding: 20, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(C.success),
+      padding: 20, borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
     }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 14 }}>
         What Worked
@@ -845,13 +855,10 @@ function AutomationActivity({ atRisk, newNoReturnCount, now }) {
     return list.slice(0, 3);
   }, [atRisk, newNoReturnCount, now]);
 
-  const topColor = automations[0]?.color || C.accent;
-
   return (
-    /* cardBg: topColor — warn/accent/success based on automation state */
     <div style={{
-      padding: 20, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(topColor),
+      padding: 20, borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
         <Bot style={{ width: 11, height: 11, color: C.accent }} />
@@ -885,37 +892,44 @@ function AutomationActivity({ atRisk, newNoReturnCount, now }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIDEBAR — LIVE SIGNALS
+   SIDEBAR — LIVE SIGNALS (light trends)
 ══════════════════════════════════════════════════════════════════ */
 function LiveSignals({ todayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate, sparkData }) {
   const activeRatio = totalMembers > 0 ? Math.round((activeThisWeek / totalMembers) * 100) : 0;
   const retColor    = retentionRate >= 70 ? C.success : retentionRate >= 50 ? C.warn : C.danger;
-  const ciColor     = todayVsYest >= 0 ? C.success : C.danger;
-  /* Card tint = worst signal among the three rows */
-  const cardColor   = retColor === C.danger ? C.danger : ciColor === C.danger ? C.danger : C.accent;
 
   const signals = [
     {
-      label: 'Check-ins today', value: String(todayCI),
-      change: todayVsYest, valueColor: ciColor, trendColor: ciColor, spark: sparkData,
+      label: 'Check-ins today',
+      value: String(todayCI),
+      change: todayVsYest,
+      changeLabel: `${Math.abs(todayVsYest)}% vs yesterday`,
+      valueColor: todayVsYest >= 0 ? C.success : C.t1,
+      trendColor: todayVsYest >= 0 ? C.success : C.danger,
+      spark: sparkData,
     },
     {
-      label: 'Active this week', value: String(activeThisWeek),
+      label: 'Active this week',
+      value: String(activeThisWeek),
       context: `${activeRatio}% of members`,
-      valueColor: activeRatio > 50 ? C.success : C.t1, trendColor: C.accent, spark: sparkData,
+      valueColor: activeRatio > 50 ? C.success : C.t1,
+      trendColor: C.accent,
+      spark: sparkData,
     },
     {
-      label: 'Retention rate', value: retentionRate + '%',
+      label: 'Retention rate',
+      value: retentionRate + '%',
       context: retentionRate >= 70 ? 'Healthy' : retentionRate >= 50 ? 'Average' : 'Below target',
-      valueColor: retColor, trendColor: retColor, spark: null,
+      valueColor: retColor,
+      trendColor: retColor,
+      spark: null,
     },
   ];
 
   return (
-    /* cardBg: cardColor — reflects the worst live signal */
     <div style={{
-      padding: '16px 18px', borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(cardColor),
+      padding: '16px 18px', borderRadius: CARD_RADIUS,
+      background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW,
     }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 12 }}>
         Live Signals
@@ -955,61 +969,14 @@ function LiveSignals({ todayCI, todayVsYest, activeThisWeek, totalMembers, reten
   );
 }
 
-/* ─── Action Queue Card (extracted to obey Rules of Hooks) ──────── */
-function ActionQueueCard({ item }) {
-  const [hov, setHov] = useState(false);
-  return (
-    /* cardBg: item.color — each queue item tinted by its own priority colour */
-    <div
-      onClick={() => item.fn1()}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        padding: '11px 12px', borderRadius: 9, cursor: 'pointer',
-        ...cardBg(item.color),
-        opacity: hov ? 0.88 : 1,
-        transition: 'opacity .15s',
-      }}>
-      {/* dot + label */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-        <div style={{ width: 5, height: 5, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-        <span style={{
-          fontSize: 11.5, fontWeight: 700, color: C.t1,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {item.title}
-        </span>
-      </div>
-      {/* subtitle */}
-      <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8, paddingLeft: 10, lineHeight: 1.4 }}>
-        {item.detail}
-      </div>
-      {/* buttons */}
-      <div style={{ display: 'flex', gap: 5, paddingLeft: 10 }}
-        onClick={e => e.stopPropagation()}>
-        <button onClick={item.fn1} style={{
-          padding: '4px 10px', borderRadius: 5,
-          background: `${item.color}18`, border: `1px solid ${item.color}30`,
-          color: item.color, fontSize: 10.5, fontWeight: 700,
-          cursor: 'pointer', fontFamily: 'inherit',
-        }}>{item.cta1}</button>
-        <button onClick={item.fn2} style={{
-          padding: '4px 10px', borderRadius: 5,
-          background: C.surface, border: `1px solid ${C.border}`,
-          color: C.t3, fontSize: 10.5, fontWeight: 600,
-          cursor: 'pointer', fontFamily: 'inherit',
-        }}>{item.cta2}</button>
-      </div>
-    </div>
-  );
-}
-
 /* ══════════════════════════════════════════════════════════════════
    SIDEBAR — ACTION QUEUE
 ══════════════════════════════════════════════════════════════════ */
 function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, challenges, now, openModal, setTab, newNoReturnCount = 0 }) {
   const items = useMemo(() => {
     const list = [];
+    const hour = now.getHours();
+
     if (atRisk > 0) {
       list.push({
         priority: 1, color: C.danger, icon: Users,
@@ -1019,6 +986,7 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         cta2: 'View',    fn2: () => setTab('members'),
       });
     }
+
     if (newNoReturnCount > 0) {
       list.push({
         priority: 2, color: C.warn, icon: UserPlus,
@@ -1028,6 +996,7 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         cta2: 'View',    fn2: () => setTab('members'),
       });
     }
+
     const recentPost = (posts || []).find(p =>
       differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 7
     );
@@ -1040,6 +1009,7 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         cta2: 'View',     fn2: () => setTab('content'),
       });
     }
+
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
     if (!hasChallenge) {
       list.push({
@@ -1050,18 +1020,14 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         cta2: 'View',   fn2: () => setTab('content'),
       });
     }
+
     return list.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [atRisk, newNoReturnCount, posts, challenges, now]);
 
   const urgentCount = items.filter(s => s.color === C.danger).length;
-  const outerColor  = urgentCount > 0 ? C.danger : C.accent;
 
   return (
-    /* cardBg: outerColor — red tint when urgent items present, accent otherwise */
-    <div style={{
-      padding: 18, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(outerColor),
-    }}>
+    <div style={{ padding: 18, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Action Queue</div>
         {urgentCount > 0 && (
@@ -1075,10 +1041,11 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         )}
       </div>
       <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Sorted by impact</div>
+
       {items.length === 0 ? (
         <div style={{
           padding: '10px 12px', borderRadius: 8,
-          ...cardBg(C.success),
+          background: C.surfaceEl, border: `1px solid ${C.border}`,
           borderLeft: `3px solid ${C.success}`,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
@@ -1087,34 +1054,43 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {items.map((item, i) => (
-            <ActionQueueCard key={i} item={item} />
-          ))}
+          {items.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div key={i} style={{
+                padding: '11px 12px', borderRadius: 9,
+                background: C.surfaceEl, border: `1px solid ${C.border}`,
+                borderLeft: `3px solid ${item.color}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 5 }}>
+                  <Icon style={{ width: 10, height: 10, color: item.color, flexShrink: 0, marginTop: 2 }} />
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t1, lineHeight: 1.35 }}>{item.title}</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: C.t3, marginBottom: 8, marginLeft: 17 }}>{item.detail}</div>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  <button onClick={item.fn1} style={{
+                    flex: 1, padding: '5px 8px', borderRadius: 6,
+                    background: `${item.color}14`, border: `1px solid ${item.color}28`,
+                    color: item.color, fontSize: 10.5, fontWeight: 700, cursor: 'pointer',
+                    fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                  }}>
+                    <Send style={{ width: 8, height: 8 }} /> {item.cta1}
+                  </button>
+                  <button onClick={item.fn2} style={{
+                    padding: '5px 10px', borderRadius: 6,
+                    background: C.surface, border: `1px solid ${C.border}`,
+                    color: C.t3, fontSize: 10.5, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 3,
+                  }}>
+                    <Eye style={{ width: 8, height: 8 }} /> {item.cta2}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
-  );
-}
-
-/* ─── Quick Action Button (extracted to obey Rules of Hooks) ────── */
-function QuickActionButton({ icon: Icon, label, fn }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button onClick={fn}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px',
-        borderRadius: 8,
-        background: hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
-        border: `1px solid ${hov ? C.borderEl : C.border}`,
-        cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
-      }}>
-      <Icon style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
-      <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .15s' }}>
-        {label}
-      </span>
-    </button>
   );
 }
 
@@ -1129,18 +1105,31 @@ function QuickActionsGrid({ openModal, setTab }) {
     { icon: Calendar,          label: 'Create Event',    fn: () => openModal('event')     },
   ];
   return (
-    /* cardBg: accent — neutral utility card */
-    <div style={{
-      padding: 16, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
-      ...cardBg(C.accent),
-    }}>
+    <div style={{ padding: 16, borderRadius: CARD_RADIUS, background: C.surface, border: `1px solid ${C.border}`, boxShadow: CARD_SHADOW }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.13em', marginBottom: 10 }}>
         Quick Actions
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        {actions.map((action, i) => (
-          <QuickActionButton key={i} {...action} />
-        ))}
+        {actions.map(({ icon: Icon, label, fn }, i) => {
+          const [hov, setHov] = useState(false);
+          return (
+            <button key={i} onClick={fn}
+              onMouseEnter={() => setHov(true)}
+              onMouseLeave={() => setHov(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px',
+                borderRadius: 8,
+                background: hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
+                border: `1px solid ${hov ? C.borderEl : C.border}`,
+                cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
+              }}>
+              <Icon style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .15s' }}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -1185,53 +1174,116 @@ export default function TabOverview({
 
       {/* ══ LEFT COLUMN ══ */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* 1 — Today's Plan (AI Coach) */}
         <TodaysPlan
-          atRisk={atRisk} atRiskMembers={atRiskMembers} newNoReturnCount={newNoReturnCount}
-          mrr={mrr} totalMembers={totalMembers} retentionRate={retentionRate}
-          todayCI={todayCI} yesterdayCI={yesterdayCI} todayVsYest={todayVsYest}
-          challenges={challenges} checkIns={checkIns} now={now}
-          openModal={openModal} setTab={setTab} ownerName={ownerName}
+          atRisk={atRisk}
+          atRiskMembers={atRiskMembers}
+          newNoReturnCount={newNoReturnCount}
+          mrr={mrr}
+          totalMembers={totalMembers}
+          retentionRate={retentionRate}
+          todayCI={todayCI}
+          yesterdayCI={yesterdayCI}
+          todayVsYest={todayVsYest}
+          challenges={challenges}
+          checkIns={checkIns}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          ownerName={ownerName}
         />
+
+        {/* 2 — Priority Member Cards (only if at-risk exist) */}
         <PriorityMemberCards
-          atRiskMembers={atRiskMembers} totalMembers={totalMembers} mrr={mrr}
-          now={now} openModal={openModal} setTab={setTab} nameMap={nameMap} avatarMap={avatarMap}
+          atRiskMembers={atRiskMembers}
+          totalMembers={totalMembers}
+          mrr={mrr}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          nameMap={nameMap}
+          avatarMap={avatarMap}
         />
+
+        {/* 3 — Revenue at Risk Banner */}
         <RevenueAtRiskBanner
-          atRisk={atRisk} mrr={mrr} totalMembers={totalMembers}
-          newNoReturnCount={newNoReturnCount} openModal={openModal}
+          atRisk={atRisk}
+          mrr={mrr}
+          totalMembers={totalMembers}
+          newNoReturnCount={newNoReturnCount}
+          openModal={openModal}
         />
+
+        {/* 4 — Core Metrics (3 only) */}
         <CoreMetrics
-          activeThisWeek={activeThisWeek} totalMembers={totalMembers} retentionRate={retentionRate}
-          mrr={mrr} atRisk={atRisk} sparkData={sparkData} setTab={setTab}
+          activeThisWeek={activeThisWeek}
+          totalMembers={totalMembers}
+          retentionRate={retentionRate}
+          mrr={mrr}
+          atRisk={atRisk}
+          sparkData={sparkData}
+          setTab={setTab}
         />
+
+        {/* 5 — Opportunities */}
         <Opportunities
-          newNoReturnCount={newNoReturnCount} challenges={challenges} checkIns={checkIns}
-          now={now} openModal={openModal} setTab={setTab} totalMembers={totalMembers} mrr={mrr}
+          newNoReturnCount={newNoReturnCount}
+          challenges={challenges}
+          checkIns={checkIns}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          totalMembers={totalMembers}
+          mrr={mrr}
         />
+
+        {/* 6 — Smart Insights */}
         <SmartInsights
-          retentionBreakdown={retentionBreakdown} atRisk={atRisk}
-          totalMembers={totalMembers} openModal={openModal}
+          retentionBreakdown={retentionBreakdown}
+          atRisk={atRisk}
+          totalMembers={totalMembers}
+          openModal={openModal}
         />
+
+        {/* 7 + 8 — What Worked & Automation Activity */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
           <WhatWorked recentActivity={recentActivity} />
           <AutomationActivity atRisk={atRisk} newNoReturnCount={newNoReturnCount} now={now} />
         </div>
+
       </div>
 
       {/* ══ RIGHT SIDEBAR ══ */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <LiveSignals
-          todayCI={todayCI} todayVsYest={todayVsYest} activeThisWeek={activeThisWeek}
-          totalMembers={totalMembers} retentionRate={retentionRate} sparkData={sparkData}
-        />
-        <SidebarActionQueue
-          atRisk={atRisk} atRiskMembers={atRiskMembers} checkIns={checkIns}
-          posts={posts} challenges={challenges} now={now}
-          openModal={openModal} setTab={setTab} newNoReturnCount={newNoReturnCount}
-        />
-        <QuickActionsGrid openModal={openModal} setTab={setTab} />
-      </div>
 
+        {/* Live Signals (light trends + sparklines) */}
+        <LiveSignals
+          todayCI={todayCI}
+          todayVsYest={todayVsYest}
+          activeThisWeek={activeThisWeek}
+          totalMembers={totalMembers}
+          retentionRate={retentionRate}
+          sparkData={sparkData}
+        />
+
+        {/* Action Queue */}
+        <SidebarActionQueue
+          atRisk={atRisk}
+          atRiskMembers={atRiskMembers}
+          checkIns={checkIns}
+          posts={posts}
+          challenges={challenges}
+          now={now}
+          openModal={openModal}
+          setTab={setTab}
+          newNoReturnCount={newNoReturnCount}
+        />
+
+        {/* Quick Actions */}
+        <QuickActionsGrid openModal={openModal} setTab={setTab} />
+
+      </div>
     </div>
   );
 }
