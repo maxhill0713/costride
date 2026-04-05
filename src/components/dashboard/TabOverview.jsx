@@ -969,6 +969,57 @@ function LiveSignals({ todayCI, todayVsYest, activeThisWeek, totalMembers, reten
   );
 }
 
+/* ─── Action Queue Card (extracted to obey Rules of Hooks) ──────── */
+function ActionQueueCard({ item }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onClick={() => item.fn1()}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        padding: '11px 12px', borderRadius: 9, cursor: 'pointer',
+        background: C.surfaceEl,
+        border: `1px solid ${hov ? C.borderEl : C.border}`,
+        transition: 'border-color .15s',
+      }}>
+
+      {/* dot + label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+        <div style={{ width: 5, height: 5, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+        <span style={{
+          fontSize: 11.5, fontWeight: 700, color: C.t1,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {item.title}
+        </span>
+      </div>
+
+      {/* subtitle */}
+      <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8, paddingLeft: 10, lineHeight: 1.4 }}>
+        {item.detail}
+      </div>
+
+      {/* buttons — stopPropagation so they don't double-fire fn1 */}
+      <div style={{ display: 'flex', gap: 5, paddingLeft: 10 }}
+        onClick={e => e.stopPropagation()}>
+        <button onClick={item.fn1} style={{
+          padding: '4px 10px', borderRadius: 5,
+          background: `${item.color}18`, border: `1px solid ${item.color}30`,
+          color: item.color, fontSize: 10.5, fontWeight: 700,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>{item.cta1}</button>
+        <button onClick={item.fn2} style={{
+          padding: '4px 10px', borderRadius: 5,
+          background: C.surface, border: `1px solid ${C.border}`,
+          color: C.t3, fontSize: 10.5, fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>{item.cta2}</button>
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════════
    SIDEBAR — ACTION QUEUE
    Cards now match the fg-ac style: dot + label, indented subtitle,
@@ -1055,59 +1106,34 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {items.map((item, i) => {
-            const [hov, setHov] = useState(false);
-            return (
-              <div key={i}
-                onClick={() => item.fn1()}
-                onMouseEnter={() => setHov(true)}
-                onMouseLeave={() => setHov(false)}
-                style={{
-                  padding: '11px 12px', borderRadius: 9, cursor: 'pointer',
-                  background: C.surfaceEl,
-                  border: `1px solid ${hov ? C.borderEl : C.border}`,
-                  transition: 'border-color .15s',
-                }}>
-
-                {/* dot + label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                  <span style={{
-                    fontSize: 11.5, fontWeight: 700, color: C.t1,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {item.title}
-                  </span>
-                </div>
-
-                {/* subtitle */}
-                <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8, paddingLeft: 10, lineHeight: 1.4 }}>
-                  {item.detail}
-                </div>
-
-                {/* buttons — stopPropagation so clicking them doesn't double-fire fn1 */}
-                <div style={{ display: 'flex', gap: 5, paddingLeft: 10 }}
-                  onClick={e => e.stopPropagation()}>
-                  <button onClick={item.fn1} style={{
-                    padding: '4px 10px', borderRadius: 5,
-                    background: `${item.color}18`, border: `1px solid ${item.color}30`,
-                    color: item.color, fontSize: 10.5, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}>{item.cta1}</button>
-                  <button onClick={item.fn2} style={{
-                    padding: '4px 10px', borderRadius: 5,
-                    background: C.surface, border: `1px solid ${C.border}`,
-                    color: C.t3, fontSize: 10.5, fontWeight: 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}>{item.cta2}</button>
-                </div>
-
-              </div>
-            );
-          })}
+          {items.map((item, i) => (
+            <ActionQueueCard key={i} item={item} />
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── Quick Action Button (extracted to obey Rules of Hooks) ────── */
+function QuickActionButton({ icon: Icon, label, fn }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={fn}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px',
+        borderRadius: 8,
+        background: hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
+        border: `1px solid ${hov ? C.borderEl : C.border}`,
+        cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
+      }}>
+      <Icon style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
+      <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .15s' }}>
+        {label}
+      </span>
+    </button>
   );
 }
 
@@ -1127,26 +1153,9 @@ function QuickActionsGrid({ openModal, setTab }) {
         Quick Actions
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        {actions.map(({ icon: Icon, label, fn }, i) => {
-          const [hov, setHov] = useState(false);
-          return (
-            <button key={i} onClick={fn}
-              onMouseEnter={() => setHov(true)}
-              onMouseLeave={() => setHov(false)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7, padding: '8px 10px',
-                borderRadius: 8,
-                background: hov ? C.surfaceEl : 'rgba(255,255,255,0.025)',
-                border: `1px solid ${hov ? C.borderEl : C.border}`,
-                cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
-              }}>
-              <Icon style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: hov ? C.t1 : C.t2, transition: 'color .15s' }}>
-                {label}
-              </span>
-            </button>
-          );
-        })}
+        {actions.map((action, i) => (
+          <QuickActionButton key={i} {...action} />
+        ))}
       </div>
     </div>
   );
