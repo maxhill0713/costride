@@ -15,10 +15,10 @@ import {
   TrendingDown, TrendingUp, Users, Activity, Zap,
   Target, AlertTriangle, ChevronDown, ChevronUp,
   Calendar, MessageSquare, Bell, ArrowRight, Info,
+  MapPin, Star, Award, Edit3,
 } from 'lucide-react';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
-// Strict monochrome palette. Signal colors used once each, maximum.
 const C = {
   bg:        '#08090F',
   surface:   '#0C0F18',
@@ -40,7 +40,17 @@ const F = "'Manrope', 'DM Sans', system-ui, sans-serif";
 
 // ─── Mock data ─────────────────────────────────────────────────────────────────
 const MOCK = {
-  gym: { name: 'Iron & Oak Fitness', type: 'CrossFit', city: 'Manchester' },
+  gym: {
+    name: 'Iron & Oak Fitness',
+    type: 'CrossFit',
+    city: 'Manchester',
+    founded: '2018',
+    rating: 4.8,
+    reviewCount: 214,
+    tagline: 'Where iron meets intention.',
+    heroBg: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80&fit=crop',
+    profileImg: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80&fit=crop&crop=faces',
+  },
   summary: {
     totalMembers: 87, activeMembers: 61, newThisMonth: 9,
     inactiveMembers: 14, atRiskCount: 12, retentionRate: 68,
@@ -165,28 +175,236 @@ function Sparkline({ data, color = C.t3, width = 100, height = 32 }) {
   );
 }
 
+// ─── Hero Section ───────────────────────────────────────────────────────────────
+function HeroSection({ gym, summary }) {
+  const HERO_H = 280;
+  const PROFILE_SIZE = 88;
+  const PROFILE_OFFSET = PROFILE_SIZE / 2;
+
+  return (
+    <div style={{ position: 'relative', marginBottom: 0 }}>
+
+      {/* ── Banner image ── */}
+      <div style={{
+        position: 'relative',
+        height: HERO_H,
+        overflow: 'hidden',
+        background: C.raised,
+      }}>
+        <img
+          src={gym.heroBg}
+          alt="Gym banner"
+          style={{
+            width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center 40%',
+            display: 'block',
+            filter: 'brightness(0.45) saturate(0.6)',
+          }}
+          onError={e => { e.currentTarget.style.display = 'none'; }}
+        />
+
+        {/* Dark gradient vignette — bottom fade into bg */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(
+            to bottom,
+            rgba(8,9,15,0.18) 0%,
+            rgba(8,9,15,0.10) 35%,
+            rgba(8,9,15,0.55) 70%,
+            rgba(8,9,15,0.97) 100%
+          )`,
+        }} />
+
+        {/* Edit cover button — top right */}
+        <button style={{
+          position: 'absolute', top: 18, right: 24,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 14px',
+          background: 'rgba(8,9,15,0.55)',
+          backdropFilter: 'blur(8px)',
+          border: `1px solid ${C.borderHi}`,
+          borderRadius: 7,
+          fontSize: 10, fontWeight: 600, color: C.t2,
+          cursor: 'pointer', fontFamily: F,
+          letterSpacing: '0.04em',
+        }}>
+          <Edit3 style={{ width: 10, height: 10 }} />
+          Edit cover
+        </button>
+
+        {/* Gym tagline — bottom left of banner */}
+        <div style={{
+          position: 'absolute', bottom: PROFILE_OFFSET + 24, left: 24 + PROFILE_SIZE + 20,
+        }}>
+          <div style={{
+            fontSize: 11, color: 'rgba(237,242,255,0.35)',
+            fontFamily: F, fontStyle: 'italic', letterSpacing: '0.03em',
+          }}>
+            {gym.tagline}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Profile row — overlaps banner bottom ── */}
+      <div style={{
+        maxWidth: 1280,
+        margin: '0 auto',
+        padding: '0 36px',
+        position: 'relative',
+        marginTop: -(PROFILE_OFFSET),
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: 20,
+          paddingBottom: 24,
+        }}>
+
+          {/* Profile image ring */}
+          <div style={{
+            position: 'relative',
+            flexShrink: 0,
+            zIndex: 10,
+          }}>
+            {/* Outer glow ring */}
+            <div style={{
+              width: PROFILE_SIZE + 6,
+              height: PROFILE_SIZE + 6,
+              borderRadius: '50%',
+              background: `conic-gradient(from 180deg, rgba(237,242,255,0.12), rgba(237,242,255,0.04), rgba(237,242,255,0.12))`,
+              padding: 3,
+              boxSizing: 'border-box',
+            }}>
+              <div style={{
+                width: '100%', height: '100%',
+                borderRadius: '50%',
+                background: C.raised,
+                overflow: 'hidden',
+                border: `2px solid ${C.bg}`,
+              }}>
+                <img
+                  src={gym.profileImg}
+                  alt={gym.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={e => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#4E6080;font-family:Manrope,system-ui">I&O</div>`;
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Verified / live badge */}
+            <div style={{
+              position: 'absolute', bottom: 4, right: 0,
+              width: 18, height: 18, borderRadius: '50%',
+              background: C.ok,
+              border: `2px solid ${C.bg}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
+            </div>
+          </div>
+
+          {/* Name + meta */}
+          <div style={{ flex: 1, paddingBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+              <h1 style={{
+                fontSize: 26, fontWeight: 800, color: C.t1,
+                letterSpacing: '-0.035em', lineHeight: 1, fontFamily: F,
+                margin: 0,
+              }}>
+                {gym.name}
+              </h1>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: C.t3,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontFamily: F,
+                padding: '3px 8px',
+                border: `1px solid ${C.border}`,
+                borderRadius: 4,
+              }}>
+                {gym.type}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <MapPin style={{ width: 10, height: 10, color: C.t3 }} />
+                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>{gym.city}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Star style={{ width: 10, height: 10, color: C.t3 }} />
+                <span style={{ fontSize: 11, color: C.t2, fontFamily: F, fontWeight: 600 }}>{gym.rating}</span>
+                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>({gym.reviewCount} reviews)</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Award style={{ width: 10, height: 10, color: C.t3 }} />
+                <span style={{ fontSize: 11, color: C.t3, fontFamily: F }}>Est. {gym.founded}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick-stat chips — right side */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', paddingBottom: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {[
+              { label: 'Members',    value: summary.totalMembers,          suffix: '' },
+              { label: 'Active',     value: summary.activeMembers,          suffix: '' },
+              { label: 'Retention',  value: `${summary.retentionRate}%`,    suffix: '', warn: summary.retentionRate < 75 },
+              { label: 'At risk',    value: summary.atRiskCount,            suffix: '', danger: summary.atRiskCount > 0 },
+            ].map((chip, i) => (
+              <div key={i} style={{
+                padding: '10px 16px',
+                background: C.surface,
+                border: `1px solid ${chip.danger ? 'rgba(220,38,38,0.22)' : chip.warn ? 'rgba(180,83,9,0.22)' : C.border}`,
+                borderRadius: 10,
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4,
+                minWidth: 70,
+              }}>
+                <span style={{
+                  fontSize: 20, fontWeight: 800, color: chip.danger ? C.danger : chip.warn ? C.warn : C.t1,
+                  letterSpacing: '-0.04em', lineHeight: 1, fontFamily: F,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {chip.value}
+                </span>
+                <Label style={{ color: C.t3 }}>{chip.label}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Thin separator */}
+        <div style={{ height: 1, background: C.border }} />
+      </div>
+    </div>
+  );
+}
+
 // ─── Header ────────────────────────────────────────────────────────────────────
 function Header({ gym }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '18px 36px',
+      padding: '14px 36px',
       borderBottom: `1px solid ${C.border}`,
-      background: C.surface,
+      background: 'rgba(8,9,15,0.82)',
+      backdropFilter: 'blur(12px)',
+      position: 'sticky', top: 0, zIndex: 50,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <div style={{
-          width: 32, height: 32, borderRadius: 8,
+          width: 28, height: 28, borderRadius: 7,
           background: C.raised, border: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Activity style={{ width: 14, height: 14, color: C.t2 }} />
+          <Activity style={{ width: 12, height: 12, color: C.t2 }} />
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', fontFamily: F }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', fontFamily: F }}>
             {gym.name}
           </div>
-          <div style={{ fontSize: 10, color: C.t3, fontFamily: F, marginTop: 2 }}>
+          <div style={{ fontSize: 9, color: C.t3, fontFamily: F, marginTop: 1 }}>
             {gym.type} · {gym.city} · Retention dashboard
           </div>
         </div>
@@ -284,7 +502,6 @@ function RetentionRiskPanel({ data, summary }) {
     <section style={{ marginBottom: 32 }}>
       <Label style={{ display: 'block', marginBottom: 12 }}>Churn & retention risk</Label>
 
-      {/* Three-column summary */}
       <div style={{
         border: `1px solid ${C.border}`, borderRadius: 12,
         overflow: 'hidden', background: C.surface,
@@ -427,7 +644,6 @@ function RetentionRiskPanel({ data, summary }) {
           ))}
         </div>
 
-        {/* Rows */}
         {visible.map((m, i) => (
           <div key={m.id} style={{
             display: 'grid', gridTemplateColumns: '3fr 1.5fr 2fr 2fr 100px',
@@ -727,7 +943,6 @@ function Segments({ data, summary }) {
     <section style={{ marginBottom: 32 }}>
       <Label style={{ display: 'block', marginBottom: 12 }}>Member segments</Label>
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', background: C.surface }}>
-        {/* Tabs */}
         <div style={{
           display: 'flex', gap: 0, padding: '0 8px',
           borderBottom: `1px solid ${C.border}`,
@@ -746,7 +961,6 @@ function Segments({ data, summary }) {
           ))}
         </div>
 
-        {/* Col headers */}
         {(tab === 'risk' || tab === 'new') && (
           <div style={{
             display: 'grid',
@@ -866,9 +1080,14 @@ export default function GymRetentionDashboard({
         td, th { font-family: 'Manrope', system-ui, sans-serif; }
       `}</style>
 
+      {/* Sticky top nav bar */}
       <Header gym={gym} />
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '36px 36px 80px' }}>
+      {/* Hero — full-bleed banner + profile */}
+      <HeroSection gym={gym} summary={summary} />
+
+      {/* Dashboard body */}
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 36px 80px' }}>
         <FocusStrip       items={MOCK.focus} />
         <MetricRow        s={summary} />
         <RetentionRiskPanel data={MOCK} summary={summary} />
