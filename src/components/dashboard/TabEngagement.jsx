@@ -19,28 +19,28 @@ import {
 
 /* ── Design tokens ──────────────────────────────────────────────── */
 const T = {
-  bg:          "#050810",
-  surface:     "#0a0f1e",
-  surfaceEl:   "#0d1225",
-  surfaceHov:  "#101929",
-  border:      "rgba(255,255,255,0.04)",
-  borderEl:    "rgba(255,255,255,0.07)",
-  divider:     "rgba(255,255,255,0.03)",
-  t1: "#eef2ff", t2: "#8b95b3", t3: "#4b5578", t4: "#252d45",
-  accent:      "#3b82f6",
-  accentDim:   "rgba(59,130,246,0.10)",
-  accentBrd:   "rgba(59,130,246,0.22)",
-  red:         "#ef4444",
-  redDim:      "rgba(239,68,68,0.08)",
-  redBrd:      "rgba(239,68,68,0.18)",
-  amber:       "#f59e0b",
-  amberDim:    "rgba(245,158,11,0.08)",
-  amberBrd:    "rgba(245,158,11,0.18)",
-  green:       "#10b981",
-  greenDim:    "rgba(16,185,129,0.08)",
-  greenBrd:    "rgba(16,185,129,0.18)",
-  r: "16px", rsm: "10px",
-  sh: "inset 0 1px 0 rgba(255,255,255,0.012)",
+  bg:          "#08090e",
+  surface:     "#0f1016",
+  surfaceEl:   "#14151d",
+  surfaceHov:  "#191a24",
+  border:      "#1e2030",
+  borderEl:    "#262840",
+  divider:     "#141520",
+  t1: "#ededf0", t2: "#9191a4", t3: "#525266", t4: "#2e2e42",
+  accent:      "#4c6ef5",
+  accentDim:   "#1a2048",
+  accentBrd:   "#263070",
+  red:         "#c0392b",
+  redDim:      "#160f0d",
+  redBrd:      "#2e1614",
+  amber:       "#b07b30",
+  amberDim:    "#161008",
+  amberBrd:    "#2a2010",
+  green:       "#2d8a62",
+  greenDim:    "#091912",
+  greenBrd:    "#132e20",
+  r: "8px", rsm: "6px",
+  sh: "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
 };
 
 /* ── Trigger catalogue ──────────────────────────────────────────── */
@@ -953,3 +953,4 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
     </div>
   );
 }
+f
