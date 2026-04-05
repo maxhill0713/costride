@@ -214,6 +214,10 @@ function formatPostDate(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now - date;
+
+  // Handles future timestamps (e.g. timezone offset making post appear ahead of now)
+  if (diffMs < 0) return 'Just now';
+
   const diffMins = diffMs / (1000 * 60);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
@@ -709,7 +713,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               <div className="flex flex-col items-center flex-1">
                 <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
-            </div>
+              </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">
                 <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
