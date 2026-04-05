@@ -381,41 +381,6 @@ function HeroSection({ gym, summary }) {
   );
 }
 
-// ─── Header ────────────────────────────────────────────────────────────────────
-function Header({ gym }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '14px 36px',
-      borderBottom: `1px solid ${C.border}`,
-      background: 'rgba(8,9,15,0.82)',
-      backdropFilter: 'blur(12px)',
-      position: 'sticky', top: 0, zIndex: 50,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 7,
-          background: C.raised, border: `1px solid ${C.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Activity style={{ width: 12, height: 12, color: C.t2 }} />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', fontFamily: F }}>
-            {gym.name}
-          </div>
-          <div style={{ fontSize: 9, color: C.t3, fontFamily: F, marginTop: 1 }}>
-            {gym.type} · {gym.city} · Retention dashboard
-          </div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.ok }} />
-        <span style={{ fontSize: 10, color: C.t3, fontFamily: F }}>Live · updated just now</span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Today's Focus ──────────────────────────────────────────────────────────────
 function FocusStrip({ items }) {
