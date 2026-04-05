@@ -1,70 +1,47 @@
 /**
- * MembersPageAI — Refined · Premium · Calm
- * Design direction: Stripe/Linear/Notion — high signal, low noise.
- * Color is a last resort, not a first language.
+ * MembersPageAI — Restyled with TabEngagement design system
+ * Tokens, primitives, shadows, radius, and component language
+ * all unified with TabEngagement.
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
   AlertTriangle, TrendingDown, TrendingUp, Users, UserPlus,
   Flame, Send, X, ChevronRight, ChevronDown, ChevronLeft, Search,
   Check, Bell, Activity, Star, Tag, MoreHorizontal,
-  MessageSquare, Plus, Clock, Target, Calendar, ArrowUpRight,
+  Plus, ArrowUpRight, DollarSign,
 } from "lucide-react";
 
-/* ── Design Tokens ─────────────────────────────────────────────────
-   Philosophy: near-monochromatic base. Color only where it earns
-   its place (critical risk, destructive actions, live indicators).
-──────────────────────────────────────────────────────────────────── */
+/* ── Design Tokens — unified with TabEngagement ─────────────────── */
 const T = {
-  /* Backgrounds */
-  bg:         "#050810",
-  surface:    "#0a0f1e",
-  surfaceEl:  "#0d1225",
-  surfaceHov: "#101929",
-  surfacePop: "#131c2e",
-
-  /* Borders */
-  border:     "rgba(255,255,255,0.04)",
-  borderEl:   "rgba(255,255,255,0.07)",
-  borderFoc:  "rgba(255,255,255,0.12)",
-
-  /* Divider */
-  divider:    "rgba(255,255,255,0.03)",
-
-  /* Text */
-  t1: "#eef2ff",
-  t2: "#8b95b3",
-  t3: "#4b5578",
-  t4: "#252d45",
-
-  /* Accent — single blue, used sparingly */
-  accent:    "#3b82f6",
-  accentDim: "rgba(59,130,246,0.10)",
-  accentBrd: "rgba(59,130,246,0.22)",
-
-  /* Status — intentionally desaturated */
-  red:       "#ef4444",
-  redDim:    "rgba(239,68,68,0.08)",
-  redBrd:    "rgba(239,68,68,0.18)",
-
-  amber:     "#f59e0b",
-  amberDim:  "rgba(245,158,11,0.08)",
-  amberBrd:  "rgba(245,158,11,0.18)",
-
-  green:     "#10b981",
-  greenDim:  "rgba(16,185,129,0.08)",
-  greenBrd:  "rgba(16,185,129,0.18)",
-
-  blue:      "#3b82f6",
-  blueDim:   "rgba(59,130,246,0.10)",
-  blueBrd:   "rgba(59,130,246,0.22)",
-
-  /* Misc */
-  radius:   "16px",
-  radiusSm: "10px",
-  shadow:   "inset 0 1px 0 rgba(255,255,255,0.012)",
-  shadowMd: "0 4px 24px rgba(0,0,0,0.15)",
+  bg:          "#08090e",
+  surface:     "#0f1016",
+  surfaceEl:   "#14151d",
+  surfaceHov:  "#191a24",
+  border:      "#1e2030",
+  borderEl:    "#262840",
+  divider:     "#141520",
+  t1: "#ededf0", t2: "#9191a4", t3: "#525266", t4: "#2e2e42",
+  accent:      "#4c6ef5",
+  accentDim:   "#1a2048",
+  accentBrd:   "#263070",
+  red:         "#c0392b",
+  redDim:      "#160f0d",
+  redBrd:      "#2e1614",
+  amber:       "#b07b30",
+  amberDim:    "#161008",
+  amberBrd:    "#2a2010",
+  green:       "#2d8a62",
+  greenDim:    "#091912",
+  greenBrd:    "#132e20",
+  /* blue aliased to accent for "New" status */
+  blue:        "#4c6ef5",
+  blueDim:     "#1a2048",
+  blueBrd:     "#263070",
+  r:   "8px",
+  rsm: "6px",
+  sh:  "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
+  shMd:"0 4px 24px rgba(0,0,0,0.45)",
 };
 
 /* ── Mock Data ──────────────────────────────────────────────────── */
@@ -72,31 +49,28 @@ const NOW = new Date();
 const daysAgo = (n) => new Date(NOW.getTime() - n * 864e5);
 
 const MOCK_MEMBERS = [
-  { id:"1", name:"Marcus Webb",     initials:"MW", colorIdx:0, plan:"Premium",  monthlyValue:120, lastVisit:daysAgo(22), daysSince:22, visits30:0, prevVisits30:8, visitsTotal:47, streak:0, churnPct:84, joinedDaysAgo:180, returnChance:38, reasons:["No visits in 22 days","Was averaging 8/mo → 0","Missed last 3 classes"], bestAction:"Send 'We miss you'", status:"At risk", statusDetail:"No visits in 22 days · Dropped from 8/month", segment:"atRisk" },
-  { id:"2", name:"Priya Sharma",    initials:"PS", colorIdx:1, plan:"Monthly",  monthlyValue:60,  lastVisit:daysAgo(16), daysSince:16, visits30:1, prevVisits30:4, visitsTotal:31, streak:0, churnPct:71, joinedDaysAgo:95, returnChance:44, reasons:["16 days since last visit","Frequency down 75%","Usually comes Tues/Thurs"], bestAction:"Friendly check-in", status:"Dropping off", statusDetail:"Frequency dropped 75% · Pattern broken", segment:"atRisk" },
-  { id:"3", name:"Tyler Rhodes",    initials:"TR", colorIdx:2, plan:"Monthly",  monthlyValue:60,  lastVisit:daysAgo(9),  daysSince:9,  visits30:1, prevVisits30:5, visitsTotal:12, streak:0, churnPct:55, joinedDaysAgo:28, returnChance:52, reasons:["New member not building habit","Only 1 visit this month","Week 4 — critical window"], bestAction:"Habit-building nudge", status:"New", statusDetail:"28 days in · Only 1 visit this month", segment:"new" },
-  { id:"4", name:"Chloe Nakamura",  initials:"CN", colorIdx:3, plan:"Annual",   monthlyValue:90,  lastVisit:daysAgo(1),  daysSince:1,  visits30:14, prevVisits30:11, visitsTotal:203, streak:18, churnPct:4, joinedDaysAgo:420, returnChance:96, reasons:[], bestAction:"Challenge invite", status:"Consistent", statusDetail:"18-day streak · Up 27% this month", segment:"active" },
-  { id:"5", name:"Devon Osei",      initials:"DO", colorIdx:4, plan:"Monthly",  monthlyValue:60,  lastVisit:daysAgo(19), daysSince:19, visits30:0, prevVisits30:3, visitsTotal:8, streak:0, churnPct:78, joinedDaysAgo:45, returnChance:35, reasons:["19 days absent","Early-stage member at risk","Visited 3x then stopped"], bestAction:"Personal outreach", status:"At risk", statusDetail:"19 days absent · Joined & disappeared", segment:"atRisk" },
-  { id:"6", name:"Anya Petrov",     initials:"AP", colorIdx:5, plan:"Premium",  monthlyValue:120, lastVisit:daysAgo(0),  daysSince:0,  visits30:9, prevVisits30:7, visitsTotal:88, streak:7, churnPct:6, joinedDaysAgo:210, returnChance:94, reasons:[], bestAction:"Referral ask", status:"Engaged", statusDetail:"7-day streak · Consistent performer", segment:"active" },
-  { id:"7", name:"Jamie Collins",   initials:"JC", colorIdx:6, plan:"Monthly",  monthlyValue:60,  lastVisit:daysAgo(5),  daysSince:5,  visits30:2, prevVisits30:4, visitsTotal:19, streak:0, churnPct:42, joinedDaysAgo:58, returnChance:58, reasons:[], bestAction:"Motivate", status:"Dropping off", statusDetail:"Frequency halved · Below target", segment:"inactive" },
-  { id:"8", name:"Sam Rivera",      initials:"SR", colorIdx:7, plan:"Monthly",  monthlyValue:60,  lastVisit:null,        daysSince:999, visits30:0, prevVisits30:0, visitsTotal:1, streak:0, churnPct:91, joinedDaysAgo:6, returnChance:30, reasons:["Joined 6 days ago, 1 visit only","Critical first-week window","Has not returned"], bestAction:"Week-1 welcome", status:"New", statusDetail:"6 days in · First week habit window", segment:"new" },
+  { id:"1", name:"Marcus Webb",    initials:"MW", colorIdx:0, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(22), daysSince:22, visits30:0,  prevVisits30:8,  visitsTotal:47,  streak:0,  churnPct:84, joinedDaysAgo:180, returnChance:38, reasons:["No visits in 22 days","Was averaging 8/mo → 0","Missed last 3 classes"],      bestAction:"Send 'We miss you'",   status:"At risk",     statusDetail:"No visits in 22 days · Dropped from 8/month",    segment:"atRisk"   },
+  { id:"2", name:"Priya Sharma",   initials:"PS", colorIdx:1, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(16), daysSince:16, visits30:1,  prevVisits30:4,  visitsTotal:31,  streak:0,  churnPct:71, joinedDaysAgo:95,  returnChance:44, reasons:["16 days since last visit","Frequency down 75%","Usually comes Tues/Thurs"],     bestAction:"Friendly check-in",    status:"Dropping off",statusDetail:"Frequency dropped 75% · Pattern broken",          segment:"atRisk"   },
+  { id:"3", name:"Tyler Rhodes",   initials:"TR", colorIdx:2, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(9),  daysSince:9,  visits30:1,  prevVisits30:5,  visitsTotal:12,  streak:0,  churnPct:55, joinedDaysAgo:28,  returnChance:52, reasons:["New member not building habit","Only 1 visit this month","Week 4 — critical window"],bestAction:"Habit-building nudge", status:"New",         statusDetail:"28 days in · Only 1 visit this month",            segment:"new"      },
+  { id:"4", name:"Chloe Nakamura", initials:"CN", colorIdx:3, plan:"Annual",  monthlyValue:90,  lastVisit:daysAgo(1),  daysSince:1,  visits30:14, prevVisits30:11, visitsTotal:203, streak:18, churnPct:4,  joinedDaysAgo:420, returnChance:96, reasons:[],                                                                                      bestAction:"Challenge invite",     status:"Consistent",  statusDetail:"18-day streak · Up 27% this month",               segment:"active"   },
+  { id:"5", name:"Devon Osei",     initials:"DO", colorIdx:4, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(19), daysSince:19, visits30:0,  prevVisits30:3,  visitsTotal:8,   streak:0,  churnPct:78, joinedDaysAgo:45,  returnChance:35, reasons:["19 days absent","Early-stage member at risk","Visited 3x then stopped"],              bestAction:"Personal outreach",    status:"At risk",     statusDetail:"19 days absent · Joined & disappeared",           segment:"atRisk"   },
+  { id:"6", name:"Anya Petrov",    initials:"AP", colorIdx:5, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(0),  daysSince:0,  visits30:9,  prevVisits30:7,  visitsTotal:88,  streak:7,  churnPct:6,  joinedDaysAgo:210, returnChance:94, reasons:[],                                                                                      bestAction:"Referral ask",         status:"Engaged",     statusDetail:"7-day streak · Consistent performer",             segment:"active"   },
+  { id:"7", name:"Jamie Collins",  initials:"JC", colorIdx:6, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(5),  daysSince:5,  visits30:2,  prevVisits30:4,  visitsTotal:19,  streak:0,  churnPct:42, joinedDaysAgo:58,  returnChance:58, reasons:[],                                                                                      bestAction:"Motivate",             status:"Dropping off",statusDetail:"Frequency halved · Below target",                segment:"inactive" },
+  { id:"8", name:"Sam Rivera",     initials:"SR", colorIdx:7, plan:"Monthly", monthlyValue:60,  lastVisit:null,        daysSince:999, visits30:0, prevVisits30:0,  visitsTotal:1,   streak:0,  churnPct:91, joinedDaysAgo:6,   returnChance:30, reasons:["Joined 6 days ago, 1 visit only","Critical first-week window","Has not returned"],      bestAction:"Week-1 welcome",       status:"New",         statusDetail:"6 days in · First week habit window",             segment:"new"      },
 ];
 
 const AVATAR_PALETTE = [
-  { bg:"rgba(59,130,246,0.12)",  text:"#6ea8fe" },
-  { bg:"rgba(16,185,129,0.12)",  text:"#4ade80" },
+  { bg:"rgba(76,110,245,0.12)",  text:"#6ea8fe" },
+  { bg:"rgba(45,138,98,0.14)",   text:"#4ade80" },
   { bg:"rgba(139,92,246,0.12)",  text:"#c084fc" },
-  { bg:"rgba(245,158,11,0.12)",  text:"#fbbf24" },
-  { bg:"rgba(239,68,68,0.12)",   text:"#f87171" },
+  { bg:"rgba(176,123,48,0.14)",  text:"#fbbf24" },
+  { bg:"rgba(192,57,43,0.12)",   text:"#f87171" },
   { bg:"rgba(6,182,212,0.12)",   text:"#22d3ee" },
   { bg:"rgba(168,85,247,0.12)",  text:"#d946ef" },
   { bg:"rgba(249,115,22,0.12)",  text:"#fb923c" },
 ];
 
-/* ── Risk helpers ─────────────────────────────────────────────────
-   Returns only the signal needed — a color + faint tint.
-   No bold fills, no competing saturations.
-──────────────────────────────────────────────────────────────────── */
+/* ── Helpers ────────────────────────────────────────────────────── */
 function riskTokens(pct) {
   if (pct >= 70) return { color: T.red,   dim: T.redDim,   brd: T.redBrd   };
   if (pct >= 40) return { color: T.amber, dim: T.amberDim, brd: T.amberBrd };
@@ -112,6 +86,26 @@ function statusTokens(status) {
     "Engaged":     { color: T.green, dim: T.greenDim, brd: T.greenBrd, dot: false },
   };
   return map[status] || { color: T.t3, dim: T.surfaceEl, brd: T.border, dot: false };
+}
+
+function useCountUp(target, delay = 0) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const duration = 900;
+      let start = null;
+      const step = (ts) => {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        setVal(Math.round(ease * target));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [target, delay]);
+  return val;
 }
 
 /* ── Primitives ──────────────────────────────────────────────────── */
@@ -140,16 +134,13 @@ function Dot({ color, glow = false, size = 6 }) {
   );
 }
 
-/* Subtle status badge — text + optional dot, no bold fill */
 function StatusPill({ m }) {
   const tk = statusTokens(m.status);
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "2px 7px", borderRadius: 20,
-      fontSize: 10, fontWeight: 500,
-      background: tk.dim, color: tk.color,
-      border: `1px solid ${tk.brd}`,
+      padding: "2px 7px", borderRadius: 20, fontSize: 10, fontWeight: 500,
+      background: tk.dim, color: tk.color, border: `1px solid ${tk.brd}`,
     }}>
       {tk.dot && <Dot color={tk.color} glow size={5} />}
       {m.status}
@@ -157,7 +148,6 @@ function StatusPill({ m }) {
   );
 }
 
-/* Churn — just colored text, no badge */
 function ChurnText({ pct }) {
   const tk = riskTokens(pct);
   return (
@@ -167,7 +157,6 @@ function ChurnText({ pct }) {
   );
 }
 
-/* Thin risk bar — single line, restrained */
 function ThinBar({ pct, color }) {
   return (
     <div style={{ height: 2, borderRadius: 99, background: T.divider, width: "100%", marginTop: 6 }}>
@@ -176,85 +165,115 @@ function ThinBar({ pct, color }) {
   );
 }
 
-/* Ghost / primary button */
-function Btn({ children, variant = "ghost", onClick, style = {} }) {
+function Card({ children, style = {} }) {
+  return (
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderRadius: T.r, boxShadow: T.sh, overflow: "hidden", ...style,
+    }}>{children}</div>
+  );
+}
+
+/* Ghost / Primary button — matches TabEngagement exactly */
+function GhostBtn({ children, onClick, style = {}, danger = false }) {
   const [hov, setHov] = useState(false);
-  const base = {
-    display: "inline-flex", alignItems: "center", gap: 5,
-    padding: "6px 12px", borderRadius: T.radiusSm,
-    fontSize: 11, fontWeight: 500, cursor: "pointer",
-    fontFamily: "inherit", border: "1px solid", whiteSpace: "nowrap",
-    transition: "all .12s",
-  };
-  const styles = {
-    primary: { background: T.accent, borderColor: T.accent, color: "#fff", opacity: hov ? 0.88 : 1 },
-    ghost:   { background: hov ? T.surfaceHov : T.surfaceEl, borderColor: hov ? T.borderEl : T.border, color: T.t2 },
-    subtle:  { background: "transparent", borderColor: T.border, color: T.t2, opacity: hov ? 1 : 0.8 },
-  };
   return (
     <button
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       onClick={e => { e.stopPropagation(); onClick?.(); }}
-      style={{ ...base, ...styles[variant], ...style }}
-    >
-      {children}
-    </button>
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 4,
+        padding: "5px 10px", borderRadius: T.rsm, fontSize: 11, fontWeight: 500,
+        cursor: "pointer", fontFamily: "inherit", border: "1px solid",
+        background: danger && hov ? T.redDim : hov ? T.surfaceHov : T.surfaceEl,
+        borderColor: danger && hov ? T.redBrd : hov ? T.borderEl : T.border,
+        color: danger && hov ? T.red : T.t2, transition: "all .12s", ...style,
+      }}
+    >{children}</button>
+  );
+}
+
+function PrimaryBtn({ children, onClick, style = {} }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      onClick={e => { e.stopPropagation(); onClick?.(); }}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        padding: "6px 12px", borderRadius: T.rsm, fontSize: 11, fontWeight: 600,
+        cursor: "pointer", fontFamily: "inherit", border: "1px solid transparent",
+        background: T.accent, color: "#fff", opacity: hov ? 0.88 : 1,
+        transition: "opacity .12s", whiteSpace: "nowrap", ...style,
+      }}
+    >{children}</button>
+  );
+}
+
+/* Unified Btn (ghost/primary/subtle variants) */
+function Btn({ children, variant = "ghost", onClick, style = {} }) {
+  if (variant === "primary") return <PrimaryBtn onClick={onClick} style={style}>{children}</PrimaryBtn>;
+  if (variant === "subtle") return <GhostBtn onClick={onClick} style={{ background: "transparent", ...style }}>{children}</GhostBtn>;
+  return <GhostBtn onClick={onClick} style={style}>{children}</GhostBtn>;
+}
+
+/* ── Animated stat card (TabEngagement) ─────────────────────────── */
+function StatCard({ icon: Icon, label, value, sub, prefix = "", delay = 0, valueColor }) {
+  const counted = useCountUp(typeof value === "number" ? value : 0, delay);
+  const display = typeof value === "number" ? `${prefix}${counted.toLocaleString()}` : value;
+  const col = valueColor || T.t1;
+  return (
+    <Card style={{ padding: "18px 20px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: T.rsm, flexShrink: 0,
+          background: T.surfaceEl, border: `1px solid ${T.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Icon size={14} color={col === T.t1 ? T.t3 : col} />
+        </div>
+        <ArrowUpRight size={11} color={T.t4} />
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1, color: col, marginBottom: 5, fontVariantNumeric: "tabular-nums" }}>
+        {display}
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 500, color: T.t2 }}>{label}</div>
+      <div style={{ fontSize: 10, color: T.t3, marginTop: 2 }}>{sub}</div>
+    </Card>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   METRICS BAR
+   METRICS BAR — animated stat cards
 ══════════════════════════════════════════════════════════════════ */
 function MetricsBar({ members }) {
   const atRiskCount = members.filter(m => m.churnPct >= 60).length;
-  const atRiskValue = members.filter(m => m.churnPct >= 60).reduce((s,m) => s + m.monthlyValue, 0);
+  const atRiskValue = members.filter(m => m.churnPct >= 60).reduce((s, m) => s + m.monthlyValue, 0);
   const activeCount = members.filter(m => m.daysSince < 7).length;
-
-  const stats = [
-    { label: "Total Members",   val: members.length,  sub: "all time"     },
-    { label: "Active (7 days)", val: activeCount,      sub: `${Math.round(activeCount/members.length*100)}% of total` },
-    { label: "At Risk",         val: atRiskCount,      sub: "60%+ churn risk", highlight: atRiskCount > 0 },
-    { label: "Revenue at Risk", val: `$${atRiskValue}`, sub: "per month",   highlight: atRiskValue > 0 },
-  ];
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 16 }}>
-      {stats.map((s, i) => (
-        <div key={i} style={{
-          padding: "16px 18px",
-          background: T.surface, borderRadius: T.radius,
-          border: `1px solid ${T.border}`, boxShadow: T.shadow,
-        }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: T.t3, textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 8 }}>
-            {s.label}
-          </div>
-          <div style={{
-            fontSize: 26, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1,
-            color: s.highlight ? T.red : T.t1, marginBottom: 5,
-          }}>
-            {s.val}
-          </div>
-          <div style={{ fontSize: 10, color: T.t3 }}>{s.sub}</div>
-        </div>
-      ))}
+      <StatCard icon={Users}         label="Total Members"   sub="all time"                    value={members.length} delay={0}   />
+      <StatCard icon={Activity}      label="Active (7 days)" sub={`${Math.round(activeCount/members.length*100)}% of total`} value={activeCount} delay={100} />
+      <StatCard icon={AlertTriangle} label="At Risk"         sub="60%+ churn risk"             value={atRiskCount}    delay={200} valueColor={atRiskCount > 0 ? T.red : T.t1} />
+      <StatCard icon={DollarSign}    label="Revenue at Risk" sub="per month"                   value={atRiskValue}    delay={300} prefix="$" valueColor={atRiskValue > 0 ? T.red : T.t1} />
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 1: PRIORITY MEMBERS (calm, card-based)
+   PRIORITY MEMBERS
 ══════════════════════════════════════════════════════════════════ */
 function ActOnToday({ members, onMessage, onSelect }) {
   const priority = useMemo(() =>
-    members.filter(m => m.churnPct >= 40).sort((a,b) => b.churnPct - a.churnPct).slice(0,4),
+    members.filter(m => m.churnPct >= 40).sort((a, b) => b.churnPct - a.churnPct).slice(0, 4),
   [members]);
 
   if (!priority.length) return null;
-  const totalAtRisk = priority.reduce((s,m) => s + m.monthlyValue, 0);
+  const totalAtRisk = priority.reduce((s, m) => s + m.monthlyValue, 0);
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {/* Section label */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: T.t2, textTransform: "uppercase", letterSpacing: ".1em" }}>
@@ -271,7 +290,6 @@ function ActOnToday({ members, onMessage, onSelect }) {
         <span style={{ fontSize: 11, color: T.t3 }}>${totalAtRisk}/mo at risk</span>
       </div>
 
-      {/* Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
         {priority.map(m => {
           const tk = riskTokens(m.churnPct);
@@ -281,16 +299,14 @@ function ActOnToday({ members, onMessage, onSelect }) {
               onClick={() => onSelect(m)}
               style={{
                 padding: "16px 18px",
-                background: T.surface, borderRadius: T.radius,
+                background: T.surface, borderRadius: T.r,
                 border: `1px solid ${T.border}`,
                 borderLeft: `2px solid ${tk.color}`,
-                boxShadow: T.shadow, cursor: "pointer",
-                transition: "background .12s",
+                boxShadow: T.sh, cursor: "pointer", transition: "background .12s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = T.surfaceEl}
               onMouseLeave={e => e.currentTarget.style.background = T.surface}
             >
-              {/* Header row */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <Avatar m={m} size={34} />
@@ -309,9 +325,8 @@ function ActOnToday({ members, onMessage, onSelect }) {
 
               <ThinBar pct={m.churnPct} color={tk.color} />
 
-              {/* Reasons — text only, no badges */}
               <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 3 }}>
-                {m.reasons.slice(0,2).map((r,i) => (
+                {m.reasons.slice(0, 2).map((r, i) => (
                   <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
                     <span style={{ color: T.t4, fontSize: 10, marginTop: 2 }}>—</span>
                     <span style={{ fontSize: 11, color: T.t2, lineHeight: 1.5 }}>{r}</span>
@@ -319,7 +334,6 @@ function ActOnToday({ members, onMessage, onSelect }) {
                 ))}
               </div>
 
-              {/* Footer */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
                 <span style={{ fontSize: 11, color: T.t3 }}>
                   <span style={{ color: T.t2, fontWeight: 500 }}>${m.monthlyValue}</span>/mo · {m.returnChance}% return likelihood
@@ -328,7 +342,7 @@ function ActOnToday({ members, onMessage, onSelect }) {
                   onClick={e => { e.stopPropagation(); onMessage(m); }}
                   style={{
                     display: "flex", alignItems: "center", gap: 5,
-                    padding: "5px 11px", borderRadius: T.radiusSm,
+                    padding: "5px 11px", borderRadius: T.rsm,
                     background: T.surfaceEl, border: `1px solid ${T.borderEl}`,
                     color: T.t2, fontSize: 10, fontWeight: 500,
                     cursor: "pointer", fontFamily: "inherit",
@@ -346,14 +360,14 @@ function ActOnToday({ members, onMessage, onSelect }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 2: SMART SEGMENTS (compact, neutral chips)
+   SMART SEGMENTS
 ══════════════════════════════════════════════════════════════════ */
 function SmartSegments({ members, activeFilter, onFilter, onBulkMessage }) {
   const segments = useMemo(() => [
-    { id:"atRisk",   icon:AlertTriangle, label:"Need attention",  color:T.red,   count: members.filter(m=>m.churnPct>=60).length,                                             action:"Message all" },
-    { id:"dropping", icon:TrendingDown,  label:"Dropping off",    color:T.amber, count: members.filter(m=>m.prevVisits30>0&&m.visits30<=m.prevVisits30*0.5).length,           action:"Nudge all" },
-    { id:"new",      icon:UserPlus,      label:"New members",     color:T.blue,  count: members.filter(m=>m.joinedDaysAgo<=14).length,                                        action:"Welcome" },
-    { id:"active",   icon:Flame,         label:"On streak",       color:T.green, count: members.filter(m=>m.streak>=5).length,                                                action:"Challenge" },
+    { id:"atRisk",   icon:AlertTriangle, label:"Need attention", color:T.red,   count: members.filter(m=>m.churnPct>=60).length,                                   action:"Message all" },
+    { id:"dropping", icon:TrendingDown,  label:"Dropping off",   color:T.amber, count: members.filter(m=>m.prevVisits30>0&&m.visits30<=m.prevVisits30*0.5).length,  action:"Nudge all"   },
+    { id:"new",      icon:UserPlus,      label:"New members",    color:T.blue,  count: members.filter(m=>m.joinedDaysAgo<=14).length,                               action:"Welcome"     },
+    { id:"active",   icon:Flame,         label:"On streak",      color:T.green, count: members.filter(m=>m.streak>=5).length,                                       action:"Challenge"   },
   ], [members]);
 
   return (
@@ -368,39 +382,35 @@ function SmartSegments({ members, activeFilter, onFilter, onBulkMessage }) {
             style={{
               flex: "1 1 160px", minWidth: 150,
               display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 14px", borderRadius: T.radius,
-              background: on ? T.surfacePop : T.surface,
+              padding: "10px 14px", borderRadius: T.r,
+              background: on ? T.surfaceHov : T.surface,
               border: `1px solid ${on ? T.borderEl : T.border}`,
-              cursor: "pointer", transition: "all .12s",
+              boxShadow: T.sh, cursor: "pointer", transition: "all .12s",
             }}
             onMouseEnter={e => { if (!on) e.currentTarget.style.background = T.surfaceEl; }}
             onMouseLeave={e => { if (!on) e.currentTarget.style.background = T.surface; }}
           >
             <div style={{
-              width: 30, height: 30, borderRadius: 7,
-              background: T.surfaceEl, flexShrink: 0,
+              width: 30, height: 30, borderRadius: T.rsm,
+              background: T.surfaceEl, border: `1px solid ${T.border}`, flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <Icon size={13} color={on ? s.color : T.t3} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 17, fontWeight: 700, color: on ? s.color : T.t1, lineHeight: 1.1 }}>{s.count}</div>
-              <div style={{ fontSize: 10, color: T.t3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {s.label}
-              </div>
+              <div style={{ fontSize: 10, color: T.t3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.label}</div>
             </div>
             {s.count > 0 && (
               <button
                 onClick={e => { e.stopPropagation(); onBulkMessage(s.id); }}
                 style={{
-                  padding: "3px 8px", borderRadius: 5,
+                  padding: "3px 8px", borderRadius: T.rsm,
                   background: "transparent", border: `1px solid ${T.border}`,
                   color: T.t3, fontSize: 10, cursor: "pointer",
                   fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
                 }}
-              >
-                {s.action}
-              </button>
+              >{s.action}</button>
             )}
           </div>
         );
@@ -414,13 +424,14 @@ function SmartSegments({ members, activeFilter, onFilter, onBulkMessage }) {
 ══════════════════════════════════════════════════════════════════ */
 function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts }) {
   const tabs = [
-    { id:"all",      label:"All",         count:counts.all      },
-    { id:"atRisk",   label:"At Risk",     count:counts.atRisk   },
-    { id:"dropping", label:"Dropping",    count:counts.dropping },
-    { id:"new",      label:"New",         count:counts.new      },
-    { id:"active",   label:"Active",      count:counts.active   },
-    { id:"inactive", label:"Inactive",    count:counts.inactive },
+    { id:"all",      label:"All",      count:counts.all      },
+    { id:"atRisk",   label:"At Risk",  count:counts.atRisk   },
+    { id:"dropping", label:"Dropping", count:counts.dropping },
+    { id:"new",      label:"New",      count:counts.new      },
+    { id:"active",   label:"Active",   count:counts.active   },
+    { id:"inactive", label:"Inactive", count:counts.inactive },
   ];
+
   return (
     <div style={{
       padding: "9px 14px", borderBottom: `1px solid ${T.border}`,
@@ -432,7 +443,7 @@ function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts
         return (
           <button key={t.id} onClick={() => setFilter(t.id)} style={{
             display: "flex", alignItems: "center", gap: 4,
-            padding: "4px 10px", borderRadius: 6, fontSize: 11,
+            padding: "4px 10px", borderRadius: T.rsm, fontSize: 11,
             fontWeight: on ? 600 : 400, cursor: "pointer", fontFamily: "inherit",
             background: on ? T.surfaceEl : "transparent",
             color: on ? T.t1 : T.t3,
@@ -440,18 +451,15 @@ function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts
             transition: "all .1s",
           }}>
             {t.label}
-            {t.count > 0 && (
-              <span style={{ fontSize: 9, color: on ? T.t2 : T.t4 }}>{t.count}</span>
-            )}
+            {t.count > 0 && <span style={{ fontSize: 9, color: on ? T.t2 : T.t4 }}>{t.count}</span>}
           </button>
         );
       })}
       <div style={{ flex: 1 }} />
 
-      {/* Sort */}
       <div style={{ position: "relative" }}>
         <select value={sort} onChange={e => setSort(e.target.value)} style={{
-          padding: "5px 26px 5px 9px", borderRadius: 6,
+          padding: "5px 26px 5px 9px", borderRadius: T.rsm,
           background: T.surfaceEl, border: `1px solid ${T.border}`,
           color: T.t2, fontSize: 11, outline: "none",
           cursor: "pointer", fontFamily: "inherit", appearance: "none",
@@ -464,18 +472,18 @@ function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts
         <ChevronDown size={9} color={T.t4} style={{ position:"absolute", right:7, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }} />
       </div>
 
-      {/* Search */}
       <div style={{ position: "relative" }}>
         <Search size={11} color={T.t4} style={{ position:"absolute", left:8, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }} />
         <input
           placeholder="Search members…"
           value={search} onChange={e => setSearch(e.target.value)}
           style={{
-            padding: "5px 10px 5px 26px", borderRadius: 6,
+            padding: "5px 10px 5px 26px", borderRadius: T.rsm,
             background: T.surfaceEl, border: `1px solid ${T.border}`,
             color: T.t1, fontSize: 11, outline: "none", fontFamily: "inherit", width: 160,
+            transition: "border-color .12s",
           }}
-          onFocus={e => e.target.style.borderColor = T.borderFoc}
+          onFocus={e => e.target.style.borderColor = T.borderEl}
           onBlur={e => e.target.style.borderColor = T.border}
         />
       </div>
@@ -484,7 +492,7 @@ function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 3: MEMBERS TABLE
+   MEMBERS TABLE
 ══════════════════════════════════════════════════════════════════ */
 function MembersTable({ members, filter, search, sort, setSort, selectedRows, toggleRow, toggleAll, previewMember, setPreviewMember, onMessage }) {
   const filtered = useMemo(() => {
@@ -498,7 +506,7 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
     return list;
   }, [members, filter, search]);
 
-  const sorted = useMemo(() => [...filtered].sort((a,b) => {
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sort==="churnDesc") return b.churnPct-a.churnPct;
     if (sort==="lastVisit") return a.daysSince-b.daysSince;
     if (sort==="value")     return b.monthlyValue-a.monthlyValue;
@@ -507,15 +515,14 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
   }), [filtered, sort]);
 
   const COLS = "28px 1.8fr 1.1fr 70px 100px 90px 80px 130px";
-
   const colDefs = [
-    { label:"MEMBER",        key:"name"      },
-    { label:"STATUS",        key:null        },
-    { label:"CHURN",         key:"churnDesc" },
-    { label:"LAST SEEN",     key:"lastVisit" },
-    { label:"TREND",         key:null        },
-    { label:"VALUE",         key:"value"     },
-    { label:"ACTION",        key:null        },
+    { label:"MEMBER",    key:"name"      },
+    { label:"STATUS",    key:null        },
+    { label:"CHURN",     key:"churnDesc" },
+    { label:"LAST SEEN", key:"lastVisit" },
+    { label:"TREND",     key:null        },
+    { label:"VALUE",     key:"value"     },
+    { label:"ACTION",    key:null        },
   ];
 
   return (
@@ -528,23 +535,17 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
       }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
           <input type="checkbox"
-            checked={sorted.length>0&&selectedRows.size===sorted.length}
+            checked={sorted.length>0 && selectedRows.size===sorted.length}
             onChange={() => toggleAll(sorted)}
             style={{ width:12, height:12, accentColor:T.accent, cursor:"pointer" }}
           />
         </div>
-        {colDefs.map((c,i) => (
+        {colDefs.map((c, i) => (
           <div key={i} style={{ display:"flex", alignItems:"center", gap:3 }}>
             <span
-              style={{
-                fontSize: 9, fontWeight: 600, color: sort===c.key ? T.t2 : T.t4,
-                textTransform: "uppercase", letterSpacing: ".1em",
-                cursor: c.key ? "pointer" : "default",
-              }}
+              style={{ fontSize:9, fontWeight:600, color:sort===c.key ? T.t2 : T.t4, textTransform:"uppercase", letterSpacing:".1em", cursor:c.key?"pointer":"default" }}
               onClick={() => c.key && setSort(c.key)}
-            >
-              {c.label}
-            </span>
+            >{c.label}</span>
             {c.key && <ChevronDown size={7} color={T.t4} />}
           </div>
         ))}
@@ -570,8 +571,7 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
             style={{
               display: "grid", gridTemplateColumns: COLS, gap: 8,
               padding: "10px 16px",
-              borderBottom: idx<sorted.length-1 ? `1px solid ${T.divider}` : "none",
-              /* Left accent only for selected / previewed — thin */
+              borderBottom: idx < sorted.length-1 ? `1px solid ${T.divider}` : "none",
               borderLeft: isPrev ? `2px solid ${T.accent}` : isSel ? `2px solid ${T.accentDim}` : "2px solid transparent",
               background: isPrev ? T.surfaceEl : isSel ? `${T.accent}08` : "transparent",
               cursor: "pointer", transition: "background .1s", alignItems: "center",
@@ -579,40 +579,35 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
             onMouseEnter={e => { if (!isPrev&&!isSel) e.currentTarget.style.background = T.surfaceHov; }}
             onMouseLeave={e => { e.currentTarget.style.background = isPrev?T.surfaceEl:isSel?`${T.accent}08`:"transparent"; }}
           >
-            {/* Checkbox */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"center" }}
               onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
               <input type="checkbox" checked={isSel} onChange={() => toggleRow(m.id)}
                 style={{ width:12, height:12, accentColor:T.accent, cursor:"pointer" }} />
             </div>
 
-            {/* Member name + plan */}
+            {/* Member */}
             <div style={{ display:"flex", alignItems:"center", gap:9, minWidth:0 }}>
               <div style={{ position:"relative", flexShrink:0 }}>
                 <Avatar m={m} size={28} />
-                {m.streak>=5 && (
+                {m.streak >= 5 && (
                   <div style={{ position:"absolute", top:-2, right:-2, width:10, height:10, borderRadius:"50%", background:T.surfaceEl, border:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <Flame size={6} color={T.amber} />
                   </div>
                 )}
               </div>
               <div style={{ minWidth:0 }}>
-                <div style={{ fontSize:12, fontWeight:600, color:isPrev?T.accent:T.t1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                  {m.name}
-                </div>
+                <div style={{ fontSize:12, fontWeight:600, color:isPrev?T.accent:T.t1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{m.name}</div>
                 <div style={{ fontSize:10, color:T.t3 }}>{m.plan} · {m.visitsTotal} visits</div>
               </div>
             </div>
 
-            {/* Status + detail */}
+            {/* Status */}
             <div>
               <StatusPill m={m} />
-              <div style={{ fontSize: 10, color: T.t3, marginTop: 3, lineHeight: 1.4 }}>
-                {m.statusDetail}
-              </div>
+              <div style={{ fontSize:10, color:T.t3, marginTop:3, lineHeight:1.4 }}>{m.statusDetail}</div>
             </div>
 
-            {/* Churn % */}
+            {/* Churn */}
             <div>
               <ChurnText pct={m.churnPct} />
               <ThinBar pct={m.churnPct} color={tk.color} />
@@ -620,10 +615,7 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
 
             {/* Last seen */}
             <div>
-              <span style={{
-                fontSize: 12, fontWeight: 500,
-                color: m.daysSince>=14 ? T.red : m.daysSince<=1 ? T.green : T.t1,
-              }}>
+              <span style={{ fontSize:12, fontWeight:500, color:m.daysSince>=14?T.red:m.daysSince<=1?T.green:T.t1 }}>
                 {m.daysSince===999?"Never":m.daysSince===0?"Today":`${m.daysSince}d ago`}
               </span>
             </div>
@@ -631,9 +623,9 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
             {/* Trend */}
             <div style={{ display:"flex", alignItems:"center", gap:4 }}>
               {trendPct>10
-                ? <><TrendingUp size={11} color={T.green} /><span style={{ fontSize:10, color:T.green }}>+{trendPct}%</span></>
+                ? <><TrendingUp size={11} color={T.green}/><span style={{ fontSize:10, color:T.green }}>+{trendPct}%</span></>
                 : trendPct<-10
-                ? <><TrendingDown size={11} color={T.red} /><span style={{ fontSize:10, color:T.red }}>{trendPct}%</span></>
+                ? <><TrendingDown size={11} color={T.red}/><span style={{ fontSize:10, color:T.red }}>{trendPct}%</span></>
                 : <span style={{ fontSize:10, color:T.t3 }}>—</span>
               }
             </div>
@@ -649,11 +641,11 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
               <button
                 onClick={() => onMessage(m)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 4,
-                  padding: "4px 9px", borderRadius: T.radiusSm,
-                  background: "transparent", border: `1px solid ${T.border}`,
-                  color: T.t2, fontSize: 10, fontWeight: 500,
-                  cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                  display:"flex", alignItems:"center", gap:4,
+                  padding:"4px 9px", borderRadius:T.rsm,
+                  background:"transparent", border:`1px solid ${T.border}`,
+                  color:T.t2, fontSize:10, fontWeight:500,
+                  cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
                 }}
               >
                 {m.bestAction} <ChevronRight size={7} />
@@ -668,12 +660,12 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 4: BULK ACTION BAR
+   BULK ACTION BAR
 ══════════════════════════════════════════════════════════════════ */
 function BulkBar({ selectedRows, members, onClear, onBulkMessage }) {
-  if (selectedRows.size===0) return null;
-  const sel = members.filter(m=>selectedRows.has(m.id));
-  const totalVal = sel.reduce((s,m)=>s+m.monthlyValue,0);
+  if (selectedRows.size === 0) return null;
+  const sel = members.filter(m => selectedRows.has(m.id));
+  const totalVal = sel.reduce((s, m) => s + m.monthlyValue, 0);
 
   return (
     <div style={{ borderTop:`1px solid ${T.borderEl}`, background:T.surfaceEl }}>
@@ -682,16 +674,12 @@ function BulkBar({ selectedRows, members, onClear, onBulkMessage }) {
           {selectedRows.size} selected
           <span style={{ color:T.t3, fontWeight:400 }}> · ${totalVal}/mo combined</span>
         </span>
-        <button onClick={onClear} style={{ fontSize:11, color:T.t3, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
-          Clear
-        </button>
+        <button onClick={onClear} style={{ fontSize:11, color:T.t3, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>Clear</button>
       </div>
       <div style={{ padding:"9px 16px", display:"flex", alignItems:"center", gap:6 }}>
-        <Btn variant="primary" onClick={() => onBulkMessage(sel)}>
-          <Send size={11} /> Message {selectedRows.size}
-        </Btn>
-        <Btn variant="ghost"><Tag size={11} /> Tag</Btn>
-        <Btn variant="ghost"><Star size={11} /> Add to list</Btn>
+        <PrimaryBtn onClick={() => onBulkMessage(sel)}><Send size={11}/> Message {selectedRows.size}</PrimaryBtn>
+        <GhostBtn><Tag size={11}/> Tag</GhostBtn>
+        <GhostBtn><Star size={11}/> Add to list</GhostBtn>
         <div style={{ flex:1 }} />
         <span style={{ fontSize:11, color:T.t3 }}>{sel.filter(m=>m.churnPct>=60).length} at risk in selection</span>
       </div>
@@ -700,48 +688,46 @@ function BulkBar({ selectedRows, members, onClear, onBulkMessage }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 5: MEMBER PREVIEW PANEL
+   MEMBER PREVIEW PANEL
 ══════════════════════════════════════════════════════════════════ */
 function MemberPreview({ m, onClose, onMessage }) {
   if (!m) return null;
   const tk = riskTokens(m.churnPct);
-  const engScore = Math.min(100, Math.round((m.visits30/12)*100));
+  const engScore = Math.min(100, Math.round((m.visits30 / 12) * 100));
 
   return (
     <div style={{
       position:"fixed", top:0, right:0, bottom:0, width:320,
       background:T.surface, borderLeft:`1px solid ${T.border}`,
       zIndex:200, display:"flex", flexDirection:"column",
-      boxShadow:"-12px 0 40px rgba(0,0,0,0.5)",
+      boxShadow:"-12px 0 40px rgba(0,0,0,0.6)",
       animation:"panelIn .18s ease",
     }}>
       <style>{`@keyframes panelIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
 
-      {/* Header */}
       <div style={{ padding:"15px 18px", borderBottom:`1px solid ${T.divider}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <Avatar m={m} size={38} />
           <div>
-            <div style={{ fontSize:13, fontWeight:600, color:T.t1 }}>{m.name}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.t1, marginBottom:3 }}>{m.name}</div>
             <StatusPill m={m} />
           </div>
         </div>
-        <button onClick={onClose} style={{ width:26, height:26, borderRadius:6, background:T.surfaceEl, border:`1px solid ${T.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <button onClick={onClose} style={{ width:26, height:26, borderRadius:T.rsm, background:T.surfaceEl, border:`1px solid ${T.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <X size={11} color={T.t3} />
         </button>
       </div>
 
       <div style={{ flex:1, overflowY:"auto", padding:"16px 18px" }}>
-        {/* Churn signal — only if at risk */}
         {m.churnPct >= 40 && (
-          <div style={{ padding:"12px 14px", borderRadius:T.radius, marginBottom:12, background:T.surfaceEl, border:`1px solid ${T.border}`, borderLeft:`2px solid ${tk.color}` }}>
+          <div style={{ padding:"12px 14px", borderRadius:T.r, marginBottom:12, background:T.surfaceEl, border:`1px solid ${T.border}`, borderLeft:`2px solid ${tk.color}` }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
               <span style={{ fontSize:12, fontWeight:600, color:tk.color }}>{m.churnPct}% churn risk</span>
               <span style={{ fontSize:10, color:T.t3 }}>${m.monthlyValue}/mo</span>
             </div>
             <ThinBar pct={m.churnPct} color={tk.color} />
             <div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:4 }}>
-              {m.reasons.map((r,i) => (
+              {m.reasons.map((r, i) => (
                 <div key={i} style={{ display:"flex", gap:7 }}>
                   <span style={{ color:T.t4, fontSize:10, marginTop:2, flexShrink:0 }}>—</span>
                   <span style={{ fontSize:11, color:T.t2, lineHeight:1.5 }}>{r}</span>
@@ -751,17 +737,15 @@ function MemberPreview({ m, onClose, onMessage }) {
           </div>
         )}
 
-        {/* Visit stats */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6, marginBottom:12 }}>
-          {[{label:"This mo",val:m.visits30},{label:"Last mo",val:m.prevVisits30},{label:"Total",val:m.visitsTotal}].map((s,i)=>(
-            <div key={i} style={{ padding:"10px", borderRadius:T.radiusSm, background:T.surfaceEl, border:`1px solid ${T.border}`, textAlign:"center" }}>
-              <div style={{ fontSize:18, fontWeight:700, color:i===2?T.accent:T.t1, lineHeight:1 }}>{s.val}</div>
+          {[{label:"This mo",val:m.visits30},{label:"Last mo",val:m.prevVisits30},{label:"Total",val:m.visitsTotal}].map((s, i) => (
+            <div key={i} style={{ padding:"10px", borderRadius:T.rsm, background:T.surfaceEl, border:`1px solid ${T.border}`, textAlign:"center" }}>
+              <div style={{ fontSize:18, fontWeight:700, color:i===2?T.accent:T.t1, lineHeight:1, fontVariantNumeric:"tabular-nums" }}>{s.val}</div>
               <div style={{ fontSize:9, color:T.t3, marginTop:3, textTransform:"uppercase", letterSpacing:".07em" }}>{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Engagement */}
         <div style={{ marginBottom:12 }}>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
             <span style={{ fontSize:10, color:T.t3, textTransform:"uppercase", letterSpacing:".09em" }}>Engagement</span>
@@ -772,23 +756,21 @@ function MemberPreview({ m, onClose, onMessage }) {
           </div>
         </div>
 
-        {/* Recommended action */}
-        <div style={{ padding:"12px 14px", borderRadius:T.radius, background:T.surfaceEl, border:`1px solid ${T.border}` }}>
+        <div style={{ padding:"12px 14px", borderRadius:T.r, background:T.surfaceEl, border:`1px solid ${T.border}` }}>
           <div style={{ fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:".09em", marginBottom:4 }}>Recommended</div>
           <div style={{ fontSize:12, fontWeight:600, color:T.t1, marginBottom:3 }}>{m.bestAction}</div>
           <div style={{ fontSize:10, color:T.t3 }}>{m.returnChance}% predicted success</div>
         </div>
       </div>
 
-      {/* Footer */}
       <div style={{ padding:"13px 18px", borderTop:`1px solid ${T.divider}`, display:"flex", gap:7 }}>
         <button
           onClick={() => onMessage(m)}
-          style={{ flex:1, padding:"8px", borderRadius:T.radiusSm, background:T.accent, border:"none", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}
+          style={{ flex:1, padding:"8px", borderRadius:T.rsm, background:T.accent, border:"none", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}
         >
           <Send size={11} /> {m.bestAction}
         </button>
-        <button style={{ padding:"8px 11px", borderRadius:T.radiusSm, background:T.surfaceEl, border:`1px solid ${T.border}`, color:T.t2, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>
+        <button style={{ padding:"8px 11px", borderRadius:T.rsm, background:T.surfaceEl, border:`1px solid ${T.border}`, color:T.t2, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>
           <MoreHorizontal size={13} />
         </button>
       </div>
@@ -797,57 +779,49 @@ function MemberPreview({ m, onClose, onMessage }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SECTION 6: ALERTS SIDEBAR — calm, text-first
+   ALERTS SIDEBAR
 ══════════════════════════════════════════════════════════════════ */
 function AlertsSidebar({ members, onFilter, onMessage }) {
-  const highRisk = members.filter(m=>m.churnPct>=70);
-  const newQuiet = members.filter(m=>m.joinedDaysAgo<=10&&m.visitsTotal<2);
-  const totalVal = highRisk.reduce((s,m)=>s+m.monthlyValue,0);
+  const highRisk = members.filter(m => m.churnPct >= 70);
+  const newQuiet = members.filter(m => m.joinedDaysAgo <= 10 && m.visitsTotal < 2);
+  const totalVal = highRisk.reduce((s, m) => s + m.monthlyValue, 0);
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
 
-      {/* Churn alert */}
       {highRisk.length > 0 && (
-        <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.radius, border:`1px solid ${T.border}`, borderLeft:`2px solid ${T.red}` }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <Dot color={T.red} glow size={6} />
-              <span style={{ fontSize:12, fontWeight:600, color:T.t1 }}>{highRisk.length} likely to churn</span>
-            </div>
+        <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.r, border:`1px solid ${T.border}`, borderLeft:`2px solid ${T.red}`, boxShadow:T.sh }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+            <Dot color={T.red} glow size={6} />
+            <span style={{ fontSize:12, fontWeight:600, color:T.t1 }}>{highRisk.length} likely to churn</span>
           </div>
-
-          {/* Avatars */}
           <div style={{ display:"flex", gap:4, marginBottom:8, flexWrap:"wrap" }}>
-            {highRisk.slice(0,3).map((m,i) => (
+            {highRisk.slice(0,3).map((m, i) => (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:4, padding:"2px 7px 2px 3px", borderRadius:20, background:T.surfaceEl, border:`1px solid ${T.border}` }}>
                 <Avatar m={m} size={14} />
                 <span style={{ fontSize:10, color:T.t2 }}>{m.name.split(" ")[0]}</span>
               </div>
             ))}
-            {highRisk.length>3 && <span style={{ fontSize:10, color:T.t3, alignSelf:"center" }}>+{highRisk.length-3}</span>}
+            {highRisk.length > 3 && <span style={{ fontSize:10, color:T.t3, alignSelf:"center" }}>+{highRisk.length-3}</span>}
           </div>
-
           <div style={{ fontSize:11, color:T.t3, marginBottom:10 }}>${totalVal}/mo at risk</div>
-
           <div style={{ display:"flex", gap:6 }}>
-            <Btn variant="ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => { onFilter("atRisk"); onMessage(null,"atRisk"); }}>
+            <GhostBtn style={{ flex:1, justifyContent:"center" }} onClick={() => { onFilter("atRisk"); onMessage(null,"atRisk"); }}>
               <Send size={9} /> Message
-            </Btn>
-            <Btn variant="subtle" onClick={() => onFilter("atRisk")}>View</Btn>
+            </GhostBtn>
+            <GhostBtn onClick={() => onFilter("atRisk")}>View</GhostBtn>
           </div>
         </div>
       )}
 
-      {/* New members quiet */}
       {newQuiet.length > 0 && (
-        <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.radius, border:`1px solid ${T.border}`, borderLeft:`2px solid ${T.amber}` }}>
+        <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.r, border:`1px solid ${T.border}`, borderLeft:`2px solid ${T.amber}`, boxShadow:T.sh }}>
           <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
             <UserPlus size={11} color={T.amber} />
             <span style={{ fontSize:12, fontWeight:600, color:T.t1 }}>New members going quiet</span>
           </div>
           <div style={{ display:"flex", gap:4, marginBottom:8, flexWrap:"wrap" }}>
-            {newQuiet.map((m,i) => (
+            {newQuiet.map((m, i) => (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:4, padding:"2px 7px 2px 3px", borderRadius:20, background:T.surfaceEl, border:`1px solid ${T.border}` }}>
                 <Avatar m={m} size={14} />
                 <span style={{ fontSize:10, color:T.t2 }}>{m.name.split(" ")[0]}</span>
@@ -858,16 +832,15 @@ function AlertsSidebar({ members, onFilter, onMessage }) {
             Week-1 follow-up has the highest retention impact.
           </div>
           <div style={{ display:"flex", gap:6 }}>
-            <Btn variant="ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => onFilter("new")}>
+            <GhostBtn style={{ flex:1, justifyContent:"center" }} onClick={() => onFilter("new")}>
               <Send size={9} /> Follow up
-            </Btn>
-            <Btn variant="subtle" onClick={() => onFilter("new")}>View</Btn>
+            </GhostBtn>
+            <GhostBtn onClick={() => onFilter("new")}>View</GhostBtn>
           </div>
         </div>
       )}
 
-      {/* Drop-off patterns */}
-      <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.radius, border:`1px solid ${T.border}` }}>
+      <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.r, border:`1px solid ${T.border}`, boxShadow:T.sh }}>
         <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
           <TrendingDown size={11} color={T.t3} />
           <span style={{ fontSize:12, fontWeight:600, color:T.t1 }}>Drop-off patterns</span>
@@ -879,7 +852,7 @@ function AlertsSidebar({ members, onFilter, onMessage }) {
           { label:"Week 1", pct:25, color:T.red   },
           { label:"Week 2", pct:66, color:T.amber  },
           { label:"Week 4", pct:41, color:T.t3     },
-        ].map((b,i) => (
+        ].map((b, i) => (
           <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:i<2?8:0 }}>
             <span style={{ fontSize:10, color:T.t3, minWidth:42 }}>{b.label}</span>
             <div style={{ flex:1, height:3, borderRadius:99, background:T.divider }}>
@@ -890,14 +863,13 @@ function AlertsSidebar({ members, onFilter, onMessage }) {
         ))}
       </div>
 
-      {/* Member insights */}
-      <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.radius, border:`1px solid ${T.border}` }}>
-        <div style={{ fontSize:11, fontWeight:600, color:T.t2, marginBottom:10 }}>Insights</div>
+      <div style={{ padding:"14px 16px", background:T.surface, borderRadius:T.r, border:`1px solid ${T.border}`, boxShadow:T.sh }}>
+        <div style={{ fontSize:11, fontWeight:600, color:T.t2, marginBottom:10, textTransform:"uppercase", letterSpacing:".1em" }}>Insights</div>
         {[
           `${highRisk.length} members haven't engaged in 14+ days`,
           "Highly engaged members refer at 3× the rate",
           "New members respond best in days 3–7",
-        ].map((s,i) => (
+        ].map((s, i) => (
           <div key={i} style={{ display:"flex", gap:7, marginBottom:7 }}>
             <span style={{ color:T.t4, fontSize:10, marginTop:2, flexShrink:0 }}>·</span>
             <span style={{ fontSize:11, color:T.t3, lineHeight:1.5 }}>{s}</span>
@@ -922,7 +894,7 @@ function MessageToast({ member, onClose }) {
     <div style={{
       position:"fixed", bottom:82, right:26, width:350,
       background:T.surface, border:`1px solid ${T.borderEl}`,
-      borderRadius:T.radius, boxShadow:T.shadowMd, zIndex:300, overflow:"hidden",
+      borderRadius:T.r, boxShadow:T.shMd, zIndex:300, overflow:"hidden",
       animation:"toastIn .18s ease",
     }}>
       <style>{`@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
@@ -942,9 +914,11 @@ function MessageToast({ member, onClose }) {
           style={{
             width:"100%", boxSizing:"border-box",
             background:T.surfaceEl, border:`1px solid ${T.border}`,
-            borderRadius:7, padding:"8px 10px", fontSize:11,
+            borderRadius:T.rsm, padding:"8px 10px", fontSize:11,
             color:T.t1, resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.6,
           }}
+          onFocus={e => e.target.style.borderColor = T.borderEl}
+          onBlur={e => e.target.style.borderColor = T.border}
         />
         <div style={{ marginTop:3, fontSize:10, color:T.t3 }}>
           {member.returnChance}% predicted return rate
@@ -953,7 +927,7 @@ function MessageToast({ member, onClose }) {
           onClick={() => { setSent(true); setTimeout(onClose, 1600); }}
           style={{
             marginTop:9, width:"100%", padding:"8px",
-            borderRadius:7, border:"none",
+            borderRadius:T.rsm, border:"none",
             background: sent ? T.surfaceEl : T.accent,
             color: sent ? T.green : "#fff",
             fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
@@ -961,7 +935,7 @@ function MessageToast({ member, onClose }) {
             transition:"all .2s",
           }}
         >
-          {sent ? <><Check size={11} /> Sent</> : <><Send size={11} /> Send to {member.name.split(" ")[0]}</>}
+          {sent ? <><Check size={11}/> Sent</> : <><Send size={11}/> Send to {member.name.split(" ")[0]}</>}
         </button>
       </div>
     </div>
@@ -990,12 +964,12 @@ export default function MembersPageAI() {
   }), [members]);
 
   const toggleRow = useCallback(id => {
-    setSelectedRows(prev => { const s=new Set(prev); s.has(id)?s.delete(id):s.add(id); return s; });
+    setSelectedRows(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   }, []);
 
   const toggleAll = useCallback(rows => {
-    if (selectedRows.size===rows.length) setSelectedRows(new Set());
-    else setSelectedRows(new Set(rows.map(m=>m.id)));
+    if (selectedRows.size === rows.length) setSelectedRows(new Set());
+    else setSelectedRows(new Set(rows.map(m => m.id)));
   }, [selectedRows]);
 
   const handleMessage = useCallback(m => { setMessageTarget(m); setPreviewMember(null); }, []);
@@ -1017,29 +991,48 @@ export default function MembersPageAI() {
       fontFamily:"'Geist', 'DM Sans', 'Helvetica Neue', Arial, sans-serif",
       color:T.t1, fontSize:13, lineHeight:1.5,
     }}>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
+      `}</style>
+
       <div style={{ maxWidth:1380, margin:"0 auto", padding:"24px 24px 80px" }}>
 
         {/* Page header */}
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:22, gap:12 }}>
           <div>
-            <h1 style={{ fontSize:20, fontWeight:700, color:T.t1, margin:0, letterSpacing:"-0.03em" }}>Members</h1>
-            <p style={{ fontSize:11, color:T.t3, margin:"3px 0 0" }}>AI-powered retention · know who needs you, act instantly</p>
+            <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:4 }}>
+              <div style={{ width:28, height:28, borderRadius:T.rsm, background:T.accentDim, border:`1px solid ${T.accentBrd}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Users size={13} color={T.accent} />
+              </div>
+              <h1 style={{ fontSize:18, fontWeight:700, color:T.t1, margin:0, letterSpacing:"-0.03em" }}>Members</h1>
+            </div>
+            <p style={{ fontSize:12, color:T.t3, margin:0, lineHeight:1.6 }}>
+              AI-powered retention · know who needs you, act instantly
+            </p>
           </div>
-          <div style={{ display:"flex", gap:7 }}>
-            <Btn variant="ghost"><Activity size={11} /> Export</Btn>
-            <Btn variant="primary"><Plus size={11} /> Invite Member</Btn>
+          <div style={{ display:"flex", gap:7, flexShrink:0 }}>
+            <GhostBtn><Activity size={11}/> Export</GhostBtn>
+            <PrimaryBtn><Plus size={11}/> Invite Member</PrimaryBtn>
           </div>
         </div>
 
         <MetricsBar members={members} />
-        <ActOnToday members={members} onMessage={handleMessage} onSelect={m => setPreviewMember(prev=>prev?.id===m.id?null:m)} />
+        <ActOnToday
+          members={members}
+          onMessage={handleMessage}
+          onSelect={m => setPreviewMember(prev => prev?.id === m.id ? null : m)}
+        />
         <SmartSegments members={members} activeFilter={filter} onFilter={setFilter} onBulkMessage={handleBulkMessage} />
 
         {/* Main grid */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 260px", gap:14, alignItems:"start" }}>
 
           {/* Table card */}
-          <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:T.radius, boxShadow:T.shadow, overflow:"hidden" }}>
+          <Card style={{ overflow:"hidden" }}>
             <FilterBar filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} sort={sort} setSort={setSort} counts={counts} />
             <MembersTable
               members={members} filter={filter} search={search} sort={sort} setSort={setSort}
@@ -1052,20 +1045,23 @@ export default function MembersPageAI() {
             {/* Pagination */}
             <div style={{ padding:"9px 16px", borderTop:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
               <div style={{ display:"flex", gap:3 }}>
-                {[ChevronLeft,ChevronRight].map((Icon,i) => (
-                  <button key={i} style={{ width:26, height:26, borderRadius:6, background:"transparent", border:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", opacity:0.4 }}>
+                {[ChevronLeft, ChevronRight].map((Icon, i) => (
+                  <button key={i} style={{ width:26, height:26, borderRadius:T.rsm, background:"transparent", border:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", opacity:0.4 }}>
                     <Icon size={11} color={T.t2} />
                   </button>
                 ))}
-                <button style={{ width:26, height:26, borderRadius:6, background:T.surfaceEl, border:`1px solid ${T.borderEl}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:11, fontWeight:700, color:T.t1, fontFamily:"inherit" }}>
+                <button style={{ width:26, height:26, borderRadius:T.rsm, background:T.surfaceEl, border:`1px solid ${T.borderEl}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:11, fontWeight:700, color:T.t1, fontFamily:"inherit" }}>
                   1
                 </button>
               </div>
               <span style={{ fontSize:10, color:T.t3 }}>{members.length} members · page 1 of 1</span>
             </div>
-          </div>
+          </Card>
 
-          <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+          {/* Sidebar */}
+          <div style={{ position:"sticky", top:24 }}>
+            <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+          </div>
         </div>
       </div>
 
@@ -1085,8 +1081,9 @@ export default function MembersPageAI() {
         onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow=`0 6px 28px ${T.accent}55`; }}
         onMouseLeave={e => { e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow=`0 4px 20px ${T.accent}40`; }}
       >
-        <Plus size={13} /> Invite Member
+        <Plus size={13}/> Invite Member
       </button>
     </div>
   );
 }
+f
