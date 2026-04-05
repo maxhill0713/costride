@@ -63,25 +63,38 @@ const Card=({children,style={}})=>(
 );
 
 const Av=({m,size=30})=>(
-  <div style={{width:size,height:size,borderRadius:"50%",background:AVG[m.ci%8],border:`1px solid ${T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.31,fontWeight:700,color:T.t2,letterSpacing:"0.02em",fontFamily:"monospace"}}>{m.ini}</div>
+  <div style={{width:size,height:size,borderRadius:T.rsm,background:AVG[m.ci%8],border:`1px solid ${T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.31,fontWeight:700,color:T.t2,letterSpacing:"0.02em",fontFamily:"monospace"}}>{m.ini}</div>
 );
 
 const Bar=({pct,color,h=3})=>(
   <div style={{height:h,borderRadius:99,background:T.divider,flex:1}}>
-
+    <div style={{height:"100%",width:`${pct}%`,borderRadius:99,background:color,opacity:.75}}/>
   </div>
 );
 
+/* ── Ghost button — unchanged ── */
 function GBtn({children,onClick,style={},danger}){
   const [hov,sH]=useState(false);
   return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
     style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:500,cursor:"pointer",fontFamily:"inherit",border:"1px solid",background:danger&&hov?T.redDim:hov?T.surfaceHov:T.surfaceEl,borderColor:danger&&hov?T.redBrd:hov?T.borderEl:T.border,color:danger&&hov?T.red:T.t2,transition:"all .12s",...style}}>{children}</button>;
 }
 
+/* ── Primary accent button ── */
 function PBtn({children,onClick,style={}}){
   const [hov,sH]=useState(false);
   return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
     style={{display:"inline-flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:T.rsm,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",border:"1px solid transparent",background:T.accent,color:"#fff",opacity:hov?.88:1,transition:"opacity .12s",...style}}>{children}</button>;
+}
+
+/* ── Accent-dim button (navy tinted, no fill) — NEW ── */
+function ABtn({children,onClick,style={}}){
+  const [hov,sH]=useState(false);
+  return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
+    style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",
+      background:hov?T.accent:T.accentDim,
+      border:`1px solid ${hov?T.accent:T.accentBrd}`,
+      color:hov?"#fff":T.accent,
+      transition:"all .12s",...style}}>{children}</button>;
 }
 
 function SC({icon:Icon,label,value,sub,prefix="",delay=0,highlight,alertRed}){
@@ -100,6 +113,7 @@ function SC({icon:Icon,label,value,sub,prefix="",delay=0,highlight,alertRed}){
   </Card>;
 }
 
+/* ── ChurnCard — action button now uses ABtn style ── */
 function ChurnCard({m,onMsg,onSel}){
   const [hov,sH]=useState(false);
   const bc=m.ch>=70?T.red:m.ch>=40?T.amber:T.t3;
@@ -129,10 +143,11 @@ function ChurnCard({m,onMsg,onSel}){
     </div>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14}}>
       <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t2,fontWeight:500}}>${m.mv}</span>/mo · {m.rc}% return likelihood</span>
+      {/* Accent-dim "navy" action button */}
       <button onClick={e=>{e.stopPropagation();onMsg(m);}}
-        onMouseEnter={e=>{e.currentTarget.style.color=T.t1;e.currentTarget.style.borderColor=T.borderEl;e.currentTarget.style.background=T.surfaceHov;}}
-        onMouseLeave={e=>{e.currentTarget.style.color=T.t2;e.currentTarget.style.borderColor=T.border;e.currentTarget.style.background=T.surfaceEl;}}
-        style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:10,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .12s",whiteSpace:"nowrap"}}>
+        onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
+        onMouseLeave={e=>{e.currentTarget.style.background=T.accentDim;e.currentTarget.style.borderColor=T.accentBrd;e.currentTarget.style.color=T.accent;}}
+        style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,color:T.accent,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .12s",whiteSpace:"nowrap"}}>
         <Send size={9}/> {m.act}
       </button>
     </div>
@@ -146,26 +161,28 @@ function Segs({members,active,onFilter,onBulk}){
     {id:"new",     Icon:UserPlus,     label:"New members",   count:members.filter(m=>m.jd<=14).length,  action:"Welcome"},
     {id:"active",  Icon:Flame,        label:"On streak",     count:members.filter(m=>m.str>=5).length,  action:"Challenge"},
   ],[members]);
+
   return <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
     {segs.map(s=>{
       const on=active===s.id;
       return <div key={s.id} onClick={()=>onFilter(on?"all":s.id)}
         onMouseEnter={e=>{if(!on)e.currentTarget.style.background=T.surfaceEl;}}
         onMouseLeave={e=>{if(!on)e.currentTarget.style.background=T.surface;}}
-        style={{flex:"1 1 140px",minWidth:140,display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:T.r,background:on?T.surfaceHov:T.surface,border:`1px solid ${on?T.borderEl:T.border}`,boxShadow:T.sh,cursor:"pointer",transition:"all .12s"}}>
-        <div style={{width:30,height:30,borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <s.Icon size={13} color={T.t3}/>
+        style={{flex:"1 1 140px",minWidth:140,display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:T.r,background:on?T.accentDim:T.surface,border:`1px solid ${on?T.accentBrd:T.border}`,boxShadow:T.sh,cursor:"pointer",transition:"all .12s"}}>
+        <div style={{width:30,height:30,borderRadius:T.rsm,background:on?T.accentDim:T.surfaceEl,border:`1px solid ${on?T.accentBrd:T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <s.Icon size={13} color={on?T.accent:T.t3}/>
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"center",gap:5}}>
-            <div style={{fontSize:17,fontWeight:700,color:s.urgent&&s.count>0?T.red:T.t1,lineHeight:1.1,fontVariantNumeric:"tabular-nums"}}>{s.count}</div>
+            <div style={{fontSize:17,fontWeight:700,color:s.urgent&&s.count>0?T.red:on?T.accent:T.t1,lineHeight:1.1,fontVariantNumeric:"tabular-nums"}}>{s.count}</div>
             {s.urgent&&s.count>0&&<span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}
           </div>
-          <div style={{fontSize:10,color:T.t3,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
+          <div style={{fontSize:10,color:on?T.accent:T.t3,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
         </div>
         {s.count>0&&<button onClick={e=>{e.stopPropagation();onBulk(s.id);}}
-          onMouseEnter={e=>e.currentTarget.style.color=T.t2} onMouseLeave={e=>e.currentTarget.style.color=T.t3}
-          style={{padding:"3px 8px",borderRadius:T.rsm,background:"transparent",border:`1px solid ${T.border}`,color:T.t3,fontSize:10,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,transition:"color .12s"}}>{s.action}</button>}
+          onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
+          onMouseLeave={e=>{e.currentTarget.style.background=T.accentDim;e.currentTarget.style.borderColor=T.accentBrd;e.currentTarget.style.color=T.accent;}}
+          style={{padding:"3px 8px",borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,color:T.accent,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,transition:"all .12s"}}>{s.action}</button>}
       </div>;
     })}
   </div>;
@@ -191,7 +208,7 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
     return b.ch-a.ch;
   }),[filtered,sort]);
 
-  const COLS="28px 1.8fr 1fr 70px 90px 80px 80px 140px";
+  const COLS="28px 1.8fr 1fr 70px 90px 80px 80px 150px";
   const hdrs=[{label:"MEMBER",k:"name"},{label:"STATUS",k:null},{label:"CHURN",k:"churnDesc"},{label:"LAST SEEN",k:"lastVisit"},{label:"TREND",k:null},{label:"VALUE",k:"value"},{label:"ACTION",k:null}];
 
   return <div>
@@ -201,8 +218,8 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
       </div>
       {hdrs.map((c,i)=>(
         <div key={i} style={{display:"flex",alignItems:"center",gap:3}}>
-          <span onClick={()=>c.k&&setSort(c.k)} style={{fontSize:9,fontWeight:600,color:sort===c.k?T.t2:T.t4,textTransform:"uppercase",letterSpacing:".1em",cursor:c.k?"pointer":"default"}}>{c.label}</span>
-          {c.k&&<ChevronDown size={7} color={T.t4}/>}
+          <span onClick={()=>c.k&&setSort(c.k)} style={{fontSize:9,fontWeight:600,color:sort===c.k?T.accent:T.t4,textTransform:"uppercase",letterSpacing:".1em",cursor:c.k?"pointer":"default"}}>{c.label}</span>
+          {c.k&&<ChevronDown size={7} color={sort===c.k?T.accent:T.t4}/>}
         </div>
       ))}
     </div>
@@ -250,11 +267,12 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
              :<span style={{fontSize:10,color:T.t3}}>—</span>}
           </div>
           <div><div style={{fontSize:12,fontWeight:600,color:T.t1}}>${m.mv}</div><div style={{fontSize:9,color:T.t3}}>/month</div></div>
+          {/* Row action — accent-dim navy button */}
           <div onClick={e=>e.stopPropagation()}>
             <button onClick={()=>onMsg(m)}
-              onMouseEnter={e=>{e.currentTarget.style.color=T.t1;e.currentTarget.style.borderColor=T.borderEl;}}
-              onMouseLeave={e=>{e.currentTarget.style.color=T.t2;e.currentTarget.style.borderColor=T.border;}}
-              style={{display:"flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:T.rsm,background:"transparent",border:`1px solid ${T.border}`,color:T.t2,fontSize:10,fontWeight:500,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",transition:"all .12s"}}>
+              onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
+              onMouseLeave={e=>{e.currentTarget.style.background=T.accentDim;e.currentTarget.style.borderColor=T.accentBrd;e.currentTarget.style.color=T.accent;}}
+              style={{display:"flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,color:T.accent,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",transition:"all .12s"}}>
               {m.act} <ChevronRight size={7}/>
             </button>
             <div style={{fontSize:9,color:T.t3,marginTop:3}}>~{m.rc}% success</div>
@@ -275,9 +293,11 @@ function BulkBar({selRows,members,onClear,onBulk}){
       <button onClick={onClear} onMouseEnter={e=>e.currentTarget.style.color=T.t2} onMouseLeave={e=>e.currentTarget.style.color=T.t3} style={{fontSize:11,color:T.t3,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Clear</button>
     </div>
     <div style={{padding:"9px 16px",display:"flex",alignItems:"center",gap:6}}>
+      {/* Primary full blue for the main bulk action */}
       <PBtn onClick={()=>onBulk(sel)}><Send size={11}/> Message {selRows.size}</PBtn>
-      <GBtn><Tag size={11}/> Tag</GBtn>
-      <GBtn><Star size={11}/> Add to list</GBtn>
+      {/* Accent-dim for secondary bulk actions */}
+      <ABtn><Tag size={11}/> Tag</ABtn>
+      <ABtn><Star size={11}/> Add to list</ABtn>
       <div style={{flex:1}}/>
       <span style={{fontSize:11,color:T.t3}}>{sel.filter(m=>m.ch>=60).length} at risk</span>
     </div>
@@ -304,7 +324,8 @@ function Sidebar({members,onFilter}){
       </div>
       <div style={{fontSize:11,color:T.t3,marginBottom:10}}><span style={{color:T.red,fontWeight:600}}>${tv}</span>/mo at risk</div>
       <div style={{display:"flex",gap:6}}>
-        <GBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("atRisk")}><Send size={9}/> Message</GBtn>
+        {/* Sidebar primary CTA — full accent */}
+        <PBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("atRisk")}><Send size={9}/> Message all</PBtn>
         <GBtn onClick={()=>onFilter("atRisk")}>View</GBtn>
       </div>
     </Card>}
@@ -319,7 +340,7 @@ function Sidebar({members,onFilter}){
       </div>
       <div style={{fontSize:11,color:T.t3,lineHeight:1.5,marginBottom:10}}>Week-1 follow-up has the highest retention impact.</div>
       <div style={{display:"flex",gap:6}}>
-        <GBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("new")}><Send size={9}/> Follow up</GBtn>
+        <PBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("new")}><Send size={9}/> Follow up</PBtn>
         <GBtn onClick={()=>onFilter("new")}>View</GBtn>
       </div>
     </Card>}
@@ -392,13 +413,15 @@ function Preview({m,onClose,onMsg}){
         </div>
         <div style={{height:3,borderRadius:99,background:T.divider}}><div style={{height:"100%",width:`${es}%`,borderRadius:99,background:ec,opacity:.7}}/></div>
       </div>
-      <div style={{padding:"12px 14px",borderRadius:T.r,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-        <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:".09em",marginBottom:4}}>Recommended</div>
+      {/* Recommended action — accent-dim card */}
+      <div style={{padding:"12px 14px",borderRadius:T.r,background:T.accentDim,border:`1px solid ${T.accentBrd}`}}>
+        <div style={{fontSize:9,color:T.accent,textTransform:"uppercase",letterSpacing:".09em",marginBottom:4,fontWeight:600}}>Recommended</div>
         <div style={{fontSize:12,fontWeight:600,color:T.t1,marginBottom:3}}>{m.act}</div>
         <div style={{fontSize:10,color:T.t3}}>{m.rc}% predicted success</div>
       </div>
     </div>
     <div style={{padding:"13px 18px",borderTop:`1px solid ${T.divider}`,display:"flex",gap:7}}>
+      {/* Full accent primary CTA */}
       <button onClick={()=>onMsg(m)} style={{flex:1,padding:"8px",borderRadius:T.rsm,background:T.accent,border:"none",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Send size={11}/> {m.act}</button>
       <button style={{padding:"8px 11px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}><MoreHorizontal size={13}/></button>
     </div>
@@ -417,7 +440,7 @@ function Toast({member,onClose}){
     <div style={{padding:"12px 14px"}}>
       <textarea value={body} onChange={e=>setBody(e.target.value)} rows={3}
         style={{width:"100%",boxSizing:"border-box",background:T.surfaceEl,border:`1px solid ${T.border}`,borderRadius:T.rsm,padding:"8px 10px",fontSize:11,color:T.t1,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.6}}
-        onFocus={e=>e.target.style.borderColor=T.borderEl} onBlur={e=>e.target.style.borderColor=T.border}/>
+        onFocus={e=>e.target.style.borderColor=T.accentBrd} onBlur={e=>e.target.style.borderColor=T.border}/>
       <div style={{marginTop:3,fontSize:10,color:T.t3}}>{member.rc}% predicted return rate</div>
       <button onClick={()=>{setSent(true);setTimeout(onClose,1600);}}
         style={{marginTop:9,width:"100%",padding:"8px",borderRadius:T.rsm,border:"none",background:sent?T.surfaceEl:T.accent,color:sent?T.green:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .2s"}}>
@@ -459,10 +482,13 @@ export default function MembersPage(){
       `}</style>
 
       <div style={{maxWidth:1320,margin:"0 auto",padding:"24px 24px 80px"}}>
+        {/* ── Page header ── */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:22,gap:12}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:4}}>
-              <div style={{width:28,height:28,borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center"}}><Users size={13} color={T.t3}/></div>
+              <div style={{width:28,height:28,borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <Users size={13} color={T.accent}/>
+              </div>
               <h1 style={{fontSize:18,fontWeight:700,color:T.t1,margin:0,letterSpacing:"-0.03em"}}>Members</h1>
             </div>
             <p style={{fontSize:12,color:T.t3,margin:0,lineHeight:1.6}}>AI-powered retention · know who needs you, act instantly</p>
@@ -473,6 +499,7 @@ export default function MembersPage(){
           </div>
         </div>
 
+        {/* ── Stat cards ── */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
           <SC icon={Users}         label="Total Members"   sub="all time"                                              value={members.length} delay={0}/>
           <SC icon={Activity}      label="Active (7 days)" sub={`${Math.round(activeN/members.length*100)}% of total`} value={activeN}        delay={120}/>
@@ -480,6 +507,7 @@ export default function MembersPage(){
           <SC icon={DollarSign}    label="Revenue at Risk" sub="per month"                                             value={arVal}          delay={360} prefix="$" alertRed={arVal>0}/>
         </div>
 
+        {/* ── Priority section label ── */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:11,fontWeight:600,color:T.t2,textTransform:"uppercase",letterSpacing:".1em"}}>Priority Today</span>
@@ -491,21 +519,28 @@ export default function MembersPage(){
           <span style={{fontSize:11,color:T.t3}}>${priority.reduce((s,m)=>s+m.mv,0)}/mo at risk</span>
         </div>
 
+        {/* ── Churn priority cards ── */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:16}}>
           {priority.map(m=><ChurnCard key={m.id} m={m} onMsg={setMsg} onSel={m=>setPrev(p=>p?.id===m.id?null:m)}/>)}
         </div>
 
+        {/* ── Segment pills ── */}
         <Segs members={members} active={filter} onFilter={setFilter} onBulk={id=>{
           const seg=members.filter(m=>{if(id==="atRisk")return m.ch>=60;if(id==="dropping")return m.pv>0&&m.v30<=m.pv*.5;if(id==="new")return m.jd<=14;if(id==="active")return m.str>=5;return false;});
           if(seg.length)setMsg(seg[0]);
         }}/>
 
+        {/* ── Table + sidebar ── */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,alignItems:"start"}}>
           <Card style={{overflow:"hidden"}}>
+            {/* Table toolbar */}
             <div style={{padding:"9px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:2,flexWrap:"wrap",position:"sticky",top:0,background:T.surface,zIndex:10}}>
-              {tabs.map(t=>{const on=filter===t.id;return<button key={t.id} onClick={()=>setFilter(t.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:on?600:400,cursor:"pointer",fontFamily:"inherit",background:on?T.surfaceEl:"transparent",color:on?T.t1:T.t3,border:`1px solid ${on?T.borderEl:"transparent"}`,transition:"all .1s"}}>
-                {t.label}{counts[t.id]>0&&<span style={{fontSize:9,color:on?T.t2:T.t4}}>{counts[t.id]}</span>}
-              </button>;})}
+              {tabs.map(t=>{
+                const on=filter===t.id;
+                return <button key={t.id} onClick={()=>setFilter(t.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:on?600:400,cursor:"pointer",fontFamily:"inherit",background:on?T.accentDim:"transparent",color:on?T.accent:T.t3,border:`1px solid ${on?T.accentBrd:"transparent"}`,transition:"all .1s"}}>
+                  {t.label}{counts[t.id]>0&&<span style={{fontSize:9,color:on?T.accent:T.t4}}>{counts[t.id]}</span>}
+                </button>;
+              })}
               <div style={{flex:1}}/>
               <div style={{position:"relative"}}>
                 <select value={sort} onChange={e=>setSort(e.target.value)} style={{padding:"5px 26px 5px 9px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:11,outline:"none",cursor:"pointer",fontFamily:"inherit",appearance:"none"}}>
@@ -520,21 +555,25 @@ export default function MembersPage(){
                 <Search size={11} color={T.t4} style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
                 <input placeholder="Search members…" value={search} onChange={e=>setSearch(e.target.value)}
                   style={{padding:"5px 10px 5px 26px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t1,fontSize:11,outline:"none",fontFamily:"inherit",width:160}}
-                  onFocus={e=>e.target.style.borderColor=T.borderEl} onBlur={e=>e.target.style.borderColor=T.border}/>
+                  onFocus={e=>e.target.style.borderColor=T.accentBrd} onBlur={e=>e.target.style.borderColor=T.border}/>
               </div>
             </div>
+
             <Table members={members} filter={filter} search={search} sort={sort} setSort={setSort} selRows={selRows} toggleRow={toggleRow} toggleAll={toggleAll} prev={prev} setPrev={setPrev} onMsg={setMsg}/>
             <BulkBar selRows={selRows} members={members} onClear={()=>setSelRows(new Set())} onBulk={sel=>setMsg(sel[0])}/>
+
+            {/* Pagination */}
             <div style={{padding:"9px 16px",borderTop:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{display:"flex",gap:3}}>
                 {[ChevronLeft,ChevronRight].map((Icon,i)=>(
                   <button key={i} style={{width:26,height:26,borderRadius:T.rsm,background:"transparent",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",opacity:.4}}><Icon size={11} color={T.t2}/></button>
                 ))}
-                <button style={{width:26,height:26,borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.borderEl}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,fontWeight:700,color:T.t1,fontFamily:"inherit"}}>1</button>
+                <button style={{width:26,height:26,borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,fontWeight:700,color:T.accent,fontFamily:"inherit"}}>1</button>
               </div>
               <span style={{fontSize:10,color:T.t3}}>{members.length} members · page 1 of 1</span>
             </div>
           </Card>
+
           <div style={{position:"sticky",top:24}}><Sidebar members={members} onFilter={setFilter}/></div>
         </div>
       </div>
@@ -542,6 +581,7 @@ export default function MembersPage(){
       {prev&&<Preview m={prev} onClose={()=>setPrev(null)} onMsg={setMsg}/>}
       {msg&&<Toast member={msg} onClose={()=>setMsg(null)}/>}
 
+      {/* FAB */}
       <button style={{position:"fixed",bottom:26,right:26,zIndex:100,display:"flex",alignItems:"center",gap:7,padding:"12px 20px",borderRadius:50,background:T.accent,color:"#fff",border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${T.accent}40`,transition:"all .15s"}}
         onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow=`0 6px 28px ${T.accent}55`;}}
         onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=`0 4px 20px ${T.accent}40`;}}>
