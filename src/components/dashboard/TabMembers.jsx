@@ -68,7 +68,7 @@ const Av=({m,size=30})=>(
 
 const Bar=({pct,color,h=3})=>(
   <div style={{height:h,borderRadius:99,background:T.divider,flex:1}}>
-    <div style={{height:"100%",width:`${Math.min(pct,100)}%`,borderRadius:99,background:color,opacity:.75}}/>
+
   </div>
 );
 
