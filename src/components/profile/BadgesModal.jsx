@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Flame, Calendar, Target, Users, Crown, Star, Zap, Check, X } from 'lucide-react';
+import { Trophy, Flame, Calendar, Target, Users, Crown, Star, Zap, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
@@ -90,7 +90,6 @@ const BADGE_LIBRARY = [
 export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
   const [equippedBadges, setEquippedBadges] = React.useState(user?.equipped_badges || []);
 
-  // Calculate stats from actual data
   const userStats = {
     total_check_ins: checkIns.length,
     longest_streak: user.longest_streak || 0,
@@ -99,7 +98,6 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
   };
 
   const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(userStats));
-  const lockedBadges = BADGE_LIBRARY.filter(badge => !badge.requirement(userStats));
 
   const handleEquipBadge = async (badgeId) => {
     let newEquipped = [...equippedBadges];
@@ -128,17 +126,23 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end md:items-center justify-center p-4"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end justify-center"
       >
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', damping: 32, stiffness: 320 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-3xl border border-white/10 p-6 shadow-2xl"
+          className="w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-t-3xl border-t border-x border-white/10 shadow-2xl"
         >
+          {/* Drag handle bar */}
+          <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+            <div className="w-9 h-1 rounded-full bg-white/25" />
+          </div>
+
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-center px-6 pt-2 pb-5">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
                 <Trophy className="w-5 h-5 text-white" />
@@ -148,15 +152,9 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
                 <p className="text-xs text-slate-400">Earned {earnedBadges.length} of {BADGE_LIBRARY.length}</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 -m-2 text-slate-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6 px-6 pb-8">
             {/* Equipped Badges Showcase */}
             {equippedBadgeDetails.length > 0 && (
               <div>
@@ -233,57 +231,7 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
               </div>
             )}
 
-            {/* Locked Badges */}
-            {lockedBadges.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-slate-400" />
-                  Locked ({lockedBadges.length})
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {lockedBadges.map((badge, index) => {
-                    const Icon = badge.icon;
-                    const progress = badge.getProgress(userStats);
-                    const pct = Math.min((progress.current / progress.target) * 100, 100);
-                    return (
-                      <motion.div
-                        key={badge.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-dashed border-slate-700/50 relative overflow-hidden cursor-not-allowed">
-                          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50" />
-                          
-                          <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-slate-800/50 flex items-center justify-center shadow-sm relative opacity-40">
-                            <Icon className="w-5 h-5 text-slate-500" strokeWidth={2} />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-sm">🔒</span>
-                            </div>
-                          </div>
-                          
-                          <h4 className="font-bold text-slate-500 text-[10px] mb-0.5 relative z-10 line-clamp-1">{badge.title}</h4>
-                          <p className="text-[8px] text-slate-600 font-medium relative z-10 mb-1.5 line-clamp-1">{badge.description}</p>
-
-                          {/* Progress bar */}
-                          <div className="relative z-10">
-                            <div className="h-1 bg-slate-700 rounded-full overflow-hidden mb-0.5">
-                              <div
-                                className="h-full bg-gradient-to-r from-slate-500 to-slate-400 rounded-full transition-all duration-500"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <p className="text-[8px] text-slate-500 font-semibold">{progress.current}/{progress.target}</p>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {earnedBadges.length === 0 && lockedBadges.length === 0 && (
+            {earnedBadges.length === 0 && (
               <div className="text-center py-8">
                 <Star className="w-12 h-12 mx-auto text-slate-600 mb-3" />
                 <p className="text-slate-400">Start working out to earn badges!</p>
