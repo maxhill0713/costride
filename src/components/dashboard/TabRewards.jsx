@@ -19,7 +19,7 @@ const T = {
   text3:   '#475569',
   border:  'rgba(255,255,255,0.07)',
   borderM: 'rgba(255,255,255,0.11)',
-  card:    '#0b1120',
+  card:    '#0b1020',
   divider: 'rgba(255,255,255,0.05)',
 };
 

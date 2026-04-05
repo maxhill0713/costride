@@ -60,9 +60,9 @@ function TabLoader() {
 }
 
 const D = {
-  bgBase: '#080e18',
-  bgSidebar: '#070c16',
-  bgSurface: '#0c1422',
+  bgBase: '#050810',
+  bgSidebar: '#050810',
+  bgSurface: '#0a0f1e',
   bgHover: 'rgba(255,255,255,0.03)',
   border: 'rgba(255,255,255,0.07)',
   borderHi: 'rgba(255,255,255,0.12)',
@@ -108,9 +108,9 @@ function injectDashCSS() {
 const DASH_CSS_TEXT = `
   .dash-root, .dash-root * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; box-sizing: border-box; }
   .dash-root {
-    --bg:       #080e18;
-    --sidebar:  #070c16;
-    --surface:  #0c1422;
+    --bg:       #050810;
+    --sidebar:  #050810;
+    --surface:  #0a0f1e;
     --border:   rgba(255,255,255,0.07);
     --border-hi:rgba(255,255,255,0.12);
     --blue:     #3b82f6;
@@ -147,7 +147,7 @@ const DASH_CSS_TEXT = `
   }
 
   .dash-root .stat-card {
-    background: #0c1422;
+    background: #0a0f1e;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px;
     padding: 20px 20px;

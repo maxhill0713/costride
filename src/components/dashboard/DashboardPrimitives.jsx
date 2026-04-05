@@ -19,14 +19,14 @@ const T = {
   text3:   '#475569',
   border:  'rgba(255,255,255,0.07)',
   borderM: 'rgba(255,255,255,0.11)',
-  card:    '#0b1120',
+  card:    '#0b1020',
   divider: 'rgba(255,255,255,0.05)',
 };
 
 // ── Layout primitives ──────────────────────────────────────────────────────────
 export const Card = ({ children, style = {}, className = '', onClick }) => (
   <div className={className} onClick={onClick}
-    style={{ background: 'var(--card,#111827)', border: '1px solid var(--border,rgba(255,255,255,0.07))', borderRadius: 16, ...style }}>
+    style={{ background: 'var(--card,#0a0f1e)', border: '1px solid var(--border,rgba(255,255,255,0.07))', borderRadius: 16, ...style }}>
     {children}
   </div>
 );
@@ -213,7 +213,7 @@ function DeleteBtn({ onDelete }) {
         <MoreHorizontal style={{ width: 13, height: 13, color: T.text3 }} />
       </button>
       {open && (
-        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: '#0d1528', border: `1px solid ${T.borderM}`, borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 28, right: 0, zIndex: 9999, background: '#0b1020', border: `1px solid ${T.borderM}`, borderRadius: 9, boxShadow: '0 8px 24px rgba(0,0,0,0.5)', minWidth: 110, overflow: 'hidden' }}>
           <button onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, color: T.red, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
             onMouseEnter={e => e.currentTarget.style.background = `${T.red}12`}

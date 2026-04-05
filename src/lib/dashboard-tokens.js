@@ -12,9 +12,9 @@
 
 export const C = {
   // ── Backgrounds ──────────────────────────────────────────────────────────
-  bg:        '#080e18',   // Page body
-  surface:   '#0c1422',   // Cards, panels
-  surfaceEl: '#101929',   // Hover, elevated rows, selected states
+  bg:        '#050810',   // Page body
+  surface:   '#0a0f1e',   // Cards, panels
+  surfaceEl: '#0d1225',   // Hover, elevated rows, selected states
 
   // ── Borders & dividers (neutral only — never colored) ────────────────────
   border:   'rgba(255,255,255,0.07)',
@@ -61,7 +61,7 @@ export const C = {
   warnBrd: 'rgba(245,158,11,0.22)',
 
   // Aliases used by TabEngagement
-  surfaceHi: '#101929',
+  surfaceHi: '#0d1225',
   borderHi:  'rgba(255,255,255,0.12)',
 };
 
