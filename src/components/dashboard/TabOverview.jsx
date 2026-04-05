@@ -971,11 +971,12 @@ function LiveSignals({ todayCI, todayVsYest, activeThisWeek, totalMembers, reten
 
 /* ══════════════════════════════════════════════════════════════════
    SIDEBAR — ACTION QUEUE
+   Cards now match the fg-ac style: dot + label, indented subtitle,
+   indented pill buttons. No icons, no left border accent.
 ══════════════════════════════════════════════════════════════════ */
 function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, challenges, now, openModal, setTab, newNoReturnCount = 0 }) {
   const items = useMemo(() => {
     const list = [];
-    const hour = now.getHours();
 
     if (atRisk > 0) {
       list.push({
@@ -1055,36 +1056,52 @@ function SidebarActionQueue({ atRisk, atRiskMembers = [], checkIns, posts, chall
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map((item, i) => {
-            const Icon = item.icon;
+            const [hov, setHov] = useState(false);
             return (
-              <div key={i} style={{
-                padding: '11px 12px', borderRadius: 9,
-                background: C.surfaceEl, border: `1px solid ${C.border}`,
-                borderLeft: `3px solid ${item.color}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 5 }}>
-                  <Icon style={{ width: 10, height: 10, color: item.color, flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t1, lineHeight: 1.35 }}>{item.title}</span>
+              <div key={i}
+                onClick={() => item.fn1()}
+                onMouseEnter={() => setHov(true)}
+                onMouseLeave={() => setHov(false)}
+                style={{
+                  padding: '11px 12px', borderRadius: 9, cursor: 'pointer',
+                  background: C.surfaceEl,
+                  border: `1px solid ${hov ? C.borderEl : C.border}`,
+                  transition: 'border-color .15s',
+                }}>
+
+                {/* dot + label */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                  <span style={{
+                    fontSize: 11.5, fontWeight: 700, color: C.t1,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {item.title}
+                  </span>
                 </div>
-                <div style={{ fontSize: 10.5, color: C.t3, marginBottom: 8, marginLeft: 17 }}>{item.detail}</div>
-                <div style={{ display: 'flex', gap: 5 }}>
+
+                {/* subtitle */}
+                <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8, paddingLeft: 10, lineHeight: 1.4 }}>
+                  {item.detail}
+                </div>
+
+                {/* buttons — stopPropagation so clicking them doesn't double-fire fn1 */}
+                <div style={{ display: 'flex', gap: 5, paddingLeft: 10 }}
+                  onClick={e => e.stopPropagation()}>
                   <button onClick={item.fn1} style={{
-                    flex: 1, padding: '5px 8px', borderRadius: 6,
-                    background: `${item.color}14`, border: `1px solid ${item.color}28`,
-                    color: item.color, fontSize: 10.5, fontWeight: 700, cursor: 'pointer',
-                    fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
-                  }}>
-                    <Send style={{ width: 8, height: 8 }} /> {item.cta1}
-                  </button>
+                    padding: '4px 10px', borderRadius: 5,
+                    background: `${item.color}18`, border: `1px solid ${item.color}30`,
+                    color: item.color, fontSize: 10.5, fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{item.cta1}</button>
                   <button onClick={item.fn2} style={{
-                    padding: '5px 10px', borderRadius: 6,
+                    padding: '4px 10px', borderRadius: 5,
                     background: C.surface, border: `1px solid ${C.border}`,
-                    color: C.t3, fontSize: 10.5, fontWeight: 600, cursor: 'pointer',
-                    fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 3,
-                  }}>
-                    <Eye style={{ width: 8, height: 8 }} /> {item.cta2}
-                  </button>
+                    color: C.t3, fontSize: 10.5, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{item.cta2}</button>
                 </div>
+
               </div>
             );
           })}
