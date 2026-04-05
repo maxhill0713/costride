@@ -830,6 +830,24 @@ export default function TabContent({
         ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
       `}</style>
 
+      {/* ── Page header ── */}
+      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, borderBottom: `1px solid ${T.border}` }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+            <div style={{ width: 28, height: 28, borderRadius: T.rsm, background: T.accentDim, border: `1px solid ${T.accentBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Zap size={13} color={T.accent} />
+            </div>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: T.t1, margin: 0, letterSpacing: "-0.03em" }}>Content</h1>
+          </div>
+          <p style={{ fontSize: 12, color: T.t3, margin: 0, lineHeight: 1.6 }}>Posts, events, challenges and polls — keep your members engaged</p>
+        </div>
+        <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+          <GhostBtn onClick={() => openModal?.("challenge")}><Trophy size={11} /> Challenge</GhostBtn>
+          <GhostBtn onClick={() => openModal?.("poll")}><HelpCircle size={11} /> Poll</GhostBtn>
+          <PrimaryBtn onClick={() => openModal?.("post")}><Plus size={11} /> Create post</PrimaryBtn>
+        </div>
+      </div>
+
       {/* Metrics bar */}
       <MetricsBar allPosts={allPosts} allMemberships={allMemberships} now={now} />
 
@@ -838,24 +856,6 @@ export default function TabContent({
 
         {/* ── Center ── */}
         <div style={{ padding: "22px 24px 60px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 18 }}>
-
-          {/* Page header */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
-                <div style={{ width: 28, height: 28, borderRadius: T.rsm, background: T.accentDim, border: `1px solid ${T.accentBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Zap size={13} color={T.accent} />
-                </div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: T.t1, margin: 0, letterSpacing: "-0.03em" }}>Member content</h2>
-              </div>
-              <p style={{ fontSize: 12, color: T.t3, margin: 0 }}>Keep your members engaged — posts, events, challenges, and polls all in one place.</p>
-            </div>
-            <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
-              <PrimaryBtn onClick={() => openModal?.("post")}><Plus size={11} /> Create post</PrimaryBtn>
-              <GhostBtn onClick={() => openModal?.("challenge")}><Trophy size={11} /> Challenge</GhostBtn>
-              <GhostBtn onClick={() => openModal?.("poll")}><HelpCircle size={11} /> Poll</GhostBtn>
-            </div>
-          </div>
 
           {/* Quick post ideas */}
           <QuickIdeas openModal={openModal} />
