@@ -218,7 +218,7 @@ function formatPostDate(dateStr) {
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-  if (diffMins < 1) return 'Now';
+  if (diffMins < 5) return 'Just now';
 
   if (diffMins < 60) {
     const m = Math.floor(diffMins);
@@ -230,7 +230,7 @@ function formatPostDate(dateStr) {
     return h === 1 ? '1 hour ago' : `${h} hours ago`;
   }
 
-  if (diffDays < 4) {
+  if (diffDays < 3) {
     const d = Math.floor(diffDays);
     return d === 1 ? '1 day ago' : `${d} days ago`;
   }
