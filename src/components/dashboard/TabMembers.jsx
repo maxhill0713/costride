@@ -18,53 +18,53 @@ import {
 ──────────────────────────────────────────────────────────────────── */
 const T = {
   /* Backgrounds */
-  bg:         "#08090e",
-  surface:    "#0f1016",
-  surfaceEl:  "#14151d",
-  surfaceHov: "#191a24",
-  surfacePop: "#1c1d28",
+  bg:         "#050810",
+  surface:    "#0a0f1e",
+  surfaceEl:  "#0d1225",
+  surfaceHov: "#101929",
+  surfacePop: "#131c2e",
 
   /* Borders */
-  border:     "#1e2030",
-  borderEl:   "#262840",
-  borderFoc:  "#383c5c",
+  border:     "rgba(255,255,255,0.04)",
+  borderEl:   "rgba(255,255,255,0.07)",
+  borderFoc:  "rgba(255,255,255,0.12)",
 
   /* Divider */
-  divider:    "#141520",
+  divider:    "rgba(255,255,255,0.03)",
 
   /* Text */
-  t1: "#ededf0",
-  t2: "#9191a4",
-  t3: "#525266",
-  t4: "#2e2e42",
+  t1: "#eef2ff",
+  t2: "#8b95b3",
+  t3: "#4b5578",
+  t4: "#252d45",
 
   /* Accent — single blue, used sparingly */
-  accent:    "#4c6ef5",
-  accentDim: "#1a2048",
-  accentBrd: "#263070",
+  accent:    "#3b82f6",
+  accentDim: "rgba(59,130,246,0.10)",
+  accentBrd: "rgba(59,130,246,0.22)",
 
   /* Status — intentionally desaturated */
-  red:       "#c0392b",          /* only highest-risk */
-  redDim:    "#160f0d",
-  redBrd:    "#2e1614",
+  red:       "#ef4444",
+  redDim:    "rgba(239,68,68,0.08)",
+  redBrd:    "rgba(239,68,68,0.18)",
 
-  amber:     "#b07b30",
-  amberDim:  "#161008",
-  amberBrd:  "#2a2010",
+  amber:     "#f59e0b",
+  amberDim:  "rgba(245,158,11,0.08)",
+  amberBrd:  "rgba(245,158,11,0.18)",
 
-  green:     "#2d8a62",
-  greenDim:  "#091912",
-  greenBrd:  "#132e20",
+  green:     "#10b981",
+  greenDim:  "rgba(16,185,129,0.08)",
+  greenBrd:  "rgba(16,185,129,0.18)",
 
-  blue:      "#2e6ccf",
-  blueDim:   "#0d1a30",
-  blueBrd:   "#182844",
+  blue:      "#3b82f6",
+  blueDim:   "rgba(59,130,246,0.10)",
+  blueBrd:   "rgba(59,130,246,0.22)",
 
   /* Misc */
-  radius:   "8px",
-  radiusSm: "6px",
-  shadow:   "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
-  shadowMd: "0 4px 16px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.025)",
+  radius:   "16px",
+  radiusSm: "10px",
+  shadow:   "inset 0 1px 0 rgba(255,255,255,0.012)",
+  shadowMd: "0 4px 24px rgba(0,0,0,0.15)",
 };
 
 /* ── Mock Data ──────────────────────────────────────────────────── */
@@ -83,14 +83,14 @@ const MOCK_MEMBERS = [
 ];
 
 const AVATAR_PALETTE = [
-  { bg:"#12192e", text:"#5b82c0" },
-  { bg:"#12201a", text:"#4a9972" },
-  { bg:"#1e1228", text:"#9070c0" },
-  { bg:"#211a0e", text:"#a08040" },
-  { bg:"#1e1010", text:"#a05050" },
-  { bg:"#101e22", text:"#3a9aaa" },
-  { bg:"#1a1020", text:"#b060c0" },
-  { bg:"#1e1018", text:"#c06070" },
+  { bg:"rgba(59,130,246,0.12)",  text:"#6ea8fe" },
+  { bg:"rgba(16,185,129,0.12)",  text:"#4ade80" },
+  { bg:"rgba(139,92,246,0.12)",  text:"#c084fc" },
+  { bg:"rgba(245,158,11,0.12)",  text:"#fbbf24" },
+  { bg:"rgba(239,68,68,0.12)",   text:"#f87171" },
+  { bg:"rgba(6,182,212,0.12)",   text:"#22d3ee" },
+  { bg:"rgba(168,85,247,0.12)",  text:"#d946ef" },
+  { bg:"rgba(249,115,22,0.12)",  text:"#fb923c" },
 ];
 
 /* ── Risk helpers ─────────────────────────────────────────────────

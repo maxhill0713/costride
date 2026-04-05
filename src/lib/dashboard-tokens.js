@@ -17,9 +17,9 @@ export const C = {
   surfaceEl: '#0d1225',   // Hover, elevated rows, selected states
 
   // ── Borders & dividers (neutral only — never colored) ────────────────────
-  border:   'rgba(255,255,255,0.07)',
-  borderEl: 'rgba(255,255,255,0.12)',
-  divider:  'rgba(255,255,255,0.04)',
+  border:   'rgba(255,255,255,0.04)',
+  borderEl: 'rgba(255,255,255,0.07)',
+  divider:  'rgba(255,255,255,0.03)',
 
   // ── Text scale (4 levels) ────────────────────────────────────────────────
   t1: '#f1f5f9',   // Primary — metric values, headings
@@ -62,9 +62,9 @@ export const C = {
 
   // Aliases used by TabEngagement
   surfaceHi: '#0d1225',
-  borderHi:  'rgba(255,255,255,0.12)',
+  borderHi:  'rgba(255,255,255,0.07)',
 };
 
-/** Shared card elevation — used where BoxShadow is applied to surfaces */
-export const CARD_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4)';
-export const CARD_RADIUS = 14;
+/** Shared card elevation — matches coach dashboard card shell */
+export const CARD_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.012)';
+export const CARD_RADIUS = 16;

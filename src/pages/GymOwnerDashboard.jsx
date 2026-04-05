@@ -64,8 +64,8 @@ const D = {
   bgSidebar: '#050810',
   bgSurface: '#0a0f1e',
   bgHover: 'rgba(255,255,255,0.03)',
-  border: 'rgba(255,255,255,0.07)',
-  borderHi: 'rgba(255,255,255,0.12)',
+  border: 'rgba(255,255,255,0.04)',
+  borderHi: 'rgba(255,255,255,0.07)',
   divider: 'rgba(255,255,255,0.05)',
   blue: '#3b82f6',
   blueDim: 'rgba(59,130,246,0.10)',
@@ -111,8 +111,8 @@ const DASH_CSS_TEXT = `
     --bg:       #050810;
     --sidebar:  #050810;
     --surface:  #0a0f1e;
-    --border:   rgba(255,255,255,0.07);
-    --border-hi:rgba(255,255,255,0.12);
+    --border:   rgba(255,255,255,0.04);
+    --border-hi:rgba(255,255,255,0.07);
     --blue:     #3b82f6;
     --text1:    #f1f5f9;
     --text2:    #94a3b8;
@@ -148,13 +148,13 @@ const DASH_CSS_TEXT = `
 
   .dash-root .stat-card {
     background: #0a0f1e;
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 16px;
     padding: 20px 20px;
     position: relative; overflow: hidden;
-    transition: border-color 0.15s;
+    transition: border-color 0.2s, box-shadow 0.3s;
   }
-  .dash-root .stat-card:hover { border-color: rgba(255,255,255,0.12); }
+  .dash-root .stat-card:hover { border-color: rgba(255,255,255,0.07); box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
   .dash-root .stat-num {
     font-size: 32px; font-weight: 800;
     letter-spacing: -0.04em; line-height: 1;

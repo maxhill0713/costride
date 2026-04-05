@@ -20,20 +20,20 @@ import {
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  bg:        '#08090F',
-  surface:   '#0C0F18',
-  raised:    '#111827',
-  elevated:  '#162032',
-  border:    'rgba(255,255,255,0.058)',
-  borderSub: 'rgba(255,255,255,0.032)',
-  borderHi:  'rgba(255,255,255,0.10)',
-  t1:  '#EDF2FF',
-  t2:  '#4E6080',
-  t3:  '#263347',
-  danger:  '#DC2626',
-  warn:    '#B45309',
-  ok:      '#16A34A',
-  divider: 'rgba(255,255,255,0.038)',
+  bg:        '#050810',
+  surface:   '#0a0f1e',
+  raised:    '#0d1225',
+  elevated:  '#101929',
+  border:    'rgba(255,255,255,0.04)',
+  borderSub: 'rgba(255,255,255,0.03)',
+  borderHi:  'rgba(255,255,255,0.07)',
+  t1:  '#eef2ff',
+  t2:  '#8b95b3',
+  t3:  '#4b5578',
+  danger:  '#ef4444',
+  warn:    '#f59e0b',
+  ok:      '#10b981',
+  divider: 'rgba(255,255,255,0.03)',
 };
 
 const F = "'Manrope', 'DM Sans', system-ui, sans-serif";
@@ -288,7 +288,7 @@ function HeroSection({ gym, summary }) {
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={e => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#4E6080;font-family:Manrope,system-ui">I&O</div>`;
+                    e.currentTarget.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#8b95b3;font-family:Manrope,system-ui">I&O</div>`;
                   }}
                 />
               </div>
@@ -356,7 +356,7 @@ function HeroSection({ gym, summary }) {
               <div key={i} style={{
                 padding: '10px 16px',
                 background: C.surface,
-                border: `1px solid ${chip.danger ? 'rgba(220,38,38,0.22)' : chip.warn ? 'rgba(180,83,9,0.22)' : C.border}`,
+                border: `1px solid ${chip.danger ? 'rgba(239,68,68,0.22)' : chip.warn ? 'rgba(245,158,11,0.22)' : C.border}`,
                 borderRadius: 10,
                 display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4,
                 minWidth: 70,
@@ -424,7 +424,7 @@ function FocusStrip({ items }) {
       <Label style={{ display: 'block', marginBottom: 12 }}>Today's focus</Label>
       <div style={{
         display: 'grid', gridTemplateColumns: '5fr 3fr 3fr',
-        border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden',
+        border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden',
       }}>
         {items.map((item, i) => (
           <div key={i} style={{
@@ -469,7 +469,7 @@ function MetricRow({ s }) {
     <section style={{ marginBottom: 32 }}>
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(5,1fr)',
-        border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden',
+        border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden',
       }}>
         {items.map((m, i) => (
           <div key={i} style={{
@@ -503,7 +503,7 @@ function RetentionRiskPanel({ data, summary }) {
       <Label style={{ display: 'block', marginBottom: 12 }}>Churn & retention risk</Label>
 
       <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 12,
+        border: `1px solid ${C.border}`, borderRadius: 16,
         overflow: 'hidden', background: C.surface,
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
@@ -714,7 +714,7 @@ function TrendsSection({ trends }) {
     <section style={{ marginBottom: 32 }}>
       <Label style={{ display: 'block', marginBottom: 12 }}>Trends — last 6 months</Label>
       <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 12,
+        border: `1px solid ${C.border}`, borderRadius: 16,
         overflow: 'hidden', background: C.surface,
       }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
@@ -767,7 +767,7 @@ function BehaviourInsights({ data }) {
       <Label style={{ display: 'block', marginBottom: 12 }}>Behaviour insights</Label>
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
-        border: `1px solid ${C.border}`, borderRadius: 12,
+        border: `1px solid ${C.border}`, borderRadius: 16,
         overflow: 'hidden', background: C.surface,
       }}>
         {/* Drop-off */}
@@ -866,7 +866,7 @@ function ClassPerformance({ classes }) {
     <section style={{ marginBottom: 32 }}>
       <Label style={{ display: 'block', marginBottom: 12 }}>Performance</Label>
       <div style={{
-        border: `1px solid ${C.border}`, borderRadius: 12,
+        border: `1px solid ${C.border}`, borderRadius: 16,
         overflow: 'hidden', background: C.surface,
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -942,7 +942,7 @@ function Segments({ data, summary }) {
   return (
     <section style={{ marginBottom: 32 }}>
       <Label style={{ display: 'block', marginBottom: 12 }}>Member segments</Label>
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', background: C.surface }}>
+      <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', background: C.surface }}>
         <div style={{
           display: 'flex', gap: 0, padding: '0 8px',
           borderBottom: `1px solid ${C.border}`,

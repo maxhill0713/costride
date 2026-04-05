@@ -17,8 +17,8 @@ const T = {
   text1:   '#f0f4f8',
   text2:   '#94a3b8',
   text3:   '#475569',
-  border:  'rgba(255,255,255,0.07)',
-  borderM: 'rgba(255,255,255,0.11)',
+  border:  'rgba(255,255,255,0.04)',
+  borderM: 'rgba(255,255,255,0.07)',
   card:    '#0b1020',
   divider: 'rgba(255,255,255,0.05)',
 };
