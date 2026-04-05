@@ -214,22 +214,33 @@ function formatPostDate(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now - date;
+  const diffMins = diffMs / (1000 * 60);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
+  if (diffMins < 1) return 'Now';
+
+  if (diffMins < 60) {
+    const m = Math.floor(diffMins);
+    return m === 1 ? '1 minute ago' : `${m} minutes ago`;
+  }
+
   if (diffHours < 24) {
     const h = Math.floor(diffHours);
-    return h <= 0 ? 'Just now' : h === 1 ? '1 hour ago' : `${h} hours ago`;
+    return h === 1 ? '1 hour ago' : `${h} hours ago`;
   }
+
   if (diffDays < 4) {
     const d = Math.floor(diffDays);
     return d === 1 ? '1 day ago' : `${d} days ago`;
   }
+
   const day = date.getDate();
-  const suffix = day === 1 || day === 21 || day === 31 ? 'st'
-               : day === 2 || day === 22 ? 'nd'
-               : day === 3 || day === 23 ? 'rd'
-               : 'th';
+  const suffix =
+    day === 1 || day === 21 || day === 31 ? 'st'
+    : day === 2 || day === 22 ? 'nd'
+    : day === 3 || day === 23 ? 'rd'
+    : 'th';
   const month = date.toLocaleDateString('en-GB', { month: 'long' });
   const year = date.getFullYear();
   return `${day}${suffix} ${month} ${year}`;
@@ -250,9 +261,6 @@ function PostMeta({ post, gymName }) {
 }
 
 // ── Caption with Instagram-style fade + more/less ─────────────────────────────
-// Measures whether the text overflows a single line, and if so shows a fade
-// gradient with a "more" button. Tapping "more" expands the post box naturally;
-// "less" collapses it. No other spacing is affected.
 function ExpandableCaption({ text, className = '' }) {
   const containerRef = useRef(null);
   const textRef = useRef(null);
@@ -262,19 +270,15 @@ function ExpandableCaption({ text, className = '' }) {
   useEffect(() => {
     const el = textRef.current;
     if (!el) return;
-    // scrollHeight > clientHeight means it would overflow its clamped height
     setNeedsTruncation(el.scrollHeight > el.clientHeight + 2);
   }, [text]);
 
   if (!text) return null;
 
-  // Collapsed: clamp to 1 line, fade + "more" overlaid at end
-  // Expanded: full height, "less" at the very end inline
   return (
     <div ref={containerRef} className={`relative mt-3 ${className}`}>
       {!expanded ? (
         <div className="relative">
-          {/* Text clamped to 1 line */}
           <p
             ref={textRef}
             className="text-sm text-slate-300 leading-relaxed"
@@ -283,14 +287,12 @@ function ExpandableCaption({ text, className = '' }) {
               WebkitLineClamp: 1,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              // Reserve just enough space for the fade + "more" word
               paddingRight: needsTruncation ? '42px' : '0',
             }}
           >
             {text}
           </p>
           {needsTruncation && (
-            // Narrow fade so more text is visible; "more" matches caption colour
             <div
               style={{
                 position: 'absolute',
@@ -299,7 +301,6 @@ function ExpandableCaption({ text, className = '' }) {
                 bottom: 0,
                 display: 'flex',
                 alignItems: 'center',
-                // Shorter gradient — only 22% opaque zone so less text is hidden
                 background: 'linear-gradient(to right, transparent 0%, rgba(10,12,28,0.92) 22%)',
                 paddingLeft: '14px',
                 paddingRight: '2px',
@@ -316,7 +317,6 @@ function ExpandableCaption({ text, className = '' }) {
           )}
         </div>
       ) : (
-        // Expanded: full text, "less" inline at the very end
         <p className="text-sm text-slate-300 leading-relaxed">
           {text}
           {' '}
@@ -630,7 +630,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
     const SUMMARY_WIDTH = '92%';
-    // ↑ Image panel height increased by 10%: 346px → 380px, 78vw → 85.8vw
     const PANEL_HEIGHT = 'min(85.8vw, 380px)';
 
     const userComment = (() => {
@@ -710,14 +709,13 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               <div className="flex flex-col items-center flex-1">
                 <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
-              </div>
+            </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">
                 <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
               </div>
             </div>
-            {/* Expandable caption for workout posts */}
             {userComment && <ExpandableCaption text={userComment} />}
           </div>
 
@@ -832,14 +830,11 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             </Link>
             {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
           </div>
-          {/* Expandable caption for standard posts */}
           {post.content && <ExpandableCaption text={post.content} />}
           {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
         </div>
 
         {hasMedia && (
-          // ↑ Standard post image height increased by 10%: 410px → 451px, 92.3vw → 101.5vw
-          // capped at 100vw on the vw side to avoid horizontal scroll on very small screens
           <div className="relative w-full overflow-hidden" style={{ height: 'min(100vw, 451px)' }}>
             {post.video_url
               ? <video src={post.video_url} className="w-full h-full object-cover" controls playsInline preload="metadata" />
