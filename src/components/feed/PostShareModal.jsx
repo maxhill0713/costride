@@ -159,9 +159,11 @@ async function drawStreakCard(post) {
   const streakVariant = getAuthorStreakVariant(post);
   const streakIcon = await loadImage(STREAK_ICON_URL);
   const PAD = 72;
-  const iconSz = 160;
+
+  // Smaller icon size, positioned top-right
+  const iconSz = 120; // was 160, now smaller
   const iconX = W - PAD - iconSz;
-  const iconY = 60;
+  const iconY = 52;
 
   if (streakIcon) {
     ctx.save();
@@ -178,13 +180,17 @@ async function drawStreakCard(post) {
     ctx.restore();
   }
 
+  // Streak number: to the RIGHT of the icon, vertically centred on the icon
   if (streakNum !== null && streakNum !== undefined) {
     const numFontSz = 100;
     ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'left';
     ctx.fillStyle = 'white';
     ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 20;
-    ctx.fillText(String(streakNum), W - PAD + 4, iconY + iconSz + numFontSz * 0.85);
+    // Place to the right of the icon with a small gap, vertically centred
+    const numX = iconX + iconSz + 28;
+    const numY = iconY + iconSz / 2 + numFontSz * 0.36;
+    ctx.fillText(String(streakNum), numX, numY);
     ctx.shadowBlur = 0;
   }
 
@@ -245,10 +251,14 @@ function StreakPreview({ post }) {
   return (
     <CardShell post={post}>
       <CardBrand />
-      {/* Top right: streak icon + number — matching home page header exactly */}
-      <div style={{ position: 'absolute', top: 6, right: 8, display: 'flex', alignItems: 'center' }}>
+      {/* Top right: streak icon + number side by side, pushed to the right edge */}
+      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={STREAK_ICON_URL} alt="streak" style={{ width: 44, height: 44, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }} />
+          <img
+            src={STREAK_ICON_URL}
+            alt="streak"
+            style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }}
+          />
           {streakVariant === 'sunglasses' && (
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 64 64">
               <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
@@ -258,7 +268,16 @@ function StreakPreview({ post }) {
           )}
         </div>
         {streakNum !== null && streakNum !== undefined && (
-          <span style={{ fontSize: 15, fontWeight: 900, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)', letterSpacing: '-0.02em', lineHeight: 1, marginLeft: -4, marginTop: 8 }}>{streakNum}</span>
+          <span style={{
+            fontSize: 15,
+            fontWeight: 900,
+            color: '#ffffff',
+            textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+          }}>
+            {streakNum}
+          </span>
         )}
       </div>
       <CardBottom post={post} />
@@ -399,7 +418,7 @@ export default function PostShareModal({ open, onClose, post }) {
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Post</span>
             </div>
 
-            {/* Card carousel — single viewport, inner sliding strip, exactly matching WorkoutShareModal */}
+            {/* Card carousel */}
             <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
