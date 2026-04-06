@@ -701,53 +701,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               <div className="overflow-y-auto flex-1 pb-4">
 
                 {/* PICK */}
-                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              
-
+            
                 {/* PREVIEW */}
                 {step === 'preview' && previewSplit &&
               <div className="p-4 space-y-3">
