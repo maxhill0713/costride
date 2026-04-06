@@ -80,10 +80,11 @@ const DIALOG_ANIM = `
   }
 `;
 
+// ── lb-slide-up now slides from the RIGHT (translateX) instead of from below ──
 const LBOARD_ANIM = `
 @keyframes lb-slide-up {
-  from { opacity:0; transform:translateY(100%); }
-  to   { opacity:1; transform:translateY(0); }
+  from { opacity:0; transform:translateX(100%); }
+  to   { opacity:1; transform:translateX(0); }
 }
 @keyframes lb-card-in {
   from { opacity:0; transform:translateY(28px) scale(0.9) rotateX(8deg); }
@@ -1112,6 +1113,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   return (
     <>
       <style>{LBOARD_ANIM}</style>
+      {/* Panel now slides in from the right via translateX in lb-slide-up */}
       <div style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,display:'flex',flexDirection:'column',background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',overflow:'hidden' }}>
         <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px',opacity:0.8 }}/>
         <div style={{ position:'absolute',top:'8%',left:'15%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 12s ease-in-out infinite' }}/>
@@ -1415,14 +1417,12 @@ export default function GymCommunity() {
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]), enabled: !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
   const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev });
   const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }, 'name', 20), enabled: !!gymId, staleTime: 10*60*1000, gcTime: 20*60*1000, placeholderData: prev => prev });
-  // Fetch check-ins via service-role backend function so all users (new or old) see the same data
   const { data: gymActivityData = {} } = useQuery({
     queryKey: ['gymActivityFeed', gymId],
     queryFn: () => base44.functions.invoke('getGymActivityFeed', { gymId }).then(r => r.data),
     enabled: !!gymId,
     staleTime: 2*60*1000, gcTime: 10*60*1000, placeholderData: prev => prev,
   });
-  // All gym data comes from the service-role backend function — new users see everything
   const checkIns = gymActivityData.checkIns || [];
   const gymWorkoutLogsFromFeed = gymActivityData.workoutLogs || [];
   const gymAchievementsFromFeed = gymActivityData.achievements || [];
@@ -1442,7 +1442,6 @@ export default function GymCommunity() {
   const POSTS_PAGE_SIZE = 20;
   const [postsPage, setPostsPage] = React.useState(1);
 
-  // Posts come from the service-role function — no date filter, all historic posts visible to new users
   const gymPostsRaw = gymActivityData.posts || [];
   const gymPosts = gymPostsRaw.slice(0, postsPage * POSTS_PAGE_SIZE);
   const hasMorePosts = gymPostsRaw.length > postsPage * POSTS_PAGE_SIZE;
@@ -1455,7 +1454,6 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
-  // Build avatar map directly from the already-fetched members array — no extra queries needed
   const memberAvatarMap = React.useMemo(() => {
     const map = {};
     members.forEach(m => {
@@ -1470,7 +1468,6 @@ export default function GymCommunity() {
     return map;
   }, [members, currentUser]);
 
-  // Build display name map from members — prefer display_name over full_name
   const { data: memberUsers = [] } = useQuery({
     queryKey: ['memberUsers', gymId, members.map(m => m.user_id).join(',')],
     queryFn: async () => {
@@ -1538,7 +1535,6 @@ export default function GymCommunity() {
     </div>
   );
 
-  // ── Tab trigger class — tighter padding & smaller text/icons so all 4 fit on screen ──
   const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2.5 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11.5px] transform-gpu";
 
   return (
@@ -1595,7 +1591,6 @@ export default function GymCommunity() {
             </div>
             <div className="relative z-10 pt-2" style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', overflowX:'auto', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
               <TabsList className="flex justify-start bg-transparent px-3 py-2 h-auto gap-1.5" style={{ width:'max-content', minWidth:'100%' }}>
-                {/* Icons reduced to w-3 h-3 and padding/gap tightened via tabTriggerClass */}
                 <TabsTrigger value="home"       className={tabTriggerClass}><Home       className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
                 <TabsTrigger value="activity"   className={tabTriggerClass}><Activity   className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
                 <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy     className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
