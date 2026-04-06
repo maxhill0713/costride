@@ -11,6 +11,7 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Caption sanitisation
@@ -33,31 +34,19 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/quicktime',
   'video/webm',
 ]);
-
 const MAGIC_BYTE_RULES = [
-  { mime: 'image/jpeg',      bytes: [0xFF, 0xD8, 0xFF] },
-  { mime: 'image/png',       bytes: [0x89, 0x50, 0x4E, 0x47] },
-  { mime: 'image/gif',       bytes: [0x47, 0x49, 0x46] },
-  {
-    mime: 'image/webp',
-    check: (arr) => arr[8] === 0x57 && arr[9] === 0x45 && arr[10] === 0x42 && arr[11] === 0x50,
-  },
-  {
-    mime: 'video/mp4',
-    check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70,
-  },
-  {
-    mime: 'video/quicktime',
-    check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70,
-  },
-  { mime: 'video/webm', bytes: [0x1A, 0x45, 0xDF, 0xA3] },
+  { mime: 'image/jpeg',     bytes: [0xFF, 0xD8, 0xFF] },
+  { mime: 'image/png',      bytes: [0x89, 0x50, 0x4E, 0x47] },
+  { mime: 'image/gif',      bytes: [0x47, 0x49, 0x46] },
+  { mime: 'image/webp',     check: (arr) => arr[8] === 0x57 && arr[9] === 0x45 && arr[10] === 0x42 && arr[11] === 0x50 },
+  { mime: 'video/mp4',      check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70 },
+  { mime: 'video/quicktime',check: (arr) => arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70 },
+  { mime: 'video/webm',     bytes: [0x1A, 0x45, 0xDF, 0xA3] },
 ];
-
 const matchesMagicBytes = (arr, rule) => {
   if (rule.check) return rule.check(arr);
   return rule.bytes.every((b, i) => arr[i] === b);
 };
-
 const validateFile = (file) =>
   new Promise((resolve, reject) => {
     if (!ALLOWED_MIME_TYPES.has(file.type)) {
@@ -82,6 +71,43 @@ const validateFile = (file) =>
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Bottom-sheet animation variants — slides up from the bottom edge
+// Overlay fades independently, identical pattern to CreateSplitModal
+// ─────────────────────────────────────────────────────────────────────────────
+const overlayVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18 } },
+  exit:    { opacity: 0, transition: { duration: 0.2 } },
+};
+
+const sheetVariants = {
+  hidden: {
+    y: '100%',
+    opacity: 1,
+  },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
+    },
+  },
+  exit: {
+    y: '100%',
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 40,
+      mass: 0.9,
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Profile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -97,44 +123,40 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const [selectedGridPost, setSelectedGridPost] = useState(null);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
   });
-
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }, '-created_date', 50),
     enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
-
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 200),
     enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
-
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
-
   const memberGymIds = gymMemberships.map((m) => m.gym_id);
-
   const { data: memberGymsData = [] } = useQuery({
     queryKey: ['memberGyms', currentUser?.id],
     queryFn: async () => {
@@ -144,16 +166,15 @@ export default function Profile() {
     enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
-
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friendship.filter({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
 
   useEffect(() => {
@@ -168,12 +189,11 @@ export default function Profile() {
 
   const updateHeroMutation = useMutation({
     mutationFn: (hero_image_url) => base44.auth.updateMe({ hero_image_url }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditHero(false); }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditHero(false); },
   });
-
   const updateAvatarMutation = useMutation({
     mutationFn: (avatar_url) => base44.auth.updateMe({ avatar_url }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditAvatar(false); }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditAvatar(false); },
   });
 
   const closeCreatePost = () => {
@@ -224,15 +244,15 @@ export default function Profile() {
           video_url: data.video_url || null,
           likes: 0,
           comments: [],
-          created_date: new Date().toISOString()
+          created_date: new Date().toISOString(),
         },
-        ...old
+        ...old,
       ]);
       closeCreatePost();
       return { previous };
     },
     onError: (err, data, context) => { queryClient.setQueryData(['userPosts', currentUser?.id], context.previous); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts', currentUser?.id] }); }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts', currentUser?.id] }); },
   });
 
   if (!currentUser) {
@@ -282,21 +302,19 @@ export default function Profile() {
     !post.is_hidden
   );
   const friendCount = friends.length;
-
   const badgeDefs = [
-    { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-    { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-    { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-    { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-    { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-    { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+    { id: '10_visits',        icon: '🎯', color: 'from-blue-400 to-blue-600' },
+    { id: '50_visits',        icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { id: '100_visits',       icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+    { id: '7_day_streak',     icon: '⚡', color: 'from-green-400 to-emerald-500' },
+    { id: '30_day_streak',    icon: '🔥', color: 'from-red-400 to-pink-500' },
+    { id: '90_day_streak',    icon: '👑', color: 'from-purple-400 to-pink-500' },
+    { id: '1_year',           icon: '📅', color: 'from-indigo-400 to-blue-500' },
     { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
   ];
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-
       {/* ── TOP BAR ── */}
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
@@ -307,11 +325,7 @@ export default function Profile() {
 
       {/* ── HERO ── */}
       <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
-
-        {/* Avatar + stats */}
         <div className="flex items-center gap-5">
-
-          {/* ── Avatar — plain circle, no ring or glow ── */}
           <button onClick={() => setShowProfilePicture(true)} className="flex-shrink-0 active:scale-95 transition-transform">
             <div className="w-[99px] h-[99px] rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
               {currentUser.avatar_url
@@ -319,11 +333,9 @@ export default function Profile() {
                 : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>}
             </div>
           </button>
-
-          {/* ── Stats column — nudged up so @username sits near avatar top ── */}
           <div className="flex flex-col gap-1 justify-center flex-1 -mt-2">
             {currentUser.username && (
-<p className="text-[12px] text-slate-400 font-semibold mb-3">@{currentUser.username}</p>
+              <p className="text-[12px] text-slate-400 font-semibold mb-3">@{currentUser.username}</p>
             )}
             <div className="flex justify-around items-center">
               <div className="text-center">
@@ -460,139 +472,160 @@ export default function Profile() {
         </div>
       )}
 
-      {/* ── CREATE POST BOTTOM SHEET ── */}
-      {showCreatePost && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center px-5"
-          onClick={closeCreatePost}>
-          <div
-            className="w-full max-w-sm flex flex-col gap-4"
-            onClick={(e) => e.stopPropagation()}>
+      {/* ── CREATE POST BOTTOM SHEET — animated ── */}
+      <AnimatePresence>
+        {showCreatePost && (
+          <>
+            {/* Dim overlay: fades independently */}
+            <motion.div
+              key="create-post-overlay"
+              className="fixed inset-0 z-40 bg-black/80 backdrop-blur-md"
+              variants={overlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={closeCreatePost}
+            />
 
-            {/* ── POST CARD ── */}
-            <div
-              className="w-full overflow-hidden shadow-2xl shadow-black/40 rounded-3xl relative"
-              style={{
-                background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-              }}>
-
+            {/* Sheet: springs up from the bottom */}
+            <motion.div
+              key="create-post-sheet"
+              className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-5 pb-8 pt-4"
+              variants={sheetVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
               <div
-                className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+                className="w-full max-w-sm flex flex-col gap-4"
+                onClick={(e) => e.stopPropagation()}>
 
-              <div className="px-4 pt-5 pb-5 space-y-3">
-                <div className="relative">
-                  <Textarea
-                    value={postContent}
-                    onChange={(e) => setPostContent(sanitiseCaption(e.target.value))}
-                    placeholder="Add a caption… (optional)"
-                    rows={2}
-                    maxLength={200}
-                    style={{ fontSize: '16px' }}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
-                  />
-                  <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${postContent.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
-                    {postContent.length}/200
-                  </span>
-                </div>
+                {/* ── POST CARD ── */}
+                <div
+                  className="w-full overflow-hidden shadow-2xl shadow-black/40 rounded-3xl relative"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }}>
+                  <div
+                    className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                    style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-                <div className="rounded-2xl overflow-hidden" style={{ height: 220 }}>
-                  {uploading && (
-                    <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
-                      <span className="text-slate-400 text-sm font-medium animate-pulse">Uploading…</span>
+                  <div className="px-4 pt-5 pb-5 space-y-3">
+                    <div className="relative">
+                      <Textarea
+                        value={postContent}
+                        onChange={(e) => setPostContent(sanitiseCaption(e.target.value))}
+                        placeholder="Add a caption… (optional)"
+                        rows={2}
+                        maxLength={200}
+                        style={{ fontSize: '16px' }}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                      />
+                      <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${postContent.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
+                        {postContent.length}/200
+                      </span>
                     </div>
-                  )}
-                  {!uploading && !postImage && !postVideo && (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
-                      <div className="flex gap-3">
-                        <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                          <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
-                            <ImageIcon className="w-5 h-5 text-slate-400" />
+
+                    <div className="rounded-2xl overflow-hidden" style={{ height: 220 }}>
+                      {uploading && (
+                        <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
+                          <span className="text-slate-400 text-sm font-medium animate-pulse">Uploading…</span>
+                        </div>
+                      )}
+                      {!uploading && !postImage && !postVideo && (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)', borderRadius: 16 }}>
+                          <div className="flex gap-3">
+                            <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                              <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                                <ImageIcon className="w-5 h-5 text-slate-400" />
+                              </div>
+                              <span className="text-[10px] text-slate-500 font-semibold">Photo</span>
+                            </label>
+                            <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                              <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
+                              <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                                <Video className="w-5 h-5 text-slate-400" />
+                              </div>
+                              <span className="text-[10px] text-slate-500 font-semibold">Video</span>
+                            </label>
+                            <label className="cursor-pointer flex flex-col items-center gap-1.5">
+                              <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                              <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
+                                <Camera className="w-5 h-5 text-slate-400" />
+                              </div>
+                              <span className="text-[10px] text-slate-500 font-semibold">Camera</span>
+                            </label>
                           </div>
-                          <span className="text-[10px] text-slate-500 font-semibold">Photo</span>
-                        </label>
-                        <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
-                          <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
-                            <Video className="w-5 h-5 text-slate-400" />
-                          </div>
-                          <span className="text-[10px] text-slate-500 font-semibold">Video</span>
-                        </label>
-                        <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                          <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                          <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform">
-                            <Camera className="w-5 h-5 text-slate-400" />
-                          </div>
-                          <span className="text-[10px] text-slate-500 font-semibold">Camera</span>
-                        </label>
+                          <span className="text-[11px] text-slate-600 font-medium">Add a photo or video (optional)</span>
+                        </div>
+                      )}
+                      {!uploading && postImage && (
+                        <div className="relative w-full h-full">
+                          <img src={postImage} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
+                          <button onClick={() => setPostImage('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                            <X className="w-3.5 h-3.5 text-white" />
+                          </button>
+                        </div>
+                      )}
+                      {!uploading && postVideo && (
+                        <div className="relative w-full h-full">
+                          <video src={postVideo} controls className="w-full h-full object-cover rounded-2xl bg-black" />
+                          <button onClick={() => setPostVideo('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                            <X className="w-3.5 h-3.5 text-white" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-slate-500" />
+                        <span className="text-[11px] text-slate-400 font-medium">Share with community</span>
                       </div>
-                      <span className="text-[11px] text-slate-600 font-medium">Add a photo or video (optional)</span>
-                    </div>
-                  )}
-                  {!uploading && postImage && (
-                    <div className="relative w-full h-full">
-                      <img src={postImage} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
-                      <button onClick={() => setPostImage('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
-                        <X className="w-3.5 h-3.5 text-white" />
+                      <button
+                        onClick={() => setShareWithCommunity(!shareWithCommunity)}
+                        style={{ width: 40, height: 22, position: 'relative', borderRadius: 11, background: shareWithCommunity ? '#3b82f6' : 'rgba(100,116,139,0.4)', transition: 'background 0.2s ease', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+                        <div style={{
+                          position: 'absolute', top: 2, width: 18, height: 18, borderRadius: '50%',
+                          background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          left: shareWithCommunity ? 20 : 2,
+                          transition: 'left 0.2s ease',
+                        }} />
                       </button>
                     </div>
-                  )}
-                  {!uploading && postVideo && (
-                    <div className="relative w-full h-full">
-                      <video src={postVideo} controls className="w-full h-full object-cover rounded-2xl bg-black" />
-                      <button onClick={() => setPostVideo('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-slate-500" />
-                    <span className="text-[11px] text-slate-400 font-medium">Share with community</span>
-                  </div>
+                {/* Action buttons */}
+                <div className="flex flex-col gap-3">
                   <button
-                    onClick={() => setShareWithCommunity(!shareWithCommunity)}
-                    style={{ width: 40, height: 22, position: 'relative', borderRadius: 11, background: shareWithCommunity ? '#3b82f6' : 'rgba(100,116,139,0.4)', transition: 'background 0.2s ease', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
-                    <div style={{
-                      position: 'absolute', top: 2, width: 18, height: 18, borderRadius: '50%',
-                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                      left: shareWithCommunity ? 20 : 2,
-                      transition: 'left 0.2s ease',
-                    }} />
+                    onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, share_with_community: shareWithCommunity })}
+                    disabled={(!postImage && !postVideo && !postContent.trim()) || createPostMutation.isPending}
+                    className={`w-full font-black text-base rounded-2xl border border-transparent flex items-center justify-center transition-all duration-100 ${
+                      (postImage || postVideo || postContent.trim()) && !createPostMutation.isPending
+                        ? 'bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_4px_0_0_#1a3fa8,0_8px_20px_rgba(59,130,246,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95'
+                        : 'bg-slate-800/60 text-slate-600 cursor-not-allowed'
+                    }`}
+                    style={{ height: 52 }}>
+                    {createPostMutation.isPending ? 'Posting…' : 'Share Post'}
+                  </button>
+                  <button
+                    onClick={closeCreatePost}
+                    className="w-full font-semibold text-slate-400 hover:text-white text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center"
+                    style={{ height: 48 }}>
+                    Cancel
                   </button>
                 </div>
-              </div>
-            </div>
 
-            {/* Action buttons */}
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, share_with_community: shareWithCommunity })}
-                disabled={(!postImage && !postVideo && !postContent.trim()) || createPostMutation.isPending}
-                className={`w-full font-black text-base rounded-2xl border border-transparent flex items-center justify-center transition-all duration-100 ${
-                  (postImage || postVideo || postContent.trim()) && !createPostMutation.isPending
-                    ? 'bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_4px_0_0_#1a3fa8,0_8px_20px_rgba(59,130,246,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95'
-                    : 'bg-slate-800/60 text-slate-600 cursor-not-allowed'
-                }`}
-                style={{ height: 52 }}>
-                {createPostMutation.isPending ? 'Posting…' : 'Share Post'}
-              </button>
-              <button
-                onClick={closeCreatePost}
-                className="w-full font-semibold text-slate-400 hover:text-white text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center"
-                style={{ height: 48 }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
