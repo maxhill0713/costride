@@ -45,6 +45,36 @@ import {
 //   id, reviewer_id, name, initials, rating, comment, created_at, likes
 // }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE SLIDE VARIANTS — slides in/out from the bottom
+// ─────────────────────────────────────────────────────────────────────────────
+const pageSlideVariants = {
+  hidden: {
+    y: '100%',
+    opacity: 1,
+  },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
+    },
+  },
+  exit: {
+    y: '100%',
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 40,
+      mass: 0.9,
+    },
+  },
+};
+
 const CARD_BG     = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
 
@@ -222,11 +252,6 @@ function formatDateTime(iso) {
 }
 
 // ── Session generation ─────────────────────────────────────────────────────
-/**
- * Generates a rolling list of upcoming sessions for the next 4 weeks.
- * Uses the recurring `days` array + start/end time from the schema.
- * Falls back to a single one-off session if only start_time is provided.
- */
 function generateUpcomingSessions(gymClass, days, startDT, endDT) {
   const sessions = [];
   const now = new Date();
@@ -236,40 +261,35 @@ function generateUpcomingSessions(gymClass, days, startDT, endDT) {
   const cap = getCapacity(gymClass);
   const baseEnrolled = getEnrolled(gymClass);
 
-  // Determine session time strings
   const timeLabel = startDT.time
     ? (endDT.time ? `${startDT.time} – ${endDT.time}` : startDT.time)
     : gymClass.duration_minutes
       ? `(${gymClass.duration_minutes} min)`
       : 'Time TBD';
 
-  // Helper: compute spots for a given session index (slight variation for realism)
   const spotsFor = (seedOffset) => {
     if (cap === null) return null;
-    // Seed a deterministic variance based on offset so it doesn't change on re-render
     const variance = [0, 2, 0, 3, 1, 0, 4, 2][seedOffset % 8];
     const filled = Math.min(cap, baseEnrolled + variance);
     return Math.max(0, cap - filled);
   };
 
   if (days.length > 0) {
-    // Recurring class — generate sessions for each scheduled day over 4 weeks
     let sessionIndex = 0;
     let current = new Date(now);
     current.setHours(0, 0, 0, 0);
 
     while (current <= windowEnd && sessions.length < 14) {
-      const jsDay = current.getDay(); // 0=Sun…6=Sat
+      const jsDay = current.getDay();
       const dayName = jsDay === 0 ? 'Sun' : DAYS[jsDay - 1];
 
       if (days.includes(dayName)) {
-        // Build the session datetime
         const sessionDate = new Date(current);
         if (gymClass.start_time) {
           const ref = new Date(gymClass.start_time);
           sessionDate.setHours(ref.getHours(), ref.getMinutes(), 0, 0);
         } else {
-          sessionDate.setHours(7, 0, 0, 0); // default 07:00 if no time info
+          sessionDate.setHours(7, 0, 0, 0);
         }
 
         if (sessionDate > now) {
@@ -295,7 +315,6 @@ function generateUpcomingSessions(gymClass, days, startDT, endDT) {
       current.setDate(current.getDate() + 1);
     }
   } else if (gymClass.start_time) {
-    // One-off session
     const sessionDate = new Date(gymClass.start_time);
     if (sessionDate > now) {
       const spots = spotsFor(0);
@@ -320,7 +339,6 @@ function generateUpcomingSessions(gymClass, days, startDT, endDT) {
   return sessions;
 }
 
-/** Availability badge config for a session */
 function availabilityBadge(session) {
   if (session.full) return { label: 'Full', color: '#f87171', bg: 'rgba(239,68,68,0.13)', border: 'rgba(239,68,68,0.25)' };
   if (session.hot) return { label: `${session.spots} left`, color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.28)' };
@@ -407,8 +425,11 @@ function RateSheet({ open, onClose, c, className }) {
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
             style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,4,10,0.88)', backdropFilter: 'blur(12px)' }} />
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 1.1 }}
+          <motion.div
+            variants={pageSlideVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10201, borderRadius: '24px 24px 0 0',
               background: 'linear-gradient(160deg,#0d1232 0%,#060810 100%)',
               border: '1px solid rgba(255,255,255,0.08)', borderBottom: 'none', padding: '10px 18px 42px' }}>
@@ -567,7 +588,6 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
         }}>
           {badge.label}
         </span>
-        {/* Radio indicator */}
         {!session.full && (
           <div style={{
             width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
@@ -608,11 +628,10 @@ export default function ClassDetailModal({
   const [moreReviews, setMoreReviews]   = useState(false);
   const [bookAnim, setBookAnim]         = useState(false);
   const [tab, setTab]                   = useState('details');
-  const [selectedSession, setSelectedSession] = useState(null); // ← new
+  const [selectedSession, setSelectedSession] = useState(null);
 
   useEffect(() => { setBooked(initBooked); }, [initBooked]);
   useEffect(() => { injectCSS(); }, []);
-  // Reset selected session when modal closes
   useEffect(() => { if (!open) setSelectedSession(null); }, [open]);
 
   if (!gymClass) return null;
@@ -643,7 +662,6 @@ export default function ClassDetailModal({
   const startDT     = formatDateTime(gymClass.start_time);
   const endDT       = formatDateTime(gymClass.end_time);
 
-  // ── Generate upcoming sessions ───────────────────────────────────────────
   const upcomingSessions = generateUpcomingSessions(gymClass, days, startDT, endDT);
 
   const barColor = full
@@ -654,7 +672,6 @@ export default function ClassDetailModal({
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2300); };
 
-  // ── Book handler — now session-aware ────────────────────────────────────
   const handleBook = () => {
     const targetSession = selectedSession;
 
@@ -664,7 +681,6 @@ export default function ClassDetailModal({
       return;
     }
     if (!targetSession && !booked && !waitlist) {
-      // Nudge user to select a session — switch to schedule tab
       setTab('schedule');
       showToast('Select a time slot first 👆');
       return;
@@ -686,7 +702,6 @@ export default function ClassDetailModal({
     }, 280);
   };
 
-  // ── CTA button label & disabled state ───────────────────────────────────
   const ctaLabel = (() => {
     if (bookAnim) return '…';
     if (booked)   return '✓ Booked — Tap to Cancel';
@@ -695,13 +710,10 @@ export default function ClassDetailModal({
       const time = selectedSession.timeLabel.split(' –')[0];
       return `Book for ${selectedSession.dayShort} ${time}`;
     }
-    // Only show "Select a Time Slot" when the user is already on the Schedule tab
     if (tab === 'schedule' && upcomingSessions.length > 0) return 'Select a Time Slot';
     return 'Book Now';
   })();
 
-  // Only gate the button on the Schedule tab — Details tab always allows tapping
-  // (tapping on Details without a session redirects to the Schedule tab)
   const ctaDisabled = !booked && !waitlist && !selectedSession && tab === 'schedule';
   const ctaActive   = booked || waitlist || !!selectedSession;
 
@@ -710,7 +722,6 @@ export default function ClassDetailModal({
     p: Math.round(REVIEWS.filter(r => r.rating === s).length / REVIEWS.length * 100),
   }));
 
-  // Attendees
   const MOCK_ATT = [
     { id: 'a1', name: 'Alex M.', color: '#3b82f6' },
     { id: 'a2', name: 'Sara K.', color: '#8b5cf6' },
@@ -746,9 +757,12 @@ export default function ClassDetailModal({
               )}
             </AnimatePresence>
 
-            {/* Sheet */}
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 1.1 }}
+            {/* Sheet — now uses pageSlideVariants */}
+            <motion.div
+              variants={pageSlideVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
                 maxHeight: '95vh', display: 'flex', flexDirection: 'column',
                 borderRadius: '26px 26px 0 0',
@@ -834,7 +848,6 @@ export default function ClassDetailModal({
                     <button key={s} onClick={() => setTab(s)}
                       style={{ padding: '12px 16px', fontSize: 12, fontWeight: 800, textTransform: 'capitalize', letterSpacing: '0.02em', cursor: 'pointer', background: 'none', border: 'none', borderBottom: `2px solid ${tab === s ? c.color : 'transparent'}`, color: tab === s ? c.color : 'rgba(255,255,255,0.32)', transition: 'color 0.2s ease, border-color 0.2s ease', marginBottom: -1, position: 'relative' }}>
                       {s}
-                      {/* Dot on schedule tab when session selected */}
                       {s === 'schedule' && selectedSession && (
                         <span style={{ position: 'absolute', top: 8, right: 6, width: 6, height: 6, borderRadius: '50%', background: c.color, boxShadow: `0 0 6px ${c.color}` }} />
                       )}
@@ -995,7 +1008,6 @@ export default function ClassDetailModal({
                     <motion.div key="s" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }}
                       style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-                      {/* Header row */}
                       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                         <div>
                           <SectionHead>Upcoming Sessions</SectionHead>
@@ -1014,7 +1026,6 @@ export default function ClassDetailModal({
                         )}
                       </div>
 
-                      {/* Selected session summary chip */}
                       <AnimatePresence>
                         {selectedSession && (
                           <motion.div
@@ -1040,7 +1051,6 @@ export default function ClassDetailModal({
                         )}
                       </AnimatePresence>
 
-                      {/* Session list */}
                       {upcomingSessions.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {upcomingSessions.map((session, idx) => (
@@ -1055,7 +1065,6 @@ export default function ClassDetailModal({
                           ))}
                         </div>
                       ) : (
-                        /* Empty state */
                         <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18 }}>
                           <Calendar style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.18)', margin: '0 auto 12px' }} />
                           <div style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>No upcoming sessions</div>
@@ -1063,7 +1072,6 @@ export default function ClassDetailModal({
                         </div>
                       )}
 
-                      {/* Recurring toggle (only if booked) */}
                       {booked && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: CARD_BG, border: CARD_BORDER, borderRadius: 14, padding: '13px 15px', marginTop: 4 }}>
                           <div style={{ width: 36, height: 36, borderRadius: 12, background: `rgba(${c.rgb},0.1)`, border: `1px solid rgba(${c.rgb},0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1080,7 +1088,6 @@ export default function ClassDetailModal({
                         </div>
                       )}
 
-                      {/* Add to calendar */}
                       <button onClick={() => showToast('Opening calendar…')}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 14, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
                         <Calendar style={{ width: 14, height: 14 }} />Add to Calendar<ExternalLink style={{ width: 12, height: 12, opacity: 0.4 }} />
@@ -1144,7 +1151,6 @@ export default function ClassDetailModal({
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, type: 'spring', stiffness: 200, damping: 28 }}
                   style={{ flexShrink: 0, padding: '12px 18px 34px', background: 'linear-gradient(to top,#060810 55%,transparent)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
 
-                  {/* Nudge when on schedule tab and nothing selected */}
                   <AnimatePresence>
                     {!selectedSession && !booked && !waitlist && tab === 'schedule' && upcomingSessions.length > 0 && (
                       <motion.div
@@ -1159,7 +1165,6 @@ export default function ClassDetailModal({
                     )}
                   </AnimatePresence>
 
-                  {/* Capacity bar (when session selected + capacity known) */}
                   {selectedSession && selectedSession.spots !== null && !selectedSession.full && (
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -1176,7 +1181,6 @@ export default function ClassDetailModal({
                     </motion.div>
                   )}
 
-                  {/* CTA button */}
                   <button
                     onClick={handleBook}
                     disabled={ctaDisabled && !booked && !waitlist}
@@ -1214,7 +1218,6 @@ export default function ClassDetailModal({
                       transform: bookAnim ? 'scale(0.96) translateY(2px)' : 'scale(1) translateY(0)',
                       transition: 'transform 0.18s cubic-bezier(0.34,1.5,0.64,1),background 0.3s ease,box-shadow 0.3s ease,color 0.3s ease',
                     }}>
-                    {/* Shimmer for active state */}
                     {(selectedSession || tab !== 'schedule') && !booked && !waitlist && (
                       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
                         <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)', animation: 'cdm-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 2s' }} />
