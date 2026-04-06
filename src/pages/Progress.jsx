@@ -28,11 +28,20 @@ const sectionTitle = { fontSize: 24, fontWeight: 700, color: '#e2e8f0', letterSp
 // NUTRITION TAB COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
+import React, { useState, useRef } from 'react';
+import { X, ScanBarcode, Zap, Droplets, Flame, ChevronRight } from 'lucide-react';
+
+// ─── Colour tokens (Tailwind-free, inline-only) ────────────────────────────
+// All colours reference CSS variables so the component works in both light and dark mode.
+// The only accent colours used are the semantic info / success / warning / danger
+// CSS vars provided by the host app.  No neon, no glows.
+
+// ─── Data / presets ───────────────────────────────────────────────────────────
 const NUTRITION_BASE = {
   calories: { target: 2400, consumed: 1620 },
-  protein:  { target: 180,  consumed: 112 },
-  carbs:    { target: 260,  consumed: 198 },
-  fats:     { target: 70,   consumed: 41 },
+  protein:  { target: 180,  consumed: 112  },
+  carbs:    { target: 260,  consumed: 198  },
+  fats:     { target: 70,   consumed: 41   },
   water:    { glasses: 5, target: 8 },
   streak:   4,
   weekDays: [true, true, false, true, true, false, false],
@@ -40,175 +49,336 @@ const NUTRITION_BASE = {
 
 const MEAL_PRESETS = {
   Breakfast: [
-    { name: "Oat porridge + berries",   cal: 340, protein: 12, carbs: 56, fat: 6  },
-    { name: "Greek yoghurt",             cal: 150, protein: 17, carbs: 9,  fat: 4  },
+    { name: 'Oat porridge + berries', cal: 340, protein: 12, carbs: 56, fat: 6  },
+    { name: 'Greek yoghurt',           cal: 150, protein: 17, carbs: 9,  fat: 4  },
+    { name: 'Eggs (3 large)',          cal: 210, protein: 18, carbs: 1,  fat: 15 },
+    { name: 'Banana',                  cal: 90,  protein: 1,  carbs: 23, fat: 0  },
   ],
   Lunch: [
-    { name: "Chicken & rice bowl",       cal: 490, protein: 42, carbs: 58, fat: 8  },
+    { name: 'Chicken & rice bowl',  cal: 490, protein: 42, carbs: 58, fat: 8  },
+    { name: 'Salmon fillet',         cal: 280, protein: 34, carbs: 0,  fat: 16 },
+    { name: 'Rice (200g)',           cal: 260, protein: 5,  carbs: 56, fat: 1  },
   ],
-  Dinner: [],
+  Dinner: [
+    { name: 'Chicken breast',    cal: 310, protein: 45, carbs: 0,  fat: 12 },
+    { name: 'Pasta bolognese',   cal: 520, protein: 28, carbs: 62, fat: 14 },
+    { name: 'Steak + veg',       cal: 480, protein: 50, carbs: 12, fat: 22 },
+  ],
   Snacks: [
-    { name: "Protein bar",               cal: 210, protein: 20, carbs: 22, fat: 7  },
+    { name: 'Protein bar',      cal: 210, protein: 20, carbs: 22, fat: 7 },
+    { name: 'Rice cakes x3',    cal: 90,  protein: 2,  carbs: 20, fat: 1 },
+    { name: 'Handful almonds',  cal: 175, protein: 6,  carbs: 6,  fat: 15 },
   ],
 };
 
 const QUICK_ADD_OPTIONS = [
-  { key: "shake",  label: "+ Protein Shake", sub: "30g protein · 180 kcal", cal: 180, protein: 30, carbs: 6,  fat: 3  },
-  { key: "cal500", label: "+ 500 Calories",  sub: "Quick energy boost",     cal: 500, protein: 20, carbs: 60, fat: 18 },
-  { key: "water",  label: "+ Water",         sub: "1 glass · stay hydrated",cal: 0,   protein: 0,  carbs: 0,  fat: 0, water: true },
+  { key: 'shake',  label: 'Protein shake',  sub: '30g protein · 180 kcal', cal: 180, protein: 30, carbs: 6,  fat: 3  },
+  { key: 'cal500', label: '500 calories',   sub: 'Quick energy boost',     cal: 500, protein: 20, carbs: 60, fat: 18 },
 ];
 
-function MacroBar({ label, current, target, color, unit = "g" }) {
-  const pct = Math.min((current / target) * 100, 100);
+const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '◑', Snacks: '◇' };
+
+// ─── Shared micro-styles ─────────────────────────────────────────────────────
+const card = {
+  background: 'var(--color-background-primary)',
+  border: '0.5px solid var(--color-border-tertiary)',
+  borderRadius: 16,
+  padding: '18px',
+  marginBottom: 12,
+};
+
+const sectionLabel = {
+  fontSize: 11,
+  color: 'var(--color-text-tertiary)',
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  marginBottom: 12,
+  display: 'block',
+};
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+/** Circular progress ring for calories */
+function CalorieRing({ consumed, target }) {
+  const pct   = Math.min(Math.round((consumed / target) * 100), 100);
+  const r     = 38;
+  const circ  = 2 * Math.PI * r;
+  const arc   = circ * 0.75;
+  const fill  = arc * (pct / 100);
+
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <svg width={96} height={96} style={{ display: 'block' }}>
+        {/* Track */}
+        <circle cx={48} cy={48} r={r} fill="none"
+          stroke="var(--color-background-secondary)" strokeWidth={7}
+          strokeDasharray={`${arc} ${circ - arc}`} strokeLinecap="round"
+          transform="rotate(135 48 48)" />
+        {/* Fill */}
+        <circle cx={48} cy={48} r={r} fill="none"
+          stroke="var(--color-text-info)" strokeWidth={7}
+          strokeDasharray={`${fill} ${circ - fill}`} strokeLinecap="round"
+          transform="rotate(135 48 48)"
+          style={{ transition: 'stroke-dasharray 0.8s cubic-bezier(.4,0,.2,1)' }} />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 20, fontWeight: 500, lineHeight: 1, color: 'var(--color-text-primary)' }}>{pct}%</span>
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>of goal</span>
+      </div>
+    </div>
+  );
+}
+
+/** Horizontal macro progress bar */
+function MacroBar({ label, current, target, color }) {
+  const pct = Math.min(Math.round((current / target) * 100), 100);
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.05em" }}>{label}</span>
-        <span style={{ fontSize: 11, fontWeight: 800, color }}>
-          {current}{unit} <span style={{ color: "rgba(255,255,255,0.25)", fontWeight: 500 }}>/ {target}{unit}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-primary)' }}>
+          {current}g{' '}
+          <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>/ {target}g</span>
         </span>
       </div>
-      <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, borderRadius: 999, background: color,
-          boxShadow: `0 0 8px ${color}66`, transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div style={{ height: 4, borderRadius: 99, background: 'var(--color-background-secondary)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 99, width: `${pct}%`,
+          background: color,
+          transition: 'width 0.8s cubic-bezier(.4,0,.2,1)',
+        }} />
       </div>
     </div>
   );
 }
 
-function WaterTracker({ glasses, target, onAdd }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-      {Array.from({ length: target }).map((_, i) => (
-        <div key={i} style={{
-          width: 22, height: 28, borderRadius: 4, border: i < glasses ? "none" : "1.5px solid rgba(34,211,238,0.2)",
-          background: i < glasses ? "linear-gradient(180deg,#22d3ee,#0891b2)" : "rgba(34,211,238,0.05)",
-          boxShadow: i < glasses ? "0 0 8px rgba(34,211,238,0.4)" : "none",
-          transition: "all 0.3s ease",
-          cursor: i === glasses ? "pointer" : "default",
-        }} onClick={i === glasses ? onAdd : undefined} />
-      ))}
-      <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", marginLeft: 4 }}>
-        {glasses}/{target} glasses
-      </span>
-    </div>
-  );
-}
-
-function WeekDots({ days }) {
-  const labels = ["M","T","W","T","F","S","S"];
-  const onTrack = days.filter(Boolean).length;
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-        {days.map((on, i) => (
-          <div key={i} style={{ textAlign: "center" }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: on ? "linear-gradient(135deg,#22d3ee,#0891b2)" : "rgba(255,255,255,0.05)",
-              border: on ? "none" : "1px solid rgba(255,255,255,0.08)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: on ? "0 0 10px rgba(34,211,238,0.35)" : "none",
-            }}>
-              {on && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#061820" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>}
-            </div>
-            <span style={{ fontSize: 8, fontWeight: 700, color: on ? "#22d3ee" : "rgba(255,255,255,0.2)", marginTop: 3, display: "block" }}>{labels[i]}</span>
-          </div>
-        ))}
-      </div>
-      <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)" }}>
-        <span style={{ color: "#22d3ee" }}>{onTrack}/7 days</span> on track this week
-      </p>
-    </div>
-  );
-}
-
-function NutritionCard({ children, style = {} }) {
+/** Dismissible insight card */
+function InsightBanner({ text, onDismiss }) {
   return (
     <div style={{
-      borderRadius: 20,
-      background: "linear-gradient(160deg,rgba(26,32,58,0.80) 0%,rgba(8,10,22,0.96) 100%)",
-      border: "1px solid rgba(255,255,255,0.07)",
-      backdropFilter: "blur(20px)",
-      boxShadow: "0 4px 24px rgba(0,0,0,0.45)",
-      overflow: "hidden",
-      position: "relative",
-      ...style,
+      background: 'var(--color-background-info)',
+      border: '0.5px solid var(--color-border-info)',
+      borderRadius: 8,
+      padding: '10px 14px',
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      marginBottom: 16,
     }}>
       <div style={{
-        position: "absolute", inset: "0 0 auto 0", height: 2,
-        background: "linear-gradient(90deg,transparent 5%,#22d3ee 40%,#06b6d4 60%,transparent 95%)",
-        opacity: 0.4,
+        width: 6, height: 6, borderRadius: '50%',
+        background: 'var(--color-text-info)',
+        flexShrink: 0, marginTop: 5,
       }} />
-      <div style={{ padding: 18 }}>{children}</div>
+      <p style={{ flex: 1, fontSize: 13, color: 'var(--color-text-info)', lineHeight: 1.5, margin: 0 }}>{text}</p>
+      <button onClick={onDismiss} style={{
+        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        color: 'var(--color-text-info)', fontSize: 18, lineHeight: 1, opacity: 0.5, flexShrink: 0,
+      }}>×</button>
     </div>
   );
 }
 
-function NutritionSectionLabel({ children }) {
-  return (
-    <p style={{ margin: "0 0 10px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em",
-      textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>
-      {children}
-    </p>
-  );
-}
-
+/** Bottom sheet for picking a meal item */
 function AddMealSheet({ section, onAdd, onClose }) {
-  const options = MEAL_PRESETS[section] || [];
-  const custom = [
-    { name: "Custom item",   cal: 300, protein: 15, carbs: 35, fat: 8  },
-    { name: "Protein bar",   cal: 210, protein: 20, carbs: 22, fat: 7  },
-    { name: "Eggs (3 large)",cal: 210, protein: 18, carbs: 1,  fat: 15 },
-    { name: "Rice (200g)",   cal: 260, protein: 5,  carbs: 56, fat: 1  },
-    { name: "Salmon fillet", cal: 280, protein: 34, carbs: 0,  fat: 16 },
-  ];
-  const all = [...options, ...custom.filter(c => !options.find(o => o.name === c.name))];
-
+  const presets = MEAL_PRESETS[section] || [];
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", borderRadius: "24px 24px 0 0", background: "linear-gradient(180deg,rgba(18,22,48,0.99),rgba(6,8,18,0.99))", border: "1px solid rgba(255,255,255,0.09)", padding: "20px 16px 36px", maxHeight: "70vh", overflowY: "auto" }}>
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)", margin: "0 auto 16px" }} />
-        <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#fff" }}>Add to {section}</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {all.map((m, i) => (
-            <button key={i} onClick={() => { onAdd(m); onClose(); }}
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", textAlign: "left" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{m.name}</span>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: "#22d3ee" }}>{m.cal} kcal</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", display: "block" }}>{m.protein}g protein</span>
-              </div>
-            </button>
-          ))}
-        </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+    }}>
+      {/* Overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
+
+      {/* Sheet */}
+      <div style={{
+        position: 'relative',
+        background: 'var(--color-background-primary)',
+        border: '0.5px solid var(--color-border-tertiary)',
+        borderRadius: '16px 16px 0 0',
+        padding: '20px 16px 40px',
+        maxHeight: '65vh', overflowY: 'auto',
+      }}>
+        <div style={{
+          width: 32, height: 3, borderRadius: 99,
+          background: 'var(--color-border-secondary)',
+          margin: '0 auto 16px',
+        }} />
+        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', marginBottom: 14 }}>
+          Add to {section}
+        </p>
+        {presets.map((m, i) => (
+          <button key={i} onClick={() => { onAdd(m); onClose(); }}
+            style={{
+              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '12px 14px', borderRadius: 8,
+              background: 'var(--color-background-secondary)',
+              border: '0.5px solid var(--color-border-tertiary)',
+              cursor: 'pointer', textAlign: 'left', marginBottom: 8, fontFamily: 'inherit',
+            }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{m.name}</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{m.cal} kcal</div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{m.protein}g protein</div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function NutritionToast({ msg, visible }) {
+/** Toast notification */
+function Toast({ msg, visible }) {
   return (
     <div style={{
-      position: "fixed", bottom: 80, left: "50%", transform: `translateX(-50%) translateY(${visible ? 0 : 20}px)`,
-      opacity: visible ? 1 : 0, transition: "all 0.3s ease",
-      background: "rgba(34,211,238,0.12)", backdropFilter: "blur(12px)",
-      border: "1px solid rgba(34,211,238,0.3)", borderRadius: 999, padding: "9px 18px",
-      fontSize: 12, fontWeight: 800, color: "#22d3ee", whiteSpace: "nowrap", zIndex: 300,
-      pointerEvents: "none",
+      position: 'fixed', bottom: 28, left: '50%',
+      transform: `translateX(-50%) translateY(${visible ? 0 : 10}px)`,
+      opacity: visible ? 1 : 0,
+      transition: 'all 0.25s ease',
+      background: 'var(--color-background-primary)',
+      border: '0.5px solid var(--color-border-secondary)',
+      borderRadius: 99, padding: '8px 18px',
+      fontSize: 13, color: 'var(--color-text-primary)',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+      whiteSpace: 'nowrap', zIndex: 300, pointerEvents: 'none',
     }}>
       {msg}
     </div>
   );
 }
 
-function NutritionTab() {
-  const [data, setData] = useState(NUTRITION_BASE);
-  const [meals, setMeals] = useState(MEAL_PRESETS);
+/** Single meal section in the log */
+function MealSection({ section, items, onAdd, onDelete, divider }) {
+  const sectionCals = items.reduce((s, m) => s + m.cal, 0);
+  return (
+    <>
+      {divider && <div style={{ height: '0.5px', background: 'var(--color-border-tertiary)', margin: '4px 0' }} />}
+      <div>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 14 }}>{MEAL_ICONS[section]}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{section}</span>
+            {sectionCals > 0 && (
+              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{sectionCals} kcal</span>
+            )}
+          </div>
+          <button onClick={() => onAdd(section)} style={{
+            fontSize: 12, color: 'var(--color-text-info)',
+            background: 'none', border: '0.5px solid var(--color-border-info)',
+            borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
+          }}>
+            + Add
+          </button>
+        </div>
+
+        {/* Items */}
+        {items.length === 0 ? (
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', paddingBottom: 8 }}>No items logged</p>
+        ) : (
+          items.map((m, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '9px 0',
+              borderTop: '0.5px solid var(--color-border-tertiary)',
+            }}>
+              <div style={{ flex: 1, fontSize: 13, color: 'var(--color-text-primary)' }}>{m.name}</div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{m.cal} kcal</div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+                  {m.protein}g P · {m.carbs}g C · {m.fat}g F
+                </div>
+              </div>
+              {/* Delete */}
+              <button onClick={() => onDelete(section, i)} style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: 'var(--color-background-danger)',
+                border: 'none', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <X size={12} color="var(--color-text-danger)" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Water tracker */
+function WaterTracker({ glasses, target, onAdd }) {
+  return (
+    <div>
+      <span style={sectionLabel}>Hydration</span>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+        {Array.from({ length: target }).map((_, i) => (
+          <div key={i}
+            onClick={i === glasses ? onAdd : undefined}
+            style={{
+              width: 18, height: 22, borderRadius: 3,
+              background: i < glasses ? 'var(--color-text-info)' : 'var(--color-background-secondary)',
+              border: i < glasses ? 'none' : '0.5px solid var(--color-border-secondary)',
+              cursor: i === glasses ? 'pointer' : 'default',
+              transition: 'background 0.2s',
+            }}
+          />
+        ))}
+      </div>
+      <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{glasses} / {target} glasses</p>
+    </div>
+  );
+}
+
+/** Weekly consistency dots */
+function WeekDots({ days }) {
+  const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const onTrack = days.filter(Boolean).length;
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        {days.map((on, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: '50%',
+              background: on ? 'var(--color-text-info)' : 'var(--color-background-secondary)',
+              border: on ? 'none' : '0.5px solid var(--color-border-tertiary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {on && (
+                <svg width={11} height={11} viewBox="0 0 12 12" fill="none"
+                  stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1.5,6 4.5,9 10.5,3" />
+                </svg>
+              )}
+            </div>
+            <span style={{ fontSize: 10, color: on ? 'var(--color-text-info)' : 'var(--color-text-tertiary)' }}>{labels[i]}</span>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+        <span style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{onTrack}/7 days</span> on track this week
+      </p>
+    </>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+export default function NutritionTab() {
+  const [data, setData]         = useState(NUTRITION_BASE);
+  const [meals, setMeals]       = useState({
+    Breakfast: [{ name: 'Oat porridge + berries', cal: 340, protein: 12, carbs: 56, fat: 6 }],
+    Lunch:     [{ name: 'Chicken & rice bowl',     cal: 490, protein: 42, carbs: 58, fat: 8 }],
+    Dinner:    [],
+    Snacks:    [{ name: 'Protein bar',              cal: 210, protein: 20, carbs: 22, fat: 7 }],
+  });
   const [addingTo, setAddingTo] = useState(null);
-  const [toast, setToast] = useState({ msg: "", visible: false });
-  const toastTimer = useRef(null);
+  const [insight, setInsight]   = useState(true);
+  const [toast, setToast]       = useState({ msg: '', visible: false });
+  const toastTimer              = useRef(null);
 
   const showToast = (msg) => {
     clearTimeout(toastTimer.current);
@@ -216,288 +386,215 @@ function NutritionTab() {
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
   };
 
-  const handleQuickAdd = (opt) => {
-    if (opt.water) {
-      setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
-      showToast("💧 Water logged!");
-      return;
-    }
+  const addToNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
     setData(d => ({
       ...d,
-      calories: { ...d.calories, consumed: d.calories.consumed + opt.cal },
-      protein:  { ...d.protein,  consumed: d.protein.consumed  + opt.protein },
-      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + opt.carbs },
-      fats:     { ...d.fats,     consumed: d.fats.consumed     + opt.fat },
+      calories: { ...d.calories, consumed: d.calories.consumed + cal    },
+      protein:  { ...d.protein,  consumed: d.protein.consumed  + protein },
+      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + carbs   },
+      fats:     { ...d.fats,     consumed: d.fats.consumed     + fat     },
     }));
-    showToast(`✓ ${opt.label} added!`);
+
+  const removeFromNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
+    setData(d => ({
+      ...d,
+      calories: { ...d.calories, consumed: Math.max(0, d.calories.consumed - cal    ) },
+      protein:  { ...d.protein,  consumed: Math.max(0, d.protein.consumed  - protein) },
+      carbs:    { ...d.carbs,    consumed: Math.max(0, d.carbs.consumed    - carbs  ) },
+      fats:     { ...d.fats,     consumed: Math.max(0, d.fats.consumed     - fat    ) },
+    }));
+
+  const handleQuickAdd = (opt) => {
+    addToNutrition(opt);
+    showToast(`${opt.label} added`);
   };
 
   const handleAddMeal = (section, meal) => {
     setMeals(m => ({ ...m, [section]: [...(m[section] || []), meal] }));
-    setData(d => ({
-      ...d,
-      calories: { ...d.calories, consumed: d.calories.consumed + meal.cal },
-      protein:  { ...d.protein,  consumed: d.protein.consumed  + meal.protein },
-      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + meal.carbs },
-      fats:     { ...d.fats,     consumed: d.fats.consumed     + meal.fat },
-    }));
-    showToast(`✓ ${meal.name} logged!`);
+    addToNutrition(meal);
+    showToast(`${meal.name} added`);
   };
 
-  const cals       = data.calories;
-  const calPct     = Math.round((cals.consumed / cals.target) * 100);
-  const remaining  = cals.target - cals.consumed;
+  const handleDeleteMeal = (section, idx) => {
+    const meal = meals[section][idx];
+    setMeals(m => ({ ...m, [section]: m[section].filter((_, i) => i !== idx) }));
+    removeFromNutrition(meal);
+    showToast(`${meal.name} removed`);
+  };
+
+  const handleAddWater = () => {
+    setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
+    showToast('Water logged');
+  };
+
   const proteinGap = data.protein.target - data.protein.consumed;
+  const remaining  = data.calories.target - data.calories.consumed;
 
-  const status = proteinGap > 30
-    ? { label: "Low Protein", color: "#fb923c", bg: "rgba(251,146,60,0.10)" }
-    : cals.consumed < cals.target * 0.6
-    ? { label: "Under Calories", color: "#f87171", bg: "rgba(248,113,113,0.10)" }
-    : { label: "On Track", color: "#4ade80", bg: "rgba(74,222,128,0.10)" };
-
-  const todaysFocus = proteinGap > 0
-    ? `Eat ${proteinGap}g more protein to hit your target`
+  const insightText = proteinGap > 0
+    ? `Eat ${proteinGap}g more protein to hit your daily target.`
     : remaining > 0
-    ? `${remaining} kcal left — add a meal to reach your goal`
-    : "You've nailed today's nutrition! 🎉";
-
-  const insights = [
-    proteinGap > 30 && "You're under your protein target today",
-    data.streak >= 3 && `You've hit your calories ${data.streak} days this week`,
-    !meals.Dinner.length && "You tend to skip dinner — log it early",
-  ].filter(Boolean).slice(0, 2);
+    ? `${remaining} kcal left — add a meal to reach your goal.`
+    : "You've nailed today's nutrition goals!";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 32, fontFamily: 'var(--font-sans)' }}>
 
-      {/* ── HERO CARD ── */}
-      <div style={{
-        borderRadius: 22,
-        background: "linear-gradient(155deg,rgba(14,24,60,0.95) 0%,rgba(6,18,36,0.98) 100%)",
-        border: "1px solid rgba(34,211,238,0.13)",
-        boxShadow: "0 0 40px rgba(34,211,238,0.07), 0 8px 32px rgba(0,0,0,0.5)",
-        overflow: "hidden", position: "relative",
-      }}>
-        <div style={{ position: "absolute", inset: "0 0 auto 0", height: 2,
-          background: "linear-gradient(90deg,transparent 5%,#22d3ee 40%,#06b6d4 60%,transparent 95%)", opacity: 0.6 }} />
+      {/* ── Hero: calories + macros ── */}
+      <div style={card}>
+        <span style={sectionLabel}>Daily overview</span>
 
-        <div style={{ padding: "20px 20px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div>
-              <p style={{ margin: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>
-                Daily Overview
-              </p>
-              <h2 style={{ margin: "4px 0 0", fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: -0.4 }}>Nutrition Today</h2>
-            </div>
-            <div style={{ padding: "5px 12px", borderRadius: 999, background: status.bg, border: `1px solid ${status.color}44` }}>
-              <span style={{ fontSize: 10, fontWeight: 800, color: status.color, letterSpacing: "0.05em" }}>{status.label}</span>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "rgba(255,255,255,0.055)", margin: "0 -20px 18px" }} />
-
-          {/* Calories big display */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 20 }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <svg width={108} height={108} style={{ display: "block" }}>
-                <defs>
-                  <linearGradient id="ncgrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.7" />
-                    <stop offset="100%" stopColor="#0891b2" />
-                  </linearGradient>
-                </defs>
-                {(() => {
-                  const r = 44, c = 54, circ = 2 * Math.PI * r;
-                  const arc = circ * 0.78, off = arc * (1 - Math.min(calPct, 100) / 100);
-                  return <>
-                    <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(34,211,238,0.08)" strokeWidth={8}
-                      strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" transform={`rotate(129.6 ${c} ${c})`} />
-                    <circle cx={c} cy={c} r={r} fill="none" stroke="url(#ncgrad)" strokeWidth={8}
-                      strokeDasharray={`${arc} ${circ}`} strokeDashoffset={off} strokeLinecap="round"
-                      transform={`rotate(129.6 ${c} ${c})`}
-                      style={{ filter: "drop-shadow(0 0 8px rgba(34,211,238,0.5))", transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)" }} />
-                  </>;
-                })()}
-                <text x="54" y="50" textAnchor="middle" fill="#fff" fontSize="19" fontWeight="800">{calPct}%</text>
-                <text x="54" y="64" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="9" fontWeight="700">of goal</text>
-              </svg>
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: 10 }}>
-                <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: -1, lineHeight: 1 }}>
-                  {cals.consumed.toLocaleString()}
-                </p>
-                <p style={{ margin: "3px 0 0", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.3)" }}>
-                  of {cals.target.toLocaleString()} kcal
-                </p>
-              </div>
-              <div style={{ padding: "8px 12px", borderRadius: 12, background: "rgba(34,211,238,0.07)", border: "1px solid rgba(34,211,238,0.14)" }}>
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#22d3ee", lineHeight: 1.4 }}>
-                  {todaysFocus}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "rgba(255,255,255,0.055)", margin: "0 -20px 16px" }} />
-
-          {/* Macros */}
-          <div style={{ paddingBottom: 18 }}>
-            <MacroBar label="PROTEIN" current={data.protein.consumed}  target={data.protein.target}  color="#22d3ee" />
-            <MacroBar label="CARBS"   current={data.carbs.consumed}    target={data.carbs.target}    color="#a78bfa" />
-            <MacroBar label="FATS"    current={data.fats.consumed}     target={data.fats.target}     color="#fb923c" />
+        {/* Calorie ring + summary */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 16 }}>
+          <CalorieRing consumed={data.calories.consumed} target={data.calories.target} />
+          <div>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>
+              of {data.calories.target.toLocaleString()} kcal
+            </p>
+            <p style={{ fontSize: 26, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1, margin: '0 0 2px' }}>
+              {data.calories.consumed.toLocaleString()}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>kcal consumed</p>
           </div>
         </div>
+
+        {/* Dismissible insight */}
+        {insight && (
+          <InsightBanner text={insightText} onDismiss={() => setInsight(false)} />
+        )}
+
+        {/* Macro bars */}
+        <MacroBar label="Protein"       current={data.protein.consumed} target={data.protein.target} color="var(--color-text-info)"    />
+        <MacroBar label="Carbohydrates" current={data.carbs.consumed}   target={data.carbs.target}   color="var(--color-text-success)"  />
+        <MacroBar label="Fat"           current={data.fats.consumed}    target={data.fats.target}    color="var(--color-text-warning)"  />
       </div>
 
-      {/* ── SMART FEEDBACK ── */}
-      {insights.length > 0 && (
-        <NutritionCard>
-          <NutritionSectionLabel>Smart Insights</NutritionSectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {insights.map((ins, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22d3ee", flexShrink: 0, marginTop: 3, boxShadow: "0 0 6px rgba(34,211,238,0.6)" }} />
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>{ins}</p>
-              </div>
-            ))}
-          </div>
-        </NutritionCard>
-      )}
+      {/* ── Add food panel (quick adds + barcode) ── */}
+      <div style={card}>
+        <span style={sectionLabel}>Add food</span>
 
-      {/* ── QUICK ADD ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Quick Add</NutritionSectionLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {QUICK_ADD_OPTIONS.map((opt) => (
-            <button key={opt.key} onClick={() => handleQuickAdd(opt)}
-              style={{
-                width: "100%", padding: "13px 14px", borderRadius: 14,
-                background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.14)",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                cursor: "pointer",
+        {/* Quick add grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          {QUICK_ADD_OPTIONS.map(opt => (
+            <button key={opt.key} onClick={() => handleQuickAdd(opt)} style={{
+              background: 'var(--color-background-secondary)',
+              border: '0.5px solid var(--color-border-tertiary)',
+              borderRadius: 8, padding: 12, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: opt.key === 'shake' ? 'var(--color-background-info)' : 'var(--color-background-warning)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
               }}>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#fff" }}>{opt.label}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)" }}>{opt.sub}</p>
+                {opt.key === 'shake'
+                  ? <Droplets size={14} color="var(--color-text-info)" />
+                  : <Zap      size={14} color="var(--color-text-warning)" />}
               </div>
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#22d3ee,#0891b2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(34,211,238,0.3)" }}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#061820" strokeWidth="2.8" strokeLinecap="round">
-                  <line x1="6.5" y1="1.5" x2="6.5" y2="11.5"/><line x1="1.5" y1="6.5" x2="11.5" y2="6.5"/>
-                </svg>
-              </div>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{opt.label}</p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{opt.sub}</p>
             </button>
           ))}
         </div>
-      </NutritionCard>
 
-      {/* ── MEAL LOG ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Meal Log</NutritionSectionLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {["Breakfast", "Lunch", "Dinner", "Snacks"].map((section) => {
-            const sectionMeals = meals[section] || [];
-            const icons = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snacks: "🍎" };
-            const sectionCals = sectionMeals.reduce((s, m) => s + m.cal, 0);
-            return (
-              <div key={section} style={{ borderRadius: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                <div style={{ padding: "11px 13px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 14 }}>{icons[section]}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,0.7)" }}>{section}</span>
-                    {sectionCals > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#22d3ee" }}>{sectionCals} kcal</span>}
-                  </div>
-                  <button onClick={() => setAddingTo(section)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 99, background: "rgba(34,211,238,0.10)", border: "1px solid rgba(34,211,238,0.22)", cursor: "pointer" }}>
-                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#22d3ee" strokeWidth="2.2" strokeLinecap="round">
-                      <line x1="4.5" y1="1" x2="4.5" y2="8"/><line x1="1" y1="4.5" x2="8" y2="4.5"/>
-                    </svg>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: "#22d3ee" }}>Add</span>
-                  </button>
-                </div>
-                {sectionMeals.length > 0 && (
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                    {sectionMeals.map((m, i) => (
-                      <div key={i} style={{ padding: "8px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}>{m.name}</span>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.5)" }}>{m.cal} kcal</span>
-                          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", display: "block" }}>{m.protein}g P · {m.carbs}g C · {m.fat}g F</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {sectionMeals.length === 0 && (
-                  <div style={{ padding: "6px 13px 10px" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.18)" }}>No meals logged yet</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </NutritionCard>
-
-      {/* ── WATER + STREAK ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <NutritionCard>
-          <NutritionSectionLabel>Hydration</NutritionSectionLabel>
-          <WaterTracker glasses={data.water.glasses} target={data.water.target}
-            onAdd={() => { setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } })); showToast("💧 Water logged!"); }} />
-        </NutritionCard>
-        <NutritionCard>
-          <NutritionSectionLabel>Streak</NutritionSectionLabel>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 24 }}>🔥</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#fb923c", letterSpacing: -0.5 }}>{data.streak}</p>
-              <p style={{ margin: 0, fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>days on track</p>
-            </div>
+        {/* Barcode scanner — full-width */}
+        <button style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+          background: 'var(--color-background-secondary)',
+          border: '0.5px solid var(--color-border-tertiary)',
+          borderRadius: 8, padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'var(--color-background-tertiary)',
+            border: '0.5px solid var(--color-border-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <ScanBarcode size={16} color="var(--color-text-secondary)" />
           </div>
-          <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.3)", lineHeight: 1.4 }}>Keep it up — you're building a habit!</p>
-        </NutritionCard>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>Scan barcode</p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Identify food instantly</p>
+          </div>
+          <ChevronRight size={14} color="var(--color-text-tertiary)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+        </button>
       </div>
 
-      {/* ── WEEKLY CONSISTENCY ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Weekly Consistency</NutritionSectionLabel>
-        <WeekDots days={data.weekDays} />
-      </NutritionCard>
+      {/* ── Meal log ── */}
+      <div style={card}>
+        <span style={sectionLabel}>Meal log</span>
+        {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map((section, i) => (
+          <MealSection
+            key={section}
+            section={section}
+            items={meals[section] || []}
+            onAdd={setAddingTo}
+            onDelete={handleDeleteMeal}
+            divider={i > 0}
+          />
+        ))}
+      </div>
 
-      {/* ── GOALS CONTEXT ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Your Goal</NutritionSectionLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+      {/* ── Weekly consistency ── */}
+      <div style={{ ...card, marginBottom: 12 }}>
+        <span style={sectionLabel}>Weekly consistency</span>
+        <WeekDots days={data.weekDays} />
+      </div>
+
+      {/* ── Hydration + Streak ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <div style={{
+          background: 'var(--color-background-primary)',
+          border: '0.5px solid var(--color-border-tertiary)',
+          borderRadius: 16, padding: 14,
+        }}>
+          <WaterTracker glasses={data.water.glasses} target={data.water.target} onAdd={handleAddWater} />
+        </div>
+        <div style={{
+          background: 'var(--color-background-primary)',
+          border: '0.5px solid var(--color-border-tertiary)',
+          borderRadius: 16, padding: 14,
+        }}>
+          <span style={sectionLabel}>Streak</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Flame size={18} color="var(--color-text-warning)" />
+            <span style={{ fontSize: 28, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1 }}>
+              {data.streak}
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>days on track</p>
+        </div>
+      </div>
+
+      {/* ── Current goal ── */}
+      <div style={card}>
+        <span style={sectionLabel}>Current goal</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
-            { label: "Goal",    value: "Muscle Gain",           color: "#22d3ee" },
-            { label: "Calories",value: `${cals.target} kcal`,   color: "#a78bfa" },
-            { label: "Protein", value: `${data.protein.target}g`, color: "#fb923c" },
-          ].map(({ label, value, color }) => (
-            <div key={label} style={{ padding: "10px 10px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-              <p style={{ margin: "0 0 4px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>{label}</p>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color }}>{value}</p>
+            { label: 'Goal',     value: 'Muscle gain'                      },
+            { label: 'Calories', value: `${data.calories.target.toLocaleString()} kcal` },
+            { label: 'Protein',  value: `${data.protein.target}g`          },
+          ].map(({ label, value }) => (
+            <div key={label} style={{
+              background: 'var(--color-background-secondary)',
+              borderRadius: 8, padding: '10px 8px', textAlign: 'center',
+            }}>
+              <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>{value}</p>
             </div>
           ))}
         </div>
-      </NutritionCard>
-
-      {/* ── PROGRESS CONNECTION ── */}
-      <div style={{ padding: "14px 16px", borderRadius: 16, background: "rgba(34,211,238,0.05)", border: "1px solid rgba(34,211,238,0.10)", display: "flex", alignItems: "center", gap: 10 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>
-          You've been consistent this week — your nutrition is fuelling your progress. Keep going.
-        </p>
       </div>
 
+      {/* ── Add meal bottom sheet ── */}
       {addingTo && (
-        <AddMealSheet section={addingTo} onAdd={(m) => handleAddMeal(addingTo, m)} onClose={() => setAddingTo(null)} />
+        <AddMealSheet
+          section={addingTo}
+          onAdd={(m) => handleAddMeal(addingTo, m)}
+          onClose={() => setAddingTo(null)}
+        />
       )}
 
-      <NutritionToast msg={toast.msg} visible={toast.visible} />
+      {/* ── Toast ── */}
+      <Toast msg={toast.msg} visible={toast.visible} />
     </div>
   );
 }
