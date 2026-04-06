@@ -686,7 +686,7 @@ export default function ClassDetailModal({
     }, 280);
   };
 
-  // ── CTA button label ─────────────────────────────────────────────────────
+  // ── CTA button label & disabled state ───────────────────────────────────
   const ctaLabel = (() => {
     if (bookAnim) return '…';
     if (booked)   return '✓ Booked — Tap to Cancel';
@@ -695,11 +695,14 @@ export default function ClassDetailModal({
       const time = selectedSession.timeLabel.split(' –')[0];
       return `Book for ${selectedSession.dayShort} ${time}`;
     }
+    // Only show "Select a Time Slot" when the user is already on the Schedule tab
     if (tab === 'schedule' && upcomingSessions.length > 0) return 'Select a Time Slot';
-    return 'Select a Time';
+    return 'Book Now';
   })();
 
-  const ctaDisabled = !booked && !waitlist && !selectedSession;
+  // Only gate the button on the Schedule tab — Details tab always allows tapping
+  // (tapping on Details without a session redirects to the Schedule tab)
+  const ctaDisabled = !booked && !waitlist && !selectedSession && tab === 'schedule';
   const ctaActive   = booked || waitlist || !!selectedSession;
 
   const ratCounts = [5, 4, 3, 2, 1].map(s => ({
@@ -1186,21 +1189,21 @@ export default function ClassDetailModal({
                         ? 'linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.2))'
                         : waitlist
                           ? 'linear-gradient(135deg,rgba(251,191,36,0.2),rgba(217,119,6,0.15))'
-                          : selectedSession
+                          : (selectedSession || tab !== 'schedule')
                             ? 'linear-gradient(135deg,#2563eb,#1d4ed8)'
                             : 'rgba(255,255,255,0.05)',
                       color: booked
                         ? '#34d399'
                         : waitlist
                           ? '#fbbf24'
-                          : selectedSession
+                          : (selectedSession || tab !== 'schedule')
                             ? '#fff'
                             : 'rgba(255,255,255,0.22)',
                       boxShadow: booked
                         ? '0 4px 20px rgba(16,185,129,0.25),inset 0 1px 0 rgba(255,255,255,0.1)'
                         : waitlist
                           ? '0 4px 20px rgba(251,191,36,0.2)'
-                          : selectedSession
+                          : (selectedSession || tab !== 'schedule')
                             ? '0 6px 28px rgba(37,99,235,0.5),inset 0 1px 0 rgba(255,255,255,0.2)'
                             : 'none',
                       outline: booked
@@ -1212,7 +1215,7 @@ export default function ClassDetailModal({
                       transition: 'transform 0.18s cubic-bezier(0.34,1.5,0.64,1),background 0.3s ease,box-shadow 0.3s ease,color 0.3s ease',
                     }}>
                     {/* Shimmer for active state */}
-                    {selectedSession && !booked && !waitlist && (
+                    {(selectedSession || tab !== 'schedule') && !booked && !waitlist && (
                       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
                         <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)', animation: 'cdm-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 2s' }} />
                       </div>
