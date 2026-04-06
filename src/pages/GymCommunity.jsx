@@ -42,6 +42,36 @@ import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Page slide animation — matches CreateSplitModal exactly
+// ─────────────────────────────────────────────────────────────────────────────
+const pageSlideVariants = {
+  hidden: {
+    x: '100%',
+    opacity: 1,
+  },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
+    },
+  },
+  exit: {
+    x: '100%',
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 40,
+      mass: 0.9,
+    },
+  },
+};
+
 // ── Card style — matches TodayWorkout home page cards exactly ─────────────────
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
@@ -1113,7 +1143,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   return (
     <>
       <style>{LBOARD_ANIM}</style>
-      {/* Panel now slides in from the right via translateX in lb-slide-up */}
       <div style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,display:'flex',flexDirection:'column',background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',overflow:'hidden' }}>
         <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px',opacity:0.8 }}/>
         <div style={{ position:'absolute',top:'8%',left:'15%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 12s ease-in-out infinite' }}/>
@@ -1539,7 +1568,14 @@ export default function GymCommunity() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.some(k => k === gymId) }); }}>
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      {/* ── Page slide-in animation wrapper ── */}
+      <motion.div
+        className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]"
+        variants={pageSlideVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
           <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
@@ -1815,7 +1851,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={data => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
-      </div>
+      </motion.div>
     </PullToRefresh>
   );
 }
