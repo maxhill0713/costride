@@ -6,7 +6,6 @@ import {
   Plus, ArrowUpRight, DollarSign,
 } from "lucide-react";
 
-/* ══ Design tokens ══ */
 const T = {
   bg:         "#08090e",
   surface:    "#0f1016",
@@ -19,9 +18,11 @@ const T = {
   accent:     "#4c6ef5",
   accentDim:  "#1a2048",
   accentBrd:  "#263070",
+  // red kept ONLY for the animated pulse dot on At Risk badges
   red:        "#c0392b",
   redDim:     "#160f0d",
   redBrd:     "#2e1614",
+  // amber used wherever red previously appeared for data/numbers
   amber:      "#b07b30",
   amberDim:   "#161008",
   amberBrd:   "#2a2010",
@@ -31,6 +32,9 @@ const T = {
   r:"8px", rsm:"6px",
   sh:"0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
 };
+
+// High churn border/bar color: amber instead of red
+const churnColor = (ch) => ch >= 70 ? T.amber : ch >= 40 ? T.amber : T.t3;
 
 const MEMBERS = [
   { id:"1", name:"Marcus Webb",    ini:"MW", ci:0, plan:"Premium", mv:120, ds:22,  v30:0,  pv:8,  vt:47,  str:0,  ch:84, jd:180, rc:38, reasons:["No visits in 22 days","Was averaging 8/mo then 0","Missed last 3 booked classes"],   act:"Send 'We miss you'",   st:"At risk",      sd:"No visits in 22d · Down from 8/month" },
@@ -58,7 +62,6 @@ function useCountUp(target, delay=0) {
   return v;
 }
 
-/* ── Primitives ── */
 const Av=({m,size=30})=>(
   <div style={{width:size,height:size,borderRadius:T.rsm,background:AVG[m.ci%8],border:`1px solid ${T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.31,fontWeight:700,color:T.t2,letterSpacing:"0.02em",fontFamily:"monospace"}}>{m.ini}</div>
 );
@@ -73,18 +76,16 @@ const Card=({children,style={}})=>(
   <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,overflow:"hidden",...style}}>{children}</div>
 );
 
-/* Ghost — grey, red on danger hover */
 function GBtn({children,onClick,style={},danger}){
   const [hov,sH]=useState(false);
   return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
     style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:500,cursor:"pointer",fontFamily:"inherit",border:"1px solid",
-      background:danger&&hov?T.redDim:hov?T.surfaceHov:T.surfaceEl,
-      borderColor:danger&&hov?T.redBrd:hov?T.borderEl:T.border,
-      color:danger&&hov?T.red:T.t2,
+      background:danger&&hov?T.amberDim:hov?T.surfaceHov:T.surfaceEl,
+      borderColor:danger&&hov?T.amberBrd:hov?T.borderEl:T.border,
+      color:danger&&hov?T.amber:T.t2,
       transition:"all .12s",...style}}>{children}</button>;
 }
 
-/* Primary solid blue */
 function PBtn({children,onClick,style={}}){
   const [hov,sH]=useState(false);
   return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
@@ -93,7 +94,6 @@ function PBtn({children,onClick,style={}}){
       transition:"opacity .12s",...style}}>{children}</button>;
 }
 
-/* Action button — GREY default, full BLUE on hover */
 function ActBtn({children,onClick,style={},size="md"}){
   const [hov,sH]=useState(false);
   const pad = size==="sm" ? "3px 8px" : "5px 10px";
@@ -106,12 +106,12 @@ function ActBtn({children,onClick,style={},size="md"}){
       transition:"all .12s",...style}}>{children}</button>;
 }
 
-/* ── KPI stat card — identical to TabEngagement StatCard ── */
-function StatCard({icon:Icon,label,value,sub,prefix="",delay=0,highlight=false,alertRed=false}){
+function StatCard({icon:Icon,label,value,sub,prefix="",delay=0,highlight=false,alertAmber=false}){
   const counted=useCountUp(typeof value==="number"?value:0,delay);
   const display=typeof value==="number"?`${prefix}${counted.toLocaleString()}`:value;
-  const numColor=alertRed?T.red:highlight?T.accent:T.t1;
-  const iconColor=alertRed?T.red:highlight?T.accent:T.t3;
+  // numbers are always T.t1 (white)
+  const numColor=T.t1;
+  const iconColor=alertAmber?T.amber:highlight?T.accent:T.t3;
   return(
     <Card style={{padding:"18px 20px"}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}>
@@ -127,7 +127,6 @@ function StatCard({icon:Icon,label,value,sub,prefix="",delay=0,highlight=false,a
   );
 }
 
-/* ── Segment tiles ── */
 function Segs({members,active,onFilter,onBulk}){
   const segs=useMemo(()=>[
     {id:"atRisk",   Icon:AlertTriangle,label:"Need attention",count:members.filter(m=>m.ch>=60).length,          action:"Message all",urgent:true},
@@ -151,12 +150,13 @@ function Segs({members,active,onFilter,onBulk}){
             </div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",alignItems:"center",gap:5}}>
-                <div style={{fontSize:18,fontWeight:700,color:s.urgent&&s.count>0?T.red:on?T.accent:T.t1,lineHeight:1.1,fontVariantNumeric:"tabular-nums"}}>{s.count}</div>
+                {/* count always white */}
+                <div style={{fontSize:18,fontWeight:700,color:on?T.accent:T.t1,lineHeight:1.1,fontVariantNumeric:"tabular-nums"}}>{s.count}</div>
+                {/* urgent pulse dot kept red — it's a status indicator, not a number */}
                 {s.urgent&&s.count>0&&<span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}
               </div>
               <div style={{fontSize:10,color:on?T.accent:T.t3,marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
             </div>
-            {/* Bulk action — grey → blue */}
             {s.count>0&&(
               <button onClick={e=>{e.stopPropagation();onBulk(s.id);}}
                 onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
@@ -172,10 +172,9 @@ function Segs({members,active,onFilter,onBulk}){
   );
 }
 
-/* ── Churn card ── */
 function ChurnCard({m,onMsg,onSel}){
   const [hov,sH]=useState(false);
-  const bc=m.ch>=70?T.red:m.ch>=40?T.amber:T.t3;
+  const bc=churnColor(m.ch);
   return(
     <div onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={()=>onSel(m)}
       style={{padding:"14px 16px",background:hov?T.surfaceHov:T.surface,border:`1px solid ${T.border}`,borderLeft:`2px solid ${bc}`,borderRadius:T.r,boxShadow:T.sh,cursor:"pointer",transition:"background .12s"}}>
@@ -188,7 +187,8 @@ function ChurnCard({m,onMsg,onSel}){
           </div>
         </div>
         <div style={{textAlign:"right"}}>
-          <div style={{fontSize:22,fontWeight:700,color:bc,fontVariantNumeric:"tabular-nums",lineHeight:1}}>{m.ch}%</div>
+          {/* churn % always white */}
+          <div style={{fontSize:22,fontWeight:700,color:T.t1,fontVariantNumeric:"tabular-nums",lineHeight:1}}>{m.ch}%</div>
           <div style={{fontSize:9,color:T.t3,marginTop:2}}>churn risk</div>
         </div>
       </div>
@@ -202,8 +202,8 @@ function ChurnCard({m,onMsg,onSel}){
         ))}
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:10,borderTop:`1px solid ${T.divider}`}}>
-        <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t2,fontWeight:500}}>${m.mv}</span>/mo · {m.rc}% return rate</span>
-        {/* Grey → blue on hover */}
+        {/* dollar value always white */}
+        <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t1,fontWeight:500}}>${m.mv}</span>/mo · {m.rc}% return rate</span>
         <button onClick={e=>{e.stopPropagation();onMsg(m);}}
           onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
           onMouseLeave={e=>{e.currentTarget.style.background=T.surfaceEl;e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.t2;}}
@@ -215,7 +215,6 @@ function ChurnCard({m,onMsg,onSel}){
   );
 }
 
-/* ── Table ── */
 function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,prev,setPrev,onMsg}){
   const filtered=useMemo(()=>{
     let l=members;
@@ -261,7 +260,7 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
         :sorted.map((m,idx)=>{
           const isSel=selRows.has(m.id),isPrev=prev?.id===m.id;
           const trend=m.pv>0?Math.round(((m.v30-m.pv)/m.pv)*100):0;
-          const bc=m.ch>=70?T.red:m.ch>=40?T.amber:T.t3;
+          const bc=churnColor(m.ch);
           return(
             <div key={m.id} onClick={()=>setPrev(isPrev?null:m)}
               onMouseEnter={e=>{if(!isPrev&&!isSel)e.currentTarget.style.background=T.surfaceHov;}}
@@ -281,23 +280,26 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
                 </div>
               </div>
               <div>
-                <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:m.st==="At risk"?T.red:T.t2,border:`1px solid ${T.border}`}}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:T.t2,border:`1px solid ${T.border}`}}>
+                  {/* pulse dot stays red on At risk — it's the one retained red signal */}
                   {m.st==="At risk"&&<span style={{width:4,height:4,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}{m.st}
                 </span>
                 <div style={{fontSize:10,color:T.t3,marginTop:3,lineHeight:1.4}}>{m.sd}</div>
               </div>
               <div>
-                <span style={{fontSize:13,fontWeight:600,color:m.ch>=70?T.red:m.ch>=40?T.amber:T.t2,fontVariantNumeric:"tabular-nums"}}>{m.ch}%</span>
+                {/* churn % always white */}
+                <span style={{fontSize:13,fontWeight:600,color:T.t1,fontVariantNumeric:"tabular-nums"}}>{m.ch}%</span>
                 <div style={{marginTop:5}}><Bar pct={m.ch} color={bc} h={2}/></div>
               </div>
-              <div><span style={{fontSize:12,fontWeight:500,color:m.ds>=14?T.red:m.ds<=1?T.green:T.t1}}>{m.ds===999?"Never":m.ds===0?"Today":`${m.ds}d ago`}</span></div>
+              {/* last seen — white regardless of recency */}
+              <div><span style={{fontSize:12,fontWeight:500,color:T.t1}}>{m.ds===999?"Never":m.ds===0?"Today":`${m.ds}d ago`}</span></div>
               <div style={{display:"flex",alignItems:"center",gap:4}}>
                 {trend>10?<><TrendingUp size={11} color={T.green}/><span style={{fontSize:10,color:T.green}}>+{trend}%</span></>
-                 :trend<-10?<><TrendingDown size={11} color={T.red}/><span style={{fontSize:10,color:T.red}}>{trend}%</span></>
+                 :trend<-10?<><TrendingDown size={11} color={T.amber}/><span style={{fontSize:10,color:T.amber}}>{trend}%</span></>
                  :<span style={{fontSize:10,color:T.t3}}>—</span>}
               </div>
+              {/* value always white */}
               <div><div style={{fontSize:12,fontWeight:600,color:T.t1}}>${m.mv}</div><div style={{fontSize:9,color:T.t3}}>/month</div></div>
-              {/* Row action — grey → blue */}
               <div onClick={e=>e.stopPropagation()}>
                 <button onClick={()=>onMsg(m)}
                   onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
@@ -315,7 +317,6 @@ function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,p
   );
 }
 
-/* ── Bulk bar ── */
 function BulkBar({selRows,members,onClear,onBulk}){
   if(selRows.size===0)return null;
   const sel=members.filter(m=>selRows.has(m.id));
@@ -323,7 +324,8 @@ function BulkBar({selRows,members,onClear,onBulk}){
   return(
     <div style={{borderTop:`1px solid ${T.borderEl}`,background:T.surfaceEl}}>
       <div style={{padding:"7px 16px",borderBottom:`1px solid ${T.divider}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <span style={{fontSize:11,color:T.t2,fontWeight:500}}>{selRows.size} selected <span style={{color:T.t3,fontWeight:400}}>· ${tv}/mo combined</span></span>
+        {/* combined value white */}
+        <span style={{fontSize:11,color:T.t2,fontWeight:500}}>{selRows.size} selected <span style={{color:T.t1,fontWeight:500}}> · ${tv}/mo combined</span></span>
         <button onClick={onClear} style={{fontSize:11,color:T.t3,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Clear</button>
       </div>
       <div style={{padding:"9px 16px",display:"flex",alignItems:"center",gap:6}}>
@@ -337,7 +339,6 @@ function BulkBar({selRows,members,onClear,onBulk}){
   );
 }
 
-/* ── Right sidebar ── */
 function RightPanel({members,onFilter}){
   const hr=members.filter(m=>m.ch>=70);
   const nq=members.filter(m=>m.jd<=10&&m.vt<2);
@@ -345,8 +346,9 @@ function RightPanel({members,onFilter}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:14}}>
       {hr.length>0&&(
-        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:`2px solid ${T.red}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:`2px solid ${T.amber}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            {/* pulse dot: one retained red signal */}
             <span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:12,fontWeight:600,color:T.t1}}>{hr.length} likely to churn</span>
           </div>
@@ -358,7 +360,8 @@ function RightPanel({members,onFilter}){
             ))}
             {hr.length>3&&<span style={{fontSize:10,color:T.t3,alignSelf:"center"}}>+{hr.length-3}</span>}
           </div>
-          <div style={{fontSize:11,color:T.t3,marginBottom:12}}><span style={{color:T.red,fontWeight:600}}>${tv}</span>/mo at risk</div>
+          {/* revenue at risk value white */}
+          <div style={{fontSize:11,color:T.t3,marginBottom:12}}><span style={{color:T.t1,fontWeight:600}}>${tv}</span>/mo at risk</div>
           <div style={{display:"flex",gap:6}}>
             <PBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("atRisk")}><Send size={9}/> Message all</PBtn>
             <GBtn onClick={()=>onFilter("atRisk")}>View</GBtn>
@@ -385,11 +388,12 @@ function RightPanel({members,onFilter}){
       <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}><TrendingDown size={11} color={T.t3}/><span style={{fontSize:12,fontWeight:600,color:T.t1}}>Drop-off patterns</span></div>
         <div style={{fontSize:11,color:T.t3,marginBottom:14,lineHeight:1.5}}>When members go quiet after joining.</div>
-        {[{label:"Week 1",pct:25,color:T.red},{label:"Week 2",pct:66,color:T.amber},{label:"Week 4",pct:41,color:T.t3}].map((b,i)=>(
+        {[{label:"Week 1",pct:25,color:T.amber},{label:"Week 2",pct:66,color:T.amber},{label:"Week 4",pct:41,color:T.t3}].map((b,i)=>(
           <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i<2?8:0}}>
             <span style={{fontSize:10,color:T.t3,minWidth:42}}>{b.label}</span>
             <div style={{flex:1,height:2,borderRadius:99,background:T.divider}}><div style={{height:"100%",width:`${b.pct}%`,background:b.color,borderRadius:99,opacity:.55}}/></div>
-            <span style={{fontSize:10,fontWeight:600,color:T.t2,minWidth:28,textAlign:"right"}}>{b.pct}%</span>
+            {/* drop-off pct white */}
+            <span style={{fontSize:10,fontWeight:600,color:T.t1,minWidth:28,textAlign:"right"}}>{b.pct}%</span>
           </div>
         ))}
       </div>
@@ -406,12 +410,11 @@ function RightPanel({members,onFilter}){
   );
 }
 
-/* ── Member detail panel ── */
 function Preview({m,onClose,onMsg}){
   if(!m)return null;
-  const bc=m.ch>=70?T.red:m.ch>=40?T.amber:T.t3;
+  const bc=churnColor(m.ch);
   const es=Math.min(100,Math.round((m.v30/12)*100));
-  const ec=es>=60?T.green:es>=30?T.amber:T.red;
+  const ec=es>=60?T.green:es>=30?T.amber:T.amber;
   return(
     <div style={{position:"fixed",top:0,right:0,bottom:0,width:300,background:T.surface,borderLeft:`1px solid ${T.border}`,zIndex:200,display:"flex",flexDirection:"column",boxShadow:"-12px 0 40px rgba(0,0,0,0.6)",animation:"panelIn .18s ease"}}>
       <div style={{padding:"14px 16px",borderBottom:`1px solid ${T.divider}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -419,7 +422,7 @@ function Preview({m,onClose,onMsg}){
           <Av m={m} size={36}/>
           <div>
             <div style={{fontSize:13,fontWeight:600,color:T.t1,marginBottom:3}}>{m.name}</div>
-            <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:m.st==="At risk"?T.red:T.t2,border:`1px solid ${T.border}`}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:T.t2,border:`1px solid ${T.border}`}}>
               {m.st==="At risk"&&<span style={{width:4,height:4,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}{m.st}
             </span>
           </div>
@@ -430,7 +433,8 @@ function Preview({m,onClose,onMsg}){
         {m.ch>=40&&(
           <div style={{padding:"12px 14px",borderRadius:T.r,marginBottom:12,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-              <span style={{fontSize:12,fontWeight:600,color:m.ch>=70?T.red:T.amber}}>{m.ch}% churn risk</span>
+              {/* churn % in detail panel: white */}
+              <span style={{fontSize:12,fontWeight:600,color:T.t1}}>{m.ch}% churn risk</span>
               <span style={{fontSize:10,color:T.t3}}>${m.mv}/mo</span>
             </div>
             <Bar pct={m.ch} color={bc}/>
@@ -452,7 +456,8 @@ function Preview({m,onClose,onMsg}){
         <div style={{marginBottom:12}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
             <span style={{fontSize:10,color:T.t3,textTransform:"uppercase",letterSpacing:".09em"}}>Engagement</span>
-            <span style={{fontSize:11,fontWeight:600,color:ec}}>{es}%</span>
+            {/* engagement score white */}
+            <span style={{fontSize:11,fontWeight:600,color:T.t1}}>{es}%</span>
           </div>
           <div style={{height:3,borderRadius:99,background:T.divider}}><div style={{height:"100%",width:`${es}%`,borderRadius:99,background:ec,opacity:.7}}/></div>
         </div>
@@ -470,7 +475,6 @@ function Preview({m,onClose,onMsg}){
   );
 }
 
-/* ── Toast ── */
 function Toast({member,onClose}){
   const [sent,setSent]=useState(false);
   const [body,setBody]=useState(member?`Hey ${member.name.split(" ")[0]}, we've missed seeing you at the gym. Your progress is waiting — come back and pick up where you left off.`:"");
@@ -495,7 +499,6 @@ function Toast({member,onClose}){
   );
 }
 
-/* ══ ROOT ══ */
 export default function MembersPage(){
   const members=MEMBERS;
   const [filter,setFilter]=useState("all");
@@ -535,7 +538,6 @@ export default function MembersPage(){
         ::-webkit-scrollbar-thumb{background:${T.border};border-radius:99px}
       `}</style>
 
-      {/* Header */}
       <div style={{padding:"20px 24px 16px",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,borderBottom:`1px solid ${T.border}`}}>
         <div>
           <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:4}}>
@@ -552,31 +554,26 @@ export default function MembersPage(){
         </div>
       </div>
 
-      {/* Body */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 280px",minHeight:"calc(100vh - 71px)"}}>
-
-        {/* Center */}
         <div style={{padding:"22px 24px 60px",overflowY:"auto",display:"flex",flexDirection:"column",gap:18}}>
-
-          {/* KPI cards — identical pattern to TabEngagement */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             <StatCard icon={Users}         label="Total Members"   sub="enrolled across all plans"                              value={members.length} delay={0}/>
             <StatCard icon={Activity}      label="Active (7 days)" sub={`${Math.round(activeN/members.length*100)}% of total`}  value={activeN}        delay={120}/>
-            <StatCard icon={AlertTriangle} label="At Risk"         sub="60%+ churn probability"                                 value={ar.length}      delay={240} alertRed={ar.length>0}/>
-            <StatCard icon={DollarSign}    label="Revenue at Risk" sub="monthly recurring at risk"                              value={arVal}          delay={360} prefix="$" alertRed={arVal>0}/>
+            <StatCard icon={AlertTriangle} label="At Risk"         sub="60%+ churn probability"                                 value={ar.length}      delay={240} alertAmber={ar.length>0}/>
+            <StatCard icon={DollarSign}    label="Revenue at Risk" sub="monthly recurring at risk"                              value={arVal}          delay={360} prefix="$" alertAmber={arVal>0}/>
           </div>
 
-          {/* Priority */}
           <div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <span style={{fontSize:11,fontWeight:600,color:T.t2,textTransform:"uppercase",letterSpacing:".1em"}}>Priority Today</span>
                 <div style={{display:"flex",alignItems:"center",gap:5,padding:"1px 7px",borderRadius:20,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
                   <span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>
-                  <span style={{fontSize:10,fontWeight:600,color:T.red}}>{priority.length} need attention</span>
+                  <span style={{fontSize:10,fontWeight:600,color:T.amber}}>{priority.length} need attention</span>
                 </div>
               </div>
-              <span style={{fontSize:11,color:T.t3}}>${priority.reduce((s,m)=>s+m.mv,0)}/mo at risk</span>
+              {/* at-risk value white */}
+              <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t1}}>${priority.reduce((s,m)=>s+m.mv,0)}</span>/mo at risk</span>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:9}}>
               {priority.map(m=>(
@@ -585,7 +582,6 @@ export default function MembersPage(){
             </div>
           </div>
 
-          {/* Segments */}
           <Segs members={members} active={filter} onFilter={setFilter} onBulk={id=>{
             const seg=members.filter(m=>{
               if(id==="atRisk")return m.ch>=60;
@@ -597,7 +593,6 @@ export default function MembersPage(){
             if(seg.length)setMsg(seg[0]);
           }}/>
 
-          {/* Table */}
           <Card style={{overflow:"hidden"}}>
             <div style={{padding:"9px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:2,flexWrap:"wrap",position:"sticky",top:0,background:T.surface,zIndex:10}}>
               {tabs.map(t=>{
@@ -644,7 +639,6 @@ export default function MembersPage(){
           </Card>
         </div>
 
-        {/* Right panel */}
         <div style={{padding:"18px 16px 40px",overflowY:"auto",borderLeft:`1px solid ${T.border}`,background:T.surface}}>
           <RightPanel members={members} onFilter={setFilter}/>
         </div>
