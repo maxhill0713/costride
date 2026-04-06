@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
   X, Clock, Users, MapPin, Star, Calendar, Dumbbell,
   ChevronRight, Zap, Heart, Share2, Bell, CheckCircle,
@@ -44,7 +44,11 @@ import {
 // REVIEW {
 //   id, reviewer_id, name, initials, rating, comment, created_at, likes
 // }
-
+const pageSlideVariants = {
+  hidden:  { y: '100%' },
+  visible: { y: 0, transition: { type: 'spring', stiffness: 380, damping: 36 } },
+  exit:    { y: '100%', transition: { type: 'spring', stiffness: 420, damping: 40 } },
+};
 const CARD_BG     = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
 
