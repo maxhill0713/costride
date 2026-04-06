@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 async function loadImage(src) {
   return new Promise((resolve) => {
@@ -19,17 +21,45 @@ function canvasToBlob(canvas) {
   );
 }
 
-// ─── Canvas render ────────────────────────────────────────────────────────────
-// Matches the Summary card vibe: photo bg, very light top tint, heavier bottom
-// fade, CoStride top-left, caption + date bottom-left Strava-style.
-async function drawPostCard(post) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getAuthorStreakVariant(post) {
+  // The post's reactions map userId -> variant. The author's own reaction is the
+  // closest proxy to the variant they had when posting (they react to their own posts).
+  // Fall back to 'default'.
+  if (post.reactions && post.member_id && post.reactions[post.member_id]) {
+    return post.reactions[post.member_id];
+  }
+  return post.streak_variant || 'default';
+}
+
+function getPostStreak(post) {
+  // streak_count is the ideal field; fall back to post-level fields or null
+  return post.streak_count ?? post.member_streak ?? post.streak ?? null;
+}
+
+function getCleanCaption(post) {
+  if (!post.content) return null;
+  const lines = post.content.split('\n').filter(l => {
+    const t = l.trim();
+    if (!t) return false;
+    if (t.length <= 3 && t.codePointAt(0) > 255) return false;
+    if (t.includes('Just finished')) return false;
+    if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
+    if (/[0-9]+(kg|lbs)/i.test(t)) return false;
+    return true;
+  });
+  return lines.join(' ').trim() || null;
+}
+
+// ─── Canvas render (clean card, no streak) ────────────────────────────────────
+async function drawPostCard(post, withStreak = false) {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const PAD = 72;
 
-  // ── Background ──
+  // Background
   if (post.image_url) {
     const img = await loadImage(post.image_url);
     if (img) {
@@ -39,7 +69,6 @@ async function drawPostCard(post) {
         (H - img.naturalHeight * s) / 2,
         img.naturalWidth * s, img.naturalHeight * s);
     }
-    // Subtle top tint (just enough for logo legibility), clear mid, heavier bottom
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0,    'rgba(0,0,0,0.28)');
     g.addColorStop(0.12, 'rgba(0,0,0,0.0)');
@@ -54,7 +83,7 @@ async function drawPostCard(post) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  // ── TOP LEFT: CoStride logo + wordmark ──
+  // TOP LEFT: CoStride logo + wordmark
   const logo = await loadImage(LOGO_URL);
   const logoSz = 60, fontSz = 54;
   if (logo) {
@@ -68,13 +97,51 @@ async function drawPostCard(post) {
   ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 14;
   ctx.fillText('CoStride', PAD + logoSz + 16, 136); ctx.shadowBlur = 0;
 
-  // ── BOTTOM BLOCK — left-aligned, Strava style ──
-  const bottomY = H - 160;
+  // TOP RIGHT: Streak icon + number (only on streak variant)
+  if (withStreak) {
+    const streakNum = getPostStreak(post);
+    const streakVariant = getAuthorStreakVariant(post);
+    const streakIcon = await loadImage(STREAK_ICON_URL);
 
-  // Footer: date — muted, uppercase
+    const iconSz = 160;
+    const iconX = W - PAD - iconSz;
+    const iconY = 60;
+
+    if (streakIcon) {
+      ctx.save();
+      ctx.drawImage(streakIcon, iconX, iconY, iconSz, iconSz);
+
+      // Sunglasses overlay if variant === 'sunglasses'
+      if (streakVariant === 'sunglasses') {
+        const cx1 = iconX + iconSz * 0.31, cy1 = iconY + iconSz * 0.375;
+        const cx2 = iconX + iconSz * 0.69, cy2 = iconY + iconSz * 0.375;
+        const r = iconSz * 0.094;
+        ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = iconSz * 0.024;
+        ctx.beginPath(); ctx.arc(cx1, cy1, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx2, cy2, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx1 + r, cy1); ctx.lineTo(cx2 - r, cy2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Streak number — bold, right-aligned beneath icon
+    if (streakNum !== null && streakNum !== undefined) {
+      const numFontSz = 100;
+      ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'white';
+      ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 20;
+      ctx.fillText(String(streakNum), W - PAD + 4, iconY + iconSz + numFontSz * 0.85);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // BOTTOM BLOCK
+  const bottomY = H - 160;
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric'
   });
+
   ctx.font = '500 28px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.38)';
   ctx.textAlign = 'left';
@@ -82,156 +149,194 @@ async function drawPostCard(post) {
   ctx.fillText(dateStr.toUpperCase(), PAD, bottomY + 36);
   ctx.letterSpacing = '0';
 
-  // Thin divider
   const dividerY = bottomY - 28;
   ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(PAD, dividerY); ctx.lineTo(W - PAD, dividerY); ctx.stroke();
 
-  // Caption — large, bold, above divider
-  if (post.content) {
-    // Strip any auto-generated workout lines
-    const lines = post.content.split('\n').filter(l => {
-      const t = l.trim();
-      if (!t) return false;
-      if (t.includes('Just finished')) return false;
-      if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
-      if (/[0-9]+(kg|lbs)/i.test(t)) return false;
-      return true;
-    });
-    const caption = lines.join(' ').trim();
-
-    if (caption) {
-      let capFontSize = 88;
-      ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
-      // Wrap to max 2 lines
-      const maxW = W - PAD * 2;
-      const words = caption.split(' ');
-      let line1 = '', line2 = '';
-      let onLine2 = false;
-      for (const word of words) {
-        const test = (onLine2 ? line2 : line1) + (line1 && !onLine2 ? ' ' : '') + word;
-        if (!onLine2 && ctx.measureText(test).width > maxW) {
-          onLine2 = true;
-          line2 = word;
-        } else if (onLine2) {
-          const test2 = line2 + (line2 ? ' ' : '') + word;
-          if (ctx.measureText(test2).width > maxW) {
-            line2 = line2 + '…';
-            break;
-          }
-          line2 = test2;
-        } else {
-          line1 = test;
-        }
-      }
-
-      const lineH = Math.round(capFontSize * 1.15);
-      const numLines = line2 ? 2 : 1;
-      const textBlockH = numLines * lineH;
-      const textTop = dividerY - 36 - textBlockH;
-
-      ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
-      ctx.fillStyle = 'white'; ctx.textAlign = 'left';
-      ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 28;
-      ctx.fillText(line1, PAD, textTop + lineH);
-      if (line2) ctx.fillText(line2, PAD, textTop + lineH * 2);
-      ctx.shadowBlur = 0;
+  const caption = getCleanCaption(post);
+  if (caption) {
+    const capFontSize = 88;
+    ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
+    const maxW = W - PAD * 2;
+    const words = caption.split(' ');
+    let line1 = '', line2 = '';
+    let onLine2 = false;
+    for (const word of words) {
+      const test = onLine2 ? line2 + (line2 ? ' ' : '') + word : line1 + (line1 ? ' ' : '') + word;
+      if (!onLine2 && ctx.measureText(test).width > maxW) {
+        onLine2 = true; line2 = word;
+      } else if (onLine2) {
+        const test2 = line2 + (line2 ? ' ' : '') + word;
+        if (ctx.measureText(test2).width > maxW) { line2 = line2 + '…'; break; }
+        line2 = test2;
+      } else { line1 = test; }
     }
+    const lineH = Math.round(capFontSize * 1.15);
+    const numLines = line2 ? 2 : 1;
+    const textBlockH = numLines * lineH;
+    const textTop = dividerY - 36 - textBlockH;
+    ctx.font = `900 ${capFontSize}px -apple-system,sans-serif`;
+    ctx.fillStyle = 'white'; ctx.textAlign = 'left';
+    ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 28;
+    ctx.fillText(line1, PAD, textTop + lineH);
+    if (line2) ctx.fillText(line2, PAD, textTop + lineH * 2);
+    ctx.shadowBlur = 0;
   } else {
-    // No caption — just a clean large date above divider
     let dateFontSize = 96;
     ctx.font = `900 ${dateFontSize}px -apple-system,sans-serif`;
     ctx.fillStyle = 'white'; ctx.textAlign = 'left';
     ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 28;
     ctx.fillText(dateStr, PAD, dividerY - 52);
     ctx.shadowBlur = 0;
-    // Reset the small date footer since it's now the big element
-    ctx.clearRect(PAD, bottomY + 10, W - PAD, 50);
   }
 
   return canvas;
 }
 
-// ─── React Preview ────────────────────────────────────────────────────────────
+// ─── React Preview: Clean card ────────────────────────────────────────────────
 function PostCardPreview({ post }) {
   const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric'
   });
-
-  const caption = (() => {
-    if (!post.content) return null;
-    const lines = post.content.split('\n').filter(l => {
-      const t = l.trim();
-      if (!t) return false;
-      if (t.includes('Just finished')) return false;
-      if (/[0-9]+\s*[xX]\s*[0-9]+/.test(t)) return false;
-      if (/[0-9]+(kg|lbs)/i.test(t)) return false;
-      return true;
-    });
-    return lines.join(' ').trim() || null;
-  })();
+  const caption = getCleanCaption(post);
 
   return (
     <div style={{
       width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden',
-      borderRadius: 16, background: '#0a0d16',
+      borderRadius: 12, background: '#0a0d16',
       fontFamily: "'SF Pro Display',-apple-system,sans-serif",
     }}>
-      {/* Background */}
       {post.image_url ? (<>
-        <img src={post.image_url} alt="" style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center',
-        }} />
-        {/* Very light top tint, clear middle, heavier bottom — matching canvas */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom,rgba(0,0,0,0.26) 0%,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 58%,rgba(0,0,0,0.74) 74%,rgba(0,0,0,0.96) 100%)',
-        }} />
+        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.26) 0%,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 58%,rgba(0,0,0,0.74) 74%,rgba(0,0,0,0.96) 100%)' }} />
+      </>) : (
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a0d16,#111827,#0d1320)' }} />
+      )}
+
+      {/* TOP LEFT */}
+      <div style={{ position: 'absolute', top: 0, left: 0, padding: '10px 11px 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <img src={LOGO_URL} alt="" style={{ width: 14, height: 14, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
+        <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>CoStride</span>
+      </div>
+
+      {/* BOTTOM */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 11px 18px' }}>
+        {caption && (
+          <div style={{
+            color: 'white', fontSize: 18, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.08,
+            textShadow: '0 2px 16px rgba(0,0,0,0.7)', marginBottom: 7,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>{caption}</div>
+        )}
+        <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.14)', marginBottom: 5 }} />
+        <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 6.5, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{dateStr}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── React Preview: Streak card ───────────────────────────────────────────────
+function PostStreakCardPreview({ post }) {
+  const dateStr = new Date(post.created_date).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+  const caption = getCleanCaption(post);
+  const streakNum = getPostStreak(post);
+  const streakVariant = getAuthorStreakVariant(post);
+
+  return (
+    <div style={{
+      width: '100%', aspectRatio: '9/16', position: 'relative', overflow: 'hidden',
+      borderRadius: 12, background: '#0a0d16',
+      fontFamily: "'SF Pro Display',-apple-system,sans-serif",
+    }}>
+      {post.image_url ? (<>
+        <img src={post.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.26) 0%,rgba(0,0,0,0) 12%,rgba(0,0,0,0) 58%,rgba(0,0,0,0.74) 74%,rgba(0,0,0,0.96) 100%)' }} />
       </>) : (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#0a0d16,#111827,#0d1320)' }} />
       )}
 
       {/* TOP LEFT: CoStride */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0,
-        padding: '10px 11px 0',
-        display: 'flex', alignItems: 'center', gap: 4,
-      }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, padding: '10px 11px 0', display: 'flex', alignItems: 'center', gap: 4 }}>
         <img src={LOGO_URL} alt="" style={{ width: 14, height: 14, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>CoStride</span>
       </div>
 
-      {/* BOTTOM BLOCK — left-aligned, Strava style */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 11px 18px' }}>
-
-        {/* Caption — large bold, max 2 lines */}
-        {caption && (
-          <div style={{
-            color: 'white', fontSize: 18, fontWeight: 900,
-            letterSpacing: '-0.03em', lineHeight: 1.08,
-            textShadow: '0 2px 16px rgba(0,0,0,0.7)',
-            marginBottom: 7,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}>
-            {caption}
-          </div>
-        )}
-
-        {/* Thin divider */}
-        <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.14)', marginBottom: 5 }} />
-
-        {/* Date — small, muted, uppercase */}
-        <div style={{
-          color: 'rgba(255,255,255,0.38)', fontSize: 6.5, fontWeight: 600,
-          letterSpacing: '0.07em', textTransform: 'uppercase',
-        }}>
-          {dateStr}
+      {/* TOP RIGHT: Streak icon + number — mirroring the home page header */}
+      <div style={{
+        position: 'absolute', top: 6, right: 8,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+      }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <img
+            src={STREAK_ICON_URL}
+            alt="streak"
+            style={{ width: 42, height: 42, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }}
+          />
+          {/* Sunglasses overlay */}
+          {streakVariant === 'sunglasses' && (
+            <svg
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+              viewBox="0 0 64 64"
+            >
+              <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+              <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+              <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+            </svg>
+          )}
+          {/* Streak number overlaid — same style as home header */}
+          {streakNum !== null && streakNum !== undefined && (
+            <span style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -4,
+              fontSize: 13,
+              fontWeight: 900,
+              color: '#ffffff',
+              textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              background: 'rgba(0,0,0,0.45)',
+              borderRadius: 6,
+              padding: '1px 3px',
+            }}>{streakNum}</span>
+          )}
         </div>
       </div>
+
+      {/* BOTTOM */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 11px 18px' }}>
+        {caption && (
+          <div style={{
+            color: 'white', fontSize: 18, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.08,
+            textShadow: '0 2px 16px rgba(0,0,0,0.7)', marginBottom: 7,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>{caption}</div>
+        )}
+        <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.14)', marginBottom: 5 }} />
+        <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 6.5, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{dateStr}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide dot indicator ──────────────────────────────────────────────────────
+function SlideDots({ count, active }) {
+  return (
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            width: i === active ? 18 : 6,
+            height: 6,
+            borderRadius: 3,
+            background: i === active ? 'white' : 'rgba(255,255,255,0.25)',
+            transition: 'all 0.25s ease',
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -319,12 +424,43 @@ const APP_BUTTONS = [
   },
 ];
 
+// ─── Slide definitions ────────────────────────────────────────────────────────
+const SLIDES = [
+  { id: 'clean',  label: 'Clean',  withStreak: false },
+  { id: 'streak', label: 'Streak', withStreak: true  },
+];
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 export default function PostShareModal({ open, onClose, post }) {
   const [loadingId, setLoadingId] = useState(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [dragStartX, setDragStartX] = useState(null);
+  const [slideDir, setSlideDir] = useState(0);
 
-  const getBlob = useCallback(async () => {
-    const canvas = await drawPostCard(post);
+  const currentSlide = SLIDES[activeSlide];
+
+  const goToSlide = useCallback((idx, dir) => {
+    setSlideDir(dir);
+    setActiveSlide(idx);
+  }, []);
+
+  const handleDragStart = useCallback((e) => {
+    const x = e.touches?.[0]?.clientX ?? e.clientX;
+    setDragStartX(x);
+  }, []);
+
+  const handleDragEnd = useCallback((e) => {
+    if (dragStartX === null) return;
+    const x = e.changedTouches?.[0]?.clientX ?? e.clientX;
+    const dx = x - dragStartX;
+    setDragStartX(null);
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0 && activeSlide < SLIDES.length - 1) goToSlide(activeSlide + 1, 1);
+    if (dx > 0 && activeSlide > 0) goToSlide(activeSlide - 1, -1);
+  }, [dragStartX, activeSlide, goToSlide]);
+
+  const getBlob = useCallback(async (withStreak) => {
+    const canvas = await drawPostCard(post, withStreak);
     return canvasToBlob(canvas);
   }, [post]);
 
@@ -332,7 +468,7 @@ export default function PostShareModal({ open, onClose, post }) {
     if (loadingId) return;
     setLoadingId(btnId);
     try {
-      const blob = await getBlob();
+      const blob = await getBlob(currentSlide.withStreak);
       const file = new File([blob], 'costride-post.png', { type: 'image/png' });
       const shareData = { files: [file], text: `Check this out on CoStride 💪` };
       if (navigator.share && navigator.canShare?.(shareData)) {
@@ -346,22 +482,24 @@ export default function PostShareModal({ open, onClose, post }) {
     } catch (e) {
       if (e?.name !== 'AbortError') { console.error(e); toast.error('Could not share'); }
     } finally { setLoadingId(null); }
-  }, [loadingId, getBlob]);
+  }, [loadingId, getBlob, currentSlide]);
 
   const handleSave = useCallback(async () => {
     if (loadingId) return;
     setLoadingId('save');
     try {
-      const blob = await getBlob();
+      const blob = await getBlob(currentSlide.withStreak);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'costride-post.png'; a.click();
       URL.revokeObjectURL(url);
       toast.success('Saved!');
     } catch (e) { console.error(e); toast.error('Could not save'); }
     finally { setLoadingId(null); }
-  }, [loadingId, getBlob]);
+  }, [loadingId, getBlob, currentSlide]);
 
   if (!open || !post) return null;
+
+  const CARD_W = 'min(57.2vw, 242px)';
 
   return (
     <AnimatePresence>
@@ -404,20 +542,73 @@ export default function PostShareModal({ open, onClose, post }) {
               <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Share Post</span>
             </div>
 
-            {/* Preview card — same width/style as workout share carousel */}
-            <div style={{ padding: '0 18px', flexShrink: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{
-                  width: 'min(57.2vw, 242px)', borderRadius: 14, overflow: 'hidden',
-                  boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)',
+            {/* Card carousel — swipeable */}
+            <div
+              style={{ padding: '0 18px 0', flexShrink: 0, userSelect: 'none' }}
+              onTouchStart={handleDragStart}
+              onTouchEnd={handleDragEnd}
+              onMouseDown={handleDragStart}
+              onMouseUp={handleDragEnd}
+            >
+              {/* Cards row */}
+              <div style={{
+                display: 'flex',
+                gap: 14,
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                overflow: 'visible',
+              }}>
+                {SLIDES.map((slide, idx) => {
+                  const isActive = idx === activeSlide;
+                  return (
+                    <motion.div
+                      key={slide.id}
+                      onClick={() => goToSlide(idx, idx > activeSlide ? 1 : -1)}
+                      animate={{
+                        scale: isActive ? 1 : 0.88,
+                        opacity: isActive ? 1 : 0.45,
+                        y: isActive ? 0 : 10,
+                      }}
+                      transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                      style={{
+                        width: CARD_W,
+                        flexShrink: 0,
+                        cursor: isActive ? 'default' : 'pointer',
+                        borderRadius: 14,
+                        overflow: 'hidden',
+                        boxShadow: isActive
+                          ? '0 0 0 1px rgba(255,255,255,0.12), 0 16px 40px rgba(0,0,0,0.6)'
+                          : '0 4px 16px rgba(0,0,0,0.4)',
+                        transformOrigin: 'top center',
+                      }}
+                    >
+                      {slide.withStreak
+                        ? <PostStreakCardPreview post={post} />
+                        : <PostCardPreview post={post} />
+                      }
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Slide label */}
+              <div style={{ textAlign: 'center', marginTop: 10, marginBottom: 6 }}>
+                <span style={{
+                  color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
                 }}>
-                  <PostCardPreview post={post} />
-                </div>
+                  {currentSlide.label}
+                </span>
+              </div>
+
+              {/* Dot indicators */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
+                <SlideDots count={SLIDES.length} active={activeSlide} />
               </div>
             </div>
 
             {/* Share to */}
-            <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
+            <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
               <p style={{
                 color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0',
@@ -477,7 +668,7 @@ export default function PostShareModal({ open, onClose, post }) {
                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
                 }}
               >
-                {loadingId === 'save' ? 'Saving…' : 'Save Image'}
+                {loadingId === 'save' ? 'Saving…' : `Save ${currentSlide.label} Image`}
               </button>
             </div>
           </motion.div>
