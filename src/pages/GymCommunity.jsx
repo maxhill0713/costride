@@ -1557,7 +1557,19 @@ export default function GymCommunity() {
   const progressLeaderboardMonth = enrichWithAvatars(leaderboards.progressLeaderboardMonth || []);
   const progressLeaderboardAllTime = enrichWithAvatars(leaderboards.progressLeaderboardAllTime || []);
 
-  if (gymLoading && !gym) return <GymCommunitySkeleton />;
+  // ── SKELETON: wrapped in slide animation so it slides in before data loads ──
+  if (gymLoading && !gym) return (
+    <motion.div
+      className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]"
+      variants={pageSlideVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <GymCommunitySkeleton />
+    </motion.div>
+  );
+
   if (!gymLoading && !gym) return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center p-4">
       <div className="p-8 text-center rounded-2xl" style={CARD_STYLE}><p className="text-slate-400 mb-4">Gym not found</p><Link to={createPageUrl('Gyms')} className="text-blue-400 font-bold">Back to Gyms</Link></div>
