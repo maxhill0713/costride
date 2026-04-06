@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft, ChevronRight, Search, LogOut, Trash2, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)';
 
@@ -43,7 +44,45 @@ const GROUPS = [
 
 const MAX_SEARCH_LENGTH = 30;
 
-// Only allow letters and spaces — strip everything else silently
+// ─────────────────────────────────────────────────────────────────────────────
+// Exact animation variants from CreateSplitModal
+// ─────────────────────────────────────────────────────────────────────────────
+const pageSlideVariants = {
+  hidden: {
+    x: '100%',
+    opacity: 1,
+  },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
+    },
+  },
+  exit: {
+    x: '100%',
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 40,
+      mass: 0.9,
+    },
+  },
+};
+
+// Subtle background dim that fades in independently
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function sanitiseSearchInput(raw) {
   return raw.replace(/[^a-zA-Z\s]/g, '').slice(0, MAX_SEARCH_LENGTH);
 }
@@ -178,6 +217,12 @@ export default function Settings() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
 
+  // Controls whether the page is "mounted" for AnimatePresence.
+  // Since this is a routed page (not a modal), we treat it as always open
+  // so the slide-in fires on mount. Set to false to trigger exit animation
+  // before navigating away (optional — wired up in handleBack below).
+  const [isVisible, setIsVisible] = useState(true);
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -205,6 +250,12 @@ export default function Settings() {
     } catch {
       setDeletePending(false);
     }
+  };
+
+  // Trigger exit animation then navigate back
+  const handleBack = () => {
+    setIsVisible(false);
+    setTimeout(() => navigate(createPageUrl('Profile')), 320);
   };
 
   const handleSearchChange = (e) => {
@@ -250,89 +301,125 @@ export default function Settings() {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)', color: '#fff', fontFamily: 'inherit' }}>
-
-        {/* ── Sticky Header ── */}
-        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
-          <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link to={createPageUrl('Profile')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
-              <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
-            </Link>
-            <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>Settings</span>
-          </div>
-        </div>
-
-        <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 40px' }}>
-
-          {/* ── Search ── */}
-          <div style={{ position: 'relative', marginBottom: 20 }}>
-            <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#94a3b8', pointerEvents: 'none' }} />
-            <input
-              type="text"
-              placeholder="Search settings…"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              maxLength={MAX_SEARCH_LENGTH}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck="false"
-              style={{ width: '100%', padding: '9px 16px 9px 40px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+      <AnimatePresence>
+        {isVisible && (
+          <>
+            {/* ── Dim overlay: fades independently (matches CreateSplitModal) ── */}
+            <motion.div
+              key="settings-overlay"
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.45)' }}
+              variants={overlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             />
-          </div>
 
-          {/* ── Search Results ── */}
-          {isSearching ? (
-            !hasResults ? (
-              <p style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>No settings found</p>
-            ) : (
-              <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-                {allResults.map((result, i) => {
-                  const isLast = i === allResults.length - 1;
-                  if (result.isPage) return <SettingRow key={result.page} setting={result} isLast={isLast} />;
-                  return <DeepLinkRow key={`${result.page}-${result.section}`} result={result} isLast={isLast} onNavigate={() => handleDeepLink(result)} />;
-                })}
+            {/* ── Main panel: slides in from right (matches CreateSplitModal exactly) ── */}
+            <motion.div
+              key="settings-panel"
+              className="fixed inset-0 z-50"
+              style={{
+                minHeight: '100vh',
+                minHeight: '100dvh',
+                background: 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)',
+                color: '#fff',
+                fontFamily: 'inherit',
+                overflowY: 'auto',
+              }}
+              variants={pageSlideVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {/* ── Sticky Header ── */}
+              <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
+                <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {/* Use button + handleBack so exit animation fires before navigation */}
+                  <button
+                    onClick={handleBack}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
+                  </button>
+                  <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>Settings</span>
+                </div>
               </div>
-            )
-          ) : (
-            <>
-              {GROUPS.map((group) => {
-                const rows = group.pages.map(page => SETTINGS_LIST.find(s => s.page === page)).filter(Boolean);
-                return (
-                  <div key={group.label} style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#475569', padding: '0 4px', marginBottom: 8 }}>
-                      {group.label}
-                    </div>
+
+              <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 40px' }}>
+
+                {/* ── Search ── */}
+                <div style={{ position: 'relative', marginBottom: 20 }}>
+                  <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#94a3b8', pointerEvents: 'none' }} />
+                  <input
+                    type="text"
+                    placeholder="Search settings…"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    maxLength={MAX_SEARCH_LENGTH}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                    style={{ width: '100%', padding: '9px 16px 9px 40px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.6)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+                  />
+                </div>
+
+                {/* ── Search Results ── */}
+                {isSearching ? (
+                  !hasResults ? (
+                    <p style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>No settings found</p>
+                  ) : (
                     <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-                      {rows.map((setting, i) => (
-                        <SettingRow key={setting.page} setting={setting} isLast={i === rows.length - 1} />
-                      ))}
+                      {allResults.map((result, i) => {
+                        const isLast = i === allResults.length - 1;
+                        if (result.isPage) return <SettingRow key={result.page} setting={result} isLast={isLast} />;
+                        return <DeepLinkRow key={`${result.page}-${result.section}`} result={result} isLast={isLast} onNavigate={() => handleDeepLink(result)} />;
+                      })}
                     </div>
-                  </div>
-                );
-              })}
+                  )
+                ) : (
+                  <>
+                    {GROUPS.map((group) => {
+                      const rows = group.pages.map(page => SETTINGS_LIST.find(s => s.page === page)).filter(Boolean);
+                      return (
+                        <div key={group.label} style={{ marginBottom: 20 }}>
+                          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#475569', padding: '0 4px', marginBottom: 8 }}>
+                            {group.label}
+                          </div>
+                          <div style={{ background: CARD_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+                            {rows.map((setting, i) => (
+                              <SettingRow key={setting.page} setting={setting} isLast={i === rows.length - 1} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
 
-              {/* ── Danger Zone ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <PressButton onClick={() => setShowLogoutDialog(true)}>
-                  <LogOut style={{ width: 15, height: 15 }} />
-                  Log Out
-                </PressButton>
-                <PressButton textColor="#ef4444" onClick={() => setShowDeleteDialog(true)}>
-                  <Trash2 style={{ width: 15, height: 15 }} />
-                  Delete Account
-                </PressButton>
+                    {/* ── Danger Zone ── */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+                      <PressButton onClick={() => setShowLogoutDialog(true)}>
+                        <LogOut style={{ width: 15, height: 15 }} />
+                        Log Out
+                      </PressButton>
+                      <PressButton textColor="#ef4444" onClick={() => setShowDeleteDialog(true)}>
+                        <Trash2 style={{ width: 15, height: 15 }} />
+                        Delete Account
+                      </PressButton>
+                    </div>
+
+                    <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#1e3a5f', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 28 }}>
+                      CoStride
+                    </p>
+                  </>
+                )}
               </div>
-
-              <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#1e3a5f', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 28 }}>
-                CoStride
-              </p>
-            </>
-          )}
-        </div>
-      </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <LogoutDialog
         open={showLogoutDialog}
