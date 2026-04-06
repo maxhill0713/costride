@@ -111,21 +111,21 @@ const INPUT_BASE = { fontSize: '16px', WebkitAppearance: 'none', MozAppearance: 
 // ─────────────────────────────────────────────────────────────────────────────
 const pageSlideVariants = {
   hidden: {
-    y: '100%',
-    opacity: 1 // full opacity — it's a native-feel slide, not a fade
+    x: '100%',
+    opacity: 1
   },
   visible: {
-    y: 0,
+    x: 0,
     opacity: 1,
     transition: {
       type: 'spring',
-      stiffness: 380, // snappy but not jarring
-      damping: 36, // slight overshoot then settle — the Duolingo feel
+      stiffness: 380,
+      damping: 36,
       mass: 1
     }
   },
   exit: {
-    y: '100%',
+    x: '100%',
     opacity: 1,
     transition: {
       type: 'spring',
