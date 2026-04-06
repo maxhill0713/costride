@@ -276,9 +276,9 @@ function LayoutInner({
            * navigations (e.g. gym detail) also trigger a transition.
            */}
           <PageTransition
-            pageKey={transitionKey}
+            key={transitionKey}
             direction={transitionDir}
-            duration={260}
+            duration={230}
           >
             {children}
           </PageTransition>
