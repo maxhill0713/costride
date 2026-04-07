@@ -4,7 +4,77 @@ import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false, gymImageUrl = null }) {
+// Small cluster of participant avatars + "Join X and Y others" text
+function ParticipantCluster({ participants = [], memberAvatarMap = {}, memberNameMap = {} }) {
+  if (participants.length === 0) return null;
+
+  const displayAvatars = participants.slice(0, 3);
+  const extraCount = Math.max(0, participants.length - 3);
+
+  const AV_COLORS = [
+    { bg: '#1a2a4a', color: '#93c5fd' },
+    { bg: '#2a1a3a', color: '#c4b5fd' },
+    { bg: '#1a2e20', color: '#86efac' },
+    { bg: '#2e1a1a', color: '#fca5a5' },
+  ];
+  const colorFor = (id) => AV_COLORS[(id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  // Build the label: "Join Alex and 12 others" or "Join 5 members"
+  const firstName = memberNameMap[participants[0]] || null;
+  const othersCount = participants.length - 1;
+  let label;
+  if (firstName && othersCount > 0) {
+    label = `Join ${firstName} and ${othersCount} other${othersCount === 1 ? '' : 's'}`;
+  } else if (firstName) {
+    label = `${firstName} is in`;
+  } else {
+    label = `${participants.length} member${participants.length === 1 ? '' : 's'} joined`;
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Avatar cluster */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {displayAvatars.map((userId, i) => {
+          const col = colorFor(userId);
+          const avatar = memberAvatarMap[userId];
+          const name = memberNameMap[userId] || '';
+          return (
+            <div key={userId} title={name} style={{
+              width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+              background: col.bg, border: '1.5px solid rgba(6,8,18,0.9)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 8, fontWeight: 800, color: col.color,
+              overflow: 'hidden', marginLeft: i > 0 ? -6 : 0, zIndex: 10 - i,
+            }}>
+              {avatar
+                ? <img src={avatar} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : ini(name)}
+            </div>
+          );
+        })}
+        {extraCount > 0 && (
+          <div style={{
+            width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(255,255,255,0.07)', border: '1.5px solid rgba(6,8,18,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 7, fontWeight: 900, color: 'rgba(255,255,255,0.45)',
+            marginLeft: -6,
+          }}>
+            +{extraCount}
+          </div>
+        )}
+      </div>
+      {/* Text */}
+      <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.7)', lineHeight: 1.3 }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false, gymImageUrl = null, memberAvatarMap = {}, memberNameMap = {} }) {
   const [showStats, setShowStats] = useState(false);
 
   const participantCount = challenge.participants?.length || 0;
@@ -140,6 +210,15 @@ function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, on
               <p className="text-[13px] font-black text-white truncate">{challenge.reward || 'Challenge Badge'}</p>
             </div>
           </div>
+
+          {/* ── Participant cluster (only for available/not-yet-joined) ── */}
+          {!isOwner && !userHasJoined && participantCount > 0 && (
+            <ParticipantCluster
+              participants={challenge.participants || []}
+              memberAvatarMap={memberAvatarMap}
+              memberNameMap={memberNameMap}
+            />
+          )}
 
           {/* ── Join button ── */}
           {!isExpired && !isOwner && (

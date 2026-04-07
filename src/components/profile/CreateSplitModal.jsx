@@ -40,6 +40,43 @@ const sanitiseTimeDigits = (raw) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Animation variants (mirrored from Settings.jsx)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const pageSlideVariants = {
+  hidden: {
+    x: '100%',
+    opacity: 1,
+  },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 380,
+      damping: 36,
+      mass: 1,
+    },
+  },
+  exit: {
+    x: '100%',
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 420,
+      damping: 40,
+      mass: 0.9,
+    },
+  },
+};
+
+const overlayVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18 } },
+  exit:    { opacity: 0, transition: { duration: 0.2 } },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const DEFAULT_SPLITS = [
 {
@@ -215,9 +252,6 @@ function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, 
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mirror confirmation dialog
-// ─────────────────────────────────────────────────────────────────────────────
 function MirrorConfirmDialog({ open, onClose, onConfirm }) {
   if (!open) return null;
   return (
@@ -229,14 +263,10 @@ function MirrorConfirmDialog({ open, onClose, onConfirm }) {
           The workout with more exercises will be copied to the other day. Any future changes you make to one will automatically sync to both.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 shadow-[0_3px_0_0_#0f172a,0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 shadow-[0_3px_0_0_#0f172a,0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Mirror
           </button>
         </div>
@@ -245,9 +275,6 @@ function MirrorConfirmDialog({ open, onClose, onConfirm }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Delete Workout confirmation dialog
-// ─────────────────────────────────────────────────────────────────────────────
 function DeleteWorkoutDialog({ open, onClose, onConfirm, dayName }) {
   if (!open) return null;
   return (
@@ -260,14 +287,10 @@ function DeleteWorkoutDialog({ open, onClose, onConfirm, dayName }) {
         </p>
         <p className="text-slate-500 text-xs mb-6">The day will remain selected but the workout will be empty.</p>
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(220,38,38,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(220,38,38,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Delete
           </button>
         </div>
@@ -292,20 +315,26 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState('');
   const [showSetActiveModal, setShowSetActiveModal] = useState(false);
-
-  // ── Info box for configure step ───────────────────────────────────────────
   const [showConfigureInfo, setShowConfigureInfo] = useState(false);
-
-  // ── Mirror state ──────────────────────────────────────────────────────────
   const [mirroredPairs, setMirroredPairs] = useState([]);
   const [pendingMirrorPair, setPendingMirrorPair] = useState(null);
   const [showMirrorConfirm, setShowMirrorConfirm] = useState(false);
-
-  // ── Delete workout state ──────────────────────────────────────────────────
   const [deleteWorkoutDay, setDeleteWorkoutDay] = useState(null);
   const [dayDotsMenuOpen, setDayDotsMenuOpen] = useState({});
 
+  // ── Animation closing state ───────────────────────────────────────────────
+  const [isClosing, setIsClosing] = useState(false);
+
   const queryClient = useQueryClient();
+
+  // ── Animated close: triggers exit animation then calls onClose ────────────
+  const handleAnimatedClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 320);
+  };
 
   // ── Mirror helpers ────────────────────────────────────────────────────────
   const getMirrorDay = (day) => {
@@ -409,7 +438,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const handleBack = () => {
     if (step === 'preview') { setStep('pick'); setPreviewSplit(null); }
     else if (step === 'configure') { setDotsMenuOpen(false); setEditingSplitId(null); setMirroredPairs([]); setStep('pick'); }
-    else { onClose(); }
+    else { handleAnimatedClose(); }
   };
 
   const allSplitsForModal = [
@@ -594,7 +623,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
 
-  // ── Configure step info bullets ───────────────────────────────────────────
   const configureInfoBullets = [
     { label: 'Set Active', text: 'To make this routine appear daily on your Today\'s Workout card, tap the Set Active button in the top right of this page and select this routine.' },
     { label: 'Delete Split', text: 'To delete this routine, press the three dots (⋮) on the right side of the screen and select "Delete Split".' },
@@ -602,466 +630,490 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     { label: 'Different Weights Per Set', text: 'To use different weights or reps for individual sets of the same exercise, add the same exercise multiple times with the exact same name and set each to 1 set — then choose the reps and weight you want for each. The heavier set will automatically be assigned as Set 1, and your Today\'s Workout card will display them correctly as separate sets.' },
   ];
 
-  if (!isOpen) return null;
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col" style={{ minHeight: '100vh', minHeight: '100dvh', WebkitAppearance: 'none' }}>
-      <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
+    <>
+      <AnimatePresence>
+        {isOpen && !isClosing && (
+          <>
+            {/* ── Dim overlay: fades independently ── */}
+            <motion.div
+              key="split-overlay"
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.45)' }}
+              variants={overlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={handleAnimatedClose}
+            />
 
-        {/* ── HEADER ── */}
-        <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
-          <div className="flex-shrink-0">
-            <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
-              <ChevronLeft className="w-6 h-6 text-slate-300" />
-            </button>
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
-          </div>
-          <div className="flex-shrink-0 flex items-center justify-end gap-1.5 ml-auto">
-            {step === 'pick' && (
-              <>
-                <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
-                  <Star className="w-4 h-4 text-white" />
-                </button>
-                <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
-                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
-                </button>
-              </>
-            )}
-            {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-            {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-          </div>
-        </div>
+            {/* ── Main panel: slides in from right ── */}
+            <motion.div
+              key="split-panel"
+              className="fixed inset-0 z-50"
+              style={{
+                minHeight: '100vh',
+                minHeight: '100dvh',
+                background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
+                WebkitAppearance: 'none',
+              }}
+              variants={pageSlideVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
-        {/* ── SCROLLABLE BODY ── */}
-        <div className="overflow-y-auto flex-1 pb-4">
-
-          {/* PICK */}
-          {step === 'pick' && (
-            <div className="p-4 space-y-2">
-              {(() => {
-                const allSplits = [...DEFAULT_SPLITS.map((def) => ({ type: 'default', id: def.id, def })), ...customSavedSplits.map((split) => ({ type: 'custom', id: split.id, split }))];
-                allSplits.sort((a, b) => { if (a.id === activeSplitId) return -1; if (b.id === activeSplitId) return 1; return 0; });
-                return allSplits.map((item) => {
-                  const isActive = activeSplitId === item.id;
-                  if (item.type === 'default') {
-                    const def = item.def;
-                    return (
-                      <SplitCard key={def.id} onClick={() => openDefaultPreview(def)} isActive={isActive} glowColor={def.glowColor}>
-                        <div className="flex items-center gap-4 p-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[18.2px] font-black text-white">{def.name}</p>
-                            <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">{def.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
-                          </div>
-                          {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
-                          <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                        </div>
-                      </SplitCard>
-                    );
-                  } else {
-                    const split = item.split;
-                    return (
-                      <SplitCard key={split.id} onClick={() => openEditCustom(split)} isActive={isActive} glowColor="rgba(99,102,241,0.35)">
-                        <div className="flex items-center gap-4 p-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
-                            <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => {
-                              const dayColor = split.workouts?.[d]?.color;
-                              const grad = dayColor ? colorGradient(dayColor) : 'from-slate-600 to-slate-700';
-                              return <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${grad} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>;
-                            })}</div>
-                          </div>
-                          {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
-                          <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                        </div>
-                      </SplitCard>
-                    );
-                  }
-                });
-              })()}
-            </div>
-          )}
-
-          {/* PREVIEW */}
-          {step === 'preview' && previewSplit && (
-            <div className="p-4 space-y-3">
-              <div className="p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
-                <div className="flex gap-1.5 mt-1.5 flex-wrap">{previewSplit.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
-                {previewSplit.blurb && <p className="text-[11px] text-slate-400 leading-relaxed mt-3">{previewSplit.blurb}</p>}
-              </div>
-              {previewSplit.days.map((day) => {
-                const wt = previewSplit.workouts[day];
-                if (!wt) return null;
-                return (
-                  <ReadOnlyDayCard key={day} day={day} workout={wt} weights={previewWeights[day] || {}} onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} sets={previewSets[day] || {}} onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} reps={previewReps[day] || {}} onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} />
-                );
-              })}
-            </div>
-          )}
-
-          {/* CONFIGURE */}
-          {step === 'configure' && (
-            <div className="p-4 space-y-4">
-
-              {/* ── Split Name ── */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  {/* Label + info icon — 10% smaller: original was size={18}, now size≈16 */}
-                  <div className="flex items-center gap-1.5">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
-                    <motion.button
-                      onClick={() => setShowConfigureInfo(v => !v)}
-                      whileTap={{ scale: 0.78, y: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                      style={{
-                        background: 'none', border: 'none', padding: 0,
-                        cursor: 'pointer',
-                        color: showConfigureInfo ? '#818cf8' : '#475569',
-                        display: 'flex', alignItems: 'center',
-                        transition: 'color 0.15s',
-                      }}>
-                      <Info size={16} />
-                    </motion.button>
+                {/* ── HEADER ── */}
+                <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
+                  <div className="flex-shrink-0">
+                    <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
+                      <ChevronLeft className="w-6 h-6 text-slate-300" />
+                    </button>
                   </div>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center justify-end gap-1.5 ml-auto">
+                    {step === 'pick' && (
+                      <>
+                        <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                          <Star className="w-4 h-4 text-white" />
+                        </button>
+                        <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                          <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+                        </button>
+                      </>
+                    )}
+                    {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+                    {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+                  </div>
+                </div>
 
-                  {editingSplitId && (
-                    <div className="relative">
-                      <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
-                        <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
-                      </button>
-                      {dotsMenuOpen && (
-                        <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
-                            Delete Split
-                          </button>
+                {/* ── SCROLLABLE BODY ── */}
+                <div className="overflow-y-auto flex-1 pb-4">
+
+                  {/* PICK */}
+                  {step === 'pick' && (
+                    <div className="p-4 space-y-2">
+                      {(() => {
+                        const allSplits = [...DEFAULT_SPLITS.map((def) => ({ type: 'default', id: def.id, def })), ...customSavedSplits.map((split) => ({ type: 'custom', id: split.id, split }))];
+                        allSplits.sort((a, b) => { if (a.id === activeSplitId) return -1; if (b.id === activeSplitId) return 1; return 0; });
+                        return allSplits.map((item) => {
+                          const isActive = activeSplitId === item.id;
+                          if (item.type === 'default') {
+                            const def = item.def;
+                            return (
+                              <SplitCard key={def.id} onClick={() => openDefaultPreview(def)} isActive={isActive} glowColor={def.glowColor}>
+                                <div className="flex items-center gap-4 p-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[18.2px] font-black text-white">{def.name}</p>
+                                    <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">{def.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                                  </div>
+                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
+                                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                                </div>
+                              </SplitCard>
+                            );
+                          } else {
+                            const split = item.split;
+                            return (
+                              <SplitCard key={split.id} onClick={() => openEditCustom(split)} isActive={isActive} glowColor="rgba(99,102,241,0.35)">
+                                <div className="flex items-center gap-4 p-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
+                                    <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => {
+                                      const dayColor = split.workouts?.[d]?.color;
+                                      const grad = dayColor ? colorGradient(dayColor) : 'from-slate-600 to-slate-700';
+                                      return <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${grad} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>;
+                                    })}</div>
+                                  </div>
+                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
+                                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                                </div>
+                              </SplitCard>
+                            );
+                          }
+                        });
+                      })()}
+                    </div>
+                  )}
+
+                  {/* PREVIEW */}
+                  {step === 'preview' && previewSplit && (
+                    <div className="p-4 space-y-3">
+                      <div className="p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
+                        <div className="flex gap-1.5 mt-1.5 flex-wrap">{previewSplit.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                        {previewSplit.blurb && <p className="text-[11px] text-slate-400 leading-relaxed mt-3">{previewSplit.blurb}</p>}
+                      </div>
+                      {previewSplit.days.map((day) => {
+                        const wt = previewSplit.workouts[day];
+                        if (!wt) return null;
+                        return (
+                          <ReadOnlyDayCard key={day} day={day} workout={wt} weights={previewWeights[day] || {}} onWeightChange={(idx, val) => { setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} sets={previewSets[day] || {}} onSetsChange={(idx, val) => { setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} reps={previewReps[day] || {}} onRepsChange={(idx, val) => { setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } })); setWeightsDirty(true); }} />
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* CONFIGURE */}
+                  {step === 'configure' && (
+                    <div className="p-4 space-y-4">
+
+                      {/* ── Split Name ── */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
+                            <motion.button
+                              onClick={() => setShowConfigureInfo(v => !v)}
+                              whileTap={{ scale: 0.78, y: 1 }}
+                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                              style={{
+                                background: 'none', border: 'none', padding: 0,
+                                cursor: 'pointer',
+                                color: showConfigureInfo ? '#818cf8' : '#475569',
+                                display: 'flex', alignItems: 'center',
+                                transition: 'color 0.15s',
+                              }}>
+                              <Info size={16} />
+                            </motion.button>
+                          </div>
+
+                          {editingSplitId && (
+                            <div className="relative">
+                              <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
+                                <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
+                              </button>
+                              {dotsMenuOpen && (
+                                <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                  <button onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                                    Delete Split
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ── Info Box ── */}
+                        <AnimatePresence>
+                          {showConfigureInfo && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                              animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <div style={{
+                                position: 'relative',
+                                background: 'linear-gradient(135deg, rgba(129,140,248,0.07) 0%, rgba(99,102,241,0.04) 100%)',
+                                border: '1px solid rgba(129,140,248,0.16)',
+                                borderRadius: 10,
+                                padding: '10px 13px',
+                                overflow: 'hidden',
+                              }}>
+                                <div style={{
+                                  position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                                  background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)',
+                                }} />
+                                <p style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', margin: '0 0 7px', letterSpacing: '0.02em' }}>
+                                  How to use
+                                </p>
+                                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                  {configureInfoBullets.map(({ label, text }) => (
+                                    <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+                                      <span style={{ color: '#475569', fontSize: 11, lineHeight: 1.55, flexShrink: 0 }}>•</span>
+                                      <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontWeight: 500 }}>
+                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{label}:</span>{' '}{text}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <input type="text" value={splitName} onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))} placeholder="My Training Split" maxLength={40} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
+                      </div>
+
+                      {/* ── Training Days ── */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Training Days</label>
+                        <div className="grid grid-cols-7 gap-1.5">
+                          {DAY_NAMES.map((name, i) => {
+                            const d = i + 1; const on = selectedDays.includes(d);
+                            return (
+                              <button key={d} onClick={() => toggleDay(d)} className={`flex flex-col items-center gap-0.5 py-2.5 rounded-xl border-2 font-bold text-[10px] transition-all active:scale-90 ${on ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/50 text-white shadow-[0_2px_0_0_#1a3fa8]' : 'bg-slate-900/60 border-slate-700/40 text-slate-600'}`}>
+                                {name}{on && <div className="w-1 h-1 rounded-full bg-blue-200 opacity-70" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[10px] text-slate-600 font-medium">{selectedDays.length} training · {7 - selectedDays.length} rest</p>
+                      </div>
+
+                      {/* ── Day Details ── */}
+                      {selectedDays.length > 0 && (
+                        <div className="space-y-3">
+                          {selectedDays.map((day) => {
+                            const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
+                            const exs = wt.exercises || [];
+                            const mirrorDay = getMirrorDay(day);
+                            const isMirrored = mirrorDay !== null;
+                            const mirrorPair = !isMirrored ? getMirrorablePartner(day) : null;
+                            const showMirrorBtn = mirrorPair !== null;
+                            const isDayDotsOpen = !!dayDotsMenuOpen[day];
+
+                            return (
+                              <div key={day} className="rounded-2xl overflow-hidden" style={{
+                                background: 'rgba(12,16,32,0.8)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                              }}>
+                                <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+                                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
+                                    <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={wt.name || ''}
+                                    onChange={(e) => handleWorkoutNameChange(day, e.target.value)}
+                                    placeholder={`Day ${day} workout…`}
+                                    maxLength={25}
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    spellCheck="false"
+                                    style={{ fontSize: '16px' }}
+                                    className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0"
+                                  />
+                                  {showMirrorBtn && (
+                                    <button
+                                      onClick={() => { setPendingMirrorPair(mirrorPair); setShowMirrorConfirm(true); }}
+                                      className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none text-xs h-8 px-2.5 rounded-lg flex-shrink-0 transform-gpu active:translate-y-[3px] active:scale-95 active:shadow-none"
+                                      style={{
+                                        background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
+                                        color: 'rgba(226,232,240,0.9)',
+                                        border: '1px solid rgba(255,255,255,0.10)',
+                                        boxShadow: '0 3px 0 0 #111827, inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.4)',
+                                      }}>
+                                      Mirror Workout
+                                    </button>
+                                  )}
+                                  {isMirrored && (
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                      <div
+                                        className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
+                                        style={{
+                                          background: 'rgba(255,255,255,0.04)',
+                                          border: '1px solid rgba(255,255,255,0.10)',
+                                          color: 'rgba(148,163,184,0.65)',
+                                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)',
+                                          fontSize: '9px',
+                                          letterSpacing: '0.07em',
+                                          padding: '0 6px',
+                                        }}>
+                                        Mirrored
+                                      </div>
+                                      <div className="relative">
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] })); }}
+                                          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 transition-colors active:scale-90">
+                                          <MoreVertical className="w-4 h-4" />
+                                        </button>
+                                        {isDayDotsOpen && (
+                                          <>
+                                            <div className="fixed inset-0 z-[15]" onClick={() => setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }))} />
+                                            <div className="absolute right-0 top-8 z-[16] rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)', minWidth: '140px' }}>
+                                              <button
+                                                onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false })); setDeleteWorkoutDay(day); }}
+                                                className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-red-400 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                                Delete Workout
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex gap-1.5 px-4 pb-3">
+                                  {COLOR_OPTIONS.map((c) => (
+                                    <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />
+                                  ))}
+                                </div>
+
+                                {exs.length > 0 && (
+                                  <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
+                                    </div>
+                                    {exs.map((ex, idx) => {
+                                      const isDupe = (ex.exercise || '').trim() !== '' && exs.some(
+                                        (other, otherIdx) =>
+                                          otherIdx !== idx &&
+                                          (other.exercise || '').trim().toLowerCase() === (ex.exercise || '').trim().toLowerCase()
+                                      );
+
+                                      return (
+                                        <div key={idx} className="relative">
+                                          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
+                                            <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Bench press" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                            {isDupe ? (
+                                              <div className="w-full px-2 py-2 bg-slate-800/30 border border-slate-700/20 rounded-lg text-[13px] text-slate-500 text-center cursor-not-allowed select-none" title="Each duplicate exercise is treated as 1 set">
+                                                1
+                                              </div>
+                                            ) : (
+                                              <input type="text" inputMode="numeric" value={ex.sets ?? '3'} onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))} placeholder="3" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                            )}
+                                            <input type="text" inputMode="numeric" value={ex.reps ?? '10'} onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))} placeholder="10" maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                            <div className="relative">
+                                              <input type="text" inputMode="decimal" value={ex.weight ?? ''} onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                              <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+                                            </div>
+                                          </div>
+                                          <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {(wt.cardio || []).length > 0 && (
+                                  <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rest</span>
+                                    </div>
+                                    {(wt.cardio || []).map((c, idx) => {
+                                      const rounds = parseInt(c.rounds, 10) || 0;
+                                      const restDisabled = rounds <= 1;
+                                      return (
+                                        <div key={idx} className="relative">
+                                          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
+                                            <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Run" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                            <input type="text" inputMode="numeric" value={c.rounds ?? '1'} onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))} placeholder="1" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                            <div className="relative">
+                                              <input type="text" inputMode="numeric" value={formatTime(c.time)} onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)} placeholder="0:00" maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5" />
+                                              <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                            </div>
+                                            <div className="relative">
+                                              <input type="text" inputMode="numeric" value={restDisabled ? '' : formatTime(c.rest)} onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }} placeholder="0:00" disabled={restDisabled} maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`} />
+                                              <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
+                                            </div>
+                                          </div>
+                                          <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                <div className="px-4 pb-3.5 pt-2 flex flex-col gap-1.5">
+                                  <button onClick={() => addExercise(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add exercise</button>
+                                  <button onClick={() => addCardio(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add cardio</button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* ── Info Box ── */}
-                <AnimatePresence>
-                  {showConfigureInfo && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
-                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                      transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      <div style={{
-                        position: 'relative',
-                        background: 'linear-gradient(135deg, rgba(129,140,248,0.07) 0%, rgba(99,102,241,0.04) 100%)',
-                        border: '1px solid rgba(129,140,248,0.16)',
-                        borderRadius: 10,
-                        padding: '10px 13px',
-                        overflow: 'hidden',
-                      }}>
-                        <div style={{
-                          position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
-                          background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)',
-                        }} />
-                        <p style={{
-                          fontSize: 11, fontWeight: 700, color: '#a5b4fc',
-                          margin: '0 0 7px', letterSpacing: '0.02em',
-                        }}>
-                          How to use
-                        </p>
-                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                          {configureInfoBullets.map(({ label, text }) => (
-                            <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
-                              <span style={{ color: '#475569', fontSize: 11, lineHeight: 1.55, flexShrink: 0 }}>•</span>
-                              <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontWeight: 500 }}>
-                                <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{label}:</span>{' '}{text}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <input type="text" value={splitName} onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))} placeholder="My Training Split" maxLength={40} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
+                {/* ── FOOTER ── */}
+                {step === 'preview' && weightsDirty && (
+                  <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+                    <button
+                      onClick={() => {
+                        const mergedWorkouts = Object.fromEntries(Object.entries(previewSplit.workouts).map(([day, wt]) => {
+                          const dayWeights = previewWeights[day] || {}; const daySets = previewSets[day] || {}; const dayReps = previewReps[day] || {};
+                          const mergedExercises = (wt.exercises || []).map((ex, idx) => ({ ...ex, weight: dayWeights[idx] !== undefined ? dayWeights[idx] : ex.weight, sets: daySets[idx] !== undefined && daySets[idx] !== '' ? daySets[idx] : ex.sets, reps: dayReps[idx] !== undefined && dayReps[idx] !== '' ? dayReps[idx] : ex.reps }));
+                          return [day, { ...wt, exercises: mergedExercises }];
+                        }));
+                        const splitEntry = { id: previewSplit.id, preset_id: previewSplit.id, name: previewSplit.name, training_days: previewSplit.days, workouts: mergedWorkouts, created_at: new Date().toISOString() };
+                        const updated = [...savedSplits.filter((s) => s.id !== previewSplit.id), splitEntry];
+                        setSavedSplits(updated);
+                        const isActive = activeSplitId === previewSplit.id;
+                        setActiveMutation.mutate({ saved_splits: updated, ...(isActive ? { custom_workout_types: mergedWorkouts } : {}) });
+                        toast.success('Edits saved!'); setWeightsDirty(false);
+                      }}
+                      disabled={setActiveMutation.isPending}
+                      className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                      {setActiveMutation.isPending ? 'Saving…' : 'Save Edits'}
+                    </button>
+                  </div>
+                )}
+                {step === 'configure' && (
+                  <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+                    <button onClick={handleBack} className={btnSecondary}>Back</button>
+                    <button onClick={handleSave} disabled={selectedDays.length === 0 || saveMutation.isPending} className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
+                      {saveMutation.isPending ? 'Saving…' : 'Save Split'}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* ── Training Days ── */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Training Days</label>
-                <div className="grid grid-cols-7 gap-1.5">
-                  {DAY_NAMES.map((name, i) => {
-                    const d = i + 1; const on = selectedDays.includes(d);
-                    return (
-                      <button key={d} onClick={() => toggleDay(d)} className={`flex flex-col items-center gap-0.5 py-2.5 rounded-xl border-2 font-bold text-[10px] transition-all active:scale-90 ${on ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/50 text-white shadow-[0_2px_0_0_#1a3fa8]' : 'bg-slate-900/60 border-slate-700/40 text-slate-600'}`}>
-                        {name}{on && <div className="w-1 h-1 rounded-full bg-blue-200 opacity-70" />}
+              {/* ── Modals rendered inside the panel ── */}
+              <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
+
+              <MirrorConfirmDialog
+                open={showMirrorConfirm}
+                onClose={() => { setShowMirrorConfirm(false); setPendingMirrorPair(null); }}
+                onConfirm={handleConfirmMirror}
+              />
+
+              <DeleteWorkoutDialog
+                open={deleteWorkoutDay !== null}
+                onClose={() => setDeleteWorkoutDay(null)}
+                onConfirm={() => handleDeleteWorkout(deleteWorkoutDay)}
+                dayName={deleteWorkoutDay ? (workouts[deleteWorkoutDay]?.name || DAY_NAMES[deleteWorkoutDay - 1]) : ''}
+              />
+
+              {confirmDeleteSplitId && (
+                <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
+                  <div className="w-full max-w-xs rounded-2xl p-6 space-y-4" style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }} onClick={(e) => e.stopPropagation()}>
+                    <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
+                    <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => setConfirmDeleteSplitId(null)} className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform">Cancel</button>
+                      <button
+                        onClick={() => {
+                          const id = confirmDeleteSplitId;
+                          setConfirmDeleteSplitId(null);
+                          const updated = savedSplits.filter((s) => s.id !== id);
+                          setSavedSplits(updated);
+                          if (activeSplitId === id) setActiveSplitId('');
+                          saveMutation.mutate({ saved_splits: updated });
+                        }}
+                        className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all">
+                        Delete
                       </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-slate-600 font-medium">{selectedDays.length} training · {7 - selectedDays.length} rest</p>
-              </div>
-
-              {/* ── Day Details ── */}
-              {selectedDays.length > 0 && (
-                <div className="space-y-3">
-                  {selectedDays.map((day) => {
-                    const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
-                    const exs = wt.exercises || [];
-                    const mirrorDay = getMirrorDay(day);
-                    const isMirrored = mirrorDay !== null;
-                    const mirrorPair = !isMirrored ? getMirrorablePartner(day) : null;
-                    const showMirrorBtn = mirrorPair !== null;
-                    const isDayDotsOpen = !!dayDotsMenuOpen[day];
-
-                    return (
-                      <div key={day} className="rounded-2xl overflow-hidden" style={{
-                        background: 'rgba(12,16,32,0.8)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                      }}>
-                        <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
-                          <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
-                            <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={wt.name || ''}
-                            onChange={(e) => handleWorkoutNameChange(day, e.target.value)}
-                            placeholder={`Day ${day} workout…`}
-                            maxLength={25}
-                            autoComplete="off"
-                            autoCorrect="off"
-                            spellCheck="false"
-                            style={{ fontSize: '16px' }}
-                            className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0"
-                          />
-                          {showMirrorBtn && (
-                            <button
-                              onClick={() => { setPendingMirrorPair(mirrorPair); setShowMirrorConfirm(true); }}
-                              className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none text-xs h-8 px-2.5 rounded-lg flex-shrink-0 transform-gpu active:translate-y-[3px] active:scale-95 active:shadow-none"
-                              style={{
-                                background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
-                                color: 'rgba(226,232,240,0.9)',
-                                border: '1px solid rgba(255,255,255,0.10)',
-                                boxShadow: '0 3px 0 0 #111827, inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.4)',
-                              }}>
-                              Mirror Workout
-                            </button>
-                          )}
-                          {isMirrored && (
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <div
-                                className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
-                                style={{
-                                  background: 'rgba(255,255,255,0.04)',
-                                  border: '1px solid rgba(255,255,255,0.10)',
-                                  color: 'rgba(148,163,184,0.65)',
-                                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)',
-                                  fontSize: '9px',
-                                  letterSpacing: '0.07em',
-                                  padding: '0 6px',
-                                }}>
-                                Mirrored
-                              </div>
-                              <div className="relative">
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] })); }}
-                                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 transition-colors active:scale-90">
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
-                                {isDayDotsOpen && (
-                                  <>
-                                    <div className="fixed inset-0 z-[15]" onClick={() => setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }))} />
-                                    <div className="absolute right-0 top-8 z-[16] rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)', minWidth: '140px' }}>
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false })); setDeleteWorkoutDay(day); }}
-                                        className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-red-400 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        Delete Workout
-                                      </button>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex gap-1.5 px-4 pb-3">
-                          {COLOR_OPTIONS.map((c) => (
-                            <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />
-                          ))}
-                        </div>
-
-                        {exs.length > 0 && (
-                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
-                            </div>
-                            {exs.map((ex, idx) => {
-                              // ── Check if this exercise name is a duplicate within this day ──
-                              const isDupe = (ex.exercise || '').trim() !== '' && exs.some(
-                                (other, otherIdx) =>
-                                  otherIdx !== idx &&
-                                  (other.exercise || '').trim().toLowerCase() === (ex.exercise || '').trim().toLowerCase()
-                              );
-
-                              return (
-                                <div key={idx} className="relative">
-                                  <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 68px' }}>
-                                    <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Bench press" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-
-                                    {/* ── Sets: locked to "1" if duplicate name ── */}
-                                    {isDupe ? (
-                                      <div
-                                        className="w-full px-2 py-2 bg-slate-800/30 border border-slate-700/20 rounded-lg text-[13px] text-slate-500 text-center cursor-not-allowed select-none"
-                                        title="Each duplicate exercise is treated as 1 set">
-                                        1
-                                      </div>
-                                    ) : (
-                                      <input type="text" inputMode="numeric" value={ex.sets ?? '3'} onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))} placeholder="3" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                    )}
-
-                                    <input type="text" inputMode="numeric" value={ex.reps ?? '10'} onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))} placeholder="10" maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                    <div className="relative">
-                                      <input type="text" inputMode="decimal" value={ex.weight ?? ''} onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
-                                    </div>
-                                  </div>
-                                  <button onClick={() => removeExercise(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {(wt.cardio || []).length > 0 && (
-                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
-                            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
-                              <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rest</span>
-                            </div>
-                            {(wt.cardio || []).map((c, idx) => {
-                              const rounds = parseInt(c.rounds, 10) || 0;
-                              const restDisabled = rounds <= 1;
-                              return (
-                                <div key={idx} className="relative">
-                                  <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
-                                    <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Run" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
-                                    <input type="text" inputMode="numeric" value={c.rounds ?? '1'} onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))} placeholder="1" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
-                                    <div className="relative">
-                                      <input type="text" inputMode="numeric" value={formatTime(c.time)} onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)} placeholder="0:00" maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5" />
-                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
-                                    </div>
-                                    <div className="relative">
-                                      <input type="text" inputMode="numeric" value={restDisabled ? '' : formatTime(c.rest)} onChange={(e) => { if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value); }} placeholder="0:00" disabled={restDisabled} maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`} />
-                                      <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
-                                    </div>
-                                  </div>
-                                  <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        <div className="px-4 pb-3.5 pt-2 flex flex-col gap-1.5">
-                          <button onClick={() => addExercise(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add exercise</button>
-                          <button onClick={() => addCardio(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add cardio</button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                    </div>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
-        </div>
-
-        {/* ── FOOTER ── */}
-        {step === 'preview' && weightsDirty && (
-          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button
-              onClick={() => {
-                const mergedWorkouts = Object.fromEntries(Object.entries(previewSplit.workouts).map(([day, wt]) => {
-                  const dayWeights = previewWeights[day] || {}; const daySets = previewSets[day] || {}; const dayReps = previewReps[day] || {};
-                  const mergedExercises = (wt.exercises || []).map((ex, idx) => ({ ...ex, weight: dayWeights[idx] !== undefined ? dayWeights[idx] : ex.weight, sets: daySets[idx] !== undefined && daySets[idx] !== '' ? daySets[idx] : ex.sets, reps: dayReps[idx] !== undefined && dayReps[idx] !== '' ? dayReps[idx] : ex.reps }));
-                  return [day, { ...wt, exercises: mergedExercises }];
-                }));
-                const splitEntry = { id: previewSplit.id, preset_id: previewSplit.id, name: previewSplit.name, training_days: previewSplit.days, workouts: mergedWorkouts, created_at: new Date().toISOString() };
-                const updated = [...savedSplits.filter((s) => s.id !== previewSplit.id), splitEntry];
-                setSavedSplits(updated);
-                const isActive = activeSplitId === previewSplit.id;
-                setActiveMutation.mutate({ saved_splits: updated, ...(isActive ? { custom_workout_types: mergedWorkouts } : {}) });
-                toast.success('Edits saved!'); setWeightsDirty(false);
-              }}
-              disabled={setActiveMutation.isPending}
-              className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed">
-              {setActiveMutation.isPending ? 'Saving…' : 'Save Edits'}
-            </button>
-          </div>
+            </motion.div>
+          </>
         )}
-        {step === 'configure' && (
-          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button onClick={handleBack} className={btnSecondary}>Back</button>
-            <button onClick={handleSave} disabled={selectedDays.length === 0 || saveMutation.isPending} className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
-              {saveMutation.isPending ? 'Saving…' : 'Save Split'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
-
-      <MirrorConfirmDialog
-        open={showMirrorConfirm}
-        onClose={() => { setShowMirrorConfirm(false); setPendingMirrorPair(null); }}
-        onConfirm={handleConfirmMirror}
-      />
-
-      <DeleteWorkoutDialog
-        open={deleteWorkoutDay !== null}
-        onClose={() => setDeleteWorkoutDay(null)}
-        onConfirm={() => handleDeleteWorkout(deleteWorkoutDay)}
-        dayName={deleteWorkoutDay ? (workouts[deleteWorkoutDay]?.name || DAY_NAMES[deleteWorkoutDay - 1]) : ''}
-      />
-
-      {confirmDeleteSplitId && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
-          <div className="w-full max-w-xs rounded-2xl p-6 space-y-4" style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }} onClick={(e) => e.stopPropagation()}>
-            <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
-            <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
-            <div className="flex gap-2 pt-1">
-              <button onClick={() => setConfirmDeleteSplitId(null)} className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform">Cancel</button>
-              <button
-                onClick={() => {
-                  const id = confirmDeleteSplitId;
-                  setConfirmDeleteSplitId(null);
-                  const updated = savedSplits.filter((s) => s.id !== id);
-                  setSavedSplits(updated);
-                  if (activeSplitId === id) setActiveSplitId('');
-                  saveMutation.mutate({ saved_splits: updated });
-                }}
-                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all">
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </AnimatePresence>
+    </>
   );
 }
