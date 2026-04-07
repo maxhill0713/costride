@@ -1,7 +1,29 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { createRequire } from 'module';
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
+
+// Pre-patch vite-plugin-pwa on disk BEFORE it gets imported/executed,
+// so the 2MiB hard limit doesn't throw during closeBundle.
+try {
+  const req = createRequire(import.meta.url);
+  const pwaPath = req.resolve('vite-plugin-pwa');
+  const distDir = dirname(pwaPath);
+  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+  for (const file of files) {
+    const filePath = join(distDir, file);
+    const src = readFileSync(filePath, 'utf8');
+    if (!src.includes('throwMaximumFileSizeToCacheInBytes')) continue;
+    const patched = src.replace(
+      /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
+      'if (false) {'
+    );
+    if (patched !== src) writeFileSync(filePath, patched, 'utf8');
+  }
+} catch (_) { /* ignore — plugin may not be installed */ }
 
 export default defineConfig({
   plugins: [
@@ -18,32 +40,6 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Disable the workbox file-size hard error so large chunks don't fail the build.
-    // We patch vite-plugin-pwa's chunk file to always pass false for the throw flag.
-    {
-      name: 'disable-workbox-size-error',
-      enforce: 'pre',
-      async buildStart() {
-        try {
-          const { readFileSync, writeFileSync } = await import('fs');
-          const { createRequire } = await import('module');
-          const req = createRequire(import.meta.url);
-          const pwaIndexPath = req.resolve('vite-plugin-pwa');
-          const distDir = (await import('path')).default.dirname(pwaIndexPath);
-          const chunkPath = distDir + '/chunk-G4TAN34B.js';
-          let src = readFileSync(chunkPath, 'utf8');
-          // Replace: if (throwMaximumFileSizeToCacheInBytes) { ... throw ... }
-          // by neutralising the condition
-          const patched = src.replace(
-            'if (throwMaximumFileSizeToCacheInBytes) {',
-            'if (false) {'
-          );
-          if (patched !== src) {
-            writeFileSync(chunkPath, patched, 'utf8');
-          }
-        } catch (_) { /* ignore if file not found or already patched */ }
-      },
-    },
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -86,7 +82,6 @@ export default defineConfig({
             if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark') || id.includes('mdast') || id.includes('hast') || id.includes('unist')) return 'markdown';
             if (id.includes('zod')) return 'zod';
             if (id.includes('react-hook-form') || id.includes('@hookform')) return 'forms';
-            if (id.includes('react-leaflet')) return 'leaflet';
             if (id.includes('canvas-confetti')) return 'confetti';
             return 'vendor';
           }
