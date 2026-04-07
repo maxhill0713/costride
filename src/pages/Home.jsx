@@ -17,7 +17,6 @@ import StreakLossAnimation from '../components/home/StreakLossAnimation';
 import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
 import StreakCelebration from '../components/home/StreakCelebration';
 import FriendsSection from '../components/home/FriendsSection';
-import ActivityFeedSection from '../components/home/ActivityFeedSection';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -1462,18 +1461,6 @@ export default function Home() {
           })()}
 
           {memberGym?.id && <QuoteCarousel />}
-
-          {/* ── Social Feed ── */}
-          <ActivityFeedSection
-            friends={friends}
-            filteredActivityCards={filteredActivityCards}
-            activityFeed={activityFeed}
-            socialFeedPosts={socialFeedPosts}
-            currentUser={currentUser}
-            queryClient={queryClient}
-            dismissCard={dismissCard}
-            friendsWithActivity={friendsWithActivity}
-          />
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">

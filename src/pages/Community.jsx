@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { base44 } from '@/api/base44Client'
 import { ChevronRight, ChevronDown, Trophy, TrendingUp, Flame } from 'lucide-react'
 import GymChallengeCard from '../components/challenges/GymChallengeCard'
+import ActivityFeedSection from '../components/home/ActivityFeedSection'
+import { differenceInDays, startOfDay } from 'date-fns'
 
 /* ───────────────── CONFIG ───────────────── */
 
@@ -454,6 +456,115 @@ export default function Community() {
 
   const activeChallenges = gymChallenges.filter(c => c.status === 'active' || c.status === 'upcoming')
 
+  // ── Activity feed data ──
+  const { data: friends = [] } = useQuery({
+    queryKey: ['friends', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }, '-created_date', 200),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+  })
+  const friendIdList = friends.map(f => f.friend_id)
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: allRecentCheckIns = [] } = useQuery({
+    queryKey: ['checkIns', 'communityFeed', friendIdList.join(',')],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: { $in: friendIdList }, check_in_date: { $gte: thirtyDaysAgo } }, '-check_in_date', 200),
+    enabled: !!currentUser && friendIdList.length > 0,
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: recentLifts = [] } = useQuery({
+    queryKey: ['recentLifts', 'communityFriends'],
+    queryFn: () => base44.entities.Lift.filter({ is_pr: true, created_date: { $gte: sevenDaysAgo } }, '-created_date', 50),
+    enabled: !!currentUser && friends.length > 0,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['friendPosts', 'community', currentUser?.id, friendIdList.join(',')],
+    queryFn: () => {
+      const authorIds = [...friendIdList, currentUser?.id].filter(Boolean)
+      return base44.entities.Post.filter({ member_id: { $in: authorIds }, is_system_generated: false }, '-created_date', 200)
+    },
+    enabled: !!currentUser && friendIdList.length > 0,
+    staleTime: 1 * 60 * 1000,
+  })
+
+  const calculateFriendStreak = (checkIns) => {
+    if (checkIns.length === 0) return 0
+    const today = startOfDay(new Date())
+    const lastCI = startOfDay(new Date(checkIns[0].check_in_date))
+    if (differenceInDays(today, lastCI) > 1) return 0
+    let streak = 1
+    for (let i = 0; i < checkIns.length - 1; i++) {
+      const cur = startOfDay(new Date(checkIns[i].check_in_date))
+      const nxt = startOfDay(new Date(checkIns[i + 1].check_in_date))
+      const diff = differenceInDays(cur, nxt)
+      if (diff === 1 || diff === 2) streak++; else break
+    }
+    return streak
+  }
+
+  const friendsWithActivity = friends.map(friend => {
+    const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id)
+    const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null
+    return {
+      ...friend,
+      activity: {
+        checkIns: friendCheckIns,
+        streak: calculateFriendStreak(friendCheckIns),
+        lastCheckIn: lastCI,
+        daysSinceCheckIn: lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null,
+      }
+    }
+  }).sort((a, b) => (b.activity.streak || 0) - (a.activity.streak || 0))
+
+  const activityFeed = useMemo(() => {
+    const activities = []
+    const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' }
+    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id))
+    friendPRs.forEach(lift => {
+      const friend = friends.find(f => f.friend_id === lift.member_id)
+      if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
+        activities.push({ id: `pr-${lift.id}`, type: 'pr', friendId: lift.member_id, friendName: friend?.friend_name || lift.member_name, friendAvatar: friend?.friend_avatar, message: `just hit a new PR — ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`, timestamp: new Date(lift.created_date) })
+      }
+    })
+    friendsWithActivity.forEach((friend, idx) => {
+      const streak = friend.activity?.streak || 0
+      if (streak > 0 && friend.activity?.daysSinceCheckIn === 0) {
+        const rank = idx + 1
+        if (rank <= 3) {
+          activities.push({ id: `leaderboard-${friend.friend_id}`, type: 'leaderboard_rank', friendId: friend.friend_id, friendName: friend.friend_name, friendAvatar: friend.friend_avatar, rank, message: rank === 1 ? `just took #1 on the weekly consistency leaderboard 👑` : `is sitting at #${rank} on the consistency leaderboard`, timestamp: new Date(Date.now() - rank * 60000) })
+        } else if (streak >= 7 && streak % 7 === 0) {
+          activities.push({ id: `streak-${friend.friend_id}`, type: 'streak', friendId: friend.friend_id, friendName: friend.friend_name, friendAvatar: friend.friend_avatar, streakCount: streak, message: `just hit a ${streak}-day streak! 🔥`, timestamp: new Date(Date.now() - 120000) })
+        }
+      }
+    })
+    notifications.forEach(n => {
+      const text = (n.message || n.title || '').toLowerCase()
+      if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
+        activities.push({ id: `notif-${n.id}`, type: 'notification', message: n.message || n.title, timestamp: new Date(n.created_date) })
+      }
+    })
+    return activities.sort((a, b) => b.timestamp - a.timestamp)
+  }, [recentLifts, friendsWithActivity, notifications, friendIdList, friends])
+
+  const socialFeedPosts = useMemo(() => allPosts.filter(post =>
+    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+    (post.content || post.image_url || post.video_url || post.workout_name) &&
+    !post.gym_join && !post.is_hidden &&
+    new Date(post.created_date) >= threeDaysAgo
+  ), [allPosts, friendIdList, currentUser?.id])
+
   if (lbOpen) return (
     <FullLeaderboard
       leaderboard={leaderboard}
@@ -709,6 +820,18 @@ export default function Community() {
             </div>
           </div>
         )}
+
+        {/* ─── ACTIVITY FEED ─── */}
+        <ActivityFeedSection
+          friends={friends}
+          filteredActivityCards={[]}
+          activityFeed={activityFeed}
+          socialFeedPosts={socialFeedPosts}
+          currentUser={currentUser}
+          queryClient={queryClient}
+          dismissCard={() => {}}
+          friendsWithActivity={friendsWithActivity}
+        />
 
       </div>
     </>
