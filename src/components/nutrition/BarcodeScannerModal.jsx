@@ -146,8 +146,8 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
           <div id="scanner" style={{ width: '100%', height: '100%' }} />
 
           {/* Scan overlay */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-            <div style={{ width: 260, height: 160, borderRadius: 16, border: '2px solid #38bdf8', boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)', position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: '20px' }}>
+            <div style={{ width: '100%', maxWidth: 260, aspectRatio: '260/160', borderRadius: 16, border: '2px solid #38bdf8', boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)', position: 'relative' }}>
               {/* Corner accents */}
               {[
                 { top: -2, left: -2, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '16px 0 0 0' },

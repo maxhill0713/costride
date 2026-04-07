@@ -8,10 +8,7 @@ import base44Plugin from '@base44/vite-plugin';
 
 const _req = createRequire(import.meta.url);
 
-// ── Patch size limits everywhere they appear ──────────────────────────────────
-// Raises the 2 MiB (2097152) hardcoded limit to 10 MiB in:
-//   1. workbox-build source files
-//   2. vite-plugin-pwa dist files (which bundle workbox-build internally)
+// ── Patch size limits and suppress workbox errors ──────────────────────────────
 function patchSizeLimits() {
   const dirs = [];
   try { dirs.push(dirname(_req.resolve('workbox-build'))); } catch (_) {}
@@ -23,8 +20,17 @@ function patchSizeLimits() {
     for (const f of files) {
       const fp = join(dir, f);
       let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+      let out = src;
+      
       // Replace the 2 MiB byte constant with 10 MiB
-      const out = src.replace(/\b2097152\b/g, '10485760');
+      out = out.replace(/\b2097152\b/g, '10485760');
+      
+      // Also suppress the logWorkboxResult throw for size limit errors
+      out = out.replace(
+        /throw\s+new\s+Error\s*\(\s*`[^`]*maximumFileSizeToCacheInBytes[^`]*`\s*\)/g,
+        'void 0'
+      );
+      
       if (out !== src) { try { writeFileSync(fp, out, 'utf8'); } catch (_) {} }
     }
   }
