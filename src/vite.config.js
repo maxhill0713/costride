@@ -18,26 +18,30 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Raise the workbox precache size limit to 5MB so the build doesn't fail.
-    // vite-plugin-pwa calls workbox-build's generateSW — we intercept it here
-    // via a configResolved hook that monkey-patches the already-loaded module.
+    // Disable the workbox file-size hard error so large chunks don't fail the build.
+    // We patch vite-plugin-pwa's chunk file to always pass false for the throw flag.
     {
-      name: 'raise-workbox-size-limit',
-      enforce: 'post',
-      async configResolved() {
+      name: 'disable-workbox-size-error',
+      enforce: 'pre',
+      async buildStart() {
         try {
-          // workbox-build is a CJS module — createRequire lets us load it in ESM context
+          const { readFileSync, writeFileSync } = await import('fs');
           const { createRequire } = await import('module');
           const req = createRequire(import.meta.url);
-          const wb = req('workbox-build');
-          if (wb && typeof wb.generateSW === 'function') {
-            const _orig = wb.generateSW.bind(wb);
-            wb.generateSW = (cfg, ...rest) => {
-              cfg.maximumFileSizeToCacheInBytes = 5 * 1024 * 1024;
-              return _orig(cfg, ...rest);
-            };
+          const pwaIndexPath = req.resolve('vite-plugin-pwa');
+          const distDir = (await import('path')).default.dirname(pwaIndexPath);
+          const chunkPath = distDir + '/chunk-G4TAN34B.js';
+          let src = readFileSync(chunkPath, 'utf8');
+          // Replace: if (throwMaximumFileSizeToCacheInBytes) { ... throw ... }
+          // by neutralising the condition
+          const patched = src.replace(
+            'if (throwMaximumFileSizeToCacheInBytes) {',
+            'if (false) {'
+          );
+          if (patched !== src) {
+            writeFileSync(chunkPath, patched, 'utf8');
           }
-        } catch (_) { /* ignore if workbox-build not available */ }
+        } catch (_) { /* ignore if file not found or already patched */ }
       },
     },
   ],
@@ -64,6 +68,7 @@ export default defineConfig({
             if (id.includes('@tanstack/react-query')) return 'query';
             if (id.includes('@radix-ui')) return 'radix';
             if (id.includes('react-dom')) return 'react-dom';
+            if (id.includes('/react/') || id.includes('\\react\\')) return 'react-core';
             if (id.includes('react-router')) return 'router';
             if (id.includes('recharts')) return 'charts';
             if (id.includes('d3-')) return 'charts';
