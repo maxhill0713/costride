@@ -63,10 +63,7 @@ Deno.serve(async (req) => {
       ),
     ]);
 
-    // Logout the user (this removes their session)
-    await base44.auth.logout();
-
-    return Response.json({ success: true, message: 'Account and all associated data deleted successfully' });
+    return Response.json({ success: true, message: 'Account deleted. Please log out on the frontend.' });
   } catch (error) {
     console.error('Error deleting user account:', error.message);
     return Response.json({ error: 'Failed to delete account', details: error.message }, { status: 500 });
