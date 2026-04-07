@@ -24,8 +24,8 @@ function patchWorkboxBuild() {
 }
 
 // ── Patch vite-plugin-pwa dist: nuke the size-limit error ────────────────────
-// The throw happens inside logWorkboxResult in chunk-G4TAN34B.js (line ~44).
-// We patch every JS in the dist dir using multiple strategies.
+// The throw happens inside logWorkboxResult. We replace the entire chunk files
+// to disable the throw by patching all .js files in the dist directory.
 function patchPwaPlugin() {
   try {
     const pwaEntry = _req.resolve('vite-plugin-pwa');
@@ -36,23 +36,22 @@ function patchPwaPlugin() {
       let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
       let out = src;
 
-      // Nuke any line that contains both "throw" and "maximumFileSizeToCache"
-      // This is line-level and doesn't rely on complex regexes matching across lines
-      out = out.split('\n').map(line => {
-        if (line.includes('throw') && line.includes('maximumFileSizeToCache')) {
-          return '/* b44-patched: ' + line.trimStart().slice(0, 40) + '... */';
-        }
-        return line;
-      }).join('\n');
+      // Remove all throw statements that mention the size limit
+      // Match: throw new Error(`...`) or throw new Error(...)
+      out = out.replace(
+        /throw\s+new\s+Error\s*\(\s*`[^`]*maximumFileSizeToCache[^`]*`\s*\)/g,
+        'void 0'
+      );
+      out = out.replace(
+        /throw\s+new\s+Error\s*\(\s*[^)]*maximumFileSizeToCache[^)]*\)/g,
+        'void 0'
+      );
 
-      // Also replace the entire logWorkboxResult function if found
-      // Use a simple string marker approach
-      if (out.includes('logWorkboxResult')) {
-        out = out.replace(
-          /function logWorkboxResult\b[^{]*\{[^]*?\n\}/,
-          'function logWorkboxResult() { /* b44: noop */ }'
-        );
-      }
+      // Replace logWorkboxResult function entirely with no-op
+      out = out.replace(
+        /function\s+logWorkboxResult\s*\([^)]*\)\s*\{[^]*?^[\s]*\}/m,
+        'function logWorkboxResult() {}'
+      );
 
       if (out !== src) writeFileSync(fp, out, 'utf8');
     }

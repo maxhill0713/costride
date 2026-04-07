@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, ScanBarcode, Loader2, ChevronRight, Camera, AlertCircle } from 'lucide-react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { base44 } from '@/api/base44Client';
 
 const OVERLAY_BG = 'rgba(0,0,0,0.85)';
@@ -28,12 +29,7 @@ async function lookupBarcode(barcode) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function BarcodeScannerModal({ onAdd, onClose }) {
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const animFrameRef = useRef(null);
-  const detectorRef = useRef(null);
-  const scanningRef = useRef(false);
-
+  const htmlScannerRef = useRef(null);
   const [phase, setPhase] = useState('scanning'); // scanning | found | manual | loading | result | error
   const [manualCode, setManualCode] = useState('');
   const [detectedCode, setDetectedCode] = useState('');
@@ -44,69 +40,39 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
 
   const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 
-  // Stop camera
-  const stopCamera = useCallback(() => {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-    scanningRef.current = false;
+  // Stop scanner
+  const stopScanner = useCallback(() => {
+    if (htmlScannerRef.current) {
+      htmlScannerRef.current.stop();
+    }
   }, []);
 
-  // Detect barcodes from video
-  const startDetectionLoop = useCallback(() => {
-    if (!detectorRef.current || !videoRef.current) return;
-    const detect = async () => {
-      if (!scanningRef.current) return;
-      try {
-        if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-          const codes = await detectorRef.current.detect(videoRef.current);
-          if (codes.length > 0) {
-            const code = codes[0].rawValue;
-            scanningRef.current = false;
-            setDetectedCode(code);
-            handleBarcodeFound(code);
-            return;
-          }
-        }
-      } catch (_) { /* keep trying */ }
-      animFrameRef.current = requestAnimationFrame(detect);
-    };
-    animFrameRef.current = requestAnimationFrame(detect);
-  }, []);
-
-  // Start camera
+  // Start Html5Qrcode scanner
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
-      // Check BarcodeDetector support
-      if (!('BarcodeDetector' in window)) {
-        setCameraErr('Barcode scanner not supported in this browser. Please enter the barcode manually.');
-        setPhase('manual');
-        return;
-      }
-
       try {
-        const formats = await BarcodeDetector.getSupportedFormats();
-        detectorRef.current = new BarcodeDetector({ formats });
-      } catch (_) {
-        detectorRef.current = new BarcodeDetector();
-      }
+        const scanner = new Html5Qrcode('scanner');
+        htmlScannerRef.current = scanner;
 
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-        });
-        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-          scanningRef.current = true;
-          startDetectionLoop();
-        }
+        const result = await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            if (!cancelled) {
+              scanner.stop();
+              setDetectedCode(decodedText);
+              handleBarcodeFound(decodedText);
+            }
+          },
+          (errorMessage) => {
+            // Barcode parsing error; ignore and keep scanning
+          }
+        );
       } catch (err) {
         if (!cancelled) {
-          setCameraErr('Camera access denied. Please enter the barcode manually.');
+          setCameraErr('Camera access denied or not supported. Please enter the barcode manually.');
           setPhase('manual');
         }
       }
@@ -115,9 +81,9 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     init();
     return () => {
       cancelled = true;
-      stopCamera();
+      stopScanner();
     };
-  }, [startDetectionLoop, stopCamera]);
+  }, []);
 
   const handleBarcodeFound = async (code) => {
     stopCamera();
@@ -157,7 +123,7 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   };
 
   const handleClose = () => {
-    stopCamera();
+    stopScanner();
     onClose();
   };
 
@@ -177,7 +143,7 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
       {/* Camera view */}
       {(phase === 'scanning') && (
         <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <video ref={videoRef} playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div id="scanner" style={{ width: '100%', height: '100%' }} />
 
           {/* Scan overlay */}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -203,7 +169,7 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
 
           {/* Manual entry button */}
           <button
-            onClick={() => { stopCamera(); setPhase('manual'); }}
+            onClick={() => { stopScanner(); setPhase('manual'); }}
             style={{ position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             Enter manually instead
           </button>
