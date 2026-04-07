@@ -8,6 +8,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
+import PostCard from '../components/feed/PostCard';
 import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
@@ -17,7 +18,6 @@ import StreakLossAnimation from '../components/home/StreakLossAnimation';
 import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
 import StreakCelebration from '../components/home/StreakCelebration';
 import FriendsSection from '../components/home/FriendsSection';
-import ActivityFeedSection from '../components/home/ActivityFeedSection';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -1464,16 +1464,13 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {/* ── Social Feed ── */}
-          <ActivityFeedSection
-            friends={friends}
-            filteredActivityCards={filteredActivityCards}
-            activityFeed={activityFeed}
-            socialFeedPosts={socialFeedPosts}
-            currentUser={currentUser}
-            queryClient={queryClient}
-            dismissCard={dismissCard}
-            friendsWithActivity={friendsWithActivity}
-          />
+          {socialFeedPosts.length > 0 && (
+            <div className="space-y-3">
+              {socialFeedPosts.map((post) => (
+                <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+              ))}
+            </div>
+          )}
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
