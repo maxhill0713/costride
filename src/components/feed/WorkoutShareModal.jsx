@@ -102,7 +102,7 @@ async function drawStreakBadge(ctx, W, post) {
 
   const iconSz = 120;
   const numFontSz = 100;
-  const gap = 8;
+  const gap = -6; // tightened: number sits closer to icon
 
   // Measure number width to right-align the whole icon+number group
   ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
@@ -139,7 +139,7 @@ function StreakBadge({ post }) {
   const streakNum = getPostStreak(post);
   const streakVariant = getAuthorStreakVariant(post);
   return (
-    <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 0 }}>
       <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <img
           src={STREAK_ICON_URL}
@@ -162,6 +162,7 @@ function StreakBadge({ post }) {
         letterSpacing: '-0.02em',
         lineHeight: 1,
         flexShrink: 0,
+        marginLeft: -6,
       }}>
         {streakNum}
       </span>
