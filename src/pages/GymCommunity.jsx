@@ -36,6 +36,7 @@ import AppChallengeCard from '../components/challenges/AppChallengeCard';
 import GymChallengeCard from '../components/challenges/GymChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import MemberSpotlight from '../components/gym/MemberSpotlight';
 import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
@@ -1737,6 +1738,8 @@ export default function GymCommunity() {
                     ))}
                   </div>
                 )}
+
+                <MemberSpotlight checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
 
                 {coaches.length > 0 && (
                   <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>

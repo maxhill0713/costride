@@ -1,109 +1,22 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { createRequire } from 'module';
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
-import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
-
-// ── Patch vite-plugin-pwa to disable the 2MiB size guard ─────────────────────
-// The throw lives in chunk-G4TAN34B.js inside logWorkboxResult().
-// We patch the file on disk AND bust Node's require cache so the patched
-// version is used when the PWA plugin runs its closeBundle hook.
-try {
-  const req = createRequire(import.meta.url);
-  const pwaEntry = req.resolve('vite-plugin-pwa');
-  const distDir = dirname(pwaEntry);
-
-  const PATCH_MARKER = '/* __base44_patched__ */';
-
-  const patchContent = (src) => {
-    if (src.includes(PATCH_MARKER)) return src; // already patched
-    let out = src;
-    // Pattern A: the guard in logWorkboxResult
-    out = out.replace(
-      /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
-      `if (false) { ${PATCH_MARKER}`
-    );
-    // Pattern B: calls to logWorkboxResult — force 2nd arg (throwMaximum...) to false
-    out = out.replace(
-      /logWorkboxResult\(([^,]+),\s*([^,)]+),/g,
-      `logWorkboxResult($1, false,`
-    );
-    return out;
-  };
-
-  const patchAndBust = (filePath) => {
-    if (!existsSync(filePath)) return;
-    let src;
-    try { src = readFileSync(filePath, 'utf8'); } catch { return; }
-    if (src.includes(PATCH_MARKER)) return; // already done
-
-    const patched = patchContent(src);
-    if (patched !== src) {
-      writeFileSync(filePath, patched, 'utf8');
-      // Bust Node require cache so the patched file is re-read
-      try {
-        const resolved = req.resolve(filePath);
-        if (req.cache && req.cache[resolved]) {
-          delete req.cache[resolved];
-        }
-      } catch {}
-    }
-  };
-
-  // Patch all JS files in the dist dir
-  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-  for (const f of files) patchAndBust(join(distDir, f));
-
-} catch (_) { /* PWA plugin not present — ignore */ }
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
     react(),
 
-    // Strip "use client" directives — these are just warnings but suppress them
-    {
-      name: 'strip-use-client',
-      enforce: 'pre',
-      transform(code, id) {
-        if (code.includes('"use client"') || code.includes("'use client'")) {
-          const modified = code.replace(/^\s*['"]use client['"];?\r?\n?/gm, '');
-          if (modified !== code) return { code: modified };
-        }
+    // Override vite-plugin-pwa with a high maximumFileSizeToCacheInBytes
+    // to prevent the 2MiB precache limit error
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MiB
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
-    },
-
-    // Re-patch inside buildStart (runs before the PWA plugin's closeBundle)
-    {
-      name: 'patch-pwa-size-limit',
-      enforce: 'pre',
-      buildStart() {
-        try {
-          const req = createRequire(import.meta.url);
-          const pwaEntry = req.resolve('vite-plugin-pwa');
-          const distDir = dirname(pwaEntry);
-          const MARKER = '/* __base44_patched__ */';
-          const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-          for (const f of files) {
-            const fp = join(distDir, f);
-            if (!existsSync(fp)) continue;
-            let src;
-            try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-            if (src.includes(MARKER)) continue;
-            let patched = src.replace(
-              /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
-              `if (false) { ${MARKER}`
-            );
-            patched = patched.replace(
-              /logWorkboxResult\(([^,]+),\s*([^,)]+),/g,
-              'logWorkboxResult($1, false,'
-            );
-            if (patched !== src) writeFileSync(fp, patched, 'utf8');
-          }
-        } catch (_) {}
-      },
-    },
+    }),
 
     base44Plugin(),
   ],
