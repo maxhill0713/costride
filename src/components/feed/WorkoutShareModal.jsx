@@ -763,7 +763,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
             <div style={{ padding: '0 18px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div ref={containerRef}
-                  style={{ width: 'min(57.2vw, 242px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y', boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)' }}
+                  style={{ width: 'min(68vw, 290px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y', boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)' }}
                   onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
                   <div style={{ display: 'flex', width: (cards.length * 100) + '%', transform: 'translateX(' + translateX + ')', transition: isDragging ? 'none' : 'transform 0.36s cubic-bezier(0.25,0.46,0.45,0.94)', willChange: 'transform' }}>
                     {cards.map(function(card, i) {
@@ -774,7 +774,7 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, flexShrink: 0 }}>
               {cards.map(function(_, i) {
                 return (
                   <button key={i} onClick={function() { setActiveCard(i); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
@@ -783,7 +783,6 @@ export default function WorkoutShareModal({ open, onClose, post, gymName }) {
                 );
               })}
             </div>
-            <div style={{ textAlign: 'center', marginTop: 4, color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em', flexShrink: 0 }}>{cards[activeCard].label}</div>
 
             <div style={{ padding: '12px 18px 0', flexShrink: 0 }}>
               <p style={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px 0' }}>Share to</p>
