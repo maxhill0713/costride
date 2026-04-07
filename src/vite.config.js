@@ -19,20 +19,26 @@ try {
     if (!existsSync(fp)) continue;
     let src;
     try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-    // Only patch files that actually contain the problematic throw
-    if (!src.includes('maximumFileSizeToCacheInBytes') && !src.includes('logWorkboxResult')) continue;
+    if (!src.includes('maximumFileSizeToCacheInBytes')) continue;
     let out = src;
-    // Replace the throw inside logWorkboxResult with a warning-only path
-    // The compiled code does: if (throwMaximumFileSizeToCacheInBytes) { throw ... }
+
+    // Strategy 1: rewrite the logWorkboxResult function so the 2nd param (throw flag) is always false
+    // Handles: function logWorkboxResult(result, throwOnError, logger) { ... if (throwOnError) throw ... }
     out = out.replace(
-      /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{[^}]*\}/gs,
-      '/* b44-patched: size limit disabled */'
+      /function logWorkboxResult\s*\([^)]*\)\s*\{/g,
+      (match) => match + '\n  throwMaximumFileSizeToCacheInBytes = false;'
     );
-    // Also handle minified variant: throwMaximumFileSizeToCacheInBytes&&(throw...)
+
+    // Strategy 2: any identifier containing "throw" and "MaximumFileSize" assigned or checked → force false
+    out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
+
+    // Strategy 3: the call site passes true as second arg — replace with false
+    // logWorkboxResult(result, true, ...) → logWorkboxResult(result, false, ...)
     out = out.replace(
-      /throwMaximumFileSizeToCacheInBytes&&[^;,)]+/g,
-      'false'
+      /logWorkboxResult\(([^,]+),\s*true\s*,/g,
+      'logWorkboxResult($1, false,'
     );
+
     if (out !== src) writeFileSync(fp, out, 'utf8');
   }
 } catch (_) { /* PWA plugin not installed — skip */ }
