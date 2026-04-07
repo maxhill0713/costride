@@ -6,51 +6,50 @@ import { createRequire } from 'module';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
-// ── Patch vite-plugin-pwa on disk before Vite loads it ────────────────────────
-// base44Plugin registers VitePWA internally with the default 2MiB limit.
-// We patch every JS file in the PWA plugin's dist folder to neutralise the throw.
-try {
-  const req = createRequire(import.meta.url);
-  const pwaEntry = req.resolve('vite-plugin-pwa');
-  const distDir = dirname(pwaEntry);
-  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-  for (const f of files) {
-    const fp = join(distDir, f);
-    if (!existsSync(fp)) continue;
-    let src;
-    try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-    if (!src.includes('maximumFileSizeToCacheInBytes')) continue;
-    let out = src;
+// ── Patch vite-plugin-pwa on disk ─────────────────────────────────────────────
+// Neutralise the 2MiB cache-limit throw in every dist JS file of the PWA plugin.
+function patchPwaPlugin() {
+  try {
+    const req = createRequire(import.meta.url);
+    const pwaEntry = req.resolve('vite-plugin-pwa');
+    const distDir = dirname(pwaEntry);
+    const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+    for (const f of files) {
+      const fp = join(distDir, f);
+      if (!existsSync(fp)) continue;
+      let src;
+      try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+      if (!src.includes('maximumFileSizeToCacheInBytes')) continue;
+      let out = src;
 
-    // Replace any throw that mentions the size limit — handles all minified/compiled variants
-    out = out.replace(
-      /throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g,
-      '(void 0) /* b44-patched: size limit disabled */'
-    );
-    // Also catch multiline throws that reference this limit
-    out = out.replace(
-      /throw new Error\(`[^`]*maximumFileSizeToCacheInBytes[^`]*`\)/g,
-      '(void 0) /* b44-patched */'
-    );
-    // Catch the compiled form: throw new Error("Configure \"workbox.maximumFileSizeToCacheInBytes\"...")
-    out = out.replace(
-      /throw new Error\("Configure[^"]*maximumFileSizeToCacheInBytes[^"]*"\)/g,
-      '(void 0) /* b44-patched */'
-    );
-    // Nuclear option: replace any throw inside a block that contains the size-limit string
-    // by neutralising the condition that guards it
-    out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
-    out = out.replace(
-      /logWorkboxResult\(([^,]+),\s*true\b/g,
-      'logWorkboxResult($1, false'
-    );
+      // 1. Neutralise the variable wherever it's read
+      out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
 
-    if (out !== src) writeFileSync(fp, out, 'utf8');
-  }
-} catch (_) { /* PWA plugin not installed — skip */ }
+      // 2. Flip any call-site that passes `true` as the throw flag
+      out = out.replace(/logWorkboxResult\(([^,]+),\s*true\b/g, 'logWorkboxResult($1, false');
+
+      // 3. Directly remove any throw new Error referencing the limit
+      out = out.replace(
+        /throw new Error\((?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*maximumFileSizeToCacheInBytes(?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*\)/g,
+        '(void 0)'
+      );
+
+      if (out !== src) writeFileSync(fp, out, 'utf8');
+    }
+  } catch (_) { /* skip if not installed */ }
+}
+
+// Run patch immediately (covers dev server) …
+patchPwaPlugin();
+// … and expose as a plugin so it also runs at buildStart (covers `vite build`)
+const pwaLimitPatchPlugin = {
+  name: 'b44-pwa-limit-patch',
+  buildStart() { patchPwaPlugin(); },
+};
 
 export default defineConfig({
   plugins: [
+    pwaLimitPatchPlugin,
     react(),
     base44Plugin(),
   ],

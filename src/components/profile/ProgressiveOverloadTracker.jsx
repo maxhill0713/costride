@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown, Info } from 'lucide-react';
@@ -30,6 +30,27 @@ function e1rmDiff(current, baseline) {
 function truncateName(name, max = 13) {
   if (!name) return '';
   return name.length > max ? name.slice(0, max).trimEnd() + '…' : name;
+}
+
+// ─── Chart Defs (gradients + glow filter) ────────────────────────────────────
+function ChartDefs({ exerciseMeta }) {
+  return (
+    <defs>
+      <filter id="line-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2.5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+      {exerciseMeta.map(({ name, color }, i) => (
+        <linearGradient key={name} id={`area-fill-${i}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
 }
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
@@ -375,9 +396,10 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
-              <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
+              <AreaChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
+                <ChartDefs exerciseMeta={exerciseMeta} />
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+                <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1} strokeDasharray="0" />
                 <XAxis
                   dataKey="date"
                   stroke="rgba(255,255,255,0.04)"
@@ -394,21 +416,23 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                   tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }} />
-                {exerciseMeta.map(({ name, color }) => (
-                  <Line
+                {exerciseMeta.map(({ name, color }, i) => (
+                  <Area
                     key={name}
                     type="monotone"
                     dataKey={name}
                     stroke={color}
-                    strokeWidth={1.75}
+                    strokeWidth={2}
+                    fill={`url(#area-fill-${i})`}
+                    filter="url(#line-glow)"
                     dot={false}
-                    activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
+                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2, filter: 'url(#line-glow)' }}
                     connectNulls={false}
                     isAnimationActive={localKey > 0}
                     animationDuration={800}
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
@@ -425,6 +449,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                 <div style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: color, flexShrink: 0,
+                  boxShadow: `0 0 5px ${color}88`,
                 }} />
                 <span style={{
                   fontSize: 9.5, fontWeight: 500, color: '#64748b',
