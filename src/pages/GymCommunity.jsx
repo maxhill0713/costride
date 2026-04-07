@@ -1794,10 +1794,57 @@ export default function GymCommunity() {
                     <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
                   </button>
                 )}
-                {!isGhostGym && (gymChallenges.length > 0
-                  ? gymChallenges.map(challenge => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={challengeParticipants.some(p=>p.challenge_id===challenge.id)} onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? id => { if(window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} gymImageUrl={gym?.image_url} />))
-                  : (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>)
-                )}
+                {!isGhostGym && (() => {
+                  if (gymChallenges.length === 0) {
+                    return <div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>;
+                  }
+
+                  const activeChallenges = gymChallenges.filter(c => challengeParticipants.some(p => p.challenge_id === c.id));
+                  const availableChallenges = gymChallenges.filter(c => !challengeParticipants.some(p => p.challenge_id === c.id));
+
+                  const renderCard = (challenge) => (
+                    <GymChallengeCard
+                      key={challenge.id}
+                      challenge={challenge}
+                      isJoined={challengeParticipants.some(p => p.challenge_id === challenge.id)}
+                      onJoin={!showOwnerControls ? c => joinChallengeMutation.mutate(c) : null}
+                      currentUser={currentUser}
+                      disabled={showOwnerControls}
+                      isOwner={showOwnerControls}
+                      onDelete={showOwnerControls ? id => { if(window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null}
+                      gymImageUrl={gym?.image_url}
+                      memberAvatarMap={memberAvatarMap}
+                      memberNameMap={memberNameMap}
+                    />
+                  );
+
+                  return (
+                    <>
+                      {activeChallenges.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 px-1">
+                            <div style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <CheckCircle style={{ width: 13, height: 13, color: '#34d399' }} />
+                            </div>
+                            <span className="text-xs font-black text-white uppercase tracking-widest">Active</span>
+                          </div>
+                          {activeChallenges.map(renderCard)}
+                        </div>
+                      )}
+                      {availableChallenges.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 px-1">
+                            <div style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <Trophy style={{ width: 13, height: 13, color: '#fbbf24' }} />
+                            </div>
+                            <span className="text-xs font-black text-white uppercase tracking-widest">Available</span>
+                          </div>
+                          {availableChallenges.map(renderCard)}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </motion.div>
             </TabsContent>
 

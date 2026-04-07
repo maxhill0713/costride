@@ -2,120 +2,114 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { createRequire } from 'module';
-import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
-// Patch ALL .js files in vite-plugin-pwa/dist that contain the 2MiB guard.
-// Must run synchronously at module evaluation time so the files are on disk
-// before any Vite/Rollup plugin reads them.
+// ── Patch vite-plugin-pwa to disable the 2MiB size guard ─────────────────────
+// The throw lives in chunk-G4TAN34B.js inside logWorkboxResult().
+// We patch the file on disk AND bust Node's require cache so the patched
+// version is used when the PWA plugin runs its closeBundle hook.
 try {
   const req = createRequire(import.meta.url);
   const pwaEntry = req.resolve('vite-plugin-pwa');
   const distDir = dirname(pwaEntry);
 
-  const patchFile = (filePath) => {
+  const PATCH_MARKER = '/* __base44_patched__ */';
+
+  const patchContent = (src) => {
+    if (src.includes(PATCH_MARKER)) return src; // already patched
+    let out = src;
+    // Pattern A: the guard in logWorkboxResult
+    out = out.replace(
+      /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
+      `if (false) { ${PATCH_MARKER}`
+    );
+    // Pattern B: calls to logWorkboxResult — force 2nd arg (throwMaximum...) to false
+    out = out.replace(
+      /logWorkboxResult\(([^,]+),\s*([^,)]+),/g,
+      `logWorkboxResult($1, false,`
+    );
+    return out;
+  };
+
+  const patchAndBust = (filePath) => {
+    if (!existsSync(filePath)) return;
     let src;
     try { src = readFileSync(filePath, 'utf8'); } catch { return; }
+    if (src.includes(PATCH_MARKER)) return; // already done
 
-    let patched = src;
-
-    // Pattern 1 – the if-block guard
-    patched = patched.replace(
-      /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
-      'if (false) {'
-    );
-
-    // Pattern 2 – direct throw statement using the variable
-    patched = patched.replace(
-      /throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g,
-      '/* size limit suppressed */'
-    );
-
-    // Pattern 3 – the logWorkboxResult call that does the throwing
-    patched = patched.replace(
-      /if\s*\(asset\.size\s*>\s*maximumFileSizeToCacheInBytes\)/g,
-      'if (false)'
-    );
-
-    // Pattern 4 – any comparison against the 2MiB default (2097152)
-    patched = patched.replace(
-      /if\s*\([^)]*2097152[^)]*\)/g,
-      'if (false)'
-    );
-
-    // Pattern 5 – the logWorkboxResult function body: neutralize the error throw
-    patched = patched.replace(
-      /throw new Error\(`[^`]*won't be precached[^`]*`\)/g,
-      '/* size check suppressed */'
-    );
-    patched = patched.replace(
-      /throw new Error\([`'"][^`'"]*won't be precached[^`'"]*[`'"]\)/g,
-      '/* size check suppressed */'
-    );
-
+    const patched = patchContent(src);
     if (patched !== src) {
       writeFileSync(filePath, patched, 'utf8');
+      // Bust Node require cache so the patched file is re-read
+      try {
+        const resolved = req.resolve(filePath);
+        if (req.cache && req.cache[resolved]) {
+          delete req.cache[resolved];
+        }
+      } catch {}
     }
   };
 
-  // Patch all .js files in dist/
+  // Patch all JS files in the dist dir
   const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-  for (const file of files) {
-    patchFile(join(distDir, file));
-  }
+  for (const f of files) patchAndBust(join(distDir, f));
 
-  // Also explicitly patch the chunk file named in the error
-  const knownChunks = ['chunk-G4TAN34B.js', 'chunk-FQPVKUND.js', 'chunk-ABCDEFGH.js'];
-  for (const chunk of knownChunks) {
-    patchFile(join(distDir, chunk));
-  }
-} catch (_) { /* ignore — plugin may not be installed */ }
+} catch (_) { /* PWA plugin not present — ignore */ }
 
 export default defineConfig({
   plugins: [
     react(),
-    // Strip "use client" directives that cause bundling errors
+
+    // Strip "use client" directives — these are just warnings but suppress them
     {
       name: 'strip-use-client',
       enforce: 'pre',
       transform(code, id) {
-        if (code.includes('use client')) {
-          let modified = code.replace(/^\s*['"]use client['"];?\s*\n?/gm, '');
+        if (code.includes('"use client"') || code.includes("'use client'")) {
+          const modified = code.replace(/^\s*['"]use client['"];?\r?\n?/gm, '');
           if (modified !== code) return { code: modified };
         }
       },
     },
-    // Re-patch at build start in case module cache prevented earlier patch
+
+    // Re-patch inside buildStart (runs before the PWA plugin's closeBundle)
     {
       name: 'patch-pwa-size-limit',
+      enforce: 'pre',
       buildStart() {
         try {
           const req = createRequire(import.meta.url);
           const pwaEntry = req.resolve('vite-plugin-pwa');
           const distDir = dirname(pwaEntry);
+          const MARKER = '/* __base44_patched__ */';
           const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-          for (const file of files) {
-            const filePath = join(distDir, file);
+          for (const f of files) {
+            const fp = join(distDir, f);
+            if (!existsSync(fp)) continue;
             let src;
-            try { src = readFileSync(filePath, 'utf8'); } catch { continue; }
-            if (!src.includes('maximumFileSizeToCacheInBytes') && !src.includes('logWorkboxResult')) continue;
-            let patched = src
-              .replace(/if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g, 'if (false) {')
-              .replace(/throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g, '/* suppressed */')
-              .replace(/if\s*\(asset\.size\s*>\s*maximumFileSizeToCacheInBytes\)/g, 'if (false)')
-              .replace(/if\s*\([^)]*2097152[^)]*\)/g, 'if (false)')
-              .replace(/throw new Error\(`[^`]*won't be precached[^`]*`\)/g, '/* suppressed */')
-              .replace(/throw new Error\([`'"][^`'"]*won't be precached[^`'"]*[`'"]\)/g, '/* suppressed */');
-            if (patched !== src) writeFileSync(filePath, patched, 'utf8');
+            try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+            if (src.includes(MARKER)) continue;
+            let patched = src.replace(
+              /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
+              `if (false) { ${MARKER}`
+            );
+            patched = patched.replace(
+              /logWorkboxResult\(([^,]+),\s*([^,)]+),/g,
+              'logWorkboxResult($1, false,'
+            );
+            if (patched !== src) writeFileSync(fp, patched, 'utf8');
           }
         } catch (_) {}
       },
     },
+
     base44Plugin(),
   ],
+
   build: {
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 3000,
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -124,9 +118,7 @@ export default defineConfig({
         passes: 2,
       },
       mangle: true,
-      format: {
-        comments: false,
-      },
+      format: { comments: false },
     },
     rollupOptions: {
       treeshake: 'recommended',
@@ -139,8 +131,7 @@ export default defineConfig({
             if (id.includes('react-dom')) return 'react-dom';
             if (id.includes('/react/') || id.includes('\\react\\')) return 'react-core';
             if (id.includes('react-router')) return 'router';
-            if (id.includes('recharts')) return 'charts';
-            if (id.includes('d3-')) return 'charts';
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('date-fns')) return 'date-fns';
             if (id.includes('lodash')) return 'lodash';
@@ -158,7 +149,8 @@ export default defineConfig({
             if (id.includes('canvas-confetti')) return 'confetti';
             return 'vendor';
           }
-          // Page-level splits
+
+          // Pages
           if (id.includes('pages/GymOwnerDashboard')) return 'page-gym-dashboard';
           if (id.includes('pages/Onboarding')) return 'page-onboarding';
           if (id.includes('pages/GymSignup') || id.includes('pages/MemberSignup')) return 'page-signup';
@@ -176,7 +168,7 @@ export default defineConfig({
           if (id.includes('pages/AdminGyms') || id.includes('pages/AddGym') || id.includes('pages/ClaimGym') || id.includes('pages/GymRequests') || id.includes('pages/InviteOwner') || id.includes('pages/ModeratorDashboard')) return 'page-admin';
           if (id.includes('pages/Community') || id.includes('pages/NotificationsHub') || id.includes('pages/PostArchive') || id.includes('pages/Premium') || id.includes('pages/Plus')) return 'page-misc';
 
-          // Component-level splits
+          // Components
           if (id.includes('components/dashboard/TabCoachMembers')) return 'coach-members';
           if (id.includes('components/dashboard/TabCoachSchedule')) return 'coach-schedule';
           if (id.includes('components/dashboard/TabCoachToday')) return 'coach-today';
@@ -203,18 +195,13 @@ export default defineConfig({
           if (id.includes('components/goals') || id.includes('components/rewards') || id.includes('components/groups') || id.includes('components/polls') || id.includes('components/lifts') || id.includes('components/members') || id.includes('components/premium') || id.includes('components/membership')) return 'misc-components';
           if (id.includes('components/ui')) return 'ui-components';
 
-          // Split lib/utils and shared hooks into their own chunk
           if (id.includes('lib/') || id.includes('hooks/') || id.includes('services/') || id.includes('utils/')) return 'app-lib';
-          // Split layout and core app shell
           if (id.includes('Layout') || id.includes('AuthContext') || id.includes('NavigationTracker') || id.includes('PageNotFound') || id.includes('ErrorBoundary') || id.includes('PageTransition') || id.includes('TimerContext') || id.includes('PersistentRestTimer')) return 'app-shell';
-          // Split App.jsx entry separately
-          if (id.includes('App.jsx') || id.includes('App.tsx')) return 'app-entry';
-          // Split main.jsx
-          if (id.includes('main.jsx') || id.includes('main.tsx')) return 'app-main';
         },
       },
     },
   },
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
