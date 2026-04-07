@@ -424,7 +424,7 @@ export default function PostShareModal({ open, onClose, post }) {
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
                   ref={containerRef}
-                  style={{ width: 'min(57.2vw, 242px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y', boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)' }}
+                  style={{ width: 'min(68vw, 290px)', flexShrink: 0, overflow: 'hidden', borderRadius: 14, touchAction: 'pan-y', boxShadow: '0 0 0 1px rgba(255,255,255,0.10), 0 16px 40px rgba(0,0,0,0.6)' }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
@@ -449,7 +449,7 @@ export default function PostShareModal({ open, onClose, post }) {
             </div>
 
             {/* Dot indicators */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, flexShrink: 0 }}>
               {cards.map(function(_, i) {
                 return (
                   <button key={i} onClick={function() { setActiveCard(i); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
@@ -457,11 +457,6 @@ export default function PostShareModal({ open, onClose, post }) {
                   </button>
                 );
               })}
-            </div>
-
-            {/* Card label */}
-            <div style={{ textAlign: 'center', marginTop: 4, color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em', flexShrink: 0 }}>
-              {cards[activeCard].label}
             </div>
 
             {/* Share to */}
