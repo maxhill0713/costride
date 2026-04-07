@@ -170,7 +170,7 @@ export default function Profile() {
   });
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friendship.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser?.id,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
