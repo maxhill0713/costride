@@ -444,9 +444,6 @@ async function drawCleanCard(post, gymName) {
 
   await drawCentredBrand(ctx, W, 140, 68, 58);
 
-  // ── Streak badge ──
-  await drawStreakBadge(ctx, W, post);
-
   var titleText = post.workout_name || 'Workout';
   var titleSz = 108;
   ctx.font = '900 ' + titleSz + 'px -apple-system,sans-serif';
@@ -600,9 +597,6 @@ function CleanPreview({ post, gymName }) {
         <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3.5, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 12, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
-
-      {/* Streak badge */}
-      <StreakBadge post={post} />
 
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ color: 'white', fontSize: 21, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,0.85)', textAlign: 'center', marginBottom: 5 }}>
