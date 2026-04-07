@@ -246,8 +246,10 @@ export default function Settings() {
     setDeletePending(true);
     try {
       await base44.functions.invoke('deleteUserAccount');
-      base44.auth.logout();
-    } catch {
+      // Redirect to onboarding page after account deletion
+      navigate(createPageUrl('Onboarding'), { replace: true });
+    } catch (error) {
+      console.error('Delete account error:', error);
       setDeletePending(false);
     }
   };
