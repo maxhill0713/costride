@@ -78,10 +78,6 @@ Deno.serve(async (req) => {
         // Count from DB — don't accept client-supplied counts
         const checkIns = await base44.asServiceRole.entities.CheckIn.filter({ user_id: userId }, '-check_in_date', 5000);
         newProgress = checkIns.length;
-      } else if (participant.goal_type === 'participation') {
-        // Count shared workout posts created by the user
-        const posts = await base44.asServiceRole.entities.Post.filter({ member_id: userId });
-        newProgress = posts.length;
       } else {
         continue;
       }
