@@ -95,7 +95,7 @@ function getAuthorStreakVariant(post) {
 
 // ─── Shared: draw streak badge onto canvas (top-right) ───────────────────────
 async function drawStreakBadge(ctx, W, post) {
-  const PAD = 72;
+  const PAD = 120;
   const streakNum = getPostStreak(post);
   const streakVariant = getAuthorStreakVariant(post);
   const streakIcon = await loadImage(STREAK_ICON_URL);
@@ -139,7 +139,7 @@ function StreakBadge({ post }) {
   const streakNum = getPostStreak(post);
   const streakVariant = getAuthorStreakVariant(post);
   return (
-    <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 0 }}>
+    <div style={{ position: 'absolute', top: 6, right: 14, display: 'flex', alignItems: 'center', gap: 0 }}>
       <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <img
           src={STREAK_ICON_URL}
