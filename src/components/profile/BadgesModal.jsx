@@ -7,97 +7,28 @@ import { base44 } from '@/api/base44Client';
 
 const BADGE_LIBRARY = [
   {
-    id: '10_visits',
-    title: 'Getting Started',
-    description: '10 gym check-ins',
-    icon: Target,
-    color: 'from-blue-400 to-blue-600',
-    requirement: (user) => (user.total_check_ins || 0) >= 10,
-    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 10), target: 10, label: 'check-ins' })
-  },
-  {
-    id: '50_visits',
-    title: 'Regular',
-    description: '50 gym check-ins',
-    icon: Flame,
-    color: 'from-orange-400 to-red-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 50,
-    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 50), target: 50, label: 'check-ins' })
-  },
-  {
-    id: '100_visits',
-    title: 'Dedicated',
-    description: '100 gym check-ins',
+    id: 'spartan',
+    title: 'Spartan Streak',
+    description: 'Witness My Gains',
     icon: Trophy,
-    color: 'from-yellow-400 to-orange-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 100,
-    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 100), target: 100, label: 'check-ins' })
+    color: 'from-amber-400 to-amber-600',
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png'
   },
   {
-    id: '7_day_streak',
-    title: 'Week Warrior',
-    description: '7-day streak',
-    icon: Zap,
-    color: 'from-green-400 to-emerald-500',
-    requirement: (user) => (user.longest_streak || 0) >= 7,
-    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 7), target: 7, label: 'day streak' })
-  },
-  {
-    id: '30_day_streak',
-    title: 'Month Master',
-    description: '30-day streak',
-    icon: Flame,
-    color: 'from-red-400 to-pink-500',
-    requirement: (user) => (user.longest_streak || 0) >= 30,
-    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 30), target: 30, label: 'day streak' })
-  },
-  {
-    id: '90_day_streak',
-    title: 'Consistency King',
-    description: '90-day streak',
-    icon: Crown,
-    color: 'from-purple-400 to-pink-500',
-    requirement: (user) => (user.longest_streak || 0) >= 90,
-    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 90), target: 90, label: 'day streak' })
-  },
-  {
-    id: '1_year',
-    title: 'One Year Strong',
-    description: '1 year membership',
-    icon: Calendar,
-    color: 'from-indigo-400 to-blue-500',
-    requirement: (user) => {
-      if (!user.gym_join_date) return false;
-      const daysSinceJoin = Math.floor((new Date() - new Date(user.gym_join_date)) / (1000 * 60 * 60 * 24));
-      return daysSinceJoin >= 365;
-    },
-    getProgress: (user) => {
-      const days = user.gym_join_date ? Math.floor((new Date() - new Date(user.gym_join_date)) / (1000 * 60 * 60 * 24)) : 0;
-      return { current: Math.min(days, 365), target: 365, label: 'days' };
-    }
-  },
-  {
-    id: 'community_leader',
-    title: 'Community Leader',
-    description: 'Active community member',
-    icon: Users,
-    color: 'from-cyan-400 to-blue-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 20,
-    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 20), target: 20, label: 'check-ins' })
+    id: 'beach',
+    title: 'Beach Day',
+    description: 'Discipline Builder',
+    icon: Star,
+    color: 'from-orange-400 to-orange-600',
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'
   }
 ];
 
 export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
   const [equippedBadges, setEquippedBadges] = React.useState(user?.equipped_badges || []);
 
-  const userStats = {
-    total_check_ins: checkIns.length,
-    longest_streak: user.longest_streak || 0,
-    current_streak: user.current_streak || 0,
-    gym_join_date: user.created_date
-  };
-
-  const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(userStats));
+  const unlockedVariants = user?.unlocked_streak_variants || [];
+  const earnedBadges = BADGE_LIBRARY.filter(badge => unlockedVariants.includes(badge.id));
 
   const handleEquipBadge = async (badgeId) => {
     let newEquipped = [...equippedBadges];
@@ -168,9 +99,13 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
                         <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
                           <Check className="w-2 h-2 text-amber-900" strokeWidth={3} />
                         </div>
-                        <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                          <Icon className="w-4 h-4 text-white drop-shadow-lg" strokeWidth={2.5} />
-                        </div>
+                        {badge.image ? (
+                          <img src={badge.image} alt={badge.title} className="w-8 h-8 mx-auto mb-1 object-contain" />
+                        ) : (
+                          <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                            <Icon className="w-4 h-4 text-white drop-shadow-lg" strokeWidth={2.5} />
+                          </div>
+                        )}
                         <h4 className="font-bold text-white text-[9px] text-center drop-shadow line-clamp-1">{badge.title}</h4>
                       </motion.div>
                     );
@@ -206,13 +141,17 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
                               <Check className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} />
                             </div>
                           )}
-                          
+
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                          
-                          <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
-                            <Icon className="w-5 h-5 text-white drop-shadow-lg z-10" strokeWidth={2.5} />
-                          </div>
-                          
+
+                          {badge.image ? (
+                            <img src={badge.image} alt={badge.title} className="w-10 h-10 mx-auto mb-1.5 object-contain relative z-10" />
+                          ) : (
+                            <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
+                              <Icon className="w-5 h-5 text-white drop-shadow-lg z-10" strokeWidth={2.5} />
+                            </div>
+                          )}
+
                           <h4 className="font-bold text-white text-[10px] mb-0.5 drop-shadow line-clamp-1">{badge.title}</h4>
                           <p className="text-[8px] text-white/80 font-medium drop-shadow line-clamp-1">{badge.description}</p>
                         </Card>

@@ -302,16 +302,7 @@ export default function Profile() {
     !post.is_hidden
   );
   const friendCount = friends.length;
-  const badgeDefs = [
-    { id: '10_visits',        icon: '🎯', color: 'from-blue-400 to-blue-600' },
-    { id: '50_visits',        icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { id: '100_visits',       icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-    { id: '7_day_streak',     icon: '⚡', color: 'from-green-400 to-emerald-500' },
-    { id: '30_day_streak',    icon: '🔥', color: 'from-red-400 to-pink-500' },
-    { id: '90_day_streak',    icon: '👑', color: 'from-purple-400 to-pink-500' },
-    { id: '1_year',           icon: '📅', color: 'from-indigo-400 to-blue-500' },
-    { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
-  ];
+
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
@@ -377,15 +368,15 @@ export default function Profile() {
         <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
           {currentUser?.equipped_badges?.length > 0 ? (
             <>
-              {currentUser?.equipped_badges?.map((badgeId) => {
-                const badge = badgeDefs.find((b) => b.id === badgeId);
-                if (!badge) return null;
-                return (
-                  <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
-                    <span className="text-xs">{badge.icon}</span>
-                  </div>
-                );
-              })}
+              {currentUser?.equipped_badges?.map((badgeId) => (
+                <div key={badgeId} className="w-7 h-7 rounded-lg flex items-center justify-center shadow ring-1 ring-black/30 overflow-hidden">
+                  <img 
+                    src={badgeId === 'spartan' ? 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png' : 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'}
+                    alt={badgeId}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
               <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
             </>
           ) : (
