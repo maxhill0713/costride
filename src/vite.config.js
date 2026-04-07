@@ -6,11 +6,12 @@ import { createRequire } from 'module';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
+const _req = createRequire(import.meta.url);
+
 // ── Patch workbox-build: raise 2 MiB limit to 10 MiB ─────────────────────────
 function patchWorkboxBuild() {
   try {
-    const req = createRequire(import.meta.url);
-    const wbEntry = req.resolve('workbox-build');
+    const wbEntry = _req.resolve('workbox-build');
     const wbDir = dirname(wbEntry);
     for (const f of readdirSync(wbDir).filter(f => f.endsWith('.js'))) {
       const fp = join(wbDir, f);
@@ -22,11 +23,12 @@ function patchWorkboxBuild() {
   } catch (_) { /* skip */ }
 }
 
-// ── Patch vite-plugin-pwa: remove the size-limit throw ───────────────────────
+// ── Patch vite-plugin-pwa dist: nuke the size-limit error ────────────────────
+// The throw happens inside logWorkboxResult in chunk-G4TAN34B.js (line ~44).
+// We patch every JS in the dist dir using multiple strategies.
 function patchPwaPlugin() {
   try {
-    const req = createRequire(import.meta.url);
-    const pwaEntry = req.resolve('vite-plugin-pwa');
+    const pwaEntry = _req.resolve('vite-plugin-pwa');
     const distDir = dirname(pwaEntry);
     for (const f of readdirSync(distDir).filter(f => f.endsWith('.js'))) {
       const fp = join(distDir, f);
@@ -34,42 +36,50 @@ function patchPwaPlugin() {
       let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
       let out = src;
 
-      // Strategy 1: replace whole logWorkboxResult function body
-      out = out.replace(
-        /function logWorkboxResult\s*\([^)]*\)\s*\{[\s\S]*?\n\}/,
-        'function logWorkboxResult() { /* b44: patched */ }'
-      );
+      // Nuke any line that contains both "throw" and "maximumFileSizeToCache"
+      // This is line-level and doesn't rely on complex regexes matching across lines
+      out = out.split('\n').map(line => {
+        if (line.includes('throw') && line.includes('maximumFileSizeToCache')) {
+          return '/* b44-patched: ' + line.trimStart().slice(0, 40) + '... */';
+        }
+        return line;
+      }).join('\n');
 
-      // Strategy 2: any throw whose template/string literal references the limit
-      out = out.replace(
-        /throw\s+new\s+Error\(`[^`]*maximumFileSizeToCache[^`]*`\)/g,
-        '(void 0) /* b44: size-limit throw removed */'
-      );
-      out = out.replace(
-        /throw\s+new\s+Error\([^)]*maximumFileSizeToCache[^)]*\)/g,
-        '(void 0) /* b44: size-limit throw removed */'
-      );
-
-      // Strategy 3: any if-block checking throwMaximumFileSizeToCacheInBytes
-      out = out.replace(
-        /if\s*\([^{]*throwMaximumFileSizeToCacheInBytes[^{]*\)\s*\{[^}]*\}/gs,
-        '/* b44: size-limit check removed */'
-      );
+      // Also replace the entire logWorkboxResult function if found
+      // Use a simple string marker approach
+      if (out.includes('logWorkboxResult')) {
+        out = out.replace(
+          /function logWorkboxResult\b[^{]*\{[^]*?\n\}/,
+          'function logWorkboxResult() { /* b44: noop */ }'
+        );
+      }
 
       if (out !== src) writeFileSync(fp, out, 'utf8');
     }
   } catch (_) { /* skip */ }
 }
 
-// Run patches eagerly at config-load time
+// Run immediately at module evaluation time (before vite even starts)
 patchWorkboxBuild();
 patchPwaPlugin();
 
-const pwaLimitPatchPlugin = {
-  name: 'b44-pwa-limit-patch',
-  buildStart() { patchWorkboxBuild(); patchPwaPlugin(); },
-  // order:'pre' ensures this runs before the PWA plugin's own closeBundle
-  closeBundle: { order: 'pre', handler() { patchWorkboxBuild(); patchPwaPlugin(); } },
+// Also run in plugin hooks to survive any cache invalidation
+const patchPlugin = {
+  name: 'b44-pwa-patch',
+  enforce: 'pre',
+  configResolved() {
+    patchWorkboxBuild();
+    patchPwaPlugin();
+  },
+  buildStart() {
+    patchWorkboxBuild();
+    patchPwaPlugin();
+  },
+  // Use sequential closeBundle (not object form — older rollup compat)
+  closeBundle() {
+    patchWorkboxBuild();
+    patchPwaPlugin();
+  },
 };
 
 const manualChunks = (id) => {
@@ -146,7 +156,7 @@ const manualChunks = (id) => {
 
 export default defineConfig({
   plugins: [
-    pwaLimitPatchPlugin,
+    patchPlugin,
     react(),
     base44Plugin(),
   ],

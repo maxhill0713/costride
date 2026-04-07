@@ -18,6 +18,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import ProgressiveOverloadTracker from '../components/profile/ProgressiveOverloadTracker';
 import WeeklyVolumeChart from '../components/profile/WeeklyVolumeChart';
+import BarcodeScannerModal from '../components/nutrition/BarcodeScannerModal';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const CARD = {
@@ -326,6 +327,7 @@ function NutritionTab() {
     Snacks:    [{ name: 'Protein bar',              cal: 210, protein: 20, carbs: 22, fat: 7 }],
   });
   const [addingTo, setAddingTo]   = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
   const [insight, setInsight]     = useState(true);
   const [toast, setToast]         = useState({ msg: '', visible: false });
   const toastTimer                = useRef(null);
@@ -428,7 +430,7 @@ function NutritionTab() {
             </button>
           ))}
         </div>
-        <button style={{
+        <button onClick={() => setShowScanner(true)} style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 12,
           background: 'rgba(255,255,255,0.04)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -502,6 +504,12 @@ function NutritionTab() {
 
       {addingTo && (
         <AddMealSheet section={addingTo} onAdd={(m) => handleAddMeal(addingTo, m)} onClose={() => setAddingTo(null)} />
+      )}
+      {showScanner && (
+        <BarcodeScannerModal
+          onAdd={(section, meal) => { handleAddMeal(section, meal); }}
+          onClose={() => setShowScanner(false)}
+        />
       )}
       <NutritionToast msg={toast.msg} visible={toast.visible} />
     </div>
