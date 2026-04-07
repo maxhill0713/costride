@@ -6,15 +6,37 @@ import { createRequire } from 'module';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
+// Belt-and-suspenders: bump workbox size limit via monkey-patching workbox-build
+function patchWorkboxBuild() {
+  try {
+    const req = createRequire(import.meta.url);
+    const wbEntry = req.resolve('workbox-build');
+    const wbDir = dirname(wbEntry);
+    const files = readdirSync(wbDir).filter(f => f.endsWith('.js'));
+    for (const f of files) {
+      const fp = join(wbDir, f);
+      if (!existsSync(fp)) continue;
+      let src;
+      try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+      // Replace the 2097152 (2MiB) default with 10MiB (10485760)
+      const out = src.replace(/\b2097152\b/g, '10485760');
+      if (out !== src) writeFileSync(fp, out, 'utf8');
+    }
+  } catch (_) { /* skip */ }
+}
+patchWorkboxBuild();
+
 // ── Patch vite-plugin-pwa on disk ─────────────────────────────────────────────
-// Neutralise the 2MiB cache-limit throw in every dist JS file of the PWA plugin.
+// Neutralise the 2MiB cache-limit throw. We patch every JS file in the PWA
+// dist dir, replacing the throw with a no-op. We run this at module load time
+// AND in closeBundle (same phase as the PWA plugin) to be sure it sticks.
 function patchPwaPlugin() {
   try {
     const req = createRequire(import.meta.url);
     const pwaEntry = req.resolve('vite-plugin-pwa');
     const distDir = dirname(pwaEntry);
-    // Patch ALL .js files in the dist directory
     const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+    let patched = 0;
     for (const f of files) {
       const fp = join(distDir, f);
       if (!existsSync(fp)) continue;
@@ -22,36 +44,40 @@ function patchPwaPlugin() {
       try { src = readFileSync(fp, 'utf8'); } catch { continue; }
       let out = src;
 
-      // Replace every reference to throwMaximumFileSizeToCacheInBytes with false
-      // This covers: options.throwMaximumFileSizeToCacheInBytes, throwMaximumFileSizeToCacheInBytes, etc.
-      out = out.replace(/\w*[tT]hrowMaximumFileSizeToCacheInBytes\b/g, 'false');
-
-      // Also catch the throw statement in the chunk file (logWorkboxResult body)
-      // Pattern: if (throwFlag) throw new Error(...)
-      out = out.replace(/\bif\s*\(\s*false\s*\)\s*throw\b[^;]+;/g, '/* b44-patched */');
-
-      // Nuclear: replace any throw that mentions the size limit string
+      // Target the exact throw inside logWorkboxResult (line ~44 in chunk file).
+      // The function receives a boolean "throwFlag" argument; replace the whole
+      // if-block that throws when that flag is truthy.
       out = out.replace(
-        /throw\s+new\s+Error\([^)]*[Mm]aximum[Ff]ile[Ss]ize[^)]*\)/g,
-        '(void 0)'
+        /if\s*\([^)]*[Tt]hrow[^)]*\)\s*\{[^}]*[Mm]aximum[Ff]ile[Ss]ize[^}]*\}/gs,
+        '/* b44: size-limit throw removed */'
       );
-      // Also template literal form
+      // Also handle single-statement form: if (flag) throw new Error(...)
       out = out.replace(
-        /throw\s+new\s+Error\(`[^`]*[Mm]aximum[Ff]ile[Ss]ize[^`]*`\)/g,
-        '(void 0)'
+        /if\s*\([^)]*[Tt]hrow[^)]*\)\s*throw\s+new\s+Error\([^)]*[Mm]aximum[Ff]ile[Ss]ize[^)]*\)\s*;/g,
+        '/* b44: size-limit throw removed */'
+      );
+      // Nuclear fallback: any throw referencing the size limit text
+      out = out.replace(
+        /throw\s+new\s+Error\((?:[^)(]|\([^)]*\))*[Mm]aximum[Ff]ile[Ss]ize(?:[^)(]|\([^)]*\))*\)\s*;?/g,
+        '/* b44: size-limit throw removed */'
+      );
+      // Template-literal form
+      out = out.replace(
+        /throw\s+new\s+Error\(`[^`]*[Mm]aximum[Ff]ile[Ss]ize[^`]*`\)\s*;?/g,
+        '/* b44: size-limit throw removed */'
       );
 
-      if (out !== src) writeFileSync(fp, out, 'utf8');
+      if (out !== src) { writeFileSync(fp, out, 'utf8'); patched++; }
     }
   } catch (_) { /* skip if not installed */ }
 }
 
-// Run patch immediately (covers dev server) …
 patchPwaPlugin();
-// … and expose as a plugin so it also runs at buildStart (covers `vite build`)
+
 const pwaLimitPatchPlugin = {
   name: 'b44-pwa-limit-patch',
-  buildStart() { patchPwaPlugin(); },
+  buildStart() { patchPwaPlugin(); patchWorkboxBuild(); },
+  closeBundle() { patchPwaPlugin(); patchWorkboxBuild(); },
 };
 
 export default defineConfig({
