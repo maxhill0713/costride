@@ -65,7 +65,6 @@ function Row({ label, sublabel, children, isLast }) {
   );
 }
 
-// ─── Shared: load image as HTMLImageElement ───────────────────────────────────
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -75,7 +74,6 @@ function loadImage(src) {
   });
 }
 
-// ─── Shared: draw cropped region to canvas and return a blob URL ──────────────
 async function cropToBlob(imageSrc, cropRect, outputSize) {
   const img = await loadImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -90,61 +88,62 @@ async function cropToBlob(imageSrc, cropRect, outputSize) {
   return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
 }
 
-// ─── Circular Crop Modal ─────────────────────────────────────────────────────
-// The crop region is always a square (circle rendered via CSS).
-// User drags to move, pinches/scrolls to zoom.
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   const containerRef = useRef(null);
   const [imgNatural, setImgNatural] = useState({ w: 1, h: 1 });
-
-  // offset = top-left of the image relative to the container centre
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [scale, setScale]   = useState(1);
+  const [scale, setScale] = useState(1);
 
-  const CROP_SIZE = 260; // px diameter of the circular crop window
+  const CROP_SIZE = 260;
 
-  // Load natural dimensions
   useEffect(() => {
     loadImage(imageSrc).then(img => {
       setImgNatural({ w: img.naturalWidth, h: img.naturalHeight });
-      // Fit image so shorter side fills the crop circle
       const fit = CROP_SIZE / Math.min(img.naturalWidth, img.naturalHeight);
       setScale(fit);
+      scaleRef.current = fit;
       setOffset({ x: 0, y: 0 });
     });
   }, [imageSrc]);
 
-  // Clamp so the image always covers the crop circle
   const clamp = useCallback((ox, oy, sc) => {
     const rw = imgNatural.w * sc;
     const rh = imgNatural.h * sc;
     const half = CROP_SIZE / 2;
-    const minX = half - rw;
-    const maxX = half;
-    const minY = half - rh;
-    const maxY = half;
     return {
-      x: Math.min(maxX, Math.max(minX, ox)),
-      y: Math.min(maxY, Math.max(minY, oy)),
+      x: Math.min(half, Math.max(half - rw, ox)),
+      y: Math.min(half, Math.max(half - rh, oy)),
     };
   }, [imgNatural, CROP_SIZE]);
 
-  // ── Drag ──
+  // Keep a ref to scale so RAF callbacks always see the latest value
+  const scaleRef = useRef(scale);
+  useEffect(() => { scaleRef.current = scale; }, [scale]);
+
+  // ── Smooth drag via RAF ──
   const drag = useRef(null);
+  const rafId = useRef(null);
+
   const onPointerDown = (e) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.current = { startX: e.clientX - offset.x, startY: e.clientY - offset.y };
   };
+
   const onPointerMove = (e) => {
     if (!drag.current) return;
     const nx = e.clientX - drag.current.startX;
     const ny = e.clientY - drag.current.startY;
-    setOffset(clamp(nx, ny, scale));
+    if (rafId.current) cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(() => {
+      setOffset(clamp(nx, ny, scaleRef.current));
+    });
   };
+
   const onPointerUp = () => { drag.current = null; };
 
-  // ── Pinch / wheel zoom ──
+  // ── Pinch zoom — uniform scale only, no distortion ──
   const lastDist = useRef(null);
+
   const onTouchMove = (e) => {
     if (e.touches.length !== 2) return;
     e.preventDefault();
@@ -152,20 +151,24 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     const dy = e.touches[0].clientY - e.touches[1].clientY;
     const dist = Math.hypot(dx, dy);
     if (lastDist.current != null) {
-      const delta = dist - lastDist.current;
+      const delta = (dist - lastDist.current) * 0.008;
       setScale(s => {
-        const ns = Math.max(0.5, Math.min(4, s + delta * 0.008));
+        const ns = Math.max(0.5, Math.min(4, s + delta));
+        scaleRef.current = ns;
         setOffset(o => clamp(o.x, o.y, ns));
         return ns;
       });
     }
     lastDist.current = dist;
   };
+
   const onTouchEnd = () => { lastDist.current = null; };
+
   const onWheel = (e) => {
     e.preventDefault();
     setScale(s => {
       const ns = Math.max(0.5, Math.min(4, s - e.deltaY * 0.002));
+      scaleRef.current = ns;
       setOffset(o => clamp(o.x, o.y, ns));
       return ns;
     });
@@ -174,12 +177,8 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   const handleConfirm = async () => {
     const rw = imgNatural.w * scale;
     const rh = imgNatural.h * scale;
-    // offset is top-left of the rendered image relative to the circle centre
-    // circle centre is at (CROP_SIZE/2, CROP_SIZE/2) in container coords
-    // rendered image top-left in container = (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
     const imgLeft = CROP_SIZE / 2 + offset.x;
     const imgTop  = CROP_SIZE / 2 + offset.y;
-    // Crop rect in natural pixels
     const cropX = (-imgLeft / rw) * imgNatural.w;
     const cropY = (-imgTop  / rh) * imgNatural.h;
     const cropW = (CROP_SIZE / rw) * imgNatural.w;
@@ -188,20 +187,22 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     onConfirm(blob);
   };
 
-  const containerSize = CROP_SIZE;
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Drag to position</p>
 
-      {/* Crop window */}
-      <div ref={containerRef} style={{ position: 'relative', width: containerSize, height: containerSize, userSelect: 'none' }}
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
-        onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-        onWheel={onWheel}>
-
-        {/* Clipped circle showing the crop */}
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 0 0 2000px rgba(0,0,0,0.7)', cursor: 'grab' }}>
+      <div
+        ref={containerRef}
+        style={{ position: 'relative', width: CROP_SIZE, height: CROP_SIZE, userSelect: 'none' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onWheel={onWheel}
+      >
+        {/* Clipped circle — no dark overlay */}
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', cursor: 'grab' }}>
           <img
             src={imageSrc}
             draggable={false}
@@ -209,11 +210,11 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
               position: 'absolute',
               width: imgNatural.w * scale,
               height: imgNatural.h * scale,
-              left: containerSize / 2 + offset.x,
-              top:  containerSize / 2 + offset.y,
-              transform: 'translate(0,0)',
+              left: CROP_SIZE / 2 + offset.x,
+              top:  CROP_SIZE / 2 + offset.y,
               pointerEvents: 'none',
               userSelect: 'none',
+              willChange: 'transform',
             }}
           />
         </div>
@@ -224,8 +225,7 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
 
       <p style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>Pinch or scroll to zoom</p>
 
-      {/* Buttons */}
-      <div style={{ display: 'flex', gap: 12, width: containerSize }}>
+      <div style={{ display: 'flex', gap: 12, width: CROP_SIZE }}>
         <button onClick={onCancel} style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 0 0 #0a0f1a' }}>
           <X style={{ width: 15, height: 15 }} /> Cancel
         </button>
@@ -237,16 +237,13 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProfileSettings() {
   const queryClient = useQueryClient();
   const highlighted = useSectionHighlight();
 
-  // Crop modal state
-  const [circleCrop, setCircleCrop] = useState(null);  // { src: string }
+  const [circleCrop, setCircleCrop] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Display name state
   const [localFullName, setLocalFullName]   = useState('');
   const [nameEditing,   setNameEditing]     = useState(false);
   const [nameSaving,    setNameSaving]      = useState(false);
@@ -266,7 +263,6 @@ export default function ProfileSettings() {
     },
   });
 
-  // ── File → object URL → open crop modal ──────────────────────────────────
   const handleAvatarFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -275,7 +271,6 @@ export default function ProfileSettings() {
     e.target.value = '';
   };
 
-  // ── Crop confirmed → upload blob ─────────────────────────────────────────
   const handleAvatarCropConfirm = async (blob) => {
     setUploadingAvatar(true);
     try {
@@ -287,7 +282,6 @@ export default function ProfileSettings() {
     finally { setUploadingAvatar(false); }
   };
 
-  // ── Display name save/cancel ──────────────────────────────────────────────
   const handleNameSave = async () => {
     setNameSaving(true);
     try {
@@ -308,7 +302,6 @@ export default function ProfileSettings() {
     <>
       <PageShell title="Profile">
 
-        {/* ── Avatar ── */}
         <SectionLabel>Profile picture</SectionLabel>
         <Group sectionId="avatar" highlighted={highlighted}>
           <Row label="Photo" sublabel="Shown on your profile and posts" isLast>
@@ -328,7 +321,6 @@ export default function ProfileSettings() {
           </Row>
         </Group>
 
-        {/* ── Display name ── */}
         <SectionLabel>Display name</SectionLabel>
         <Group sectionId="name" highlighted={highlighted}>
           <div style={{ padding: '14px 16px' }}>
@@ -342,10 +334,8 @@ export default function ProfileSettings() {
               style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${nameEditing ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, color: '#e2e8f0', fontSize: 14, padding: '9px 12px', outline: 'none', width: '100%', fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
             />
 
-            {/* Save / Cancel — only shown when editing */}
             {nameEditing && (
               <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-                {/* Cancel */}
                 <div style={{ position: 'relative', flex: 1 }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#0a0f1a', transform: 'translateY(4px)' }} />
                   <button
@@ -354,7 +344,6 @@ export default function ProfileSettings() {
                     Cancel
                   </button>
                 </div>
-                {/* Save */}
                 <div style={{ position: 'relative', flex: 1 }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(4px)' }} />
                   <button
@@ -371,7 +360,6 @@ export default function ProfileSettings() {
 
       </PageShell>
 
-      {/* ── Circle crop modal ── */}
       {circleCrop && (
         <CircleCropModal
           imageSrc={circleCrop.src}
