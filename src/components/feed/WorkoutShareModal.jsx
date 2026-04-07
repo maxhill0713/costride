@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg';
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 // ─── Canvas helpers ───────────────────────────────────────────────────────────
 async function loadImage(src) {
@@ -21,7 +22,6 @@ function canvasToBlob(canvas) {
 }
 
 // ─── Cross-browser rounded rect path ─────────────────────────────────────────
-// r can be a number (uniform) or [tl, tr, br, bl]
 function rrect(ctx, x, y, w, h, r) {
   var tl, tr, br, bl;
   if (typeof r === 'number') {
@@ -82,6 +82,93 @@ async function drawCentredBrand(ctx, W, y, logoSize, fontSize) {
   ctx.shadowBlur = 0;
 }
 
+// ─── Shared: streak data helpers ─────────────────────────────────────────────
+function getPostStreak(post) {
+  return post.streak_count ?? post.member_streak ?? post.streak ?? post.member_current_streak ?? post.current_streak ?? 0;
+}
+function getAuthorStreakVariant(post) {
+  if (post.reactions && post.member_id && post.reactions[post.member_id]) {
+    return post.reactions[post.member_id];
+  }
+  return post.streak_variant || 'default';
+}
+
+// ─── Shared: draw streak badge onto canvas (top-right) ───────────────────────
+async function drawStreakBadge(ctx, W, post) {
+  const PAD = 72;
+  const streakNum = getPostStreak(post);
+  const streakVariant = getAuthorStreakVariant(post);
+  const streakIcon = await loadImage(STREAK_ICON_URL);
+
+  const iconSz = 120;
+  const numFontSz = 100;
+  const gap = 8;
+
+  // Measure number width to right-align the whole icon+number group
+  ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
+  const numW = ctx.measureText(String(streakNum)).width;
+  const totalW = iconSz + gap + numW;
+  const iconX = W - PAD - totalW;
+  const iconY = 52;
+
+  if (streakIcon) {
+    ctx.save();
+    ctx.drawImage(streakIcon, iconX, iconY, iconSz, iconSz);
+    if (streakVariant === 'sunglasses') {
+      const cx1 = iconX + iconSz * 0.31, cy1 = iconY + iconSz * 0.375;
+      const cx2 = iconX + iconSz * 0.69, cy2 = iconY + iconSz * 0.375;
+      const r = iconSz * 0.094;
+      ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = iconSz * 0.024;
+      ctx.beginPath(); ctx.arc(cx1, cy1, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx2, cy2, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx1 + r, cy1); ctx.lineTo(cx2 - r, cy2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'white';
+  ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 20;
+  ctx.fillText(String(streakNum), iconX + iconSz + gap, iconY + iconSz / 2 + numFontSz * 0.36);
+  ctx.shadowBlur = 0;
+}
+
+// ─── Shared: React streak badge (top-right overlay) ──────────────────────────
+function StreakBadge({ post }) {
+  const streakNum = getPostStreak(post);
+  const streakVariant = getAuthorStreakVariant(post);
+  return (
+    <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <img
+          src={STREAK_ICON_URL}
+          alt="streak"
+          style={{ width: 32, height: 32, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }}
+        />
+        {streakVariant === 'sunglasses' && (
+          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 64 64">
+            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+          </svg>
+        )}
+      </div>
+      <span style={{
+        fontSize: 14,
+        fontWeight: 900,
+        color: '#ffffff',
+        textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+        letterSpacing: '-0.02em',
+        lineHeight: 1,
+        flexShrink: 0,
+      }}>
+        {streakNum}
+      </span>
+    </div>
+  );
+}
+
 // ─── STATS CARD ──────────────────────────────────────────────────────────────
 async function drawStatsCard(post, gymName) {
   var W = 1080, H = 1920;
@@ -123,6 +210,9 @@ async function drawStatsCard(post, gymName) {
   ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.textAlign = 'left';
   ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 14;
   ctx.fillText('CoStride', brandX + brandLogoSz + 16, brandY); ctx.shadowBlur = 0;
+
+  // ── Streak badge ──
+  await drawStreakBadge(ctx, W, post);
 
   var bottomY = H - 160;
   var dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -219,6 +309,9 @@ async function drawBreakdownCard(post, gymName) {
   }
 
   await drawCentredBrand(ctx, W, 108, 52, 46);
+
+  // ── Streak badge ──
+  await drawStreakBadge(ctx, W, post);
 
   var dateStr = new Date(post.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
   var topLine = gymName ? (gymName + '  \u00b7  ' + dateStr) : dateStr;
@@ -350,6 +443,9 @@ async function drawCleanCard(post, gymName) {
 
   await drawCentredBrand(ctx, W, 140, 68, 58);
 
+  // ── Streak badge ──
+  await drawStreakBadge(ctx, W, post);
+
   var titleText = post.workout_name || 'Workout';
   var titleSz = 108;
   ctx.font = '900 ' + titleSz + 'px -apple-system,sans-serif';
@@ -390,6 +486,9 @@ function StatsPreview({ post, gymName }) {
         <img src={LOGO_URL} alt="" style={{ width: 14, height: 14, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>CoStride</span>
       </div>
+
+      {/* Streak badge */}
+      <StreakBadge post={post} />
 
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ color: 'white', fontSize: 20, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 2px 16px rgba(0,0,0,0.7)', marginBottom: 7, textAlign: 'center', width: '100%' }}>
@@ -478,6 +577,9 @@ function BreakdownPreview({ post, gymName }) {
           })}
         </div>
       </div>
+
+      {/* Streak badge — on top of the column layout */}
+      <StreakBadge post={post} />
     </div>
   );
 }
@@ -497,6 +599,9 @@ function CleanPreview({ post, gymName }) {
         <img src={LOGO_URL} alt="" style={{ width: 15, height: 15, borderRadius: 3.5, objectFit: 'cover', flexShrink: 0 }} />
         <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 12, fontWeight: 900, textShadow: '0 1px 6px rgba(0,0,0,0.8)', letterSpacing: '-0.02em' }}>CoStride</span>
       </div>
+
+      {/* Streak badge */}
+      <StreakBadge post={post} />
 
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 12px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ color: 'white', fontSize: 21, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,0.85)', textAlign: 'center', marginBottom: 5 }}>
