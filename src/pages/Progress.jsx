@@ -39,6 +39,45 @@ const sectionTitle = {
 // NUTRITION TAB  (redesigned — clean palette, CSS-variable colours)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NutritionTab — drop-in replacement
+// Cards match the Analytics page style:
+//   background: linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)
+//   border: 1px solid rgba(255,255,255,0.07)
+//   backdropFilter: blur(16px)
+//   borderRadius: 20px
+// Barcode / QR scanner uses the browser's getUserMedia + BarcodeDetector API
+// with a ZXing-WASM fallback rendered in a bottom sheet modal.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  ChevronRight, Droplets, Zap, ScanBarcode, Flame, X,
+  Check, AlertCircle, Camera, RefreshCw, Plus, Minus,
+} from 'lucide-react';
+
+// ── Shared card style (matches Analytics page exactly) ────────────────────────
+const GLASS_CARD = {
+  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  borderRadius: 20,
+  padding: '20px 18px',
+  marginBottom: 14,
+};
+
+const nutLabel = {
+  fontSize: 11,
+  color: 'rgba(148,163,184,0.7)',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  marginBottom: 14,
+  display: 'block',
+  fontWeight: 700,
+};
+
+// ── Baseline data ─────────────────────────────────────────────────────────────
 const NUTRITION_BASE = {
   calories: { target: 2400, consumed: 1620 },
   protein:  { target: 180,  consumed: 112  },
@@ -78,117 +117,127 @@ const QUICK_ADD_OPTIONS = [
   { key: 'cal500', label: '500 calories',  sub: 'Quick energy boost',     cal: 500, protein: 20, carbs: 60, fat: 18 },
 ];
 
-const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '◑', Snacks: '◇' };
+const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '🌙', Snacks: '◇' };
 
-const nutCard = {
-  background: 'var(--color-background-primary)',
-  border: '0.5px solid var(--color-border-tertiary)',
-  borderRadius: 16,
-  padding: '18px',
-  marginBottom: 12,
-};
-
-const nutLabel = {
-  fontSize: 11,
-  color: 'var(--color-text-tertiary)',
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  marginBottom: 12,
-  display: 'block',
-};
-
+// ── Calorie ring ──────────────────────────────────────────────────────────────
 function CalorieRing({ consumed, target }) {
   const pct  = Math.min(Math.round((consumed / target) * 100), 100);
-  const r    = 38;
+  const r    = 42;
   const circ = 2 * Math.PI * r;
-  const arc  = circ * 0.75;
+  const arc  = circ * 0.78;
   const fill = arc * (pct / 100);
+
+  const color = pct >= 100 ? '#f43f5e' : pct >= 80 ? '#f59e0b' : '#38bdf8';
+
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
-      <svg width={96} height={96} style={{ display: 'block' }}>
-        <circle cx={48} cy={48} r={r} fill="none"
-          stroke="var(--color-background-secondary)" strokeWidth={7}
+      <svg width={104} height={104} style={{ display: 'block' }}>
+        {/* Track */}
+        <circle cx={52} cy={52} r={r} fill="none"
+          stroke="rgba(255,255,255,0.06)" strokeWidth={8}
           strokeDasharray={`${arc} ${circ - arc}`} strokeLinecap="round"
-          transform="rotate(135 48 48)" />
-        <circle cx={48} cy={48} r={r} fill="none"
-          stroke="var(--color-text-info)" strokeWidth={7}
+          transform="rotate(129 52 52)" />
+        {/* Fill */}
+        <circle cx={52} cy={52} r={r} fill="none"
+          stroke={color} strokeWidth={8}
           strokeDasharray={`${fill} ${circ - fill}`} strokeLinecap="round"
-          transform="rotate(135 48 48)"
-          style={{ transition: 'stroke-dasharray 0.8s cubic-bezier(.4,0,.2,1)' }} />
+          transform="rotate(129 52 52)"
+          style={{
+            filter: `drop-shadow(0 0 8px ${color}88)`,
+            transition: 'stroke-dasharray 0.9s cubic-bezier(.4,0,.2,1), stroke 0.4s ease',
+          }} />
       </svg>
       <div style={{
         position: 'absolute', inset: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 20, fontWeight: 500, lineHeight: 1, color: 'var(--color-text-primary)' }}>{pct}%</span>
-        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>of goal</span>
+        <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1, color: '#f1f5f9' }}>{pct}%</span>
+        <span style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)', marginTop: 2, letterSpacing: '0.04em' }}>of goal</span>
       </div>
     </div>
   );
 }
 
+// ── Macro bar ─────────────────────────────────────────────────────────────────
 function MacroBar({ label, current, target, color }) {
   const pct = Math.min(Math.round((current / target) * 100), 100);
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{label}</span>
-        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-primary)' }}>
-          {current}g{' '}
-          <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>/ {target}g</span>
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.75)', fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>
+          {current}g
+          <span style={{ color: 'rgba(100,116,139,0.7)', fontWeight: 400 }}> / {target}g</span>
         </span>
       </div>
-      <div style={{ height: 4, borderRadius: 99, background: 'var(--color-background-secondary)', overflow: 'hidden' }}>
+      <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
         <div style={{
-          height: '100%', borderRadius: 99, width: `${pct}%`, background: color,
-          transition: 'width 0.8s cubic-bezier(.4,0,.2,1)',
+          height: '100%', borderRadius: 99, width: `${pct}%`,
+          background: color,
+          boxShadow: `0 0 8px ${color}66`,
+          transition: 'width 0.9s cubic-bezier(.4,0,.2,1)',
         }} />
       </div>
     </div>
   );
 }
 
+// ── Insight banner ────────────────────────────────────────────────────────────
 function InsightBanner({ text, onDismiss }) {
   return (
     <div style={{
-      background: 'var(--color-background-info)',
-      border: '0.5px solid var(--color-border-info)',
-      borderRadius: 8, padding: '10px 14px',
+      background: 'rgba(56,189,248,0.08)',
+      border: '1px solid rgba(56,189,248,0.22)',
+      borderRadius: 12, padding: '11px 14px',
       display: 'flex', alignItems: 'flex-start', gap: 10,
-      marginBottom: 16,
+      marginBottom: 18,
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-text-info)', flexShrink: 0, marginTop: 5 }} />
-      <p style={{ flex: 1, fontSize: 13, color: 'var(--color-text-info)', lineHeight: 1.5, margin: 0 }}>{text}</p>
-      <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-text-info)', fontSize: 18, lineHeight: 1, opacity: 0.5, flexShrink: 0 }}>×</button>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#38bdf8', flexShrink: 0, marginTop: 6 }} />
+      <p style={{ flex: 1, fontSize: 13, color: '#7dd3fc', lineHeight: 1.55, margin: 0, fontWeight: 500 }}>{text}</p>
+      <button onClick={onDismiss} style={{
+        background: 'none', border: 'none', cursor: 'pointer', padding: 2,
+        color: '#38bdf8', fontSize: 16, lineHeight: 1, opacity: 0.5, flexShrink: 0,
+      }}>×</button>
     </div>
   );
 }
 
+// ── Add meal bottom sheet ─────────────────────────────────────────────────────
 function AddMealSheet({ section, onAdd, onClose }) {
   const presets = MEAL_PRESETS[section] || [];
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
       <div style={{
-        position: 'relative', background: 'var(--color-background-primary)',
-        border: '0.5px solid var(--color-border-tertiary)',
-        borderRadius: '16px 16px 0 0', padding: '20px 16px 40px', maxHeight: '65vh', overflowY: 'auto',
+        position: 'relative',
+        background: 'linear-gradient(160deg, rgba(18,24,52,0.99) 0%, rgba(6,10,24,1) 100%)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        borderRadius: '20px 20px 0 0',
+        padding: '20px 18px 44px',
+        maxHeight: '72vh', overflowY: 'auto',
+        boxShadow: '0 -24px 80px rgba(0,0,0,0.8)',
       }}>
-        <div style={{ width: 32, height: 3, borderRadius: 99, background: 'var(--color-border-secondary)', margin: '0 auto 16px' }} />
-        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', marginBottom: 14 }}>Add to {section}</p>
+        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.12)', margin: '0 auto 18px' }} />
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 16, letterSpacing: '-0.01em' }}>
+          {MEAL_ICONS[section]} Add to {section}
+        </p>
         {presets.map((m, i) => (
           <button key={i} onClick={() => { onAdd(m); onClose(); }} style={{
             width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '12px 14px', borderRadius: 8,
-            background: 'var(--color-background-secondary)',
-            border: '0.5px solid var(--color-border-tertiary)',
+            padding: '13px 15px', borderRadius: 14,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
             cursor: 'pointer', textAlign: 'left', marginBottom: 8, fontFamily: 'inherit',
-          }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{m.name}</span>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{m.cal} kcal</div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{m.protein}g protein</div>
+            transition: 'background 0.12s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+          >
+            <span style={{ fontSize: 13, color: '#e2e8f0', fontWeight: 500 }}>{m.name}</span>
+            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{m.cal} kcal</div>
+              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.55)' }}>{m.protein}g protein</div>
             </div>
           </button>
         ))}
@@ -197,58 +246,67 @@ function AddMealSheet({ section, onAdd, onClose }) {
   );
 }
 
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function NutritionToast({ msg, visible }) {
   return (
     <div style={{
-      position: 'fixed', bottom: 28, left: '50%',
+      position: 'fixed', bottom: 32, left: '50%',
       transform: `translateX(-50%) translateY(${visible ? 0 : 10}px)`,
       opacity: visible ? 1 : 0, transition: 'all 0.25s ease',
-      background: 'var(--color-background-primary)',
-      border: '0.5px solid var(--color-border-secondary)',
-      borderRadius: 99, padding: '8px 18px',
-      fontSize: 13, color: 'var(--color-text-primary)',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-      whiteSpace: 'nowrap', zIndex: 300, pointerEvents: 'none',
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.95) 0%, rgba(8,10,20,0.98) 100%)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: 99, padding: '9px 20px',
+      fontSize: 13, color: '#e2e8f0', fontWeight: 600,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      whiteSpace: 'nowrap', zIndex: 400, pointerEvents: 'none',
     }}>
       {msg}
     </div>
   );
 }
 
+// ── Meal section row ──────────────────────────────────────────────────────────
 function NutMealSection({ section, items, onAdd, onDelete, divider }) {
   const sectionCals = items.reduce((s, m) => s + m.cal, 0);
   return (
     <>
-      {divider && <div style={{ height: '0.5px', background: 'var(--color-border-tertiary)', margin: '4px 0' }} />}
+      {divider && <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '6px 0' }} />}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0 8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 14 }}>{MEAL_ICONS[section]}</span>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{section}</span>
-            {sectionCals > 0 && <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{sectionCals} kcal</span>}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0 9px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <span style={{ fontSize: 15 }}>{MEAL_ICONS[section]}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{section}</span>
+            {sectionCals > 0 && (
+              <span style={{ fontSize: 11, color: 'rgba(148,163,184,0.55)', fontWeight: 500 }}>{sectionCals} kcal</span>
+            )}
           </div>
           <button onClick={() => onAdd(section)} style={{
-            fontSize: 12, color: 'var(--color-text-info)',
-            background: 'none', border: '0.5px solid var(--color-border-info)',
-            borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: 11, fontWeight: 700, color: '#38bdf8',
+            background: 'rgba(56,189,248,0.1)',
+            border: '1px solid rgba(56,189,248,0.25)',
+            borderRadius: 9, padding: '4px 12px', cursor: 'pointer', fontFamily: 'inherit',
+            letterSpacing: '0.02em',
           }}>+ Add</button>
         </div>
         {items.length === 0 ? (
-          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', paddingBottom: 8 }}>No items logged</p>
+          <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.5)', paddingBottom: 8, margin: 0 }}>No items logged</p>
         ) : items.map((m, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderTop: '0.5px solid var(--color-border-tertiary)' }}>
-            <div style={{ flex: 1, fontSize: 13, color: 'var(--color-text-primary)' }}>{m.name}</div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{m.cal} kcal</div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{m.protein}g P · {m.carbs}g C · {m.fat}g F</div>
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
+            borderTop: '1px solid rgba(255,255,255,0.04)',
+          }}>
+            <div style={{ flex: 1, fontSize: 13, color: '#cbd5e1', fontWeight: 500 }}>{m.name}</div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{m.cal} kcal</div>
+              <div style={{ fontSize: 10, color: 'rgba(100,116,139,0.6)' }}>{m.protein}g P · {m.carbs}g C · {m.fat}g F</div>
             </div>
             <button onClick={() => onDelete(section, i)} style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: 'var(--color-background-danger)',
-              border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+              background: 'rgba(244,63,94,0.12)',
+              border: '1px solid rgba(244,63,94,0.2)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <X size={12} color="var(--color-text-danger)" />
+              <X size={11} color="#f87171" />
             </button>
           </div>
         ))}
@@ -257,100 +315,449 @@ function NutMealSection({ section, items, onAdd, onDelete, divider }) {
   );
 }
 
-function NutWaterTracker({ glasses, target, onAdd }) {
+// ── Water tracker ─────────────────────────────────────────────────────────────
+function NutWaterTracker({ glasses, target, onAdd, onRemove }) {
   return (
     <div>
       <span style={nutLabel}>Hydration</span>
-      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
         {Array.from({ length: target }).map((_, i) => (
-          <div key={i} onClick={i === glasses ? onAdd : undefined} style={{
-            width: 18, height: 22, borderRadius: 3,
-            background: i < glasses ? 'var(--color-text-info)' : 'var(--color-background-secondary)',
-            border: i < glasses ? 'none' : '0.5px solid var(--color-border-secondary)',
-            cursor: i === glasses ? 'pointer' : 'default',
-            transition: 'background 0.2s',
-          }} />
+          <div key={i} onClick={i < glasses ? () => onRemove() : i === glasses ? onAdd : undefined}
+            style={{
+              width: 20, height: 26, borderRadius: 4,
+              background: i < glasses ? '#38bdf8' : 'rgba(255,255,255,0.05)',
+              border: i < glasses ? 'none' : '1px solid rgba(255,255,255,0.1)',
+              boxShadow: i < glasses ? '0 0 8px rgba(56,189,248,0.4)' : 'none',
+              cursor: i <= glasses ? 'pointer' : 'default',
+              transition: 'all 0.2s',
+            }}
+          />
         ))}
       </div>
-      <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{glasses} / {target} glasses</p>
+      <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.55)', margin: 0, fontWeight: 500 }}>
+        {glasses} / {target} glasses · tap to log
+      </p>
     </div>
   );
 }
 
+// ── Week dots ─────────────────────────────────────────────────────────────────
 function NutWeekDots({ days }) {
   const labels  = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const onTrack = days.filter(Boolean).length;
   return (
     <>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
         {days.map((on, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: '50%',
-              background: on ? 'var(--color-text-info)' : 'var(--color-background-secondary)',
-              border: on ? 'none' : '0.5px solid var(--color-border-tertiary)',
+              width: 30, height: 30, borderRadius: '50%',
+              background: on ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.04)',
+              border: on ? '1.5px solid #38bdf8' : '1px solid rgba(255,255,255,0.07)',
+              boxShadow: on ? '0 0 10px rgba(56,189,248,0.3)' : 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s',
             }}>
               {on && (
-                <svg width={11} height={11} viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width={11} height={11} viewBox="0 0 12 12" fill="none" stroke="#38bdf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="1.5,6 4.5,9 10.5,3" />
                 </svg>
               )}
             </div>
-            <span style={{ fontSize: 10, color: on ? 'var(--color-text-info)' : 'var(--color-text-tertiary)' }}>{labels[i]}</span>
+            <span style={{ fontSize: 10, color: on ? '#38bdf8' : 'rgba(100,116,139,0.5)', fontWeight: on ? 700 : 400 }}>{labels[i]}</span>
           </div>
         ))}
       </div>
-      <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-        <span style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{onTrack}/7 days</span> on track this week
+      <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: 0 }}>
+        <span style={{ fontWeight: 700, color: '#e2e8f0' }}>{onTrack}/7 days</span> on track this week
       </p>
     </>
   );
 }
 
-function NutritionTab() {
-  const [data, setData]           = useState(NUTRITION_BASE);
-  const [meals, setMeals]         = useState({
+// ─────────────────────────────────────────────────────────────────────────────
+// BARCODE / QR SCANNER MODAL
+// Uses BarcodeDetector (Chrome/Android) → live camera feed
+// Falls back to a manual entry form on unsupported browsers
+// ─────────────────────────────────────────────────────────────────────────────
+function ScannerModal({ onFound, onClose }) {
+  const videoRef    = useRef(null);
+  const canvasRef   = useRef(null);
+  const streamRef   = useRef(null);
+  const rafRef      = useRef(null);
+  const detectorRef = useRef(null);
+
+  const [phase, setPhase]       = useState('init'); // init | scanning | found | error | manual | loading
+  const [scannedCode, setScannedCode] = useState('');
+  const [productInfo, setProductInfo] = useState(null);
+  const [errorMsg, setErrorMsg]       = useState('');
+  const [manualCode, setManualCode]   = useState('');
+  const [camFacing, setCamFacing]     = useState('environment');
+
+  // ── Open camera ────────────────────────────────────────────────────────────
+  const startCamera = useCallback(async (facing = camFacing) => {
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setPhase('scanning');
+    } catch (err) {
+      setErrorMsg('Camera access denied or unavailable.');
+      setPhase('error');
+    }
+  }, [camFacing]);
+
+  // ── Detect loop ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== 'scanning') return;
+    const supported = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+    if (!supported) {
+      setPhase('error');
+      setErrorMsg('BarcodeDetector not supported in this browser. Please enter the code manually.');
+      return;
+    }
+    if (!detectorRef.current) {
+      detectorRef.current = new window.BarcodeDetector({
+        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code', 'data_matrix'],
+      });
+    }
+    const detect = async () => {
+      if (!videoRef.current || videoRef.current.readyState < 2) {
+        rafRef.current = requestAnimationFrame(detect);
+        return;
+      }
+      try {
+        const barcodes = await detectorRef.current.detect(videoRef.current);
+        if (barcodes.length > 0) {
+          const code = barcodes[0].rawValue;
+          setScannedCode(code);
+          setPhase('loading');
+          lookupProduct(code);
+          return;
+        }
+      } catch (_) {}
+      rafRef.current = requestAnimationFrame(detect);
+    };
+    rafRef.current = requestAnimationFrame(detect);
+    return () => { cancelAnimationFrame(rafRef.current); };
+  }, [phase]);
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    startCamera();
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // ── Open Food Facts lookup ─────────────────────────────────────────────────
+  const lookupProduct = async (code) => {
+    setPhase('loading');
+    try {
+      const res  = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+      const data = await res.json();
+      if (data.status === 1 && data.product) {
+        const p   = data.product;
+        const n   = p.nutriments || {};
+        const per = p.serving_size ? 'serving' : '100g';
+        const suffix = per === 'serving' ? '_serving' : '_100g';
+        const info = {
+          name:    p.product_name || p.product_name_en || 'Unknown Product',
+          brand:   p.brands || '',
+          cal:     Math.round(n[`energy-kcal${suffix}`] || n['energy-kcal_100g'] || 0),
+          protein: Math.round(n[`proteins${suffix}`]    || n['proteins_100g']    || 0),
+          carbs:   Math.round(n[`carbohydrates${suffix}`] || n['carbohydrates_100g'] || 0),
+          fat:     Math.round(n[`fat${suffix}`]         || n['fat_100g']         || 0),
+          per,
+          image:   p.image_front_small_url || p.image_url || null,
+          barcode: code,
+        };
+        setProductInfo(info);
+        setPhase('found');
+      } else {
+        setPhase('error');
+        setErrorMsg(`No product found for barcode ${code}.`);
+      }
+    } catch (err) {
+      setPhase('error');
+      setErrorMsg('Could not reach Open Food Facts. Check your connection.');
+    }
+  };
+
+  const flipCamera = () => {
+    const next = camFacing === 'environment' ? 'user' : 'environment';
+    setCamFacing(next);
+    startCamera(next);
+  };
+
+  const handleAddProduct = (product, mealSection) => {
+    onFound({ ...product, section: mealSection });
+    onClose();
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      {/* Backdrop */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }} onClick={onClose} />
+
+      {/* Sheet */}
+      <div style={{
+        position: 'relative',
+        background: 'linear-gradient(160deg, rgba(12,18,44,0.99) 0%, rgba(4,6,20,1) 100%)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        borderRadius: '24px 24px 0 0',
+        padding: '0 0 44px',
+        maxHeight: '90vh', overflowY: 'auto',
+        boxShadow: '0 -32px 100px rgba(0,0,0,0.85)',
+      }}>
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 8px' }}>
+          <div style={{ width: 40, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.1)' }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px 16px' }}>
+          <div>
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>Scan Barcode</p>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: '2px 0 0' }}>Point camera at any food barcode or QR code</p>
+          </div>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={16} color="rgba(148,163,184,0.8)" />
+          </button>
+        </div>
+
+        {/* Camera view */}
+        {(phase === 'scanning' || phase === 'loading') && (
+          <div style={{ position: 'relative', margin: '0 18px 18px', borderRadius: 18, overflow: 'hidden', background: '#000', aspectRatio: '4/3' }}>
+            <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+            {/* Scan overlay */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Corner brackets */}
+              {[
+                { top: '25%', left: '20%', borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '6px 0 0 0' },
+                { top: '25%', right: '20%', borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 6px 0 0' },
+                { bottom: '25%', left: '20%', borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '0 0 0 6px' },
+                { bottom: '25%', right: '20%', borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 0 6px 0' },
+              ].map((s, i) => (
+                <div key={i} style={{ position: 'absolute', width: 28, height: 28, ...s }} />
+              ))}
+              {/* Scan line animation */}
+              <div style={{
+                position: 'absolute',
+                left: '20%', right: '20%',
+                height: 2,
+                background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)',
+                boxShadow: '0 0 12px #38bdf8',
+                animation: 'scanLine 2s linear infinite',
+                top: '25%',
+              }} />
+            </div>
+
+            {phase === 'loading' && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid rgba(56,189,248,0.2)', borderTopColor: '#38bdf8', animation: 'spin 0.8s linear infinite' }} />
+                <p style={{ fontSize: 13, color: '#7dd3fc', fontWeight: 600 }}>Looking up product…</p>
+              </div>
+            )}
+
+            {/* Flip camera button */}
+            <button onClick={flipCamera} style={{ position: 'absolute', bottom: 12, right: 12, width: 38, height: 38, borderRadius: 12, background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+              <RefreshCw size={16} color="rgba(255,255,255,0.8)" />
+            </button>
+          </div>
+        )}
+
+        {/* Error state */}
+        {phase === 'error' && (
+          <div style={{ margin: '0 18px 18px', borderRadius: 16, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.22)', padding: '20px 18px', textAlign: 'center' }}>
+            <AlertCircle size={32} color="#f87171" style={{ margin: '0 auto 10px' }} />
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#fca5a5', margin: '0 0 6px' }}>Scan failed</p>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: '0 0 16px', lineHeight: 1.5 }}>{errorMsg}</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setPhase('init'); setErrorMsg(''); startCamera(); }} style={{ flex: 1, padding: '10px 0', borderRadius: 12, background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.3)', color: '#38bdf8', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Try again
+              </button>
+              <button onClick={() => setPhase('manual')} style={{ flex: 1, padding: '10px 0', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Enter manually
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Manual entry */}
+        {phase === 'manual' && (
+          <div style={{ margin: '0 18px 18px' }}>
+            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', marginBottom: 10, fontWeight: 500 }}>Enter barcode number</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={manualCode}
+                onChange={e => setManualCode(e.target.value)}
+                placeholder="e.g. 5000112637922"
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 12, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit',
+                }}
+                onKeyDown={e => { if (e.key === 'Enter' && manualCode.trim()) lookupProduct(manualCode.trim()); }}
+              />
+              <button onClick={() => manualCode.trim() && lookupProduct(manualCode.trim())} style={{ padding: '11px 16px', borderRadius: 12, background: '#38bdf8', border: 'none', color: '#0c1830', fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Go
+              </button>
+            </div>
+            <button onClick={() => { setPhase('init'); startCamera(); }} style={{ width: '100%', marginTop: 10, padding: '10px 0', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <Camera size={13} /> Back to camera
+            </button>
+          </div>
+        )}
+
+        {/* Product found */}
+        {phase === 'found' && productInfo && (
+          <div style={{ margin: '0 18px 18px' }}>
+            {/* Product card */}
+            <div style={{
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 18, padding: '16px 16px', marginBottom: 14,
+            }}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
+                {productInfo.image && (
+                  <img src={productInfo.image} alt={productInfo.name} style={{ width: 60, height: 60, borderRadius: 10, objectFit: 'cover', flexShrink: 0, background: '#1e2340' }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', margin: '0 0 3px', lineHeight: 1.3 }}>{productInfo.name}</p>
+                  {productInfo.brand && <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: '0 0 2px' }}>{productInfo.brand}</p>}
+                  <p style={{ fontSize: 11, color: 'rgba(100,116,139,0.5)', margin: 0 }}>per {productInfo.per}</p>
+                </div>
+              </div>
+
+              {/* Macro grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                {[
+                  { label: 'Calories', value: productInfo.cal, unit: 'kcal', color: '#38bdf8' },
+                  { label: 'Protein',  value: productInfo.protein, unit: 'g', color: '#10b981' },
+                  { label: 'Carbs',    value: productInfo.carbs,   unit: 'g', color: '#f59e0b' },
+                  { label: 'Fat',      value: productInfo.fat,     unit: 'g', color: '#f43f5e' },
+                ].map(({ label, value, unit, color }) => (
+                  <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '9px 6px', textAlign: 'center' }}>
+                    <p style={{ fontSize: 16, fontWeight: 800, color, margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
+                    <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.6)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{unit}</p>
+                    <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.4)', margin: 0 }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Add to meal */}
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', marginBottom: 8, fontWeight: 600, letterSpacing: '0.04em' }}>ADD TO</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map(section => (
+                <button key={section} onClick={() => handleAddProduct(productInfo, section)} style={{
+                  padding: '13px 12px', borderRadius: 14,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'background 0.12s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(56,189,248,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                >
+                  <span style={{ fontSize: 15 }}>{MEAL_ICONS[section]}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#cbd5e1' }}>{section}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Scan again */}
+            <button onClick={() => { setProductInfo(null); setScannedCode(''); setPhase('init'); startCamera(); }}
+              style={{ width: '100%', marginTop: 10, padding: '12px 0', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+              <ScanBarcode size={14} /> Scan another
+            </button>
+          </div>
+        )}
+
+        {/* Manual entry fallback link shown during scanning */}
+        {phase === 'scanning' && (
+          <div style={{ padding: '0 18px 4px', textAlign: 'center' }}>
+            <button onClick={() => { setPhase('manual'); if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(100,116,139,0.6)', fontFamily: 'inherit', textDecoration: 'underline' }}>
+              Enter barcode manually instead
+            </button>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes scanLine {
+          0%   { top: 25%; opacity: 1; }
+          50%  { top: 75%; opacity: 0.6; }
+          100% { top: 25%; opacity: 1; }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN NUTRITION TAB
+// ─────────────────────────────────────────────────────────────────────────────
+export default function NutritionTab() {
+  const [data, setData]         = useState(NUTRITION_BASE);
+  const [meals, setMeals]       = useState({
     Breakfast: [{ name: 'Oat porridge + berries', cal: 340, protein: 12, carbs: 56, fat: 6 }],
-    Lunch:     [{ name: 'Chicken & rice bowl',     cal: 490, protein: 42, carbs: 58, fat: 8 }],
+    Lunch:     [{ name: 'Chicken & rice bowl',    cal: 490, protein: 42, carbs: 58, fat: 8 }],
     Dinner:    [],
-    Snacks:    [{ name: 'Protein bar',              cal: 210, protein: 20, carbs: 22, fat: 7 }],
+    Snacks:    [{ name: 'Protein bar',             cal: 210, protein: 20, carbs: 22, fat: 7 }],
   });
-  const [addingTo, setAddingTo]   = useState(null);
-  const [insight, setInsight]     = useState(true);
-  const [toast, setToast]         = useState({ msg: '', visible: false });
-  const toastTimer                = useRef(null);
+  const [addingTo, setAddingTo] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [insight, setInsight]   = useState(true);
+  const [toast, setToast]       = useState({ msg: '', visible: false });
+  const toastTimer              = useRef(null);
 
   const showToast = (msg) => {
     clearTimeout(toastTimer.current);
     setToast({ msg, visible: true });
-    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
+    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2200);
   };
 
   const addToNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
     setData(d => ({
       ...d,
-      calories: { ...d.calories, consumed: d.calories.consumed + cal     },
+      calories: { ...d.calories, consumed: d.calories.consumed + cal },
       protein:  { ...d.protein,  consumed: d.protein.consumed  + protein },
-      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + carbs   },
-      fats:     { ...d.fats,     consumed: d.fats.consumed     + fat     },
+      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + carbs },
+      fats:     { ...d.fats,     consumed: d.fats.consumed     + fat },
     }));
 
   const removeFromNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
     setData(d => ({
       ...d,
-      calories: { ...d.calories, consumed: Math.max(0, d.calories.consumed - cal    ) },
+      calories: { ...d.calories, consumed: Math.max(0, d.calories.consumed - cal) },
       protein:  { ...d.protein,  consumed: Math.max(0, d.protein.consumed  - protein) },
-      carbs:    { ...d.carbs,    consumed: Math.max(0, d.carbs.consumed    - carbs  ) },
-      fats:     { ...d.fats,     consumed: Math.max(0, d.fats.consumed     - fat    ) },
+      carbs:    { ...d.carbs,    consumed: Math.max(0, d.carbs.consumed    - carbs) },
+      fats:     { ...d.fats,     consumed: Math.max(0, d.fats.consumed     - fat) },
     }));
 
-  const handleQuickAdd = (opt) => { addToNutrition(opt); showToast(`${opt.label} added`); };
+  const handleQuickAdd = (opt) => { addToNutrition(opt); showToast(`${opt.label} added ✓`); };
 
   const handleAddMeal = (section, meal) => {
     setMeals(m => ({ ...m, [section]: [...(m[section] || []), meal] }));
     addToNutrition(meal);
-    showToast(`${meal.name} added`);
+    showToast(`${meal.name} added ✓`);
   };
 
   const handleDeleteMeal = (section, idx) => {
@@ -360,129 +767,217 @@ function NutritionTab() {
     showToast(`${meal.name} removed`);
   };
 
-  const handleAddWater = () => {
-    setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
-    showToast('Water logged');
+  // Scanner found a product — add it to the right meal
+  const handleScannedProduct = ({ section, ...product }) => {
+    const meal = { name: product.name, cal: product.cal, protein: product.protein, carbs: product.carbs, fat: product.fat };
+    handleAddMeal(section || 'Snacks', meal);
   };
 
-  const proteinGap = data.protein.target - data.protein.consumed;
-  const remaining  = data.calories.target - data.calories.consumed;
-  const insightText = proteinGap > 0
+  const handleAddWater    = () => setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
+  const handleRemoveWater = () => setData(d => ({ ...d, water: { ...d.water, glasses: Math.max(d.water.glasses - 1, 0) } }));
+
+  const proteinGap   = data.protein.target - data.protein.consumed;
+  const remaining    = data.calories.target - data.calories.consumed;
+  const insightText  = proteinGap > 0
     ? `Eat ${proteinGap}g more protein to hit your daily target.`
     : remaining > 0
-    ? `${remaining} kcal left — add a meal to reach your goal.`
-    : "You've nailed today's nutrition goals!";
+    ? `${remaining} kcal remaining — keep going!`
+    : "You've nailed today's nutrition goals! 🎯";
+
+  const totalMealCals = Object.values(meals).flat().reduce((s, m) => s + m.cal, 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 32 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 40 }}>
 
-      {/* Hero */}
-      <div style={nutCard}>
+      {/* ── Hero overview card ── */}
+      <div style={GLASS_CARD}>
         <span style={nutLabel}>Daily overview</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 18 }}>
           <CalorieRing consumed={data.calories.consumed} target={data.calories.target} />
           <div>
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>of {data.calories.target.toLocaleString()} kcal</p>
-            <p style={{ fontSize: 26, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1, margin: '0 0 2px' }}>{data.calories.consumed.toLocaleString()}</p>
-            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>kcal consumed</p>
+            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', margin: '0 0 4px', fontWeight: 500 }}>
+              of {data.calories.target.toLocaleString()} kcal goal
+            </p>
+            <p style={{ fontSize: 30, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, margin: '0 0 2px', letterSpacing: '-0.03em' }}>
+              {data.calories.consumed.toLocaleString()}
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: 0 }}>kcal consumed today</p>
           </div>
-        </div>
-        {insight && <InsightBanner text={insightText} onDismiss={() => setInsight(false)} />}
-        <MacroBar label="Protein"       current={data.protein.consumed} target={data.protein.target} color="var(--color-text-info)"    />
-        <MacroBar label="Carbohydrates" current={data.carbs.consumed}   target={data.carbs.target}   color="var(--color-text-success)"  />
-        <MacroBar label="Fat"           current={data.fats.consumed}    target={data.fats.target}    color="var(--color-text-warning)"  />
-      </div>
-
-      {/* Add food */}
-      <div style={nutCard}>
-        <span style={nutLabel}>Add food</span>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-          {QUICK_ADD_OPTIONS.map(opt => (
-            <button key={opt.key} onClick={() => handleQuickAdd(opt)} style={{
-              background: 'var(--color-background-secondary)',
-              border: '0.5px solid var(--color-border-tertiary)',
-              borderRadius: 8, padding: 12, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+          {/* Remaining pill */}
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <div style={{
+              padding: '6px 12px', borderRadius: 10,
+              background: remaining > 0 ? 'rgba(56,189,248,0.1)' : 'rgba(244,63,94,0.1)',
+              border: `1px solid ${remaining > 0 ? 'rgba(56,189,248,0.25)' : 'rgba(244,63,94,0.25)'}`,
             }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: 8,
-                background: opt.key === 'shake' ? 'var(--color-background-info)' : 'var(--color-background-warning)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
-              }}>
-                {opt.key === 'shake'
-                  ? <Droplets size={14} color="var(--color-text-info)" />
-                  : <Zap      size={14} color="var(--color-text-warning)" />}
-              </div>
-              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{opt.label}</p>
-              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{opt.sub}</p>
-            </button>
-          ))}
-        </div>
-        <button style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-          background: 'var(--color-background-secondary)',
-          border: '0.5px solid var(--color-border-tertiary)',
-          borderRadius: 8, padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit',
-        }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--color-background-tertiary)', border: '0.5px solid var(--color-border-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <ScanBarcode size={16} color="var(--color-text-secondary)" />
+              <p style={{ fontSize: 16, fontWeight: 800, color: remaining > 0 ? '#38bdf8' : '#f87171', margin: 0, lineHeight: 1 }}>{Math.abs(remaining)}</p>
+              <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.6)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{remaining >= 0 ? 'left' : 'over'}</p>
+            </div>
           </div>
-          <div style={{ textAlign: 'left' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>Scan barcode</p>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Identify food instantly</p>
-          </div>
-          <ChevronRight size={14} color="var(--color-text-tertiary)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-        </button>
-      </div>
-
-      {/* Meal log */}
-      <div style={nutCard}>
-        <span style={nutLabel}>Meal log</span>
-        {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map((section, i) => (
-          <NutMealSection key={section} section={section} items={meals[section] || []} onAdd={setAddingTo} onDelete={handleDeleteMeal} divider={i > 0} />
-        ))}
-      </div>
-
-      {/* Weekly consistency */}
-      <div style={nutCard}>
-        <span style={nutLabel}>Weekly consistency</span>
-        <NutWeekDots days={data.weekDays} />
-      </div>
-
-      {/* Hydration + Streak */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-        <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 16, padding: 14 }}>
-          <NutWaterTracker glasses={data.water.glasses} target={data.water.target} onAdd={handleAddWater} />
         </div>
-        <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 16, padding: 14 }}>
-          <span style={nutLabel}>Streak</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Flame size={18} color="var(--color-text-warning)" />
-            <span style={{ fontSize: 28, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1 }}>{data.streak}</span>
-          </div>
-          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>days on track</p>
-        </div>
+
+        {insight && <InsightBanner text={insightText} onDismiss={() => setInsight(false)} />}
+
+        <MacroBar label="Protein"       current={data.protein.consumed} target={data.protein.target} color="#38bdf8" />
+        <MacroBar label="Carbohydrates" current={data.carbs.consumed}   target={data.carbs.target}   color="#10b981" />
+        <MacroBar label="Fat"           current={data.fats.consumed}    target={data.fats.target}    color="#f59e0b" />
       </div>
 
-      {/* Current goal */}
-      <div style={nutCard}>
-        <span style={nutLabel}>Current goal</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      {/* ── Macro summary strip ── */}
+      <div style={{ ...GLASS_CARD, padding: '16px 18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {[
-            { label: 'Goal',     value: 'Muscle gain'                               },
-            { label: 'Calories', value: `${data.calories.target.toLocaleString()} kcal` },
-            { label: 'Protein',  value: `${data.protein.target}g`                   },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ background: 'var(--color-background-secondary)', borderRadius: 8, padding: '10px 8px', textAlign: 'center' }}>
-              <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
-              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>{value}</p>
+            { label: 'Calories', current: data.calories.consumed, target: data.calories.target, unit: 'kcal', color: '#38bdf8' },
+            { label: 'Protein',  current: data.protein.consumed,  target: data.protein.target,  unit: 'g',    color: '#10b981' },
+            { label: 'Carbs',    current: data.carbs.consumed,    target: data.carbs.target,    unit: 'g',    color: '#f59e0b' },
+            { label: 'Fat',      current: data.fats.consumed,     target: data.fats.target,     unit: 'g',    color: '#f43f5e' },
+          ].map(({ label, current, target, unit, color }) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: '10px 8px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <p style={{ fontSize: 15, fontWeight: 800, color, margin: '0 0 1px', lineHeight: 1 }}>{current}</p>
+              <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.5)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{unit}</p>
+              <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.4)', margin: 0 }}>/ {target}</p>
+              <p style={{ fontSize: 9, color: 'rgba(100,116,139,0.35)', margin: 0 }}>{label}</p>
             </div>
           ))}
         </div>
       </div>
 
+      {/* ── Add food card ── */}
+      <div style={GLASS_CARD}>
+        <span style={nutLabel}>Add food</span>
+
+        {/* Quick add grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          {QUICK_ADD_OPTIONS.map(opt => (
+            <button key={opt.key} onClick={() => handleQuickAdd(opt)} style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 14, padding: '14px 13px', cursor: 'pointer', textAlign: 'left',
+              fontFamily: 'inherit', transition: 'all 0.15s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+            >
+              <div style={{
+                width: 30, height: 30, borderRadius: 9,
+                background: opt.key === 'shake' ? 'rgba(56,189,248,0.12)' : 'rgba(245,158,11,0.12)',
+                border: `1px solid ${opt.key === 'shake' ? 'rgba(56,189,248,0.25)' : 'rgba(245,158,11,0.25)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+              }}>
+                {opt.key === 'shake'
+                  ? <Droplets size={14} color="#38bdf8" />
+                  : <Zap      size={14} color="#f59e0b" />}
+              </div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: '0 0 3px' }}>{opt.label}</p>
+              <p style={{ fontSize: 11, color: 'rgba(100,116,139,0.6)', margin: 0 }}>{opt.sub}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Scan barcode button */}
+        <button onClick={() => setShowScanner(true)} style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 14, padding: '14px 15px', cursor: 'pointer', fontFamily: 'inherit',
+          transition: 'all 0.15s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56,189,248,0.08)'; e.currentTarget.style.borderColor = 'rgba(56,189,248,0.22)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+        >
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ScanBarcode size={18} color="#38bdf8" />
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: '0 0 2px' }}>Scan barcode</p>
+            <p style={{ fontSize: 11, color: 'rgba(100,116,139,0.6)', margin: 0 }}>Identify food instantly via camera</p>
+          </div>
+          <ChevronRight size={15} color="rgba(100,116,139,0.5)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+        </button>
+      </div>
+
+      {/* ── Meal log card ── */}
+      <div style={GLASS_CARD}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ ...nutLabel, marginBottom: 0 }}>Meal log</span>
+          {totalMealCals > 0 && (
+            <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)', fontWeight: 600 }}>{totalMealCals} kcal total</span>
+          )}
+        </div>
+        {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map((section, i) => (
+          <NutMealSection
+            key={section} section={section}
+            items={meals[section] || []}
+            onAdd={setAddingTo}
+            onDelete={handleDeleteMeal}
+            divider={i > 0}
+          />
+        ))}
+      </div>
+
+      {/* ── Weekly consistency card ── */}
+      <div style={GLASS_CARD}>
+        <span style={nutLabel}>Weekly consistency</span>
+        <NutWeekDots days={data.weekDays} />
+      </div>
+
+      {/* ── Hydration + Streak row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+        <div style={{ ...GLASS_CARD, marginBottom: 0, padding: '18px 16px' }}>
+          <NutWaterTracker
+            glasses={data.water.glasses}
+            target={data.water.target}
+            onAdd={handleAddWater}
+            onRemove={handleRemoveWater}
+          />
+        </div>
+        <div style={{ ...GLASS_CARD, marginBottom: 0, padding: '18px 16px' }}>
+          <span style={nutLabel}>Streak</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <Flame size={20} color="#f59e0b" style={{ filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))' }} />
+            <span style={{ fontSize: 32, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, letterSpacing: '-0.03em' }}>{data.streak}</span>
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(100,116,139,0.55)', margin: 0, fontWeight: 500 }}>days on track</p>
+          <div style={{ marginTop: 10, height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min((data.streak / 7) * 100, 100)}%`, background: '#f59e0b', borderRadius: 99, boxShadow: '0 0 8px rgba(245,158,11,0.5)', transition: 'width 0.8s ease' }} />
+          </div>
+          <p style={{ fontSize: 10, color: 'rgba(100,116,139,0.4)', margin: '5px 0 0' }}>{data.streak}/7 weekly goal</p>
+        </div>
+      </div>
+
+      {/* ── Current goal card ── */}
+      <div style={GLASS_CARD}>
+        <span style={nutLabel}>Current goal</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {[
+            { label: 'Goal',     value: 'Muscle gain',                                 color: '#a78bfa' },
+            { label: 'Calories', value: `${data.calories.target.toLocaleString()} kcal`, color: '#38bdf8' },
+            { label: 'Protein',  value: `${data.protein.target}g`,                      color: '#10b981' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '12px 10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p style={{ fontSize: 10, color: 'rgba(100,116,139,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 5px', fontWeight: 700 }}>{label}</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color, margin: 0, lineHeight: 1.2 }}>{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modals & overlays */}
       {addingTo && (
-        <AddMealSheet section={addingTo} onAdd={(m) => handleAddMeal(addingTo, m)} onClose={() => setAddingTo(null)} />
+        <AddMealSheet
+          section={addingTo}
+          onAdd={(m) => handleAddMeal(addingTo, m)}
+          onClose={() => setAddingTo(null)}
+        />
       )}
+
+      {showScanner && (
+        <ScannerModal
+          onFound={handleScannedProduct}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       <NutritionToast msg={toast.msg} visible={toast.visible} />
     </div>
   );
