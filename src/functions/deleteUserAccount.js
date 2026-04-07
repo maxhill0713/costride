@@ -9,51 +9,59 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let userId = user.id;
-    const body = await req.json().catch(() => ({}));
+    const userId = user.id;
 
-    // Admin can delete another user by email
-    if (body.email && user.role === 'admin') {
-      const users = await base44.asServiceRole.entities.User.filter({ email: body.email });
-      if (!users || users.length === 0) {
-        return Response.json({ error: 'User not found' }, { status: 404 });
-      }
-      userId = users[0].id;
-    }
-
-    // Helper to safely delete records sequentially to avoid rate limiting
-    const safeDeleteSequential = async (entity, ids) => {
-      for (const id of ids) {
-        try {
-          await entity.delete(id);
-          // Small delay between deletes to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 10));
-        } catch (err) {
-          if (err.status !== 404) throw err;
-        }
-      }
-    };
-
-    // Delete all user-related data (sequential to avoid rate limiting)
-    const entities = [
-      { entity: base44.asServiceRole.entities.CheckIn, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.WorkoutLog, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.Lift, filter: { member_id: userId } },
-      { entity: base44.asServiceRole.entities.Post, filter: { member_id: userId } },
-      { entity: base44.asServiceRole.entities.GymMembership, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.Friend, filter: { $or: [{ user_id: userId }, { friend_id: userId }] } },
-      { entity: base44.asServiceRole.entities.Goal, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.Message, filter: { $or: [{ sender_id: userId }, { receiver_id: userId }] } },
-      { entity: base44.asServiceRole.entities.Notification, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.Achievement, filter: { user_id: userId } },
-      { entity: base44.asServiceRole.entities.CoachInvite, filter: { $or: [{ coach_id: userId }, { member_id: userId }] } },
-      { entity: base44.asServiceRole.entities.AssignedWorkout, filter: { member_id: userId } },
-    ];
-
-    for (const { entity, filter } of entities) {
-      const items = await entity.filter(filter);
-      await safeDeleteSequential(entity, items.map(i => i.id));
-    }
+    // Delete all user-related data in parallel
+    await Promise.all([
+      // Delete check-ins
+      base44.asServiceRole.entities.CheckIn.filter({ user_id: userId }).then(checkIns =>
+        Promise.all(checkIns.map(c => base44.asServiceRole.entities.CheckIn.delete(c.id)))
+      ),
+      // Delete workout logs
+      base44.asServiceRole.entities.WorkoutLog.filter({ user_id: userId }).then(logs =>
+        Promise.all(logs.map(l => base44.asServiceRole.entities.WorkoutLog.delete(l.id)))
+      ),
+      // Delete lifts
+      base44.asServiceRole.entities.Lift.filter({ member_id: userId }).then(lifts =>
+        Promise.all(lifts.map(l => base44.asServiceRole.entities.Lift.delete(l.id)))
+      ),
+      // Delete posts
+      base44.asServiceRole.entities.Post.filter({ member_id: userId }).then(posts =>
+        Promise.all(posts.map(p => base44.asServiceRole.entities.Post.delete(p.id)))
+      ),
+      // Delete gym memberships
+      base44.asServiceRole.entities.GymMembership.filter({ user_id: userId }).then(memberships =>
+        Promise.all(memberships.map(m => base44.asServiceRole.entities.GymMembership.delete(m.id)))
+      ),
+      // Delete friends relationships
+      base44.asServiceRole.entities.Friend.filter({ $or: [{ user_id: userId }, { friend_id: userId }] }).then(friends =>
+        Promise.all(friends.map(f => base44.asServiceRole.entities.Friend.delete(f.id)))
+      ),
+      // Delete goals
+      base44.asServiceRole.entities.Goal.filter({ user_id: userId }).then(goals =>
+        Promise.all(goals.map(g => base44.asServiceRole.entities.Goal.delete(g.id)))
+      ),
+      // Delete messages
+      base44.asServiceRole.entities.Message.filter({ $or: [{ sender_id: userId }, { receiver_id: userId }] }).then(messages =>
+        Promise.all(messages.map(m => base44.asServiceRole.entities.Message.delete(m.id)))
+      ),
+      // Delete notifications
+      base44.asServiceRole.entities.Notification.filter({ user_id: userId }).then(notifications =>
+        Promise.all(notifications.map(n => base44.asServiceRole.entities.Notification.delete(n.id)))
+      ),
+      // Delete achievements
+      base44.asServiceRole.entities.Achievement.filter({ user_id: userId }).then(achievements =>
+        Promise.all(achievements.map(a => base44.asServiceRole.entities.Achievement.delete(a.id)))
+      ),
+      // Delete coach invites
+      base44.asServiceRole.entities.CoachInvite.filter({ $or: [{ coach_id: userId }, { member_id: userId }] }).then(invites =>
+        Promise.all(invites.map(i => base44.asServiceRole.entities.CoachInvite.delete(i.id)))
+      ),
+      // Delete assigned workouts
+      base44.asServiceRole.entities.AssignedWorkout.filter({ member_id: userId }).then(workouts =>
+        Promise.all(workouts.map(w => base44.asServiceRole.entities.AssignedWorkout.delete(w.id)))
+      ),
+    ]);
 
     return Response.json({ success: true, message: 'Account deleted. Please log out on the frontend.' });
   } catch (error) {
