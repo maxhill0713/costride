@@ -31,6 +31,7 @@ const sanitiseUsernameQuery = (v) =>
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
+const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
 const MOCK_MODE = false;
 
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
@@ -898,7 +899,7 @@ export default function Home() {
         onClick={() => setShowStreakVariants(true)}
         className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2" style={{ marginTop: '2px' }}>
         <img
-          src={streakVariant === 'spartan' ? SPARTAN_ICON_URL : POSE_1_URL}
+          src={streakVariant === 'spartan' ? SPARTAN_ICON_URL : streakVariant === 'beach' ? BEACH_ICON_URL : POSE_1_URL}
           alt="streak"
           className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} animate-[breathe_3s_ease-in-out_infinite]`}
           style={{ objectFit: 'contain', opacity: 1 }} />

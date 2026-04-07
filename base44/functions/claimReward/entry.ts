@@ -170,6 +170,32 @@ Deno.serve(async (req) => {
              unlocked_streak_variants: [...unlockedVariants, 'spartan']
            });
          }
+       } else if (challengeId === 'discipline_builder') {
+         // Verify user completed the monthly challenge (15 workouts)
+         const now = new Date();
+         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+         const userRecord = await base44.asServiceRole.entities.User.filter({ id: user.id });
+         if (!userRecord.length) return Response.json({ error: 'User not found' }, { status: 404 });
+
+         const monthlyProgress = userRecord[0].monthly_challenge_progress || {};
+         const isCurrentMonth = monthlyProgress.month === currentMonth;
+         const progress = isCurrentMonth ? (monthlyProgress.discipline_builder || 0) : 0;
+
+         if (progress < 15) {
+           return Response.json({ error: 'You need to log 15 workouts this month to complete this challenge' }, { status: 403 });
+         }
+
+         offerDetails = 'Discipline Builder';
+         earnedText   = 'Completed: Discipline Builder';
+         bonusType    = 'streak_icon_unlock';
+
+         // Unlock the Beach streak icon for this user
+         const unlockedVariants = userRecord[0].unlocked_streak_variants || [];
+         if (!unlockedVariants.includes('beach')) {
+           await base44.asServiceRole.entities.User.update(user.id, {
+             unlocked_streak_variants: [...unlockedVariants, 'beach']
+           });
+         }
        } else {
          // Regular gym challenge
          const challenges = await base44.asServiceRole.entities.Challenge.filter({ id: challengeId });
