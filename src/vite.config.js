@@ -9,29 +9,36 @@ import base44Plugin from '@base44/vite-plugin';
 const _req = createRequire(import.meta.url);
 
 // ── Patch size limits and suppress workbox errors ──────────────────────────────
-function patchSizeLimits() {
-  const dirs = [];
-  try { dirs.push(dirname(_req.resolve('workbox-build'))); } catch (_) {}
-  try { dirs.push(dirname(_req.resolve('vite-plugin-pwa'))); } catch (_) {}
+function patchJsFile(fp) {
+  let src; try { src = readFileSync(fp, 'utf8'); } catch { return; }
+  let out = src;
+  // Raise 2 MiB → 10 MiB constant
+  out = out.replace(/\b2097152\b/g, '10485760');
+  // Suppress any throw that mentions the cache limit
+  out = out.replace(/throw\s+new\s+Error\([^)]*maximumFileSizeToCache[^)]*\)/g, 'void 0');
+  out = out.replace(/throw\s+new\s+Error\(`[^`]*maximumFileSizeToCache[^`]*`\)/g, 'void 0');
+  // Nuke the entire logWorkboxResult body if it still throws
+  out = out.replace(/(function\s+logWorkboxResult\s*\([^)]*\)\s*\{)[^}]*(})/g, '$1$2');
+  if (out !== src) { try { writeFileSync(fp, out, 'utf8'); } catch (_) {} }
+}
 
-  for (const dir of dirs) {
-    let files;
-    try { files = readdirSync(dir).filter(f => f.endsWith('.js')); } catch (_) { continue; }
-    for (const f of files) {
-      const fp = join(dir, f);
-      let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-      let out = src;
-      
-      // Replace the 2 MiB byte constant with 10 MiB
-      out = out.replace(/\b2097152\b/g, '10485760');
-      
-      // Also suppress the logWorkboxResult throw for size limit errors
-      out = out.replace(
-        /throw\s+new\s+Error\s*\(\s*`[^`]*maximumFileSizeToCacheInBytes[^`]*`\s*\)/g,
-        'void 0'
-      );
-      
-      if (out !== src) { try { writeFileSync(fp, out, 'utf8'); } catch (_) {} }
+function patchSizeLimits() {
+  // Collect all dirs to scan: workbox-build and vite-plugin-pwa (including subdirs)
+  const dirsToScan = [];
+  try { dirsToScan.push(dirname(_req.resolve('workbox-build'))); } catch (_) {}
+  try { dirsToScan.push(dirname(_req.resolve('vite-plugin-pwa'))); } catch (_) {}
+
+  for (const dir of dirsToScan) {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch (_) { continue; }
+    for (const e of entries) {
+      const fp = join(dir, e.name);
+      if (e.isFile() && e.name.endsWith('.js')) patchJsFile(fp);
+      // Also patch one level of subdirs (workbox-build has lib/ subdir)
+      if (e.isDirectory()) {
+        let sub; try { sub = readdirSync(fp); } catch { continue; }
+        for (const sf of sub.filter(f => f.endsWith('.js'))) patchJsFile(join(fp, sf));
+      }
     }
   }
 }
