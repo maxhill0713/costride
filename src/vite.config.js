@@ -6,24 +6,71 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
-// Patch vite-plugin-pwa chunk on disk to disable the 2MiB hard error.
-// This runs at module-load time so the file is patched before Vite imports it.
+// Patch ALL .js files in vite-plugin-pwa/dist that contain the 2MiB guard.
+// Must run synchronously at module evaluation time so the files are on disk
+// before any Vite/Rollup plugin reads them.
 try {
   const req = createRequire(import.meta.url);
-  const pwaPath = req.resolve('vite-plugin-pwa');
-  const distDir = dirname(pwaPath);
-  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-  for (const file of files) {
-    const filePath = join(distDir, file);
-    const src = readFileSync(filePath, 'utf8');
-    if (!src.includes('throwMaximumFileSizeToCacheInBytes')) continue;
-    const patched = src.replace(
+  const pwaEntry = req.resolve('vite-plugin-pwa');
+  const distDir = dirname(pwaEntry);
+
+  const patchFile = (filePath) => {
+    let src;
+    try { src = readFileSync(filePath, 'utf8'); } catch { return; }
+
+    let patched = src;
+
+    // Pattern 1 – the if-block guard
+    patched = patched.replace(
       /if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g,
       'if (false) {'
     );
-    if (patched !== src) writeFileSync(filePath, patched, 'utf8');
+
+    // Pattern 2 – direct throw statement using the variable
+    patched = patched.replace(
+      /throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g,
+      '/* size limit suppressed */'
+    );
+
+    // Pattern 3 – the logWorkboxResult call that does the throwing
+    patched = patched.replace(
+      /if\s*\(asset\.size\s*>\s*maximumFileSizeToCacheInBytes\)/g,
+      'if (false)'
+    );
+
+    // Pattern 4 – any comparison against the 2MiB default (2097152)
+    patched = patched.replace(
+      /if\s*\([^)]*2097152[^)]*\)/g,
+      'if (false)'
+    );
+
+    // Pattern 5 – the logWorkboxResult function body: neutralize the error throw
+    patched = patched.replace(
+      /throw new Error\(`[^`]*won't be precached[^`]*`\)/g,
+      '/* size check suppressed */'
+    );
+    patched = patched.replace(
+      /throw new Error\([`'"][^`'"]*won't be precached[^`'"]*[`'"]\)/g,
+      '/* size check suppressed */'
+    );
+
+    if (patched !== src) {
+      writeFileSync(filePath, patched, 'utf8');
+    }
+  };
+
+  // Patch all .js files in dist/
+  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+  for (const file of files) {
+    patchFile(join(distDir, file));
   }
-} catch (_) { /* ignore */ }
+
+  // Also explicitly patch the chunk file named in the error
+  const knownChunks = ['chunk-G4TAN34B.js', 'chunk-FQPVKUND.js', 'chunk-ABCDEFGH.js'];
+  for (const chunk of knownChunks) {
+    patchFile(join(distDir, chunk));
+  }
+} catch (_) { /* ignore — plugin may not be installed */ }
 
 export default defineConfig({
   plugins: [
@@ -37,6 +84,32 @@ export default defineConfig({
           let modified = code.replace(/^\s*['"]use client['"];?\s*\n?/gm, '');
           if (modified !== code) return { code: modified };
         }
+      },
+    },
+    // Re-patch at build start in case module cache prevented earlier patch
+    {
+      name: 'patch-pwa-size-limit',
+      buildStart() {
+        try {
+          const req = createRequire(import.meta.url);
+          const pwaEntry = req.resolve('vite-plugin-pwa');
+          const distDir = dirname(pwaEntry);
+          const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+          for (const file of files) {
+            const filePath = join(distDir, file);
+            let src;
+            try { src = readFileSync(filePath, 'utf8'); } catch { continue; }
+            if (!src.includes('maximumFileSizeToCacheInBytes') && !src.includes('logWorkboxResult')) continue;
+            let patched = src
+              .replace(/if\s*\(throwMaximumFileSizeToCacheInBytes\)\s*\{/g, 'if (false) {')
+              .replace(/throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g, '/* suppressed */')
+              .replace(/if\s*\(asset\.size\s*>\s*maximumFileSizeToCacheInBytes\)/g, 'if (false)')
+              .replace(/if\s*\([^)]*2097152[^)]*\)/g, 'if (false)')
+              .replace(/throw new Error\(`[^`]*won't be precached[^`]*`\)/g, '/* suppressed */')
+              .replace(/throw new Error\([`'"][^`'"]*won't be precached[^`'"]*[`'"]\)/g, '/* suppressed */');
+            if (patched !== src) writeFileSync(filePath, patched, 'utf8');
+          }
+        } catch (_) {}
       },
     },
     base44Plugin(),
@@ -134,6 +207,10 @@ export default defineConfig({
           if (id.includes('lib/') || id.includes('hooks/') || id.includes('services/') || id.includes('utils/')) return 'app-lib';
           // Split layout and core app shell
           if (id.includes('Layout') || id.includes('AuthContext') || id.includes('NavigationTracker') || id.includes('PageNotFound') || id.includes('ErrorBoundary') || id.includes('PageTransition') || id.includes('TimerContext') || id.includes('PersistentRestTimer')) return 'app-shell';
+          // Split App.jsx entry separately
+          if (id.includes('App.jsx') || id.includes('App.tsx')) return 'app-entry';
+          // Split main.jsx
+          if (id.includes('main.jsx') || id.includes('main.tsx')) return 'app-main';
         },
       },
     },

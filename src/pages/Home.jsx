@@ -716,20 +716,67 @@ export default function Home() {
 
   const activityFeed = (() => {
     const activities = [];
-    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
     const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' };
+
+    // PRs
+    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
     friendPRs.forEach(lift => {
       const friend = friends.find(f => f.friend_id === lift.member_id);
       if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
-        activities.push({ id: `pr-${lift.id}`, type: 'pr', friendId: lift.member_id, friendName: friend?.friend_name || lift.member_name, friendAvatar: friend?.friend_avatar, message: `hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`, timestamp: new Date(lift.created_date), emoji: '🏆' });
+        activities.push({
+          id: `pr-${lift.id}`,
+          type: 'pr',
+          friendId: lift.member_id,
+          friendName: friend?.friend_name || lift.member_name,
+          friendAvatar: friend?.friend_avatar,
+          message: `just hit a new PR — ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
+          timestamp: new Date(lift.created_date),
+        });
       }
     });
+
+    // Leaderboard rank changes — friends with top streaks get a spotlight moment
+    friendsWithActivity.forEach((friend, idx) => {
+      const streak = friend.activity?.streak || 0;
+      if (streak > 0 && friend.activity?.daysSinceCheckIn === 0) {
+        const rank = idx + 1;
+        if (rank <= 3) {
+          activities.push({
+            id: `leaderboard-${friend.friend_id}`,
+            type: 'leaderboard_rank',
+            friendId: friend.friend_id,
+            friendName: friend.friend_name,
+            friendAvatar: friend.friend_avatar,
+            rank,
+            message: rank === 1
+              ? `just took #1 on the weekly consistency leaderboard 👑`
+              : `is sitting at #${rank} on the consistency leaderboard`,
+            timestamp: new Date(Date.now() - rank * 60000),
+          });
+        } else if (streak >= 7 && streak % 7 === 0) {
+          // Streak milestone
+          activities.push({
+            id: `streak-${friend.friend_id}`,
+            type: 'streak',
+            friendId: friend.friend_id,
+            friendName: friend.friend_name,
+            friendAvatar: friend.friend_avatar,
+            streakCount: streak,
+            message: `just hit a ${streak}-day streak! 🔥`,
+            timestamp: new Date(Date.now() - 120000),
+          });
+        }
+      }
+    });
+
+    // Notifications
     notifications.forEach(n => {
       const text = (n.message || n.title || '').toLowerCase();
       if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
         activities.push({ id: `notif-${n.id}`, type: 'notification', message: n.message || n.title, timestamp: new Date(n.created_date) });
       }
     });
+
     return activities.sort((a, b) => b.timestamp - a.timestamp);
   })();
 
@@ -1425,6 +1472,7 @@ export default function Home() {
             currentUser={currentUser}
             queryClient={queryClient}
             dismissCard={dismissCard}
+            friendsWithActivity={friendsWithActivity}
           />
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && primaryGymIdForQuery === null && (
