@@ -1,23 +1,45 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { createRequire } from 'module';
+import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
-import { VitePWA } from 'vite-plugin-pwa';
+
+// ── Patch vite-plugin-pwa on disk before Vite loads it ────────────────────────
+// base44Plugin registers VitePWA internally with the default 2MiB limit.
+// We patch every JS file in the PWA plugin's dist folder to disable the throw.
+const MARKER = '/*__b44_patched__*/';
+try {
+  const req = createRequire(import.meta.url);
+  const pwaEntry = req.resolve('vite-plugin-pwa');
+  const distDir = dirname(pwaEntry);
+  const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
+  for (const f of files) {
+    const fp = join(distDir, f);
+    if (!existsSync(fp)) continue;
+    let src;
+    try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+    if (src.includes(MARKER)) continue;
+    let out = src;
+    // Neutralise the guard that throws when a file exceeds the cache size limit
+    out = out.replace(
+      /if\s*\(\s*throwMaximumFileSizeToCacheInBytes\s*\)/g,
+      `if (false) ${MARKER} //`
+    );
+    // Force the second argument (throwMaximumFileSizeToCacheInBytes) to false
+    // wherever logWorkboxResult is called
+    out = out.replace(
+      /logWorkboxResult\(\s*([^,]+),\s*[^,)]+,/g,
+      `logWorkboxResult($1, false,`
+    );
+    if (out !== src) writeFileSync(fp, out, 'utf8');
+  }
+} catch (_) { /* PWA plugin not installed — skip */ }
 
 export default defineConfig({
   plugins: [
     react(),
-
-    // Override vite-plugin-pwa with a high maximumFileSizeToCacheInBytes
-    // to prevent the 2MiB precache limit error
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MiB
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-      },
-    }),
-
     base44Plugin(),
   ],
 

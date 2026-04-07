@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
 import { ChevronLeft, TrendingUp, Flame, Zap, Check, Loader2, Calendar, Target } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const pageSlideVariants = {
+  hidden:  { x: '100%', opacity: 1 },
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
+  exit:    { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
+};
+
+const overlayVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18 } },
+  exit:    { opacity: 0, transition: { duration: 0.2 } },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
@@ -310,8 +323,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
   const [hasDeadline, setHasDeadline] = useState(false);
   const [deadline,    setDeadline]    = useState('');
   const [reminder,    setReminder]    = useState(true);
-
-  if (!open) return null;
+  const [isClosing,   setIsClosing]   = useState(false);
 
   const gt = GOAL_TYPES.find(t => t.id === typeId);
 
@@ -321,7 +333,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
     setHasDeadline(false); setDeadline(''); setReminder(true);
   };
 
-  const close = () => { reset(); onClose(); };
+  const close = () => {
+    setIsClosing(true);
+    setTimeout(() => { setIsClosing(false); reset(); onClose(); }, 320);
+  };
 
   const handleSave = () => {
     const autoTitle =
@@ -354,7 +369,24 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
   const btnSec = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
 
   return (
-    <div className="fixed inset-0 z-50 bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col">
+    <AnimatePresence>
+      {open && !isClosing && (
+      <>
+        <motion.div
+          key="goal-overlay"
+          className="fixed inset-0 z-40"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          variants={overlayVariants}
+          initial="hidden" animate="visible" exit="exit"
+          onClick={close}
+        />
+        <motion.div
+          key="goal-panel"
+          className="fixed inset-0 z-50"
+          style={{ minHeight: '100vh', minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}
+          variants={pageSlideVariants}
+          initial="hidden" animate="visible" exit="exit"
+        >
       <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
         {/* HEADER */}
@@ -539,6 +571,9 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
         </div>
 
       </div>
-    </div>
+        </motion.div>
+      </>
+      )}
+    </AnimatePresence>
   );
 }
