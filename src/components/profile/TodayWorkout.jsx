@@ -678,12 +678,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           )}
         </AnimatePresence>
 
-        {/* EXPANDED STATE
-            KEY FIX: overflow is kept hidden during the spring so the card
-            grows cleanly. A counter-translate on the inner wrapper cancels
-            the perceived upward jump — the content starts shifted DOWN by
-            the same amount the spring overshoots, then settles to 0 in sync,
-            so from the user's perspective it never moves. */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -699,8 +693,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               }}
               style={{ overflow: 'hidden', transformOrigin: 'top' }}
             >
-              {/* Inner wrapper: slides down slightly as the outer clips up,
-                  so the content appears stationary relative to the viewport */}
               <motion.div
                 initial={{ y: -12 }}
                 animate={{ y: 0 }}
@@ -716,20 +708,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
 
-                  {/* Column headers */}
-                  <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05, duration: 0.2 }}
-                className="grid gap-1 mb-1.5 items-end"
-                style={{ gridTemplateColumns: exerciseGridCols }}>
+                  {/* ── Column headers — static, no separate animation ── */}
+                  <div
+                    className="grid gap-1 mb-1.5 items-end"
+                    style={{ gridTemplateColumns: exerciseGridCols }}>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Sets</div>
                     <div></div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Reps</div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2">Weight</div>
                     {!alreadyLoggedToday && <div className="w-6" />}
-                  </motion.div>
+                  </div>
 
                   {/* Exercise groups */}
                   {buildExerciseGroups(todayWorkout.exercises).map((group) => {
@@ -917,18 +906,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
               <div className="mt-3">
-                      <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05, duration: 0.2 }}
-                  className="grid gap-1 mb-1.5 items-end px-1"
-                  style={{ gridTemplateColumns: cardioGridCols }}>
+                      {/* ── Cardio column headers — static, no separate animation ── */}
+                      <div
+                        className="grid gap-1 mb-1.5 items-end px-1"
+                        style={{ gridTemplateColumns: cardioGridCols }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-16">Rounds</div>
                         <div />
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-14">Time/Round</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Rest</div>
-                      </motion.div>
+                      </div>
 
                       {todayWorkout.cardio.map((c, index) =>
                 <motion.div
@@ -1099,7 +1086,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>)
             }
 
-              </motion.div>{/* end inner counter-translate wrapper */}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
