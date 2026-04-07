@@ -8,77 +8,38 @@ import base44Plugin from '@base44/vite-plugin';
 
 const _req = createRequire(import.meta.url);
 
-// ── Patch workbox-build: raise 2 MiB limit to 10 MiB ─────────────────────────
-function patchWorkboxBuild() {
-  try {
-    const wbEntry = _req.resolve('workbox-build');
-    const wbDir = dirname(wbEntry);
-    for (const f of readdirSync(wbDir).filter(f => f.endsWith('.js'))) {
-      const fp = join(wbDir, f);
-      if (!existsSync(fp)) continue;
+// ── Patch size limits everywhere they appear ──────────────────────────────────
+// Raises the 2 MiB (2097152) hardcoded limit to 10 MiB in:
+//   1. workbox-build source files
+//   2. vite-plugin-pwa dist files (which bundle workbox-build internally)
+function patchSizeLimits() {
+  const dirs = [];
+  try { dirs.push(dirname(_req.resolve('workbox-build'))); } catch (_) {}
+  try { dirs.push(dirname(_req.resolve('vite-plugin-pwa'))); } catch (_) {}
+
+  for (const dir of dirs) {
+    let files;
+    try { files = readdirSync(dir).filter(f => f.endsWith('.js')); } catch (_) { continue; }
+    for (const f of files) {
+      const fp = join(dir, f);
       let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
+      // Replace the 2 MiB byte constant with 10 MiB
       const out = src.replace(/\b2097152\b/g, '10485760');
-      if (out !== src) writeFileSync(fp, out, 'utf8');
+      if (out !== src) { try { writeFileSync(fp, out, 'utf8'); } catch (_) {} }
     }
-  } catch (_) { /* skip */ }
-}
-
-// ── Patch vite-plugin-pwa dist: nuke the size-limit error ────────────────────
-// The throw happens inside logWorkboxResult. We replace the entire chunk files
-// to disable the throw by patching all .js files in the dist directory.
-function patchPwaPlugin() {
-  try {
-    const pwaEntry = _req.resolve('vite-plugin-pwa');
-    const distDir = dirname(pwaEntry);
-    for (const f of readdirSync(distDir).filter(f => f.endsWith('.js'))) {
-      const fp = join(distDir, f);
-      if (!existsSync(fp)) continue;
-      let src; try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-      let out = src;
-
-      // Remove all throw statements that mention the size limit
-      // Match: throw new Error(`...`) or throw new Error(...)
-      out = out.replace(
-        /throw\s+new\s+Error\s*\(\s*`[^`]*maximumFileSizeToCache[^`]*`\s*\)/g,
-        'void 0'
-      );
-      out = out.replace(
-        /throw\s+new\s+Error\s*\(\s*[^)]*maximumFileSizeToCache[^)]*\)/g,
-        'void 0'
-      );
-
-      // Replace logWorkboxResult function entirely with no-op
-      out = out.replace(
-        /function\s+logWorkboxResult\s*\([^)]*\)\s*\{[^]*?^[\s]*\}/m,
-        'function logWorkboxResult() {}'
-      );
-
-      if (out !== src) writeFileSync(fp, out, 'utf8');
-    }
-  } catch (_) { /* skip */ }
+  }
 }
 
 // Run immediately at module evaluation time (before vite even starts)
-patchWorkboxBuild();
-patchPwaPlugin();
+patchSizeLimits();
 
 // Also run in plugin hooks to survive any cache invalidation
 const patchPlugin = {
   name: 'b44-pwa-patch',
   enforce: 'pre',
-  configResolved() {
-    patchWorkboxBuild();
-    patchPwaPlugin();
-  },
-  buildStart() {
-    patchWorkboxBuild();
-    patchPwaPlugin();
-  },
-  // Use sequential closeBundle (not object form — older rollup compat)
-  closeBundle() {
-    patchWorkboxBuild();
-    patchPwaPlugin();
-  },
+  configResolved() { patchSizeLimits(); },
+  buildStart() { patchSizeLimits(); },
+  closeBundle() { patchSizeLimits(); },
 };
 
 const manualChunks = (id) => {
