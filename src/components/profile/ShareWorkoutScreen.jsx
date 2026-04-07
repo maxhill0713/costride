@@ -228,6 +228,22 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         gym_name: gymName || null,
       });
 
+      // Track "Witness My Gains" monthly challenge progress
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const prevProgress = currentUser.monthly_challenge_progress || {};
+      const isNewMonth = prevProgress.month !== currentMonth;
+      const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
+      if (currentCount < 4) {
+        await base44.auth.updateMe({
+          monthly_challenge_progress: {
+            ...prevProgress,
+            month: currentMonth,
+            witness_my_gains: currentCount + 1,
+          },
+        });
+      }
+
       toast.success('Workout shared with your friends! 🔥');
       onContinue();
     } catch { toast.error('Failed to share workout'); }

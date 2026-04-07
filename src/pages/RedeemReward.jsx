@@ -16,14 +16,14 @@ const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
 const MONTHLY_CHALLENGES = [
   {
-    id: 'streak_master',
-    title: 'Streak Master',
-    description: 'Maintain your gym streak for 7 consecutive days',
-    goal_type: 'longest_streak',
-    target_value: 7,
-    reward: '🏅 Streak Master Badge',
+    id: 'witness_my_gains',
+    title: 'Witness My Gains',
+    description: 'Share 4 of your workouts with your friends or community',
+    goal_type: 'shared_workouts',
+    target_value: 4,
+    reward: '📸 Witness My Gains Badge',
     end_date: monthEnd.toISOString(),
-    progressKey: 'streak_master',
+    progressKey: 'witness_my_gains',
   },
   {
     id: 'discipline_builder',

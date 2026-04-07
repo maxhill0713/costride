@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
     const newMonthlyProgress = {
       month:              currentMonth,
-      streak_master:      Math.min(7, newStreak),
+      witness_my_gains:   isNewMonth ? 0 : (prevProgress.witness_my_gains || 0),
       discipline_builder: isNewMonth ? 1 : (prevProgress.discipline_builder || 0) + 1,
       weekend_warrior:    isNewMonth
         ? (isWeekend ? 1 : 0)

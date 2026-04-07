@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { content, image_url, video_url, allow_gym_repost } = await req.json();
+    const { content, image_url, video_url, allow_gym_repost, share_with_community, workout_name } = await req.json();
 
     const safeContent = sanitise(content, 2000);
     if (!safeContent) {
@@ -68,6 +68,25 @@ Deno.serve(async (req) => {
       reactions:         {},
       allow_gym_repost:  allow_gym_repost === true,
     });
+
+    // Track "Witness My Gains" challenge progress — sharing a workout post
+    const isWorkoutShare = !!(workout_name || share_with_community || image_url || video_url);
+    if (isWorkoutShare) {
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const prevProgress = user.monthly_challenge_progress || {};
+      const isNewMonth = prevProgress.month !== currentMonth;
+      const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
+      if (currentCount < 4) {
+        await base44.auth.updateMe({
+          monthly_challenge_progress: {
+            ...prevProgress,
+            month: currentMonth,
+            witness_my_gains: currentCount + 1,
+          },
+        });
+      }
+    }
 
     return Response.json({ post });
   } catch (error) {
