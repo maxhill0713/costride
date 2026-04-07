@@ -9,9 +9,9 @@ const quotes = [
     context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
   },
   {
-    text: "I am testing code here.",
-    author: "Angela Davis",
-    context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
+    text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    author: "Winston Churchill",
+    context: "Neither success nor failure defines you permanently—what truly matters is having the resilience and determination to keep going despite outcomes.",
   },
   {
     text: "The only thing we have to fear is fear itself.",
