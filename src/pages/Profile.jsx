@@ -366,27 +366,31 @@ export default function Profile() {
 
         {/* Badges */}
         <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
-          {currentUser?.equipped_badges?.length > 0 ? (
-            <>
-              {currentUser?.equipped_badges?.map((badgeId) => (
-                <div key={badgeId} className="w-7 h-7 rounded-lg flex items-center justify-center shadow ring-1 ring-black/30 overflow-hidden">
-                  <img 
-                    src={badgeId === 'spartan' ? 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png' : 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'}
-                    alt={badgeId}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-              <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
-            </>
-          ) : (
+          {(() => {
+            const unlockedVariants = currentUser?.unlocked_streak_variants || [];
+            const validEquipped = (currentUser?.equipped_badges || []).filter(id => unlockedVariants.includes(id));
+            return validEquipped.length > 0 ? (
+              <>
+                {validEquipped.map((badgeId) => (
+                  <div key={badgeId} className="w-7 h-7 rounded-lg flex items-center justify-center shadow ring-1 ring-black/30 overflow-hidden">
+                    <img 
+                      src={badgeId === 'spartan' ? 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png' : 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'}
+                      alt={badgeId}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+                <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
+              </>
+            ) : (
             <div className="flex items-center gap-1.5">
               <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
               <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
               <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
               <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
             </div>
-          )}
+            );
+          })()}
         </button>
 
         {/* Action buttons */}
