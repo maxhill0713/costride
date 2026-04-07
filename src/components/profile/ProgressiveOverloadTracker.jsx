@@ -206,7 +206,19 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
 
     const now = new Date();
-    const cutoff = subMonths(now, CUTOFF_MONTHS);
+    // Find the earliest data point across all exercises
+    let earliestDate = null;
+    allExerciseNames.forEach(name => {
+      const series = exerciseSeriesMap[name];
+      if (series?.length) {
+        const d = series[0].rawDate;
+        if (!earliestDate || d < earliestDate) earliestDate = d;
+      }
+    });
+
+    // Start from the first logged workout, but cap at CUTOFF_MONTHS back
+    const cutoffByMonths = subMonths(now, CUTOFF_MONTHS);
+    const cutoff = earliestDate && earliestDate > cutoffByMonths ? earliestDate : cutoffByMonths;
 
     const baselines = {};
     allExerciseNames.forEach(name => {

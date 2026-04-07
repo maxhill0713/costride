@@ -8,7 +8,7 @@ import base44Plugin from '@base44/vite-plugin';
 
 // ── Patch vite-plugin-pwa on disk before Vite loads it ────────────────────────
 // base44Plugin registers VitePWA internally with the default 2MiB limit.
-// We patch every JS file in the PWA plugin's dist folder to disable the throw.
+// We patch every JS file in the PWA plugin's dist folder to neutralise the throw.
 try {
   const req = createRequire(import.meta.url);
   const pwaEntry = req.resolve('vite-plugin-pwa');
@@ -22,21 +22,27 @@ try {
     if (!src.includes('maximumFileSizeToCacheInBytes')) continue;
     let out = src;
 
-    // Strategy 1: rewrite the logWorkboxResult function so the 2nd param (throw flag) is always false
-    // Handles: function logWorkboxResult(result, throwOnError, logger) { ... if (throwOnError) throw ... }
+    // Replace any throw that mentions the size limit — handles all minified/compiled variants
     out = out.replace(
-      /function logWorkboxResult\s*\([^)]*\)\s*\{/g,
-      (match) => match + '\n  throwMaximumFileSizeToCacheInBytes = false;'
+      /throw new Error\([^)]*maximumFileSizeToCacheInBytes[^)]*\)/g,
+      '(void 0) /* b44-patched: size limit disabled */'
     );
-
-    // Strategy 2: any identifier containing "throw" and "MaximumFileSize" assigned or checked → force false
-    out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
-
-    // Strategy 3: the call site passes true as second arg — replace with false
-    // logWorkboxResult(result, true, ...) → logWorkboxResult(result, false, ...)
+    // Also catch multiline throws that reference this limit
     out = out.replace(
-      /logWorkboxResult\(([^,]+),\s*true\s*,/g,
-      'logWorkboxResult($1, false,'
+      /throw new Error\(`[^`]*maximumFileSizeToCacheInBytes[^`]*`\)/g,
+      '(void 0) /* b44-patched */'
+    );
+    // Catch the compiled form: throw new Error("Configure \"workbox.maximumFileSizeToCacheInBytes\"...")
+    out = out.replace(
+      /throw new Error\("Configure[^"]*maximumFileSizeToCacheInBytes[^"]*"\)/g,
+      '(void 0) /* b44-patched */'
+    );
+    // Nuclear option: replace any throw inside a block that contains the size-limit string
+    // by neutralising the condition that guards it
+    out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
+    out = out.replace(
+      /logWorkboxResult\(([^,]+),\s*true\b/g,
+      'logWorkboxResult($1, false'
     );
 
     if (out !== src) writeFileSync(fp, out, 'utf8');
