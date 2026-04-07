@@ -12,6 +12,7 @@ import CreateSplitModal from '../components/profile/CreateSplitModal';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import FriendsSection from '../components/home/FriendsSection';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Caption sanitisation
@@ -123,6 +124,13 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const [selectedGridPost, setSelectedGridPost] = useState(null);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [confirmRemoveFriend, setConfirmRemoveFriend] = useState(null);
+  const [friendMenuOpen, setFriendMenuOpen] = useState(null);
+  const [pendingMenuOpen, setPendingMenuOpen] = useState(null);
+  const [friendSearchQuery, setFriendSearchQuery] = useState('');
+  const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -176,6 +184,45 @@ export default function Profile() {
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser?.id,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+  const { data: sentFriendRequests = [] } = useQuery({
+    queryKey: ['sentFriendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser?.id,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
+  const { data: friendUsersList = [] } = useQuery({
+    queryKey: ['friendUsers', knownUserIds.join(',')],
+    queryFn: () => base44.entities.User.filter({ id: { $in: knownUserIds } }),
+    enabled: knownUserIds.length > 0,
+    staleTime: 2 * 60 * 1000,
+  });
+  const { data: allRecentCheckIns = [] } = useQuery({
+    queryKey: ['checkIns', 'friendFeed', friends.map(f => f.friend_id).join(',')],
+    queryFn: () => {
+      const ids = friends.map(f => f.friend_id);
+      if (ids.length === 0) return [];
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      return base44.entities.CheckIn.filter({ user_id: { $in: ids }, check_in_date: { $gte: thirtyDaysAgo } }, '-check_in_date', 200);
+    },
+    enabled: !!currentUser?.id && friends.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['searchUsers', friendSearchQuery],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery.trim(), searchBy: 'username', limit: 5 }).then(res => res.data.users || []),
+    enabled: friendSearchQuery.trim().length >= 2,
+    staleTime: 30000,
+  });
 
   useEffect(() => {
     if (currentUser?.dark_mode) {
@@ -194,6 +241,28 @@ export default function Profile() {
   const updateAvatarMutation = useMutation({
     mutationFn: (avatar_url) => base44.auth.updateMe({ avatar_url }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditAvatar(false); },
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', { friendId: friendUser.id, action: 'add' }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friends'] }); queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }); setFriendSearchQuery(''); },
+  });
+  const acceptFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'accept' }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] }); },
+  });
+  const rejectFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'reject' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] }),
+  });
+  const removeFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', currentUser?.id] }),
+  });
+  const cancelFriendMutation = useMutation({
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', { friendId, action: 'remove' }),
+    onMutate: (friendId) => { queryClient.setQueryData(['sentFriendRequests', currentUser?.id], (old = []) => old.filter(r => r.friend_id !== friendId)); },
+    onSettled: () => { queryClient.invalidateQueries({ queryKey: ['sentFriendRequests', currentUser?.id] }); },
   });
 
   const closeCreatePost = () => {
@@ -333,10 +402,10 @@ export default function Profile() {
                 <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>
                 <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
               </div>
-              <div className="text-center">
+              <button onClick={() => setShowFriendsModal(true)} className="text-center active:scale-95 transition-transform">
                 <p className="text-[18px] font-black text-white leading-none">{friendCount}</p>
                 <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
-              </div>
+              </button>
               <div className="text-center">
                 <p className="text-[18px] font-black text-white leading-none">{currentStreak}</p>
                 <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
@@ -464,6 +533,37 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      <FriendsSection
+        showFriendsModal={showFriendsModal}
+        setShowFriendsModal={setShowFriendsModal}
+        showAddFriendModal={showAddFriendModal}
+        setShowAddFriendModal={setShowAddFriendModal}
+        confirmRemoveFriend={confirmRemoveFriend}
+        setConfirmRemoveFriend={setConfirmRemoveFriend}
+        friendMenuOpen={friendMenuOpen}
+        setFriendMenuOpen={setFriendMenuOpen}
+        pendingMenuOpen={pendingMenuOpen}
+        setPendingMenuOpen={setPendingMenuOpen}
+        friendSearchQuery={friendSearchQuery}
+        setFriendSearchQuery={setFriendSearchQuery}
+        friendsListSearchQuery={friendsListSearchQuery}
+        setFriendsListSearchQuery={setFriendsListSearchQuery}
+        sentFriendRequests={sentFriendRequests}
+        friendUsersList={friendUsersList}
+        friendRequests={friendRequests}
+        friends={friends}
+        friendsWithActivity={friends.map(f => {
+          const fCheckIns = allRecentCheckIns.filter(c => c.user_id === f.friend_id);
+          return { ...f, activity: { checkIns: fCheckIns, streak: 0, lastCheckIn: fCheckIns[0] || null, daysSinceCheckIn: null, totalCheckIns: fCheckIns.length } };
+        })}
+        filteredSearchResults={searchResults.filter(u => !friends.map(f => f.friend_id).includes(u.id))}
+        acceptFriendMutation={acceptFriendMutation}
+        rejectFriendMutation={rejectFriendMutation}
+        removeFriendMutation={removeFriendMutation}
+        cancelFriendMutation={cancelFriendMutation}
+        addFriendMutation={addFriendMutation}
+      />
 
       {/* ── CREATE POST BOTTOM SHEET — animated ── */}
       <AnimatePresence>
