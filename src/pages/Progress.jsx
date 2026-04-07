@@ -1,10 +1,16 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 // Module-level set — tracks which tabs have animated this session
 const animatedTabs = new Set();
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ClipboardList, ChevronRight, ChevronDown, Trophy, TrendingUp, Flame, CalendarDays, User, Send, X, BadgeCheck, Utensils } from 'lucide-react';
+import {
+  Plus, Target, CheckCircle, BarChart3, ClipboardList,
+  ChevronRight, ChevronDown, Trophy, TrendingUp, Flame,
+  CalendarDays, User, Send, X, BadgeCheck, Utensils,
+  Droplets, Zap, ScanBarcode,
+} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
@@ -21,18 +27,23 @@ const CARD = {
   WebkitBackdropFilter: 'blur(16px)',
 };
 
-const btnNewGoal = "bg-slate-900/80 border border-slate-500/50 text-slate-400 font-bold rounded-full px-4 py-2 flex items-center gap-1.5 justify-center shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
-const sectionTitle = { fontSize: 24, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2 };
+const btnNewGoal =
+  'bg-slate-900/80 border border-slate-500/50 text-slate-400 font-bold rounded-full px-4 py-2 flex items-center gap-1.5 justify-center shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu';
+
+const sectionTitle = {
+  fontSize: 24, fontWeight: 700, color: '#e2e8f0',
+  letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NUTRITION TAB COMPONENTS
+// NUTRITION TAB
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NUTRITION_BASE = {
   calories: { target: 2400, consumed: 1620 },
-  protein:  { target: 180,  consumed: 112 },
-  carbs:    { target: 260,  consumed: 198 },
-  fats:     { target: 70,   consumed: 41 },
+  protein:  { target: 180,  consumed: 112  },
+  carbs:    { target: 260,  consumed: 198  },
+  fats:     { target: 70,   consumed: 41   },
   water:    { glasses: 5, target: 8 },
   streak:   4,
   weekDays: [true, true, false, true, true, false, false],
@@ -40,149 +51,152 @@ const NUTRITION_BASE = {
 
 const MEAL_PRESETS = {
   Breakfast: [
-    { name: "Oat porridge + berries",   cal: 340, protein: 12, carbs: 56, fat: 6  },
-    { name: "Greek yoghurt",             cal: 150, protein: 17, carbs: 9,  fat: 4  },
+    { name: 'Oat porridge + berries', cal: 340, protein: 12, carbs: 56, fat: 6  },
+    { name: 'Greek yoghurt',           cal: 150, protein: 17, carbs: 9,  fat: 4  },
+    { name: 'Eggs (3 large)',          cal: 210, protein: 18, carbs: 1,  fat: 15 },
+    { name: 'Banana',                  cal: 90,  protein: 1,  carbs: 23, fat: 0  },
   ],
   Lunch: [
-    { name: "Chicken & rice bowl",       cal: 490, protein: 42, carbs: 58, fat: 8  },
+    { name: 'Chicken & rice bowl', cal: 490, protein: 42, carbs: 58, fat: 8  },
+    { name: 'Salmon fillet',        cal: 280, protein: 34, carbs: 0,  fat: 16 },
+    { name: 'Rice (200g)',          cal: 260, protein: 5,  carbs: 56, fat: 1  },
   ],
-  Dinner: [],
+  Dinner: [
+    { name: 'Chicken breast',  cal: 310, protein: 45, carbs: 0,  fat: 12 },
+    { name: 'Pasta bolognese', cal: 520, protein: 28, carbs: 62, fat: 14 },
+    { name: 'Steak + veg',     cal: 480, protein: 50, carbs: 12, fat: 22 },
+  ],
   Snacks: [
-    { name: "Protein bar",               cal: 210, protein: 20, carbs: 22, fat: 7  },
+    { name: 'Protein bar',     cal: 210, protein: 20, carbs: 22, fat: 7  },
+    { name: 'Rice cakes x3',   cal: 90,  protein: 2,  carbs: 20, fat: 1  },
+    { name: 'Handful almonds', cal: 175, protein: 6,  carbs: 6,  fat: 15 },
   ],
 };
 
 const QUICK_ADD_OPTIONS = [
-  { key: "shake",  label: "+ Protein Shake", sub: "30g protein · 180 kcal", cal: 180, protein: 30, carbs: 6,  fat: 3  },
-  { key: "cal500", label: "+ 500 Calories",  sub: "Quick energy boost",     cal: 500, protein: 20, carbs: 60, fat: 18 },
-  { key: "water",  label: "+ Water",         sub: "1 glass · stay hydrated",cal: 0,   protein: 0,  carbs: 0,  fat: 0, water: true },
+  { key: 'shake',  label: 'Protein shake', sub: '30g protein · 180 kcal', cal: 180, protein: 30, carbs: 6,  fat: 3  },
+  { key: 'cal500', label: '500 calories',  sub: 'Quick energy boost',     cal: 500, protein: 20, carbs: 60, fat: 18 },
 ];
 
-function MacroBar({ label, current, target, color, unit = "g" }) {
-  const pct = Math.min((current / target) * 100, 100);
+const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '◑', Snacks: '◇' };
+
+// Nutrition card style — matches CARD from analytics tab
+const nutCard = {
+  ...CARD,
+  borderRadius: 16,
+  padding: '18px',
+  marginBottom: 12,
+};
+
+const nutLabel = {
+  fontSize: 11,
+  color: 'rgba(148,163,184,0.7)',
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  marginBottom: 12,
+  display: 'block',
+  fontWeight: 600,
+};
+
+function CalorieRing({ consumed, target }) {
+  const pct  = Math.min(Math.round((consumed / target) * 100), 100);
+  const r    = 38;
+  const circ = 2 * Math.PI * r;
+  const arc  = circ * 0.75;
+  const fill = arc * (pct / 100);
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <svg width={96} height={96} style={{ display: 'block' }}>
+        <circle cx={48} cy={48} r={r} fill="none"
+          stroke="rgba(255,255,255,0.06)" strokeWidth={7}
+          strokeDasharray={`${arc} ${circ - arc}`} strokeLinecap="round"
+          transform="rotate(135 48 48)" />
+        <circle cx={48} cy={48} r={r} fill="none"
+          stroke="#38bdf8" strokeWidth={7}
+          strokeDasharray={`${fill} ${circ - fill}`} strokeLinecap="round"
+          transform="rotate(135 48 48)"
+          style={{ transition: 'stroke-dasharray 0.8s cubic-bezier(.4,0,.2,1)', filter: 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' }} />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 20, fontWeight: 600, lineHeight: 1, color: '#e2e8f0' }}>{pct}%</span>
+        <span style={{ fontSize: 11, color: 'rgba(148,163,184,0.6)', marginTop: 2 }}>of goal</span>
+      </div>
+    </div>
+  );
+}
+
+function MacroBar({ label, current, target, color }) {
+  const pct = Math.min(Math.round((current / target) * 100), 100);
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.05em" }}>{label}</span>
-        <span style={{ fontSize: 11, fontWeight: 800, color }}>
-          {current}{unit} <span style={{ color: "rgba(255,255,255,0.25)", fontWeight: 500 }}>/ {target}{unit}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+        <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.8)' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: '#e2e8f0' }}>
+          {current}g{' '}
+          <span style={{ color: 'rgba(148,163,184,0.5)', fontWeight: 400 }}>/ {target}g</span>
         </span>
       </div>
-      <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, borderRadius: 999, background: color,
-          boxShadow: `0 0 8px ${color}66`, transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 99, width: `${pct}%`, background: color,
+          transition: 'width 0.8s cubic-bezier(.4,0,.2,1)',
+          boxShadow: `0 0 8px ${color}55`,
+        }} />
       </div>
     </div>
   );
 }
 
-function WaterTracker({ glasses, target, onAdd }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-      {Array.from({ length: target }).map((_, i) => (
-        <div key={i} style={{
-          width: 22, height: 28, borderRadius: 4, border: i < glasses ? "none" : "1.5px solid rgba(34,211,238,0.2)",
-          background: i < glasses ? "linear-gradient(180deg,#22d3ee,#0891b2)" : "rgba(34,211,238,0.05)",
-          boxShadow: i < glasses ? "0 0 8px rgba(34,211,238,0.4)" : "none",
-          transition: "all 0.3s ease",
-          cursor: i === glasses ? "pointer" : "default",
-        }} onClick={i === glasses ? onAdd : undefined} />
-      ))}
-      <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", marginLeft: 4 }}>
-        {glasses}/{target} glasses
-      </span>
-    </div>
-  );
-}
-
-function WeekDots({ days }) {
-  const labels = ["M","T","W","T","F","S","S"];
-  const onTrack = days.filter(Boolean).length;
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-        {days.map((on, i) => (
-          <div key={i} style={{ textAlign: "center" }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: on ? "linear-gradient(135deg,#22d3ee,#0891b2)" : "rgba(255,255,255,0.05)",
-              border: on ? "none" : "1px solid rgba(255,255,255,0.08)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: on ? "0 0 10px rgba(34,211,238,0.35)" : "none",
-            }}>
-              {on && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#061820" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>}
-            </div>
-            <span style={{ fontSize: 8, fontWeight: 700, color: on ? "#22d3ee" : "rgba(255,255,255,0.2)", marginTop: 3, display: "block" }}>{labels[i]}</span>
-          </div>
-        ))}
-      </div>
-      <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)" }}>
-        <span style={{ color: "#22d3ee" }}>{onTrack}/7 days</span> on track this week
-      </p>
-    </div>
-  );
-}
-
-function NutritionCard({ children, style = {} }) {
+function InsightBanner({ text, onDismiss }) {
   return (
     <div style={{
-      borderRadius: 20,
-      background: "linear-gradient(160deg,rgba(26,32,58,0.80) 0%,rgba(8,10,22,0.96) 100%)",
-      border: "1px solid rgba(255,255,255,0.07)",
-      backdropFilter: "blur(20px)",
-      boxShadow: "0 4px 24px rgba(0,0,0,0.45)",
-      overflow: "hidden",
-      position: "relative",
-      ...style,
+      background: 'rgba(56,189,248,0.08)',
+      border: '1px solid rgba(56,189,248,0.2)',
+      borderRadius: 10, padding: '10px 14px',
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      marginBottom: 16,
     }}>
-      <div style={{
-        position: "absolute", inset: "0 0 auto 0", height: 2,
-        background: "linear-gradient(90deg,transparent 5%,#22d3ee 40%,#06b6d4 60%,transparent 95%)",
-        opacity: 0.4,
-      }} />
-      <div style={{ padding: 18 }}>{children}</div>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#38bdf8', flexShrink: 0, marginTop: 5 }} />
+      <p style={{ flex: 1, fontSize: 13, color: '#7dd3fc', lineHeight: 1.5, margin: 0 }}>{text}</p>
+      <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#38bdf8', fontSize: 18, lineHeight: 1, opacity: 0.5, flexShrink: 0 }}>×</button>
     </div>
-  );
-}
-
-function NutritionSectionLabel({ children }) {
-  return (
-    <p style={{ margin: "0 0 10px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em",
-      textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>
-      {children}
-    </p>
   );
 }
 
 function AddMealSheet({ section, onAdd, onClose }) {
-  const options = MEAL_PRESETS[section] || [];
-  const custom = [
-    { name: "Custom item",   cal: 300, protein: 15, carbs: 35, fat: 8  },
-    { name: "Protein bar",   cal: 210, protein: 20, carbs: 22, fat: 7  },
-    { name: "Eggs (3 large)",cal: 210, protein: 18, carbs: 1,  fat: 15 },
-    { name: "Rice (200g)",   cal: 260, protein: 5,  carbs: 56, fat: 1  },
-    { name: "Salmon fillet", cal: 280, protein: 34, carbs: 0,  fat: 16 },
-  ];
-  const all = [...options, ...custom.filter(c => !options.find(o => o.name === c.name))];
-
+  const presets = MEAL_PRESETS[section] || [];
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", borderRadius: "24px 24px 0 0", background: "linear-gradient(180deg,rgba(18,22,48,0.99),rgba(6,8,18,0.99))", border: "1px solid rgba(255,255,255,0.09)", padding: "20px 16px 36px", maxHeight: "70vh", overflowY: "auto" }}>
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)", margin: "0 auto 16px" }} />
-        <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#fff" }}>Add to {section}</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {all.map((m, i) => (
-            <button key={i} onClick={() => { onAdd(m); onClose(); }}
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", textAlign: "left" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{m.name}</span>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: "#22d3ee" }}>{m.cal} kcal</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", display: "block" }}>{m.protein}g protein</span>
-              </div>
-            </button>
-          ))}
-        </div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
+      <div style={{
+        position: 'relative',
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.98) 0%, rgba(8,10,20,0.99) 100%)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '20px 20px 0 0', padding: '20px 16px 40px', maxHeight: '65vh', overflowY: 'auto',
+        backdropFilter: 'blur(20px)',
+      }}>
+        <div style={{ width: 32, height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.15)', margin: '0 auto 16px' }} />
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0', marginBottom: 14 }}>Add to {section}</p>
+        {presets.map((m, i) => (
+          <button key={i} onClick={() => { onAdd(m); onClose(); }} style={{
+            width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '12px 14px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            cursor: 'pointer', textAlign: 'left', marginBottom: 8, fontFamily: 'inherit',
+            transition: 'background 0.15s',
+          }}>
+            <span style={{ fontSize: 13, color: '#e2e8f0' }}>{m.name}</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{m.cal} kcal</div>
+              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.6)' }}>{m.protein}g protein</div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -191,24 +205,130 @@ function AddMealSheet({ section, onAdd, onClose }) {
 function NutritionToast({ msg, visible }) {
   return (
     <div style={{
-      position: "fixed", bottom: 80, left: "50%", transform: `translateX(-50%) translateY(${visible ? 0 : 20}px)`,
-      opacity: visible ? 1 : 0, transition: "all 0.3s ease",
-      background: "rgba(34,211,238,0.12)", backdropFilter: "blur(12px)",
-      border: "1px solid rgba(34,211,238,0.3)", borderRadius: 999, padding: "9px 18px",
-      fontSize: 12, fontWeight: 800, color: "#22d3ee", whiteSpace: "nowrap", zIndex: 300,
-      pointerEvents: "none",
+      position: 'fixed', bottom: 28, left: '50%',
+      transform: `translateX(-50%) translateY(${visible ? 0 : 10}px)`,
+      opacity: visible ? 1 : 0, transition: 'all 0.25s ease',
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.98) 0%, rgba(8,10,20,0.99) 100%)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: 99, padding: '8px 18px',
+      fontSize: 13, color: '#e2e8f0',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+      whiteSpace: 'nowrap', zIndex: 300, pointerEvents: 'none',
     }}>
       {msg}
     </div>
   );
 }
 
+function NutMealSection({ section, items, onAdd, onDelete, divider }) {
+  const sectionCals = items.reduce((s, m) => s + m.cal, 0);
+  return (
+    <>
+      {divider && <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 14 }}>{MEAL_ICONS[section]}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{section}</span>
+            {sectionCals > 0 && <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)' }}>{sectionCals} kcal</span>}
+          </div>
+          <button onClick={() => onAdd(section)} style={{
+            fontSize: 12, color: '#38bdf8',
+            background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)',
+            borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
+            transition: 'background 0.15s',
+          }}>+ Add</button>
+        </div>
+        {items.length === 0 ? (
+          <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.4)', paddingBottom: 8 }}>No items logged</p>
+        ) : items.map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ flex: 1, fontSize: 13, color: '#e2e8f0' }}>{m.name}</div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>{m.cal} kcal</div>
+              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)' }}>{m.protein}g P · {m.carbs}g C · {m.fat}g F</div>
+            </div>
+            <button onClick={() => onDelete(section, i)} style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              transition: 'background 0.15s',
+            }}>
+              <X size={12} color="#f87171" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function NutWaterTracker({ glasses, target, onAdd }) {
+  return (
+    <div>
+      <span style={nutLabel}>Hydration</span>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+        {Array.from({ length: target }).map((_, i) => (
+          <div key={i} onClick={i === glasses ? onAdd : undefined} style={{
+            width: 18, height: 22, borderRadius: 4,
+            background: i < glasses ? '#38bdf8' : 'rgba(255,255,255,0.06)',
+            border: i < glasses ? 'none' : '1px solid rgba(255,255,255,0.1)',
+            cursor: i === glasses ? 'pointer' : 'default',
+            transition: 'background 0.2s',
+            boxShadow: i < glasses ? '0 0 6px rgba(56,189,248,0.4)' : 'none',
+          }} />
+        ))}
+      </div>
+      <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', margin: 0 }}>{glasses} / {target} glasses</p>
+    </div>
+  );
+}
+
+function NutWeekDots({ days }) {
+  const labels  = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const onTrack = days.filter(Boolean).length;
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        {days.map((on, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: '50%',
+              background: on ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.04)',
+              border: on ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: on ? '0 0 10px rgba(56,189,248,0.25)' : 'none',
+            }}>
+              {on && (
+                <svg width={11} height={11} viewBox="0 0 12 12" fill="none" stroke="#38bdf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1.5,6 4.5,9 10.5,3" />
+                </svg>
+              )}
+            </div>
+            <span style={{ fontSize: 10, color: on ? '#38bdf8' : 'rgba(148,163,184,0.4)' }}>{labels[i]}</span>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: 0 }}>
+        <span style={{ fontWeight: 600, color: '#e2e8f0' }}>{onTrack}/7 days</span> on track this week
+      </p>
+    </>
+  );
+}
+
 function NutritionTab() {
-  const [data, setData] = useState(NUTRITION_BASE);
-  const [meals, setMeals] = useState(MEAL_PRESETS);
-  const [addingTo, setAddingTo] = useState(null);
-  const [toast, setToast] = useState({ msg: "", visible: false });
-  const toastTimer = useRef(null);
+  const [data, setData]           = useState(NUTRITION_BASE);
+  const [meals, setMeals]         = useState({
+    Breakfast: [{ name: 'Oat porridge + berries', cal: 340, protein: 12, carbs: 56, fat: 6 }],
+    Lunch:     [{ name: 'Chicken & rice bowl',     cal: 490, protein: 42, carbs: 58, fat: 8 }],
+    Dinner:    [],
+    Snacks:    [{ name: 'Protein bar',              cal: 210, protein: 20, carbs: 22, fat: 7 }],
+  });
+  const [addingTo, setAddingTo]   = useState(null);
+  const [insight, setInsight]     = useState(true);
+  const [toast, setToast]         = useState({ msg: '', visible: false });
+  const toastTimer                = useRef(null);
 
   const showToast = (msg) => {
     clearTimeout(toastTimer.current);
@@ -216,287 +336,173 @@ function NutritionTab() {
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
   };
 
-  const handleQuickAdd = (opt) => {
-    if (opt.water) {
-      setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
-      showToast("💧 Water logged!");
-      return;
-    }
+  const addToNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
     setData(d => ({
       ...d,
-      calories: { ...d.calories, consumed: d.calories.consumed + opt.cal },
-      protein:  { ...d.protein,  consumed: d.protein.consumed  + opt.protein },
-      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + opt.carbs },
-      fats:     { ...d.fats,     consumed: d.fats.consumed     + opt.fat },
+      calories: { ...d.calories, consumed: d.calories.consumed + cal     },
+      protein:  { ...d.protein,  consumed: d.protein.consumed  + protein },
+      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + carbs   },
+      fats:     { ...d.fats,     consumed: d.fats.consumed     + fat     },
     }));
-    showToast(`✓ ${opt.label} added!`);
-  };
+
+  const removeFromNutrition = ({ cal = 0, protein = 0, carbs = 0, fat = 0 }) =>
+    setData(d => ({
+      ...d,
+      calories: { ...d.calories, consumed: Math.max(0, d.calories.consumed - cal    ) },
+      protein:  { ...d.protein,  consumed: Math.max(0, d.protein.consumed  - protein) },
+      carbs:    { ...d.carbs,    consumed: Math.max(0, d.carbs.consumed    - carbs  ) },
+      fats:     { ...d.fats,     consumed: Math.max(0, d.fats.consumed     - fat    ) },
+    }));
+
+  const handleQuickAdd = (opt) => { addToNutrition(opt); showToast(`${opt.label} added`); };
 
   const handleAddMeal = (section, meal) => {
     setMeals(m => ({ ...m, [section]: [...(m[section] || []), meal] }));
-    setData(d => ({
-      ...d,
-      calories: { ...d.calories, consumed: d.calories.consumed + meal.cal },
-      protein:  { ...d.protein,  consumed: d.protein.consumed  + meal.protein },
-      carbs:    { ...d.carbs,    consumed: d.carbs.consumed    + meal.carbs },
-      fats:     { ...d.fats,     consumed: d.fats.consumed     + meal.fat },
-    }));
-    showToast(`✓ ${meal.name} logged!`);
+    addToNutrition(meal);
+    showToast(`${meal.name} added`);
   };
 
-  const cals       = data.calories;
-  const calPct     = Math.round((cals.consumed / cals.target) * 100);
-  const remaining  = cals.target - cals.consumed;
+  const handleDeleteMeal = (section, idx) => {
+    const meal = meals[section][idx];
+    setMeals(m => ({ ...m, [section]: m[section].filter((_, i) => i !== idx) }));
+    removeFromNutrition(meal);
+    showToast(`${meal.name} removed`);
+  };
+
+  const handleAddWater = () => {
+    setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } }));
+    showToast('Water logged');
+  };
+
   const proteinGap = data.protein.target - data.protein.consumed;
-
-  const status = proteinGap > 30
-    ? { label: "Low Protein", color: "#fb923c", bg: "rgba(251,146,60,0.10)" }
-    : cals.consumed < cals.target * 0.6
-    ? { label: "Under Calories", color: "#f87171", bg: "rgba(248,113,113,0.10)" }
-    : { label: "On Track", color: "#4ade80", bg: "rgba(74,222,128,0.10)" };
-
-  const todaysFocus = proteinGap > 0
-    ? `Eat ${proteinGap}g more protein to hit your target`
+  const remaining  = data.calories.target - data.calories.consumed;
+  const insightText = proteinGap > 0
+    ? `Eat ${proteinGap}g more protein to hit your daily target.`
     : remaining > 0
-    ? `${remaining} kcal left — add a meal to reach your goal`
-    : "You've nailed today's nutrition! 🎉";
-
-  const insights = [
-    proteinGap > 30 && "You're under your protein target today",
-    data.streak >= 3 && `You've hit your calories ${data.streak} days this week`,
-    !meals.Dinner.length && "You tend to skip dinner — log it early",
-  ].filter(Boolean).slice(0, 2);
+    ? `${remaining} kcal left — add a meal to reach your goal.`
+    : "You've nailed today's nutrition goals!";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 32 }}>
 
-      {/* ── HERO CARD ── */}
-      <div style={{
-        borderRadius: 22,
-        background: "linear-gradient(155deg,rgba(14,24,60,0.95) 0%,rgba(6,18,36,0.98) 100%)",
-        border: "1px solid rgba(34,211,238,0.13)",
-        boxShadow: "0 0 40px rgba(34,211,238,0.07), 0 8px 32px rgba(0,0,0,0.5)",
-        overflow: "hidden", position: "relative",
-      }}>
-        <div style={{ position: "absolute", inset: "0 0 auto 0", height: 2,
-          background: "linear-gradient(90deg,transparent 5%,#22d3ee 40%,#06b6d4 60%,transparent 95%)", opacity: 0.6 }} />
-
-        <div style={{ padding: "20px 20px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div>
-              <p style={{ margin: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>
-                Daily Overview
-              </p>
-              <h2 style={{ margin: "4px 0 0", fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: -0.4 }}>Nutrition Today</h2>
-            </div>
-            <div style={{ padding: "5px 12px", borderRadius: 999, background: status.bg, border: `1px solid ${status.color}44` }}>
-              <span style={{ fontSize: 10, fontWeight: 800, color: status.color, letterSpacing: "0.05em" }}>{status.label}</span>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "rgba(255,255,255,0.055)", margin: "0 -20px 18px" }} />
-
-          {/* Calories big display */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 20 }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <svg width={108} height={108} style={{ display: "block" }}>
-                <defs>
-                  <linearGradient id="ncgrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.7" />
-                    <stop offset="100%" stopColor="#0891b2" />
-                  </linearGradient>
-                </defs>
-                {(() => {
-                  const r = 44, c = 54, circ = 2 * Math.PI * r;
-                  const arc = circ * 0.78, off = arc * (1 - Math.min(calPct, 100) / 100);
-                  return <>
-                    <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(34,211,238,0.08)" strokeWidth={8}
-                      strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" transform={`rotate(129.6 ${c} ${c})`} />
-                    <circle cx={c} cy={c} r={r} fill="none" stroke="url(#ncgrad)" strokeWidth={8}
-                      strokeDasharray={`${arc} ${circ}`} strokeDashoffset={off} strokeLinecap="round"
-                      transform={`rotate(129.6 ${c} ${c})`}
-                      style={{ filter: "drop-shadow(0 0 8px rgba(34,211,238,0.5))", transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)" }} />
-                  </>;
-                })()}
-                <text x="54" y="50" textAnchor="middle" fill="#fff" fontSize="19" fontWeight="800">{calPct}%</text>
-                <text x="54" y="64" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="9" fontWeight="700">of goal</text>
-              </svg>
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: 10 }}>
-                <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: -1, lineHeight: 1 }}>
-                  {cals.consumed.toLocaleString()}
-                </p>
-                <p style={{ margin: "3px 0 0", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.3)" }}>
-                  of {cals.target.toLocaleString()} kcal
-                </p>
-              </div>
-              <div style={{ padding: "8px 12px", borderRadius: 12, background: "rgba(34,211,238,0.07)", border: "1px solid rgba(34,211,238,0.14)" }}>
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#22d3ee", lineHeight: 1.4 }}>
-                  {todaysFocus}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "rgba(255,255,255,0.055)", margin: "0 -20px 16px" }} />
-
-          {/* Macros */}
-          <div style={{ paddingBottom: 18 }}>
-            <MacroBar label="PROTEIN" current={data.protein.consumed}  target={data.protein.target}  color="#22d3ee" />
-            <MacroBar label="CARBS"   current={data.carbs.consumed}    target={data.carbs.target}    color="#a78bfa" />
-            <MacroBar label="FATS"    current={data.fats.consumed}     target={data.fats.target}     color="#fb923c" />
+      {/* Hero — Daily Overview */}
+      <div style={nutCard}>
+        <span style={nutLabel}>Daily overview</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 16 }}>
+          <CalorieRing consumed={data.calories.consumed} target={data.calories.target} />
+          <div>
+            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: '0 0 4px' }}>of {data.calories.target.toLocaleString()} kcal</p>
+            <p style={{ fontSize: 28, fontWeight: 600, color: '#e2e8f0', lineHeight: 1, margin: '0 0 2px', letterSpacing: '-0.02em' }}>{data.calories.consumed.toLocaleString()}</p>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)', margin: 0 }}>kcal consumed</p>
           </div>
         </div>
+        {insight && <InsightBanner text={insightText} onDismiss={() => setInsight(false)} />}
+        <MacroBar label="Protein"       current={data.protein.consumed} target={data.protein.target} color="#38bdf8"    />
+        <MacroBar label="Carbohydrates" current={data.carbs.consumed}   target={data.carbs.target}   color="#22c55e"  />
+        <MacroBar label="Fat"           current={data.fats.consumed}    target={data.fats.target}    color="#f59e0b"  />
       </div>
 
-      {/* ── SMART FEEDBACK ── */}
-      {insights.length > 0 && (
-        <NutritionCard>
-          <NutritionSectionLabel>Smart Insights</NutritionSectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {insights.map((ins, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22d3ee", flexShrink: 0, marginTop: 3, boxShadow: "0 0 6px rgba(34,211,238,0.6)" }} />
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>{ins}</p>
-              </div>
-            ))}
-          </div>
-        </NutritionCard>
-      )}
-
-      {/* ── QUICK ADD ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Quick Add</NutritionSectionLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {QUICK_ADD_OPTIONS.map((opt) => (
-            <button key={opt.key} onClick={() => handleQuickAdd(opt)}
-              style={{
-                width: "100%", padding: "13px 14px", borderRadius: 14,
-                background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.14)",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                cursor: "pointer",
+      {/* Add Food */}
+      <div style={nutCard}>
+        <span style={nutLabel}>Add food</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          {QUICK_ADD_OPTIONS.map(opt => (
+            <button key={opt.key} onClick={() => handleQuickAdd(opt)} style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 10, padding: 12, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+              transition: 'background 0.15s',
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 9,
+                background: opt.key === 'shake' ? 'rgba(56,189,248,0.12)' : 'rgba(245,158,11,0.12)',
+                border: opt.key === 'shake' ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(245,158,11,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
               }}>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#fff" }}>{opt.label}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)" }}>{opt.sub}</p>
+                {opt.key === 'shake'
+                  ? <Droplets size={14} color="#38bdf8" />
+                  : <Zap      size={14} color="#f59e0b" />}
               </div>
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#22d3ee,#0891b2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(34,211,238,0.3)" }}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#061820" strokeWidth="2.8" strokeLinecap="round">
-                  <line x1="6.5" y1="1.5" x2="6.5" y2="11.5"/><line x1="1.5" y1="6.5" x2="11.5" y2="6.5"/>
-                </svg>
-              </div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', margin: '0 0 2px' }}>{opt.label}</p>
+              <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', margin: 0 }}>{opt.sub}</p>
             </button>
           ))}
         </div>
-      </NutritionCard>
-
-      {/* ── MEAL LOG ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Meal Log</NutritionSectionLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {["Breakfast", "Lunch", "Dinner", "Snacks"].map((section) => {
-            const sectionMeals = meals[section] || [];
-            const icons = { Breakfast: "🌅", Lunch: "☀️", Dinner: "🌙", Snacks: "🍎" };
-            const sectionCals = sectionMeals.reduce((s, m) => s + m.cal, 0);
-            return (
-              <div key={section} style={{ borderRadius: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                <div style={{ padding: "11px 13px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 14 }}>{icons[section]}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,0.7)" }}>{section}</span>
-                    {sectionCals > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#22d3ee" }}>{sectionCals} kcal</span>}
-                  </div>
-                  <button onClick={() => setAddingTo(section)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 99, background: "rgba(34,211,238,0.10)", border: "1px solid rgba(34,211,238,0.22)", cursor: "pointer" }}>
-                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#22d3ee" strokeWidth="2.2" strokeLinecap="round">
-                      <line x1="4.5" y1="1" x2="4.5" y2="8"/><line x1="1" y1="4.5" x2="8" y2="4.5"/>
-                    </svg>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: "#22d3ee" }}>Add</span>
-                  </button>
-                </div>
-                {sectionMeals.length > 0 && (
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                    {sectionMeals.map((m, i) => (
-                      <div key={i} style={{ padding: "8px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}>{m.name}</span>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.5)" }}>{m.cal} kcal</span>
-                          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", display: "block" }}>{m.protein}g P · {m.carbs}g C · {m.fat}g F</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {sectionMeals.length === 0 && (
-                  <div style={{ padding: "6px 13px 10px" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.18)" }}>No meals logged yet</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </NutritionCard>
-
-      {/* ── WATER + STREAK ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <NutritionCard>
-          <NutritionSectionLabel>Hydration</NutritionSectionLabel>
-          <WaterTracker glasses={data.water.glasses} target={data.water.target}
-            onAdd={() => { setData(d => ({ ...d, water: { ...d.water, glasses: Math.min(d.water.glasses + 1, d.water.target) } })); showToast("💧 Water logged!"); }} />
-        </NutritionCard>
-        <NutritionCard>
-          <NutritionSectionLabel>Streak</NutritionSectionLabel>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 24 }}>🔥</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#fb923c", letterSpacing: -0.5 }}>{data.streak}</p>
-              <p style={{ margin: 0, fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>days on track</p>
-            </div>
+        <button style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 10, padding: '12px 14px', cursor: 'pointer', fontFamily: 'inherit',
+          transition: 'background 0.15s',
+        }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ScanBarcode size={16} color="rgba(148,163,184,0.7)" />
           </div>
-          <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.3)", lineHeight: 1.4 }}>Keep it up — you're building a habit!</p>
-        </NutritionCard>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', margin: '0 0 2px' }}>Scan barcode</p>
+            <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', margin: 0 }}>Identify food instantly</p>
+          </div>
+          <ChevronRight size={14} color="rgba(148,163,184,0.4)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+        </button>
       </div>
 
-      {/* ── WEEKLY CONSISTENCY ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Weekly Consistency</NutritionSectionLabel>
-        <WeekDots days={data.weekDays} />
-      </NutritionCard>
+      {/* Meal Log */}
+      <div style={nutCard}>
+        <span style={nutLabel}>Meal log</span>
+        {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map((section, i) => (
+          <NutMealSection key={section} section={section} items={meals[section] || []} onAdd={setAddingTo} onDelete={handleDeleteMeal} divider={i > 0} />
+        ))}
+      </div>
 
-      {/* ── GOALS CONTEXT ── */}
-      <NutritionCard>
-        <NutritionSectionLabel>Your Goal</NutritionSectionLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+      {/* Weekly Consistency */}
+      <div style={nutCard}>
+        <span style={nutLabel}>Weekly consistency</span>
+        <NutWeekDots days={data.weekDays} />
+      </div>
+
+      {/* Hydration + Streak — matched to CARD style */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <div style={{
+          ...CARD,
+          borderRadius: 16,
+          padding: 14,
+        }}>
+          <NutWaterTracker glasses={data.water.glasses} target={data.water.target} onAdd={handleAddWater} />
+        </div>
+        <div style={{
+          ...CARD,
+          borderRadius: 16,
+          padding: 14,
+        }}>
+          <span style={nutLabel}>Streak</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Flame size={18} color="#f59e0b" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.5))' }} />
+            <span style={{ fontSize: 28, fontWeight: 600, color: '#e2e8f0', lineHeight: 1, letterSpacing: '-0.02em' }}>{data.streak}</span>
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', margin: 0 }}>days on track</p>
+        </div>
+      </div>
+
+      {/* Current Goal */}
+      <div style={nutCard}>
+        <span style={nutLabel}>Current goal</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
-            { label: "Goal",    value: "Muscle Gain",           color: "#22d3ee" },
-            { label: "Calories",value: `${cals.target} kcal`,   color: "#a78bfa" },
-            { label: "Protein", value: `${data.protein.target}g`, color: "#fb923c" },
-          ].map(({ label, value, color }) => (
-            <div key={label} style={{ padding: "10px 10px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-              <p style={{ margin: "0 0 4px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)" }}>{label}</p>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color }}>{value}</p>
+            { label: 'Goal',     value: 'Muscle gain'                               },
+            { label: 'Calories', value: `${data.calories.target.toLocaleString()} kcal` },
+            { label: 'Protein',  value: `${data.protein.target}g`                   },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+              <p style={{ fontSize: 10, color: 'rgba(148,163,184,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>{label}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', margin: 0 }}>{value}</p>
             </div>
           ))}
         </div>
-      </NutritionCard>
-
-      {/* ── PROGRESS CONNECTION ── */}
-      <div style={{ padding: "14px 16px", borderRadius: 16, background: "rgba(34,211,238,0.05)", border: "1px solid rgba(34,211,238,0.10)", display: "flex", alignItems: "center", gap: 10 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>
-          You've been consistent this week — your nutrition is fuelling your progress. Keep going.
-        </p>
       </div>
 
       {addingTo && (
         <AddMealSheet section={addingTo} onAdd={(m) => handleAddMeal(addingTo, m)} onClose={() => setAddingTo(null)} />
       )}
-
       <NutritionToast msg={toast.msg} visible={toast.visible} />
     </div>
   );
@@ -595,27 +601,26 @@ function LiftDropdown({ value, onChange, liftMeta }) {
     document.addEventListener('mousedown', fn);
     return () => document.removeEventListener('mousedown', fn);
   }, []);
-
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 14, border: 'none', cursor: 'pointer', background: `rgba(${liftMeta.colorRgb}, 0.08)`, outline: `1px solid rgba(${liftMeta.colorRgb}, 0.28)`, fontFamily: "'Outfit', system-ui, sans-serif", transition: 'all 0.2s ease', boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(${liftMeta.colorRgb},0.06)` }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 14, border: 'none', cursor: 'pointer', background: `rgba(${liftMeta.colorRgb}, 0.08)`, outline: `1px solid rgba(${liftMeta.colorRgb}, 0.28)`, fontFamily: "'Outfit', system-ui, sans-serif", transition: 'all 0.2s ease' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: liftMeta.color, boxShadow: `0 0 10px ${liftMeta.color}`, flexShrink: 0, transition: 'background 0.3s ease, box-shadow 0.3s ease' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: liftMeta.color, boxShadow: `0 0 10px ${liftMeta.color}`, flexShrink: 0 }} />
           <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>{liftMeta.label}</span>
         </div>
         <ChevronDown style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.35)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }} />
       </button>
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, borderRadius: 16, overflow: 'hidden', background: 'linear-gradient(160deg, rgba(10,18,44,0.99) 0%, rgba(5,8,22,1) 100%)', border: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 24px 64px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.03)', zIndex: 100, animation: 'dd-open 0.18s cubic-bezier(0.34,1.3,0.64,1) both' }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, borderRadius: 16, overflow: 'hidden', background: 'linear-gradient(160deg, rgba(10,18,44,0.99) 0%, rgba(5,8,22,1) 100%)', border: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 24px 64px rgba(0,0,0,0.75)', zIndex: 100, animation: 'dd-open 0.18s cubic-bezier(0.34,1.3,0.64,1) both' }}>
           {LIFTS.map((lift, i) => {
             const active = lift.id === value;
             return (
               <button key={lift.id} onClick={() => { onChange(lift.id); setOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 16px', border: 'none', cursor: 'pointer', background: active ? `rgba(${lift.colorRgb}, 0.09)` : 'transparent', borderBottom: i < LIFTS.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', fontFamily: "'Outfit', system-ui, sans-serif", transition: 'background 0.12s ease' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: active ? lift.color : 'rgba(255,255,255,0.12)', boxShadow: active ? `0 0 8px ${lift.color}` : 'none', transition: 'all 0.2s ease' }} />
-                  <span style={{ fontSize: 13, fontWeight: active ? 800 : 500, color: active ? '#fff' : 'rgba(255,255,255,0.38)', letterSpacing: '-0.01em', transition: 'color 0.15s ease' }}>{lift.label}</span>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: active ? lift.color : 'rgba(255,255,255,0.12)', boxShadow: active ? `0 0 8px ${lift.color}` : 'none' }} />
+                  <span style={{ fontSize: 13, fontWeight: active ? 800 : 500, color: active ? '#fff' : 'rgba(255,255,255,0.38)', letterSpacing: '-0.01em' }}>{lift.label}</span>
                 </div>
-                {active && <div style={{ width: 5, height: 5, borderRadius: '50%', background: lift.color, boxShadow: `0 0 6px ${lift.color}`, flexShrink: 0 }} />}
+                {active && <div style={{ width: 5, height: 5, borderRadius: '50%', background: lift.color, flexShrink: 0 }} />}
               </button>
             );
           })}
@@ -753,42 +758,21 @@ function CommunityLiftCard({ currentUser }) {
   const [lbOpen, setLbOpen] = useState(false);
 
   const { data: gymMemberships = [] } = useQuery({ queryKey: ['gymMemberships', currentUser?.id], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }), enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000 });
-
   const gymId = gymMemberships[0]?.gym_id;
 
-  const { data: workoutLogs = [], isLoading } = useQuery({
-    queryKey: ['communityWorkoutLogs', gymId],
-    queryFn: () => base44.entities.WorkoutLog.filter({ gym_id: gymId }, '-completed_date', 500),
-    enabled: !!gymId,
-    staleTime: 3 * 60 * 1000,
-    placeholderData: p => p,
-  });
-
-  const { data: gymMembersForNames = [] } = useQuery({
-    queryKey: ['gymMembersForNames', gymId],
-    queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200),
-    enabled: !!gymId,
-    staleTime: 10 * 60 * 1000,
-    placeholderData: p => p,
-  });
+  const { data: workoutLogs = [], isLoading } = useQuery({ queryKey: ['communityWorkoutLogs', gymId], queryFn: () => base44.entities.WorkoutLog.filter({ gym_id: gymId }, '-completed_date', 500), enabled: !!gymId, staleTime: 3 * 60 * 1000, placeholderData: p => p });
+  const { data: gymMembersForNames = [] } = useQuery({ queryKey: ['gymMembersForNames', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 10 * 60 * 1000, placeholderData: p => p });
 
   const userMap = useMemo(() => {
     const m = {};
-    gymMembersForNames.forEach(u => {
-      const uid = u.user_id || u.id;
-      if (uid) m[uid] = u.user_name || u.full_name || u.email?.split('@')[0] || 'Athlete';
-    });
+    gymMembersForNames.forEach(u => { const uid = u.user_id || u.id; if (uid) m[uid] = u.user_name || u.full_name || u.email?.split('@')[0] || 'Athlete'; });
     if (currentUser) m[currentUser.id] = currentUser.full_name || currentUser.email?.split('@')[0] || 'You';
     return m;
   }, [gymMembersForNames, currentUser]);
 
   const userAvatarMap = useMemo(() => {
     const m = {};
-    gymMembersForNames.forEach(u => {
-      const uid = u.user_id || u.id;
-      const avatar = u.avatar_url || u.user_avatar || u.profile_picture || null;
-      if (uid && avatar) m[uid] = avatar;
-    });
+    gymMembersForNames.forEach(u => { const uid = u.user_id || u.id; const avatar = u.avatar_url || u.user_avatar || u.profile_picture || null; if (uid && avatar) m[uid] = avatar; });
     const myAvatar = currentUser?.avatar_url || currentUser?.profile_picture || currentUser?.photo_url || null;
     if (currentUser?.id && myAvatar) m[currentUser.id] = myAvatar;
     return m;
@@ -808,19 +792,10 @@ function CommunityLiftCard({ currentUser }) {
   ), [allSets, currentUser?.id, activeLift]);
 
   const todayLifters = useMemo(() => new Set(allSets.filter(s => Date.now() - new Date(s.logged_date || 0) < 86400000).map(s => s.user_id)).size, [allSets]);
-
   const gymName  = gymMemberships[0]?.gym_name || 'Community';
   const liftMeta = LIFTS.find(l => l.id === activeLift) || LIFTS[0];
 
-  if (lbOpen) return (
-    <FullLeaderboard
-      leaderboard={leaderboard}
-      liftMeta={liftMeta}
-      currentUserId={currentUser?.id}
-      onClose={() => setLbOpen(false)}
-      userAvatarMap={userAvatarMap}
-    />
-  );
+  if (lbOpen) return <FullLeaderboard leaderboard={leaderboard} liftMeta={liftMeta} currentUserId={currentUser?.id} onClose={() => setLbOpen(false)} userAvatarMap={userAvatarMap} />;
 
   return (
     <>
@@ -829,20 +804,9 @@ function CommunityLiftCard({ currentUser }) {
         <h2 style={sectionTitle}>Community Lift Rankings</h2>
         <p style={{ fontSize: 22, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>{gymName}</p>
       </div>
-      <div style={{
-        borderRadius: 28,
-        background: 'linear-gradient(160deg,rgba(12,20,48,0.96) 0%,rgba(6,10,26,0.99) 100%)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(40px)',
-        WebkitBackdropFilter: 'blur(40px)',
-        boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(${liftMeta.colorRgb},0.08), inset 0 1px 0 rgba(255,255,255,0.06)`,
-        position: 'relative',
-        overflow: 'visible',
-        transition: 'box-shadow 0.4s ease',
-        fontFamily: "'Outfit', system-ui, sans-serif",
-      }}>
+      <div style={{ borderRadius: 28, background: 'linear-gradient(160deg,rgba(12,20,48,0.96) 0%,rgba(6,10,26,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(${liftMeta.colorRgb},0.08), inset 0 1px 0 rgba(255,255,255,0.06)`, position: 'relative', overflow: 'visible', transition: 'box-shadow 0.4s ease', fontFamily: "'Outfit', system-ui, sans-serif" }}>
         <div style={{ height: 3, borderRadius: '28px 28px 0 0', background: `linear-gradient(90deg,transparent 0%,rgba(${liftMeta.colorRgb},0.5) 20%,${liftMeta.color} 50%,rgba(${liftMeta.colorRgb},0.5) 80%,transparent 100%)`, transition: 'background 0.4s ease' }} />
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 180, borderRadius: '50%', background: `radial-gradient(ellipse,rgba(${liftMeta.colorRgb},0.07) 0%,transparent 70%)`, pointerEvents: 'none', transition: 'background 0.4s ease' }} />
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 300, height: 180, borderRadius: '50%', background: `radial-gradient(ellipse,rgba(${liftMeta.colorRgb},0.07) 0%,transparent 70%)`, pointerEvents: 'none' }} />
         <div style={{ padding: '18px 18px 0', position: 'relative', zIndex: 10 }}>
           <LiftDropdown value={activeLift} onChange={v => { setActiveLift(v); setLbOpen(false); }} liftMeta={liftMeta} />
         </div>
@@ -850,9 +814,7 @@ function CommunityLiftCard({ currentUser }) {
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <ArcRing pct={myPct ?? 0} color={liftMeta.color} size={118} />
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: myEntry ? 26 : 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, animation: 'num-pop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both' }}>
-                {myEntry ? myEntry.weight : '—'}
-              </span>
+              <span style={{ fontSize: myEntry ? 26 : 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, animation: 'num-pop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.1s both' }}>{myEntry ? myEntry.weight : '—'}</span>
               {myEntry && <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.28)' }}>kg PB</span>}
             </div>
           </div>
@@ -947,15 +909,8 @@ function CommunityLiftCard({ currentUser }) {
           </div>
         </div>
         <div style={{ padding: '0 16px 18px' }}>
-          <button
-            onClick={() => setLbOpen(true)}
-            style={{ width: '100%', padding: '14px 20px', borderRadius: 16, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: `linear-gradient(135deg,rgba(${liftMeta.colorRgb},0.13),rgba(${liftMeta.colorRgb},0.05))`, outline: `1px solid rgba(${liftMeta.colorRgb},0.22)`, boxShadow: `0 4px 20px rgba(${liftMeta.colorRgb},0.08),inset 0 1px 0 rgba(255,255,255,0.05)`, fontFamily: "'Outfit',system-ui,sans-serif", transition: 'transform 0.1s ease' }}
-            onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
-            onMouseUp={e => e.currentTarget.style.transform = ''}
-            onMouseLeave={e => e.currentTarget.style.transform = ''}
-            onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
-            onTouchEnd={e => e.currentTarget.style.transform = ''}
-          >
+          <button onClick={() => setLbOpen(true)} style={{ width: '100%', padding: '14px 20px', borderRadius: 16, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: `linear-gradient(135deg,rgba(${liftMeta.colorRgb},0.13),rgba(${liftMeta.colorRgb},0.05))`, outline: `1px solid rgba(${liftMeta.colorRgb},0.22)`, boxShadow: `0 4px 20px rgba(${liftMeta.colorRgb},0.08),inset 0 1px 0 rgba(255,255,255,0.05)`, fontFamily: "'Outfit',system-ui,sans-serif", transition: 'transform 0.1s ease' }}
+            onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'} onMouseUp={e => e.currentTarget.style.transform = ''} onMouseLeave={e => e.currentTarget.style.transform = ''} onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'} onTouchEnd={e => e.currentTarget.style.transform = ''}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `rgba(${liftMeta.colorRgb},0.14)`, border: `1px solid rgba(${liftMeta.colorRgb},0.22)` }}>
                 <Trophy style={{ width: 15, height: 15, color: liftMeta.color }} />
@@ -984,89 +939,35 @@ function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
         <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
       </div>
       {currentUser?.workout_split && (
-        <WorkoutSplitHeatmap
-          checkIns={checkIns}
-          workoutSplit={currentUser?.workout_split}
-          weeklyGoal={currentUser?.weekly_goal}
-          trainingDays={currentUser?.training_days}
-          customWorkoutTypes={currentUser?.custom_workout_types || {}}
-          joinDate={currentUser?.created_date}
-        />
+        <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} joinDate={currentUser?.created_date} />
       )}
-      <ExerciseInsights
-        workoutLogs={workoutLogs}
-        workoutSplit={currentUser?.custom_workout_types}
-        trainingDays={currentUser?.training_days}
-      />
+      <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
     </div>
   );
 }
 
-// ─── Completed Goals (collapsible) ───────────────────────────────────────────
+// ─── Completed Goals ──────────────────────────────────────────────────────────
 function CompletedGoals({ goals }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-2">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 w-full group mb-3"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-      >
+      <button onClick={() => setOpen(o => !o)} className="flex items-center gap-2 w-full group mb-3" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
         <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', flex: 1, textAlign: 'left' }}>
-          Completed ({goals.length})
-        </span>
-        <ChevronDown
-          className="w-4 h-4 text-slate-500 transition-transform duration-200"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
-        />
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', flex: 1, textAlign: 'left' }}>Completed ({goals.length})</span>
+        <ChevronDown className="w-4 h-4 text-slate-500 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }} />
       </button>
       {open && (
         <div className="space-y-2">
           {goals.map((goal) => (
-            <div
-              key={goal.id}
-              style={{
-                background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                borderRadius: 16,
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <div style={{
-                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: 'rgba(34,197,94,0.12)',
-                border: '1px solid rgba(34,197,94,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+            <div key={goal.id} style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 16, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CheckCircle className="w-4 h-4 text-green-400" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
-                  {goal.title}
-                </p>
-                {goal.target_value && (
-                  <p style={{ fontSize: 11, fontWeight: 500, color: '#475569', margin: '2px 0 0' }}>
-                    {goal.target_value}{goal.unit ? ` ${goal.unit}` : ''}
-                  </p>
-                )}
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>{goal.title}</p>
+                {goal.target_value && <p style={{ fontSize: 11, fontWeight: 500, color: '#475569', margin: '2px 0 0' }}>{goal.target_value}{goal.unit ? ` ${goal.unit}` : ''}</p>}
               </div>
-              <div style={{
-                padding: '3px 10px', borderRadius: 99,
-                background: 'rgba(34,197,94,0.1)',
-                border: '1px solid rgba(34,197,94,0.2)',
-                fontSize: 10, fontWeight: 700,
-                color: '#4ade80',
-                flexShrink: 0,
-                letterSpacing: '0.04em',
-              }}>
-                Done
-              </div>
+              <div style={{ padding: '3px 10px', borderRadius: 99, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 10, fontWeight: 700, color: '#4ade80', flexShrink: 0, letterSpacing: '0.04em' }}>Done</div>
             </div>
           ))}
         </div>
@@ -1078,12 +979,7 @@ function CompletedGoals({ goals }) {
 // ─── Goals tab ────────────────────────────────────────────────────────────────
 function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
   const queryClient = useQueryClient();
-
-  const { data: goals = [] } = useQuery({
-    queryKey: ['goals', currentUser?.id],
-    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id }),
-    enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
-  });
+  const { data: goals = [] } = useQuery({ queryKey: ['goals', currentUser?.id], queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id }), enabled: !!currentUser?.id, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev });
 
   const createGoalMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create(data),
@@ -1128,14 +1024,10 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
     <div className="space-y-4">
       {activeGoals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-4">
-            <Target className="w-7 h-7 text-slate-600" />
-          </div>
+          <div className="w-16 h-16 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-4"><Target className="w-7 h-7 text-slate-600" /></div>
           <p className="text-base font-bold text-white mb-1">No Goals Yet</p>
           <p className="text-sm text-slate-500 mb-5">Set your first fitness goal and start tracking.</p>
-          <button onClick={() => setShowAddGoal(true)} className={btnNewGoal}>
-            <Plus className="w-3.5 h-3.5" />Create a Goal
-          </button>
+          <button onClick={() => setShowAddGoal(true)} className={btnNewGoal}><Plus className="w-3.5 h-3.5" />Create a Goal</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -1149,13 +1041,7 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
         </div>
       )}
       {completedGoals.length > 0 && <CompletedGoals goals={completedGoals} />}
-      <AddGoalModal
-        open={showAddGoal}
-        onClose={() => setShowAddGoal(false)}
-        onSave={(data) => createGoalMutation.mutate(data)}
-        currentUser={currentUser}
-        isLoading={createGoalMutation.isPending}
-      />
+      <AddGoalModal open={showAddGoal} onClose={() => setShowAddGoal(false)} onSave={(data) => createGoalMutation.mutate(data)} currentUser={currentUser} isLoading={createGoalMutation.isPending} />
     </div>
   );
 }
@@ -1163,89 +1049,33 @@ function GoalsTab({ currentUser, showAddGoal, setShowAddGoal }) {
 // ─── Coach Messages ───────────────────────────────────────────────────────────
 function CoachMessages({ currentUser }) {
   const [openThread, setOpenThread] = useState(null);
-  const [replyText, setReplyText] = useState('');
+  const [replyText, setReplyText]   = useState('');
   const bottomRef = useRef(null);
   const qc = useQueryClient();
 
-  const { data: received = [], isLoading } = useQuery({
-    queryKey: ['coachMessages', currentUser?.id],
-    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
-    enabled: !!currentUser,
-    staleTime: 15 * 1000,
-    refetchInterval: 15 * 1000,
-  });
-
-  const { data: sent = [] } = useQuery({
-    queryKey: ['coachMessagesSent', currentUser?.id],
-    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200),
-    enabled: !!currentUser,
-    staleTime: 15 * 1000,
-    refetchInterval: 15 * 1000,
-  });
+  const { data: received = [], isLoading } = useQuery({ queryKey: ['coachMessages', currentUser?.id], queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200), enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000 });
+  const { data: sent = [] } = useQuery({ queryKey: ['coachMessagesSent', currentUser?.id], queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200), enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000 });
 
   const sendReply = useMutation({
-    mutationFn: content => base44.entities.Message.create({
-      sender_id:     currentUser.id,
-      sender_name:   currentUser.full_name || currentUser.email,
-      sender_avatar: currentUser.avatar_url || null,
-      receiver_id:   openThread,
-      receiver_name: threads.find(t => t.sender_id === openThread)?.name || 'Coach',
-      content,
-      read: false,
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] });
-      qc.invalidateQueries({ queryKey: ['coachMessagesSent', currentUser?.id] });
-      qc.invalidateQueries({ queryKey: ['dashMessages'] });
-      setReplyText('');
-    },
+    mutationFn: content => base44.entities.Message.create({ sender_id: currentUser.id, sender_name: currentUser.full_name || currentUser.email, sender_avatar: currentUser.avatar_url || null, receiver_id: openThread, receiver_name: threads.find(t => t.sender_id === openThread)?.name || 'Coach', content, read: false }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] }); qc.invalidateQueries({ queryKey: ['coachMessagesSent', currentUser?.id] }); qc.invalidateQueries({ queryKey: ['dashMessages'] }); setReplyText(''); },
   });
 
   const threads = useMemo(() => {
     const map = {};
-    received.forEach(msg => {
-      const otherId = msg.sender_id;
-      if (!map[otherId]) map[otherId] = { sender_id: otherId, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] };
-      map[otherId].messages.push(msg);
-    });
-    sent.forEach(msg => {
-      const otherId = msg.receiver_id;
-      if (map[otherId]) map[otherId].messages.push(msg);
-    });
-    Object.values(map).forEach(t => {
-      const seen = new Set();
-      t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
-      t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-    });
-    return Object.values(map).sort((a, b) => {
-      const la = a.messages[a.messages.length - 1]?.created_date || 0;
-      const lb = b.messages[b.messages.length - 1]?.created_date || 0;
-      return new Date(lb) - new Date(la);
-    });
+    received.forEach(msg => { const otherId = msg.sender_id; if (!map[otherId]) map[otherId] = { sender_id: otherId, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] }; map[otherId].messages.push(msg); });
+    sent.forEach(msg => { const otherId = msg.receiver_id; if (map[otherId]) map[otherId].messages.push(msg); });
+    Object.values(map).forEach(t => { const seen = new Set(); t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; }); t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)); });
+    return Object.values(map).sort((a, b) => { const la = a.messages[a.messages.length - 1]?.created_date || 0; const lb = b.messages[b.messages.length - 1]?.created_date || 0; return new Date(lb) - new Date(la); });
   }, [received, sent]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [openThread, received, sent]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [openThread, received, sent]);
 
   const activeThread = threads.find(t => t.sender_id === openThread);
-
-  const fmtTime = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    const now = new Date();
-    const diffDays = Math.floor((now - d) / 86400000);
-    if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday: 'short' });
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  };
+  const fmtTime = (date) => { if (!date) return ''; const d = new Date(date); const now = new Date(); const diffDays = Math.floor((now - d) / 86400000); if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); if (diffDays === 1) return 'Yesterday'; if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday: 'short' }); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
 
   if (activeThread) {
-    const handleSend = () => {
-      if (!replyText.trim()) return;
-      sendReply.mutate(replyText.trim());
-    };
+    const handleSend = () => { if (!replyText.trim()) return; sendReply.mutate(replyText.trim()); };
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', background: 'linear-gradient(135deg, rgba(10,14,30,0.98) 0%, rgba(5,8,20,1) 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.02)' }}>
@@ -1272,18 +1102,12 @@ function CoachMessages({ currentUser }) {
               <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8 }}>
                 {!isMe && (
                   <div style={{ width: 28, flexShrink: 0 }}>
-                    {showAvatar && (
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.5)', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#3b82f6' }}>
-                        {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    {showAvatar && <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#3b82f6' }}>{activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}</div>}
                   </div>
                 )}
                 <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2, alignItems: isMe ? 'flex-end' : 'flex-start' }}>
                   {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4 }}>{activeThread.name}</span>}
-                  <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? '#3b82f6' : 'rgba(255,255,255,0.08)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.5 }}>
-                    {msg.content}
-                  </div>
+                  <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? '#3b82f6' : 'rgba(255,255,255,0.08)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.5 }}>{msg.content}</div>
                   <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4, paddingRight: 4 }}>{fmtTime(msg.created_date)}</span>
                 </div>
               </div>
@@ -1292,21 +1116,8 @@ function CoachMessages({ currentUser }) {
           <div ref={bottomRef} />
         </div>
         <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 8, alignItems: 'flex-end', flexShrink: 0, background: 'rgba(255,255,255,0.01)' }}>
-          <textarea
-            value={replyText}
-            onChange={e => setReplyText(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder={`Reply to ${activeThread.name}…`}
-            rows={1}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '10px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-          />
-          <button
-            onClick={handleSend}
-            disabled={!replyText.trim() || sendReply.isPending}
-            style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: replyText.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: 'none', cursor: replyText.trim() ? 'pointer' : 'default', transition: 'background 0.15s', flexShrink: 0, boxShadow: replyText.trim() ? '0 0 12px rgba(59,130,246,0.4)' : 'none' }}
-          >
+          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder={`Reply to ${activeThread.name}…`} rows={1} style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '10px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }} onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          <button onClick={handleSend} disabled={!replyText.trim() || sendReply.isPending} style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: replyText.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: 'none', cursor: replyText.trim() ? 'pointer' : 'default', transition: 'background 0.15s', flexShrink: 0, boxShadow: replyText.trim() ? '0 0 12px rgba(59,130,246,0.4)' : 'none' }}>
             <Send style={{ width: 16, height: 16, color: replyText.trim() ? '#fff' : '#334155' }} />
           </button>
         </div>
@@ -1337,13 +1148,7 @@ function CoachMessages({ currentUser }) {
       {threads.map((thread, idx) => {
         const lastMsg = thread.messages[thread.messages.length - 1];
         return (
-          <button
-            key={thread.sender_id}
-            onClick={() => setOpenThread(thread.sender_id)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', border: 'none', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit', textAlign: 'left', borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'background 0.12s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
+          <button key={thread.sender_id} onClick={() => setOpenThread(thread.sender_id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', border: 'none', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit', textAlign: 'left', borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'background 0.12s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 12px rgba(59,130,246,0.55)', background: thread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#3b82f6' }}>
                 {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (thread.name || '?').charAt(0).toUpperCase()}
@@ -1354,9 +1159,7 @@ function CoachMessages({ currentUser }) {
                 <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{thread.name}</span>
                 <span style={{ fontSize: 11, color: '#334155', flexShrink: 0, marginLeft: 8 }}>{fmtTime(lastMsg?.created_date)}</span>
               </div>
-              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                {lastMsg?.content || ''}
-              </span>
+              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{lastMsg?.content || ''}</span>
             </div>
             <ChevronRight style={{ width: 16, height: 16, color: '#2d3f55', flexShrink: 0 }} />
           </button>
@@ -1431,28 +1234,11 @@ function TrainerTab({ currentUser }) {
   const btnBase = "px-2 py-1.5 rounded-2xl font-bold text-sm transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu flex-1";
   const btnInactive = "bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]";
 
-  const { data: me } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: me } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const user = me || currentUser;
 
-  const { data: pendingInvites = [] } = useQuery({
-    queryKey: ['coachInvitesPending', user?.id],
-    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'pending' }, '-created_date', 20),
-    enabled: !!user?.id,
-    staleTime: 0,
-    refetchInterval: 15 * 1000,
-  });
-
-  const { data: acceptedInvites = [] } = useQuery({
-    queryKey: ['coachInvitesAccepted', user?.id],
-    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'accepted' }, '-created_date', 10),
-    enabled: !!user?.id,
-    staleTime: 0,
-    refetchInterval: 30 * 1000,
-  });
+  const { data: pendingInvites = [] } = useQuery({ queryKey: ['coachInvitesPending', user?.id], queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'pending' }, '-created_date', 20), enabled: !!user?.id, staleTime: 0, refetchInterval: 15 * 1000 });
+  const { data: acceptedInvites = [] } = useQuery({ queryKey: ['coachInvitesAccepted', user?.id], queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'accepted' }, '-created_date', 10), enabled: !!user?.id, staleTime: 0, refetchInterval: 30 * 1000 });
 
   const [processingId, setProcessingId] = useState(null);
 
@@ -1474,16 +1260,10 @@ function TrainerTab({ currentUser }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => setActiveSection('classes')}
-          className={`${btnBase} ${activeSection === 'classes' ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_5px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]' : btnInactive}`}
-        >
+        <button onClick={() => setActiveSection('classes')} className={`${btnBase} ${activeSection === 'classes' ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_5px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]' : btnInactive}`}>
           <CalendarDays className="w-4 h-4" />Classes
         </button>
-        <button
-          onClick={() => setActiveSection('coaches')}
-          className={`${btnBase} ${activeSection === 'coaches' ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]' : btnInactive}`}
-        >
+        <button onClick={() => setActiveSection('coaches')} className={`${btnBase} ${activeSection === 'coaches' ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]' : btnInactive}`}>
           <User className="w-4 h-4" />Coaches
         </button>
       </div>
@@ -1502,14 +1282,7 @@ function TrainerTab({ currentUser }) {
             <div className="space-y-3">
               <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Coach Requests</p>
               {pendingInvites.map(invite => (
-                <CoachInviteBanner
-                  key={invite.id}
-                  invite={invite}
-                  accepting={processingId === invite.id}
-                  declining={processingId === invite.id}
-                  onAccept={() => handleAccept(invite)}
-                  onDecline={() => handleDecline(invite)}
-                />
+                <CoachInviteBanner key={invite.id} invite={invite} accepting={processingId === invite.id} declining={processingId === invite.id} onAccept={() => handleAccept(invite)} onDecline={() => handleDecline(invite)} />
               ))}
             </div>
           )}
