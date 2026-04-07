@@ -142,25 +142,55 @@ Deno.serve(async (req) => {
       bonusType    = reward.type === 'free_day_pass' ? 'free_day_pass' : 'gym_offer';
 
     } else {
-      // ── CHALLENGE REWARD CLAIM ────────────────────────────────────────────
-      const challenges = await base44.asServiceRole.entities.Challenge.filter({ id: challengeId });
-      if (!challenges.length) return Response.json({ error: 'Challenge not found' }, { status: 404 });
-      const challenge = challenges[0];
+       // ── CHALLENGE REWARD CLAIM ────────────────────────────────────────────
+       // Handle monthly "Witness My Gains" challenge separately
+       if (challengeId === 'witness_my_gains') {
+         // Verify user completed the monthly challenge (4 shared workouts)
+         const now = new Date();
+         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+         const userRecord = await base44.asServiceRole.entities.User.filter({ id: user.id });
+         if (!userRecord.length) return Response.json({ error: 'User not found' }, { status: 404 });
 
-      if (challenge.status !== 'completed') {
-        return Response.json({ error: 'Challenge is not yet completed' }, { status: 400 });
-      }
+         const monthlyProgress = userRecord[0].monthly_challenge_progress || {};
+         const isCurrentMonth = monthlyProgress.month === currentMonth;
+         const progress = isCurrentMonth ? (monthlyProgress.witness_my_gains || 0) : 0;
 
-      const isParticipant = (challenge.participants || []).includes(user.id);
-      if (!isParticipant) {
-        return Response.json({ error: 'You did not participate in this challenge' }, { status: 403 });
-      }
+         if (progress < 4) {
+           return Response.json({ error: 'You need to share 4 workouts this month to complete this challenge' }, { status: 403 });
+         }
 
-      gymId        = challenge.gym_id || null;
-      offerDetails = challenge.title;
-      earnedText   = `Completed: ${challenge.title}`;
-      bonusType    = 'gym_offer';
-    }
+         offerDetails = 'Witness My Gains';
+         earnedText   = 'Completed: Witness My Gains';
+         bonusType    = 'streak_icon_unlock';
+
+         // Unlock the Spartan streak icon for this user
+         const unlockedVariants = userRecord[0].unlocked_streak_variants || [];
+         if (!unlockedVariants.includes('spartan')) {
+           await base44.asServiceRole.entities.User.update(user.id, {
+             unlocked_streak_variants: [...unlockedVariants, 'spartan']
+           });
+         }
+       } else {
+         // Regular gym challenge
+         const challenges = await base44.asServiceRole.entities.Challenge.filter({ id: challengeId });
+         if (!challenges.length) return Response.json({ error: 'Challenge not found' }, { status: 404 });
+         const challenge = challenges[0];
+
+         if (challenge.status !== 'completed') {
+           return Response.json({ error: 'Challenge is not yet completed' }, { status: 400 });
+         }
+
+         const isParticipant = (challenge.participants || []).includes(user.id);
+         if (!isParticipant) {
+           return Response.json({ error: 'You did not participate in this challenge' }, { status: 403 });
+         }
+
+         gymId        = challenge.gym_id || null;
+         offerDetails = challenge.title;
+         earnedText   = `Completed: ${challenge.title}`;
+         bonusType    = 'gym_offer';
+       }
+     }
 
     // ── CREATE CLAIM with cryptographically secure code ───────────────────────
     const redemptionCode = generateSecureCode(8);

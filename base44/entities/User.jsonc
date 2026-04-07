@@ -30,7 +30,7 @@
         "month": {
           "type": "string"
         },
-        "streak_master": {
+        "witness_my_gains": {
           "type": "number",
           "default": 0
         },
@@ -43,6 +43,14 @@
           "default": 0
         }
       }
+    },
+    "unlocked_streak_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of unlocked streak icon variants (e.g., spartan)"
     }
   },
   "required": []

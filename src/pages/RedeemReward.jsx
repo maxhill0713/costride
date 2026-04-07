@@ -21,7 +21,9 @@ const MONTHLY_CHALLENGES = [
     description: 'Share 4 of your workouts with your friends or community',
     goal_type: 'shared_workouts',
     target_value: 4,
-    reward: '📸 Witness My Gains Badge',
+    reward: '1 x Spartan Streak Icon Design',
+    rewardType: 'streak_icon',
+    rewardValue: 'spartan',
     end_date: monthEnd.toISOString(),
     progressKey: 'witness_my_gains',
   },
@@ -169,10 +171,13 @@ export default function RedeemReward() {
     onError: (err, vars, context) => {
       queryClient.setQueryData(['claimedBonuses', currentUser?.id], context.previous);
     },
-    onSuccess: () => {
+    onSuccess: (result, rewardData) => {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id] });
-
+      // If it's a Witness My Gains challenge, unlock the Spartan streak icon
+      if (rewardData.id === 'witness_my_gains' || rewardData.challengeId === 'witness_my_gains') {
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      }
     }
   });
 
@@ -190,24 +195,45 @@ export default function RedeemReward() {
     return true;
   });
 
-  const completedChallengeRewards = completedChallenges.
-  filter((challenge) => {
-    const isWinner = challenge.winner_id === currentUser?.id;
-    const isParticipant = challenge.participants?.includes(currentUser?.id);
-    const notClaimed = !claimedBonuses.find((cb) => cb.challenge_id === challenge.id);
-    return (isWinner || isParticipant) && notClaimed;
-  }).
-  map((challenge) => ({
-    id: challenge.id,
-    title: challenge.title,
-    description: challenge.description,
-    type: 'challenge',
-    icon: '🏆',
-    reward: challenge.reward,
-    earnedText: `Completed: ${challenge.title}`,
-    isChallenge: true,
-    challengeId: challenge.id
-  }));
+  const completedChallengeRewards = [
+    // Check if "Witness My Gains" monthly challenge is completed
+    ...(() => {
+      const witnessed = monthlyChallengesWithProgress.find(c => c.id === 'witness_my_gains');
+      if (witnessed && witnessed.userProgress >= 4 && !claimedBonuses.find(cb => cb.challenge_id === 'witness_my_gains')) {
+        return [{
+          id: 'witness_my_gains',
+          title: 'Witness My Gains',
+          description: 'Monthly Challenge: Share 4 workouts with community',
+          type: 'challenge',
+          icon: '⚔️',
+          reward: '1 x Spartan Streak Icon Design',
+          rewardType: 'streak_icon',
+          rewardValue: 'spartan',
+          earnedText: 'Completed: Witness My Gains',
+          isChallenge: true,
+          challengeId: 'witness_my_gains'
+        }];
+      }
+      return [];
+    })(),
+    // Gym-based challenges
+    ...completedChallenges.filter((challenge) => {
+      const isWinner = challenge.winner_id === currentUser?.id;
+      const isParticipant = challenge.participants?.includes(currentUser?.id);
+      const notClaimed = !claimedBonuses.find((cb) => cb.challenge_id === challenge.id);
+      return (isWinner || isParticipant) && notClaimed;
+    }).map((challenge) => ({
+      id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      type: 'challenge',
+      icon: '🏆',
+      reward: challenge.reward,
+      earnedText: `Completed: ${challenge.title}`,
+      isChallenge: true,
+      challengeId: challenge.id
+    }))
+  ];
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)] pb-24">
@@ -330,8 +356,16 @@ export default function RedeemReward() {
                       <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mb-3">
                         Challenge Reward
                       </Badge>
-                      {reward.reward && (
-                        <div className="mb-3 text-xs text-slate-300">💝 {reward.reward}</div>
+                      {reward.rewardType === 'streak_icon' && reward.rewardValue === 'spartan' ? (
+                        <div className="mb-3 flex items-center gap-2">
+                          <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png" alt="Spartan Streak Icon" className="w-12 h-12" />
+                          <div className="text-xs text-slate-300">
+                            <div className="font-semibold">Reward</div>
+                            <div>{reward.reward}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        reward.reward && <div className="mb-3 text-xs text-slate-300">💝 {reward.reward}</div>
                       )}
                       <Button
                         onClick={() => claimMutation.mutate(reward)}
