@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
 
-// Pre-patch vite-plugin-pwa on disk BEFORE it gets imported/executed,
-// so the 2MiB hard limit doesn't throw during closeBundle.
+// Patch vite-plugin-pwa chunk on disk to disable the 2MiB hard error.
+// This runs at module-load time so the file is patched before Vite imports it.
 try {
   const req = createRequire(import.meta.url);
   const pwaPath = req.resolve('vite-plugin-pwa');
@@ -23,7 +23,7 @@ try {
     );
     if (patched !== src) writeFileSync(filePath, patched, 'utf8');
   }
-} catch (_) { /* ignore — plugin may not be installed */ }
+} catch (_) { /* ignore */ }
 
 export default defineConfig({
   plugins: [
@@ -129,6 +129,11 @@ export default defineConfig({
           if (id.includes('components/events')) return 'events-components';
           if (id.includes('components/goals') || id.includes('components/rewards') || id.includes('components/groups') || id.includes('components/polls') || id.includes('components/lifts') || id.includes('components/members') || id.includes('components/premium') || id.includes('components/membership')) return 'misc-components';
           if (id.includes('components/ui')) return 'ui-components';
+
+          // Split lib/utils and shared hooks into their own chunk
+          if (id.includes('lib/') || id.includes('hooks/') || id.includes('services/') || id.includes('utils/')) return 'app-lib';
+          // Split layout and core app shell
+          if (id.includes('Layout') || id.includes('AuthContext') || id.includes('NavigationTracker') || id.includes('PageNotFound') || id.includes('ErrorBoundary') || id.includes('PageTransition') || id.includes('TimerContext') || id.includes('PersistentRestTimer')) return 'app-shell';
         },
       },
     },
