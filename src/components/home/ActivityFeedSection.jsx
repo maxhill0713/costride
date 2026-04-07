@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import PostCard from '../feed/PostCard';
 import { createPageUrl } from '../../utils';
-import { Trophy, TrendingUp, Star, ChevronRight, Zap, Crown, Flame } from 'lucide-react';
+import { Trophy, TrendingUp, Star, ChevronRight, Zap, Crown, Flame, Dumbbell } from 'lucide-react';
 
 const POSTS_PER_PAGE = 4;
 
@@ -199,6 +199,12 @@ function ActivityFeedSection({
       {/* ── Social Feed ── */}
       {socialFeedPosts.length > 0 && (
         <div className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(59,130,246,0.1))', border: '1px solid rgba(20,184,166,0.25)' }}>
+              <Dumbbell className="w-3.5 h-3.5" style={{ color: '#2dd4bf' }} />
+            </div>
+            <span className="text-xs font-black text-white uppercase tracking-widest">Feed</span>
+          </div>
           {socialFeedPosts.slice(0, visiblePostCount).map((post) => (
             <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
           ))}
