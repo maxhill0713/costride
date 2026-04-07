@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown, Info } from 'lucide-react';
@@ -32,53 +32,6 @@ function truncateName(name, max = 13) {
   return name.length > max ? name.slice(0, max).trimEnd() + '…' : name;
 }
 
-// ─── SVG Defs (gradients + glow filters) ────────────────────────────────────
-function ChartDefs({ exerciseMeta, animationKey }) {
-  return (
-    <defs>
-      {exerciseMeta.map(({ name, color }, i) => (
-        <React.Fragment key={`${animationKey}-${i}`}>
-          {/* Area gradient fill */}
-          <linearGradient id={`areaGrad-${animationKey}-${i}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-            <stop offset="60%" stopColor={color} stopOpacity={0.07} />
-            <stop offset="100%" stopColor={color} stopOpacity={0} />
-          </linearGradient>
-
-          {/* Glow filter for the line stroke */}
-          <filter id={`lineGlow-${animationKey}-${i}`} x="-40%" y="-100%" width="180%" height="300%">
-            <feGaussianBlur stdDeviation="3" result="blur1" />
-            <feGaussianBlur stdDeviation="1.5" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur1" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </React.Fragment>
-      ))}
-    </defs>
-  );
-}
-
-// ─── Terminal Endpoint Dot ───────────────────────────────────────────────────
-// Only renders at the last non-null data point for its series.
-function TerminalDot({ cx, cy, index, color, lastDataIdx }) {
-  if (index !== lastDataIdx || cx == null || cy == null) return null;
-  return (
-    <g>
-      {/* Outer halo */}
-      <circle cx={cx} cy={cy} r={11} fill={color} opacity={0.07} />
-      {/* Mid ring */}
-      <circle cx={cx} cy={cy} r={6.5} fill={color} opacity={0.16} />
-      {/* Core */}
-      <circle cx={cx} cy={cy} r={3.5} fill={color} stroke="#0a0e1e" strokeWidth={1.5} />
-      {/* Specular highlight */}
-      <circle cx={cx} cy={cy} r={1.3} fill="white" opacity={0.7} />
-    </g>
-  );
-}
-
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -93,7 +46,7 @@ function CustomTooltip({ active, payload, label }) {
       <p style={{ color: '#64748b', fontSize: 10, fontWeight: 600,
         letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</p>
       {payload
-        .filter(p => p.value !== null && p.value !== undefined && p.dataKey !== '__area__')
+        .filter(p => p.value !== null && p.value !== undefined)
         .sort((a, b) => b.value - a.value)
         .map(p => (
           <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
@@ -115,6 +68,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
   const [open, setOpen] = useState(false);
   const current = options.find(o => o.key === selected);
   const switchableOptions = options.filter(o => o.key !== selected);
+
   return (
     <div style={{ position: 'relative', minWidth: 0, flexShrink: 0 }}>
       <button
@@ -135,6 +89,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
         <ChevronDown size={11} color="#64748b"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
       </button>
+
       {open && switchableOptions.length > 0 && (
         <>
           <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
@@ -178,10 +133,13 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   const workoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
+
+    // Get mirrored pairs from the active saved split
     const activeSplitId = currentUser?.active_split_id;
     const activeSplit = (currentUser?.saved_splits || []).find(s => s.id === activeSplitId);
     const mirroredPairs = activeSplit?.mirrored_pairs || [];
     const mirroredSecondDays = new Set(mirroredPairs.map(([a, b]) => String(Math.max(a, b))));
+
     const all = Object.entries(types)
       .filter(([dayKey, w]) => w?.name && w?.exercises?.length > 0 && !mirroredSecondDays.has(dayKey))
       .map(([dayKey, w]) => ({
@@ -189,6 +147,8 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
       }));
+
+    // Fallback: also dedup by name in case mirrored_pairs isn't set
     const seen = new Set();
     return all.filter(opt => {
       if (seen.has(opt.label)) return false;
@@ -198,9 +158,11 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   }, [currentUser]);
 
   const [selectedWorkoutKey, setSelectedWorkoutKey] = useState(() => workoutOptions[0]?.key ?? null);
+
   const validKey = workoutOptions.find(o => o.key === selectedWorkoutKey)
     ? selectedWorkoutKey
     : workoutOptions[0]?.key ?? null;
+
   const selectedWorkout = workoutOptions.find(o => o.key === validKey);
   const targetExercises = selectedWorkout?.exercises ?? [];
 
@@ -242,53 +204,41 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
   const { chartData, exerciseMeta } = useMemo(() => {
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
+
     const now = new Date();
-    let earliestDate = null;
-    allExerciseNames.forEach(name => {
-      const series = exerciseSeriesMap[name];
-      if (series?.length) {
-        const d = series[0].rawDate;
-        if (!earliestDate || d < earliestDate) earliestDate = d;
-      }
-    });
-    const cutoffByMonths = subMonths(now, CUTOFF_MONTHS);
-    const cutoff = earliestDate && earliestDate > cutoffByMonths ? earliestDate : cutoffByMonths;
+    const cutoff = subMonths(now, CUTOFF_MONTHS);
+
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (series?.length) baselines[name] = series[0].e1rm;
     });
+
     const totalDays = Math.round((now - cutoff) / 86400000);
     const tickCount = Math.min(9, Math.max(5, Math.round(totalDays / 7)));
     const tickDates = Array.from({ length: tickCount }, (_, i) => {
       const t = new Date(cutoff.getTime() + (i / (tickCount - 1)) * (now.getTime() - cutoff.getTime()));
       return startOfDay(t);
     });
+
     const rows = tickDates.map(tickDate => {
       const row = { date: format(tickDate, 'MMM d') };
       allExerciseNames.forEach(name => {
         const series = exerciseSeriesMap[name] || [];
         const candidates = series.filter(pt => pt.rawDate <= tickDate);
-        row[name] = candidates.length === 0
-          ? null
-          : e1rmDiff(candidates[candidates.length - 1].e1rm, baselines[name]);
+        if (candidates.length === 0) {
+          row[name] = null;
+        } else {
+          const latest = candidates[candidates.length - 1];
+          row[name] = e1rmDiff(latest.e1rm, baselines[name]);
+        }
       });
       return row;
     });
 
     const meta = allExerciseNames.map((name, i) => {
-      // Find last index with non-null data for terminal dot
-      let lastDataIdx = -1;
-      rows.forEach((row, idx) => {
-        if (row[name] !== null && row[name] !== undefined) lastDataIdx = idx;
-      });
       const lastRow = [...rows].reverse().find(r => r[name] !== null && r[name] !== undefined);
-      return {
-        name,
-        color: LINE_COLORS[i % LINE_COLORS.length],
-        finalDiff: lastRow ? lastRow[name] : 0,
-        lastDataIdx,
-      };
+      return { name, color: LINE_COLORS[i % LINE_COLORS.length], finalDiff: lastRow ? lastRow[name] : 0 };
     });
     meta.sort((a, b) => b.finalDiff - a.finalDiff);
     return { chartData: rows, exerciseMeta: meta };
@@ -313,7 +263,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
   return (
     <div>
-      {/* ── Header ── */}
+      {/* ── Title left, selector right ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 10 : 16 }}>
         <div style={{ flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -367,13 +317,19 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
               position: 'relative',
               background: 'linear-gradient(135deg, rgba(96,165,250,0.07) 0%, rgba(52,211,153,0.04) 100%)',
               border: '1px solid rgba(96,165,250,0.16)',
-              borderRadius: 10, padding: '10px 13px', overflow: 'hidden',
+              borderRadius: 10,
+              padding: '10px 13px',
+              overflow: 'hidden',
             }}>
+              {/* top shimmer line */}
               <div style={{
                 position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
                 background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)',
               }} />
-              <p style={{ fontSize: 11, lineHeight: 1.65, color: '#94a3b8', margin: 0, fontWeight: 500 }}>
+              <p style={{
+                fontSize: 11, lineHeight: 1.65, color: '#94a3b8',
+                margin: 0, fontWeight: 500,
+              }}>
                 <span style={{ color: '#93c5fd', fontWeight: 700 }}>Progressive overload</span> means consistently lifting more over time — the primary stimulus for muscle and strength growth.{' '}
                 This graph tracks your estimated 1-rep max per exercise over the last 2 months, so you can see exactly where you're gaining.
               </p>
@@ -403,14 +359,11 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
+
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
-              <ComposedChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
-
-                {/* SVG defs: gradients + glow filters */}
-                <ChartDefs exerciseMeta={exerciseMeta} animationKey={animationKey} />
-
+              <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
@@ -429,71 +382,46 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                   tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }} />
-
-                {/* Area fills — rendered first (behind lines) */}
-                {exerciseMeta.map(({ name, color }, i) => (
-                  <Area
-                    key={`area-${name}`}
-                    type="monotone"
-                    dataKey={name}
-                    name={name}
-                    stroke="none"
-                    fill={`url(#areaGrad-${animationKey}-${i})`}
-                    connectNulls={false}
-                    isAnimationActive={false}
-                    dot={false}
-                    activeDot={false}
-                    legendType="none"
-                    tooltipType="none"
-                  />
-                ))}
-
-                {/* Lines — rendered on top with glow filter + terminal dots */}
-                {exerciseMeta.map(({ name, color, lastDataIdx }, i) => (
+                {exerciseMeta.map(({ name, color }) => (
                   <Line
                     key={name}
                     type="monotone"
                     dataKey={name}
-                    name={name}
                     stroke={color}
-                    strokeWidth={2.25}
-                    filter={`url(#lineGlow-${animationKey}-${i})`}
-                    dot={(props) => (
-                      <TerminalDot
-                        key={`dot-${name}-${props.index}`}
-                        {...props}
-                        color={color}
-                        lastDataIdx={lastDataIdx}
-                      />
-                    )}
-                    activeDot={{ r: 4.5, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
+                    strokeWidth={1.75}
+                    dot={false}
+                    activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
                     isAnimationActive={localKey > 0}
                     animationDuration={800}
                   />
                 ))}
-              </ComposedChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Legend — 20% width */}
           <div style={{
-            width: '20%', paddingLeft: 8,
-            display: 'flex', flexDirection: 'column', gap: 9,
+            width: '20%',
+            paddingLeft: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 9,
           }}>
             {exerciseMeta.map(({ name, color }) => (
               <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: color, flexShrink: 0,
-                  boxShadow: `0 0 5px ${color}88`,
                 }} />
-                <span style={{ fontSize: 9.5, fontWeight: 500, color: '#64748b', lineHeight: 1.3 }}>
-                  {truncateName(name)}
-                </span>
+                <span style={{
+                  fontSize: 9.5, fontWeight: 500, color: '#64748b',
+                  lineHeight: 1.3,
+                }}>{truncateName(name)}</span>
               </div>
             ))}
           </div>
+
         </div>
       )}
     </div>
