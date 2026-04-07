@@ -155,14 +155,20 @@ async function drawStreakCard(post) {
   const ctx = canvas.getContext('2d');
   await drawBase(ctx, W, H, post);
 
-  const streakNum = getPostStreak(post);
+  const streakNum = getPostStreak(post) ?? post.member_current_streak ?? post.current_streak ?? 0;
   const streakVariant = getAuthorStreakVariant(post);
   const streakIcon = await loadImage(STREAK_ICON_URL);
   const PAD = 72;
 
-  // Smaller icon size, positioned top-right
-  const iconSz = 120; // was 160, now smaller
-  const iconX = W - PAD - iconSz;
+  const iconSz = 120;
+  const numFontSz = 100;
+  const gap = 24;
+
+  // Measure number width first so we can right-align the whole group
+  ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
+  const numW = ctx.measureText(String(streakNum)).width;
+  const totalW = iconSz + gap + numW;
+  const iconX = W - PAD - totalW;
   const iconY = 52;
 
   if (streakIcon) {
@@ -180,19 +186,15 @@ async function drawStreakCard(post) {
     ctx.restore();
   }
 
-  // Streak number: to the RIGHT of the icon, vertically centred on the icon
-  if (streakNum !== null && streakNum !== undefined) {
-    const numFontSz = 100;
-    ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'white';
-    ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 20;
-    // Place to the right of the icon with a small gap, vertically centred
-    const numX = iconX + iconSz + 28;
-    const numY = iconY + iconSz / 2 + numFontSz * 0.36;
-    ctx.fillText(String(streakNum), numX, numY);
-    ctx.shadowBlur = 0;
-  }
+  // Number: to the right of the icon, vertically centred on it
+  ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'white';
+  ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 20;
+  const numX = iconX + iconSz + gap;
+  const numY = iconY + iconSz / 2 + numFontSz * 0.36;
+  ctx.fillText(String(streakNum), numX, numY);
+  ctx.shadowBlur = 0;
 
   drawBottomBlock(ctx, W, H, post);
   return canvas;
@@ -246,18 +248,18 @@ function CleanPreview({ post }) {
 }
 
 function StreakPreview({ post }) {
-  const streakNum = getPostStreak(post);
+  const streakNum = getPostStreak(post) ?? post.member_current_streak ?? post.current_streak ?? 0;
   const streakVariant = getAuthorStreakVariant(post);
   return (
     <CardShell post={post}>
       <CardBrand />
-      {/* Top right: streak icon + number side by side, pushed to the right edge */}
-      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Top right: icon + number side by side, with enough left margin so number fits inside card */}
+      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <img
             src={STREAK_ICON_URL}
             alt="streak"
-            style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }}
+            style={{ width: 32, height: 32, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))' }}
           />
           {streakVariant === 'sunglasses' && (
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 64 64">
@@ -267,18 +269,17 @@ function StreakPreview({ post }) {
             </svg>
           )}
         </div>
-        {streakNum !== null && streakNum !== undefined && (
-          <span style={{
-            fontSize: 15,
-            fontWeight: 900,
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}>
-            {streakNum}
-          </span>
-        )}
+        <span style={{
+          fontSize: 14,
+          fontWeight: 900,
+          color: '#ffffff',
+          textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+          flexShrink: 0,
+        }}>
+          {streakNum}
+        </span>
       </div>
       <CardBottom post={post} />
     </CardShell>
