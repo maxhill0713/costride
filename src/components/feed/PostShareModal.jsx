@@ -158,7 +158,7 @@ async function drawStreakCard(post) {
   const streakNum = getPostStreak(post) ?? post.member_current_streak ?? post.current_streak ?? 0;
   const streakVariant = getAuthorStreakVariant(post);
   const streakIcon = await loadImage(STREAK_ICON_URL);
-  const PAD = 72;
+  const PAD = 120;
 
   const iconSz = 120;
   const numFontSz = 100;
@@ -254,7 +254,7 @@ function StreakPreview({ post }) {
     <CardShell post={post}>
       <CardBrand />
       {/* Top right: icon + number side by side, tightened gap */}
-      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 0 }}>
+      <div style={{ position: 'absolute', top: 6, right: 14, display: 'flex', alignItems: 'center', gap: 0 }}>
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <img
             src={STREAK_ICON_URL}
