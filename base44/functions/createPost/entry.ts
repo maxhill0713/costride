@@ -69,9 +69,9 @@ Deno.serve(async (req) => {
       allow_gym_repost:  allow_gym_repost === true,
     });
 
-    // Track "Witness My Gains" challenge progress — sharing a workout post
-    const isWorkoutShare = !!(workout_name || share_with_community || image_url || video_url);
-    if (isWorkoutShare) {
+    // Track "Witness My Gains" challenge — only if it's a workout summary shared with community
+    const isWorkoutSummarySharedWithCommunity = !!(workout_name && share_with_community);
+    if (isWorkoutSummarySharedWithCommunity) {
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const prevProgress = user.monthly_challenge_progress || {};

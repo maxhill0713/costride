@@ -177,6 +177,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const [uploading, setUploading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -216,6 +217,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         likes: 0, comments: [], reactions: {},
         is_system_generated: false,
         allow_gym_repost: false,
+        share_with_community: shareWithCommunity,
         workout_name: postTitle.trim() || workoutName || null,
         workout_exercises: (exercises || []).map(ex => {
           const rawName = ex.name || ex.title || ex.exercise_name || ex.exercise || '';
@@ -228,20 +230,22 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         gym_name: gymName || null,
       });
 
-      // Track "Witness My Gains" monthly challenge progress
-      const now = new Date();
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const prevProgress = currentUser.monthly_challenge_progress || {};
-      const isNewMonth = prevProgress.month !== currentMonth;
-      const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
-      if (currentCount < 4) {
-        await base44.auth.updateMe({
-          monthly_challenge_progress: {
-            ...prevProgress,
-            month: currentMonth,
-            witness_my_gains: currentCount + 1,
-          },
-        });
+      // Track "Witness My Gains" only if shared with community
+      if (shareWithCommunity) {
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const prevProgress = currentUser.monthly_challenge_progress || {};
+        const isNewMonth = prevProgress.month !== currentMonth;
+        const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
+        if (currentCount < 4) {
+          await base44.auth.updateMe({
+            monthly_challenge_progress: {
+              ...prevProgress,
+              month: currentMonth,
+              witness_my_gains: currentCount + 1,
+            },
+          });
+        }
       }
 
       toast.success('Workout shared with your friends! 🔥');
@@ -359,6 +363,40 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         </motion.div>
 
         <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
+      </div>
+
+      {/* Share with community toggle */}
+      <div className="w-full max-w-sm flex items-center justify-between px-1 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-slate-300">Share with community</span>
+        </div>
+        <button
+          onClick={() => setShareWithCommunity(!shareWithCommunity)}
+          style={{
+            width: 44,
+            height: 28,
+            position: 'relative',
+            borderRadius: 14,
+            background: shareWithCommunity ? '#3b82f6' : 'rgba(100,116,139,0.4)',
+            transition: 'background 0.2s ease',
+            border: 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 2,
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              background: '#fff',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              left: shareWithCommunity ? 18 : 2,
+              transition: 'left 0.2s ease',
+            }}
+          />
+        </button>
       </div>
 
       {/* Buttons */}
