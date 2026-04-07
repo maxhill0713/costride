@@ -162,7 +162,7 @@ async function drawStreakCard(post) {
 
   const iconSz = 120;
   const numFontSz = 100;
-  const gap = 8;
+  const gap = -6; // tightened: number sits closer to icon
 
   // Measure number width first so we can right-align the whole group
   ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
@@ -253,8 +253,8 @@ function StreakPreview({ post }) {
   return (
     <CardShell post={post}>
       <CardBrand />
-      {/* Top right: icon + number side by side, with enough left margin so number fits inside card */}
-      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
+      {/* Top right: icon + number side by side, tightened gap */}
+      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 0 }}>
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <img
             src={STREAK_ICON_URL}
@@ -277,6 +277,7 @@ function StreakPreview({ post }) {
           letterSpacing: '-0.02em',
           lineHeight: 1,
           flexShrink: 0,
+          marginLeft: -6,
         }}>
           {streakNum}
         </span>
