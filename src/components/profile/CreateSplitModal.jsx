@@ -701,7 +701,95 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               <div className="overflow-y-auto flex-1 pb-4">
 
                 {/* PICK */}
-            
+                {step === 'pick' &&
+                  <div className="p-4 space-y-4">
+                    {/* Active split banner */}
+                    {activeSplitId && (() => {
+                      const activeEntry = allSplitsForModal.find(s => s.id === activeSplitId);
+                      return activeEntry ? (
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: 'rgba(120,40,220,0.12)', border: '1px solid rgba(168,85,247,0.25)' }}>
+                          <Star className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-purple-300 uppercase tracking-wider">Active Split</p>
+                            <p className="text-[14px] font-black text-white truncate">{activeEntry.name}</p>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Preset splits */}
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preset Splits</p>
+                      <div className="space-y-2">
+                        {DEFAULT_SPLITS.map((def) => {
+                          const isActive = activeSplitId === def.id;
+                          return (
+                            <SplitCard key={def.id} onClick={() => openDefaultPreview(def)} isActive={isActive} glowColor={def.glowColor}>
+                              <div className="p-4 flex items-center gap-3">
+                                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center flex-shrink-0 shadow-lg text-2xl`}>
+                                  {def.icon}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-[15px] font-black text-white">{def.name}</p>
+                                    {isActive && <Badge className="bg-purple-500 text-white text-[9px] px-1.5 py-0"><Star className="w-2.5 h-2.5 mr-0.5" />Active</Badge>}
+                                  </div>
+                                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">{def.description}</p>
+                                  <div className="flex gap-1 mt-1.5">
+                                    {def.days.map(d => <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-70`}>{DAY_NAMES[d - 1]}</span>)}
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                              </div>
+                            </SplitCard>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Custom splits */}
+                    {customSavedSplits.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">My Custom Splits</p>
+                        <div className="space-y-2">
+                          {customSavedSplits.map((split) => {
+                            const isActive = activeSplitId === split.id;
+                            return (
+                              <SplitCard key={split.id} onClick={() => openEditCustom(split)} isActive={isActive} glowColor="rgba(59,130,246,0.35)">
+                                <div className="p-4 flex items-center gap-3">
+                                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-lg text-xl">
+                                    🏋️
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-[15px] font-black text-white truncate">{split.name}</p>
+                                      {isActive && <Badge className="bg-purple-500 text-white text-[9px] px-1.5 py-0 flex-shrink-0"><Star className="w-2.5 h-2.5 mr-0.5" />Active</Badge>}
+                                    </div>
+                                    <p className="text-[11px] text-slate-400 font-medium mt-0.5">{(split.training_days || []).length} training days · custom</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                                  </div>
+                                </div>
+                              </SplitCard>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Create custom CTA */}
+                    <button
+                      onClick={openCustomConfigure}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-blue-300 transition-all active:scale-95"
+                      style={{ background: 'rgba(59,130,246,0.08)', border: '1px dashed rgba(59,130,246,0.3)' }}>
+                      <Plus className="w-4 h-4" />
+                      Create Custom Split
+                    </button>
+                  </div>
+                }
+
                 {/* PREVIEW */}
                 {step === 'preview' && previewSplit &&
               <div className="p-4 space-y-3">

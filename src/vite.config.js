@@ -18,24 +18,6 @@ export default defineConfig({
       },
     },
     base44Plugin(),
-    // Patch workbox-build to raise the 2MB precache limit to 10MB before the PWA plugin uses it.
-    {
-      name: 'patch-workbox-file-size-limit',
-      enforce: 'pre',
-      config() {
-        // Synchronously patch workbox-build as early as possible via require
-        try {
-          const wb = require('workbox-build');
-          if (typeof wb.generateSW === 'function') {
-            const orig = wb.generateSW.bind(wb);
-            wb.generateSW = (cfg) => {
-              cfg.maximumFileSizeToCacheInBytes = 10 * 1024 * 1024;
-              return orig(cfg);
-            };
-          }
-        } catch {}
-      },
-    },
   ],
   build: {
     chunkSizeWarningLimit: 1500,
@@ -74,6 +56,11 @@ export default defineConfig({
             if (id.includes('sonner')) return 'toast';
             if (id.includes('vaul')) return 'drawer';
             if (id.includes('stripe')) return 'stripe';
+            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark') || id.includes('mdast') || id.includes('hast') || id.includes('unist')) return 'markdown';
+            if (id.includes('zod')) return 'zod';
+            if (id.includes('react-hook-form') || id.includes('@hookform')) return 'forms';
+            if (id.includes('react-leaflet')) return 'leaflet';
+            if (id.includes('canvas-confetti')) return 'confetti';
             return 'vendor';
           }
           // Page-level splits
@@ -88,7 +75,12 @@ export default defineConfig({
           if (id.includes('pages/Home')) return 'page-home';
           if (id.includes('pages/Messages')) return 'page-messages';
           if (id.includes('pages/Notifications')) return 'page-notifications';
-          
+          if (id.includes('pages/RedeemReward')) return 'page-redeem';
+          if (id.includes('pages/Settings') || id.includes('pages/AccountSettings') || id.includes('pages/ProfileSettings') || id.includes('pages/PrivacySettings') || id.includes('pages/AppearanceSettings') || id.includes('pages/NotificationSettings') || id.includes('pages/SubscriptionSettings') || id.includes('pages/HelpSupport')) return 'page-settings';
+          if (id.includes('pages/Friends') || id.includes('pages/UserProfile')) return 'page-social';
+          if (id.includes('pages/AdminGyms') || id.includes('pages/AddGym') || id.includes('pages/ClaimGym') || id.includes('pages/GymRequests') || id.includes('pages/InviteOwner') || id.includes('pages/ModeratorDashboard')) return 'page-admin';
+          if (id.includes('pages/Community') || id.includes('pages/NotificationsHub') || id.includes('pages/PostArchive') || id.includes('pages/Premium') || id.includes('pages/Plus')) return 'page-misc';
+
           // Component-level splits
           if (id.includes('components/dashboard/TabCoachMembers')) return 'coach-members';
           if (id.includes('components/dashboard/TabCoachSchedule')) return 'coach-schedule';
@@ -113,6 +105,7 @@ export default defineConfig({
           if (id.includes('components/coach')) return 'coach-components';
           if (id.includes('components/leaderboard')) return 'leaderboard-components';
           if (id.includes('components/events')) return 'events-components';
+          if (id.includes('components/goals') || id.includes('components/rewards') || id.includes('components/groups') || id.includes('components/polls') || id.includes('components/lifts') || id.includes('components/members') || id.includes('components/premium') || id.includes('components/membership')) return 'misc-components';
           if (id.includes('components/ui')) return 'ui-components';
         },
       },
