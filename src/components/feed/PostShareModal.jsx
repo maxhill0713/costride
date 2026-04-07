@@ -162,7 +162,7 @@ async function drawStreakCard(post) {
 
   const iconSz = 120;
   const numFontSz = 100;
-  const gap = 24;
+  const gap = 8;
 
   // Measure number width first so we can right-align the whole group
   ctx.font = `900 ${numFontSz}px -apple-system,sans-serif`;
@@ -254,7 +254,7 @@ function StreakPreview({ post }) {
     <CardShell post={post}>
       <CardBrand />
       {/* Top right: icon + number side by side, with enough left margin so number fits inside card */}
-      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ position: 'absolute', top: 6, right: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <img
             src={STREAK_ICON_URL}
@@ -321,8 +321,8 @@ export default function PostShareModal({ open, onClose, post }) {
   useEffect(function() { if (open) { setActiveCard(0); } }, [open]);
 
   const cards = [
-    { label: 'Clean',  drawFn: drawCleanCard,  node: <CleanPreview  post={post || {}} /> },
     { label: 'Streak', drawFn: drawStreakCard,  node: <StreakPreview post={post || {}} /> },
+    { label: 'Clean',  drawFn: drawCleanCard,  node: <CleanPreview  post={post || {}} /> },
   ];
 
   const getCanvas = useCallback(function() {
