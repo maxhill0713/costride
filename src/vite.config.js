@@ -131,7 +131,13 @@ export default defineConfig({
   plugins: [
     patchPlugin,
     react(),
-    base44Plugin(),
+    base44Plugin({
+      pwa: {
+        workbox: {
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        },
+      },
+    }),
   ],
 
   build: {

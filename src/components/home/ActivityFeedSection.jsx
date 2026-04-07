@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import PostCard from '../feed/PostCard';
 import { createPageUrl } from '../../utils';
-import { Trophy, Dumbbell, TrendingUp, Star, ChevronRight, Zap } from 'lucide-react';
+import { Trophy, Dumbbell, TrendingUp, Star, ChevronRight, Zap, Crown, Flame } from 'lucide-react';
 
 const POSTS_PER_PAGE = 4;
 
