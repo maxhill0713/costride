@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown, Info } from 'lucide-react';
@@ -30,27 +30,6 @@ function e1rmDiff(current, baseline) {
 function truncateName(name, max = 13) {
   if (!name) return '';
   return name.length > max ? name.slice(0, max).trimEnd() + '…' : name;
-}
-
-// ─── Chart Defs (gradients + glow filter) ────────────────────────────────────
-function ChartDefs({ exerciseMeta }) {
-  return (
-    <defs>
-      <filter id="line-glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="2.5" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-      {exerciseMeta.map(({ name, color }, i) => (
-        <linearGradient key={name} id={`area-fill-${i}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.22} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.01} />
-        </linearGradient>
-      ))}
-    </defs>
-  );
 }
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
@@ -185,7 +164,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     : workoutOptions[0]?.key ?? null;
 
   const selectedWorkout = workoutOptions.find(o => o.key === validKey);
-  // If user has no split configured, targetExercises will be populated from logs later
   const targetExercises = selectedWorkout?.exercises ?? [];
 
   const { data: workoutLogs = [], isLoading } = useQuery({
@@ -199,35 +177,23 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   });
 
   const exerciseSeriesMap = useMemo(() => {
+    if (!targetExercises.length) return {};
     const map = {};
     workoutLogs.forEach(log => {
       const logDate = new Date(log.completed_date || log.created_date);
       (log.exercises || []).forEach(ex => {
         const name = ex.exercise || ex.name;
         if (!name) return;
-        // If we have target exercises from a split, filter to those only.
-        // Otherwise, include all exercises that have weight data.
-        if (targetExercises.length > 0) {
-          const matched = targetExercises.find(t => t.toLowerCase() === name.toLowerCase());
-          if (!matched) return;
-          const w = parseFloat(ex.weight);
-          if (!w || w <= 0) return;
-          const reps = parseFloat(ex.reps) ||
-            parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
-            1;
-          const e1rm = epley(w, reps);
-          if (!map[matched]) map[matched] = [];
-          map[matched].push({ rawDate: logDate, e1rm });
-        } else {
-          const w = parseFloat(ex.weight);
-          if (!w || w <= 0) return;
-          const reps = parseFloat(ex.reps) ||
-            parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
-            1;
-          const e1rm = epley(w, reps);
-          if (!map[name]) map[name] = [];
-          map[name].push({ rawDate: logDate, e1rm });
-        }
+        const matched = targetExercises.find(t => t.toLowerCase() === name.toLowerCase());
+        if (!matched) return;
+        const w = parseFloat(ex.weight);
+        if (!w || w <= 0) return;
+        const reps = parseFloat(ex.reps) ||
+          parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
+          1;
+        const e1rm = epley(w, reps);
+        if (!map[matched]) map[matched] = [];
+        map[matched].push({ rawDate: logDate, e1rm });
       });
     });
     Object.values(map).forEach(arr => arr.sort((a, b) => a.rawDate - b.rawDate));
@@ -409,10 +375,9 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
-              <AreaChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
-                <ChartDefs exerciseMeta={exerciseMeta} />
+              <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1} strokeDasharray="0" />
+                <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
                   dataKey="date"
                   stroke="rgba(255,255,255,0.04)"
@@ -429,23 +394,21 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                   tickFormatter={v => `${v > 0 ? '+' : ''}${v}kg`}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }} />
-                {exerciseMeta.map(({ name, color }, i) => (
-                  <Area
+                {exerciseMeta.map(({ name, color }) => (
+                  <Line
                     key={name}
                     type="monotone"
                     dataKey={name}
                     stroke={color}
-                    strokeWidth={2}
-                    fill={`url(#area-fill-${i})`}
-                    filter="url(#line-glow)"
+                    strokeWidth={1.75}
                     dot={false}
-                    activeDot={{ r: 4, fill: color, stroke: '#0a0e1e', strokeWidth: 2, filter: 'url(#line-glow)' }}
+                    activeDot={{ r: 3.5, fill: color, stroke: '#0a0e1e', strokeWidth: 1.5 }}
                     connectNulls={false}
                     isAnimationActive={localKey > 0}
                     animationDuration={800}
                   />
                 ))}
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
 
@@ -462,7 +425,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
                 <div style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: color, flexShrink: 0,
-                  boxShadow: `0 0 5px ${color}88`,
                 }} />
                 <span style={{
                   fontSize: 9.5, fontWeight: 500, color: '#64748b',
