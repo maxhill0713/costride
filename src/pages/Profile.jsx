@@ -381,10 +381,10 @@ export default function Profile() {
             </>
           ) : (
             <div className="flex items-center gap-1.5">
-              <div className="w-7 h-7 rounded-lg border border-dashed border-slate-600 flex items-center justify-center">
-                <span className="text-slate-600 text-xs">+</span>
-              </div>
-              <span className="text-[10px] text-slate-600">tap to earn badges</span>
+              <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
+              <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
+              <div className="w-7 h-7 rounded-lg border border-slate-600 flex items-center justify-center"></div>
+              <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
             </div>
           )}
         </button>

@@ -164,8 +164,7 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
 
             {earnedBadges.length === 0 && (
               <div className="text-center py-8">
-                <Star className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                <p className="text-slate-400">Start working out to earn badges!</p>
+                <p className="text-slate-400">Check out the monthly challenges to earn some badges!</p>
               </div>
             )}
           </div>
