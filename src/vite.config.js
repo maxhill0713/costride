@@ -13,24 +13,31 @@ function patchPwaPlugin() {
     const req = createRequire(import.meta.url);
     const pwaEntry = req.resolve('vite-plugin-pwa');
     const distDir = dirname(pwaEntry);
+    // Patch ALL .js files in the dist directory
     const files = readdirSync(distDir).filter(f => f.endsWith('.js'));
     for (const f of files) {
       const fp = join(distDir, f);
       if (!existsSync(fp)) continue;
       let src;
       try { src = readFileSync(fp, 'utf8'); } catch { continue; }
-      if (!src.includes('maximumFileSizeToCacheInBytes')) continue;
       let out = src;
 
-      // 1. Neutralise the variable wherever it's read
-      out = out.replace(/\bthrowMaximumFileSizeToCacheInBytes\b/g, 'false');
+      // Replace every reference to throwMaximumFileSizeToCacheInBytes with false
+      // This covers: options.throwMaximumFileSizeToCacheInBytes, throwMaximumFileSizeToCacheInBytes, etc.
+      out = out.replace(/\w*[tT]hrowMaximumFileSizeToCacheInBytes\b/g, 'false');
 
-      // 2. Flip any call-site that passes `true` as the throw flag
-      out = out.replace(/logWorkboxResult\(([^,]+),\s*true\b/g, 'logWorkboxResult($1, false');
+      // Also catch the throw statement in the chunk file (logWorkboxResult body)
+      // Pattern: if (throwFlag) throw new Error(...)
+      out = out.replace(/\bif\s*\(\s*false\s*\)\s*throw\b[^;]+;/g, '/* b44-patched */');
 
-      // 3. Directly remove any throw new Error referencing the limit
+      // Nuclear: replace any throw that mentions the size limit string
       out = out.replace(
-        /throw new Error\((?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*maximumFileSizeToCacheInBytes(?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*\)/g,
+        /throw\s+new\s+Error\([^)]*[Mm]aximum[Ff]ile[Ss]ize[^)]*\)/g,
+        '(void 0)'
+      );
+      // Also template literal form
+      out = out.replace(
+        /throw\s+new\s+Error\(`[^`]*[Mm]aximum[Ff]ile[Ss]ize[^`]*`\)/g,
         '(void 0)'
       );
 

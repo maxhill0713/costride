@@ -185,6 +185,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     : workoutOptions[0]?.key ?? null;
 
   const selectedWorkout = workoutOptions.find(o => o.key === validKey);
+  // If user has no split configured, targetExercises will be populated from logs later
   const targetExercises = selectedWorkout?.exercises ?? [];
 
   const { data: workoutLogs = [], isLoading } = useQuery({
@@ -198,23 +199,35 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   });
 
   const exerciseSeriesMap = useMemo(() => {
-    if (!targetExercises.length) return {};
     const map = {};
     workoutLogs.forEach(log => {
       const logDate = new Date(log.completed_date || log.created_date);
       (log.exercises || []).forEach(ex => {
         const name = ex.exercise || ex.name;
         if (!name) return;
-        const matched = targetExercises.find(t => t.toLowerCase() === name.toLowerCase());
-        if (!matched) return;
-        const w = parseFloat(ex.weight);
-        if (!w || w <= 0) return;
-        const reps = parseFloat(ex.reps) ||
-          parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
-          1;
-        const e1rm = epley(w, reps);
-        if (!map[matched]) map[matched] = [];
-        map[matched].push({ rawDate: logDate, e1rm });
+        // If we have target exercises from a split, filter to those only.
+        // Otherwise, include all exercises that have weight data.
+        if (targetExercises.length > 0) {
+          const matched = targetExercises.find(t => t.toLowerCase() === name.toLowerCase());
+          if (!matched) return;
+          const w = parseFloat(ex.weight);
+          if (!w || w <= 0) return;
+          const reps = parseFloat(ex.reps) ||
+            parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
+            1;
+          const e1rm = epley(w, reps);
+          if (!map[matched]) map[matched] = [];
+          map[matched].push({ rawDate: logDate, e1rm });
+        } else {
+          const w = parseFloat(ex.weight);
+          if (!w || w <= 0) return;
+          const reps = parseFloat(ex.reps) ||
+            parseFloat((ex.setsReps || '').split(/[xX]/)[1]) ||
+            1;
+          const e1rm = epley(w, reps);
+          if (!map[name]) map[name] = [];
+          map[name].push({ rawDate: logDate, e1rm });
+        }
       });
     });
     Object.values(map).forEach(arr => arr.sort((a, b) => a.rawDate - b.rawDate));
