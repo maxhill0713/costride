@@ -1,15 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, ScanBarcode, Loader2, ChevronRight, Camera, AlertCircle } from 'lucide-react';
+import { X, ScanBarcode, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { base44 } from '@/api/base44Client';
 
 const OVERLAY_BG = 'rgba(0,0,0,0.85)';
 const CARD_BG = 'linear-gradient(135deg, rgba(20,25,50,0.99) 0%, rgba(6,8,18,1) 100%)';
 
-// ─── LLM food lookup by barcode ───────────────────────────────────────────────
 async function lookupBarcode(barcode) {
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Look up this food product barcode: ${barcode}. Return the nutritional information per serving. If you cannot find it, return null for all fields.`,
+    prompt: `Look up this food product barcode: ${barcode}. Return the nutritional information per serving. If you cannot find it, set found to false.`,
     add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
@@ -27,10 +26,10 @@ async function lookupBarcode(barcode) {
   return result;
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function BarcodeScannerModal({ onAdd, onClose }) {
-  const htmlScannerRef = useRef(null);
-  const [phase, setPhase] = useState('scanning'); // scanning | found | manual | loading | result | error
+  const scannerRef = useRef(null);
+  const scannerStartedRef = useRef(false);
+  const [phase, setPhase] = useState('scanning'); // scanning | loading | result | manual | error
   const [manualCode, setManualCode] = useState('');
   const [detectedCode, setDetectedCode] = useState('');
   const [foodResult, setFoodResult] = useState(null);
@@ -38,76 +37,140 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   const [cameraErr, setCameraErr] = useState('');
   const [selectedMeal, setSelectedMeal] = useState('Breakfast');
 
-  const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
-
-  // Stop scanner
-  const stopScanner = useCallback(() => {
-    if (htmlScannerRef.current) {
-      htmlScannerRef.current.stop();
+  const stopScanner = useCallback(async () => {
+    if (scannerRef.current && scannerStartedRef.current) {
+      try {
+        await scannerRef.current.stop();
+      } catch (_) {}
+      scannerStartedRef.current = false;
     }
   }, []);
 
-  // Start Html5Qrcode scanner
+  const fetchFood = useCallback(async (code) => {
+    setDetectedCode(code);
+    setPhase('loading');
+    try {
+      // First try Open Food Facts (free, no API key needed)
+      const offResp = await fetch(
+        `https://world.openfoodfacts.org/api/v0/product/${code}.json`,
+        { headers: { 'User-Agent': 'CoStrideApp - Web - 1.0' } }
+      );
+      const offData = await offResp.json();
+
+      if (offData.status === 1 && offData.product?.product_name) {
+        const n = offData.product.nutriments || {};
+        setFoodResult({
+          found: true,
+          name: offData.product.product_name,
+          cal: n['energy-kcal_100g'] || n['energy-kcal'] || 0,
+          protein: n.proteins_100g || n.proteins || 0,
+          carbs: n.carbohydrates_100g || n.carbohydrates || 0,
+          fat: n.fat_100g || n.fat || 0,
+          serving_size: offData.product.serving_size || '100g',
+        });
+        setPhase('result');
+        return;
+      }
+
+      // Fallback to LLM lookup
+      const llmData = await lookupBarcode(code);
+      if (llmData?.found && llmData?.name) {
+        setFoodResult(llmData);
+        setPhase('result');
+      } else {
+        setErrMsg(`No product found for barcode ${code}.`);
+        setPhase('error');
+      }
+    } catch (_) {
+      setErrMsg('Failed to look up product. Please try again or enter manually.');
+      setPhase('error');
+    }
+  }, []);
+
+  // Start scanner on mount
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
       try {
-        const scanner = new Html5Qrcode('scanner');
-        htmlScannerRef.current = scanner;
+        const scanner = new Html5Qrcode('barcode-scanner-view');
+        scannerRef.current = scanner;
 
-        const result = await scanner.start(
+        await scanner.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
+          {
+            fps: 10,
+            qrbox: { width: 280, height: 140 },
+            formatsToSupport: [
+              Html5Qrcode.FORMATS?.EAN_13,
+              Html5Qrcode.FORMATS?.EAN_8,
+              Html5Qrcode.FORMATS?.UPC_A,
+              Html5Qrcode.FORMATS?.UPC_E,
+              Html5Qrcode.FORMATS?.CODE_128,
+              Html5Qrcode.FORMATS?.CODE_39,
+            ].filter(Boolean),
+          },
           (decodedText) => {
-            if (!cancelled) {
-              scanner.stop();
-              setDetectedCode(decodedText);
-              handleBarcodeFound(decodedText);
+            if (!cancelled && scannerStartedRef.current) {
+              scannerStartedRef.current = false;
+              scanner.stop().catch(() => {});
+              fetchFood(decodedText);
             }
           },
-          (errorMessage) => {
-            // Barcode parsing error; ignore and keep scanning
-          }
+          () => {} // suppress scan errors
         );
+        if (!cancelled) scannerStartedRef.current = true;
       } catch (err) {
         if (!cancelled) {
-          setCameraErr('Camera access denied or not supported. Please enter the barcode manually.');
+          setCameraErr('Camera access denied or unavailable.');
           setPhase('manual');
         }
       }
     };
 
     init();
+
     return () => {
       cancelled = true;
       stopScanner();
     };
-  }, []);
-
-  const handleBarcodeFound = async (code) => {
-    stopCamera();
-    setPhase('loading');
-    try {
-      const data = await lookupBarcode(code);
-      if (data?.found && data?.name) {
-        setFoodResult(data);
-        setPhase('result');
-      } else {
-        setErrMsg(`No product found for barcode ${code}. Try entering manually.`);
-        setPhase('error');
-      }
-    } catch (_) {
-      setErrMsg('Failed to look up product. Please try again.');
-      setPhase('error');
-    }
-  };
+  }, [fetchFood, stopScanner]);
 
   const handleManualSubmit = async () => {
     if (!manualCode.trim()) return;
-    stopCamera();
-    setDetectedCode(manualCode.trim());
-    await handleBarcodeFound(manualCode.trim());
+    await stopScanner();
+    fetchFood(manualCode.trim());
+  };
+
+  const handleScanAgain = async () => {
+    setErrMsg('');
+    setFoodResult(null);
+    setManualCode('');
+    setDetectedCode('');
+
+    // Re-init scanner
+    try {
+      const scanner = new Html5Qrcode('barcode-scanner-view');
+      scannerRef.current = scanner;
+      setPhase('scanning');
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 280, height: 140 } },
+        (decodedText) => {
+          if (scannerStartedRef.current) {
+            scannerStartedRef.current = false;
+            scanner.stop().catch(() => {});
+            fetchFood(decodedText);
+          }
+        },
+        () => {}
+      );
+      scannerStartedRef.current = true;
+    } catch (_) {
+      setCameraErr('Camera unavailable.');
+      setPhase('manual');
+    }
   };
 
   const handleAdd = () => {
@@ -140,41 +203,35 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
         </button>
       </div>
 
-      {/* Camera view */}
-      {(phase === 'scanning') && (
-        <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <div id="scanner" style={{ width: '100%', height: '100%' }} />
+      {/* Scanner view — always in DOM when phase=scanning so Html5Qrcode can attach */}
+      <div style={{ display: phase === 'scanning' ? 'flex' : 'none', flex: 1, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div id="barcode-scanner-view" style={{ width: '100%', height: '100%' }} />
 
-          {/* Scan overlay */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: '20px' }}>
-            <div style={{ width: '100%', maxWidth: 260, aspectRatio: '260/160', borderRadius: 16, border: '2px solid #38bdf8', boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)', position: 'relative' }}>
-              {/* Corner accents */}
-              {[
-                { top: -2, left: -2, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '16px 0 0 0' },
-                { top: -2, right: -2, borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 16px 0 0' },
-                { bottom: -2, left: -2, borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '0 0 0 16px' },
-                { bottom: -2, right: -2, borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 0 16px 0' },
-              ].map((s, i) => (
-                <div key={i} style={{ position: 'absolute', width: 24, height: 24, ...s }} />
-              ))}
-              {/* Scan line animation */}
-              <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)', animation: 'scanLine 1.5s ease-in-out infinite', top: '50%' }} />
-            </div>
+        {/* Scan frame overlay */}
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ width: 290, height: 150, borderRadius: 12, border: '2px solid #38bdf8', boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)', position: 'relative' }}>
+            {[
+              { top: -2, left: -2, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '12px 0 0 0' },
+              { top: -2, right: -2, borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 12px 0 0' },
+              { bottom: -2, left: -2, borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '0 0 0 12px' },
+              { bottom: -2, right: -2, borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 0 12px 0' },
+            ].map((s, i) => (
+              <div key={i} style={{ position: 'absolute', width: 24, height: 24, ...s }} />
+            ))}
+            <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)', animation: 'scanLine 1.5s ease-in-out infinite', top: '50%' }} />
           </div>
-
-          {/* Instruction */}
-          <div style={{ position: 'absolute', bottom: 32, left: 0, right: 0, textAlign: 'center' }}>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Point camera at barcode</p>
-          </div>
-
-          {/* Manual entry button */}
-          <button
-            onClick={() => { stopScanner(); setPhase('manual'); }}
-            style={{ position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Enter manually instead
-          </button>
         </div>
-      )}
+
+        <div style={{ position: 'absolute', bottom: 90, left: 0, right: 0, textAlign: 'center' }}>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Point camera at barcode</p>
+        </div>
+
+        <button
+          onClick={() => { stopScanner(); setPhase('manual'); }}
+          style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+          Enter manually instead
+        </button>
+      </div>
 
       {/* Loading */}
       {phase === 'loading' && (
@@ -206,12 +263,12 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
           <button
             onClick={handleManualSubmit}
             disabled={manualCode.length < 8}
-            style={{ padding: '14px', borderRadius: 12, background: manualCode.length >= 8 ? '#38bdf8' : 'rgba(255,255,255,0.06)', border: 'none', color: manualCode.length >= 8 ? '#061820' : '#475569', fontSize: 14, fontWeight: 700, cursor: manualCode.length >= 8 ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+            style={{ padding: '14px', borderRadius: 12, background: manualCode.length >= 8 ? '#38bdf8' : 'rgba(255,255,255,0.06)', border: 'none', color: manualCode.length >= 8 ? '#061820' : '#475569', fontSize: 14, fontWeight: 700, cursor: manualCode.length >= 8 ? 'pointer' : 'default', fontFamily: 'inherit' }}>
             Look Up Product
           </button>
           {!cameraErr && (
             <button
-              onClick={() => { setManualCode(''); setPhase('scanning'); }}
+              onClick={handleScanAgain}
               style={{ padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
               <Camera size={14} /> Use Camera Instead
             </button>
@@ -232,8 +289,6 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
                 {foodResult.serving_size && <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>Per {foodResult.serving_size}</p>}
               </div>
             </div>
-
-            {/* Macros */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               {[
                 { label: 'Calories', value: `${Math.round(foodResult.cal || 0)}`, unit: 'kcal', color: '#38bdf8' },
@@ -254,31 +309,17 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
             <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Add to meal</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
               {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map(meal => (
-                <button
-                  key={meal}
-                  onClick={() => setSelectedMeal(meal)}
-                  style={{
-                    padding: '8px 4px', borderRadius: 10, border: '1px solid',
-                    borderColor: selectedMeal === meal ? 'rgba(56,189,248,0.4)' : 'rgba(255,255,255,0.08)',
-                    background: selectedMeal === meal ? 'rgba(56,189,248,0.1)' : 'rgba(255,255,255,0.04)',
-                    color: selectedMeal === meal ? '#38bdf8' : '#64748b',
-                    fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                  }}>
+                <button key={meal} onClick={() => setSelectedMeal(meal)} style={{ padding: '8px 4px', borderRadius: 10, border: '1px solid', borderColor: selectedMeal === meal ? 'rgba(56,189,248,0.4)' : 'rgba(255,255,255,0.08)', background: selectedMeal === meal ? 'rgba(56,189,248,0.1)' : 'rgba(255,255,255,0.04)', color: selectedMeal === meal ? '#38bdf8' : '#64748b', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {meal}
                 </button>
               ))}
             </div>
           </div>
 
-          <button
-            onClick={handleAdd}
-            style={{ padding: '14px', borderRadius: 12, background: '#38bdf8', border: 'none', color: '#061820', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={handleAdd} style={{ padding: '14px', borderRadius: 12, background: '#38bdf8', border: 'none', color: '#061820', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             Add to {selectedMeal}
           </button>
-
-          <button
-            onClick={() => { setPhase('manual'); setManualCode(''); }}
-            style={{ padding: '10px', borderRadius: 10, background: 'transparent', border: 'none', color: '#475569', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => { setPhase('manual'); setManualCode(''); }} style={{ padding: '10px', borderRadius: 10, background: 'transparent', border: 'none', color: '#475569', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             Try a different barcode
           </button>
         </div>
@@ -291,26 +332,19 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
             <AlertCircle size={24} color="#f87171" />
           </div>
           <p style={{ fontSize: 14, color: '#f87171', margin: 0 }}>{errMsg}</p>
-          <button
-            onClick={() => { setPhase('manual'); setManualCode(detectedCode); }}
-            style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={() => { setPhase('manual'); setManualCode(detectedCode); }} style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             Enter manually
           </button>
-          <button
-            onClick={() => { setDetectedCode(''); setPhase('scanning'); scanningRef.current = true; startDetectionLoop(); }}
-            style={{ padding: '12px 20px', borderRadius: 12, background: '#38bdf8', border: 'none', color: '#061820', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={handleScanAgain} style={{ padding: '12px 20px', borderRadius: 12, background: '#38bdf8', border: 'none', color: '#061820', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Camera size={14} /> Try scanning again
           </button>
         </div>
       )}
 
       <style>{`
-        @keyframes scanLine {
-          0% { top: 10%; }
-          50% { top: 85%; }
-          100% { top: 10%; }
-        }
+        @keyframes scanLine { 0% { top: 10%; } 50% { top: 85%; } 100% { top: 10%; } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        #barcode-scanner-view video { object-fit: cover; }
       `}</style>
     </div>
   );
