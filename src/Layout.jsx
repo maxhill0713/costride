@@ -61,11 +61,11 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
 
-      {/* Safe-area top fill — matches each page's sticky header colour so the status bar area blends seamlessly */}
+      {/* Safe-area top fill — matches the app's base dark colour so the status bar blends seamlessly with each page header */}
       {!hideNavigation && !isCoachUser && (
         <div
-          className="fixed top-0 left-0 right-0 z-50 md:hidden backdrop-blur-xl"
-          style={{ height: 'env(safe-area-inset-top)', background: 'rgba(15,23,42,0.97)' }}
+          className="fixed top-0 left-0 right-0 z-50 md:hidden"
+          style={{ height: 'env(safe-area-inset-top)', background: '#02040a' }}
         />
       )}
 
