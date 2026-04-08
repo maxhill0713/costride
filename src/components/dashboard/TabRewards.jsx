@@ -343,6 +343,28 @@ export default function TabRewards({ selectedGym, rewards = [], onCreateReward, 
           )
         }
 
+        {/* Most Claimed — surfaced to top on mobile */}
+        {isMobile && topRewards.length > 0 && (
+          <div className={cn(CARD, 'px-4 py-3.5')}>
+            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.15),transparent)' }} />
+            <div className="flex items-center gap-[7px] mb-3">
+              <Award className="w-[11px] h-[11px] text-amber-400" />
+              <span className="text-[11px] font-bold text-[#f0f4f8]">Most Claimed</span>
+            </div>
+            <div className="flex flex-col gap-0">
+              {topRewards.map((r, i) => (
+                <div key={r.id} className={cn('flex items-center gap-[10px] py-[7px]', i < topRewards.length - 1 && 'border-b border-white/[0.05]')}>
+                  <div className={cn('w-[20px] h-[20px] rounded-[5px] flex items-center justify-center text-[9px] font-extrabold shrink-0', i === 0 ? 'bg-amber-400/[0.09] text-amber-400' : 'bg-white/[0.05] text-[#475569]')}>
+                    #{i + 1}
+                  </div>
+                  <span className="flex-1 text-[11.5px] text-[#f0f4f8] overflow-hidden text-ellipsis whitespace-nowrap">{r.title}</span>
+                  <span className="text-xs font-extrabold text-amber-400 tabular-nums">{claimCountMap[r.id] || 0}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative flex-1 min-w-[160px]">
@@ -389,8 +411,8 @@ export default function TabRewards({ selectedGym, rewards = [], onCreateReward, 
       {/* ── RIGHT SIDEBAR ── */}
       <div className="flex flex-col gap-3">
 
-        {/* Top rewards */}
-        {topRewards.length > 0 && (
+        {/* Top rewards — hidden on mobile (shown at top of left column instead) */}
+        {!isMobile && topRewards.length > 0 && (
           <div className={cn(CARD, 'p-5')}>
             <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.15),transparent)' }} />
             <div className="flex items-center gap-[7px] mb-[14px]">

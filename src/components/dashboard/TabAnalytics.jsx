@@ -103,7 +103,7 @@ function SectionHead({ title, sub, right }) {
 }
 
 /* ─── TODAY'S FOCUS ─── */
-function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, totalMembers = 0 }) {
+function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, totalMembers = 0, isMobile = false }) {
   const cards = useMemo(() => {
     const list = [];
 
@@ -158,8 +158,10 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
         <span className="text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase">Today's Focus</span>
         <span className="text-[10px] text-[#252d45]">· {format(new Date(), 'EEE d MMM')}</span>
       </div>
-      <div className="overflow-x-auto">
-      <div className="grid gap-[10px] min-w-[480px]" style={{ gridTemplateColumns: `repeat(${cards.length}, 1fr)` }}>
+      <div
+        className={cn('grid gap-[10px]', isMobile ? 'grid-cols-1' : '')}
+        style={isMobile ? undefined : { gridTemplateColumns: `repeat(${cards.length}, 1fr)` }}
+      >
         {cards.map((card, i) => (
           <div key={i} className={cn('bg-[#0d1225] rounded-2xl p-[14px_16px] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]', slotBorder[card.slot] || slotBorder.neutral)}>
             <div className={cn('flex items-start gap-[10px]', card.cta && 'mb-3')}>
@@ -175,7 +177,6 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
             {card.cta && <AppButton variant="primary" size="sm" onClick={() => {}}>{card.cta}</AppButton>}
           </div>
         ))}
-      </div>
       </div>
     </div>
   );
@@ -198,20 +199,19 @@ function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthC
   ];
 
   return (
-    <div className="overflow-x-auto">
-    <div className="grid gap-[10px] min-w-[480px]" style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
       {kpis.map((k, i) => {
         const trendUp = k.trend > 0, trendDown = k.trend < 0;
         return (
-          <div key={i} className={cn(CARD, 'p-[16px_18px] flex flex-col')}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase">{k.label}</span>
-              <k.icon className="w-3 h-3 text-[#4b5578]" />
+          <div key={i} className={cn(CARD, 'p-[12px_14px] sm:p-[16px_18px] flex flex-col')}>
+            <div className="flex items-center justify-between mb-2 sm:mb-3 gap-1 min-w-0">
+              <span className="text-[9.5px] sm:text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase truncate">{k.label}</span>
+              <k.icon className="w-3 h-3 text-[#4b5578] shrink-0" />
             </div>
             <div className="flex items-end justify-between mb-2">
               <div>
-                <div className={cn('text-[28px] font-bold leading-none tracking-[-0.04em]', k.valueClass)}>{k.value}</div>
-                {k.unit && <div className="text-[10.5px] text-[#4b5578] mt-1">{k.unit}</div>}
+                <div className={cn('text-[22px] sm:text-[28px] font-bold leading-none tracking-[-0.04em]', k.valueClass)}>{k.value}</div>
+                {k.unit && <div className="text-[9.5px] sm:text-[10.5px] text-[#4b5578] mt-1">{k.unit}</div>}
               </div>
               {k.spark && <Spark data={k.spark} />}
             </div>
@@ -227,7 +227,6 @@ function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthC
           </div>
         );
       })}
-    </div>
     </div>
   );
 }
@@ -882,7 +881,7 @@ export default function TabAnalytics({
     });
     return (
       <div className="flex flex-col gap-[18px]">
-        <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} />
+        <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} isMobile={isMobile} />
         <div className={cn('grid gap-[18px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_264px]')}>
           <div className="flex flex-col gap-[14px]">
             <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} weekTrend={weekTrend} />

@@ -654,7 +654,9 @@ function ClassPerformance({ classes }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Performance</Label>
-      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
+
+      {/* Desktop table */}
+      <div className="hidden sm:block border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
         <table className="w-full min-w-[500px] border-collapse">
           <thead>
             <tr className="border-b border-white/[0.04]">
@@ -708,6 +710,50 @@ function ClassPerformance({ classes }) {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden flex flex-col gap-2.5">
+        {classes.map((c, i) => {
+          const fill = Math.round(c.avg / c.cap * 100);
+          const lowFill = fill < 60;
+          return (
+            <div key={i} className="border border-white/[0.04] rounded-2xl bg-[#0a0f1e] px-4 py-3.5">
+              <div className="flex items-start justify-between mb-2.5">
+                <div>
+                  <div className="text-[12.5px] font-semibold text-[#eef2ff]">{c.name}</div>
+                  <div className="text-[10.5px] text-[#4b5578] mt-0.5">{c.coach}</div>
+                </div>
+                <span className={cn(
+                  'inline-flex items-center gap-[3px] text-[11px] font-semibold',
+                  c.trend > 0 ? 'text-[#8b95b3]' : c.trend < 0 ? 'text-red-500' : 'text-[#4b5578]',
+                )}>
+                  {c.trend > 0 && <TrendingUp className="w-[10px] h-[10px]" />}
+                  {c.trend < 0 && <TrendingDown className="w-[10px] h-[10px]" />}
+                  {c.trend !== 0 && (c.trend > 0 ? '+' : '')}{c.trend}
+                </span>
+              </div>
+
+              {/* Fill rate */}
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className="flex-1 h-[3px] rounded-full bg-[#0d1225] overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full', lowFill ? 'bg-red-500/50' : 'bg-[#8b95b3]')}
+                    style={{ width: `${fill}%` }}
+                  />
+                </div>
+                <span className={cn('text-[11px] font-bold tabular-nums w-8 text-right', lowFill ? 'text-red-500' : 'text-[#8b95b3]')}>
+                  {fill}%
+                </span>
+              </div>
+
+              <div className="flex gap-5 text-[10.5px] text-[#4b5578]">
+                <span>Avg <span className="font-bold text-[#eef2ff] tabular-nums">{c.avg}</span></span>
+                <span>Cap <span className="font-semibold tabular-nums">{c.cap}</span></span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

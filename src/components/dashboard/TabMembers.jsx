@@ -333,8 +333,8 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
 
   return (
     <div>
-      {/* Column headers */}
-      <div className="grid gap-2 px-4 py-1.5 border-b border-white/[0.04] bg-[#050810]" style={{ gridTemplateColumns: COLS }}>
+      {/* Desktop: Column headers */}
+      <div className="hidden sm:grid gap-2 px-4 py-1.5 border-b border-white/[0.04] bg-[#050810]" style={{ gridTemplateColumns: COLS }}>
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
@@ -360,99 +360,125 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
         ))}
       </div>
 
-      {/* Rows */}
-      {sorted.length === 0 ? (
+      {/* Empty state */}
+      {sorted.length === 0 && (
         <div className="py-12 px-5 text-center">
           <Users className="w-8 h-8 text-[#252d45] mx-auto mb-3" />
           <div className="text-[13px] text-slate-400 font-medium mb-1">No members match</div>
           <div className="text-[11px] text-slate-600">Try a different filter or search term</div>
         </div>
-      ) : sorted.map((m, idx) => {
+      )}
+
+      {sorted.map((m, idx) => {
         const isSel    = selectedRows.has(m.id);
         const isPrev   = previewMember?.id === m.id;
         const trendPct = m.prevVisits30 > 0 ? Math.round(((m.visits30 - m.prevVisits30) / m.prevVisits30) * 100) : 0;
         const lastSeenCls = m.daysSince >= 14 ? "text-red-500" : m.daysSince <= 1 ? "text-emerald-500" : "text-[#eef2ff]";
+        const lastSeenLabel = m.daysSince === 999 ? "Never" : m.daysSince === 0 ? "Today" : `${m.daysSince}d ago`;
 
         return (
-          <div
-            key={m.id}
-            onClick={() => setPreviewMember(isPrev ? null : m)}
-            className={cn(
-              "grid items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors duration-100 border-l-2",
-              idx < sorted.length - 1 && "border-b border-white/[0.03]",
-              isPrev  ? "bg-[#0d1225] border-l-blue-500"
-              : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
-              :          "border-l-transparent hover:bg-[#101929]",
-            )}
-            style={{ gridTemplateColumns: COLS }}
-          >
-            {/* Checkbox */}
-            <div className="flex items-center justify-center" onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
-              <input
-                type="checkbox"
-                checked={isSel}
-                onChange={() => toggleRow(m.id)}
-                className="w-3 h-3 accent-blue-500 cursor-pointer"
-              />
-            </div>
+          <div key={m.id}>
 
-            {/* Member */}
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="relative shrink-0">
-                <Avatar m={m} size={28} />
-                {m.streak >= 5 && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-                    <Flame className="w-1.5 h-1.5 text-amber-500" />
-                  </div>
-                )}
+            {/* ── Desktop row ── */}
+            <div
+              onClick={() => setPreviewMember(isPrev ? null : m)}
+              className={cn(
+                "hidden sm:grid items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors duration-100 border-l-2",
+                idx < sorted.length - 1 && "border-b border-white/[0.03]",
+                isPrev  ? "bg-[#0d1225] border-l-blue-500"
+                : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
+                :          "border-l-transparent hover:bg-[#101929]",
+              )}
+              style={{ gridTemplateColumns: COLS }}
+            >
+              <div className="flex items-center justify-center" onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
+                <input type="checkbox" checked={isSel} onChange={() => toggleRow(m.id)} className="w-3 h-3 accent-blue-500 cursor-pointer" />
               </div>
-              <div className="min-w-0">
-                <div className={cn("text-xs font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>
-                  {m.name}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="relative shrink-0">
+                  <Avatar m={m} size={28} />
+                  {m.streak >= 5 && (
+                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
+                      <Flame className="w-1.5 h-1.5 text-amber-500" />
+                    </div>
+                  )}
                 </div>
-                <div className="text-[10px] text-slate-600">{m.plan} · {m.visitsTotal} visits</div>
+                <div className="min-w-0">
+                  <div className={cn("text-xs font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>{m.name}</div>
+                  <div className="text-[10px] text-slate-600">{m.plan} · {m.visitsTotal} visits</div>
+                </div>
+              </div>
+              <div>
+                <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
+                <div className="text-[10px] text-slate-600 mt-0.5 leading-snug">{m.statusDetail}</div>
+              </div>
+              <div>
+                <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
+                <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px] mt-1.5" />
+              </div>
+              <div>
+                <span className={cn("text-xs font-medium", lastSeenCls)}>{lastSeenLabel}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {trendPct > 10  ? <><TrendingUp   className="w-3 h-3 text-emerald-500" /><span className="text-[10px] text-emerald-500">+{trendPct}%</span></> :
+                 trendPct < -10 ? <><TrendingDown  className="w-3 h-3 text-red-500"     /><span className="text-[10px] text-red-500">{trendPct}%</span></> :
+                                   <span className="text-[10px] text-slate-600">—</span>}
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-[#eef2ff]">${m.monthlyValue}</div>
+                <div className="text-[9px] text-slate-600">/month</div>
+              </div>
+              <div onClick={e => e.stopPropagation()}>
+                <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
+                  {m.bestAction} <ChevronRight className="w-3 h-3" />
+                </AppButton>
+                <div className="text-[9px] text-slate-600 mt-0.5">~{m.returnChance}% success</div>
               </div>
             </div>
 
-            {/* Status */}
-            <div>
-              <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
-              <div className="text-[10px] text-slate-600 mt-0.5 leading-snug">{m.statusDetail}</div>
+            {/* ── Mobile card ── */}
+            <div
+              onClick={() => setPreviewMember(isPrev ? null : m)}
+              className={cn(
+                "sm:hidden flex flex-col gap-2.5 px-4 py-3.5 cursor-pointer transition-colors border-l-2",
+                idx < sorted.length - 1 && "border-b border-white/[0.03]",
+                isPrev  ? "bg-[#0d1225] border-l-blue-500"
+                : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
+                :          "border-l-transparent",
+              )}
+            >
+              {/* Top row: avatar + name + churn % */}
+              <div className="flex items-center gap-2.5">
+                <div onClick={e => { e.stopPropagation(); toggleRow(m.id); }} className="relative shrink-0">
+                  <Avatar m={m} size={34} />
+                  {m.streak >= 5 && (
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
+                      <Flame className="w-2 h-2 text-amber-500" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className={cn("text-[12.5px] font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>{m.name}</div>
+                  <div className="text-[10.5px] text-slate-600 mt-0.5">{m.plan} · {m.visitsTotal} visits</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className={cn("text-[17px] font-extrabold tabular-nums leading-none tracking-[-0.03em]", churnTextClass(m.churnPct))}>{m.churnPct}%</div>
+                  <div className="text-[9px] text-slate-600 mt-0.5">churn risk</div>
+                </div>
+              </div>
+
+              {/* Bottom row: status badge + last seen + action */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
+                <span className={cn("text-[10.5px] font-medium", lastSeenCls)}>{lastSeenLabel}</span>
+                <div className="ml-auto" onClick={e => e.stopPropagation()}>
+                  <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
+                    {m.bestAction} <ChevronRight className="w-2.5 h-2.5" />
+                  </AppButton>
+                </div>
+              </div>
             </div>
 
-            {/* Churn */}
-            <div>
-              <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
-              <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px] mt-1.5" />
-            </div>
-
-            {/* Last seen */}
-            <div>
-              <span className={cn("text-xs font-medium", lastSeenCls)}>
-                {m.daysSince === 999 ? "Never" : m.daysSince === 0 ? "Today" : `${m.daysSince}d ago`}
-              </span>
-            </div>
-
-            {/* Trend */}
-            <div className="flex items-center gap-1">
-              {trendPct > 10  ? <><TrendingUp   className="w-3 h-3 text-emerald-500" /><span className="text-[10px] text-emerald-500">+{trendPct}%</span></> :
-               trendPct < -10 ? <><TrendingDown  className="w-3 h-3 text-red-500"     /><span className="text-[10px] text-red-500">{trendPct}%</span></> :
-                                 <span className="text-[10px] text-slate-600">—</span>}
-            </div>
-
-            {/* Value */}
-            <div>
-              <div className="text-xs font-semibold text-[#eef2ff]">${m.monthlyValue}</div>
-              <div className="text-[9px] text-slate-600">/month</div>
-            </div>
-
-            {/* Action */}
-            <div onClick={e => e.stopPropagation()}>
-              <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
-                {m.bestAction} <ChevronRight className="w-3 h-3" />
-              </AppButton>
-              <div className="text-[9px] text-slate-600 mt-0.5">~{m.returnChance}% success</div>
-            </div>
           </div>
         );
       })}

@@ -968,6 +968,18 @@ export default function TabOverview({
         {/* Quick actions — top of page on mobile for instant access */}
         {isMobile && <QuickActionsGrid openModal={openModal} setTab={setTab} />}
 
+        {/* Live Signals — surfaced to top on mobile */}
+        {isMobile && (
+          <LiveSignals
+            todayCI={todayCI}
+            todayVsYest={todayVsYest}
+            activeThisWeek={activeThisWeek}
+            totalMembers={totalMembers}
+            retentionRate={retentionRate}
+            sparkData={sparkData}
+          />
+        )}
+
         {/* ─ Core Metric Cards ─ */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
           <MetricCard
@@ -1079,14 +1091,16 @@ export default function TabOverview({
 
       {/* ══ RIGHT SIDEBAR ══ */}
       <div className="flex flex-col gap-3.5">
-        <LiveSignals
-          todayCI={todayCI}
-          todayVsYest={todayVsYest}
-          activeThisWeek={activeThisWeek}
-          totalMembers={totalMembers}
-          retentionRate={retentionRate}
-          sparkData={sparkData}
-        />
+        {!isMobile && (
+          <LiveSignals
+            todayCI={todayCI}
+            todayVsYest={todayVsYest}
+            activeThisWeek={activeThisWeek}
+            totalMembers={totalMembers}
+            retentionRate={retentionRate}
+            sparkData={sparkData}
+          />
+        )}
         <SidebarActionQueue
           atRisk={atRisk}
           atRiskMembers={atRiskMembers}
