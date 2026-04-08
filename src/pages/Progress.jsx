@@ -1393,14 +1393,14 @@ export default function Progress() {
         <div style={{ height: 'calc(3rem + env(safe-area-inset-top))' }} />
 
         {/* ── Analytics ── */}
-        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5 pb-40 md:pb-5">
+        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} animateCharts={analyticsAnimKey} />
           </div>
         </TabsContent>
 
         {/* ── Targets ── */}
-        <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-5 pb-40 md:pb-5">
+        <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-5 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto space-y-8">
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -1416,14 +1416,14 @@ export default function Progress() {
         </TabsContent>
 
         {/* ── Nutrition ── */}
-        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 py-5 pb-40 md:pb-5">
+        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 py-5 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <NutritionTab />
           </div>
         </TabsContent>
 
         {/* ── Trainer ── */}
-        <TabsContent value="rank" className="mt-0 px-3 md:px-4 py-5 pb-40 md:pb-5">
+        <TabsContent value="rank" className="mt-0 px-3 md:px-4 py-5 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <TrainerTab currentUser={currentUser} />
           </div>
