@@ -158,7 +158,8 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
         <span className="text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase">Today's Focus</span>
         <span className="text-[10px] text-[#252d45]">· {format(new Date(), 'EEE d MMM')}</span>
       </div>
-      <div className="grid gap-[10px]" style={{ gridTemplateColumns: `repeat(${cards.length}, 1fr)` }}>
+      <div className="overflow-x-auto">
+      <div className="grid gap-[10px] min-w-[480px]" style={{ gridTemplateColumns: `repeat(${cards.length}, 1fr)` }}>
         {cards.map((card, i) => (
           <div key={i} className={cn('bg-[#0d1225] rounded-2xl p-[14px_16px] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]', slotBorder[card.slot] || slotBorder.neutral)}>
             <div className={cn('flex items-start gap-[10px]', card.cta && 'mb-3')}>
@@ -174,6 +175,7 @@ function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [],
             {card.cta && <AppButton variant="primary" size="sm" onClick={() => {}}>{card.cta}</AppButton>}
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
@@ -196,7 +198,8 @@ function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthC
   ];
 
   return (
-    <div className="grid gap-[10px]" style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}>
+    <div className="overflow-x-auto">
+    <div className="grid gap-[10px] min-w-[480px]" style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}>
       {kpis.map((k, i) => {
         const trendUp = k.trend > 0, trendDown = k.trend < 0;
         return (
@@ -224,6 +227,7 @@ function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthC
           </div>
         );
       })}
+    </div>
     </div>
   );
 }

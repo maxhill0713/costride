@@ -700,7 +700,7 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
         </div>
 
         {/* Performance summary */}
-        <div className="grid grid-cols-4 gap-[10px] mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[10px] mb-4">
           <StatCard icon={Send}        label="Messages sent"      sub="automatically this month" value={totalSent}      delay={0}   />
           <StatCard icon={Activity}    label="Members re-engaged" sub="returned after a message"  value={totalReturned}  delay={120} />
           <StatCard icon={DollarSign}  label="Revenue retained"   sub="from re-engaged members"  value={totalSaved}     delay={240} prefix="$" highlight />

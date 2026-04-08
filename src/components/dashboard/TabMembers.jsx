@@ -91,7 +91,7 @@ function MetricsBar({ members }) {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2.5 mb-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
       {stats.map((s, i) => (
         <div key={i} className="px-4 py-4 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
           <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-[0.1em] mb-2">{s.label}</div>
@@ -821,7 +821,7 @@ export default function MembersPageAI() {
         />
 
         {/* Main grid */}
-        <div className="grid grid-cols-[1fr_260px] gap-3.5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-3.5 items-start">
 
           {/* Table card */}
           <div className="rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden">
@@ -831,12 +831,14 @@ export default function MembersPageAI() {
               sort={sort}     setSort={setSort}
               counts={counts}
             />
+            <div className="overflow-x-auto">
             <MembersTable
               members={members} filter={filter} search={search} sort={sort} setSort={setSort}
               selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
               previewMember={previewMember} setPreviewMember={setPreviewMember}
               onMessage={handleMessage}
             />
+            </div>
             <BulkBar
               selectedRows={selectedRows}
               members={members}

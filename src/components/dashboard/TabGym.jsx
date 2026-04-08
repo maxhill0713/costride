@@ -452,6 +452,8 @@ function RetentionRiskPanel({ data, summary }) {
         </div>
 
         {/* Column headers */}
+        <div className="overflow-x-auto">
+        <div className="min-w-[560px]">
         <div className="grid px-6 py-2 border-b border-white/[0.03]" style={{ gridTemplateColumns: '3fr 1.5fr 2fr 2fr 100px' }}>
           {['Member', 'Last seen', 'Churn signal', 'Plan', ''].map((h, i) => (
             <Label key={i} className={i === 4 ? 'text-right' : ''}>{h}</Label>
@@ -481,6 +483,8 @@ function RetentionRiskPanel({ data, summary }) {
           </div>
         ))}
 
+        </div>
+        </div>
         {data.atRiskMembers.length > 5 && (
           <div
             onClick={() => setExpanded(!expanded)}
@@ -509,7 +513,7 @@ function TrendsSection({ trends }) {
     <section className="mb-8">
       <Label className="block mb-3">Trends — last 6 months</Label>
       <div className="border border-white/[0.04] rounded-2xl overflow-hidden bg-[#0a0f1e]">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4">
           {items.map((s, i) => {
             const last = s.data[s.data.length - 1];
             const display = (s.label === 'Retention' || s.label === 'Engagement') ? `${last}%` : last;
@@ -724,6 +728,8 @@ function Segments({ data, summary }) {
           ))}
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[480px]">
         {(tab === 'risk' || tab === 'new') && (
           <div className="grid px-6 py-[9px] border-b border-white/[0.03]" style={{
             gridTemplateColumns: tab === 'risk' ? '3fr 1.5fr 2fr 1.5fr' : '3fr 1.5fr 1.5fr 1.5fr',
@@ -768,6 +774,8 @@ function Segments({ data, summary }) {
             </span>
           </div>
         ))}
+        </div>
+        </div>
 
         {tab === 'inactive' && (
           <div className="px-6 py-12 text-center">

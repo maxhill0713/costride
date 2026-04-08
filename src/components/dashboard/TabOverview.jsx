@@ -221,7 +221,7 @@ function TodaysPlan({
         <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.13em] mb-3">
           Your 3 highest-impact actions today
         </p>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           {actions.map((act, i) => {
             const c = getClr(act.color);
             return (
