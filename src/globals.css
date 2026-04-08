@@ -9,7 +9,7 @@
 
 /* Force dark background — fills overscroll areas on all pages */
 html {
-  background: linear-gradient(to bottom right, #02040a, #0d2360, #02040a) fixed;
+  background: linear-gradient(to bottom right, #1e3a8a, #0f172a, #172554) fixed;
   min-height: 100%;
 }
 
@@ -28,7 +28,6 @@ html {
     @apply p-0 m-0 h-full scroll-smooth;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    padding-top: env(safe-area-inset-top);
     background: transparent !important;
     color: #e2e8f0;
     transition: background-color 0.3s ease;
