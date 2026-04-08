@@ -81,7 +81,6 @@ const QUICK_ADD_OPTIONS = [
 
 const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '◑', Snacks: '◇' };
 
-// Nutrition card style — matches CARD from analytics tab
 const nutCard = {
   ...CARD,
   borderRadius: 16,
@@ -462,20 +461,12 @@ function NutritionTab() {
         <NutWeekDots days={data.weekDays} />
       </div>
 
-      {/* Hydration + Streak — matched to CARD style */}
+      {/* Hydration + Streak */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-        <div style={{
-          ...CARD,
-          borderRadius: 16,
-          padding: 14,
-        }}>
+        <div style={{ ...CARD, borderRadius: 16, padding: 14 }}>
           <NutWaterTracker glasses={data.water.glasses} target={data.water.target} onAdd={handleAddWater} />
         </div>
-        <div style={{
-          ...CARD,
-          borderRadius: 16,
-          padding: 14,
-        }}>
+        <div style={{ ...CARD, borderRadius: 16, padding: 14 }}>
           <span style={nutLabel}>Streak</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <Flame size={18} color="#f59e0b" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.5))' }} />
@@ -1338,16 +1329,22 @@ export default function Progress() {
     }
   }, [currentUser]);
 
+  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
-          <div className="max-w-4xl mx-auto flex justify-between gap-2">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex-1 h-8 rounded bg-slate-700/60 animate-pulse" />
-            ))}
+        {/* Fixed skeleton header — same height/style as real header */}
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center h-10 gap-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex-1 h-8 rounded bg-slate-700/60 animate-pulse" />
+              ))}
+            </div>
           </div>
         </div>
+        {/* Spacer matching fixed header */}
+        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
         <div className="max-w-4xl mx-auto px-3 py-5 space-y-4">
           <div className="h-32 rounded-2xl bg-slate-800/60 animate-pulse" />
           <div className="grid grid-cols-2 gap-3">
@@ -1365,27 +1362,30 @@ export default function Progress() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <Tabs defaultValue="analytics" className="w-full">
 
-        {/* ── Header ── */}
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
+        {/* ── Fixed header — same pattern as Gyms page ── */}
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center h-18">
+            <div className="flex items-center h-10">
               <TabsList className="flex justify-between w-full bg-transparent p-0 h-10 gap-0 border-0">
-                <TabsTrigger value="analytics" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="analytics" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="goals" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
                   <Target className="w-4 h-4 mr-1.5" />Targets
                 </TabsTrigger>
-                <TabsTrigger value="nutrition" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="nutrition" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
                   <Utensils className="w-4 h-4 mr-1.5" />Nutrition
                 </TabsTrigger>
-                <TabsTrigger value="rank" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 mb-[-2px] transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="rank" className="flex-1 data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
                   <ClipboardList className="w-4 h-4 mr-1.5" />Trainer
                 </TabsTrigger>
               </TabsList>
             </div>
           </div>
         </div>
+
+        {/* ── Spacer matching fixed header height ── */}
+        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
 
         {/* ── Analytics ── */}
         <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5">
