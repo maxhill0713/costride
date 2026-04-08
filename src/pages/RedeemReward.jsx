@@ -18,7 +18,7 @@ const MONTHLY_CHALLENGES = [
   {
     id: 'witness_my_gains',
     title: 'Witness My Gains',
-    description: 'Share 4 of your workouts with your friends or community',
+    description: 'Share 4 of your workouts with your community',
     goal_type: 'shared_workouts',
     target_value: 4,
     reward: '1 x Spartan Streak Icon Design',
