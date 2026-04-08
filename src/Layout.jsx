@@ -180,7 +180,7 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
       )}
 
       {/* Main Content */}
-      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))', paddingTop: isCoachUser ? 'calc(3rem + env(safe-area-inset-top))' : 'env(safe-area-inset-top)' }}>
+      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'env(safe-area-inset-bottom)', paddingTop: isCoachUser ? 'calc(3rem + env(safe-area-inset-top))' : 'env(safe-area-inset-top)' }}>
         <ErrorBoundary>
           <PageTransition key={currentPageName}>
             {children}
