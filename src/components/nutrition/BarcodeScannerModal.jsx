@@ -22,26 +22,34 @@ async function lookupOpenFoodFacts(barcode) {
     const data = await resp.json();
     if (data.status === 1 && data.product?.product_name) {
       const n = data.product.nutriments || {};
-      
-      // Energy: prefer kcal_100g, fallback to kJ conversion
-      let cal = n['energy-kcal_100g'] ?? n['energy-kcal_serving'] ?? n['energy-kcal'] ?? null;
-      if (cal === null) {
-        const kj = n['energy_100g'] ?? n['energy-kj_100g'] ?? n['energy'] ?? null;
-        cal = kj !== null ? Math.round(kj / 4.184) : 0;
-      }
+      const p = data.product;
 
-      const protein = n['proteins_100g'] ?? n['proteins_serving'] ?? n['proteins'] ?? 0;
-      const carbs = n['carbohydrates_100g'] ?? n['carbohydrates_serving'] ?? n['carbohydrates'] ?? 0;
-      const fat = n['fat_100g'] ?? n['fat_serving'] ?? n['fat'] ?? 0;
+      // Try to get the total product size in grams/ml
+      // product_quantity is the total size e.g. "500" (ml or g), quantity is e.g. "500ml"
+      const totalSize = parseFloat(p.product_quantity) || null;
+
+      // Per 100g/ml values
+      let calPer100 = n['energy-kcal_100g'] ?? null;
+      if (calPer100 === null) {
+        const kj = n['energy_100g'] ?? n['energy-kj_100g'] ?? null;
+        calPer100 = kj !== null ? kj / 4.184 : 0;
+      }
+      const proteinPer100 = n['proteins_100g'] ?? 0;
+      const carbsPer100 = n['carbohydrates_100g'] ?? 0;
+      const fatPer100 = n['fat_100g'] ?? 0;
+
+      // If we have the total size, scale up to full product
+      const multiplier = totalSize ? totalSize / 100 : 1;
+      const servingLabel = totalSize ? `${totalSize}${p.quantity?.includes('ml') || p.product_quantity_unit === 'ml' ? 'ml' : 'g'} (full product)` : (p.serving_size || 'per 100g');
 
       return {
         found: true,
-        name: data.product.product_name,
-        cal,
-        protein,
-        carbs,
-        fat,
-        serving_size: data.product.serving_size || '100g',
+        name: p.product_name,
+        cal: calPer100 * multiplier,
+        protein: proteinPer100 * multiplier,
+        carbs: carbsPer100 * multiplier,
+        fat: fatPer100 * multiplier,
+        serving_size: servingLabel,
       };
     }
   } catch (_) {}
@@ -207,10 +215,10 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     if (!foodResult) return;
     onAdd(selectedMeal, {
       name: foodResult.name,
-      cal: Math.round(foodResult.cal || 0),
-      protein: Math.round(foodResult.protein || 0),
-      carbs: Math.round(foodResult.carbs || 0),
-      fat: Math.round(foodResult.fat || 0),
+      cal: parseFloat((foodResult.cal || 0).toFixed(1)),
+      protein: parseFloat((foodResult.protein || 0).toFixed(1)),
+      carbs: parseFloat((foodResult.carbs || 0).toFixed(1)),
+      fat: parseFloat((foodResult.fat || 0).toFixed(1)),
     });
     onClose();
   };
@@ -345,10 +353,10 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               {[
-                { label: 'Calories', value: Math.round(foodResult.cal || 0), unit: 'kcal', color: '#38bdf8' },
-                { label: 'Protein', value: Math.round(foodResult.protein || 0), unit: 'g', color: '#60a5fa' },
-                { label: 'Carbs', value: Math.round(foodResult.carbs || 0), unit: 'g', color: '#22c55e' },
-                { label: 'Fat', value: Math.round(foodResult.fat || 0), unit: 'g', color: '#f59e0b' },
+                { label: 'Calories', value: parseFloat((foodResult.cal || 0).toFixed(1)), unit: 'kcal', color: '#38bdf8' },
+                { label: 'Protein', value: parseFloat((foodResult.protein || 0).toFixed(1)), unit: 'g', color: '#60a5fa' },
+                { label: 'Carbs', value: parseFloat((foodResult.carbs || 0).toFixed(1)), unit: 'g', color: '#22c55e' },
+                { label: 'Fat', value: parseFloat((foodResult.fat || 0).toFixed(1)), unit: 'g', color: '#f59e0b' },
               ].map(({ label, value, unit, color }) => (
                 <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
                   <p style={{ fontSize: 16, fontWeight: 700, color, margin: '0 0 2px' }}>{value}<span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>{unit}</span></p>
