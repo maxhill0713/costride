@@ -24,9 +24,11 @@ async function lookupOpenFoodFacts(barcode) {
       const n = data.product.nutriments || {};
       const p = data.product;
 
-      // Try to get the total product size in grams/ml
-      // product_quantity is the total size e.g. "500" (ml or g), quantity is e.g. "500ml"
-      const totalSize = parseFloat(p.product_quantity) || null;
+      // Debug: log all relevant fields
+      console.log('[OFFApi] product_quantity:', p.product_quantity, '| quantity:', p.quantity, '| serving_size:', p.serving_size, '| serving_quantity:', p.serving_quantity, '| nutriments keys:', Object.keys(n).filter(k => k.includes('energy') || k.includes('kcal')));
+
+      // Try multiple fields to get total product size
+      const totalSize = parseFloat(p.product_quantity) || parseFloat(p.quantity) || null;
 
       // Per 100g/ml values
       let calPer100 = n['energy-kcal_100g'] ?? null;
