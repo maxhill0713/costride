@@ -7,14 +7,10 @@
   --foreground: 213 31% 91%;
 }
 
-/* Force dark background — overrides index.css @layer base :root reset */
+/* Force dark background — fills overscroll areas on all pages */
 html {
-  background: linear-gradient(to bottom right, #02040a, #0d2360, #02040a);
-  background-attachment: fixed;
-}
-
-body {
-  background: transparent !important;
+  background: linear-gradient(to bottom right, #02040a, #0d2360, #02040a) fixed;
+  min-height: 100%;
 }
 
 @layer base {
@@ -33,7 +29,7 @@ body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-top: env(safe-area-inset-top);
-    background: transparent;
+    background: transparent !important;
     color: #e2e8f0;
     transition: background-color 0.3s ease;
     overscroll-behavior: none;
