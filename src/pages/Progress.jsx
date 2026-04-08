@@ -1341,7 +1341,7 @@ export default function Progress() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 pt-6 pb-4">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto flex justify-between gap-2">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex-1 h-8 rounded bg-slate-700/60 animate-pulse" />
@@ -1366,7 +1366,7 @@ export default function Progress() {
       <Tabs defaultValue="analytics" className="w-full">
 
         {/* ── Header ── */}
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center h-18">
               <TabsList className="flex justify-between w-full bg-transparent p-0 h-10 gap-0 border-0">
