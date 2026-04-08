@@ -60,10 +60,13 @@ function usePrimaryGymDialogStyles() {
 }
 
 // ─── Gym search sanitiser ─────────────────────────────────────────────────────
+// Allows letters, digits, spaces and common name punctuation (apostrophes,
+// hyphens, commas, dots, brackets) so names like "CrossFit Bristol - St. Paul's"
+// work fine. Strips HTML/script-injection chars and caps at 60 characters.
 const sanitiseGymSearch = (v) =>
   v
-    .replace(/[<>{};`\\]/g, '')
-    .slice(0, 60);
+    .replace(/[<>{};`\\]/g, '')  // strip injection-risk chars
+    .slice(0, 60);               // sensible cap for a gym name
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Gyms() {
@@ -228,6 +231,7 @@ const toggleSave = (gymId) => {
     );
   };
 const searchPlaces = async (query) => {
+    // Trim and validate before sending to the API
     const safe = query.trim();
     if (!safe || safe.length < 2) {
       setPlacesResults([]);
@@ -376,36 +380,15 @@ return (
   };
 return (
   <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-
-    {/* ── Fixed header ── */}
-    <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center h-18 gap-6">
-          {userGyms.length > 0 &&
-            <Button onClick={() => setShowPrimaryGymModal(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-              <Star className="w-4 h-4" />
-            </Button>
-          }
-          <div className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0 items-center">
-            {/* These are just visual — real tab switching is handled by the Tabs below */}
-          </div>
-          <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-            <Key className="w-4 h-4" />
-            <span className="hidden md:inline">Join with Code</span>
-          </Button>
-        </div>
-      </div>
-    </div>
-
     <Tabs defaultValue="my-gyms" className="w-full">
-        {/* ── Spacer that exactly matches the fixed header height ── */}
-        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
-
-        {/* ── Tab bar (sticky, sits just below the fixed header) ── */}
-        <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-6">
-              {userGyms.length > 0 && <div className="w-[52px]" />}
+            <div className="flex items-center h-18 gap-6">
+              {userGyms.length > 0 &&
+                <Button onClick={() => setShowPrimaryGymModal(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                  <Star className="w-4 h-4" />
+                </Button>
+              }
               <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0">
                 <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base">
                   <Users className="w-5 h-5 mr-2" />My Gyms
@@ -414,10 +397,13 @@ return (
                   <MapPin className="w-5 h-5 mr-2" />Explore
                 </TabsTrigger>
               </TabsList>
+              <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                <Key className="w-4 h-4" />
+                <span className="hidden md:inline">Join with Code</span>
+              </Button>
             </div>
           </div>
         </div>
-
         <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
             <div className="max-w-6xl mx-auto">
               {userGyms.length === 0 ?
