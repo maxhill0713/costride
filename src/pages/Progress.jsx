@@ -1332,7 +1332,7 @@ export default function Progress() {
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]" style={{ backgroundColor: '#02040a' }}>
+      <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
         {/* Overscroll background fix */}
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
         {/* Fixed skeleton header — same height/style as real header */}
@@ -1361,7 +1361,7 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]" style={{ backgroundColor: '#02040a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
       {/* Overscroll background fix — covers the rubber-band pull area with the page gradient */}
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
