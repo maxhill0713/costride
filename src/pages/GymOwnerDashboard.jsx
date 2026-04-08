@@ -523,7 +523,7 @@ export default function GymOwnerDashboard() {
   /* ── Splash screen (loading / error states) ── */
   const Splash = ({ children }) => (
     <div className="min-h-screen flex items-center justify-center bg-[#050810]">
-      <div className="bg-[#0a0f1e] border border-white/[0.04] rounded-2xl p-9 max-w-[380px] w-full text-center">
+      <div className="bg-[#0a0f1e] border border-white/[0.04] rounded-2xl p-6 sm:p-9 max-w-[380px] w-full text-center">
         {children}
       </div>
     </div>

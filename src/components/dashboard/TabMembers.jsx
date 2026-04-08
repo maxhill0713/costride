@@ -507,7 +507,7 @@ function MemberPreview({ m, onClose, onMessage }) {
   const engTextCls = engScore >= 60 ? "text-emerald-500" : engScore >= 30 ? "text-amber-500" : "text-red-500";
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-80 bg-[#0a0f1e] border-l border-white/[0.04] z-[200] flex flex-col shadow-[-12px_0_40px_rgba(0,0,0,0.5)] animate-[panelIn_0.18s_ease]">
+    <div className="fixed top-0 right-0 bottom-0 w-full sm:w-80 bg-[#0a0f1e] border-l border-white/[0.04] z-[200] flex flex-col shadow-[-12px_0_40px_rgba(0,0,0,0.5)] animate-[panelIn_0.18s_ease]">
       <style>{`@keyframes panelIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
 
       {/* Header */}
