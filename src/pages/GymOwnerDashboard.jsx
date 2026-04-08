@@ -14,6 +14,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import ProfileDropdown from '../components/dashboard/ProfileDropdown';
 import MemberChatPanel from '../components/dashboard/MemberChatPanel';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
@@ -53,37 +54,15 @@ const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday')
 
 function TabLoader() {
   return (
-    <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+    <div className="flex justify-center p-10">
       <style>{`@keyframes _tab-spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ width: 28, height: 28, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: '_tab-spin 0.7s linear infinite' }} />
-    </div>);
+    </div>
+  );
 }
 
-const D = {
-  bgBase: '#050810',
-  bgSidebar: '#050810',
-  bgSurface: '#0a0f1e',
-  bgHover: 'rgba(255,255,255,0.03)',
-  border: 'rgba(255,255,255,0.04)',
-  borderHi: 'rgba(255,255,255,0.07)',
-  divider: 'rgba(255,255,255,0.05)',
-  blue: '#3b82f6',
-  blueDim: 'rgba(59,130,246,0.10)',
-  blueBrd: 'rgba(59,130,246,0.22)',
-  red: '#ef4444',
-  redDim: 'rgba(239,68,68,0.08)',
-  redBrd: 'rgba(239,68,68,0.22)',
-  amber: '#f59e0b',
-  amberDim: 'rgba(245,158,11,0.08)',
-  amberBrd: 'rgba(245,158,11,0.22)',
-  green: '#10b981',
-  greenDim: 'rgba(16,185,129,0.08)',
-  greenBrd: 'rgba(16,185,129,0.20)',
-  t1: '#f1f5f9',
-  t2: '#94a3b8',
-  t3: '#475569',
-  t4: '#2d3f55'
-};
+/* ─── Hex values for SVG / data-driven color needs ─────────────── */
+const HEX = { blue: '#3b82f6', red: '#ef4444', amber: '#f59e0b', green: '#10b981' };
 
 const ALL_NAV = [
 { id: 'overview', label: 'Overview', icon: LayoutDashboard, roles: ['gym_owner'] },
@@ -96,122 +75,10 @@ const ALL_NAV = [
 { id: 'engagement', label: 'Automations', icon: Zap, roles: ['gym_owner'] },
 { id: 'gym', label: 'Settings', icon: Settings, roles: ['gym_owner'] }];
 
-
-function injectDashCSS() {
-  if (typeof document === 'undefined' || document.getElementById('dash-root-css')) return;
-  const el = document.createElement('style');
-  el.id = 'dash-root-css';
-  el.textContent = DASH_CSS_TEXT;
-  document.head.appendChild(el);
-}
-
-const DASH_CSS_TEXT = `
-  .dash-root, .dash-root * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; box-sizing: border-box; }
-  .dash-root {
-    --bg:       #050810;
-    --sidebar:  #050810;
-    --surface:  #0a0f1e;
-    --border:   rgba(255,255,255,0.04);
-    --border-hi:rgba(255,255,255,0.07);
-    --blue:     #3b82f6;
-    --text1:    #f1f5f9;
-    --text2:    #94a3b8;
-    --text3:    #475569;
-    --red:      #ef4444;
-    --amber:    #f59e0b;
-    --green:    #10b981;
-  }
-
-  .dash-root ::-webkit-scrollbar { width: 3px; height: 3px; }
-  .dash-root ::-webkit-scrollbar-track { background: transparent; }
-  .dash-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 99px; }
-
-  .dash-root .nav-item {
-    display: flex; align-items: center; width: 100%;
-    border: none; background: transparent; cursor: pointer;
-    border-left: 2px solid transparent;
-    border-radius: 0 8px 8px 0;
-    color: #475569;
-    font-size: 13px; font-weight: 500;
-    transition: background 0.12s, color 0.12s, border-color 0.12s;
-  }
-  .dash-root .nav-item:hover {
-    background: rgba(255,255,255,0.03);
-    color: #94a3b8;
-  }
-  .dash-root .nav-item.active {
-    background: rgba(59,130,246,0.08);
-    color: #3b82f6;
-    border-left-color: #3b82f6;
-    font-weight: 700;
-  }
-
-  .dash-root .stat-card {
-    background: #0a0f1e;
-    border: 1px solid rgba(255,255,255,0.04);
-    border-radius: 16px;
-    padding: 20px 20px;
-    position: relative; overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.3s;
-  }
-  .dash-root .stat-card:hover { border-color: rgba(255,255,255,0.07); box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
-  .dash-root .stat-num {
-    font-size: 32px; font-weight: 800;
-    letter-spacing: -0.04em; line-height: 1;
-    color: #f1f5f9; margin: 8px 0 5px;
-  }
-  .dash-root .stat-label {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.10em; color: #475569;
-  }
-  .dash-root .stat-sub {
-    font-size: 11px; color: #475569;
-    display: flex; align-items: center; gap: 5px;
-  }
-
-  .dash-root .member-row { transition: background 0.10s; cursor: pointer; }
-  .dash-root .member-row:hover { background: rgba(255,255,255,0.02); }
-
-  .dash-root .priority-row {
-    border-left: 2px solid transparent;
-    border-radius: 0 8px 8px 0;
-    transition: background 0.12s, border-color 0.12s;
-  }
-  .dash-root .priority-row:hover {
-    background: rgba(255,255,255,0.025);
-    border-left-color: rgba(239,68,68,0.4);
-  }
-
-  .dash-root .filter-tab {
-    color: #475569; border-radius: 7px; border: 1px solid transparent;
-    transition: all 0.12s; cursor: pointer; background: none;
-    font-family: inherit;
-  }
-  .dash-root .filter-tab:hover { color: #94a3b8; background: rgba(255,255,255,0.03); }
-  .dash-root .filter-tab.active {
-    color: #3b82f6;
-    background: rgba(59,130,246,0.08);
-    border-color: rgba(59,130,246,0.20);
-  }
-
-  @keyframes dashFadeUp {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: none; }
-  }
-  .dash-root .fade-up { animation: dashFadeUp 0.28s ease both; }
-
-  .dash-root .pill         { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; border: 1px solid; }
-  .dash-root .pill-blue    { color: #3b82f6;  background: rgba(59,130,246,0.10);  border-color: rgba(59,130,246,0.22);  }
-  .dash-root .pill-green   { color: #10b981; background: rgba(16,185,129,0.08);  border-color: rgba(16,185,129,0.20);  }
-  .dash-root .pill-red     { color: #ef4444;   background: rgba(239,68,68,0.08);   border-color: rgba(239,68,68,0.22);   }
-  .dash-root .pill-amber   { color: #f59e0b; background: rgba(245,158,11,0.08);  border-color: rgba(245,158,11,0.22);  }
-  .dash-root .pill-neutral { color: #475569;   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
-`;
-injectDashCSS();
-
-const Spark = ({ data = [], color = D.blue, height = 32 }) => {
+/* ─── Sparkline ─────────────────────────────────────────────────── */
+const Spark = ({ data = [], color = HEX.blue, height = 32 }) => {
   if (!data.length) return null;
-  const w = 100,h = height;
+  const w = 100, h = height;
   const max = Math.max(...data, 1);
   const pts = data.map((v, i) => {
     const x = i / (data.length - 1) * w;
@@ -222,7 +89,7 @@ const Spark = ({ data = [], color = D.blue, height = 32 }) => {
   const id = `sp-${color.replace(/[^a-z0-9]/gi, '')}`;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
-    style={{ width: '100%', height, display: 'block', marginTop: 8 }}>
+      style={{ width: '100%', height, display: 'block', marginTop: 8 }}>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.18" />
@@ -230,111 +97,113 @@ const Spark = ({ data = [], color = D.blue, height = 32 }) => {
         </linearGradient>
       </defs>
       <polyline points={pts} fill="none" stroke={color} strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round" />
+        strokeLinecap="round" strokeLinejoin="round" />
       <polygon points={area} fill={`url(#${id})`} />
-    </svg>);
+    </svg>
+  );
 };
 
+/* ─── Delta badge ───────────────────────────────────────────────── */
 const Delta = ({ val }) => {
-  const up = val > 0;
-  const flat = val === 0;
-  const color = flat ? D.t3 : up ? D.green : D.red;
-  const bg = flat ? 'rgba(255,255,255,0.05)' : up ? D.greenDim : D.redDim;
-  const brd = flat ? D.border : up ? D.greenBrd : D.redBrd;
+  const up = val > 0, flat = val === 0;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 2,
-      fontSize: 10, fontWeight: 700, padding: '2px 6px',
-      borderRadius: 5, background: bg, color,
-      border: `1px solid ${brd}`
-    }}>
+    <span className={cn(
+      'inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] border',
+      flat ? 'text-slate-600 bg-white/[0.05] border-white/[0.04]'
+           : up ? 'text-emerald-500 bg-emerald-500/[0.08] border-emerald-500/[0.20]'
+                : 'text-red-500 bg-red-500/[0.08] border-red-500/[0.22]'
+    )}>
       {flat ? '—' : up ? '+' : ''}{val}%
-    </span>);
+    </span>
+  );
 };
 
+/* ─── KPI card ──────────────────────────────────────────────────── */
 function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, footerColor, trend }) {
-  const valColor = valueColor || D.t1;
-  const barColor = footerColor || D.blue;
   return (
-    <div className="stat-card">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span className="stat-label">{label}</span>
-        <div style={{
-          width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-          background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Icon style={{ width: 12, height: 12, color: D.t3 }} />
+    <div className="bg-[#0a0f1e] border border-white/[0.04] rounded-2xl p-5 relative overflow-hidden hover:border-white/[0.07] hover:shadow-[0_4px_24px_rgba(0,0,0,0.15)] transition-[border-color,box-shadow] duration-200">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-[0.10em] text-slate-600">{label}</span>
+        <div className="w-[26px] h-[26px] rounded-[7px] shrink-0 bg-white/[0.04] border border-white/[0.04] flex items-center justify-center">
+          <Icon className="w-3 h-3 text-slate-600" />
         </div>
       </div>
-      <div className="stat-num" style={{ color: valColor }}>{value}</div>
-      <div className="stat-sub" style={{ color: subColor || D.t3 }}>
+      <div className={cn('text-[32px] font-extrabold tracking-[-0.04em] leading-none my-2', valueColor || 'text-slate-100')}>{value}</div>
+      <div className={cn('text-[11px] flex items-center gap-1.5', subColor || 'text-slate-600')}>
         <span>{sub}</span>
         {trend != null && <Delta val={trend} />}
       </div>
-      {footerBar != null &&
-      <div style={{ marginTop: 10, height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-          <div style={{
-          height: '100%', width: `${Math.min(100, footerBar)}%`,
-          background: barColor, borderRadius: 99, transition: 'width 0.7s ease'
-        }} />
+      {footerBar != null && (
+        <div className="mt-2.5 h-0.5 rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="h-full rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${Math.min(100, footerBar)}%`, background: footerColor || HEX.blue }} />
         </div>
-      }
-    </div>);
+      )}
+    </div>
+  );
 }
 
 function CoachKpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, trend }) {
   return <KpiCard icon={Icon} label={label} value={value} sub={sub} subColor={subColor} valueColor={valueColor} footerBar={footerBar} trend={trend} />;
 }
 
-function DashCard({ children, style = {}, accentColor, title, action, onAction }) {
+/* ─── Generic card shell ────────────────────────────────────────── */
+function DashCard({ children, className, accentColor, title, action, onAction }) {
   return (
-    <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 12, position: 'relative', overflow: 'hidden', ...style }}>
-      {accentColor &&
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1.5, background: `linear-gradient(90deg, ${accentColor}50 0%, ${accentColor}18 60%, transparent 100%)`, pointerEvents: 'none' }} />
-      }
-      {title &&
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: D.t1 }}>{title}</span>
-          {onAction &&
-        <button onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: D.blue, background: D.blueDim, border: `1px solid ${D.blueBrd}`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+    <div className={cn('bg-[#0a0f1e] border border-white/[0.04] rounded-xl relative overflow-hidden', className)}>
+      {accentColor && (
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none"
+          style={{ background: `linear-gradient(90deg, ${accentColor}50 0%, ${accentColor}18 60%, transparent 100%)` }} />
+      )}
+      {title && (
+        <div className="flex items-center justify-between px-4 pt-3.5">
+          <span className="text-[13px] font-bold text-slate-100">{title}</span>
+          {onAction && (
+            <button onClick={onAction} className="text-[11px] font-semibold text-blue-500 bg-blue-500/10 border border-blue-500/[0.22] rounded-[7px] px-2.5 py-1 cursor-pointer">
               {action || 'View all'}
             </button>
-        }
+          )}
         </div>
-      }
+      )}
       {children}
-    </div>);
+    </div>
+  );
 }
 
 const CoachCard = DashCard;
 
+/* ─── Mini avatar ───────────────────────────────────────────────── */
 function MiniAvatar({ name, src, size = 30 }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: src ? 'transparent' : 'rgba(255,255,255,0.08)', border: `1.5px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, color: D.t2, overflow: 'hidden' }}>
-      {src ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (name || '?').charAt(0).toUpperCase()}
-    </div>);
+    <div
+      className="rounded-full shrink-0 bg-white/[0.08] border border-white/[0.04] flex items-center justify-center font-bold text-slate-400 overflow-hidden"
+      style={{ width: size, height: size, fontSize: size * 0.36 }}
+    >
+      {src ? <img src={src} className="w-full h-full object-cover" alt="" /> : (name || '?').charAt(0).toUpperCase()}
+    </div>
+  );
 }
 
-const CLASS_TYPE_COLORS = { hiit: D.red, yoga: D.green, strength: D.blue, spin: D.blue, boxing: D.red, cardio: D.amber, pilates: D.green, default: D.blue };
+const CLASS_TYPE_COLORS = { hiit: HEX.red, yoga: HEX.green, strength: HEX.blue, spin: HEX.blue, boxing: HEX.red, cardio: HEX.amber, pilates: HEX.green, default: HEX.blue };
 function classColor(cls) {
   const n = (cls?.class_type || cls?.name || '').toLowerCase();
   return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
 }
 
+/* ─── Mobile KPI strip ──────────────────────────────────────────── */
 function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
   const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
   let items;
   if (tab === 'overview') {
-    items = [{ label: 'TODAY', value: todayCI, color: D.blue }, { label: 'WEEK', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }, { label: 'MEMBERS', value: totalMembers, color: null }];
+    items = [{ label: 'TODAY', value: todayCI, color: HEX.blue }, { label: 'WEEK', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? HEX.red : null }, { label: 'MEMBERS', value: totalMembers, color: null }];
   } else if (tab === 'members') {
-    items = [{ label: 'TOTAL', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }, { label: 'NEW', value: newSignUps, color: newSignUps > 0 ? D.green : null }];
+    items = [{ label: 'TOTAL', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? HEX.red : null }, { label: 'NEW', value: newSignUps, color: newSignUps > 0 ? HEX.green : null }];
   } else if (tab === 'content') {
     items = [{ label: 'POSTS', value: posts.length, color: null }, { label: 'EVENTS', value: events.length, color: null }, { label: 'CHALLENGES', value: challenges.length, color: null }, { label: 'POLLS', value: polls.length, color: null }];
   } else if (tab === 'analytics') {
-    items = [{ label: 'RETENTION', value: retentionRate + '%', color: retentionRate >= 70 ? D.green : retentionRate >= 40 ? D.amber : D.red }, { label: '30-DAY Δ', value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? D.green : monthChangePct < 0 ? D.red : null }, { label: 'ACTIVE', value: activeThisMonth, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }];
+    items = [{ label: 'RETENTION', value: retentionRate + '%', color: retentionRate >= 70 ? HEX.green : retentionRate >= 40 ? HEX.amber : HEX.red }, { label: '30-DAY Δ', value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? HEX.green : monthChangePct < 0 ? HEX.red : null }, { label: 'ACTIVE', value: activeThisMonth, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? HEX.red : null }];
   } else if (tab === 'engagement') {
-    items = [{ label: 'MEMBERS', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? D.red : null }];
+    items = [{ label: 'MEMBERS', value: totalMembers, color: null }, { label: 'ACTIVE', value: activeThisWeek, color: null }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? HEX.red : null }];
   } else if (tab === 'gym') {
     items = [{ label: 'COACHES', value: coaches.length, color: null }, { label: 'CLASSES', value: classes.length, color: null }, { label: 'MEMBERS', value: totalMembers, color: null }];
   } else if ((tab === 'today' || tab === 'schedule') && isCoach) {
@@ -343,17 +212,18 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
     return null;
   }
   return (
-    <div style={{ flexShrink: 0, background: D.bgSurface, borderBottom: `1px solid ${D.border}`, display: 'flex' }}>
+    <div className="shrink-0 bg-[#0a0f1e] border-b border-white/[0.04] flex">
       {items.map((item, i) =>
-      <React.Fragment key={item.label}>
-          {i > 0 && <div style={{ width: 1, background: D.divider, alignSelf: 'stretch', margin: '7px 0' }} />}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '9px 2px' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: item.color || D.t1 }}>{item.value}</div>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: D.t4, marginTop: 3 }}>{item.label}</div>
+        <React.Fragment key={item.label}>
+          {i > 0 && <div className="w-px bg-white/[0.05] self-stretch my-[7px]" />}
+          <div className="flex-1 flex flex-col items-center justify-center py-[9px] px-0.5">
+            <div className="text-[18px] font-extrabold tracking-[-0.04em] leading-none" style={{ color: item.color || '#f1f5f9' }}>{item.value}</div>
+            <div className="text-[8px] font-bold uppercase tracking-[0.10em] text-[#2d3f55] mt-[3px]">{item.label}</div>
           </div>
         </React.Fragment>
       )}
-    </div>);
+    </div>
+  );
 }
 
 export default function GymOwnerDashboard() {
@@ -410,7 +280,6 @@ export default function GymOwnerDashboard() {
     return () => document.removeEventListener('dash-logout', h);
   }, []);
 
-  // Handle coach quick actions from the top bar
   useEffect(() => {
     const h = (e) => {
       if (e.detail === 'addClient') {
@@ -571,8 +440,6 @@ export default function GymOwnerDashboard() {
   } = stats;
 
   const ci30 = [];
-  // Use the resolved avatar map (fetched from User entity) as the primary source
-  // Fall back to stats.avatarMap for any user IDs not covered by memberUserRecords
   const avatarMapFull = useMemo(() => {
     return { ...avatarMap, ...memberAvatarMapResolved };
   }, [avatarMap, memberAvatarMapResolved]);
@@ -591,12 +458,10 @@ export default function GymOwnerDashboard() {
 
   const coachMemberships = useMemo(() => {
     if (!isCoach) return allMemberships;
-    // Include members who have a booking with this coach
     const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
     if (bookedClientIds.size > 0) {
       return allMemberships.filter(m => bookedClientIds.has(m.user_id));
     }
-    // Fallback: filter by client_notes if available
     if (activeCoachRecord?.client_notes) {
       const ids = Object.keys(activeCoachRecord.client_notes);
       if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
@@ -619,11 +484,11 @@ export default function GymOwnerDashboard() {
   const coachPolls = isCoach ? polls.filter((p) => p.created_by === coachUserId || !p.created_by) : polls;
 
   const priorities = [
-  atRisk > 0 && { icon: AlertCircle, color: D.red, label: `${atRisk} members inactive 14+ days`, action: 'View members', fn: () => setTab('members') },
-  !challenges.some((c) => c.status === 'active') && { icon: Trophy, color: D.amber, label: 'No active challenge running', action: 'Create one', fn: () => openModal('challenge') },
-  polls.length === 0 && { icon: BarChart2, color: D.amber, label: 'No active polls', action: 'Create poll', fn: () => openModal('poll') },
-  monthChangePct < 0 && { icon: TrendingDown, color: D.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') }].
-  filter(Boolean).slice(0, 4);
+    atRisk > 0 && { icon: AlertCircle, color: HEX.red, label: `${atRisk} members inactive 14+ days`, action: 'View members', fn: () => setTab('members') },
+    !challenges.some((c) => c.status === 'active') && { icon: Trophy, color: HEX.amber, label: 'No active challenge running', action: 'Create one', fn: () => openModal('challenge') },
+    polls.length === 0 && { icon: BarChart2, color: HEX.amber, label: 'No active polls', action: 'Create poll', fn: () => openModal('poll') },
+    monthChangePct < 0 && { icon: TrendingDown, color: HEX.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') }]
+    .filter(Boolean).slice(0, 4);
 
   const tabPanels = NAV.map((item) => {
     let content = null;
@@ -635,16 +500,16 @@ export default function GymOwnerDashboard() {
       content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach ?
-      <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
-      <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
+        <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
+        <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?
-      <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
-      <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
+        <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
+        <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} currentUser={currentUser} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
     } else if (item.id === 'analytics') {
       content = isCoach ?
-      <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
-      <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />;
+        <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
+        <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk} gymId={selectedGym?.id} allMemberships={allMemberships} classes={classes} coaches={coaches} avatarMap={avatarMapFull} sparkData={sparkData7} Spark={Spark} Delta={Delta} weekTrend={weekTrend} peakHours={peakHours} busiestDays={busiestDays} returnRate={returnRate} dailyAvg={dailyAvg} engagementSegments={engagementSegments} retentionFunnel={retentionFunnel} dropOffBuckets={dropOffBuckets} churnSignals={churnSignals} week1ReturnTrend={week1ReturnTrend} />;
     } else if (item.id === 'profile' && isCoach) {
       content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'engagement') {
@@ -655,39 +520,44 @@ export default function GymOwnerDashboard() {
     return { id: item.id, content };
   }).filter((p) => p.content !== null);
 
-  const Splash = ({ children }) =>
-  <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.bgBase }}>
-      <div style={{ background: D.bgSurface, border: `1px solid ${D.border}`, borderRadius: 16, padding: 36, maxWidth: 380, width: '100%', textAlign: 'center' }}>
+  /* ── Splash screen (loading / error states) ── */
+  const Splash = ({ children }) => (
+    <div className="min-h-screen flex items-center justify-center bg-[#050810]">
+      <div className="bg-[#0a0f1e] border border-white/[0.04] rounded-2xl p-9 max-w-[380px] w-full text-center">
         {children}
       </div>
-    </div>;
+    </div>
+  );
 
   if (gymsError) return (
     <Splash>
-      <X style={{ width: 26, height: 26, color: D.red, margin: '0 auto 12px' }} />
-      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>Connection Error</h2>
-      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>{gymsError.message}</p>
-      <button onClick={() => window.location.reload()} style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
-    </Splash>);
+      <X className="w-[26px] h-[26px] text-red-500 mx-auto mb-3" />
+      <h2 className="text-slate-100 font-extrabold mb-2 tracking-[-0.03em]">Connection Error</h2>
+      <p className="text-slate-600 text-[13px] mb-5">{gymsError.message}</p>
+      <button onClick={() => window.location.reload()} className="bg-blue-500 text-white border-none rounded-[9px] px-5 py-2.5 font-bold cursor-pointer">Retry</button>
+    </Splash>
+  );
 
   if (approvedGyms.length === 0 && pendingGyms.length > 0) return (
     <Splash>
-      <Clock style={{ width: 26, height: 26, color: D.amber, margin: '0 auto 12px' }} />
-      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>Pending Approval</h2>
-      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Your gym <strong style={{ color: D.t1 }}>{pendingGyms[0].name}</strong> is under review. We'll notify you once it's approved.</p>
-      <Link to={createPageUrl('Home')}><button style={{ background: 'rgba(255,255,255,0.06)', color: D.t1, border: `1px solid ${D.border}`, borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Back to Home</button></Link>
-    </Splash>);
+      <Clock className="w-[26px] h-[26px] text-amber-500 mx-auto mb-3" />
+      <h2 className="text-slate-100 font-extrabold mb-2 tracking-[-0.03em]">Pending Approval</h2>
+      <p className="text-slate-600 text-[13px] mb-5">Your gym <strong className="text-slate-100">{pendingGyms[0].name}</strong> is under review. We'll notify you once it's approved.</p>
+      <Link to={createPageUrl('Home')}><button className="bg-white/[0.06] text-slate-100 border border-white/[0.04] rounded-[9px] px-5 py-2.5 font-bold cursor-pointer">Back to Home</button></Link>
+    </Splash>
+  );
 
   if (myGyms.length === 0 && !isCoach) return (
     <Splash>
-      <Dumbbell style={{ width: 26, height: 26, color: D.blue, margin: '0 auto 12px' }} />
-      <h2 style={{ color: D.t1, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.03em' }}>No Gyms Yet</h2>
-      <p style={{ color: D.t3, fontSize: 13, marginBottom: 20 }}>Register your gym to get started with the dashboard.</p>
-      <Link to={createPageUrl('GymSignup')}><button style={{ background: D.blue, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Register Your Gym</button></Link>
-    </Splash>);
+      <Dumbbell className="w-[26px] h-[26px] text-blue-500 mx-auto mb-3" />
+      <h2 className="text-slate-100 font-extrabold mb-2 tracking-[-0.03em]">No Gyms Yet</h2>
+      <p className="text-slate-600 text-[13px] mb-5">Register your gym to get started with the dashboard.</p>
+      <Link to={createPageUrl('GymSignup')}><button className="bg-blue-500 text-white border-none rounded-[9px] px-5 py-2.5 font-bold cursor-pointer">Register Your Gym</button></Link>
+    </Splash>
+  );
 
-  const sharedModals =
-  <>
+  const sharedModals = (
+    <>
       <ManageClassesModal open={modal === 'classes'} onClose={closeModal} classes={classes} onCreateClass={(d) => createClassM.mutate(d)} onUpdateClass={(id, data) => updateClassM.mutate({ id, data })} onDeleteClass={(id) => deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending || updateClassM.isPending} />
       <CreateGymOwnerPostModal open={modal === 'post'} onClose={closeModal} gym={selectedGym} onSuccess={() => inv('posts')} />
       <CreateEventModal open={modal === 'event'} onClose={closeModal} onSave={(d) => createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending} />
@@ -706,18 +576,18 @@ export default function GymOwnerDashboard() {
       <EditPricingModal open={modal === 'pricing'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
 
       <AlertDialog open={modal === 'deleteGym'} onOpenChange={(v) => !v && closeModal()}>
-        <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
+        <AlertDialogContent className="bg-[#0a0f1e] backdrop-blur-xl border border-red-500/[0.22] max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: D.t1, display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800 }}>
-              <Trash2 style={{ width: 16, height: 16, color: D.red }} /> Delete Gym Permanently?
+            <AlertDialogTitle className="text-slate-100 flex items-center gap-2 text-[15px] font-extrabold">
+              <Trash2 className="w-4 h-4 text-red-500" /> Delete Gym Permanently?
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ color: D.t3, fontSize: 13 }}>
-              Deletes <strong style={{ color: D.t1 }}>{selectedGym?.name}</strong> and all its data. <span style={{ color: D.red, fontWeight: 700 }}>This cannot be undone.</span>
+            <AlertDialogDescription className="text-slate-600 text-[13px]">
+              Deletes <strong className="text-slate-100">{selectedGym?.name}</strong> and all its data. <span className="text-red-500 font-bold">This cannot be undone.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: 'rgba(255,255,255,0.05)', color: D.t1, border: `1px solid ${D.border}` }}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteGymM.mutate()} disabled={deleteGymM.isPending} style={{ background: D.red, color: '#fff', border: 'none' }}>
+            <AlertDialogCancel className="bg-white/[0.05] text-slate-100 border border-white/[0.04]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteGymM.mutate()} disabled={deleteGymM.isPending} className="bg-red-500 text-white border-none">
               {deleteGymM.isPending ? 'Deleting…' : 'Delete Permanently'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -725,18 +595,18 @@ export default function GymOwnerDashboard() {
       </AlertDialog>
 
       <AlertDialog open={modal === 'deleteAccount'} onOpenChange={(v) => !v && closeModal()}>
-        <AlertDialogContent style={{ background: D.bgSurface, backdropFilter: 'blur(20px)', border: `1px solid ${D.redBrd}` }} className="max-w-md">
+        <AlertDialogContent className="bg-[#0a0f1e] backdrop-blur-xl border border-red-500/[0.22] max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: D.t1, display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800 }}>
-              <Trash2 style={{ width: 16, height: 16, color: D.red }} /> Delete Account?
+            <AlertDialogTitle className="text-slate-100 flex items-center gap-2 text-[15px] font-extrabold">
+              <Trash2 className="w-4 h-4 text-red-500" /> Delete Account?
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ color: D.t3, fontSize: 13 }}>
-              Deletes your account, all gyms, and personal data. <span style={{ color: D.red, fontWeight: 700 }}>This cannot be undone.</span>
+            <AlertDialogDescription className="text-slate-600 text-[13px]">
+              Deletes your account, all gyms, and personal data. <span className="text-red-500 font-bold">This cannot be undone.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: 'rgba(255,255,255,0.05)', color: D.t1, border: `1px solid ${D.border}` }}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteAccountM.mutate()} disabled={deleteAccountM.isPending} style={{ background: D.red, color: '#fff', border: 'none' }}>
+            <AlertDialogCancel className="bg-white/[0.05] text-slate-100 border border-white/[0.04]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteAccountM.mutate()} disabled={deleteAccountM.isPending} className="bg-red-500 text-white border-none">
               {deleteAccountM.isPending ? 'Deleting…' : 'Delete Account'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -745,209 +615,208 @@ export default function GymOwnerDashboard() {
 
       <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)} />
       <MemberChatPanel open={showChat} onClose={() => setShowChat(false)} allMemberships={allMemberships} currentUser={currentUser} avatarMap={memberAvatarMapResolved} />
-    </>;
+    </>
+  );
 
   // ── MOBILE ────────────────────────────────────────────────────────────────
   if (isMobile) return (
-    <div className="dash-root" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: D.bgBase, overflow: 'hidden' }}>
-      <header style={{ flexShrink: 0, background: D.bgSidebar, borderBottom: `1px solid ${D.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: D.bgSurface, border: `1px solid ${D.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
+    <div className="flex flex-col bg-[#050810] overflow-hidden" style={{ height: '100dvh' }}>
+      <header className="shrink-0 bg-[#050810] border-b border-white/[0.04] px-3.5 py-[10px] flex items-center justify-between">
+        <div className="flex items-center gap-[9px]">
+          <div className="w-[30px] h-[30px] rounded-lg bg-[#0a0f1e] border border-white/[0.04] flex items-center justify-center">
+            <Dumbbell className="w-3.5 h-3.5 text-blue-500" />
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: D.t1, letterSpacing: '-0.02em', lineHeight: 1 }}>{selectedGym?.name || 'Dashboard'}</div>
-            <div style={{ fontSize: 9, color: D.t3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 1 }}>{roleLabel}</div>
+            <div className="text-[13px] font-bold text-slate-100 tracking-[-0.02em] leading-none">{selectedGym?.name || 'Dashboard'}</div>
+            <div className="text-[9px] text-slate-600 font-semibold uppercase tracking-[0.08em] mt-0.5">{roleLabel}</div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {atRisk > 0 &&
-          <button onClick={() => setTab('members')} style={{ background: D.redDim, color: D.red, border: `1px solid ${D.redBrd}`, borderRadius: 99, fontSize: 10, fontWeight: 700, padding: '4px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <AlertTriangle style={{ width: 9, height: 9 }} />{atRisk}
+        <div className="flex gap-1.5 items-center">
+          {atRisk > 0 && (
+            <button onClick={() => setTab('members')} className="bg-red-500/[0.08] text-red-500 border border-red-500/[0.22] rounded-full text-[10px] font-bold py-1 px-[9px] cursor-pointer flex items-center gap-[3px]">
+              <AlertTriangle className="w-[9px] h-[9px]" />{atRisk}
             </button>
-          }
-          <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: `1px solid ${D.border}`, color: D.t3, cursor: 'pointer' }}>
-            <QrCode style={{ width: 14, height: 14 }} />
+          )}
+          <button onClick={() => openModal('qrScanner')} className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.04] text-slate-600 cursor-pointer">
+            <QrCode className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.blue, border: 'none', color: '#fff', cursor: 'pointer' }}>
-            <Plus style={{ width: 14, height: 14 }} />
+          <button onClick={() => openModal('post')} className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 border-none text-white cursor-pointer">
+            <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
       <MobileKpiStrip tab={tab} isCoach={isCoach} stats={stats} posts={posts} events={events} challenges={challenges} polls={polls} coaches={coaches} classes={classes} myClasses={myClasses} allMemberships={effectiveMemberships} />
 
-      <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
-        <div style={{ maxWidth: '100%' }}>
-          <Suspense fallback={<TabLoader />}>
-            {tabPanels.map((p) =>
+      <main className="flex-1 overflow-auto px-3 pt-3 pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <Suspense fallback={<TabLoader />}>
+          {tabPanels.map((p) => (
             <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
-            )}
-          </Suspense>
-        </div>
+          ))}
+        </Suspense>
       </main>
 
-      <nav style={{ flexShrink: 0, background: D.bgSidebar, borderTop: `1px solid ${D.border}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="shrink-0 bg-[#050810] border-t border-white/[0.04] flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map((item) => {
           const active = tab === item.id;
           return (
             <button key={item.id} onClick={() => setTab(item.id)}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '11px 4px 9px', border: 'none', background: active ? 'rgba(59,130,246,0.06)' : 'transparent', cursor: 'pointer', color: active ? D.blue : D.t4, transition: 'color 0.15s, background 0.15s', fontFamily: 'inherit', position: 'relative' }}>
-              {active && <div style={{ position: 'absolute', top: 0, left: '25%', right: '25%', height: 2, background: D.blue, borderRadius: '0 0 2px 2px' }} />}
-              <item.icon style={{ width: 18, height: 18 }} />
-              <span style={{ fontSize: 9, fontWeight: active ? 700 : 500, letterSpacing: '0.03em' }}>{item.label}</span>
-            </button>);
+              className={cn(
+                'flex-1 flex flex-col items-center gap-[3px] pt-[11px] pb-[9px] border-none cursor-pointer relative transition-[color,background] duration-150',
+                active ? 'bg-blue-500/[0.06] text-blue-500' : 'bg-transparent text-[#2d3f55]'
+              )}>
+              {active && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-blue-500 rounded-b-[2px]" />}
+              <item.icon className="w-[18px] h-[18px]" />
+              <span className={cn('text-[9px] tracking-[0.03em]', active ? 'font-bold' : 'font-medium')}>{item.label}</span>
+            </button>
+          );
         })}
       </nav>
       {sharedModals}
-    </div>);
+    </div>
+  );
 
   // ── DESKTOP ───────────────────────────────────────────────────────────────
   return (
-    <div className="dash-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: D.bgBase }}>
+    <div className="flex h-screen overflow-hidden bg-[#050810]">
 
       {/* ── SIDEBAR ── */}
-      <aside style={{
-        width: collapsed ? 56 : 220, flexShrink: 0, height: '100%', overflow: 'hidden',
-        background: D.bgSidebar, borderRight: `1px solid ${D.border}`,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)'
-      }}>
-
-        <div style={{ padding: collapsed ? '13px 0' : '13px 14px', borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
-          {collapsed ?
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button
-              onClick={() => setCollapsed(false)}
-              style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
-              onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
-                <Menu style={{ width: 16, height: 16 }} />
+      <aside
+        className="shrink-0 h-full overflow-hidden bg-[#050810] border-r border-white/[0.04] flex flex-col transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ width: collapsed ? 56 : 220 }}
+      >
+        {/* Gym header */}
+        <div className={cn('border-b border-white/[0.04] shrink-0', collapsed ? 'py-[13px] px-0' : 'py-[13px] px-3.5')}>
+          {collapsed ? (
+            <div className="flex justify-center">
+              <button onClick={() => setCollapsed(false)}
+                className="w-[30px] h-[30px] rounded-[7px] flex items-center justify-center bg-transparent border-none text-slate-600 cursor-pointer hover:text-slate-100 transition-colors duration-[120ms]">
+                <Menu className="w-4 h-4" />
               </button>
-            </div> :
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: D.bgSurface, border: `2px solid ${D.blue}`, boxShadow: '0 0 8px rgba(59,130,246,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                {selectedGym?.logo_url || selectedGym?.image_url ?
-              <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
-              <Dumbbell style={{ width: 14, height: 14, color: D.blue }} />
-              }
+            </div>
+          ) : (
+            <div className="flex items-center gap-[10px]">
+              <div className="w-[34px] h-[34px] rounded-full shrink-0 bg-[#0a0f1e] border-2 border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.45)] flex items-center justify-center overflow-hidden">
+                {selectedGym?.logo_url || selectedGym?.image_url
+                  ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" className="w-full h-full object-cover" />
+                  : <Dumbbell className="w-3.5 h-3.5 text-blue-500" />
+                }
               </div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: D.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-bold text-slate-100 overflow-hidden text-ellipsis whitespace-nowrap tracking-[-0.02em]">
                   {selectedGym?.name || 'Dashboard'}
                 </div>
-                <div style={{ fontSize: 9, color: D.t3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 1 }}>
+                <div className="text-[9px] text-slate-600 font-semibold uppercase tracking-[0.08em] mt-0.5">
                   {roleLabel}
                 </div>
               </div>
-              <button
-              onClick={() => setCollapsed(true)}
-              style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: D.t3, cursor: 'pointer', transition: 'color 0.12s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = D.t1}
-              onMouseLeave={(e) => e.currentTarget.style.color = D.t3}>
-                <Menu style={{ width: 14, height: 14 }} />
+              <button onClick={() => setCollapsed(true)}
+                className="shrink-0 w-[26px] h-[26px] rounded-[6px] flex items-center justify-center bg-transparent border-none text-slate-600 cursor-pointer hover:text-slate-100 transition-colors duration-[120ms]">
+                <Menu className="w-3.5 h-3.5" />
               </button>
             </div>
-          }
+          )}
 
-          {!collapsed && approvedGyms.length > 1 &&
-          <div style={{ position: 'relative', marginTop: 10 }}>
+          {/* Gym switcher */}
+          {!collapsed && approvedGyms.length > 1 && (
+            <div className="relative mt-2.5">
               <button onClick={() => setGymOpen((o) => !o)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedGym?.name}</span>
-                <ChevronDown style={{ width: 11, height: 11, flexShrink: 0, transform: gymOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }} />
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.04] text-slate-400 text-[11px] font-semibold cursor-pointer">
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap">{selectedGym?.name}</span>
+                <ChevronDown className={cn('w-[11px] h-[11px] shrink-0 transition-transform duration-[180ms]', gymOpen && 'rotate-180')} />
               </button>
-              {gymOpen &&
-            <div style={{ position: 'absolute', left: 0, right: 0, top: '110%', borderRadius: 10, overflow: 'hidden', background: '#060c18', border: `1px solid ${D.borderHi}`, zIndex: 20, boxShadow: '0 12px 32px rgba(0,0,0,0.6)' }}>
-                  {approvedGyms.map((g) =>
-              <button key={g.id} onClick={() => {setSelectedGym(g);setGymOpen(false);}}
-              style={{ width: '100%', textAlign: 'left', padding: '9px 12px', fontSize: 12, fontWeight: 600, background: selectedGym?.id === g.id ? D.blueDim : 'transparent', color: selectedGym?.id === g.id ? D.blue : D.t2, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              {gymOpen && (
+                <div className="absolute left-0 right-0 top-[110%] rounded-[10px] overflow-hidden bg-[#060c18] border border-white/[0.07] z-20 shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
+                  {approvedGyms.map((g) => (
+                    <button key={g.id} onClick={() => { setSelectedGym(g); setGymOpen(false); }}
+                      className={cn('w-full text-left px-3 py-[9px] text-[12px] font-semibold border-none cursor-pointer', selectedGym?.id === g.id ? 'bg-blue-500/10 text-blue-500' : 'bg-transparent text-slate-400')}>
                       {g.name}
                     </button>
-              )}
+                  ))}
                 </div>
-            }
+              )}
             </div>
-          }
+          )}
         </div>
 
         {/* Navigation */}
-        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {!collapsed &&
-          <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, letterSpacing: '0.10em', textTransform: 'uppercase', padding: '0 16px', marginBottom: 4 }}>
-              Navigation
-            </div>
-          }
+        <nav className="flex-1 py-2 overflow-y-auto">
+          {!collapsed && (
+            <div className="text-[9px] font-bold text-[#2d3f55] uppercase tracking-[0.10em] px-4 mb-1">Navigation</div>
+          )}
           {NAV.map((item) => {
             const active = tab === item.id;
             return (
               <button key={item.id} onClick={() => setTab(item.id)}
-              className={`nav-item ${active ? 'active' : ''}`}
-              style={{ gap: collapsed ? 0 : 9, padding: collapsed ? '10px 0' : '8px 14px', justifyContent: collapsed ? 'center' : 'flex-start', marginBottom: 1 }}>
-                <item.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
-                {!collapsed && <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>}
-              </button>);
+                className={cn(
+                  'flex items-center w-full border-none cursor-pointer border-l-2 rounded-r-[8px] text-[13px] font-medium mb-px',
+                  'transition-[background,color,border-color] duration-[120ms]',
+                  active
+                    ? 'bg-blue-500/[0.08] text-blue-500 border-l-blue-500 font-bold'
+                    : 'bg-transparent text-slate-600 border-l-transparent hover:bg-white/[0.03] hover:text-slate-400'
+                )}
+                style={{ gap: collapsed ? 0 : 9, padding: collapsed ? '10px 0' : '8px 14px', justifyContent: collapsed ? 'center' : 'flex-start' }}
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+              </button>
+            );
           })}
         </nav>
 
         {/* Upgrade prompt */}
-        {!collapsed && isGymOwner &&
-        <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
+        {!collapsed && isGymOwner && (
+          <div className="px-2.5 pb-2.5 shrink-0">
             <Link to={createPageUrl('Plus')}>
-              <div style={{ padding: '11px 13px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = D.borderHi}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = D.border}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-                  <Crown style={{ width: 11, height: 11, color: D.t3 }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: D.t2 }}>Retention Pro</span>
+              <div className="px-[13px] py-[11px] rounded-[10px] bg-white/[0.03] border border-white/[0.04] cursor-pointer hover:border-white/[0.07] transition-colors duration-150">
+                <div className="flex items-center gap-[7px] mb-0.5">
+                  <Crown className="w-[11px] h-[11px] text-slate-600" />
+                  <span className="text-[11px] font-bold text-slate-400">Retention Pro</span>
                 </div>
-                <div style={{ fontSize: 10, color: D.t4 }}>Advanced analytics · From £49.99/mo</div>
+                <div className="text-[10px] text-[#2d3f55]">Advanced analytics · From £49.99/mo</div>
               </div>
             </Link>
           </div>
-        }
+        )}
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, borderTop: `1px solid ${D.border}` }}>
-          {!collapsed &&
-          <div style={{ padding: '10px 10px 4px' }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: D.t4, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, paddingLeft: 4 }}>Links</div>
+        <div className="shrink-0 border-t border-white/[0.04]">
+          {!collapsed && (
+            <div className="px-2.5 pt-2.5 pb-1">
+              <div className="text-[9px] font-bold text-[#2d3f55] uppercase tracking-[0.08em] mb-1 pl-1">Links</div>
               {[
-            { icon: Eye, label: 'View Gym Page', to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
-            { icon: Users, label: 'Member View', to: createPageUrl('Home') }].
-            map((l, i) =>
-            <Link key={i} to={l.to}>
-                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', border: 'none', background: 'transparent', color: D.t4, fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 7, marginBottom: 1, transition: 'color 0.12s', fontFamily: 'inherit' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = D.t2}
-              onMouseLeave={(e) => e.currentTarget.style.color = D.t4}>
-                    <l.icon style={{ width: 12, height: 12 }} /><span>{l.label}</span>
+                { icon: Eye, label: 'View Gym Page', to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
+                { icon: Users, label: 'Member View', to: createPageUrl('Home') }
+              ].map((l, i) => (
+                <Link key={i} to={l.to}>
+                  <button className="w-full flex items-center gap-2 px-2 py-[7px] border-none bg-transparent text-[#2d3f55] text-[12px] font-medium cursor-pointer rounded-[7px] mb-px hover:text-slate-400 transition-colors duration-[120ms]">
+                    <l.icon className="w-3 h-3" /><span>{l.label}</span>
                   </button>
                 </Link>
-            )}
+              ))}
             </div>
-          }
-          {collapsed &&
-          <div style={{ padding: '8px 0' }}>
+          )}
+          {collapsed && (
+            <div className="py-2">
               {[
-            { icon: Eye, to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
-            { icon: Users, to: createPageUrl('Home') }].
-            map((l, i) =>
-            <Link key={i} to={l.to}>
-                  <button style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '9px 0', border: 'none', background: 'transparent', color: D.t4, cursor: 'pointer', transition: 'color 0.12s', fontFamily: 'inherit' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = D.t2}
-              onMouseLeave={(e) => e.currentTarget.style.color = D.t4}>
-                    <l.icon style={{ width: 13, height: 13 }} />
+                { icon: Eye, to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
+                { icon: Users, to: createPageUrl('Home') }
+              ].map((l, i) => (
+                <Link key={i} to={l.to}>
+                  <button className="w-full flex justify-center py-[9px] border-none bg-transparent text-[#2d3f55] cursor-pointer hover:text-slate-400 transition-colors duration-[120ms]">
+                    <l.icon className="w-[13px] h-[13px]" />
                   </button>
                 </Link>
-            )}
+              ))}
             </div>
-          }
-          <div style={{ padding: collapsed ? '4px 0 14px' : '0 10px 14px' }}>
+          )}
+          <div className={cn('pb-[14px]', collapsed ? 'px-0 pt-1' : 'px-2.5 pt-0')}>
             <button onClick={() => base44.auth.logout()}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: collapsed ? '9px 0' : '7px 8px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', background: 'transparent', color: D.red, fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 7, opacity: 0.6, transition: 'opacity 0.12s', fontFamily: 'inherit' }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}>
-              <LogOut style={{ width: 13, height: 13 }} />
+              className={cn(
+                'w-full flex items-center gap-2 border-none bg-transparent text-red-500 text-[12px] font-semibold cursor-pointer rounded-[7px] opacity-60 hover:opacity-100 transition-opacity duration-[120ms]',
+                collapsed ? 'justify-center py-[9px] px-0' : 'justify-start py-[7px] px-2'
+              )}>
+              <LogOut className="w-[13px] h-[13px]" />
               {!collapsed && <span>Log Out</span>}
             </button>
           </div>
@@ -955,72 +824,66 @@ export default function GymOwnerDashboard() {
       </aside>
 
       {/* ── MAIN ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        {/* ── TOP BAR — date on the left, actions on the right ── */}
-        <header style={{ height: 54, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: D.bgSidebar, borderBottom: `1px solid ${D.border}` }}>
-
-          {/* LEFT: live date, shown on every tab */}
-          <div style={{ fontSize: 13, fontWeight: 600, color: D.t2, letterSpacing: '-0.01em' }}>
+        {/* ── TOP BAR ── */}
+        <header className="h-[54px] shrink-0 flex items-center justify-between px-5 bg-[#050810] border-b border-white/[0.04]">
+          <div className="text-[13px] font-semibold text-slate-400 tracking-[-0.01em]">
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
 
-          {/* RIGHT: action buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {isGymOwner && selectedGym?.join_code &&
-            <button onClick={() => setShowPoster(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${D.border}`, color: D.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'border-color 0.12s', fontFamily: 'inherit' }}
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = D.borderHi}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = D.border}>
-                <QrCode style={{ width: 11, height: 11 }} />
-                <span style={{ fontFamily: 'monospace', letterSpacing: '0.10em' }}>{selectedGym.join_code}</span>
+          <div className="flex items-center gap-1.5">
+            {isGymOwner && selectedGym?.join_code && (
+              <button onClick={() => setShowPoster(true)}
+                className="flex items-center gap-1.5 px-[11px] py-[5px] rounded-[7px] bg-white/[0.03] border border-white/[0.04] text-slate-400 text-[11px] font-semibold cursor-pointer hover:border-white/[0.07] transition-colors">
+                <QrCode className="w-[11px] h-[11px]" />
+                <span className="font-mono tracking-[0.10em]">{selectedGym.join_code}</span>
               </button>
-            }
+            )}
 
-            {atRisk > 0 &&
-            <button onClick={() => setTab('members')}
-            style={{ background: D.redDim, color: D.red, border: `1px solid ${D.redBrd}`, borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
-                <AlertTriangle style={{ width: 11, height: 11 }} />{atRisk} at risk
+            {atRisk > 0 && (
+              <button onClick={() => setTab('members')}
+                className="bg-red-500/[0.08] text-red-500 border border-red-500/[0.22] rounded-full text-[11px] font-bold py-[5px] px-[11px] cursor-pointer flex items-center gap-1">
+                <AlertTriangle className="w-[11px] h-[11px]" />{atRisk} at risk
               </button>
-            }
+            )}
 
             <button onClick={() => openModal('qrScanner')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: D.t2, border: `1px solid ${D.border}`, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.12s', fontFamily: 'inherit' }}
-            onMouseEnter={(e) => {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}
-            onMouseLeave={(e) => {e.currentTarget.style.color = D.t2;e.currentTarget.style.borderColor = D.border;}}>
-              <QrCode style={{ width: 12, height: 12 }} /> Scan QR
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] text-slate-400 border border-white/[0.04] text-[12px] font-semibold cursor-pointer hover:text-slate-100 hover:border-white/[0.07] transition-all">
+              <QrCode className="w-3 h-3" /> Scan QR
             </button>
 
             <button onClick={() => openModal('post')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: D.blue, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.12s', fontFamily: 'inherit' }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.88'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
-              <Plus style={{ width: 12, height: 12 }} /> New Post
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white border-none text-[12px] font-bold cursor-pointer hover:opacity-90 transition-opacity">
+              <Plus className="w-3 h-3" /> New Post
             </button>
 
             <ProfileDropdown currentUser={currentUser} coaches={coaches} currentRole={selectedCoachId || (isCoach ? 'coach' : 'gym_owner')} onRoleSelect={handleRoleSelect} />
 
-            <button
-              onClick={() => setShowChat((o) => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showChat ? D.blueDim : 'rgba(255,255,255,0.03)', border: `1px solid ${showChat ? D.blueBrd : D.border}`, color: showChat ? D.blue : D.t3, cursor: 'pointer', position: 'relative', transition: 'all 0.12s', fontFamily: 'inherit' }}
-              onMouseEnter={(e) => {if (!showChat) {e.currentTarget.style.color = D.t1;e.currentTarget.style.borderColor = D.borderHi;}}}
-              onMouseLeave={(e) => {if (!showChat) {e.currentTarget.style.color = D.t3;e.currentTarget.style.borderColor = D.border;}}}>
-              <MessageCircle style={{ width: 13, height: 13 }} />
+            <button onClick={() => setShowChat((o) => !o)}
+              className={cn(
+                'w-8 h-8 rounded-lg flex items-center justify-center border cursor-pointer transition-all',
+                showChat
+                  ? 'bg-blue-500/10 border-blue-500/[0.22] text-blue-500'
+                  : 'bg-white/[0.03] border-white/[0.04] text-slate-600 hover:text-slate-100 hover:border-white/[0.07]'
+              )}>
+              <MessageCircle className="w-[13px] h-[13px]" />
             </button>
           </div>
         </header>
 
-        <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto', paddingRight: 2 }}>
+        <main className="flex-1 overflow-hidden px-[22px] pt-5 pb-7 flex flex-col">
+          <div className="flex-1 min-h-0 w-full max-w-[1600px] overflow-y-auto pr-0.5">
             <Suspense fallback={<TabLoader />}>
-              {tabPanels.map((p) =>
-              <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
-              )}
+              {tabPanels.map((p) => (
+                <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
+              ))}
             </Suspense>
           </div>
         </main>
       </div>
 
       {sharedModals}
-    </div>);
+    </div>
+  );
 }
