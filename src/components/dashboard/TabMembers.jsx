@@ -862,7 +862,9 @@ export default function MembersPageAI() {
             </div>
           </div>
 
-          <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+          <div className="order-first lg:order-last">
+            <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+          </div>
         </div>
       </div>
 
@@ -874,7 +876,7 @@ export default function MembersPageAI() {
       )}
 
       {/* Floating CTA */}
-      <button className="fixed bottom-[26px] right-[26px] z-[100] flex items-center gap-1.5 px-5 py-3 rounded-full bg-blue-500 text-white border-none text-xs font-semibold cursor-pointer shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:-translate-y-px hover:shadow-[0_6px_28px_rgba(59,130,246,0.35)] transition-all duration-150">
+      <button className="fixed bottom-[82px] sm:bottom-[26px] right-4 sm:right-[26px] z-[100] flex items-center gap-1.5 px-5 py-3 rounded-full bg-blue-500 text-white border-none text-xs font-semibold cursor-pointer shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:-translate-y-px hover:shadow-[0_6px_28px_rgba(59,130,246,0.35)] transition-all duration-150">
         <Plus className="w-3 h-3" /> Invite Member
       </button>
     </div>

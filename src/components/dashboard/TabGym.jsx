@@ -161,7 +161,7 @@ function HeroSection({ gym, summary }) {
   return (
     <div className="relative">
       {/* Banner image */}
-      <div className="relative h-[280px] overflow-hidden bg-[#0d1225]">
+      <div className="relative h-[140px] sm:h-[280px] overflow-hidden bg-[#0d1225]">
         <img
           src={gym.heroBg}
           alt="Gym banner"
@@ -298,12 +298,12 @@ function FocusStrip({ items }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Today's focus</Label>
-      <div className="overflow-x-auto rounded-2xl border border-white/[0.04]">
-      <div className="grid min-w-[480px] overflow-hidden" style={{ gridTemplateColumns: '5fr 3fr 3fr' }}>
+      <div className="border border-white/[0.04] rounded-2xl overflow-hidden">
+      <div className="grid sm:grid-cols-[5fr_3fr_3fr]">
         {items.map((item, i) => (
           <div key={i} className={cn(
-            'flex flex-col gap-[10px] p-[22px_24px] bg-[#0a0f1e]',
-            i < items.length - 1 && 'border-r border-white/[0.04]',
+            'flex flex-col gap-[10px] p-[18px_20px] sm:p-[22px_24px] bg-[#0a0f1e]',
+            i < items.length - 1 && 'border-b sm:border-b-0 sm:border-r border-white/[0.04]',
             item.urgent ? 'border-l-2 border-l-red-500' : '',
           )}>
             {item.urgent && <Label className="text-red-500">Attention required</Label>}
@@ -323,7 +323,7 @@ function FocusStrip({ items }) {
   );
 }
 
-// ─── Core Metrics ───────────────────────────────────────────────────────────────
+// ─── Core Metrics ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 function MetricRow({ s }) {
   const items = [
     { label: 'Total members',  value: s.totalMembers,         sub: `+${s.newThisMonth} this month`,                                              valueCls: 'text-[#eef2ff]' },
@@ -334,18 +334,22 @@ function MetricRow({ s }) {
   ];
   return (
     <section className="mb-8">
-      <div className="overflow-x-auto">
-      <div className="min-w-[560px] grid grid-cols-5 border border-white/[0.04] rounded-2xl overflow-hidden">
+      <div className="grid grid-cols-2 sm:grid-cols-5 border border-white/[0.04] rounded-2xl overflow-hidden">
         {items.map((m, i) => (
-          <div key={i} className={cn('px-6 py-[22px] bg-[#0a0f1e]', i < items.length - 1 && 'border-r border-white/[0.04]')}>
-            <Label className="block mb-[14px]">{m.label}</Label>
-            <div className={cn('text-[34px] font-extrabold tracking-[-0.04em] leading-none mb-2 tabular-nums', m.valueCls)}>
+          <div key={i} className={cn(
+            'px-4 sm:px-6 py-[16px] sm:py-[22px] bg-[#0a0f1e]',
+            i < items.length - 1 && 'sm:border-r sm:border-white/[0.04]',
+            i % 2 === 0 && i !== 4 && 'border-r border-white/[0.04]',
+            i < 3 && 'border-b border-white/[0.04] sm:border-b-0',
+            i === 4 && 'col-span-2 sm:col-span-1',
+          )}>
+            <Label className="block mb-[10px] sm:mb-[14px]">{m.label}</Label>
+            <div className={cn('text-[26px] sm:text-[34px] font-extrabold tracking-[-0.04em] leading-none mb-1.5 tabular-nums', m.valueCls)}>
               {m.value}
             </div>
             <div className="text-[10px] text-[#4b5578]">{m.sub}</div>
           </div>
         ))}
-      </div>
       </div>
     </section>
   );

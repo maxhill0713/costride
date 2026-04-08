@@ -604,7 +604,14 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
   const [rules, setRules]   = useState(MOCK_RULES);
   const [showAdd, setShowAdd] = useState(false);
   const [activity, setActivity] = useState(MOCK_ACTIVITY_SEED);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const liveIdx = useRef(0);
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
 
   /* Stub — replace with base44.entities.Gym.update(...) */
   const persist = useCallback(async (updated) => {
@@ -716,10 +723,10 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
         )}
 
         {/* Rules list + Live feed */}
-        <div className="grid gap-[14px] items-start" style={{ gridTemplateColumns: '1fr 284px' }}>
+        <div className={cn('grid gap-[14px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_284px]')}>
 
           {/* Left — rules list */}
-          <div className="flex flex-col gap-[14px]">
+          <div className={cn('flex flex-col gap-[14px]', isMobile && 'order-2')}>
 
             {/* Active rules */}
             <div>
@@ -777,7 +784,7 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
           </div>
 
           {/* Right — live feed */}
-          <div className="sticky top-6">
+          <div className={cn(isMobile ? 'order-1' : 'sticky top-6')}>
             <ActivityFeed events={activity} />
           </div>
         </div>

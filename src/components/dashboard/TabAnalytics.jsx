@@ -920,6 +920,10 @@ export default function TabAnalytics({
 
       <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} />
 
+      {isMobile && (
+        <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />
+      )}
+
       <div className={cn('grid gap-[18px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_272px]')}>
 
         <div className="flex flex-col gap-4">
@@ -953,7 +957,7 @@ export default function TabAnalytics({
         </div>
 
         <div className="flex flex-col gap-3">
-          <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />
+          {!isMobile && <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />}
           <Week1ReturnCard week1ReturnTrend={week1ReturnTrendProp} />
           <MilestoneCard checkIns={checkIns} />
           <MemberSegments totalMembers={totalMembers} superActive={superActive} active={active} casual={casual} inactive={inactive} />

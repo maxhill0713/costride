@@ -965,8 +965,11 @@ export default function TabOverview({
       {/* ══ LEFT COLUMN ══ */}
       <div className="flex flex-col gap-4">
 
+        {/* Quick actions — top of page on mobile for instant access */}
+        {isMobile && <QuickActionsGrid openModal={openModal} setTab={setTab} />}
+
         {/* ─ Core Metric Cards ─ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
           <MetricCard
             title="Active This Week"
             value={`${activeThisWeek} / ${totalMembers}`}
@@ -1095,7 +1098,7 @@ export default function TabOverview({
           setTab={setTab}
           newNoReturnCount={newNoReturnCount}
         />
-        <QuickActionsGrid openModal={openModal} setTab={setTab} />
+        {!isMobile && <QuickActionsGrid openModal={openModal} setTab={setTab} />}
       </div>
 
     </div>
