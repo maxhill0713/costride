@@ -22,13 +22,25 @@ async function lookupOpenFoodFacts(barcode) {
     const data = await resp.json();
     if (data.status === 1 && data.product?.product_name) {
       const n = data.product.nutriments || {};
+      
+      // Energy: prefer kcal_100g, fallback to kJ conversion
+      let cal = n['energy-kcal_100g'] ?? n['energy-kcal_serving'] ?? n['energy-kcal'] ?? null;
+      if (cal === null) {
+        const kj = n['energy_100g'] ?? n['energy-kj_100g'] ?? n['energy'] ?? null;
+        cal = kj !== null ? Math.round(kj / 4.184) : 0;
+      }
+
+      const protein = n['proteins_100g'] ?? n['proteins_serving'] ?? n['proteins'] ?? 0;
+      const carbs = n['carbohydrates_100g'] ?? n['carbohydrates_serving'] ?? n['carbohydrates'] ?? 0;
+      const fat = n['fat_100g'] ?? n['fat_serving'] ?? n['fat'] ?? 0;
+
       return {
         found: true,
         name: data.product.product_name,
-        cal: n['energy-kcal_100g'] ?? n['energy-kcal'] ?? 0,
-        protein: n.proteins_100g ?? n.proteins ?? 0,
-        carbs: n.carbohydrates_100g ?? n.carbohydrates ?? 0,
-        fat: n.fat_100g ?? n.fat ?? 0,
+        cal,
+        protein,
+        carbs,
+        fat,
         serving_size: data.product.serving_size || '100g',
       };
     }
