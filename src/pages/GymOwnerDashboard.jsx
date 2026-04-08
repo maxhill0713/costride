@@ -215,10 +215,10 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
     <div className="shrink-0 bg-[#0a0f1e] border-b border-white/[0.04] flex">
       {items.map((item, i) =>
         <React.Fragment key={item.label}>
-          {i > 0 && <div className="w-px bg-white/[0.05] self-stretch my-[7px]" />}
-          <div className="flex-1 flex flex-col items-center justify-center py-[9px] px-0.5">
-            <div className="text-[18px] font-extrabold tracking-[-0.04em] leading-none" style={{ color: item.color || '#f1f5f9' }}>{item.value}</div>
-            <div className="text-[8px] font-bold uppercase tracking-[0.10em] text-[#2d3f55] mt-[3px]">{item.label}</div>
+          {i > 0 && <div className="w-px bg-white/[0.05] self-stretch my-2" />}
+          <div className="flex-1 flex flex-col items-center justify-center py-[11px] px-1 gap-[3px]">
+            <div className="text-[20px] font-extrabold tracking-[-0.04em] leading-none" style={{ color: item.color || '#f1f5f9' }}>{item.value}</div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.09em]" style={{ color: item.color ? item.color + 'aa' : '#2d3f55' }}>{item.label}</div>
           </div>
         </React.Fragment>
       )}

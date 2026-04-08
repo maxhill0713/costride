@@ -789,7 +789,7 @@ export default function MembersPageAI() {
 
   return (
     <div className="min-h-screen bg-[#050810] text-[#eef2ff] text-[13px] leading-relaxed">
-      <div className="max-w-[1380px] mx-auto px-6 pt-6 pb-20">
+      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 pt-5 sm:pt-6 pb-20">
 
         {/* Page header */}
         <div className="flex items-center justify-between mb-5">

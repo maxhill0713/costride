@@ -680,10 +680,10 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
         @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      <div className="max-w-[1320px] mx-auto px-6 pt-6 pb-[60px]">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 pt-5 sm:pt-6 pb-[60px]">
 
         {/* Page header */}
-        <div className="flex items-start justify-between mb-[22px] gap-3">
+        <div className="flex items-start justify-between mb-[22px] gap-3 flex-wrap">
           <div>
             <div className="flex items-center gap-[9px] mb-1">
               <div className="w-7 h-7 rounded-[10px] bg-blue-500/[0.10] border border-blue-500/[0.22] flex items-center justify-center">

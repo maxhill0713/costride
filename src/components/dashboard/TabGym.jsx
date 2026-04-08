@@ -189,7 +189,7 @@ function HeroSection({ gym, summary }) {
 
       {/* Profile row — overlaps banner bottom */}
       <div className="max-w-[1280px] mx-auto px-4 sm:px-9 relative" style={{ marginTop: -44 }}>
-        <div className="flex items-end gap-5 pb-6">
+        <div className="flex flex-wrap items-end gap-4 pb-6">
 
           {/* Profile image ring */}
           <div className="relative shrink-0 z-10">
@@ -243,7 +243,7 @@ function HeroSection({ gym, summary }) {
           </div>
 
           {/* Quick-stat chips */}
-          <div className="flex gap-2 items-end pb-1 flex-wrap justify-end">
+          <div className="flex gap-2 items-end pb-1 flex-wrap justify-end sm:justify-end self-end w-full sm:w-auto">
             {[
               { label: 'Members',   value: summary.totalMembers,       warn: false, danger: false },
               { label: 'Active',    value: summary.activeMembers,       warn: false, danger: false },
@@ -365,13 +365,13 @@ function RetentionRiskPanel({ data, summary }) {
     <section className="mb-8">
       <Label className="block mb-3">Churn & retention risk</Label>
 
-      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
-        <div className="grid grid-cols-3 min-w-[600px]">
+      <div className="border border-white/[0.04] rounded-2xl bg-[#0a0f1e] overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3">
 
           {/* Revenue at risk */}
-          <div className="p-8 border-r border-white/[0.04]">
+          <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/[0.04]">
             <Label className="block mb-4 text-red-500">Revenue at risk</Label>
-            <div className="text-[60px] font-extrabold text-[#eef2ff] tracking-[-0.05em] leading-none mb-2 tabular-nums">
+            <div className="text-[40px] sm:text-[60px] font-extrabold text-[#eef2ff] tracking-[-0.05em] leading-none mb-2 tabular-nums">
               £{revenue.toLocaleString()}
             </div>
             <div className="text-xs text-[#8b95b3] mb-7 leading-[1.6]">
@@ -383,7 +383,7 @@ function RetentionRiskPanel({ data, summary }) {
           </div>
 
           {/* Retention rate */}
-          <div className="p-8 border-r border-white/[0.04]">
+          <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/[0.04]">
             <Label className="block mb-4">Retention rate</Label>
             <div className={cn(
               'text-[60px] font-extrabold tracking-[-0.05em] leading-none mb-2 tabular-nums',
@@ -413,7 +413,7 @@ function RetentionRiskPanel({ data, summary }) {
           </div>
 
           {/* Churn drivers */}
-          <div className="p-8">
+          <div className="p-6 sm:p-8">
             <Label className="block mb-4">Primary churn drivers</Label>
             <div className="flex flex-col gap-5">
               {data.riskDrivers.map((d, i) => (
@@ -559,11 +559,11 @@ function BehaviourInsights({ data }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Behaviour insights</Label>
-      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
-      <div className="grid grid-cols-2 min-w-[520px]">
+      <div className="border border-white/[0.04] rounded-2xl bg-[#0a0f1e] overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2">
 
         {/* Drop-off */}
-        <div className="p-7 border-r border-white/[0.04]">
+        <div className="p-5 sm:p-7 border-b md:border-b-0 md:border-r border-white/[0.04]">
           <Label className="block mb-5">Member drop-off</Label>
           <div className="flex flex-col gap-[14px]">
             {data.dropOff.map((s, i) => {
@@ -597,7 +597,7 @@ function BehaviourInsights({ data }) {
         </div>
 
         {/* Heatmap — cell colors are data-driven opacity calculations, kept inline */}
-        <div className="p-7">
+        <div className="p-5 sm:p-7">
           <Label className="block mb-5">Peak activity times</Label>
           <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 3 }}>
             <thead>
@@ -646,6 +646,7 @@ function BehaviourInsights({ data }) {
       </div>
     </section>
   );
+
 }
 
 // ─── Class Performance ──────────────────────────────────────────────────────────
