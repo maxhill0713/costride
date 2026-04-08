@@ -293,7 +293,7 @@ function PriorityMemberCards({ atRiskMembers = [], totalMembers, mrr, now, openM
         </button>
       </div>
 
-      <div className={cn('grid gap-2.5', displayMembers.length >= 2 ? 'grid-cols-2' : 'grid-cols-1')}>
+      <div className={cn('grid gap-2.5', displayMembers.length >= 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1')}>
         {displayMembers.map((member, i) => {
           const name = nameMap[member.user_id] || member.name || member.first_name || 'Member';
           const daysSince   = member.days_since_visit || member.daysSinceVisit || 14;

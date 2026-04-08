@@ -526,7 +526,7 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
           <X size={11} />
         </button>
       </div>
-      <div className={cn('p-[16px_18px]', selected ? 'grid grid-cols-2 gap-[18px]' : '')}>
+      <div className={cn('p-[16px_18px]', selected ? 'grid grid-cols-1 md:grid-cols-2 gap-[18px]' : '')}>
         <div>
           <div className="flex gap-1 mb-3 flex-wrap">
             {CATS.map(c => (

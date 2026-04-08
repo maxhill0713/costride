@@ -188,7 +188,7 @@ function HeroSection({ gym, summary }) {
       </div>
 
       {/* Profile row — overlaps banner bottom */}
-      <div className="max-w-[1280px] mx-auto px-9 relative" style={{ marginTop: -44 }}>
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-9 relative" style={{ marginTop: -44 }}>
         <div className="flex items-end gap-5 pb-6">
 
           {/* Profile image ring */}
@@ -275,7 +275,7 @@ function HeroSection({ gym, summary }) {
 // ─── Header ────────────────────────────────────────────────────────────────────
 function Header({ gym }) {
   return (
-    <div className="flex items-center justify-between px-9 py-[14px] border-b border-white/[0.04] bg-[rgba(8,9,15,0.82)] backdrop-blur-[12px] sticky top-0 z-50">
+    <div className="flex items-center justify-between px-4 sm:px-9 py-[14px] border-b border-white/[0.04] bg-[rgba(8,9,15,0.82)] backdrop-blur-[12px] sticky top-0 z-50">
       <div className="flex items-center gap-4">
         <div className="w-7 h-7 rounded-[7px] bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
           <Activity className="w-3 h-3 text-[#8b95b3]" />
@@ -298,7 +298,8 @@ function FocusStrip({ items }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Today's focus</Label>
-      <div className="grid border border-white/[0.04] rounded-2xl overflow-hidden" style={{ gridTemplateColumns: '5fr 3fr 3fr' }}>
+      <div className="overflow-x-auto rounded-2xl border border-white/[0.04]">
+      <div className="grid min-w-[480px] overflow-hidden" style={{ gridTemplateColumns: '5fr 3fr 3fr' }}>
         {items.map((item, i) => (
           <div key={i} className={cn(
             'flex flex-col gap-[10px] p-[22px_24px] bg-[#0a0f1e]',
@@ -317,6 +318,7 @@ function FocusStrip({ items }) {
           </div>
         ))}
       </div>
+      </div>
     </section>
   );
 }
@@ -332,7 +334,8 @@ function MetricRow({ s }) {
   ];
   return (
     <section className="mb-8">
-      <div className="grid grid-cols-5 border border-white/[0.04] rounded-2xl overflow-hidden">
+      <div className="overflow-x-auto">
+      <div className="min-w-[560px] grid grid-cols-5 border border-white/[0.04] rounded-2xl overflow-hidden">
         {items.map((m, i) => (
           <div key={i} className={cn('px-6 py-[22px] bg-[#0a0f1e]', i < items.length - 1 && 'border-r border-white/[0.04]')}>
             <Label className="block mb-[14px]">{m.label}</Label>
@@ -342,6 +345,7 @@ function MetricRow({ s }) {
             <div className="text-[10px] text-[#4b5578]">{m.sub}</div>
           </div>
         ))}
+      </div>
       </div>
     </section>
   );
@@ -357,8 +361,8 @@ function RetentionRiskPanel({ data, summary }) {
     <section className="mb-8">
       <Label className="block mb-3">Churn & retention risk</Label>
 
-      <div className="border border-white/[0.04] rounded-2xl overflow-hidden bg-[#0a0f1e]">
-        <div className="grid grid-cols-3">
+      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
+        <div className="grid grid-cols-3 min-w-[600px]">
 
           {/* Revenue at risk */}
           <div className="p-8 border-r border-white/[0.04]">
@@ -551,7 +555,8 @@ function BehaviourInsights({ data }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Behaviour insights</Label>
-      <div className="grid grid-cols-2 border border-white/[0.04] rounded-2xl overflow-hidden bg-[#0a0f1e]">
+      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
+      <div className="grid grid-cols-2 min-w-[520px]">
 
         {/* Drop-off */}
         <div className="p-7 border-r border-white/[0.04]">
@@ -634,6 +639,7 @@ function BehaviourInsights({ data }) {
           </div>
         </div>
       </div>
+      </div>
     </section>
   );
 }
@@ -643,8 +649,8 @@ function ClassPerformance({ classes }) {
   return (
     <section className="mb-8">
       <Label className="block mb-3">Performance</Label>
-      <div className="border border-white/[0.04] rounded-2xl overflow-hidden bg-[#0a0f1e]">
-        <table className="w-full border-collapse">
+      <div className="border border-white/[0.04] rounded-2xl overflow-x-auto bg-[#0a0f1e]">
+        <table className="w-full min-w-[500px] border-collapse">
           <thead>
             <tr className="border-b border-white/[0.04]">
               {['Class', 'Coach', 'Avg attendance', 'Capacity', 'Fill rate', 'Trend'].map((h, i) => (
@@ -825,7 +831,7 @@ export default function GymRetentionDashboard({
     <div className="min-h-screen bg-[#050810] text-[#eef2ff]">
       <Header gym={gym} />
       <HeroSection gym={gym} summary={summary} />
-      <main className="max-w-[1280px] mx-auto px-9 pt-8 pb-20">
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-9 pt-8 pb-20">
         <FocusStrip        items={MOCK.focus} />
         <MetricRow         s={summary} />
         <RetentionRiskPanel data={MOCK} summary={summary} />

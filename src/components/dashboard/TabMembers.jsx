@@ -126,7 +126,7 @@ function ActOnToday({ members, onMessage, onSelect }) {
         <span className="text-[11px] text-slate-600">${totalAtRisk}/mo at risk</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {priority.map(m => (
           <div
             key={m.id}
@@ -708,7 +708,7 @@ function MessageToast({ member, onClose }) {
   if (!member) return null;
 
   return (
-    <div className="fixed bottom-[82px] right-[26px] w-[350px] bg-[#0a0f1e] border border-white/[0.07] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] z-[300] overflow-hidden animate-[toastIn_0.18s_ease]">
+    <div className="fixed bottom-[82px] right-4 sm:right-[26px] w-[calc(100vw-2rem)] max-w-[350px] bg-[#0a0f1e] border border-white/[0.07] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] z-[300] overflow-hidden animate-[toastIn_0.18s_ease]">
       <style>{`@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
       <div className="px-3.5 py-2.5 border-b border-white/[0.03] flex items-center justify-between">
         <div className="flex items-center gap-1.5">
