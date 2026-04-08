@@ -88,8 +88,8 @@ export default function ChallengeProgressCard({ challenge, userProgress = 0 }) {
       {/* Challenge Period */}
       <div className="mt-3 pt-3 border-t border-purple-200">
         <div className="flex items-center justify-between text-xs text-gray-600">
-          <span>Start: {new Date(challenge.start_date).toLocaleDateString()}</span>
-          <span>End: {new Date(challenge.end_date).toLocaleDateString()}</span>
+          <span>Start: {challenge.start_date ? new Date(challenge.start_date).toLocaleDateString() : '—'}</span>
+          <span>End: {challenge.end_date ? new Date(challenge.end_date).toLocaleDateString() : '—'}</span>
         </div>
       </div>
     </Card>

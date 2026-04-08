@@ -112,11 +112,13 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
   const checkInMutation = useMutation({
     mutationFn: async () => {
       const me = await base44.auth.me();
+      if (!me?.id) throw new Error('Could not identify your account — please log in again');
+      if (!selectedGym?.id) throw new Error('No gym selected for check-in');
       return base44.entities.CheckIn.create({
         user_id: me.id,
-        user_name: me.full_name,
+        user_name: me.full_name || me.email?.split('@')[0] || 'Member',
         gym_id: selectedGym.id,
-        gym_name: selectedGym.name,
+        gym_name: selectedGym.name || '',
         check_in_date: new Date().toISOString(),
       });
     },

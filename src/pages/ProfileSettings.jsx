@@ -278,7 +278,10 @@ export default function ProfileSettings() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await updateSettingsMutation.mutateAsync({ avatar_url: file_url });
       setCircleCrop(null);
-    } catch { }
+    } catch (err) {
+      console.error('[ProfileSettings] avatar upload failed:', err);
+      alert('Failed to upload photo — ' + (err?.message || 'unknown error'));
+    }
     finally { setUploadingAvatar(false); }
   };
 
@@ -287,7 +290,10 @@ export default function ProfileSettings() {
     try {
       await updateSettingsMutation.mutateAsync({ display_name: localFullName.trim() });
       setNameEditing(false);
-    } catch { }
+    } catch (err) {
+      console.error('[ProfileSettings] name save failed:', err);
+      alert('Failed to save name — ' + (err?.message || 'unknown error'));
+    }
     finally { setNameSaving(false); }
   };
 
