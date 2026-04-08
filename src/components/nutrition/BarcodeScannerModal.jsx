@@ -87,29 +87,22 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     }
   }, []);
 
-  // Start scanner on mount
+  // Start scanner on mount — only runs once when phase='scanning'
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
+      // Small delay to ensure the DOM element is rendered
+      await new Promise(r => setTimeout(r, 100));
+      if (cancelled) return;
+
       try {
         const scanner = new Html5Qrcode('barcode-scanner-view');
         scannerRef.current = scanner;
 
         await scanner.start(
           { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 280, height: 140 },
-            formatsToSupport: [
-              Html5Qrcode.FORMATS?.EAN_13,
-              Html5Qrcode.FORMATS?.EAN_8,
-              Html5Qrcode.FORMATS?.UPC_A,
-              Html5Qrcode.FORMATS?.UPC_E,
-              Html5Qrcode.FORMATS?.CODE_128,
-              Html5Qrcode.FORMATS?.CODE_39,
-            ].filter(Boolean),
-          },
+          { fps: 10, qrbox: { width: 250, height: 120 } },
           (decodedText) => {
             if (!cancelled && scannerStartedRef.current) {
               scannerStartedRef.current = false;
@@ -117,12 +110,12 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
               fetchFood(decodedText);
             }
           },
-          () => {} // suppress scan errors
+          () => {} // suppress per-frame scan errors
         );
         if (!cancelled) scannerStartedRef.current = true;
       } catch (err) {
         if (!cancelled) {
-          setCameraErr('Camera access denied or unavailable.');
+          setCameraErr('Camera access denied or unavailable. Please enable camera permissions.');
           setPhase('manual');
         }
       }
@@ -134,7 +127,7 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
       cancelled = true;
       stopScanner();
     };
-  }, [fetchFood, stopScanner]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleManualSubmit = async () => {
     if (!manualCode.trim()) return;
@@ -147,16 +140,17 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     setFoodResult(null);
     setManualCode('');
     setDetectedCode('');
+    setPhase('scanning');
 
-    // Re-init scanner
+    await new Promise(r => setTimeout(r, 150));
+
     try {
       const scanner = new Html5Qrcode('barcode-scanner-view');
       scannerRef.current = scanner;
-      setPhase('scanning');
 
       await scanner.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 280, height: 140 } },
+        { fps: 10, qrbox: { width: 250, height: 120 } },
         (decodedText) => {
           if (scannerStartedRef.current) {
             scannerStartedRef.current = false;
@@ -203,8 +197,8 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
         </button>
       </div>
 
-      {/* Scanner view — always in DOM when phase=scanning so Html5Qrcode can attach */}
-      <div style={{ display: phase === 'scanning' ? 'flex' : 'none', flex: 1, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      {/* Scanner view — always in DOM so Html5Qrcode can attach, hidden via visibility when not scanning */}
+      <div style={{ display: 'flex', flex: phase === 'scanning' ? 1 : 0, height: phase === 'scanning' ? undefined : 0, overflow: 'hidden', position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
         <div id="barcode-scanner-view" style={{ width: '100%', height: '100%' }} />
 
         {/* Scan frame overlay */}
