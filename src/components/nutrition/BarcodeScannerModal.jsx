@@ -113,7 +113,13 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   }, []);
 
   const startScanner = useCallback(async (cancelled) => {
-    await new Promise(r => setTimeout(r, 100));
+    // Wait for DOM to be ready — poll until element has size
+    for (let i = 0; i < 20; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      if (cancelled?.value) return;
+      const el = document.getElementById('barcode-scanner-view');
+      if (el && el.offsetWidth > 0) break;
+    }
     if (cancelled?.value) return;
 
     try {
@@ -216,9 +222,9 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
         </button>
       </div>
 
-      {/* Scanner view — always in DOM so Html5Qrcode can attach, hidden via visibility when not scanning */}
-      <div style={{ display: 'flex', flex: phase === 'scanning' ? 1 : 0, height: phase === 'scanning' ? undefined : 0, overflow: 'hidden', position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-        <div id="barcode-scanner-view" style={{ width: '100%', height: '100%' }} />
+      {/* Scanner view — always in DOM so Html5Qrcode can find the element; hidden when not scanning */}
+      <div style={{ display: phase === 'scanning' ? 'flex' : 'none', flex: 1, minHeight: 0, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div id="barcode-scanner-view" style={{ width: '100%', height: '100%', minHeight: 300 }} />
 
         {/* Scan frame overlay */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
