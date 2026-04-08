@@ -666,7 +666,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
                 {/* ── HEADER ── */}
-                <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
+                <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top), 14.7px)' }}>
                   <div className="flex-shrink-0">
                     <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
                       <ChevronLeft className="w-6 h-6 text-slate-300" />

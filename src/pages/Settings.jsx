@@ -335,7 +335,7 @@ export default function Settings() {
               exit="exit"
             >
               {/* ── Sticky Header ── */}
-              <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
+              <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
                 <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
                   {/* Use button + handleBack so exit animation fires before navigation */}
                   <button
