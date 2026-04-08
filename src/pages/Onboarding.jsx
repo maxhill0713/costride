@@ -156,7 +156,7 @@ function ActionButton({ onClick, disabled, loading, children, color = 'blue' }) 
 }
 
 function PageShell({ children }) {
-  return <div style={{ position: 'fixed', inset: 0, background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>{children}</div>;
+  return <div style={{ position: 'fixed', inset: 0, background: C.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 'env(safe-area-inset-top)' }}>{children}</div>;
 }
 
 function SlidePane({ visible, dir, children }) {

@@ -156,7 +156,7 @@ const GLOBAL_CSS = `
 /* ─── Background wrapper ─────────────────────────────────────────────────── */
 function BG({ children, maxWidth = 520, fullHeight = true }) {
   return (
-    <div className="gs-root" style={{ minHeight: fullHeight ? '100vh' : 'auto', background: '#04080f', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className="gs-root" style={{ minHeight: fullHeight ? '100vh' : 'auto', background: '#04080f', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 'env(safe-area-inset-top)' }}>
       <style>{GLOBAL_CSS}</style>
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '52px 52px', maskImage: 'radial-gradient(ellipse 80% 60% at 50% 25%,black,transparent)', WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 25%,black,transparent)' }} />
       <div style={{ position: 'absolute', top: '-10%', left: '-8%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.1) 0%,transparent 62%)', animation: 'gs-orb-a 24s ease-in-out infinite', pointerEvents: 'none' }} />
@@ -401,7 +401,7 @@ export default function GymSignup() {
      SHARED BACKGROUND LAYER (reused across full-screen steps)
   ────────────────────────────────────────────────────────────────────── */
   const FullBG = ({ children }) => (
-    <div className="gs-root" style={{ minHeight: '100vh', background: '#04080f', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className="gs-root" style={{ minHeight: '100vh', background: '#04080f', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 'env(safe-area-inset-top)' }}>
       <style>{GLOBAL_CSS}</style>
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '52px 52px', maskImage: 'radial-gradient(ellipse 85% 55% at 50% 28%,black,transparent)', WebkitMaskImage: 'radial-gradient(ellipse 85% 55% at 50% 28%,black,transparent)' }} />
       <div style={{ position: 'absolute', top: '-10%', left: '-8%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.1) 0%,transparent 62%)', animation: 'gs-orb-a 24s ease-in-out infinite', pointerEvents: 'none' }} />
