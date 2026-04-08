@@ -1336,7 +1336,7 @@ export default function Progress() {
         {/* Overscroll background fix */}
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
         {/* Fixed skeleton header — same height/style as real header */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900 border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center h-10 gap-2">
               {[...Array(4)].map((_, i) => (
@@ -1368,7 +1368,7 @@ export default function Progress() {
       <Tabs defaultValue="analytics" className="w-full">
 
         {/* ── Fixed header — same pattern as Gyms page ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900 border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center h-10">
               <TabsList className="flex justify-between w-full bg-transparent p-0 h-10 gap-0 border-0">
