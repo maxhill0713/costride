@@ -1332,7 +1332,9 @@ export default function Progress() {
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]" style={{ backgroundColor: '#02040a' }}>
+        {/* Overscroll background fix */}
+        <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
         {/* Fixed skeleton header — same height/style as real header */}
         <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
@@ -1343,8 +1345,8 @@ export default function Progress() {
             </div>
           </div>
         </div>
-        {/* Spacer matching fixed header */}
-        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
+        {/* Spacer matching fixed header — reduced for tighter content gap */}
+        <div style={{ height: 'calc(3rem + env(safe-area-inset-top))' }} />
         <div className="max-w-4xl mx-auto px-3 py-5 space-y-4">
           <div className="h-32 rounded-2xl bg-slate-800/60 animate-pulse" />
           <div className="grid grid-cols-2 gap-3">
@@ -1359,7 +1361,10 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]" style={{ backgroundColor: '#02040a' }}>
+      {/* Overscroll background fix — covers the rubber-band pull area with the page gradient */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+
       <Tabs defaultValue="analytics" className="w-full">
 
         {/* ── Fixed header — same pattern as Gyms page ── */}
@@ -1384,8 +1389,8 @@ export default function Progress() {
           </div>
         </div>
 
-        {/* ── Spacer matching fixed header height ── */}
-        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
+        {/* ── Spacer matching fixed header height — reduced for tighter content gap ── */}
+        <div style={{ height: 'calc(3rem + env(safe-area-inset-top))' }} />
 
         {/* ── Analytics ── */}
         <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5">
