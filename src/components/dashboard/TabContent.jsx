@@ -1,192 +1,58 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import { format, subDays, getDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from "date-fns";
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { format, subDays, getDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
 import {
   Trophy, BarChart2, Calendar, ChevronRight, TrendingUp, TrendingDown,
   Heart, MessageCircle, MoreHorizontal, Trash2, CheckCircle, Plus,
-  Users, Flame, HelpCircle, ChevronLeft, List, Zap, Send, Star,
-  ArrowUpRight, Activity, Clock,
-} from "lucide-react";
+  Users, Flame, HelpCircle, ChevronLeft, List,
+} from 'lucide-react';
+import { AppButton } from '@/components/ui/AppButton';
+import { AppBadge } from '@/components/ui/AppBadge';
+import { AppProgressBar } from '@/components/ui/AppProgressBar';
+import { cn } from '@/lib/utils';
 
-/* ── Design tokens — TabEngagement system ───────────────────────── */
-const T = {
-  bg:         "#08090e",
-  surface:    "#0f1016",
-  surfaceEl:  "#14151d",
-  surfaceHov: "#191a24",
-  border:     "#1e2030",
-  borderEl:   "#262840",
-  divider:    "#141520",
-  t1: "#ededf0", t2: "#9191a4", t3: "#525266", t4: "#2e2e42",
-  accent:     "#4c6ef5",
-  accentDim:  "#1a2048",
-  accentBrd:  "#263070",
-  red:        "#c0392b",
-  redDim:     "#160f0d",
-  redBrd:     "#2e1614",
-  amber:      "#b07b30",
-  amberDim:   "#161008",
-  amberBrd:   "#2a2010",
-  green:      "#2d8a62",
-  greenDim:   "#091912",
-  greenBrd:   "#132e20",
-  r:   "8px",
-  rsm: "6px",
-  sh:  "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
-};
-
-/* ── Mock data ──────────────────────────────────────────────────── */
-const NOW = new Date();
-
-const MOCK_POSTS = [
-  { id:"p1", author_name:"Apex Fitness", title:"Monday Morning Motivation 💪", content:"Every rep counts. Every session matters. Show up today and show up tomorrow.", likes:["m1","m2","m3","m4","m5"], comments:[{user_id:"m1"},{user_id:"m2"}], created_date: subDays(NOW,1).toISOString() },
-  { id:"p2", author_name:"Apex Fitness", title:"Member Spotlight — Priya Sharma", content:"Priya has hit 50 visits this month. An absolute machine. Drop a 🔥 below!", likes:["m1","m3","m6"], comments:[{user_id:"m4"},{user_id:"m5"},{user_id:"m6"}], created_date: subDays(NOW,2).toISOString() },
-  { id:"p3", author_name:"Apex Fitness", title:"New class: Saturday Strength", content:"Starting this Saturday at 9am — 45 minutes, all levels welcome.", likes:["m2","m5"], comments:[], created_date: subDays(NOW,4).toISOString() },
-];
-
-const MOCK_EVENTS = [
-  { id:"e1", title:"Summer Shred Challenge — Kickoff", description:"Weigh-in, team assignment, and kick-off workout.", event_date: new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()+3).toISOString() },
-  { id:"e2", title:"Community Social — Rooftop BBQ", description:"Bring a friend. Food, drinks, and good company.", event_date: new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()+12).toISOString() },
-];
-
-const MOCK_CHALLENGES = [
-  { id:"c1", title:"30-Day Consistency Challenge", status:"active", start_date: subDays(NOW,10).toISOString(), end_date: new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()+20).toISOString(), participants:["m1","m2","m3","m4","m5","m6","m7"] },
-  { id:"c2", title:"1000 Push-Up Weekend", status:"active", start_date: subDays(NOW,1).toISOString(), end_date: new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()+2).toISOString(), participants:["m1","m3","m5"] },
-];
-
-const MOCK_POLLS = [
-  { id:"pl1", title:"What time works best for an early morning class?", voters:["m1","m2","m3","m4"], created_date: subDays(NOW,3).toISOString() },
-];
-
-const MOCK_CLASSES = [
-  { id:"cl1", name:"HIIT Blast", instructor:"Coach Dan", duration_minutes:45, created_date: subDays(NOW,5).toISOString() },
-  { id:"cl2", name:"Yoga Flow", instructor:"Coach Maya", duration_minutes:60, created_date: subDays(NOW,7).toISOString() },
-];
-
-const MOCK_MEMBERSHIPS = Array.from({ length: 14 }, (_, i) => ({ id:`m${i+1}` }));
-
-/* ── Primitives ─────────────────────────────────────────────────── */
-function Card({ children, style = {}, accent = false }) {
-  return (
-    <div style={{
-      background: T.surface,
-      border: `1px solid ${accent ? T.accentBrd : T.border}`,
-      borderLeft: accent ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
-      borderRadius: T.r,
-      boxShadow: T.sh,
-      overflow: "hidden",
-      ...style,
-    }}>{children}</div>
+/* ─── PRIMITIVES ─── */
+function Av({ name = '', size = 28, src = null }) {
+  const letters = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const hue = (name.charCodeAt(0) || 72) % 360;
+  if (src) return (
+    <img src={src} alt={name} className="rounded-full object-cover shrink-0"
+         style={{ width: size, height: size }}
+         onError={e => { e.currentTarget.style.display = 'none'; }} />
   );
-}
-
-function GhostBtn({ children, onClick, style = {}, danger = false }) {
-  const [hov, setHov] = useState(false);
   return (
-    <button
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      onClick={e => { e.stopPropagation(); onClick?.(); }}
-      style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        padding: "5px 10px", borderRadius: T.rsm, fontSize: 11, fontWeight: 500,
-        cursor: "pointer", fontFamily: "inherit", border: "1px solid",
-        background: danger && hov ? T.redDim : hov ? T.surfaceHov : T.surfaceEl,
-        borderColor: danger && hov ? T.redBrd : hov ? T.borderEl : T.border,
-        color: danger && hov ? T.red : T.t2,
-        transition: "all .12s", ...style,
-      }}>{children}</button>
-  );
-}
-
-function PrimaryBtn({ children, onClick, style = {} }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      onClick={e => { e.stopPropagation(); onClick?.(); }}
-      style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        padding: "6px 12px", borderRadius: T.rsm, fontSize: 11, fontWeight: 600,
-        cursor: "pointer", fontFamily: "inherit", border: "1px solid transparent",
-        background: T.accent, color: "#fff", opacity: hov ? 0.88 : 1,
-        transition: "opacity .12s", ...style,
-      }}>{children}</button>
-  );
-}
-
-function Pill({ children, color = T.accent, bg = T.accentDim, brd = T.accentBrd }) {
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4,
-      padding: "2px 7px", borderRadius: 20, fontSize: 10, fontWeight: 500,
-      color, background: bg, border: `1px solid ${brd}`,
-    }}>{children}</span>
-  );
-}
-
-function IconBox({ icon: Icon, color = T.t3, size = 32 }) {
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: T.rsm, flexShrink: 0,
-      background: T.surfaceEl, border: `1px solid ${T.border}`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <Icon size={size * 0.4} color={color} />
+    <div className="flex items-center justify-center shrink-0 font-extrabold"
+         style={{ width: size, height: size, borderRadius: size * 0.28,
+                  background: `hsl(${hue},38%,16%)`,
+                  border: `1.5px solid hsl(${hue},38%,24%)`,
+                  fontSize: size * 0.32,
+                  color: `hsl(${hue},60%,60%)` }}>
+      {letters}
     </div>
   );
 }
 
-function Av({ name = "", size = 28 }) {
-  const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-  const hue = (name.charCodeAt(0) || 72) % 360;
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: T.rsm, flexShrink: 0,
-      background: `hsl(${hue},25%,10%)`, border: `1px solid hsl(${hue},25%,18%)`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.34, fontWeight: 700, color: `hsl(${hue},50%,55%)`,
-    }}>{letters}</div>
-  );
-}
-
-/* ── Delete button ──────────────────────────────────────────────── */
 function DelBtn({ onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
     if (!open) return;
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, [open]);
   return (
-    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+    <div ref={ref} className="relative shrink-0">
       <button
         onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-        style={{
-          width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center",
-          background: "transparent", border: `1px solid ${T.border}`, borderRadius: T.rsm,
-          cursor: "pointer", transition: "all .1s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = T.borderEl}
-        onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
-        <MoreHorizontal size={10} color={T.t3} />
+        className="w-[22px] h-[22px] flex items-center justify-center bg-transparent border border-white/[0.04] rounded-[5px] cursor-pointer transition-colors hover:border-white/[0.07]">
+        <MoreHorizontal className="w-[11px] h-[11px] text-[#4b5578]" />
       </button>
       {open && (
-        <div style={{
-          position: "absolute", top: 28, right: 0, zIndex: 9999,
-          background: T.surfaceEl, border: `1px solid ${T.borderEl}`,
-          borderRadius: T.r, boxShadow: "0 8px 28px rgba(0,0,0,.75)", minWidth: 110, overflow: "hidden",
-        }}>
+        <div className="absolute top-[26px] right-0 z-[9999] bg-[#060d1c] border border-white/[0.07] rounded-[9px] shadow-[0_8px_28px_rgba(0,0,0,0.75)] min-w-[100px] overflow-hidden">
           <button
-            onClick={e => { e.stopPropagation(); setOpen(false); onDelete?.(); }}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 7,
-              padding: "9px 13px", fontSize: 11, fontWeight: 600, color: T.red,
-              background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = T.redDim}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}>
-            <Trash2 size={10} /> Delete
+            onClick={e => { e.stopPropagation(); setOpen(false); onDelete(); }}
+            className="w-full flex items-center gap-[7px] px-[13px] py-[9px] text-[11.5px] font-bold text-red-500 bg-transparent border-none cursor-pointer hover:bg-red-500/[0.07] transition-colors">
+            <Trash2 className="w-[11px] h-[11px]" /> Delete
           </button>
         </div>
       )}
@@ -194,16 +60,7 @@ function DelBtn({ onDelete }) {
   );
 }
 
-/* ── Tiny progress bar ──────────────────────────────────────────── */
-function TinyBar({ pct, color }) {
-  return (
-    <div style={{ height: 2, borderRadius: 99, background: T.divider, flex: 1 }}>
-      <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: color, opacity: 0.8 }} />
-    </div>
-  );
-}
-
-/* ── Metrics bar ────────────────────────────────────────────────── */
+/* ─── METRICS BAR ─── */
 function MetricsBar({ allPosts, allMemberships, now }) {
   const weekPosts = allPosts.filter(p => new Date(p.created_date || 0) >= subDays(now, 7));
   const totalMem  = allMemberships.length;
@@ -215,106 +72,86 @@ function MetricsBar({ allPosts, allMemberships, now }) {
   ]).size;
   const typeMap = {};
   allPosts.forEach(p => {
-    const type = (p.image_url || p.media_url) ? "Photo" : p.poll_options ? "Poll" : "Text";
+    const type = (p.image_url || p.media_url) ? 'Photo' : p.poll_options ? 'Poll' : 'Text';
     typeMap[type] = (typeMap[type] || 0) + (p.likes?.length || 0) + (p.comments?.length || 0) * 2;
   });
-  const bestType = Object.entries(typeMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
-  const wkColor  = weekPosts.length < 2 ? T.red : weekPosts.length < 4 ? T.amber : T.green;
+  const bestType    = Object.entries(typeMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+  const wkDotClass  = weekPosts.length === 0 ? 'bg-red-500' : weekPosts.length < 3 ? 'bg-amber-400' : 'bg-emerald-500';
+  const engDotClass = engRate > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
+  const actDotClass = activeMem > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
 
   const metrics = [
-    { Icon: Flame,    label: "Posts This Week",    val: String(weekPosts.length), sub: "3×/week = +40% retention",  dot: wkColor   },
-    { Icon: BarChart2,label: "Engagement Rate",    val: `${engRate}%`,           sub: `${totalMem} members tracked`, dot: engRate > 0 ? T.green : T.t4 },
-    { Icon: Users,    label: "Actively Engaging",  val: String(activeMem),       sub: "liked or commented recently", dot: activeMem > 0 ? T.green : T.t4 },
-    { Icon: Trophy,   label: "Top Post Type",      val: bestType,                sub: "best for interactions",       dot: T.amber   },
+    { icon: Flame,     iconClass: 'text-orange-500',  label: 'Posts This Week',   display: String(weekPosts.length), sub: 'Gyms posting 3×/week see +40% retention', dotClass: wkDotClass },
+    { icon: BarChart2, iconClass: 'text-blue-500',    label: 'Engagement Rate',   display: `${engRate}%`,           sub: totalMem > 0 ? `Across ${totalMem} members` : 'Add members to track', dotClass: engDotClass },
+    { icon: Users,     iconClass: 'text-emerald-500', label: 'Actively Engaging', display: String(activeMem), suffix: ' Members', sub: activeMem > 0 ? 'Liked or commented recently' : 'No interactions yet', dotClass: actDotClass },
+    { icon: Trophy,    iconClass: 'text-amber-400',   label: 'Top Post Type',     display: bestType, sub: allPosts.length > 0 ? 'Best for likes & saves' : 'Post to see insights', isDonut: true },
   ];
 
   return (
-    <div style={{
-      display: "grid", gridTemplateColumns: "repeat(4,1fr)",
-      borderBottom: `1px solid ${T.border}`,
-      background: T.surface,
-    }}>
+    <div className="grid grid-cols-2 md:grid-cols-4 border-b border-white/[0.04] shrink-0 bg-[#0a0f1e]">
       {metrics.map((m, i) => (
-        <div key={i} style={{
-          padding: "16px 20px",
-          borderRight: i < 3 ? `1px solid ${T.border}` : "none",
-          transition: "background .12s",
-          cursor: "default",
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = T.surfaceEl}
-          onMouseLeave={e => e.currentTarget.style.background = T.surface}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-            <div style={{ width: 26, height: 26, borderRadius: T.rsm, background: T.surfaceEl, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <m.Icon size={11} color={T.t3} />
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 600, color: T.t3, textTransform: "uppercase", letterSpacing: ".1em" }}>{m.label}</span>
-            <div style={{ marginLeft: "auto" }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: m.dot }} />
+        <div key={i} className={cn(
+          'px-5 py-[14px] relative cursor-default transition-colors hover:bg-[#0d1225]',
+          i < metrics.length - 1 && 'border-r border-white/[0.04]',
+        )}>
+          <div className="flex items-center gap-1.5 mb-[7px]">
+            <m.icon className={cn('w-[11px] h-[11px]', m.iconClass)} />
+            <span className="text-[10.5px] font-semibold text-[#4b5578] tracking-[0.01em]">{m.label}</span>
+            <div className="ml-auto flex items-center gap-[5px]">
+              {m.dotClass && <div className={cn('w-[5px] h-[5px] rounded-full', m.dotClass)} />}
+              {m.isDonut && (
+                <svg viewBox="0 0 34 34" className="w-7 h-7 -rotate-90">
+                  <circle cx="17" cy="17" r="12" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
+                  <circle cx="17" cy="17" r="12" fill="none" stroke="#0d9488" strokeWidth="4" strokeDasharray="46 75" strokeLinecap="round" />
+                </svg>
+              )}
             </div>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: T.t1, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 5, fontVariantNumeric: "tabular-nums" }}>
-            {m.val}
+          <div className="text-[28px] font-extrabold text-[#eef2ff] tracking-[-0.035em] leading-none mb-[5px]">
+            {m.display}
+            {m.suffix && <span className="text-sm font-semibold text-[#8b95b3] ml-1">{m.suffix}</span>}
           </div>
-          <div style={{ fontSize: 10, color: T.t3, lineHeight: 1.5 }}>{m.sub}</div>
+          <div className="text-[10px] text-[#4b5578] leading-relaxed">{m.sub}</div>
         </div>
       ))}
     </div>
   );
 }
 
-/* ── Quick post ideas ───────────────────────────────────────────── */
+/* ─── QUICK IDEAS ─── */
 const QUICK_IDEAS = [
-  { Icon: Flame,   color: T.amber,  title: "Motivation Monday",          desc: "Drives comments & reactions",  cta: "Generate post",    modal: "post"      },
-  { Icon: Users,   color: T.accent, title: "Member Spotlight",            desc: "Builds community loyalty",     cta: "Create spotlight", modal: "post"      },
-  { Icon: Trophy,  color: T.green,  title: "Start a weekend challenge",   desc: "Increases visit frequency",   cta: "Start challenge",  modal: "challenge" },
+  { icon: Flame,  iconClass: 'text-orange-500', bgClass: 'bg-orange-500/[0.12]', borderClass: 'border-orange-500/[0.19]', ctaClass: 'text-orange-500', title: 'Motivation Monday',         desc: 'Drives comments',      cta: 'Generate post',   modal: 'post'      },
+  { icon: Users,  iconClass: 'text-blue-500',   bgClass: 'bg-blue-500/[0.12]',   borderClass: 'border-blue-500/[0.19]',   ctaClass: 'text-blue-500',   title: 'Member Spotlight',          desc: 'Builds community',     cta: 'Create',          modal: 'post'      },
+  { icon: Trophy, iconClass: 'text-amber-400',  bgClass: 'bg-amber-400/[0.12]',  borderClass: 'border-amber-400/[0.19]',  ctaClass: 'text-amber-400',  title: 'Start a weekend challenge', desc: 'Increases attendance', cta: 'Start challenge', modal: 'challenge' },
 ];
 
 function QuickIdeas({ openModal }) {
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: T.t2, textTransform: "uppercase", letterSpacing: ".1em" }}>
-          Quick post ideas
-        </span>
+      <div className="flex items-center gap-[7px] mb-[11px]">
+        <span className="text-[13px] font-bold text-[#eef2ff]">Quick post ideas</span>
+        <HelpCircle className="w-3 h-3 text-[#4b5578]" />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[9px]">
         {QUICK_IDEAS.map((c, i) => (
           <div
             key={i}
-            onClick={() => openModal?.(c.modal)}
-            style={{
-              padding: "16px",
-              background: T.surface, border: `1px solid ${T.border}`,
-              borderRadius: T.r, boxShadow: T.sh,
-              cursor: "pointer", transition: "border-color .15s, transform .15s",
-              display: "flex", flexDirection: "column", gap: 14, overflow: "hidden",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = T.borderEl; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border;   e.currentTarget.style.transform = "none"; }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: T.rsm, flexShrink: 0,
-                background: T.surfaceEl, border: `1px solid ${T.border}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <c.Icon size={16} color={c.color} />
+            className="bg-[#0d1225] border border-white/[0.07] rounded-[11px] p-4 cursor-pointer transition-all duration-150 flex flex-col gap-4 hover:border-white/[0.14] hover:bg-[#101929] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+            onClick={() => openModal(c.modal)}
+          >
+            <div className="flex items-center gap-[13px]">
+              <div className={cn('w-[42px] h-[42px] rounded-[12px] shrink-0 border flex items-center justify-center', c.bgClass, c.borderClass)}>
+                <c.icon className={cn('w-[19px] h-[19px]', c.iconClass)} />
               </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, lineHeight: 1.25, marginBottom: 3 }}>{c.title}</div>
-                <div style={{ fontSize: 10, color: T.t3, lineHeight: 1.4 }}>{c.desc}</div>
+              <div className="min-w-0">
+                <div className="text-sm font-extrabold text-[#eef2ff] leading-snug mb-1">{c.title}</div>
+                <div className="text-[11px] text-[#4b5578] leading-snug">{c.desc}</div>
               </div>
             </div>
             <button
-              onClick={e => { e.stopPropagation(); openModal?.(c.modal); }}
-              style={{
-                width: "100%", padding: "7px 0",
-                borderRadius: T.rsm, fontSize: 11, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit",
-                background: T.accent, border: "none", color: "#fff",
-                transition: "opacity .1s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = ".85"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+              className={cn('w-full py-[10px] rounded-[7px] text-[13px] font-bold cursor-pointer bg-[#050810] border border-white/[0.07] transition-all tracking-[0.01em]', c.ctaClass)}
+              onClick={e => { e.stopPropagation(); openModal(c.modal); }}
+            >
               {c.cta}
             </button>
           </div>
@@ -324,138 +161,102 @@ function QuickIdeas({ openModal }) {
   );
 }
 
-/* ── Feed cards ─────────────────────────────────────────────────── */
+/* ─── FEED CARDS ─── */
+const CARD = 'bg-[#0d1225] border border-white/[0.04] rounded-2xl overflow-hidden transition-colors hover:border-white/[0.07] relative';
+
 function FeedPostCard({ post, onDelete, isTop, totalMembers }) {
   const likes    = post.likes?.length    || 0;
   const comments = post.comments?.length || 0;
   const engRate  = totalMembers > 0 ? Math.round(((likes + comments) / totalMembers) * 100) : 0;
-  const title    = post.title || (post.content || "").split("\n")[0] || "";
-  const body     = post.title ? (post.content || "") : "";
-
+  const title    = post.title || (post.content || '').split('\n')[0] || '';
+  const body     = post.title ? (post.content || '') : '';
   return (
-    <Card accent={isTop}>
-      {/* Header */}
-      <div style={{ padding: "13px 14px 0" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Av name={post.author_name || "G"} size={28} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: T.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {post.author_name || "Gym Post"}
-            </div>
-            <div style={{ fontSize: 10, color: T.t3 }}>
-              {post.created_date ? format(new Date(post.created_date), "MMM d") : ""}
-            </div>
-          </div>
-          {isTop && (
-            <Pill color={T.amber} bg={T.amberDim} brd={T.amberBrd}>
-              <Star size={8} /> Top Post
-            </Pill>
-          )}
-          <DelBtn onDelete={() => onDelete?.(post.id)} />
-        </div>
-      </div>
-
-      {/* Content */}
-      {title && (
-        <div style={{ padding: "10px 14px" }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: T.t1, margin: "0 0 4px", lineHeight: 1.4 }}>{title}</p>
-          {body && (
-            <p style={{ fontSize: 11, color: T.t2, margin: 0, lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{body}</p>
-          )}
+    <div className={cn(CARD, isTop && 'border-blue-500/[0.22]')}>
+      {isTop && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-transparent" />}
+      {isTop && (
+        <div className="absolute top-[10px] left-[11px] z-[2]">
+          <AppBadge variant="active">⭐ Top Post</AppBadge>
         </div>
       )}
-
-      {/* Footer stats */}
-      <div style={{ padding: "9px 14px 12px", display: "flex", alignItems: "center", gap: 12, borderTop: `1px solid ${T.divider}` }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 500, color: T.t3 }}>
-          <Heart size={10} /> {likes}
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 500, color: T.t3 }}>
-          <MessageCircle size={10} /> {comments}
-        </span>
-        {engRate > 0 && (
-          <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 600, color: T.green, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: 4, padding: "2px 7px" }}>
-            {engRate}% engaged
+      <div className="px-[14px] pt-3">
+        <div className="flex items-center gap-2">
+          <Av name={post.author_name || post.gym_name || 'G'} size={26} src={post.author_avatar || null} />
+          <span className="flex-1 text-xs font-semibold text-[#8b95b3] overflow-hidden text-ellipsis whitespace-nowrap">
+            {post.author_name || post.gym_name || 'Gym Post'}
           </span>
-        )}
-        {engRate > 0 && (
-          <div style={{ width: 48 }}>
-            <TinyBar pct={Math.min(engRate * 2, 100)} color={T.green} />
-          </div>
-        )}
+          <span className="text-[10px] text-[#4b5578] shrink-0">{post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}</span>
+          <DelBtn onDelete={() => onDelete(post.id)} />
+        </div>
       </div>
-    </Card>
+      {title && (
+        <div className="px-[14px] py-[10px]">
+          <p className="text-[13.5px] font-bold text-[#eef2ff] mb-1 leading-snug">{title}</p>
+          {body && <p className="text-xs text-[#8b95b3] leading-relaxed line-clamp-2">{body}</p>}
+        </div>
+      )}
+      {(post.image_url || post.media_url) && (
+        <div className="mx-[14px] mb-[10px] rounded-[8px] overflow-hidden">
+          <img src={post.image_url || post.media_url} alt="" className="w-full max-h-[140px] object-cover block" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
+        </div>
+      )}
+      <div className="px-[14px] pb-[11px] pt-2 flex items-center gap-3 border-t border-white/[0.03]">
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><Heart className="w-[11px] h-[11px]" />{likes}</span>
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><MessageCircle className="w-[11px] h-[11px]" />{comments}</span>
+        {engRate > 0 && <AppBadge variant="active" className="ml-auto">{engRate}% engaged</AppBadge>}
+      </div>
+    </div>
   );
 }
 
 function EventCard({ event, now, onDelete }) {
   const evDate = new Date(event.event_date);
   const diff   = Math.max(0, Math.floor((evDate - now) / 86400000));
-  const urgency = diff <= 2;
+  const timingLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d away`;
   return (
-    <Card>
-      <div style={{ padding: "13px 14px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: T.rsm, flexShrink: 0,
-            background: T.surfaceEl, border: `1px solid ${T.border}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Calendar size={14} color={T.t3} />
+    <div className={CARD}>
+      <div className="p-[14px]">
+        <div className="flex items-center gap-2 mb-[9px]">
+          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
+            <Calendar className="w-[11px] h-[11px] text-blue-500" />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
-              <Pill>Event</Pill>
-              <Pill
-                color={urgency ? T.amber : T.t3}
-                bg={urgency ? T.amberDim : T.surfaceEl}
-                brd={urgency ? T.amberBrd : T.border}>
-                {diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : `${diff}d away`}
-              </Pill>
-              <div style={{ marginLeft: "auto" }}><DelBtn onDelete={() => onDelete?.(event.id)} /></div>
-            </div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: T.t1, margin: "0 0 4px" }}>{event.title}</p>
-            {event.description && <p style={{ fontSize: 11, color: T.t2, margin: "0 0 6px", lineHeight: 1.5 }}>{event.description}</p>}
-            <div style={{ fontSize: 10, color: T.t3 }}>{format(evDate, "MMM d, h:mm a")}</div>
-          </div>
+          <AppBadge variant="active">Event</AppBadge>
+          <AppBadge variant={diff <= 2 ? 'warning' : 'neutral'}>{timingLabel}</AppBadge>
+          <div className="ml-auto"><DelBtn onDelete={() => onDelete(event.id)} /></div>
         </div>
+        <p className="text-[13px] font-bold text-[#eef2ff] mb-1">{event.title}</p>
+        {event.description && <p className="text-[11px] text-[#8b95b3] mb-[7px] leading-relaxed">{event.description}</p>}
+        <div className="text-[10px] text-[#4b5578]">{format(evDate, 'MMM d, h:mm a')}</div>
       </div>
-    </Card>
+    </div>
   );
 }
 
 function ChallengeCard({ challenge, now, onDelete }) {
   const start  = new Date(challenge.start_date), end = new Date(challenge.end_date);
-  const totalD = Math.max(1, Math.floor((end - start) / 86400000));
-  const elapsed= Math.max(0, Math.floor((now - start) / 86400000));
-  const rem    = Math.max(0, totalD - elapsed);
-  const pct    = Math.min(100, Math.round((elapsed / totalD) * 100));
-  const parts  = challenge.participants?.length || 0;
+  const totalD  = Math.max(1, Math.floor((end - start) / 86400000));
+  const elapsed = Math.max(0, Math.floor((now - start) / 86400000));
+  const rem     = Math.max(0, totalD - elapsed);
+  const pct     = Math.min(100, Math.round((elapsed / totalD) * 100));
+  const parts   = challenge.participants?.length || 0;
   return (
-    <Card>
-      <div style={{ padding: "13px 14px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Trophy size={14} color={T.amber} />
+    <div className={CARD}>
+      <div className="p-[14px]">
+        <div className="flex items-center gap-2 mb-[9px]">
+          <div className="w-[26px] h-[26px] rounded-[7px] bg-amber-400/[0.08] border border-amber-400/[0.13] flex items-center justify-center shrink-0">
+            <Trophy className="w-[11px] h-[11px] text-amber-400" />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
-              <Pill color={T.amber} bg={T.amberDim} brd={T.amberBrd}>Challenge</Pill>
-              <Pill color={T.t3} bg={T.surfaceEl} brd={T.border}>{rem}d left</Pill>
-              <div style={{ marginLeft: "auto" }}><DelBtn onDelete={() => onDelete?.(challenge.id)} /></div>
-            </div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: T.t1, margin: "0 0 10px" }}>{challenge.title}</p>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-              <span style={{ fontSize: 10, color: T.t3 }}>{parts} joined</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: T.accent }}>{pct}%</span>
-            </div>
-            <div style={{ height: 2, borderRadius: 99, background: T.divider }}>
-              <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: T.accent, opacity: 0.8 }} />
-            </div>
-          </div>
+          <AppBadge variant="active">Challenge</AppBadge>
+          <AppBadge variant={rem <= 3 ? 'warning' : 'neutral'}>{rem}d left</AppBadge>
+          <div className="ml-auto"><DelBtn onDelete={() => onDelete(challenge.id)} /></div>
         </div>
+        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{challenge.title}</p>
+        <div className="flex justify-between mb-[5px]">
+          <span className="text-[11px] text-[#4b5578]">{parts} joined</span>
+          <span className="text-[11px] font-bold text-blue-500">{pct}%</span>
+        </div>
+        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px]" />
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -464,144 +265,126 @@ function PollCard({ poll, onDelete, allMemberships }) {
   const total = allMemberships?.length || 0;
   const pct   = total > 0 ? Math.round((votes / total) * 100) : 0;
   return (
-    <Card>
-      <div style={{ padding: "13px 14px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <BarChart2 size={14} color={T.t3} />
+    <div className={CARD}>
+      <div className="p-[14px]">
+        <div className="flex items-center gap-2 mb-[9px]">
+          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
+            <BarChart2 className="w-[11px] h-[11px] text-blue-500" />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
-              <Pill>Poll</Pill>
-              {pct > 0 && <Pill color={T.t3} bg={T.surfaceEl} brd={T.border}>{pct}% voted</Pill>}
-              <div style={{ marginLeft: "auto" }}><DelBtn onDelete={() => onDelete?.(poll.id)} /></div>
-            </div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: T.t1, margin: "0 0 10px" }}>{poll.title}</p>
-            <div style={{ height: 2, borderRadius: 99, background: T.divider, marginBottom: 5 }}>
-              <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: T.accent, opacity: 0.8 }} />
-            </div>
-            <div style={{ fontSize: 10, color: T.t3 }}>{votes} vote{votes !== 1 ? "s" : ""}{total > 0 ? ` of ${total} members` : ""}</div>
-          </div>
+          <AppBadge variant="active">Poll</AppBadge>
+          {pct > 0 && <AppBadge variant="neutral">{pct}% voted</AppBadge>}
+          <div className="ml-auto"><DelBtn onDelete={() => onDelete(poll.id)} /></div>
         </div>
-      </div>
-    </Card>
-  );
-}
-
-const CLS_TYPES = { hiit:"HIIT", yoga:"Yoga", strength:"Strength", default:"Class" };
-function getClsType(c) {
-  const n = (c.class_type || c.name || "").toLowerCase();
-  if (n.includes("hiit") || n.includes("interval")) return "hiit";
-  if (n.includes("yoga") || n.includes("flow"))     return "yoga";
-  if (n.includes("strength") || n.includes("lift")) return "strength";
-  return "default";
-}
-function ClassCard({ gymClass, onDelete }) {
-  const type = getClsType(gymClass);
-  const typeColor = { hiit: T.red, yoga: T.green, strength: T.amber, default: T.accent }[type];
-  return (
-    <Card>
-      <div style={{ padding: "13px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: T.rsm, flexShrink: 0, background: T.surfaceEl, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Activity size={14} color={typeColor} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-              <Pill color={typeColor} bg={T.surfaceEl} brd={T.border}>{CLS_TYPES[type]}</Pill>
-              {gymClass.duration_minutes && (
-                <Pill color={T.t3} bg={T.surfaceEl} brd={T.border}>
-                  <Clock size={8} /> {gymClass.duration_minutes}m
-                </Pill>
-              )}
-              <div style={{ marginLeft: "auto" }}><DelBtn onDelete={() => onDelete?.(gymClass.id)} /></div>
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {gymClass.name || gymClass.title}
-            </div>
-            {gymClass.instructor && (
-              <div style={{ fontSize: 10, color: T.t3, marginTop: 2 }}>{gymClass.instructor}</div>
-            )}
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/* ── Empty state ────────────────────────────────────────────────── */
-function EmptyState({ openModal, label }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px", gap: 14, textAlign: "center" }}>
-      <div style={{ width: 44, height: 44, borderRadius: T.r, background: T.surfaceEl, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Zap size={18} color={T.t4} />
-      </div>
-      <div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: T.t2, margin: "0 0 6px" }}>
-          {label ? `No ${label} yet` : "Your feed is empty"}
-        </p>
-        <p style={{ fontSize: 11, color: T.t3, margin: 0, lineHeight: 1.6 }}>
-          Create content to keep your members engaged and coming back.
-        </p>
-      </div>
-      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center" }}>
-        <PrimaryBtn onClick={() => openModal?.("post")}><Plus size={11} /> Create first post</PrimaryBtn>
-        <GhostBtn onClick={() => openModal?.("challenge")}><Trophy size={11} /> Start a challenge</GhostBtn>
-        <GhostBtn onClick={() => openModal?.("poll")}><HelpCircle size={11} /> Ask a question</GhostBtn>
+        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{poll.title}</p>
+        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px] mb-[6px]" />
+        <div className="text-[11px] text-[#4b5578]">{votes} vote{votes !== 1 ? 's' : ''}{total > 0 ? ` of ${total} members` : ''}</div>
       </div>
     </div>
   );
 }
 
-/* ── Calendar view ──────────────────────────────────────────────── */
+const CLS_IMGS = {
+  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
+  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
+  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
+  default:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
+};
+function getClsType(c) {
+  const n = (c.class_type || c.name || '').toLowerCase();
+  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
+  if (n.includes('yoga') || n.includes('flow'))     return 'yoga';
+  if (n.includes('strength') || n.includes('lift')) return 'strength';
+  return 'default';
+}
+function ClassCard({ gymClass, onDelete }) {
+  const type = getClsType(gymClass);
+  return (
+    <div className={CARD}>
+      <div className="relative h-20 overflow-hidden">
+        <img src={gymClass.image_url || CLS_IMGS[type]} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0d1225cc]" />
+        <span className="absolute top-[7px] left-[9px] text-[8.5px] font-extrabold tracking-[0.08em] uppercase text-blue-500 bg-black/50 border border-blue-500/[0.22] rounded px-[6px] py-[2px]">
+          {type.toUpperCase()}
+        </span>
+      </div>
+      <div className="px-[13px] py-[10px] pb-3">
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="text-[13px] font-bold text-[#eef2ff] flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{gymClass.name || gymClass.title}</div>
+          <DelBtn onDelete={() => onDelete(gymClass.id)} />
+        </div>
+        {gymClass.duration_minutes && <div className="text-[11px] text-[#4b5578] mt-[3px]">{gymClass.duration_minutes} min</div>}
+        {gymClass.instructor       && <div className="text-[11px] text-[#8b95b3] mt-[3px]">{gymClass.instructor}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ─── EMPTY STATE ─── */
+function EmptyState({ openModal, label }) {
+  return (
+    <div className="flex flex-col items-center py-[52px] px-5 gap-[14px] text-center">
+      <div className="w-[50px] h-[50px] rounded-[14px] bg-blue-500/10 border border-blue-500/[0.22] flex items-center justify-center">
+        <Flame className="w-[22px] h-[22px] text-blue-500" />
+      </div>
+      <div>
+        <p className="text-[15px] font-extrabold text-[#eef2ff] mb-[6px]">🔥 Let's get your members engaged!</p>
+        <p className="text-xs text-[#4b5578] leading-relaxed">
+          {label ? `No ${label} yet.` : 'Your feed is empty. Create your first piece of content.'}
+        </p>
+      </div>
+      <div className="flex gap-[7px] flex-wrap justify-center">
+        <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
+        <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
+        <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
+      </div>
+    </div>
+  );
+}
+
+/* ─── CALENDAR VIEW ─── */
 function CalendarView({ allPosts, events, now, openModal }) {
   const [viewMonth, setViewMonth] = useState(now);
   const ms   = startOfMonth(viewMonth), me = endOfMonth(viewMonth);
   const days   = eachDayOfInterval({ start: ms, end: me });
   const blanks = Array(getDay(ms)).fill(null);
-  const DOW    = ["Su","Mo","Tu","We","Th","Fr","Sa"];
-  const postDates = new Set(allPosts.map(p => format(new Date(p.created_date || 0), "yyyy-MM-dd")));
-  const evDates   = new Set(events.map(e => format(new Date(e.event_date || 0), "yyyy-MM-dd")));
-
+  const DOW    = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const postDates = new Set(allPosts.map(p => format(new Date(p.created_date || 0), 'yyyy-MM-dd')));
+  const evDates   = new Set(events.map(e => format(new Date(e.event_date    || 0), 'yyyy-MM-dd')));
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <button onClick={() => setViewMonth(subDays(ms, 1))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: T.rsm, padding: "4px 7px", cursor: "pointer", color: T.t2, display: "flex" }}>
-          <ChevronLeft size={12} />
+      <div className="flex items-center justify-between mb-[10px]">
+        <button onClick={() => setViewMonth(subDays(ms, 1))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
+          <ChevronLeft className="w-3 h-3" />
         </button>
-        <span style={{ fontSize: 11, fontWeight: 600, color: T.t1 }}>{format(viewMonth, "MMMM yyyy")}</span>
-        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} style={{ background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: T.rsm, padding: "4px 7px", cursor: "pointer", color: T.t2, display: "flex" }}>
-          <ChevronRight size={12} />
+        <span className="text-xs font-bold text-[#eef2ff]">{format(viewMonth, 'MMMM yyyy')}</span>
+        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
+          <ChevronRight className="w-3 h-3" />
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 4 }}>
+      <div className="grid grid-cols-7 gap-[2px] mb-[2px]">
         {DOW.map(d => (
-          <div key={d} style={{ textAlign: "center", fontSize: 9, fontWeight: 600, color: T.t4, padding: "2px 0", letterSpacing: ".06em" }}>{d}</div>
+          <div key={d} className="text-center text-[9px] font-bold text-[#4b5578] py-[2px] tracking-[0.05em]">{d}</div>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+
+      <div className="grid grid-cols-7 gap-[2px]">
         {blanks.map((_, i) => <div key={`b${i}`} />)}
         {days.map(day => {
-          const key     = format(day, "yyyy-MM-dd");
+          const key     = format(day, 'yyyy-MM-dd');
           const hasPost = postDates.has(key);
           const hasEv   = evDates.has(key);
           const today   = isToday(day);
           return (
-            <div key={key} style={{
-              height: 26, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, borderRadius: T.rsm, position: "relative",
-              color: today ? "#fff" : T.t2, fontWeight: today ? 700 : 500,
-              background: today ? T.accent : "transparent",
-              cursor: "default", transition: "background .1s",
-            }}
-              onMouseEnter={e => { if (!today) e.currentTarget.style.background = T.surfaceEl; }}
-              onMouseLeave={e => { if (!today) e.currentTarget.style.background = "transparent"; }}>
-              {format(day, "d")}
+            <div key={key} className={cn(
+              'h-[26px] flex items-center justify-center text-[10.5px] rounded-[5px] relative text-[#8b95b3] font-medium cursor-default transition-colors',
+              today ? 'bg-blue-500 text-white font-extrabold' : 'hover:bg-[#0d1225]',
+            )}>
+              {format(day, 'd')}
               {(hasPost || hasEv) && !today && (
-                <div style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 2 }}>
-                  {hasPost && <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.accent }} />}
-                  {hasEv   && <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.amber }} />}
+                <div className="absolute bottom-[1px] left-1/2 -translate-x-1/2 flex gap-[2px]">
+                  {hasPost && <div className="w-[3px] h-[3px] rounded-full bg-blue-500" />}
+                  {hasEv   && <div className="w-[3px] h-[3px] rounded-full bg-orange-500" />}
                 </div>
               )}
             </div>
@@ -609,55 +392,74 @@ function CalendarView({ allPosts, events, now, openModal }) {
         })}
       </div>
 
-      <div style={{ marginTop: 14, padding: 12, borderRadius: T.rsm, background: T.surfaceEl, border: `1px solid ${T.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-          <CheckCircle size={9} color={T.green} />
-          <span style={{ fontSize: 10, color: T.t3 }}>Best engagement time: <span style={{ color: T.green, fontWeight: 600 }}>5–7 pm</span></span>
+      <div className="mt-3 p-[11px] rounded-[7px] bg-[#0d1225] border border-white/[0.04]">
+        <div className="flex items-start gap-[7px] mb-[6px]">
+          <div className="w-[5px] h-[5px] rounded-full bg-[#4b5578] mt-1 shrink-0" />
+          <span className="text-[10.5px] text-[#4b5578] leading-relaxed">No content scheduled. Filling your calendar keeps members engaged.</span>
         </div>
-        <div style={{ fontSize: 10, color: T.t4, lineHeight: 1.5 }}>Fill your calendar — consistent posting keeps members coming back.</div>
+        <div className="flex items-center gap-[6px]">
+          <CheckCircle className="w-[9px] h-[9px] text-emerald-500 shrink-0" />
+          <span className="text-[10px] text-[#4b5578]">Best engagement time: <span className="text-emerald-500 font-bold">5–7pm</span></span>
+        </div>
       </div>
 
-      <PrimaryBtn onClick={() => openModal?.("post")} style={{ width: "100%", justifyContent: "center", marginTop: 10 }}>
-        <Plus size={11} /> Schedule a Post
-      </PrimaryBtn>
+      <AppButton variant="primary" className="w-full justify-center mt-[10px] text-[11.5px]" onClick={() => openModal('post')}>
+        <Plus className="w-3 h-3" /> Schedule a Post
+      </AppButton>
     </div>
   );
 }
 
-/* ── Right panel: AI suggestions ────────────────────────────────── */
+/* ─── RIGHT PANEL ─── */
+const SUGG_IMGS = [
+  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&q=80',
+  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&q=80',
+  'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=120&q=80',
+];
 const AI_SUGGS = [
-  { dot: T.accent, label: "Motivation Monday", sub: "Share a quote · drives comments", modal: "post" },
-  { dot: T.green,  label: "Post a member spotlight", sub: "Feature a dedicated member", modal: "post" },
-  { dot: T.amber,  label: "Start a weekend challenge", sub: "Increases visit frequency", modal: "challenge" },
+  { dotClass: 'bg-blue-500',    label: 'Motivation Monday',         sub: 'Share a motivating quote · Drives comments',       btns: [{ label: 'Generate post',  primary: true,  modal: 'post'      }, { label: 'Make it →',  primary: false, modal: 'post'      }] },
+  { dotClass: 'bg-emerald-500', label: 'Post a member spotlight',   sub: 'Feature a dedicated member from your community',   btns: [{ label: 'Create',         primary: true,  modal: 'post'      }, { label: 'Refine',     primary: false, modal: 'post'      }] },
+  { dotClass: 'bg-amber-400',   label: 'Start a weekend challenge', sub: 'Clearly repeat a signature event',                  btns: [{ label: 'Start challenge', primary: true, modal: 'challenge' }, { label: 'Goals',      primary: false, modal: 'challenge' }] },
 ];
 
 function AISuggestions({ openModal }) {
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: T.t2, textTransform: "uppercase", letterSpacing: ".1em" }}>
-          What to post today
-        </span>
-        <span style={{ fontSize: 10, fontWeight: 600, color: T.accent, background: T.accentDim, border: `1px solid ${T.accentBrd}`, padding: "1px 7px", borderRadius: 20 }}>AI</span>
+      <div className="flex items-center gap-[6px] mb-[10px]">
+        <Flame className="w-3 h-3 text-orange-500" />
+        <span className="text-xs font-bold text-[#eef2ff]">What should you post today?</span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className="flex flex-col gap-[7px]">
         {AI_SUGGS.map((s, i) => (
-          <div
-            key={i}
-            onClick={() => openModal?.(s.modal)}
-            style={{
-              padding: "10px 12px", borderRadius: T.rsm,
-              background: T.surfaceEl, border: `1px solid ${T.border}`,
-              cursor: "pointer", transition: "all .1s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = T.borderEl; e.currentTarget.style.background = T.surfaceHov; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border;   e.currentTarget.style.background = T.surfaceEl; }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: s.dot, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: T.t1 }}>{s.label}</span>
-              <ChevronRight size={9} color={T.t4} style={{ marginLeft: "auto" }} />
+          <div key={i}
+            className="bg-[#050810] border border-white/[0.04] rounded-2xl p-[11px] cursor-pointer transition-all hover:border-blue-500/[0.22] hover:bg-[#0d1225]"
+            onClick={() => openModal(s.btns[0].modal)}>
+            <div className="flex gap-[9px] items-start">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-[5px] mb-[2px]">
+                  <div className={cn('w-[5px] h-[5px] rounded-full shrink-0', s.dotClass)} />
+                  <div className="text-[11.5px] font-bold text-[#eef2ff] overflow-hidden text-ellipsis whitespace-nowrap">{s.label}</div>
+                </div>
+                <div className="text-[9.5px] text-[#4b5578] mb-2 pl-[10px] leading-snug">{s.sub}</div>
+                <div className="flex gap-[5px] pl-[10px]">
+                  {s.btns.map((b, j) => (
+                    <button key={j}
+                      className={cn(
+                        'text-[10.5px] font-bold px-[10px] py-[5px] rounded-[6px] cursor-pointer transition-all',
+                        b.primary
+                          ? 'bg-blue-500/10 border border-blue-500/[0.22] text-blue-500 hover:bg-blue-500 hover:text-white'
+                          : 'bg-transparent border border-white/[0.04] text-[#8b95b3] hover:border-white/[0.07] hover:text-[#eef2ff]',
+                      )}
+                      onClick={e => { e.stopPropagation(); openModal(b.modal); }}>
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="w-[44px] h-[44px] rounded-[7px] overflow-hidden shrink-0">
+                <img src={SUGG_IMGS[i]} alt="" className="w-full h-full object-cover" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
+              </div>
             </div>
-            <div style={{ fontSize: 10, color: T.t3, paddingLeft: 11 }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -665,102 +467,103 @@ function AISuggestions({ openModal }) {
   );
 }
 
-/* ── Right panel: Engagement score ──────────────────────────────── */
 function EngagementScore({ allPosts, polls, activeChallenges, now, openModal }) {
   const score = (s, e) =>
     allPosts.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
-      .reduce((a, x) => a + (x.likes?.length || 0) + (x.comments?.length || 0), 0);
+      .reduce((a, x) => a + (x.likes?.length || 0) + (x.comments?.length || 0), 0) +
+    polls.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
+      .reduce((a, x) => a + (x.voters?.length || 0), 0);
   const thisW = score(subDays(now, 7), now);
   const lastW = score(subDays(now, 14), subDays(now, 7));
   const chg   = lastW === 0 ? 0 : Math.round(((thisW - lastW) / lastW) * 100);
   const up    = chg >= 0;
+  const total = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0) +
+                polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0) +
+                activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
   const likes    = allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0);
   const comments = allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0);
   const challP   = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
   const pollV    = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
-  const total    = likes + comments + challP + pollV;
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: T.t2, textTransform: "uppercase", letterSpacing: ".1em" }}>Engagement score</span>
+      <div className="flex items-center gap-[6px] mb-[10px]">
+        <Flame className="w-3 h-3 text-orange-500" />
+        <span className="text-xs font-bold text-[#eef2ff]">Engagement Score</span>
+        <HelpCircle className="w-[10px] h-[10px] text-[#4b5578]" />
       </div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 9, marginBottom: 3 }}>
-        <span style={{ fontSize: 34, fontWeight: 700, color: T.t1, letterSpacing: "-0.04em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{total}</span>
-        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: up ? T.green : T.red }}>
-          {up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-          {up ? "+" : ""}{chg}% this week
+      <div className="flex items-baseline gap-[9px] mb-[2px]">
+        <span className="text-[38px] font-extrabold text-[#eef2ff] tracking-[-0.04em] leading-none">{total}</span>
+        <span className={cn('flex items-center gap-[3px] text-[11px] font-bold', up ? 'text-emerald-500' : 'text-red-500')}>
+          {up ? <TrendingUp className="w-[10px] h-[10px]" /> : <TrendingDown className="w-[10px] h-[10px]" />}
+          {up ? '+' : ''}{chg}% this week
         </span>
       </div>
-      <div style={{ fontSize: 10, color: T.t3, marginBottom: 14 }}>Total interactions</div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <div className="text-[10px] text-[#4b5578] mb-[13px]">Total interactions</div>
+      <div className="flex flex-col mb-[13px]">
         {[
-          { l: `${likes} likes`,    r: `${challP} challenge` },
-          { l: `${comments} comments`, r: `${pollV} poll votes` },
+          { l: `${likes} Likes`,       r: `${challP} Challenge Responses` },
+          { l: `${comments} Comments`, r: `${pollV} Poll Votes`            },
         ].map((row, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "6px 0", borderBottom: `1px solid ${T.divider}` }}>
-            <span style={{ color: T.t2, fontWeight: 500 }}>{row.l}</span>
-            <span style={{ color: T.t3 }}>{row.r}</span>
+          <div key={i} className={cn('flex justify-between text-[11px] py-[5px]', i === 0 && 'border-b border-white/[0.03]')}>
+            <span className="text-[#8b95b3] font-semibold">{row.l}</span>
+            <span className="text-[#4b5578]">{row.r}</span>
           </div>
         ))}
       </div>
-
-      <PrimaryBtn onClick={() => openModal?.("post")} style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
-        <Plus size={11} /> Create content
-      </PrimaryBtn>
+      {total === 0 && (
+        <div className="text-[10.5px] text-[#8b95b3] px-[11px] py-2 bg-amber-400/[0.07] border border-amber-400/[0.16] rounded-[7px] mb-[11px] leading-relaxed">
+          Low engagement — try posting a poll question
+        </div>
+      )}
+      <AppButton variant="primary" className="w-full justify-center text-xs" onClick={() => openModal('post')}>
+        <Plus className="w-3 h-3" /> Create
+      </AppButton>
     </div>
   );
 }
 
-/* ── Right panel ────────────────────────────────────────────────── */
 function RightPanel({ allPosts, polls, challenges, events, activeChallenges, allMemberships, now, openModal }) {
-  const [view, setView] = useState("feed");
+  const [view, setView] = useState('feed');
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Toggle */}
-      <div style={{ display: "inline-flex", gap: 2, background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: T.r, padding: 2 }}>
-        {[{ id:"feed", Icon:Flame, label:"Feed" },{ id:"cal", Icon:Calendar, label:"Calendar" }].map(tab => (
-          <button key={tab.id} onClick={() => setView(tab.id)} style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            padding: "5px 11px", borderRadius: T.rsm, fontSize: 11, fontWeight: 600,
-            cursor: "pointer", border: "none", fontFamily: "inherit", transition: "all .12s",
-            background: view === tab.id ? T.accent : "transparent",
-            color: view === tab.id ? "#fff" : T.t3,
-          }}>
-            <tab.Icon size={10} /> {tab.label}
-          </button>
-        ))}
+    <>
+      <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px]">
+        <button
+          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
+          onClick={() => setView('feed')}>
+          <Flame className="w-[10px] h-[10px]" /> Feed
+        </button>
+        <button
+          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'cal' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
+          onClick={() => setView('cal')}>
+          <Calendar className="w-[10px] h-[10px]" /> Calendar
+        </button>
       </div>
 
-      <div style={{ height: 1, background: T.divider }} />
+      <div className="h-px bg-white/[0.03]" />
 
-      {view === "feed" ? (
+      {view === 'feed' ? (
         <>
           <AISuggestions openModal={openModal} />
-          <div style={{ height: 1, background: T.divider }} />
+          <div className="h-px bg-white/[0.03]" />
           <EngagementScore allPosts={allPosts} polls={polls} activeChallenges={activeChallenges} now={now} openModal={openModal} />
         </>
       ) : (
         <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
       )}
-    </div>
+    </>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ROOT COMPONENT
-══════════════════════════════════════════════════════════════════ */
+/* ─── MAIN EXPORT ─── */
 export default function TabContent({
-  events        = MOCK_EVENTS,
-  challenges    = MOCK_CHALLENGES,
-  polls         = MOCK_POLLS,
-  posts         = MOCK_POSTS,
-  userPosts     = [],
-  openModal     = () => {},
-  now           = NOW,
-  allMemberships= MOCK_MEMBERSHIPS,
-  classes       = MOCK_CLASSES,
+  events = [], challenges = [], polls = [], posts = [], userPosts = [],
+  checkIns, ci30, avatarMap,
+  openModal        = () => {},
+  now              = new Date(),
+  allMemberships   = [],
+  classes          = [],
+  currentUser      = null,
   onDeletePost      = () => {},
   onDeleteEvent     = () => {},
   onDeleteChallenge = () => {},
@@ -768,14 +571,14 @@ export default function TabContent({
   onDeletePoll      = () => {},
   isCoach = false,
 }) {
-  const [activeFilter, setActiveFilter] = useState(isCoach ? "classes" : "gym");
-  const [viewMode,     setViewMode]     = useState("feed");
+  const [activeFilter, setActiveFilter] = useState(isCoach ? 'classes' : 'gym');
+  const [viewMode,     setViewMode]     = useState('feed');
 
   const allPosts         = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   const gymPosts         = allPosts.filter(p => !p.user_id || p.gym_id || p.member_id);
   const memberPosts      = allPosts.filter(p => p.user_id && !p.gym_id);
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
-  const activeChallenges = challenges.filter(c => c.status === "active");
+  const activeChallenges = challenges.filter(c => c.status === 'active');
   const totalMembers     = allMemberships.length;
 
   const postScores = useMemo(() => allPosts.map(p => ({ id: p.id, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 })), [allPosts]);
@@ -783,134 +586,120 @@ export default function TabContent({
   const topPostIds = new Set(postScores.filter(p => p.score >= maxScore * 0.7 && p.score > 0).map(p => p.id));
 
   const FILTERS = isCoach
-    ? [{ id:"classes",label:"My Classes" },{ id:"gym",label:"Posts" },{ id:"challenges",label:"Challenges" },{ id:"polls",label:"Polls" },{ id:"events",label:"Events" }]
-    : [{ id:"gym",label:"Feed" },{ id:"members",label:"Members" },{ id:"challenges",label:"Challenges" },{ id:"classes",label:"Classes" },{ id:"polls",label:"Polls" }];
+    ? [{ id: 'classes', label: 'My Classes' }, { id: 'gym', label: 'Posts' }, { id: 'challenges', label: 'Challenges' }, { id: 'polls', label: 'Polls' }, { id: 'events', label: 'Events' }]
+    : [{ id: 'gym', label: 'Feed' }, { id: 'members', label: 'Members' }, { id: 'challenges', label: 'Challenges' }, { id: 'classes', label: 'Classes' }, { id: 'polls', label: 'Polls' }];
 
   const feedItems = useMemo(() => {
     const fi = (() => {
       switch (activeFilter) {
-        case "members":    return { posts:memberPosts, events:[], challenges:[], polls:[], classes:[] };
-        case "gym":        return { posts:gymPosts, events:[], challenges:[], polls:[], classes:[] };
-        case "challenges": return { posts:[], events:[], challenges:activeChallenges, polls:[], classes:[] };
-        case "classes":    return { posts:[], events:[], challenges:[], polls:[], classes };
-        case "polls":      return { posts:[], events:[], challenges:[], polls, classes:[] };
-        case "events":     return { posts:[], events:upcomingEvents, challenges:[], polls:[], classes:[] };
-        default:           return { posts:allPosts, events:upcomingEvents, challenges:activeChallenges, polls, classes };
+        case 'members':    return { posts: memberPosts,   events: [],             challenges: [],               polls: [],  classes: [] };
+        case 'gym':        return { posts: gymPosts,       events: [],             challenges: [],               polls: [],  classes: [] };
+        case 'challenges': return { posts: [],             events: [],             challenges: activeChallenges, polls: [],  classes: [] };
+        case 'classes':    return { posts: [],             events: [],             challenges: [],               polls: [],  classes };
+        case 'polls':      return { posts: [],             events: [],             challenges: [],               polls,      classes: [] };
+        case 'events':     return { posts: [],             events: upcomingEvents, challenges: [],               polls: [],  classes: [] };
+        default:           return { posts: allPosts,       events: upcomingEvents, challenges: activeChallenges, polls,      classes };
       }
     })();
     return [
-      ...fi.posts.map(p      => ({ type:"post",      data:p, date:new Date(p.created_date || 0) })),
-      ...fi.events.map(e     => ({ type:"event",     data:e, date:new Date(e.event_date    || 0) })),
-      ...fi.challenges.map(c => ({ type:"challenge", data:c, date:new Date(c.start_date    || 0) })),
-      ...fi.polls.map(p      => ({ type:"poll",      data:p, date:new Date(p.created_date  || 0) })),
-      ...fi.classes.map(c    => ({ type:"class",     data:c, date:new Date(c.created_date  || 0) })),
+      ...fi.posts.map(p      => ({ type: 'post',      data: p, date: new Date(p.created_date || 0) })),
+      ...fi.events.map(e     => ({ type: 'event',     data: e, date: new Date(e.event_date    || 0) })),
+      ...fi.challenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date    || 0) })),
+      ...fi.polls.map(p      => ({ type: 'poll',      data: p, date: new Date(p.created_date  || 0) })),
+      ...fi.classes.map(c    => ({ type: 'class',     data: c, date: new Date(c.created_date  || 0) })),
     ].sort((a, b) => b.date - a.date);
   }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
 
   const renderItem = (item, i) => {
-    if (item.type === "post")      return <FeedPostCard  key={item.data.id||i} post={item.data}      onDelete={onDeletePost}      isTop={topPostIds.has(item.data.id)} totalMembers={totalMembers} />;
-    if (item.type === "event")     return <EventCard     key={item.data.id||i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
-    if (item.type === "challenge") return <ChallengeCard key={item.data.id||i} challenge={item.data} onDelete={onDeleteChallenge} now={now} />;
-    if (item.type === "poll")      return <PollCard      key={item.data.id||i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
-    if (item.type === "class")     return <ClassCard     key={item.data.id||i} gymClass={item.data}  onDelete={onDeleteClass} />;
+    if (item.type === 'post')      return <FeedPostCard  key={item.data.id || i} post={item.data}      onDelete={onDeletePost}      isTop={topPostIds.has(item.data.id)} totalMembers={totalMembers} />;
+    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
+    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} onDelete={onDeleteChallenge} now={now} />;
+    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
+    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass} />;
     return null;
   };
 
   const currentLabel = FILTERS.find(f => f.id === activeFilter)?.label;
 
   return (
-    <div style={{
-      minHeight: "100vh", background: T.bg,
-      fontFamily: "'Geist','DM Sans','Helvetica Neue',Arial,sans-serif",
-      color: T.t1, fontSize: 13, lineHeight: 1.5,
-    }}>
-      <style>{`
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
-      `}</style>
+    <div className="flex flex-col w-full h-full min-h-[600px] overflow-hidden bg-[#050810] text-[#eef2ff]">
 
-      {/* ── Page header ── */}
-      <div style={{ padding: "20px 24px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, borderBottom: `1px solid ${T.border}` }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
-            <div style={{ width: 28, height: 28, borderRadius: T.rsm, background: T.accentDim, border: `1px solid ${T.accentBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Zap size={13} color={T.accent} />
-            </div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: T.t1, margin: 0, letterSpacing: "-0.03em" }}>Content</h1>
-          </div>
-          <p style={{ fontSize: 12, color: T.t3, margin: 0, lineHeight: 1.6 }}>Posts, events, challenges and polls — keep your members engaged</p>
-        </div>
-        <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
-          <GhostBtn onClick={() => openModal?.("challenge")}><Trophy size={11} /> Challenge</GhostBtn>
-          <GhostBtn onClick={() => openModal?.("poll")}><HelpCircle size={11} /> Poll</GhostBtn>
-          <PrimaryBtn onClick={() => openModal?.("post")}><Plus size={11} /> Create post</PrimaryBtn>
-        </div>
-      </div>
-
-      {/* Metrics bar */}
+      {/* ── METRICS BAR ── */}
       <MetricsBar allPosts={allPosts} allMemberships={allMemberships} now={now} />
 
-      {/* Body */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", minHeight: "calc(100vh - 90px)" }}>
+      {/* ── BODY ── */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_292px] flex-1 overflow-hidden min-h-0">
 
-        {/* ── Center ── */}
-        <div style={{ padding: "22px 24px 60px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* ══ CENTER ══ */}
+        <div className="px-[22px] py-5 pb-12 overflow-y-auto flex flex-col gap-[18px] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
+
+          {/* Header row */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="m-0 text-[17px] font-extrabold text-[#eef2ff] tracking-[-0.025em] flex-1 min-w-[160px] whitespace-nowrap">
+              🔥 Let's get your members engaged!
+            </h2>
+            <div className="flex gap-[7px] shrink-0 flex-wrap">
+              <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
+              <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
+              <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
+            </div>
+          </div>
 
           {/* Quick post ideas */}
           <QuickIdeas openModal={openModal} />
 
-          {/* Feed/Calendar toggle */}
-          <div style={{ display: "inline-flex", gap: 2, background: T.surfaceEl, border: `1px solid ${T.border}`, borderRadius: T.r, padding: 2, alignSelf: "flex-start" }}>
-            {[{ id:"feed",Icon:List,label:"Feed" },{ id:"calendar",Icon:Calendar,label:"Calendar" }].map(tab => (
-              <button key={tab.id} onClick={() => setViewMode(tab.id)} style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                padding: "5px 11px", borderRadius: T.rsm, fontSize: 11, fontWeight: 600,
-                cursor: "pointer", border: "none", fontFamily: "inherit", transition: "all .12s",
-                background: viewMode === tab.id ? T.accent : "transparent",
-                color: viewMode === tab.id ? "#fff" : T.t3,
-              }}>
-                <tab.Icon size={10} /> {tab.label}
-              </button>
-            ))}
+          {/* Feed / Calendar toggle */}
+          <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px] self-start">
+            <button
+              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
+              onClick={() => setViewMode('feed')}>
+              <List className="w-[10px] h-[10px]" /> Feed
+            </button>
+            <button
+              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'calendar' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
+              onClick={() => setViewMode('calendar')}>
+              <Calendar className="w-[10px] h-[10px]" /> Calendar
+            </button>
           </div>
 
-          {viewMode === "calendar" ? (
+          {/* Calendar or Feed */}
+          {viewMode === 'calendar' ? (
             <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
           ) : (
             <>
               {/* Filter tabs */}
-              <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${T.border}`, overflowX: "auto", marginTop: -6 }}>
+              <div className="flex items-center border-b border-white/[0.04] overflow-x-auto -mt-[6px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {FILTERS.map(f => (
-                  <button key={f.id} onClick={() => setActiveFilter(f.id)} style={{
-                    padding: "8px 14px", fontSize: 12, fontFamily: "inherit", background: "none",
-                    border: "none", borderBottom: `2px solid ${activeFilter === f.id ? T.accent : "transparent"}`,
-                    cursor: "pointer", transition: "all .1s", color: activeFilter === f.id ? T.t1 : T.t3,
-                    fontWeight: activeFilter === f.id ? 600 : 500, marginBottom: -1, whiteSpace: "nowrap",
-                  }}>
+                  <button key={f.id}
+                    className={cn(
+                      'px-[14px] py-2 text-[12.5px] bg-transparent border-b-2 cursor-pointer transition-all -mb-px whitespace-nowrap font-medium',
+                      activeFilter === f.id
+                        ? 'text-[#eef2ff] border-blue-500 font-bold'
+                        : 'text-[#4b5578] border-transparent hover:text-[#8b95b3]',
+                    )}
+                    onClick={() => setActiveFilter(f.id)}>
                     {f.label}
                   </button>
                 ))}
               </div>
 
               {feedItems.length > 0
-                ? <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{feedItems.map(renderItem)}</div>
-                : <EmptyState openModal={openModal} label={currentLabel !== "Feed" ? currentLabel : null} />}
+                ? <div className="flex flex-col gap-[9px]">{feedItems.map(renderItem)}</div>
+                : <EmptyState openModal={openModal} label={currentLabel !== 'Feed' ? currentLabel : null} />
+              }
             </>
           )}
         </div>
 
-        {/* ── Right panel ── */}
-        <div style={{
-          padding: "18px 16px 40px", overflowY: "auto",
-          borderLeft: `1px solid ${T.border}`, background: T.surface,
-        }}>
+        {/* ══ RIGHT PANEL ══ */}
+        <div className="hidden md:flex flex-col px-[15px] py-4 pb-10 overflow-y-auto gap-[13px] border-l border-white/[0.04] bg-[#0a0f1e] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
           <RightPanel
             allPosts={allPosts} polls={polls} challenges={challenges}
             events={events} activeChallenges={activeChallenges}
             allMemberships={allMemberships} now={now} openModal={openModal}
           />
         </div>
+
       </div>
     </div>
   );

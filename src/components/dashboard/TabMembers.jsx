@@ -1,167 +1,224 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+/**
+ * MembersPageAI — v2 "Tailwind Refactor"
+ * Design: Stripe/Linear/Notion — high signal, low noise.
+ */
+
+import { useState, useMemo, useCallback } from "react";
 import {
   AlertTriangle, TrendingDown, TrendingUp, Users, UserPlus,
   Flame, Send, X, ChevronRight, ChevronDown, ChevronLeft, Search,
   Check, Bell, Activity, Star, Tag, MoreHorizontal,
-  Plus, ArrowUpRight, DollarSign,
+  Plus,
 } from "lucide-react";
+import { AppButton } from "@/components/ui/AppButton";
+import { AppBadge } from "@/components/ui/AppBadge";
+import { AppProgressBar } from "@/components/ui/AppProgressBar";
+import { cn } from "@/lib/utils";
 
-const T = {
-  bg:         "#08090e",
-  surface:    "#0f1016",
-  surfaceEl:  "#14151d",
-  surfaceHov: "#191a24",
-  border:     "#1e2030",
-  borderEl:   "#262840",
-  divider:    "#141520",
-  t1:"#ededf0", t2:"#9191a4", t3:"#525266", t4:"#2e2e42",
-  accent:     "#4c6ef5",
-  accentDim:  "#1a2048",
-  accentBrd:  "#263070",
-  // red kept ONLY for the animated pulse dot on At Risk badges
-  red:        "#c0392b",
-  redDim:     "#160f0d",
-  redBrd:     "#2e1614",
-  // amber used wherever red previously appeared for data/numbers
-  amber:      "#b07b30",
-  amberDim:   "#161008",
-  amberBrd:   "#2a2010",
-  green:      "#2d8a62",
-  greenDim:   "#091912",
-  greenBrd:   "#132e20",
-  r:"8px", rsm:"6px",
-  sh:"0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025)",
-};
+/* ── Mock Data ──────────────────────────────────────────────────── */
+const NOW = new Date();
+const daysAgo = (n) => new Date(NOW.getTime() - n * 864e5);
 
-// High churn border/bar color: amber instead of red
-const churnColor = (ch) => ch >= 70 ? T.amber : ch >= 40 ? T.amber : T.t3;
-
-const MEMBERS = [
-  { id:"1", name:"Marcus Webb",    ini:"MW", ci:0, plan:"Premium", mv:120, ds:22,  v30:0,  pv:8,  vt:47,  str:0,  ch:84, jd:180, rc:38, reasons:["No visits in 22 days","Was averaging 8/mo then 0","Missed last 3 booked classes"],   act:"Send 'We miss you'",   st:"At risk",      sd:"No visits in 22d · Down from 8/month" },
-  { id:"2", name:"Priya Sharma",   ini:"PS", ci:1, plan:"Monthly", mv:60,  ds:16,  v30:1,  pv:4,  vt:31,  str:0,  ch:71, jd:95,  rc:44, reasons:["16 days since last visit","Frequency down 75%","Usually comes Tues/Thurs"],      act:"Friendly check-in",    st:"Dropping off", sd:"Frequency -75% · Pattern broken"       },
-  { id:"3", name:"Tyler Rhodes",   ini:"TR", ci:2, plan:"Monthly", mv:60,  ds:9,   v30:1,  pv:5,  vt:12,  str:0,  ch:55, jd:28,  rc:52, reasons:["New member not building habit","Only 1 visit this month","Week 4 critical"],     act:"Habit-building nudge", st:"New",          sd:"28 days in · 1 visit this month"       },
-  { id:"4", name:"Chloe Nakamura", ini:"CN", ci:3, plan:"Annual",  mv:90,  ds:1,   v30:14, pv:11, vt:203, str:18, ch:4,  jd:420, rc:96, reasons:[],                                                                                 act:"Challenge invite",     st:"Consistent",   sd:"18-day streak · Up 27% this month"     },
-  { id:"5", name:"Devon Osei",     ini:"DO", ci:4, plan:"Monthly", mv:60,  ds:19,  v30:0,  pv:3,  vt:8,   str:0,  ch:78, jd:45,  rc:35, reasons:["19 days absent","Early-stage member at risk","Visited 3x then stopped"],         act:"Personal outreach",    st:"At risk",      sd:"19 days absent · Joined & disappeared" },
-  { id:"6", name:"Anya Petrov",    ini:"AP", ci:5, plan:"Premium", mv:120, ds:0,   v30:9,  pv:7,  vt:88,  str:7,  ch:6,  jd:210, rc:94, reasons:[],                                                                                 act:"Referral ask",         st:"Engaged",      sd:"7-day streak · Consistent performer"   },
-  { id:"7", name:"Jamie Collins",  ini:"JC", ci:6, plan:"Monthly", mv:60,  ds:5,   v30:2,  pv:4,  vt:19,  str:0,  ch:42, jd:58,  rc:58, reasons:["Frequency halved this month","Skipped usual Friday session"],                    act:"Motivate",             st:"Dropping off", sd:"Frequency halved · Below target"        },
-  { id:"8", name:"Sam Rivera",     ini:"SR", ci:7, plan:"Monthly", mv:60,  ds:999, v30:0,  pv:0,  vt:1,   str:0,  ch:91, jd:6,   rc:30, reasons:["Joined 6 days ago 1 visit only","Critical first-week window","Has not returned"],act:"Week-1 welcome",       st:"New",          sd:"6 days in · First week habit window"   },
+const MOCK_MEMBERS = [
+  { id:"1", name:"Marcus Webb",    initials:"MW", colorIdx:0, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(22), daysSince:22,  visits30:0,  prevVisits30:8,  visitsTotal:47,  streak:0,  churnPct:84, joinedDaysAgo:180, returnChance:38, reasons:["No visits in 22 days","Was averaging 8/mo → 0","Missed last 3 classes"],        bestAction:"Send 'We miss you'",   status:"At risk",      statusDetail:"No visits in 22 days · Dropped from 8/month",   segment:"atRisk" },
+  { id:"2", name:"Priya Sharma",   initials:"PS", colorIdx:1, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(16), daysSince:16,  visits30:1,  prevVisits30:4,  visitsTotal:31,  streak:0,  churnPct:71, joinedDaysAgo:95,  returnChance:44, reasons:["16 days since last visit","Frequency down 75%","Usually comes Tues/Thurs"],   bestAction:"Friendly check-in",    status:"Dropping off", statusDetail:"Frequency dropped 75% · Pattern broken",        segment:"atRisk" },
+  { id:"3", name:"Tyler Rhodes",   initials:"TR", colorIdx:2, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(9),  daysSince:9,   visits30:1,  prevVisits30:5,  visitsTotal:12,  streak:0,  churnPct:55, joinedDaysAgo:28,  returnChance:52, reasons:["New member not building habit","Only 1 visit this month","Week 4 — critical window"], bestAction:"Habit-building nudge", status:"New",          statusDetail:"28 days in · Only 1 visit this month",          segment:"new"    },
+  { id:"4", name:"Chloe Nakamura", initials:"CN", colorIdx:3, plan:"Annual",  monthlyValue:90,  lastVisit:daysAgo(1),  daysSince:1,   visits30:14, prevVisits30:11, visitsTotal:203, streak:18, churnPct:4,  joinedDaysAgo:420, returnChance:96, reasons:[],                                                                                     bestAction:"Challenge invite",     status:"Consistent",   statusDetail:"18-day streak · Up 27% this month",             segment:"active" },
+  { id:"5", name:"Devon Osei",     initials:"DO", colorIdx:4, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(19), daysSince:19,  visits30:0,  prevVisits30:3,  visitsTotal:8,   streak:0,  churnPct:78, joinedDaysAgo:45,  returnChance:35, reasons:["19 days absent","Early-stage member at risk","Visited 3x then stopped"],          bestAction:"Personal outreach",    status:"At risk",      statusDetail:"19 days absent · Joined & disappeared",         segment:"atRisk" },
+  { id:"6", name:"Anya Petrov",    initials:"AP", colorIdx:5, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(0),  daysSince:0,   visits30:9,  prevVisits30:7,  visitsTotal:88,  streak:7,  churnPct:6,  joinedDaysAgo:210, returnChance:94, reasons:[],                                                                                     bestAction:"Referral ask",         status:"Engaged",      statusDetail:"7-day streak · Consistent performer",           segment:"active" },
+  { id:"7", name:"Jamie Collins",  initials:"JC", colorIdx:6, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(5),  daysSince:5,   visits30:2,  prevVisits30:4,  visitsTotal:19,  streak:0,  churnPct:42, joinedDaysAgo:58,  returnChance:58, reasons:[],                                                                                     bestAction:"Motivate",             status:"Dropping off", statusDetail:"Frequency halved · Below target",               segment:"inactive"},
+  { id:"8", name:"Sam Rivera",     initials:"SR", colorIdx:7, plan:"Monthly", monthlyValue:60,  lastVisit:null,        daysSince:999, visits30:0,  prevVisits30:0,  visitsTotal:1,   streak:0,  churnPct:91, joinedDaysAgo:6,   returnChance:30, reasons:["Joined 6 days ago, 1 visit only","Critical first-week window","Has not returned"], bestAction:"Week-1 welcome",       status:"New",          statusDetail:"6 days in · First week habit window",           segment:"new"    },
 ];
 
-const AVG = ["#252a45","#1c2f28","#2e2540","#352e18","#2e1818","#173040","#2e2540","#302418"];
+const AVATAR_PALETTE = [
+  { bg:"rgba(59,130,246,0.12)",  text:"#6ea8fe" },
+  { bg:"rgba(16,185,129,0.12)",  text:"#4ade80" },
+  { bg:"rgba(139,92,246,0.12)",  text:"#c084fc" },
+  { bg:"rgba(245,158,11,0.12)",  text:"#fbbf24" },
+  { bg:"rgba(239,68,68,0.12)",   text:"#f87171" },
+  { bg:"rgba(6,182,212,0.12)",   text:"#22d3ee" },
+  { bg:"rgba(168,85,247,0.12)",  text:"#d946ef" },
+  { bg:"rgba(249,115,22,0.12)",  text:"#fb923c" },
+];
 
-function useCountUp(target, delay=0) {
-  const [v,setV]=useState(0);
-  useEffect(()=>{
-    const t=setTimeout(()=>{
-      let s=null;
-      const step=ts=>{if(!s)s=ts;const p=Math.min((ts-s)/900,1);const e=1-Math.pow(1-p,3);setV(Math.round(e*target));if(p<1)requestAnimationFrame(step);};
-      requestAnimationFrame(step);
-    },delay);
-    return()=>clearTimeout(t);
-  },[target,delay]);
-  return v;
+/* ── Color helpers ──────────────────────────────────────────────── */
+function churnColorClass(pct) {
+  if (pct >= 70) return "bg-red-500";
+  if (pct >= 40) return "bg-amber-500";
+  return "bg-emerald-500";
+}
+function churnTextClass(pct) {
+  if (pct >= 70) return "text-red-500";
+  if (pct >= 40) return "text-amber-500";
+  return "text-emerald-500";
+}
+function churnLeftBorder(pct) {
+  if (pct >= 70) return "border-l-red-500";
+  if (pct >= 40) return "border-l-amber-500";
+  return "border-l-emerald-500";
+}
+function statusBadgeVariant(status) {
+  return { "At risk":"danger", "Dropping off":"dropping", "Consistent":"success", "Engaged":"success" }[status] || "neutral";
 }
 
-const Av=({m,size=30})=>(
-  <div style={{width:size,height:size,borderRadius:T.rsm,background:AVG[m.ci%8],border:`1px solid ${T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.31,fontWeight:700,color:T.t2,letterSpacing:"0.02em",fontFamily:"monospace"}}>{m.ini}</div>
-);
-
-const Bar=({pct,color,h=3})=>(
-  <div style={{height:h,borderRadius:99,background:T.divider,flex:1}}>
-    <div style={{height:"100%",width:`${pct}%`,borderRadius:99,background:color,opacity:.75}}/>
-  </div>
-);
-
-const Card=({children,style={}})=>(
-  <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,overflow:"hidden",...style}}>{children}</div>
-);
-
-function GBtn({children,onClick,style={},danger}){
-  const [hov,sH]=useState(false);
-  return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
-    style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:500,cursor:"pointer",fontFamily:"inherit",border:"1px solid",
-      background:danger&&hov?T.amberDim:hov?T.surfaceHov:T.surfaceEl,
-      borderColor:danger&&hov?T.amberBrd:hov?T.borderEl:T.border,
-      color:danger&&hov?T.amber:T.t2,
-      transition:"all .12s",...style}}>{children}</button>;
-}
-
-function PBtn({children,onClick,style={}}){
-  const [hov,sH]=useState(false);
-  return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
-    style={{display:"inline-flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:T.rsm,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",border:"1px solid transparent",
-      background:T.accent,color:"#fff",opacity:hov?.88:1,
-      transition:"opacity .12s",...style}}>{children}</button>;
-}
-
-function ActBtn({children,onClick,style={},size="md"}){
-  const [hov,sH]=useState(false);
-  const pad = size==="sm" ? "3px 8px" : "5px 10px";
-  return <button onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={e=>{e.stopPropagation();onClick?.();}}
-    style={{display:"inline-flex",alignItems:"center",gap:4,padding:pad,borderRadius:T.rsm,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",
-      background:hov?T.accent:T.surfaceEl,
-      border:`1px solid ${hov?T.accent:T.border}`,
-      color:hov?"#fff":T.t2,
-      whiteSpace:"nowrap",
-      transition:"all .12s",...style}}>{children}</button>;
-}
-
-function StatCard({icon:Icon,label,value,sub,prefix="",delay=0,highlight=false,alertAmber=false}){
-  const counted=useCountUp(typeof value==="number"?value:0,delay);
-  const display=typeof value==="number"?`${prefix}${counted.toLocaleString()}`:value;
-  // numbers are always T.t1 (white)
-  const numColor=T.t1;
-  const iconColor=alertAmber?T.amber:highlight?T.accent:T.t3;
-  return(
-    <Card style={{padding:"18px 20px"}}>
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}>
-        <div style={{width:32,height:32,borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <Icon size={14} color={iconColor}/>
-        </div>
-        <ArrowUpRight size={11} color={T.t4}/>
-      </div>
-      <div style={{fontSize:28,fontWeight:700,letterSpacing:"-0.04em",lineHeight:1,color:numColor,marginBottom:5,fontVariantNumeric:"tabular-nums"}}>{display}</div>
-      <div style={{fontSize:11,fontWeight:500,color:T.t2}}>{label}</div>
-      <div style={{fontSize:10,color:T.t3,marginTop:2}}>{sub}</div>
-    </Card>
+/* ── Avatar ─────────────────────────────────────────────────────── */
+function Avatar({ m, size = 30 }) {
+  const c = AVATAR_PALETTE[m.colorIdx % AVATAR_PALETTE.length];
+  // Inline styles are required here — colors come from a runtime data palette
+  return (
+    <div
+      className="rounded-full shrink-0 flex items-center justify-center font-mono font-semibold tracking-[0.02em]"
+      style={{ width: size, height: size, background: c.bg, color: c.text, fontSize: size * 0.32 }}
+    >
+      {m.initials}
+    </div>
   );
 }
 
-function Segs({members,active,onFilter,onBulk}){
-  const segs=useMemo(()=>[
-    {id:"atRisk",   Icon:AlertTriangle,label:"Need attention",count:members.filter(m=>m.ch>=60).length,          action:"Message all",urgent:true},
-    {id:"dropping", Icon:TrendingDown, label:"Dropping off",  count:members.filter(m=>m.pv>0&&m.v30<=m.pv*.5).length,action:"Nudge all"},
-    {id:"new",      Icon:UserPlus,     label:"New members",   count:members.filter(m=>m.jd<=14).length,          action:"Welcome"},
-    {id:"active",   Icon:Flame,        label:"On streak",     count:members.filter(m=>m.str>=5).length,          action:"Challenge"},
-  ],[members]);
-  return(
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:18}}>
-      {segs.map(s=>{
-        const on=active===s.id;
-        return(
-          <div key={s.id} onClick={()=>onFilter(on?"all":s.id)}
-            onMouseEnter={e=>{if(!on)e.currentTarget.style.background=T.surfaceEl;}}
-            onMouseLeave={e=>{if(!on)e.currentTarget.style.background=T.surface;}}
-            style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:T.r,
-              background:on?T.accentDim:T.surface,border:`1px solid ${on?T.accentBrd:T.border}`,
-              boxShadow:T.sh,cursor:"pointer",transition:"all .12s"}}>
-            <div style={{width:30,height:30,borderRadius:T.rsm,background:on?T.accentDim:T.surfaceEl,border:`1px solid ${on?T.accentBrd:T.border}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <s.Icon size={13} color={on?T.accent:T.t3}/>
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",alignItems:"center",gap:5}}>
-                {/* count always white */}
-                <div style={{fontSize:18,fontWeight:700,color:on?T.accent:T.t1,lineHeight:1.1,fontVariantNumeric:"tabular-nums"}}>{s.count}</div>
-                {/* urgent pulse dot kept red — it's a status indicator, not a number */}
-                {s.urgent&&s.count>0&&<span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}
+/* ══════════════════════════════════════════════════════════════════
+   METRICS BAR
+══════════════════════════════════════════════════════════════════ */
+function MetricsBar({ members }) {
+  const atRiskCount = members.filter(m => m.churnPct >= 60).length;
+  const atRiskValue = members.filter(m => m.churnPct >= 60).reduce((s, m) => s + m.monthlyValue, 0);
+  const activeCount = members.filter(m => m.daysSince < 7).length;
+
+  const stats = [
+    { label:"Total Members",   val:members.length,   sub:"all time"                                                       },
+    { label:"Active (7 days)", val:activeCount,       sub:`${Math.round(activeCount/members.length*100)}% of total`        },
+    { label:"At Risk",         val:atRiskCount,       sub:"60%+ churn risk", highlight:atRiskCount > 0                     },
+    { label:"Revenue at Risk", val:`$${atRiskValue}`, sub:"per month",       highlight:atRiskValue > 0                     },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-2.5 mb-4">
+      {stats.map((s, i) => (
+        <div key={i} className="px-4 py-4 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
+          <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-[0.1em] mb-2">{s.label}</div>
+          <div className={cn("text-[26px] font-bold tracking-[-0.04em] leading-none mb-1", s.highlight ? "text-red-500" : "text-[#eef2ff]")}>
+            {s.val}
+          </div>
+          <div className="text-[10px] text-slate-600">{s.sub}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 1: PRIORITY MEMBERS
+══════════════════════════════════════════════════════════════════ */
+function ActOnToday({ members, onMessage, onSelect }) {
+  const priority = useMemo(() =>
+    members.filter(m => m.churnPct >= 40).sort((a, b) => b.churnPct - a.churnPct).slice(0, 4),
+  [members]);
+
+  if (!priority.length) return null;
+  const totalAtRisk = priority.reduce((s, m) => s + m.monthlyValue, 0);
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Priority Today</span>
+          <AppBadge variant="danger">{priority.length} need attention</AppBadge>
+        </div>
+        <span className="text-[11px] text-slate-600">${totalAtRisk}/mo at risk</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {priority.map(m => (
+          <div
+            key={m.id}
+            onClick={() => onSelect(m)}
+            className={cn(
+              "px-4 py-4 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2",
+              "shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] cursor-pointer transition-colors duration-150 hover:bg-[#0d1225]",
+              churnLeftBorder(m.churnPct),
+            )}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <Avatar m={m} size={34} />
+                <div>
+                  <div className="text-[13px] font-semibold text-[#eef2ff]">{m.name}</div>
+                  <div className="text-[10px] text-slate-600 mt-0.5">
+                    {m.daysSince === 999 ? "Never visited" : `Last seen ${m.daysSince}d ago`}
+                  </div>
+                </div>
               </div>
-              <div style={{fontSize:10,color:on?T.accent:T.t3,marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
+              <div className="text-right">
+                <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
+                <div className="text-[9px] text-slate-600 mt-0.5">churn risk</div>
+              </div>
             </div>
-            {s.count>0&&(
-              <button onClick={e=>{e.stopPropagation();onBulk(s.id);}}
-                onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
-                onMouseLeave={e=>{e.currentTarget.style.background=T.surfaceEl;e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.t2;}}
-                style={{padding:"3px 8px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,transition:"all .12s"}}>
+
+            <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px]" />
+
+            <div className="mt-2.5 flex flex-col gap-1">
+              {m.reasons.slice(0, 2).map((r, i) => (
+                <div key={i} className="flex gap-1.5 items-start">
+                  <span className="text-[#252d45] text-[10px] mt-0.5">—</span>
+                  <span className="text-[11px] text-slate-400 leading-relaxed">{r}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between mt-3.5">
+              <span className="text-[11px] text-slate-600">
+                <span className="text-slate-400 font-medium">${m.monthlyValue}</span>/mo · {m.returnChance}% return likelihood
+              </span>
+              <button
+                onClick={e => { e.stopPropagation(); onMessage(m); }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-[#0d1225] border border-white/[0.07] text-slate-400 text-[10px] font-medium cursor-pointer hover:border-white/[0.12] transition-colors"
+              >
+                <Send className="w-2 h-2" /> {m.bestAction}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 2: SMART SEGMENTS
+══════════════════════════════════════════════════════════════════ */
+function SmartSegments({ members, activeFilter, onFilter, onBulkMessage }) {
+  const segments = useMemo(() => [
+    { id:"atRisk",   icon:AlertTriangle, label:"Need attention", textCls:"text-red-500",     count:members.filter(m => m.churnPct >= 60).length,                                           action:"Message all" },
+    { id:"dropping", icon:TrendingDown,  label:"Dropping off",   textCls:"text-amber-500",   count:members.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5).length,  action:"Nudge all"   },
+    { id:"new",      icon:UserPlus,      label:"New members",    textCls:"text-blue-500",    count:members.filter(m => m.joinedDaysAgo <= 14).length,                                      action:"Welcome"     },
+    { id:"active",   icon:Flame,         label:"On streak",      textCls:"text-emerald-500", count:members.filter(m => m.streak >= 5).length,                                              action:"Challenge"   },
+  ], [members]);
+
+  return (
+    <div className="flex gap-2 mb-4 flex-wrap">
+      {segments.map(s => {
+        const Icon = s.icon;
+        const on   = activeFilter === s.id;
+        return (
+          <div
+            key={s.id}
+            onClick={() => onFilter(on ? "all" : s.id)}
+            className={cn(
+              "flex-1 basis-40 min-w-[150px] flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border cursor-pointer transition-all duration-150",
+              on ? "bg-[#131c2e] border-white/[0.07]" : "bg-[#0a0f1e] border-white/[0.04] hover:bg-[#0d1225]",
+            )}
+          >
+            <div className="w-[30px] h-[30px] rounded-[7px] bg-[#0d1225] shrink-0 flex items-center justify-center">
+              <Icon className={cn("w-3 h-3", on ? s.textCls : "text-slate-600")} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className={cn("text-[17px] font-bold leading-none", on ? s.textCls : "text-[#eef2ff]")}>{s.count}</div>
+              <div className="text-[10px] text-slate-600 mt-0.5 truncate">{s.label}</div>
+            </div>
+            {s.count > 0 && (
+              <button
+                onClick={e => { e.stopPropagation(); onBulkMessage(s.id); }}
+                className="px-2 py-0.5 rounded-md bg-transparent border border-white/[0.04] text-slate-600 text-[10px] cursor-pointer whitespace-nowrap shrink-0 hover:border-white/[0.07] hover:text-slate-400 transition-colors"
+              >
                 {s.action}
               </button>
             )}
@@ -172,485 +229,651 @@ function Segs({members,active,onFilter,onBulk}){
   );
 }
 
-function ChurnCard({m,onMsg,onSel}){
-  const [hov,sH]=useState(false);
-  const bc=churnColor(m.ch);
-  return(
-    <div onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={()=>onSel(m)}
-      style={{padding:"14px 16px",background:hov?T.surfaceHov:T.surface,border:`1px solid ${T.border}`,borderLeft:`2px solid ${bc}`,borderRadius:T.r,boxShadow:T.sh,cursor:"pointer",transition:"background .12s"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <Av m={m} size={32}/>
-          <div>
-            <div style={{fontSize:13,fontWeight:600,color:T.t1}}>{m.name}</div>
-            <div style={{fontSize:10,color:T.t3,marginTop:1}}>{m.ds===999?"Never visited":`Last seen ${m.ds}d ago`}</div>
-          </div>
-        </div>
-        <div style={{textAlign:"right"}}>
-          {/* churn % always white */}
-          <div style={{fontSize:22,fontWeight:700,color:T.t1,fontVariantNumeric:"tabular-nums",lineHeight:1}}>{m.ch}%</div>
-          <div style={{fontSize:9,color:T.t3,marginTop:2}}>churn risk</div>
-        </div>
+/* ══════════════════════════════════════════════════════════════════
+   FILTER BAR
+══════════════════════════════════════════════════════════════════ */
+function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts }) {
+  const tabs = [
+    { id:"all",      label:"All",      count:counts.all      },
+    { id:"atRisk",   label:"At Risk",  count:counts.atRisk   },
+    { id:"dropping", label:"Dropping", count:counts.dropping },
+    { id:"new",      label:"New",      count:counts.new      },
+    { id:"active",   label:"Active",   count:counts.active   },
+    { id:"inactive", label:"Inactive", count:counts.inactive },
+  ];
+
+  return (
+    <div className="sticky top-0 z-10 px-3.5 py-2 bg-[#0a0f1e] border-b border-white/[0.04] flex items-center gap-0.5 flex-wrap">
+      {tabs.map(t => {
+        const on = filter === t.id;
+        return (
+          <button
+            key={t.id}
+            onClick={() => setFilter(t.id)}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] cursor-pointer transition-all duration-100",
+              on
+                ? "bg-[#0d1225] text-[#eef2ff] font-semibold border border-white/[0.07]"
+                : "text-slate-600 font-normal border border-transparent hover:text-slate-400",
+            )}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className={cn("text-[9px]", on ? "text-slate-400" : "text-[#252d45]")}>{t.count}</span>
+            )}
+          </button>
+        );
+      })}
+      <div className="flex-1" />
+
+      {/* Sort */}
+      <div className="relative">
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value)}
+          className="appearance-none pl-2.5 pr-7 py-1 rounded-md bg-[#0d1225] border border-white/[0.04] text-slate-400 text-[11px] outline-none cursor-pointer"
+        >
+          <option value="churnDesc">Highest risk</option>
+          <option value="lastVisit">Recently active</option>
+          <option value="value">Highest value</option>
+          <option value="name">Name A–Z</option>
+        </select>
+        <ChevronDown className="w-2 h-2 text-[#252d45] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
-      <div style={{marginBottom:10}}><Bar pct={m.ch} color={bc} h={2}/></div>
-      <div style={{display:"flex",flexDirection:"column",gap:3,marginBottom:12}}>
-        {m.reasons.slice(0,2).map((r,i)=>(
-          <div key={i} style={{display:"flex",gap:7}}>
-            <span style={{color:T.t4,fontSize:10,marginTop:1,flexShrink:0}}>—</span>
-            <span style={{fontSize:11,color:T.t3,lineHeight:1.5}}>{r}</span>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="w-2.5 h-2.5 text-[#252d45] absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          placeholder="Search members…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-6 pr-2.5 py-1 rounded-md bg-[#0d1225] border border-white/[0.04] text-[#eef2ff] text-[11px] outline-none w-40 focus:border-white/[0.12] transition-colors"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 3: MEMBERS TABLE
+══════════════════════════════════════════════════════════════════ */
+// Complex fr-unit grid — kept as a JS constant, applied via style prop (static value, unavoidable with mixed fr units)
+const COLS = "28px 1.8fr 1.1fr 70px 100px 90px 80px 130px";
+
+const COL_DEFS = [
+  { label:"MEMBER",    key:"name"      },
+  { label:"STATUS",    key:null        },
+  { label:"CHURN",     key:"churnDesc" },
+  { label:"LAST SEEN", key:"lastVisit" },
+  { label:"TREND",     key:null        },
+  { label:"VALUE",     key:"value"     },
+  { label:"ACTION",    key:null        },
+];
+
+function MembersTable({ members, filter, search, sort, setSort, selectedRows, toggleRow, toggleAll, previewMember, setPreviewMember, onMessage }) {
+  const filtered = useMemo(() => {
+    let list = members;
+    if (filter === "atRisk")   list = list.filter(m => m.churnPct >= 60);
+    if (filter === "dropping") list = list.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5);
+    if (filter === "new")      list = list.filter(m => m.joinedDaysAgo <= 14);
+    if (filter === "active")   list = list.filter(m => m.streak >= 5);
+    if (filter === "inactive") list = list.filter(m => m.daysSince >= 14);
+    if (search) list = list.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [members, filter, search]);
+
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
+    if (sort === "churnDesc") return b.churnPct - a.churnPct;
+    if (sort === "lastVisit") return a.daysSince - b.daysSince;
+    if (sort === "value")     return b.monthlyValue - a.monthlyValue;
+    if (sort === "name")      return a.name.localeCompare(b.name);
+    return b.churnPct - a.churnPct;
+  }), [filtered, sort]);
+
+  return (
+    <div>
+      {/* Column headers */}
+      <div className="grid gap-2 px-4 py-1.5 border-b border-white/[0.04] bg-[#050810]" style={{ gridTemplateColumns: COLS }}>
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            checked={sorted.length > 0 && selectedRows.size === sorted.length}
+            onChange={() => toggleAll(sorted)}
+            className="w-3 h-3 cursor-pointer accent-blue-500"
+          />
+        </div>
+        {COL_DEFS.map((c, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <span
+              onClick={() => c.key && setSort(c.key)}
+              className={cn(
+                "text-[9px] font-semibold uppercase tracking-[0.1em]",
+                sort === c.key ? "text-slate-400" : "text-[#252d45]",
+                c.key ? "cursor-pointer" : "cursor-default",
+              )}
+            >
+              {c.label}
+            </span>
+            {c.key && <ChevronDown className="w-1.5 h-1.5 text-[#252d45]" />}
           </div>
         ))}
       </div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:10,borderTop:`1px solid ${T.divider}`}}>
-        {/* dollar value always white */}
-        <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t1,fontWeight:500}}>${m.mv}</span>/mo · {m.rc}% return rate</span>
-        <button onClick={e=>{e.stopPropagation();onMsg(m);}}
-          onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
-          onMouseLeave={e=>{e.currentTarget.style.background=T.surfaceEl;e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.t2;}}
-          style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .12s",whiteSpace:"nowrap"}}>
-          <Send size={9}/> {m.act}
+
+      {/* Rows */}
+      {sorted.length === 0 ? (
+        <div className="py-12 px-5 text-center">
+          <Users className="w-8 h-8 text-[#252d45] mx-auto mb-3" />
+          <div className="text-[13px] text-slate-400 font-medium mb-1">No members match</div>
+          <div className="text-[11px] text-slate-600">Try a different filter or search term</div>
+        </div>
+      ) : sorted.map((m, idx) => {
+        const isSel    = selectedRows.has(m.id);
+        const isPrev   = previewMember?.id === m.id;
+        const trendPct = m.prevVisits30 > 0 ? Math.round(((m.visits30 - m.prevVisits30) / m.prevVisits30) * 100) : 0;
+        const lastSeenCls = m.daysSince >= 14 ? "text-red-500" : m.daysSince <= 1 ? "text-emerald-500" : "text-[#eef2ff]";
+
+        return (
+          <div
+            key={m.id}
+            onClick={() => setPreviewMember(isPrev ? null : m)}
+            className={cn(
+              "grid items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors duration-100 border-l-2",
+              idx < sorted.length - 1 && "border-b border-white/[0.03]",
+              isPrev  ? "bg-[#0d1225] border-l-blue-500"
+              : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
+              :          "border-l-transparent hover:bg-[#101929]",
+            )}
+            style={{ gridTemplateColumns: COLS }}
+          >
+            {/* Checkbox */}
+            <div className="flex items-center justify-center" onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
+              <input
+                type="checkbox"
+                checked={isSel}
+                onChange={() => toggleRow(m.id)}
+                className="w-3 h-3 accent-blue-500 cursor-pointer"
+              />
+            </div>
+
+            {/* Member */}
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="relative shrink-0">
+                <Avatar m={m} size={28} />
+                {m.streak >= 5 && (
+                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
+                    <Flame className="w-1.5 h-1.5 text-amber-500" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className={cn("text-xs font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>
+                  {m.name}
+                </div>
+                <div className="text-[10px] text-slate-600">{m.plan} · {m.visitsTotal} visits</div>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
+              <div className="text-[10px] text-slate-600 mt-0.5 leading-snug">{m.statusDetail}</div>
+            </div>
+
+            {/* Churn */}
+            <div>
+              <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
+              <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px] mt-1.5" />
+            </div>
+
+            {/* Last seen */}
+            <div>
+              <span className={cn("text-xs font-medium", lastSeenCls)}>
+                {m.daysSince === 999 ? "Never" : m.daysSince === 0 ? "Today" : `${m.daysSince}d ago`}
+              </span>
+            </div>
+
+            {/* Trend */}
+            <div className="flex items-center gap-1">
+              {trendPct > 10  ? <><TrendingUp   className="w-3 h-3 text-emerald-500" /><span className="text-[10px] text-emerald-500">+{trendPct}%</span></> :
+               trendPct < -10 ? <><TrendingDown  className="w-3 h-3 text-red-500"     /><span className="text-[10px] text-red-500">{trendPct}%</span></> :
+                                 <span className="text-[10px] text-slate-600">—</span>}
+            </div>
+
+            {/* Value */}
+            <div>
+              <div className="text-xs font-semibold text-[#eef2ff]">${m.monthlyValue}</div>
+              <div className="text-[9px] text-slate-600">/month</div>
+            </div>
+
+            {/* Action */}
+            <div onClick={e => e.stopPropagation()}>
+              <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
+                {m.bestAction} <ChevronRight className="w-3 h-3" />
+              </AppButton>
+              <div className="text-[9px] text-slate-600 mt-0.5">~{m.returnChance}% success</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 4: BULK ACTION BAR
+══════════════════════════════════════════════════════════════════ */
+function BulkBar({ selectedRows, members, onClear, onBulkMessage }) {
+  if (selectedRows.size === 0) return null;
+  const sel      = members.filter(m => selectedRows.has(m.id));
+  const totalVal = sel.reduce((s, m) => s + m.monthlyValue, 0);
+
+  return (
+    <div className="border-t border-white/[0.07] bg-[#0d1225]">
+      <div className="px-4 py-1.5 border-b border-white/[0.03] flex items-center justify-between">
+        <span className="text-[11px] text-slate-400 font-medium">
+          {selectedRows.size} selected
+          <span className="text-slate-600 font-normal"> · ${totalVal}/mo combined</span>
+        </span>
+        <button
+          onClick={onClear}
+          className="text-[11px] text-slate-600 bg-transparent border-none cursor-pointer hover:text-slate-400 transition-colors"
+        >
+          Clear
         </button>
       </div>
-    </div>
-  );
-}
-
-function Table({members,filter,search,sort,setSort,selRows,toggleRow,toggleAll,prev,setPrev,onMsg}){
-  const filtered=useMemo(()=>{
-    let l=members;
-    if(filter==="atRisk")   l=l.filter(m=>m.ch>=60);
-    if(filter==="dropping") l=l.filter(m=>m.pv>0&&m.v30<=m.pv*.5);
-    if(filter==="new")      l=l.filter(m=>m.jd<=14);
-    if(filter==="active")   l=l.filter(m=>m.str>=5);
-    if(filter==="inactive") l=l.filter(m=>m.ds>=14);
-    if(search)l=l.filter(m=>m.name.toLowerCase().includes(search.toLowerCase()));
-    return l;
-  },[members,filter,search]);
-
-  const sorted=useMemo(()=>[...filtered].sort((a,b)=>{
-    if(sort==="churnDesc")return b.ch-a.ch;
-    if(sort==="lastVisit")return a.ds-b.ds;
-    if(sort==="value")    return b.mv-a.mv;
-    if(sort==="name")     return a.name.localeCompare(b.name);
-    return b.ch-a.ch;
-  }),[filtered,sort]);
-
-  const COLS="28px 1.8fr 1fr 70px 80px 80px 80px 150px";
-  const hdrs=[{label:"MEMBER",k:"name"},{label:"STATUS",k:null},{label:"CHURN",k:"churnDesc"},{label:"LAST SEEN",k:"lastVisit"},{label:"TREND",k:null},{label:"VALUE",k:"value"},{label:"ACTION",k:null}];
-
-  return(
-    <div>
-      <div style={{display:"grid",gridTemplateColumns:COLS,gap:8,padding:"7px 16px",borderBottom:`1px solid ${T.border}`,background:T.bg}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <input type="checkbox" checked={sorted.length>0&&selRows.size===sorted.length} onChange={()=>toggleAll(sorted)} style={{width:12,height:12,accentColor:T.accent,cursor:"pointer"}}/>
-        </div>
-        {hdrs.map((c,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:3}}>
-            <span onClick={()=>c.k&&setSort(c.k)} style={{fontSize:9,fontWeight:600,color:sort===c.k?T.accent:T.t4,textTransform:"uppercase",letterSpacing:".1em",cursor:c.k?"pointer":"default"}}>{c.label}</span>
-            {c.k&&<ChevronDown size={7} color={sort===c.k?T.accent:T.t4}/>}
-          </div>
-        ))}
-      </div>
-      {sorted.length===0
-        ?<div style={{padding:"52px 20px",textAlign:"center"}}>
-           <Users size={32} color={T.t4} style={{margin:"0 auto 12px"}}/>
-           <div style={{fontSize:13,color:T.t2,fontWeight:500,marginBottom:4}}>No members match</div>
-           <div style={{fontSize:11,color:T.t3}}>Try a different filter or search term</div>
-         </div>
-        :sorted.map((m,idx)=>{
-          const isSel=selRows.has(m.id),isPrev=prev?.id===m.id;
-          const trend=m.pv>0?Math.round(((m.v30-m.pv)/m.pv)*100):0;
-          const bc=churnColor(m.ch);
-          return(
-            <div key={m.id} onClick={()=>setPrev(isPrev?null:m)}
-              onMouseEnter={e=>{if(!isPrev&&!isSel)e.currentTarget.style.background=T.surfaceHov;}}
-              onMouseLeave={e=>{e.currentTarget.style.background=isPrev?T.surfaceEl:isSel?`${T.accent}08`:"transparent";}}
-              style={{display:"grid",gridTemplateColumns:COLS,gap:8,padding:"10px 16px",borderBottom:idx<sorted.length-1?`1px solid ${T.divider}`:"none",borderLeft:isPrev?`2px solid ${T.accent}`:"2px solid transparent",background:isPrev?T.surfaceEl:isSel?`${T.accent}08`:"transparent",cursor:"pointer",transition:"background .1s",alignItems:"center"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center"}} onClick={e=>{e.stopPropagation();toggleRow(m.id);}}>
-                <input type="checkbox" checked={isSel} onChange={()=>toggleRow(m.id)} style={{width:12,height:12,accentColor:T.accent,cursor:"pointer"}}/>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
-                <div style={{position:"relative",flexShrink:0}}>
-                  <Av m={m} size={28}/>
-                  {m.str>=5&&<div style={{position:"absolute",top:-2,right:-2,width:10,height:10,borderRadius:"50%",background:T.surfaceEl,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center"}}><Flame size={6} color={T.t3}/></div>}
-                </div>
-                <div style={{minWidth:0}}>
-                  <div style={{fontSize:12,fontWeight:600,color:isPrev?T.accent:T.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.name}</div>
-                  <div style={{fontSize:10,color:T.t3}}>{m.plan} · {m.vt} visits</div>
-                </div>
-              </div>
-              <div>
-                <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:T.t2,border:`1px solid ${T.border}`}}>
-                  {/* pulse dot stays red on At risk — it's the one retained red signal */}
-                  {m.st==="At risk"&&<span style={{width:4,height:4,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}{m.st}
-                </span>
-                <div style={{fontSize:10,color:T.t3,marginTop:3,lineHeight:1.4}}>{m.sd}</div>
-              </div>
-              <div>
-                {/* churn % always white */}
-                <span style={{fontSize:13,fontWeight:600,color:T.t1,fontVariantNumeric:"tabular-nums"}}>{m.ch}%</span>
-                <div style={{marginTop:5}}><Bar pct={m.ch} color={bc} h={2}/></div>
-              </div>
-              {/* last seen — white regardless of recency */}
-              <div><span style={{fontSize:12,fontWeight:500,color:T.t1}}>{m.ds===999?"Never":m.ds===0?"Today":`${m.ds}d ago`}</span></div>
-              <div style={{display:"flex",alignItems:"center",gap:4}}>
-                {trend>10?<><TrendingUp size={11} color={T.green}/><span style={{fontSize:10,color:T.green}}>+{trend}%</span></>
-                 :trend<-10?<><TrendingDown size={11} color={T.amber}/><span style={{fontSize:10,color:T.amber}}>{trend}%</span></>
-                 :<span style={{fontSize:10,color:T.t3}}>—</span>}
-              </div>
-              {/* value always white */}
-              <div><div style={{fontSize:12,fontWeight:600,color:T.t1}}>${m.mv}</div><div style={{fontSize:9,color:T.t3}}>/month</div></div>
-              <div onClick={e=>e.stopPropagation()}>
-                <button onClick={()=>onMsg(m)}
-                  onMouseEnter={e=>{e.currentTarget.style.background=T.accent;e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background=T.surfaceEl;e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.t2;}}
-                  style={{display:"flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",transition:"all .12s"}}>
-                  {m.act} <ChevronRight size={7}/>
-                </button>
-                <div style={{fontSize:9,color:T.t3,marginTop:3}}>~{m.rc}% success</div>
-              </div>
-            </div>
-          );
-        })
-      }
-    </div>
-  );
-}
-
-function BulkBar({selRows,members,onClear,onBulk}){
-  if(selRows.size===0)return null;
-  const sel=members.filter(m=>selRows.has(m.id));
-  const tv=sel.reduce((s,m)=>s+m.mv,0);
-  return(
-    <div style={{borderTop:`1px solid ${T.borderEl}`,background:T.surfaceEl}}>
-      <div style={{padding:"7px 16px",borderBottom:`1px solid ${T.divider}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        {/* combined value white */}
-        <span style={{fontSize:11,color:T.t2,fontWeight:500}}>{selRows.size} selected <span style={{color:T.t1,fontWeight:500}}> · ${tv}/mo combined</span></span>
-        <button onClick={onClear} style={{fontSize:11,color:T.t3,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Clear</button>
-      </div>
-      <div style={{padding:"9px 16px",display:"flex",alignItems:"center",gap:6}}>
-        <PBtn onClick={()=>onBulk(sel)}><Send size={11}/> Message {selRows.size}</PBtn>
-        <ActBtn><Tag size={11}/> Tag</ActBtn>
-        <ActBtn><Star size={11}/> Add to list</ActBtn>
-        <div style={{flex:1}}/>
-        <span style={{fontSize:11,color:T.t3}}>{sel.filter(m=>m.ch>=60).length} at risk</span>
+      <div className="px-4 py-2 flex items-center gap-1.5">
+        <AppButton size="sm" onClick={() => onBulkMessage(sel)}>
+          <Send className="w-2.5 h-2.5" /> Message {selectedRows.size}
+        </AppButton>
+        <AppButton variant="secondary" size="sm"><Tag  className="w-2.5 h-2.5" /> Tag</AppButton>
+        <AppButton variant="secondary" size="sm"><Star className="w-2.5 h-2.5" /> Add to list</AppButton>
+        <div className="flex-1" />
+        <span className="text-[11px] text-slate-600">
+          {sel.filter(m => m.churnPct >= 60).length} at risk in selection
+        </span>
       </div>
     </div>
   );
 }
 
-function RightPanel({members,onFilter}){
-  const hr=members.filter(m=>m.ch>=70);
-  const nq=members.filter(m=>m.jd<=10&&m.vt<2);
-  const tv=hr.reduce((s,m)=>s+m.mv,0);
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:14}}>
-      {hr.length>0&&(
-        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:`2px solid ${T.amber}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            {/* pulse dot: one retained red signal */}
-            <span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>
-            <span style={{fontSize:12,fontWeight:600,color:T.t1}}>{hr.length} likely to churn</span>
-          </div>
-          <div style={{display:"flex",gap:4,marginBottom:10,flexWrap:"wrap"}}>
-            {hr.slice(0,3).map((m,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:4,padding:"2px 7px 2px 3px",borderRadius:20,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-                <Av m={m} size={14}/><span style={{fontSize:10,color:T.t2}}>{m.name.split(" ")[0]}</span>
-              </div>
-            ))}
-            {hr.length>3&&<span style={{fontSize:10,color:T.t3,alignSelf:"center"}}>+{hr.length-3}</span>}
-          </div>
-          {/* revenue at risk value white */}
-          <div style={{fontSize:11,color:T.t3,marginBottom:12}}><span style={{color:T.t1,fontWeight:600}}>${tv}</span>/mo at risk</div>
-          <div style={{display:"flex",gap:6}}>
-            <PBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("atRisk")}><Send size={9}/> Message all</PBtn>
-            <GBtn onClick={()=>onFilter("atRisk")}>View</GBtn>
-          </div>
-        </div>
-      )}
-      {nq.length>0&&(
-        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><UserPlus size={11} color={T.t3}/><span style={{fontSize:12,fontWeight:600,color:T.t1}}>New members going quiet</span></div>
-          <div style={{display:"flex",gap:4,marginBottom:10,flexWrap:"wrap"}}>
-            {nq.map((m,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:4,padding:"2px 7px 2px 3px",borderRadius:20,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-                <Av m={m} size={14}/><span style={{fontSize:10,color:T.t2}}>{m.name.split(" ")[0]}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{fontSize:11,color:T.t3,lineHeight:1.5,marginBottom:12}}>Week-1 follow-up has the highest retention impact.</div>
-          <div style={{display:"flex",gap:6}}>
-            <PBtn style={{flex:1,justifyContent:"center"}} onClick={()=>onFilter("new")}><Send size={9}/> Follow up</PBtn>
-            <GBtn onClick={()=>onFilter("new")}>View</GBtn>
-          </div>
-        </div>
-      )}
-      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}><TrendingDown size={11} color={T.t3}/><span style={{fontSize:12,fontWeight:600,color:T.t1}}>Drop-off patterns</span></div>
-        <div style={{fontSize:11,color:T.t3,marginBottom:14,lineHeight:1.5}}>When members go quiet after joining.</div>
-        {[{label:"Week 1",pct:25,color:T.amber},{label:"Week 2",pct:66,color:T.amber},{label:"Week 4",pct:41,color:T.t3}].map((b,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i<2?8:0}}>
-            <span style={{fontSize:10,color:T.t3,minWidth:42}}>{b.label}</span>
-            <div style={{flex:1,height:2,borderRadius:99,background:T.divider}}><div style={{height:"100%",width:`${b.pct}%`,background:b.color,borderRadius:99,opacity:.55}}/></div>
-            {/* drop-off pct white */}
-            <span style={{fontSize:10,fontWeight:600,color:T.t1,minWidth:28,textAlign:"right"}}>{b.pct}%</span>
-          </div>
-        ))}
-      </div>
-      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:T.r,boxShadow:T.sh,padding:"14px 16px"}}>
-        <div style={{fontSize:11,fontWeight:600,color:T.t2,marginBottom:12,textTransform:"uppercase",letterSpacing:".1em"}}>Insights</div>
-        {[`${hr.length} members haven't engaged in 14+ days`,"Highly engaged members refer at 3x the rate","New members respond best in days 3-7"].map((s,i)=>(
-          <div key={i} style={{display:"flex",gap:7,marginBottom:i<2?8:0}}>
-            <span style={{color:T.t4,fontSize:10,marginTop:2,flexShrink:0}}>·</span>
-            <span style={{fontSize:11,color:T.t3,lineHeight:1.5}}>{s}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 5: MEMBER PREVIEW PANEL
+══════════════════════════════════════════════════════════════════ */
+function MemberPreview({ m, onClose, onMessage }) {
+  if (!m) return null;
+  const engScore   = Math.min(100, Math.round((m.visits30 / 12) * 100));
+  const engCls     = engScore >= 60 ? "bg-emerald-500" : engScore >= 30 ? "bg-amber-500" : "bg-red-500";
+  const engTextCls = engScore >= 60 ? "text-emerald-500" : engScore >= 30 ? "text-amber-500" : "text-red-500";
 
-function Preview({m,onClose,onMsg}){
-  if(!m)return null;
-  const bc=churnColor(m.ch);
-  const es=Math.min(100,Math.round((m.v30/12)*100));
-  const ec=es>=60?T.green:es>=30?T.amber:T.amber;
-  return(
-    <div style={{position:"fixed",top:0,right:0,bottom:0,width:300,background:T.surface,borderLeft:`1px solid ${T.border}`,zIndex:200,display:"flex",flexDirection:"column",boxShadow:"-12px 0 40px rgba(0,0,0,0.6)",animation:"panelIn .18s ease"}}>
-      <div style={{padding:"14px 16px",borderBottom:`1px solid ${T.divider}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <Av m={m} size={36}/>
+  return (
+    <div className="fixed top-0 right-0 bottom-0 w-80 bg-[#0a0f1e] border-l border-white/[0.04] z-[200] flex flex-col shadow-[-12px_0_40px_rgba(0,0,0,0.5)] animate-[panelIn_0.18s_ease]">
+      <style>{`@keyframes panelIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+
+      {/* Header */}
+      <div className="px-4 py-3.5 border-b border-white/[0.03] flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <Avatar m={m} size={38} />
           <div>
-            <div style={{fontSize:13,fontWeight:600,color:T.t1,marginBottom:3}}>{m.name}</div>
-            <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 7px",borderRadius:20,fontSize:10,fontWeight:500,background:T.surfaceEl,color:T.t2,border:`1px solid ${T.border}`}}>
-              {m.st==="At risk"&&<span style={{width:4,height:4,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>}{m.st}
-            </span>
+            <div className="text-[13px] font-semibold text-[#eef2ff] mb-1">{m.name}</div>
+            <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
           </div>
         </div>
-        <button onClick={onClose} style={{width:26,height:26,borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><X size={11} color={T.t3}/></button>
+        <button
+          onClick={onClose}
+          className="w-6 h-6 rounded-md bg-[#0d1225] border border-white/[0.04] cursor-pointer flex items-center justify-center hover:border-white/[0.07] transition-colors"
+        >
+          <X className="w-2.5 h-2.5 text-slate-600" />
+        </button>
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"14px 16px"}}>
-        {m.ch>=40&&(
-          <div style={{padding:"12px 14px",borderRadius:T.r,marginBottom:12,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-              {/* churn % in detail panel: white */}
-              <span style={{fontSize:12,fontWeight:600,color:T.t1}}>{m.ch}% churn risk</span>
-              <span style={{fontSize:10,color:T.t3}}>${m.mv}/mo</span>
+
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+        {/* Churn signal */}
+        {m.churnPct >= 40 && (
+          <div className={cn("px-3.5 py-3 rounded-2xl bg-[#0d1225] border border-white/[0.04] border-l-2", churnLeftBorder(m.churnPct))}>
+            <div className="flex justify-between mb-2">
+              <span className={cn("text-xs font-semibold", churnTextClass(m.churnPct))}>{m.churnPct}% churn risk</span>
+              <span className="text-[10px] text-slate-600">${m.monthlyValue}/mo</span>
             </div>
-            <Bar pct={m.ch} color={bc}/>
-            <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4}}>
-              {m.reasons.map((r,i)=>(
-                <div key={i} style={{display:"flex",gap:7}}><span style={{color:T.t4,fontSize:10,marginTop:2,flexShrink:0}}>—</span><span style={{fontSize:11,color:T.t2,lineHeight:1.5}}>{r}</span></div>
+            <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px]" />
+            <div className="mt-2 flex flex-col gap-1">
+              {m.reasons.map((r, i) => (
+                <div key={i} className="flex gap-1.5">
+                  <span className="text-[#252d45] text-[10px] mt-0.5 shrink-0">—</span>
+                  <span className="text-[11px] text-slate-400 leading-relaxed">{r}</span>
+                </div>
               ))}
             </div>
           </div>
         )}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:12}}>
-          {[{label:"This mo",val:m.v30},{label:"Last mo",val:m.pv},{label:"Total",val:m.vt}].map((s,i)=>(
-            <div key={i} style={{padding:"10px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,textAlign:"center"}}>
-              <div style={{fontSize:18,fontWeight:700,color:T.t1,lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{s.val}</div>
-              <div style={{fontSize:9,color:T.t3,marginTop:3,textTransform:"uppercase",letterSpacing:".07em"}}>{s.label}</div>
+
+        {/* Visit stats */}
+        <div className="grid grid-cols-3 gap-1.5">
+          {[
+            { label:"This mo", val:m.visits30,      accent:false },
+            { label:"Last mo", val:m.prevVisits30,   accent:false },
+            { label:"Total",   val:m.visitsTotal,    accent:true  },
+          ].map((s, i) => (
+            <div key={i} className="px-2.5 py-2.5 rounded-[10px] bg-[#0d1225] border border-white/[0.04] text-center">
+              <div className={cn("text-[18px] font-bold leading-none", s.accent ? "text-blue-500" : "text-[#eef2ff]")}>{s.val}</div>
+              <div className="text-[9px] text-slate-600 mt-0.5 uppercase tracking-[0.07em]">{s.label}</div>
             </div>
           ))}
         </div>
-        <div style={{marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-            <span style={{fontSize:10,color:T.t3,textTransform:"uppercase",letterSpacing:".09em"}}>Engagement</span>
-            {/* engagement score white */}
-            <span style={{fontSize:11,fontWeight:600,color:T.t1}}>{es}%</span>
+
+        {/* Engagement */}
+        <div>
+          <div className="flex justify-between mb-1.5">
+            <span className="text-[10px] text-slate-600 uppercase tracking-[0.09em]">Engagement</span>
+            <span className={cn("text-[11px] font-semibold", engTextCls)}>{engScore}%</span>
           </div>
-          <div style={{height:3,borderRadius:99,background:T.divider}}><div style={{height:"100%",width:`${es}%`,borderRadius:99,background:ec,opacity:.7}}/></div>
+          <AppProgressBar value={engScore} colorClass={engCls} className="h-[3px]" />
         </div>
-        <div style={{padding:"12px 14px",borderRadius:T.r,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-          <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:".09em",marginBottom:4,fontWeight:600}}>Recommended</div>
-          <div style={{fontSize:12,fontWeight:600,color:T.t1,marginBottom:3}}>{m.act}</div>
-          <div style={{fontSize:10,color:T.t3}}>{m.rc}% predicted success</div>
+
+        {/* Recommended action */}
+        <div className="px-3.5 py-3 rounded-2xl bg-[#0d1225] border border-white/[0.04]">
+          <div className="text-[9px] text-slate-600 uppercase tracking-[0.09em] mb-1">Recommended</div>
+          <div className="text-xs font-semibold text-[#eef2ff] mb-0.5">{m.bestAction}</div>
+          <div className="text-[10px] text-slate-600">{m.returnChance}% predicted success</div>
         </div>
       </div>
-      <div style={{padding:"12px 16px",borderTop:`1px solid ${T.divider}`,display:"flex",gap:7}}>
-        <button onClick={()=>onMsg(m)} style={{flex:1,padding:"8px",borderRadius:T.rsm,background:T.accent,border:"none",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Send size={11}/> {m.act}</button>
-        <button style={{padding:"8px 11px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}><MoreHorizontal size={13}/></button>
+
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-white/[0.03] flex gap-1.5">
+        <AppButton className="flex-1 justify-center" onClick={() => onMessage(m)}>
+          <Send className="w-2.5 h-2.5" /> {m.bestAction}
+        </AppButton>
+        <AppButton variant="secondary" size="sm">
+          <MoreHorizontal className="w-3 h-3" />
+        </AppButton>
       </div>
     </div>
   );
 }
 
-function Toast({member,onClose}){
-  const [sent,setSent]=useState(false);
-  const [body,setBody]=useState(member?`Hey ${member.name.split(" ")[0]}, we've missed seeing you at the gym. Your progress is waiting — come back and pick up where you left off.`:"");
-  if(!member)return null;
-  return(
-    <div style={{position:"fixed",bottom:80,right:26,width:340,background:T.surface,border:`1px solid ${T.borderEl}`,borderRadius:T.r,boxShadow:"0 4px 24px rgba(0,0,0,0.5)",zIndex:300,overflow:"hidden",animation:"toastIn .18s ease"}}>
-      <div style={{padding:"11px 14px",borderBottom:`1px solid ${T.divider}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><Bell size={11} color={T.t3}/><span style={{fontSize:11,fontWeight:600,color:T.t1}}>Push notification</span><span style={{fontSize:10,color:T.t3}}>to {member.name.split(" ")[0]}</span></div>
-        <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer"}}><X size={11} color={T.t3}/></button>
+/* ══════════════════════════════════════════════════════════════════
+   SECTION 6: ALERTS SIDEBAR
+══════════════════════════════════════════════════════════════════ */
+function AlertsSidebar({ members, onFilter, onMessage }) {
+  const highRisk = members.filter(m => m.churnPct >= 70);
+  const newQuiet = members.filter(m => m.joinedDaysAgo <= 10 && m.visitsTotal < 2);
+  const totalVal = highRisk.reduce((s, m) => s + m.monthlyValue, 0);
+
+  const dropoffs = [
+    { label:"Week 1", pct:25, colorCls:"bg-red-500"   },
+    { label:"Week 2", pct:66, colorCls:"bg-amber-500" },
+    { label:"Week 4", pct:41, colorCls:"bg-slate-600" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-2">
+
+      {highRisk.length > 0 && (
+        <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2 border-l-red-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.56)] shrink-0" />
+              <span className="text-xs font-semibold text-[#eef2ff]">{highRisk.length} likely to churn</span>
+            </div>
+          </div>
+          <div className="flex gap-1 mb-2 flex-wrap">
+            {highRisk.slice(0, 3).map((m, i) => (
+              <div key={i} className="flex items-center gap-1 py-0.5 pr-2 pl-0.5 rounded-full bg-[#0d1225] border border-white/[0.04]">
+                <Avatar m={m} size={14} />
+                <span className="text-[10px] text-slate-400">{m.name.split(" ")[0]}</span>
+              </div>
+            ))}
+            {highRisk.length > 3 && <span className="text-[10px] text-slate-600 self-center">+{highRisk.length - 3}</span>}
+          </div>
+          <div className="text-[11px] text-slate-600 mb-2.5">${totalVal}/mo at risk</div>
+          <div className="flex gap-1.5">
+            <AppButton variant="secondary" size="sm" className="flex-1 justify-center" onClick={() => { onFilter("atRisk"); onMessage(null, "atRisk"); }}>
+              <Send className="w-2 h-2" /> Message
+            </AppButton>
+            <AppButton variant="outline" size="sm" onClick={() => onFilter("atRisk")}>View</AppButton>
+          </div>
+        </div>
+      )}
+
+      {newQuiet.length > 0 && (
+        <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2 border-l-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <UserPlus className="w-2.5 h-2.5 text-amber-500" />
+            <span className="text-xs font-semibold text-[#eef2ff]">New members going quiet</span>
+          </div>
+          <div className="flex gap-1 mb-2 flex-wrap">
+            {newQuiet.map((m, i) => (
+              <div key={i} className="flex items-center gap-1 py-0.5 pr-2 pl-0.5 rounded-full bg-[#0d1225] border border-white/[0.04]">
+                <Avatar m={m} size={14} />
+                <span className="text-[10px] text-slate-400">{m.name.split(" ")[0]}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-[11px] text-slate-600 leading-relaxed mb-2.5">
+            Week-1 follow-up has the highest retention impact.
+          </div>
+          <div className="flex gap-1.5">
+            <AppButton variant="secondary" size="sm" className="flex-1 justify-center" onClick={() => onFilter("new")}>
+              <Send className="w-2 h-2" /> Follow up
+            </AppButton>
+            <AppButton variant="outline" size="sm" onClick={() => onFilter("new")}>View</AppButton>
+          </div>
+        </div>
+      )}
+
+      {/* Drop-off patterns */}
+      <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
+        <div className="flex items-center gap-1.5 mb-2.5">
+          <TrendingDown className="w-2.5 h-2.5 text-slate-600" />
+          <span className="text-xs font-semibold text-[#eef2ff]">Drop-off patterns</span>
+        </div>
+        <div className="text-[11px] text-slate-600 mb-3 leading-relaxed">When members go quiet after joining.</div>
+        {dropoffs.map((b, i) => (
+          <div key={i} className={cn("flex items-center gap-2", i < 2 && "mb-2")}>
+            <span className="text-[10px] text-slate-600 w-[42px] shrink-0">{b.label}</span>
+            <div className="flex-1">
+              <AppProgressBar value={b.pct} colorClass={b.colorCls} className="h-[3px]" />
+            </div>
+            <span className="text-[10px] font-semibold text-slate-400 w-[28px] text-right">{b.pct}%</span>
+          </div>
+        ))}
       </div>
-      <div style={{padding:"12px 14px"}}>
-        <textarea value={body} onChange={e=>setBody(e.target.value)} rows={3}
-          style={{width:"100%",boxSizing:"border-box",background:T.surfaceEl,border:`1px solid ${T.border}`,borderRadius:T.rsm,padding:"8px 10px",fontSize:11,color:T.t1,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.6}}
-          onFocus={e=>e.target.style.borderColor=T.accentBrd} onBlur={e=>e.target.style.borderColor=T.border}/>
-        <div style={{marginTop:3,fontSize:10,color:T.t3}}>{member.rc}% predicted return rate</div>
-        <button onClick={()=>{setSent(true);setTimeout(onClose,1600);}}
-          style={{marginTop:9,width:"100%",padding:"8px",borderRadius:T.rsm,border:"none",background:sent?T.surfaceEl:T.accent,color:sent?T.green:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .2s"}}>
-          {sent?<><Check size={11}/> Sent</>:<><Send size={11}/> Send to {member.name.split(" ")[0]}</>}
+
+      {/* Insights */}
+      <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
+        <div className="text-[11px] font-semibold text-slate-400 mb-2.5">Insights</div>
+        {[
+          `${highRisk.length} members haven't engaged in 14+ days`,
+          "Highly engaged members refer at 3× the rate",
+          "New members respond best in days 3–7",
+        ].map((s, i) => (
+          <div key={i} className={cn("flex gap-1.5", i < 2 && "mb-1.5")}>
+            <span className="text-[#252d45] text-[10px] mt-0.5 shrink-0">·</span>
+            <span className="text-[11px] text-slate-600 leading-relaxed">{s}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MESSAGE TOAST
+══════════════════════════════════════════════════════════════════ */
+function MessageToast({ member, onClose }) {
+  const [sent, setSent] = useState(false);
+  const [body, setBody] = useState(
+    member ? `Hey ${member.name.split(" ")[0]}, we've missed seeing you at the gym. Your progress is waiting — come back and pick up where you left off.` : ""
+  );
+  if (!member) return null;
+
+  return (
+    <div className="fixed bottom-[82px] right-[26px] w-[350px] bg-[#0a0f1e] border border-white/[0.07] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] z-[300] overflow-hidden animate-[toastIn_0.18s_ease]">
+      <style>{`@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
+      <div className="px-3.5 py-2.5 border-b border-white/[0.03] flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Bell className="w-2.5 h-2.5 text-slate-600" />
+          <span className="text-[11px] font-semibold text-[#eef2ff]">Push notification</span>
+          <span className="text-[10px] text-slate-600">→ {member.name.split(" ")[0]}</span>
+        </div>
+        <button onClick={onClose} className="bg-transparent border-none cursor-pointer p-0">
+          <X className="w-2.5 h-2.5 text-slate-600" />
+        </button>
+      </div>
+      <div className="px-3.5 py-3">
+        <textarea
+          value={body}
+          onChange={e => setBody(e.target.value)}
+          rows={3}
+          className="w-full bg-[#0d1225] border border-white/[0.04] rounded-[7px] px-2.5 py-2 text-[11px] text-[#eef2ff] resize-none outline-none leading-relaxed focus:border-white/[0.12] transition-colors"
+        />
+        <div className="mt-0.5 text-[10px] text-slate-600">{member.returnChance}% predicted return rate</div>
+        <button
+          onClick={() => { setSent(true); setTimeout(onClose, 1600); }}
+          className={cn(
+            "mt-2 w-full py-2 rounded-[7px] border-none text-[11px] font-semibold cursor-pointer flex items-center justify-center gap-1.5 transition-all duration-200",
+            sent ? "bg-[#0d1225] text-emerald-500" : "bg-blue-500 text-white",
+          )}
+        >
+          {sent
+            ? <><Check className="w-2.5 h-2.5" /> Sent</>
+            : <><Send  className="w-2.5 h-2.5" /> Send to {member.name.split(" ")[0]}</>
+          }
         </button>
       </div>
     </div>
   );
 }
 
-export default function MembersPage(){
-  const members=MEMBERS;
-  const [filter,setFilter]=useState("all");
-  const [search,setSearch]=useState("");
-  const [sort,setSort]=useState("churnDesc");
-  const [selRows,setSelRows]=useState(new Set());
-  const [prev,setPrev]=useState(null);
-  const [msg,setMsg]=useState(null);
+/* ══════════════════════════════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════════════════════════════ */
+export default function MembersPageAI() {
+  const members = MOCK_MEMBERS;
+  const [filter,        setFilter]        = useState("all");
+  const [search,        setSearch]        = useState("");
+  const [sort,          setSort]          = useState("churnDesc");
+  const [selectedRows,  setSelectedRows]  = useState(new Set());
+  const [previewMember, setPreviewMember] = useState(null);
+  const [messageTarget, setMessageTarget] = useState(null);
 
-  const counts=useMemo(()=>({
-    all:members.length,
-    atRisk:members.filter(m=>m.ch>=60).length,
-    dropping:members.filter(m=>m.pv>0&&m.v30<=m.pv*.5).length,
-    new:members.filter(m=>m.jd<=14).length,
-    active:members.filter(m=>m.str>=5).length,
-    inactive:members.filter(m=>m.ds>=14).length,
-  }),[]);
+  const counts = useMemo(() => ({
+    all:      members.length,
+    atRisk:   members.filter(m => m.churnPct >= 60).length,
+    dropping: members.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5).length,
+    new:      members.filter(m => m.joinedDaysAgo <= 14).length,
+    active:   members.filter(m => m.streak >= 5).length,
+    inactive: members.filter(m => m.daysSince >= 14).length,
+  }), [members]);
 
-  const ar=members.filter(m=>m.ch>=60);
-  const arVal=ar.reduce((s,m)=>s+m.mv,0);
-  const activeN=members.filter(m=>m.ds<7).length;
-  const priority=useMemo(()=>members.filter(m=>m.ch>=55).sort((a,b)=>b.ch-a.ch).slice(0,4),[]);
+  const toggleRow = useCallback(id => {
+    setSelectedRows(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }, []);
 
-  const toggleRow=useCallback(id=>setSelRows(p=>{const s=new Set(p);s.has(id)?s.delete(id):s.add(id);return s;}),[]);
-  const toggleAll=useCallback(rows=>{if(selRows.size===rows.length)setSelRows(new Set());else setSelRows(new Set(rows.map(m=>m.id)));},[ selRows]);
+  const toggleAll = useCallback(rows => {
+    if (selectedRows.size === rows.length) setSelectedRows(new Set());
+    else setSelectedRows(new Set(rows.map(m => m.id)));
+  }, [selectedRows]);
 
-  const tabs=[{id:"all",label:"All"},{id:"atRisk",label:"At Risk"},{id:"dropping",label:"Dropping"},{id:"new",label:"New"},{id:"active",label:"Active"},{id:"inactive",label:"Inactive"}];
+  const handleMessage     = useCallback(m => { setMessageTarget(m); setPreviewMember(null); }, []);
+  const handleBulkMessage = useCallback(segId => {
+    const seg = members.filter(m => {
+      if (segId === "atRisk")   return m.churnPct >= 60;
+      if (segId === "dropping") return m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5;
+      if (segId === "new")      return m.joinedDaysAgo <= 14;
+      if (segId === "active")   return m.streak >= 5;
+      return false;
+    });
+    if (seg.length) setMessageTarget(seg[0]);
+  }, [members]);
 
-  return(
-    <div style={{minHeight:"100vh",background:T.bg,fontFamily:"'Geist','DM Sans','Helvetica Neue',Arial,sans-serif",color:T.t1,fontSize:13,lineHeight:1.5}}>
-      <style>{`
-        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-        @keyframes panelIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
-        @keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
-        ::-webkit-scrollbar{width:4px;height:4px}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:${T.border};border-radius:99px}
-      `}</style>
+  return (
+    <div className="min-h-screen bg-[#050810] text-[#eef2ff] text-[13px] leading-relaxed">
+      <div className="max-w-[1380px] mx-auto px-6 pt-6 pb-20">
 
-      <div style={{padding:"20px 24px 16px",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,borderBottom:`1px solid ${T.border}`}}>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:4}}>
-            <div style={{width:28,height:28,borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <Users size={13} color={T.accent}/>
-            </div>
-            <h1 style={{fontSize:18,fontWeight:700,color:T.t1,margin:0,letterSpacing:"-0.03em"}}>Members</h1>
-          </div>
-          <p style={{fontSize:12,color:T.t3,margin:0,lineHeight:1.6}}>AI-powered retention · know who needs you, act instantly</p>
-        </div>
-        <div style={{display:"flex",gap:7,flexShrink:0}}>
-          <GBtn><Activity size={11}/> Export</GBtn>
-          <PBtn><Plus size={11}/> Invite Member</PBtn>
-        </div>
-      </div>
-
-      <div style={{display:"grid",gridTemplateColumns:"1fr 280px",minHeight:"calc(100vh - 71px)"}}>
-        <div style={{padding:"22px 24px 60px",overflowY:"auto",display:"flex",flexDirection:"column",gap:18}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
-            <StatCard icon={Users}         label="Total Members"   sub="enrolled across all plans"                              value={members.length} delay={0}/>
-            <StatCard icon={Activity}      label="Active (7 days)" sub={`${Math.round(activeN/members.length*100)}% of total`}  value={activeN}        delay={120}/>
-            <StatCard icon={AlertTriangle} label="At Risk"         sub="60%+ churn probability"                                 value={ar.length}      delay={240} alertAmber={ar.length>0}/>
-            <StatCard icon={DollarSign}    label="Revenue at Risk" sub="monthly recurring at risk"                              value={arVal}          delay={360} prefix="$" alertAmber={arVal>0}/>
-          </div>
-
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:11,fontWeight:600,color:T.t2,textTransform:"uppercase",letterSpacing:".1em"}}>Priority Today</span>
-                <div style={{display:"flex",alignItems:"center",gap:5,padding:"1px 7px",borderRadius:20,background:T.surfaceEl,border:`1px solid ${T.border}`}}>
-                  <span style={{width:5,height:5,borderRadius:"50%",background:T.red,display:"inline-block",animation:"pulse 2s ease-in-out infinite"}}/>
-                  <span style={{fontSize:10,fontWeight:600,color:T.amber}}>{priority.length} need attention</span>
-                </div>
+            <h1 className="text-xl font-bold text-[#eef2ff] m-0 tracking-[-0.03em]">Members</h1>
+            <p className="text-[11px] text-slate-600 mt-0.5 mb-0">AI-powered retention · know who needs you, act instantly</p>
+          </div>
+          <div className="flex gap-1.5">
+            <AppButton variant="secondary" size="sm">
+              <Activity className="w-2.5 h-2.5" /> Export
+            </AppButton>
+            <AppButton size="sm">
+              <Plus className="w-3 h-3" /> Invite Member
+            </AppButton>
+          </div>
+        </div>
+
+        <MetricsBar members={members} />
+        <ActOnToday
+          members={members}
+          onMessage={handleMessage}
+          onSelect={m => setPreviewMember(prev => prev?.id === m.id ? null : m)}
+        />
+        <SmartSegments
+          members={members}
+          activeFilter={filter}
+          onFilter={setFilter}
+          onBulkMessage={handleBulkMessage}
+        />
+
+        {/* Main grid */}
+        <div className="grid grid-cols-[1fr_260px] gap-3.5 items-start">
+
+          {/* Table card */}
+          <div className="rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden">
+            <FilterBar
+              filter={filter} setFilter={setFilter}
+              search={search} setSearch={setSearch}
+              sort={sort}     setSort={setSort}
+              counts={counts}
+            />
+            <MembersTable
+              members={members} filter={filter} search={search} sort={sort} setSort={setSort}
+              selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
+              previewMember={previewMember} setPreviewMember={setPreviewMember}
+              onMessage={handleMessage}
+            />
+            <BulkBar
+              selectedRows={selectedRows}
+              members={members}
+              onClear={() => setSelectedRows(new Set())}
+              onBulkMessage={sel => setMessageTarget(sel[0])}
+            />
+
+            {/* Pagination */}
+            <div className="px-4 py-2 border-t border-white/[0.04] flex items-center justify-between">
+              <div className="flex gap-1">
+                {[ChevronLeft, ChevronRight].map((Icon, i) => (
+                  <button key={i} className="w-6 h-6 rounded-md bg-transparent border border-white/[0.04] flex items-center justify-center cursor-pointer opacity-40">
+                    <Icon className="w-2.5 h-2.5 text-slate-400" />
+                  </button>
+                ))}
+                <button className="w-6 h-6 rounded-md bg-[#0d1225] border border-white/[0.07] flex items-center justify-center cursor-pointer text-[11px] font-bold text-[#eef2ff]">
+                  1
+                </button>
               </div>
-              {/* at-risk value white */}
-              <span style={{fontSize:11,color:T.t3}}><span style={{color:T.t1}}>${priority.reduce((s,m)=>s+m.mv,0)}</span>/mo at risk</span>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:9}}>
-              {priority.map(m=>(
-                <ChurnCard key={m.id} m={m} onMsg={setMsg} onSel={m=>setPrev(p=>p?.id===m.id?null:m)}/>
-              ))}
+              <span className="text-[10px] text-slate-600">{members.length} members · page 1 of 1</span>
             </div>
           </div>
 
-          <Segs members={members} active={filter} onFilter={setFilter} onBulk={id=>{
-            const seg=members.filter(m=>{
-              if(id==="atRisk")return m.ch>=60;
-              if(id==="dropping")return m.pv>0&&m.v30<=m.pv*.5;
-              if(id==="new")return m.jd<=14;
-              if(id==="active")return m.str>=5;
-              return false;
-            });
-            if(seg.length)setMsg(seg[0]);
-          }}/>
-
-          <Card style={{overflow:"hidden"}}>
-            <div style={{padding:"9px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:2,flexWrap:"wrap",position:"sticky",top:0,background:T.surface,zIndex:10}}>
-              {tabs.map(t=>{
-                const on=filter===t.id;
-                return(
-                  <button key={t.id} onClick={()=>setFilter(t.id)}
-                    style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:T.rsm,fontSize:11,fontWeight:on?600:400,cursor:"pointer",fontFamily:"inherit",
-                      background:on?T.accentDim:"transparent",color:on?T.accent:T.t3,
-                      border:`1px solid ${on?T.accentBrd:"transparent"}`,transition:"all .1s"}}>
-                    {t.label}{counts[t.id]>0&&<span style={{fontSize:9,color:on?T.accent:T.t4}}>{counts[t.id]}</span>}
-                  </button>
-                );
-              })}
-              <div style={{flex:1}}/>
-              <div style={{position:"relative"}}>
-                <select value={sort} onChange={e=>setSort(e.target.value)}
-                  style={{padding:"5px 26px 5px 9px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t2,fontSize:11,outline:"none",cursor:"pointer",fontFamily:"inherit",appearance:"none"}}>
-                  <option value="churnDesc">Highest risk</option>
-                  <option value="lastVisit">Recently active</option>
-                  <option value="value">Highest value</option>
-                  <option value="name">Name A-Z</option>
-                </select>
-                <ChevronDown size={9} color={T.t4} style={{position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
-              </div>
-              <div style={{position:"relative"}}>
-                <Search size={11} color={T.t4} style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
-                <input placeholder="Search members..." value={search} onChange={e=>setSearch(e.target.value)}
-                  style={{padding:"5px 10px 5px 26px",borderRadius:T.rsm,background:T.surfaceEl,border:`1px solid ${T.border}`,color:T.t1,fontSize:11,outline:"none",fontFamily:"inherit",width:160}}
-                  onFocus={e=>e.target.style.borderColor=T.accentBrd} onBlur={e=>e.target.style.borderColor=T.border}/>
-              </div>
-            </div>
-            <Table members={members} filter={filter} search={search} sort={sort} setSort={setSort}
-              selRows={selRows} toggleRow={toggleRow} toggleAll={toggleAll} prev={prev} setPrev={setPrev} onMsg={setMsg}/>
-            <BulkBar selRows={selRows} members={members} onClear={()=>setSelRows(new Set())} onBulk={sel=>setMsg(sel[0])}/>
-            <div style={{padding:"9px 16px",borderTop:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",gap:3}}>
-                {[ChevronLeft,ChevronRight].map((Icon,i)=>(
-                  <button key={i} style={{width:26,height:26,borderRadius:T.rsm,background:"transparent",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",opacity:.4}}><Icon size={11} color={T.t2}/></button>
-                ))}
-                <button style={{width:26,height:26,borderRadius:T.rsm,background:T.accentDim,border:`1px solid ${T.accentBrd}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,fontWeight:700,color:T.accent,fontFamily:"inherit"}}>1</button>
-              </div>
-              <span style={{fontSize:10,color:T.t3}}>{members.length} members · page 1 of 1</span>
-            </div>
-          </Card>
-        </div>
-
-        <div style={{padding:"18px 16px 40px",overflowY:"auto",borderLeft:`1px solid ${T.border}`,background:T.surface}}>
-          <RightPanel members={members} onFilter={setFilter}/>
+          <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
         </div>
       </div>
 
-      {prev&&<Preview m={prev} onClose={()=>setPrev(null)} onMsg={setMsg}/>}
-      {msg&&<Toast member={msg} onClose={()=>setMsg(null)}/>}
+      {previewMember && (
+        <MemberPreview m={previewMember} onClose={() => setPreviewMember(null)} onMessage={handleMessage} />
+      )}
+      {messageTarget && (
+        <MessageToast member={messageTarget} onClose={() => setMessageTarget(null)} />
+      )}
 
-      <button style={{position:"fixed",bottom:26,right:26,zIndex:100,display:"flex",alignItems:"center",gap:7,padding:"12px 20px",borderRadius:50,background:T.accent,color:"#fff",border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${T.accent}40`,transition:"all .15s"}}
-        onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow=`0 6px 28px ${T.accent}55`;}}
-        onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=`0 4px 20px ${T.accent}40`;}}>
-        <Plus size={13}/> Invite Member
+      {/* Floating CTA */}
+      <button className="fixed bottom-[26px] right-[26px] z-[100] flex items-center gap-1.5 px-5 py-3 rounded-full bg-blue-500 text-white border-none text-xs font-semibold cursor-pointer shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:-translate-y-px hover:shadow-[0_6px_28px_rgba(59,130,246,0.35)] transition-all duration-150">
+        <Plus className="w-3 h-3" /> Invite Member
       </button>
     </div>
   );
