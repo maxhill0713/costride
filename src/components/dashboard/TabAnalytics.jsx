@@ -24,7 +24,7 @@ import { format, differenceInDays, subDays, isWithinInterval } from 'date-fns';
 import {
   Activity, TrendingUp, TrendingDown, Users, Zap, ArrowUpRight,
   Calendar, Clock, AlertTriangle, Shield, Target, Award,
-  UserPlus, BarChart2, RefreshCw, CheckCircle,
+  UserPlus, RefreshCw, CheckCircle,
   Send, ChevronRight,
 } from 'lucide-react';
 import {

@@ -6,11 +6,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   TrendingDown, Users, Trophy, AlertCircle, BarChart2,
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
-  LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
-  Plus, Dumbbell, Clock, Crown, Trash2, X, Download, Send,
-  Sun, Zap, TrendingUp, Activity, Calendar, CheckCircle,
-  MessageCircle, Star, UserCheck, Flame, ChevronRight, Pencil, Gift } from
-'lucide-react';
+  LogOut, ChevronDown, AlertTriangle, QrCode,
+  Plus, Dumbbell, Clock, Crown, Trash2, X,
+  Sun, Zap, Calendar,
+  MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format } from 'date-fns';

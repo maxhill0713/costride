@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Gift, Plus, Trash2, CheckCircle, Clock, Star, Zap, Award,
   Users, TrendingUp, AlertTriangle, Search, ChevronRight, X,
-  BarChart2, Tag, Lock, Infinity,
+  Tag, Lock, Infinity,
 } from 'lucide-react';
 import { AppButton } from '@/components/ui/AppButton';
 import { cn } from '@/lib/utils';

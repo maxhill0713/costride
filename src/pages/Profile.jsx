@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, Image as ImageIcon, Video, Star, Send, Users } from 'lucide-react';
+import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, Image as ImageIcon, Video, Star, Users } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import BadgesModal from '../components/profile/BadgesModal';
 import StatusBadge from '../components/profile/StatusBadge';
