@@ -3,12 +3,42 @@ import { X, ScanBarcode, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { base44 } from '@/api/base44Client';
 
-const OVERLAY_BG = 'rgba(0,0,0,0.85)';
+const OVERLAY_BG = 'rgba(0,0,0,0.92)';
 const CARD_BG = 'linear-gradient(135deg, rgba(20,25,50,0.99) 0%, rgba(6,8,18,1) 100%)';
 
-async function lookupBarcode(barcode) {
+const FOOD_FORMATS = [
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+];
+
+async function lookupOpenFoodFacts(barcode) {
+  try {
+    const resp = await fetch(
+      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+      { headers: { 'User-Agent': 'CoStrideApp/1.0' } }
+    );
+    const data = await resp.json();
+    if (data.status === 1 && data.product?.product_name) {
+      const n = data.product.nutriments || {};
+      return {
+        found: true,
+        name: data.product.product_name,
+        cal: n['energy-kcal_100g'] ?? n['energy-kcal'] ?? 0,
+        protein: n.proteins_100g ?? n.proteins ?? 0,
+        carbs: n.carbohydrates_100g ?? n.carbohydrates ?? 0,
+        fat: n.fat_100g ?? n.fat ?? 0,
+        serving_size: data.product.serving_size || '100g',
+      };
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function lookupLLM(barcode) {
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Look up this food product barcode: ${barcode}. Return the nutritional information per serving. If you cannot find it, set found to false.`,
+    prompt: `Look up food product with barcode: ${barcode}. Return nutritional info per 100g serving. If not found, set found to false.`,
     add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
@@ -26,34 +56,15 @@ async function lookupBarcode(barcode) {
   return result;
 }
 
-const FOOD_BARCODE_FORMATS = [
-  Html5QrcodeSupportedFormats.EAN_13,
-  Html5QrcodeSupportedFormats.EAN_8,
-  Html5QrcodeSupportedFormats.UPC_A,
-  Html5QrcodeSupportedFormats.UPC_E,
-];
-
-const SCANNER_CONFIG = {
-  fps: 10,
-  qrbox: { width: 250, height: 150 },
-  disableFlip: false,
-};
-
-// Throttled debug logger — logs at most once per second
-let lastWarnTime = 0;
-function throttledWarn(msg) {
-  const now = Date.now();
-  if (now - lastWarnTime > 1000) {
-    lastWarnTime = now;
-    console.warn('[BarcodeScanner] frame error:', msg);
-  }
-}
+// Each mount gets a unique ID to avoid conflicts if component remounts
+let instanceCount = 0;
 
 export default function BarcodeScannerModal({ onAdd, onClose }) {
+  const idRef = useRef(`bcsv-${++instanceCount}`);
   const scannerRef = useRef(null);
-  const scannerStartedRef = useRef(false);
-  const fallbackTimerRef = useRef(null);
-  const [phase, setPhase] = useState('scanning'); // scanning | loading | result | manual | error
+  const activeRef = useRef(false); // true while camera is running
+
+  const [phase, setPhase] = useState('init'); // init | scanning | loading | result | manual | error
   const [manualCode, setManualCode] = useState('');
   const [detectedCode, setDetectedCode] = useState('');
   const [foodResult, setFoodResult] = useState(null);
@@ -61,13 +72,15 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   const [cameraErr, setCameraErr] = useState('');
   const [selectedMeal, setSelectedMeal] = useState('Breakfast');
   const [showFallback, setShowFallback] = useState(false);
+  const fallbackTimer = useRef(null);
 
-  const stopScanner = useCallback(async () => {
-    if (scannerRef.current && scannerStartedRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch (_) {}
-      scannerStartedRef.current = false;
+  const stopCamera = useCallback(async () => {
+    clearTimeout(fallbackTimer.current);
+    if (scannerRef.current && activeRef.current) {
+      activeRef.current = false;
+      try { await scannerRef.current.stop(); } catch (_) {}
+      try { scannerRef.current.clear(); } catch (_) {}
+      scannerRef.current = null;
     }
   }, []);
 
@@ -75,121 +88,96 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     setDetectedCode(code);
     setPhase('loading');
     try {
-      // First try Open Food Facts (free, no API key needed)
-      const offResp = await fetch(
-        `https://world.openfoodfacts.org/api/v0/product/${code}.json`,
-        { headers: { 'User-Agent': 'CoStrideApp - Web - 1.0' } }
-      );
-      const offData = await offResp.json();
-
-      if (offData.status === 1 && offData.product?.product_name) {
-        const n = offData.product.nutriments || {};
-        setFoodResult({
-          found: true,
-          name: offData.product.product_name,
-          cal: n['energy-kcal_100g'] || n['energy-kcal'] || 0,
-          protein: n.proteins_100g || n.proteins || 0,
-          carbs: n.carbohydrates_100g || n.carbohydrates || 0,
-          fat: n.fat_100g || n.fat || 0,
-          serving_size: offData.product.serving_size || '100g',
-        });
-        setPhase('result');
-        return;
-      }
-
-      // Fallback to LLM lookup
-      const llmData = await lookupBarcode(code);
-      if (llmData?.found && llmData?.name) {
-        setFoodResult(llmData);
-        setPhase('result');
-      } else {
-        setErrMsg(`No product found for barcode ${code}.`);
-        setPhase('error');
-      }
+      const off = await lookupOpenFoodFacts(code);
+      if (off) { setFoodResult(off); setPhase('result'); return; }
+      const llm = await lookupLLM(code);
+      if (llm?.found && llm?.name) { setFoodResult(llm); setPhase('result'); }
+      else { setErrMsg(`No product found for barcode ${code}.`); setPhase('error'); }
     } catch (_) {
-      setErrMsg('Failed to look up product. Please try again or enter manually.');
+      setErrMsg('Failed to look up product. Try manual entry.');
       setPhase('error');
     }
   }, []);
 
-  const startScanner = useCallback(async (cancelled) => {
-    // Wait for DOM to be ready — poll until element has size
+  const startCamera = useCallback(async () => {
+    const divId = idRef.current;
+    setPhase('scanning');
+    setShowFallback(false);
+
+    // Wait up to 2s for the div to appear and have a size
+    let el = null;
     for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 100));
-      if (cancelled?.value) return;
-      const el = document.getElementById('barcode-scanner-view');
-      if (el && el.offsetWidth > 0) break;
+      el = document.getElementById(divId);
+      if (el && el.offsetWidth > 10 && el.offsetHeight > 10) break;
     }
-    if (cancelled?.value) return;
+
+    if (!el || el.offsetWidth <= 10) {
+      setCameraErr('Scanner view not ready. Please try again.');
+      setPhase('manual');
+      return;
+    }
+
+    // Clean up any previous instance
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch (_) {}
+      try { scannerRef.current.clear(); } catch (_) {}
+      scannerRef.current = null;
+    }
 
     try {
-      const scanner = new Html5Qrcode('barcode-scanner-view', {
-        formatsToSupport: FOOD_BARCODE_FORMATS,
+      const scanner = new Html5Qrcode(divId, {
+        formatsToSupport: FOOD_FORMATS,
         verbose: false,
       });
       scannerRef.current = scanner;
 
       await scanner.start(
         { facingMode: 'environment' },
-        SCANNER_CONFIG,
-        (decodedText) => {
-          if (!cancelled?.value && scannerStartedRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            scannerStartedRef.current = false;
-            scanner.stop().catch(() => {});
-            fetchFood(decodedText);
-          }
+        { fps: 10, qrbox: { width: Math.min(el.offsetWidth - 40, 260), height: 140 } },
+        (decoded) => {
+          if (!activeRef.current) return;
+          stopCamera();
+          fetchFood(decoded);
         },
-        (errorMsg) => {
-          throttledWarn(errorMsg);
-        }
+        () => {} // suppress per-frame errors
       );
 
-      if (!cancelled?.value) {
-        scannerStartedRef.current = true;
-        // 10-second fallback: show manual entry button hint
-        fallbackTimerRef.current = setTimeout(() => {
-          if (scannerStartedRef.current) {
-            setShowFallback(true);
-          }
-        }, 10000);
-      }
-    } catch (err) {
-      if (!cancelled?.value) {
-        console.warn('[BarcodeScanner] init error:', err);
-        setCameraErr('Camera access denied or unavailable. Please enable camera permissions.');
-        setPhase('manual');
-      }
-    }
-  }, [fetchFood]);
+      activeRef.current = true;
 
-  // Start scanner on mount
+      fallbackTimer.current = setTimeout(() => {
+        if (activeRef.current) setShowFallback(true);
+      }, 10000);
+
+    } catch (err) {
+      console.error('[BarcodeScanner]', err);
+      const msg = String(err).toLowerCase();
+      if (msg.includes('permission') || msg.includes('notallowed') || msg.includes('denied')) {
+        setCameraErr('Camera permission denied. Please allow camera access and try again.');
+      } else if (msg.includes('notfound') || msg.includes('no camera')) {
+        setCameraErr('No camera found on this device.');
+      } else {
+        setCameraErr(`Camera error: ${err?.message || err}`);
+      }
+      setPhase('manual');
+    }
+  }, [fetchFood, stopCamera]);
+
+  // Start on mount
   useEffect(() => {
-    const cancelled = { value: false };
-    startScanner(cancelled);
-    return () => {
-      cancelled.value = true;
-      clearTimeout(fallbackTimerRef.current);
-      stopScanner();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    startCamera();
+    return () => { stopCamera(); };
+  }, []); // eslint-disable-line
+
+  const handleScanAgain = () => {
+    setErrMsg(''); setFoodResult(null); setManualCode(''); setDetectedCode('');
+    startCamera();
+  };
 
   const handleManualSubmit = async () => {
     if (!manualCode.trim()) return;
-    await stopScanner();
+    await stopCamera();
     fetchFood(manualCode.trim());
-  };
-
-  const handleScanAgain = async () => {
-    setErrMsg('');
-    setFoodResult(null);
-    setManualCode('');
-    setDetectedCode('');
-    setShowFallback(false);
-    clearTimeout(fallbackTimerRef.current);
-    setPhase('scanning');
-    const cancelled = { value: false };
-    startScanner(cancelled);
   };
 
   const handleAdd = () => {
@@ -204,15 +192,14 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     onClose();
   };
 
-  const handleClose = () => {
-    stopScanner();
-    onClose();
-  };
+  const handleClose = () => { stopCamera(); onClose(); };
+
+  const showScanner = phase === 'scanning' || phase === 'init';
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', flexDirection: 'column', background: OVERLAY_BG }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 12px', background: 'rgba(0,0,0,0.6)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 12px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ScanBarcode size={18} color="#38bdf8" />
           <span style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0' }}>Scan Barcode</span>
@@ -222,48 +209,66 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
         </button>
       </div>
 
-      {/* Scanner view — always in DOM so Html5Qrcode can find the element; hidden when not scanning */}
-      <div style={{ display: phase === 'scanning' ? 'flex' : 'none', flex: 1, minHeight: 0, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <div id="barcode-scanner-view" style={{ width: '100%', height: '100%', minHeight: 300 }} />
+      {/* Camera view — always rendered so the div exists in DOM */}
+      <div style={{
+        flex: showScanner ? 1 : 0,
+        minHeight: showScanner ? 200 : 0,
+        overflow: 'hidden',
+        position: 'relative',
+        background: '#000',
+        display: showScanner ? 'block' : 'none',
+      }}>
+        {/* The div Html5Qrcode attaches to */}
+        <div id={idRef.current} style={{ width: '100%', height: '100%', minHeight: 280 }} />
 
         {/* Scan frame overlay */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-          <div style={{ width: 290, height: 150, borderRadius: 12, border: '2px solid #38bdf8', boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)', position: 'relative' }}>
-            {[
-              { top: -2, left: -2, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '12px 0 0 0' },
-              { top: -2, right: -2, borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 12px 0 0' },
-              { bottom: -2, left: -2, borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '0 0 0 12px' },
-              { bottom: -2, right: -2, borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 0 12px 0' },
-            ].map((s, i) => (
-              <div key={i} style={{ position: 'absolute', width: 24, height: 24, ...s }} />
-            ))}
-            <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)', animation: 'scanLine 1.5s ease-in-out infinite', top: '50%' }} />
+        {phase === 'scanning' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div style={{ width: 270, height: 140, borderRadius: 10, border: '2px solid rgba(56,189,248,0.6)', boxShadow: '0 0 0 9999px rgba(0,0,0,0.45)', position: 'relative', marginBottom: 60 }}>
+              {/* Corner accents */}
+              {[
+                { top: -2, left: -2, borderTop: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '10px 0 0 0' },
+                { top: -2, right: -2, borderTop: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 10px 0 0' },
+                { bottom: -2, left: -2, borderBottom: '3px solid #38bdf8', borderLeft: '3px solid #38bdf8', borderRadius: '0 0 0 10px' },
+                { bottom: -2, right: -2, borderBottom: '3px solid #38bdf8', borderRight: '3px solid #38bdf8', borderRadius: '0 0 10px 0' },
+              ].map((s, i) => (
+                <div key={i} style={{ position: 'absolute', width: 22, height: 22, ...s }} />
+              ))}
+              <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)', animation: 'scanLine 1.6s ease-in-out infinite', top: '50%' }} />
+            </div>
           </div>
-        </div>
+        )}
 
-        <div style={{ position: 'absolute', bottom: 90, left: 0, right: 0, textAlign: 'center' }}>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Point camera at barcode</p>
-        </div>
+        {/* Hint + manual button */}
+        {phase === 'scanning' && (
+          <div style={{ position: 'absolute', bottom: 24, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, pointerEvents: 'all' }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>Point at a barcode on food packaging</p>
+            {showFallback && (
+              <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 600, margin: 0 }}>
+                Tip: ensure good lighting and hold steady
+              </p>
+            )}
+            <button
+              onClick={() => { stopCamera(); setPhase('manual'); }}
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 20px', color: showFallback ? '#e2e8f0' : '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', fontWeight: showFallback ? 700 : 400 }}>
+              Enter manually instead
+            </button>
+          </div>
+        )}
 
-        <div style={{ position: 'absolute', bottom: 32, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          {showFallback && (
-            <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 600, margin: 0 }}>
-              Having trouble? Make sure barcode is well-lit and centred.
-            </p>
-          )}
-          <button
-            onClick={() => { clearTimeout(fallbackTimerRef.current); stopScanner(); setPhase('manual'); }}
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: showFallback ? '#e2e8f0' : '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', fontWeight: showFallback ? 700 : 400 }}>
-            Enter manually instead
-          </button>
-        </div>
+        {/* Init spinner */}
+        {phase === 'init' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 size={32} color="#38bdf8" style={{ animation: 'spin 0.8s linear infinite' }} />
+          </div>
+        )}
       </div>
 
       {/* Loading */}
       {phase === 'loading' && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <Loader2 size={36} color="#38bdf8" style={{ animation: 'spin 0.8s linear infinite' }} />
-          <p style={{ fontSize: 14, color: '#94a3b8' }}>Looking up barcode {detectedCode}…</p>
+          <p style={{ fontSize: 14, color: '#94a3b8' }}>Looking up {detectedCode}…</p>
         </div>
       )}
 
@@ -271,8 +276,8 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
       {phase === 'manual' && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 20, gap: 16 }}>
           {cameraErr && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
-              <AlertCircle size={14} color="#f87171" />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <AlertCircle size={14} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
               <p style={{ fontSize: 12, color: '#f87171', margin: 0 }}>{cameraErr}</p>
             </div>
           )}
@@ -317,10 +322,10 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               {[
-                { label: 'Calories', value: `${Math.round(foodResult.cal || 0)}`, unit: 'kcal', color: '#38bdf8' },
-                { label: 'Protein', value: `${Math.round(foodResult.protein || 0)}`, unit: 'g', color: '#60a5fa' },
-                { label: 'Carbs', value: `${Math.round(foodResult.carbs || 0)}`, unit: 'g', color: '#22c55e' },
-                { label: 'Fat', value: `${Math.round(foodResult.fat || 0)}`, unit: 'g', color: '#f59e0b' },
+                { label: 'Calories', value: Math.round(foodResult.cal || 0), unit: 'kcal', color: '#38bdf8' },
+                { label: 'Protein', value: Math.round(foodResult.protein || 0), unit: 'g', color: '#60a5fa' },
+                { label: 'Carbs', value: Math.round(foodResult.carbs || 0), unit: 'g', color: '#22c55e' },
+                { label: 'Fat', value: Math.round(foodResult.fat || 0), unit: 'g', color: '#f59e0b' },
               ].map(({ label, value, unit, color }) => (
                 <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
                   <p style={{ fontSize: 16, fontWeight: 700, color, margin: '0 0 2px' }}>{value}<span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>{unit}</span></p>
@@ -330,7 +335,6 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
             </div>
           </div>
 
-          {/* Meal picker */}
           <div>
             <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Add to meal</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
@@ -368,9 +372,9 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
       )}
 
       <style>{`
-        @keyframes scanLine { 0% { top: 10%; } 50% { top: 85%; } 100% { top: 10%; } }
+        @keyframes scanLine { 0% { top: 5%; } 50% { top: 88%; } 100% { top: 5%; } }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #barcode-scanner-view video { object-fit: cover; }
+        #${idRef.current} video { width: 100% !important; height: 100% !important; object-fit: cover; }
       `}</style>
     </div>
   );
