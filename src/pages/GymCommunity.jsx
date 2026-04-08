@@ -814,6 +814,11 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           <div style={{ fontSize:16,fontWeight:900,color:'#fff',letterSpacing:'-0.025em',lineHeight:1.18,textShadow:'0 2px 10px rgba(0,0,0,0.9)' }}>
             {gymClass.name||gymClass.title}
           </div>
+          {(gymClass.instructor||gymClass.coach_name) && (
+            <div style={{ fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.65)',marginTop:2,textShadow:'0 1px 4px rgba(0,0,0,0.8)' }}>
+              with {gymClass.instructor||gymClass.coach_name}
+            </div>
+          )}
         </div>
       </div>
 
@@ -822,8 +827,17 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           <span style={{ fontSize:12,fontWeight:800,color:'#60a5fa' }}>{timeStr}</span>
           {gymClass.duration_minutes && <span style={{ fontSize:11,color:'rgba(255,255,255,0.38)',fontWeight:600 }}>({gymClass.duration_minutes} min)</span>}
           {diff && <><span style={{ fontSize:10,color:'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.58)' }}>{diff}</span></>}
-          {left!==null && <><span style={{ fontSize:10,color:'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize:11,fontWeight:800,color:full?'#f87171':hot?'#fbbf24':'rgba(255,255,255,0.45)' }}>{full?'Full':`${left} Spot${left===1?'':'s'} Left`}</span></>}
         </div>
+        {left!==null && (
+          <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+            <div style={{ flex:1,height:4,borderRadius:99,background:'rgba(255,255,255,0.08)',overflow:'hidden' }}>
+              <div style={{ height:'100%',borderRadius:99,width:`${cap?Math.min(100,Math.round((enr/cap)*100)):0}%`,background:full?'#f87171':hot?'linear-gradient(90deg,#d97706,#fbbf24)':`linear-gradient(90deg,${cfg.color}88,${cfg.color})`,transition:'width 0.6s ease' }} />
+            </div>
+            <span style={{ fontSize:11,fontWeight:800,color:full?'#f87171':hot?'#fbbf24':'rgba(255,255,255,0.5)',whiteSpace:'nowrap',flexShrink:0 }}>
+              {full?'🔴 Full':hot?`🔥 ${left} left`:`${left} spots`}
+            </span>
+          </div>
+        )}
 
         {pct!==null && (
           <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.07)',overflow:'hidden' }}>
