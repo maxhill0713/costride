@@ -1329,12 +1329,17 @@ export default function Progress() {
     }
   }, [currentUser]);
 
+  // Paint the overscroll rubber-band areas with the page gradient
+  useEffect(() => {
+    const prev = document.documentElement.style.background;
+    document.documentElement.style.background = 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)';
+    return () => { document.documentElement.style.background = prev; };
+  }, []);
+
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (!currentUser) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
-        {/* Overscroll background fix */}
-        <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+      <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>
         {/* Fixed skeleton header — same height/style as real header */}
         <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-4xl mx-auto">
@@ -1362,8 +1367,6 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>
-      {/* Overscroll background fix — covers rubber-band pull area */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="analytics" className="w-full">
 
