@@ -180,7 +180,7 @@ function LayoutInner({ children, currentPageName, currentUser, notifications, gy
       )}
 
       {/* Main Content */}
-      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))', paddingTop: isCoachUser ? '3rem' : 0 }}>
+      <main className={hideNavigation ? '' : 'md:pb-0 md:pl-20'} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))', paddingTop: isCoachUser ? 'calc(3rem + env(safe-area-inset-top))' : 'env(safe-area-inset-top)' }}>
         <ErrorBoundary>
           <PageTransition key={currentPageName}>
             {children}
@@ -249,4 +249,4 @@ export default function Layout({ children, currentPageName }) {
       </LayoutInner>
     </TimerProvider>);
 
-} 
+}
