@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
@@ -130,11 +130,11 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   const [localKey, setLocalKey] = useState(0);
   const animationKey = localKey + animate;
 
-  const workoutOptions = useMemo(() => {
+  // Primary: derive workout options from named splits if the user set them up
+  const splitWorkoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
 
-    // Get mirrored pairs from the active saved split
     const activeSplitId = currentUser?.active_split_id;
     const activeSplit = (currentUser?.saved_splits || []).find(s => s.id === activeSplitId);
     const mirroredPairs = activeSplit?.mirrored_pairs || [];
@@ -148,7 +148,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
       }));
 
-    // Fallback: also dedup by name in case mirrored_pairs isn't set
     const seen = new Set();
     return all.filter(opt => {
       if (seen.has(opt.label)) return false;
@@ -157,14 +156,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     });
   }, [currentUser]);
 
-  const [selectedWorkoutKey, setSelectedWorkoutKey] = useState(() => workoutOptions[0]?.key ?? null);
-
-  const validKey = workoutOptions.find(o => o.key === selectedWorkoutKey)
-    ? selectedWorkoutKey
-    : workoutOptions[0]?.key ?? null;
-
-  const selectedWorkout = workoutOptions.find(o => o.key === validKey);
-  const targetExercises = selectedWorkout?.exercises ?? [];
+  const [selectedWorkoutKey, setSelectedWorkoutKey] = useState(() => splitWorkoutOptions[0]?.key ?? null);
 
   const { data: workoutLogs = [], isLoading } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
@@ -175,6 +167,40 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     staleTime: 2 * 60 * 1000,
     placeholderData: prev => prev,
   });
+
+  // Fallback: if user has no splits set up, derive workout options from their log history
+  const logDerivedOptions = useMemo(() => {
+    if (splitWorkoutOptions.length > 0) return [];
+    if (!workoutLogs.length) return [];
+    const typeMap = {};
+    workoutLogs.forEach(log => {
+      const key = log.workout_type || log.workout_name || 'All Workouts';
+      if (!typeMap[key]) typeMap[key] = new Set();
+      (log.exercises || []).forEach(ex => {
+        const name = ex.exercise || ex.name;
+        if (name && parseFloat(ex.weight) > 0) typeMap[key].add(name);
+      });
+    });
+    return Object.entries(typeMap)
+      .filter(([, exs]) => exs.size > 0)
+      .map(([label, exs]) => ({ key: label, label, exercises: [...exs] }));
+  }, [splitWorkoutOptions, workoutLogs]);
+
+  const workoutOptions = splitWorkoutOptions.length > 0 ? splitWorkoutOptions : logDerivedOptions;
+
+  // When options first load (for users with no splits), select the first available key
+  useEffect(() => {
+    if (!selectedWorkoutKey && workoutOptions.length > 0) {
+      setSelectedWorkoutKey(workoutOptions[0].key);
+    }
+  }, [workoutOptions.length]);
+
+  const validKey = workoutOptions.find(o => o.key === selectedWorkoutKey)
+    ? selectedWorkoutKey
+    : workoutOptions[0]?.key ?? null;
+
+  const selectedWorkout = workoutOptions.find(o => o.key === validKey);
+  const targetExercises = selectedWorkout?.exercises ?? [];
 
   const exerciseSeriesMap = useMemo(() => {
     if (!targetExercises.length) return {};
@@ -363,10 +389,12 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         <div style={{ height: 200, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <p style={{ color: '#475569', fontSize: 13, fontWeight: 600, margin: 0 }}>
-            No data for {selectedWorkout?.label ?? 'this workout'} yet
+            {workoutOptions.length === 0 ? 'No workout history yet' : `No weighted data for ${selectedWorkout?.label ?? 'this workout'}`}
           </p>
           <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 200 }}>
-            Log this workout to start tracking overload
+            {workoutOptions.length === 0
+              ? 'Log workouts with weights to start tracking progressive overload'
+              : 'Log sets with a weight entered to see your strength progress'}
           </p>
         </div>
       ) : (

@@ -196,6 +196,10 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   };
 
   const handleShare = async () => {
+    if (!currentUser?.id) {
+      toast.error('Could not identify your account — please refresh and try again');
+      return;
+    }
     setSharing(true);
     try {
       const content = comment ? comment.trim() : null;
@@ -209,7 +213,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
 
       await base44.entities.Post.create({
         member_id: currentUser.id,
-        member_name: currentUser.full_name,
+        member_name: currentUser.full_name || currentUser.email?.split('@')[0] || 'Member',
         member_avatar: currentUser.avatar_url || '',
         content,
         image_url: photoUrl || null,
@@ -250,7 +254,10 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
 
       toast.success('Workout shared with your friends! 🔥');
       onContinue();
-    } catch { toast.error('Failed to share workout'); }
+    } catch (err) {
+      console.error('[ShareWorkout] failed:', err);
+      toast.error('Failed to share workout — ' + (err?.message || 'unknown error'));
+    }
     finally { setSharing(false); }
   };
 
@@ -270,7 +277,8 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6">
+      className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6"
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       <div className="w-full flex flex-col items-center overflow-y-auto max-h-[85vh] pb-4">
 

@@ -72,7 +72,7 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
         onClick={onClose}
         style={{
           position: 'fixed',
-          top: '-100px',
+          top: 0,
           left: 0,
           right: 0,
           bottom: 0,
@@ -83,7 +83,7 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '120px 16px 32px'
+          padding: 'max(env(safe-area-inset-top), 20px) 16px max(env(safe-area-inset-bottom), 32px)',
         }}
       >
         <motion.div
