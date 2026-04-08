@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, ScanBarcode, Loader2, Camera, AlertCircle } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { base44 } from '@/api/base44Client';
 
 const OVERLAY_BG = 'rgba(0,0,0,0.85)';
@@ -26,9 +26,33 @@ async function lookupBarcode(barcode) {
   return result;
 }
 
+const FOOD_BARCODE_FORMATS = [
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+];
+
+const SCANNER_CONFIG = {
+  fps: 10,
+  qrbox: { width: 250, height: 150 },
+  disableFlip: false,
+};
+
+// Throttled debug logger — logs at most once per second
+let lastWarnTime = 0;
+function throttledWarn(msg) {
+  const now = Date.now();
+  if (now - lastWarnTime > 1000) {
+    lastWarnTime = now;
+    console.warn('[BarcodeScanner] frame error:', msg);
+  }
+}
+
 export default function BarcodeScannerModal({ onAdd, onClose }) {
   const scannerRef = useRef(null);
   const scannerStartedRef = useRef(false);
+  const fallbackTimerRef = useRef(null);
   const [phase, setPhase] = useState('scanning'); // scanning | loading | result | manual | error
   const [manualCode, setManualCode] = useState('');
   const [detectedCode, setDetectedCode] = useState('');
@@ -36,6 +60,7 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   const [errMsg, setErrMsg] = useState('');
   const [cameraErr, setCameraErr] = useState('');
   const [selectedMeal, setSelectedMeal] = useState('Breakfast');
+  const [showFallback, setShowFallback] = useState(false);
 
   const stopScanner = useCallback(async () => {
     if (scannerRef.current && scannerStartedRef.current) {
@@ -87,44 +112,58 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     }
   }, []);
 
-  // Start scanner on mount — only runs once when phase='scanning'
-  useEffect(() => {
-    let cancelled = false;
+  const startScanner = useCallback(async (cancelled) => {
+    await new Promise(r => setTimeout(r, 100));
+    if (cancelled?.value) return;
 
-    const init = async () => {
-      // Small delay to ensure the DOM element is rendered
-      await new Promise(r => setTimeout(r, 100));
-      if (cancelled) return;
+    try {
+      const scanner = new Html5Qrcode('barcode-scanner-view', {
+        formatsToSupport: FOOD_BARCODE_FORMATS,
+        verbose: false,
+      });
+      scannerRef.current = scanner;
 
-      try {
-        const scanner = new Html5Qrcode('barcode-scanner-view');
-        scannerRef.current = scanner;
-
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 250, height: 120 } },
-          (decodedText) => {
-            if (!cancelled && scannerStartedRef.current) {
-              scannerStartedRef.current = false;
-              scanner.stop().catch(() => {});
-              fetchFood(decodedText);
-            }
-          },
-          () => {} // suppress per-frame scan errors
-        );
-        if (!cancelled) scannerStartedRef.current = true;
-      } catch (err) {
-        if (!cancelled) {
-          setCameraErr('Camera access denied or unavailable. Please enable camera permissions.');
-          setPhase('manual');
+      await scanner.start(
+        { facingMode: 'environment' },
+        SCANNER_CONFIG,
+        (decodedText) => {
+          if (!cancelled?.value && scannerStartedRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            scannerStartedRef.current = false;
+            scanner.stop().catch(() => {});
+            fetchFood(decodedText);
+          }
+        },
+        (errorMsg) => {
+          throttledWarn(errorMsg);
         }
+      );
+
+      if (!cancelled?.value) {
+        scannerStartedRef.current = true;
+        // 10-second fallback: show manual entry button hint
+        fallbackTimerRef.current = setTimeout(() => {
+          if (scannerStartedRef.current) {
+            setShowFallback(true);
+          }
+        }, 10000);
       }
-    };
+    } catch (err) {
+      if (!cancelled?.value) {
+        console.warn('[BarcodeScanner] init error:', err);
+        setCameraErr('Camera access denied or unavailable. Please enable camera permissions.');
+        setPhase('manual');
+      }
+    }
+  }, [fetchFood]);
 
-    init();
-
+  // Start scanner on mount
+  useEffect(() => {
+    const cancelled = { value: false };
+    startScanner(cancelled);
     return () => {
-      cancelled = true;
+      cancelled.value = true;
+      clearTimeout(fallbackTimerRef.current);
       stopScanner();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -140,31 +179,11 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     setFoodResult(null);
     setManualCode('');
     setDetectedCode('');
+    setShowFallback(false);
+    clearTimeout(fallbackTimerRef.current);
     setPhase('scanning');
-
-    await new Promise(r => setTimeout(r, 150));
-
-    try {
-      const scanner = new Html5Qrcode('barcode-scanner-view');
-      scannerRef.current = scanner;
-
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 120 } },
-        (decodedText) => {
-          if (scannerStartedRef.current) {
-            scannerStartedRef.current = false;
-            scanner.stop().catch(() => {});
-            fetchFood(decodedText);
-          }
-        },
-        () => {}
-      );
-      scannerStartedRef.current = true;
-    } catch (_) {
-      setCameraErr('Camera unavailable.');
-      setPhase('manual');
-    }
+    const cancelled = { value: false };
+    startScanner(cancelled);
   };
 
   const handleAdd = () => {
@@ -220,11 +239,18 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Point camera at barcode</p>
         </div>
 
-        <button
-          onClick={() => { stopScanner(); setPhase('manual'); }}
-          style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-          Enter manually instead
-        </button>
+        <div style={{ position: 'absolute', bottom: 32, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          {showFallback && (
+            <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 600, margin: 0 }}>
+              Having trouble? Make sure barcode is well-lit and centred.
+            </p>
+          )}
+          <button
+            onClick={() => { clearTimeout(fallbackTimerRef.current); stopScanner(); setPhase('manual'); }}
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 20, padding: '8px 18px', color: showFallback ? '#e2e8f0' : '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', fontWeight: showFallback ? 700 : 400 }}>
+            Enter manually instead
+          </button>
+        </div>
       </div>
 
       {/* Loading */}
