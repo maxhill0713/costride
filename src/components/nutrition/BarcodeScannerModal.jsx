@@ -109,10 +109,12 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 100));
       el = document.getElementById(divId);
+      console.log(`[BarcodeScanner] poll ${i}: el=${!!el} w=${el?.offsetWidth} h=${el?.offsetHeight}`);
       if (el && el.offsetWidth > 10 && el.offsetHeight > 10) break;
     }
 
     if (!el || el.offsetWidth <= 10) {
+      console.error('[BarcodeScanner] div never got size', el?.offsetWidth, el?.offsetHeight);
       setCameraErr('Scanner view not ready. Please try again.');
       setPhase('manual');
       return;
@@ -126,23 +128,32 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     }
 
     try {
+      console.log('[BarcodeScanner] creating Html5Qrcode on div:', divId, 'size:', el.offsetWidth, 'x', el.offsetHeight);
       const scanner = new Html5Qrcode(divId, {
         formatsToSupport: FOOD_FORMATS,
-        verbose: false,
+        verbose: true,
       });
       scannerRef.current = scanner;
 
+      console.log('[BarcodeScanner] calling scanner.start...');
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: Math.min(el.offsetWidth - 40, 260), height: 140 } },
         (decoded) => {
+          console.log('[BarcodeScanner] decoded:', decoded);
           if (!activeRef.current) return;
           stopCamera();
           fetchFood(decoded);
         },
-        () => {} // suppress per-frame errors
+        (err) => {
+          // per-frame errors are normal — only log distinct ones
+          if (err && !String(err).includes('No MultiFormat')) {
+            console.log('[BarcodeScanner] frame:', err);
+          }
+        }
       );
 
+      console.log('[BarcodeScanner] scanner started successfully');
       activeRef.current = true;
 
       fallbackTimer.current = setTimeout(() => {
@@ -150,14 +161,14 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
       }, 10000);
 
     } catch (err) {
-      console.error('[BarcodeScanner]', err);
-      const msg = String(err).toLowerCase();
+      console.error('[BarcodeScanner] START ERROR:', err, JSON.stringify(err));
+      const msg = String(err?.message || err).toLowerCase();
       if (msg.includes('permission') || msg.includes('notallowed') || msg.includes('denied')) {
-        setCameraErr('Camera permission denied. Please allow camera access and try again.');
-      } else if (msg.includes('notfound') || msg.includes('no camera')) {
+        setCameraErr('Camera permission denied. Please allow camera access in your browser settings.');
+      } else if (msg.includes('notfound') || msg.includes('no camera') || msg.includes('devices')) {
         setCameraErr('No camera found on this device.');
       } else {
-        setCameraErr(`Camera error: ${err?.message || err}`);
+        setCameraErr(`Camera error: ${err?.message || String(err)}`);
       }
       setPhase('manual');
     }
