@@ -89,9 +89,21 @@ function Sidebar({ activeTab, setActiveTab }) {
     {id:'content',Icon:LayoutGrid,label:'Content'},{id:'analytics',Icon:BarChart2,label:'Analytics'},
     {id:'automations',Icon:Zap,label:'Automations'},{id:'settings',Icon:Settings,label:'Settings'},
   ];
-  const bot = [{Icon:Monitor,label:'View Gym Page'},{Icon:Users,label:'Member View'},{Icon:LogOut,label:'Log Out'}];
   return (
-
+    <div style={{ width:200, flexShrink:0, background:T.surface, borderRight:`1px solid ${T.border}`,
+      display:'flex', flexDirection:'column', minHeight:'100vh', padding:'16px 10px' }}>
+      {nav.map(({id,Icon,label})=>(
+        <button key={id} onClick={()=>setActiveTab(id)}
+          style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 12px', borderRadius:8,
+            background: activeTab===id ? T.blueDim : 'transparent',
+            border: activeTab===id ? `1px solid ${T.blueBorder}` : '1px solid transparent',
+            color: activeTab===id ? T.blue : T.textMuted,
+            fontSize:12.5, fontWeight: activeTab===id ? 700 : 500,
+            cursor:'pointer', marginBottom:2, width:'100%', textAlign:'left' }}>
+          <Icon size={14}/>{label}
+        </button>
+      ))}
+    </div>
   );
 }
 
