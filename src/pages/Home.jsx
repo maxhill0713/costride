@@ -1029,8 +1029,9 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        {/* ── Fixed header ── */}
+  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+    {/* ── Fixed header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{
