@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { ChevronDown, Info } from 'lucide-react';
-import { format, subMonths, startOfDay } from 'date-fns';
+import { format, subMonths, startOfDay, isWithinInterval } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const LINE_COLORS = [
@@ -15,6 +15,10 @@ const LINE_COLORS = [
 ];
 
 const CUTOFF_MONTHS = 2;
+const TICK_COUNT = 9;
+
+// Day-of-week index: 0=Sun,1=Mon,...,6=Sat
+const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
 function epley(weight, reps) {
   if (!weight || weight <= 0) return 0;
@@ -128,6 +132,7 @@ function WorkoutSelector({ options, selected, onSelect }) {
 export default function ProgressiveOverloadTracker({ currentUser, animate = 0 }) {
   const [showInfo, setShowInfo] = useState(false);
   const [localKey, setLocalKey] = useState(0);
+  const [userSelectedKey, setUserSelectedKey] = useState(null); // null = auto-select mode
   const animationKey = localKey + animate;
 
   // Primary: derive workout options from named splits if the user set them up
@@ -146,6 +151,8 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         key: dayKey,
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
+        // Store which days of week this workout is scheduled on (dayKey may be a day name or index)
+        dayKey,
       }));
 
     const seen = new Set();
@@ -155,8 +162,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
       return true;
     });
   }, [currentUser]);
-
-  const [selectedWorkoutKey, setSelectedWorkoutKey] = useState(() => splitWorkoutOptions[0]?.key ?? null);
 
   const { data: workoutLogs = [], isLoading } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
@@ -188,10 +193,62 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
   const workoutOptions = splitWorkoutOptions.length > 0 ? splitWorkoutOptions : logDerivedOptions;
 
-  // When options first load (for users with no splits), select the first available key
+  // ── Determine the best default workout key ─────────────────────────────────
+  // Priority: 1) today's scheduled workout, 2) most recently logged workout type, 3) first option
+  const autoSelectedKey = useMemo(() => {
+    if (!workoutOptions.length) return null;
+
+    const todayDayName = DAY_NAMES[new Date().getDay()]; // e.g. 'monday'
+    const todayDayIndex = new Date().getDay(); // 0-6
+
+    // Try to find a split workout scheduled for today
+    // custom_workout_types keys can be day names ('monday') or day indices ('1') or arbitrary IDs
+    if (splitWorkoutOptions.length > 0) {
+      const types = currentUser?.custom_workout_types || {};
+
+      // Check if any workout key matches today by day name or numeric index
+      const todayMatch = splitWorkoutOptions.find(opt => {
+        const k = String(opt.dayKey).toLowerCase();
+        return k === todayDayName || k === String(todayDayIndex);
+      });
+
+      if (todayMatch) return todayMatch.key;
+
+      // No workout today (rest day) — find the most recently logged workout type
+      // by matching log workout_type/workout_name to a split option label
+      if (workoutLogs.length > 0) {
+        // workoutLogs is sorted by -completed_date, so first is most recent
+        for (const log of workoutLogs) {
+          const logType = log.workout_type || log.workout_name;
+          if (!logType) continue;
+          const match = splitWorkoutOptions.find(
+            opt => opt.label.toLowerCase() === logType.toLowerCase()
+          );
+          if (match) return match.key;
+        }
+      }
+    }
+
+    // For log-derived options, find the most recently logged type
+    if (logDerivedOptions.length > 0 && workoutLogs.length > 0) {
+      for (const log of workoutLogs) {
+        const logType = log.workout_type || log.workout_name || 'All Workouts';
+        const match = logDerivedOptions.find(opt => opt.key === logType);
+        if (match) return match.key;
+      }
+    }
+
+    return workoutOptions[0]?.key ?? null;
+  }, [workoutOptions, splitWorkoutOptions, logDerivedOptions, workoutLogs, currentUser]);
+
+  // The effective selected key: user's manual choice takes priority, else auto
+  const selectedWorkoutKey = userSelectedKey ?? autoSelectedKey;
+
+  // Once options load for users with no splits, also clear any stale userSelectedKey
   useEffect(() => {
-    if (!selectedWorkoutKey && workoutOptions.length > 0) {
-      setSelectedWorkoutKey(workoutOptions[0].key);
+    if (workoutOptions.length > 0 && userSelectedKey &&
+        !workoutOptions.find(o => o.key === userSelectedKey)) {
+      setUserSelectedKey(null);
     }
   }, [workoutOptions.length]);
 
@@ -232,30 +289,50 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     if (!allExerciseNames.length) return { chartData: [], exerciseMeta: [] };
 
     const now = new Date();
-    // Find the earliest data point across all exercises
-    let earliestDate = null;
+    const twoMonthsAgo = subMonths(now, CUTOFF_MONTHS);
+
+    // Find the absolute earliest data point across all exercises
+    let absoluteEarliestDate = null;
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (series?.length) {
         const d = series[0].rawDate;
-        if (!earliestDate || d < earliestDate) earliestDate = d;
+        if (!absoluteEarliestDate || d < absoluteEarliestDate) absoluteEarliestDate = d;
       }
     });
 
-    // Start from the first logged workout, but cap at CUTOFF_MONTHS back
-    const cutoffByMonths = subMonths(now, CUTOFF_MONTHS);
-    const cutoff = earliestDate && earliestDate > cutoffByMonths ? earliestDate : cutoffByMonths;
+    if (!absoluteEarliestDate) return { chartData: [], exerciseMeta: [] };
 
+    // If user has >= 2 months of data, lock to a fixed rolling 2-month window.
+    // Otherwise show from the very first data point up to now.
+    const hasEnoughHistory = absoluteEarliestDate <= twoMonthsAgo;
+    const windowStart = hasEnoughHistory ? twoMonthsAgo : absoluteEarliestDate;
+    const windowEnd = now;
+
+    // Baselines: for the fixed 2-month window, use the last known e1RM *before*
+    // windowStart (or the first data point inside the window if nothing precedes it).
+    // For the growing window, use the very first data point per exercise.
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
-      if (series?.length) baselines[name] = series[0].e1rm;
+      if (!series?.length) return;
+      if (hasEnoughHistory) {
+        // Find last point at or before windowStart to use as baseline
+        const before = [...series].filter(pt => pt.rawDate <= windowStart);
+        const inside = series.filter(pt => pt.rawDate > windowStart);
+        if (before.length > 0) {
+          baselines[name] = before[before.length - 1].e1rm;
+        } else if (inside.length > 0) {
+          baselines[name] = inside[0].e1rm;
+        }
+      } else {
+        baselines[name] = series[0].e1rm;
+      }
     });
 
-    const totalDays = Math.round((now - cutoff) / 86400000);
-    const tickCount = Math.min(9, Math.max(5, Math.round(totalDays / 7)));
-    const tickDates = Array.from({ length: tickCount }, (_, i) => {
-      const t = new Date(cutoff.getTime() + (i / (tickCount - 1)) * (now.getTime() - cutoff.getTime()));
+    const totalMs = windowEnd.getTime() - windowStart.getTime();
+    const tickDates = Array.from({ length: TICK_COUNT }, (_, i) => {
+      const t = new Date(windowStart.getTime() + (i / (TICK_COUNT - 1)) * totalMs);
       return startOfDay(t);
     });
 
@@ -263,9 +340,16 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
       const row = { date: format(tickDate, 'MMM d') };
       allExerciseNames.forEach(name => {
         const series = exerciseSeriesMap[name] || [];
-        const candidates = series.filter(pt => pt.rawDate <= tickDate);
+        // Only consider data points within the window (and up to this tick)
+        const candidates = series.filter(pt => pt.rawDate >= windowStart && pt.rawDate <= tickDate);
         if (candidates.length === 0) {
-          row[name] = null;
+          // Check if there's any data at all after window start — if not, show null
+          // If baseline exists (data before window), show 0 diff at start
+          if (baselines[name] !== undefined && tickDate <= windowStart) {
+            row[name] = 0;
+          } else {
+            row[name] = null;
+          }
         } else {
           const latest = candidates[candidates.length - 1];
           row[name] = e1rmDiff(latest.e1rm, baselines[name]);
@@ -334,7 +418,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
             options={workoutOptions}
             selected={validKey}
             onSelect={(key) => {
-              setSelectedWorkoutKey(key);
+              setUserSelectedKey(key);
               setLocalKey(k => k + 1);
             }}
           />
@@ -359,7 +443,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
               padding: '10px 13px',
               overflow: 'hidden',
             }}>
-              {/* top shimmer line */}
               <div style={{
                 position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
                 background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)',
@@ -399,7 +482,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-
           {/* Chart — 80% width */}
           <div style={{ width: '80%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
@@ -461,7 +543,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
               </div>
             ))}
           </div>
-
         </div>
       )}
     </div>
