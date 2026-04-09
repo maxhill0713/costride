@@ -91,41 +91,7 @@ function Sidebar({ activeTab, setActiveTab }) {
   ];
   const bot = [{Icon:Monitor,label:'View Gym Page'},{Icon:Users,label:'Member View'},{Icon:LogOut,label:'Log Out'}];
   return (
-    <div style={{ width:200, flexShrink:0, background:T.surface, borderRight:`1px solid ${T.border}`,
-      display:'flex', flexDirection:'column', minHeight:'100vh', position:'sticky', top:0 }}>
-      <div style={{ padding:'22px 20px 18px', borderBottom:`1px solid ${T.border}` }}>
-        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-          <div style={{ width:28, height:28, borderRadius:8,
-            background:'linear-gradient(135deg,#3b82f6 0%,#7c3aed 100%)',
-            display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Zap size={13} color="#fff" fill="#fff" />
-          </div>
-          <span style={{ fontSize:14, fontWeight:800, color:T.textPrimary, letterSpacing:'-0.01em' }}>Foundry Gym</span>
-        </div>
-      </div>
-      <nav style={{ flex:1, padding:'12px 10px', display:'flex', flexDirection:'column', gap:2 }}>
-        {nav.map(({id,Icon,label})=>{
-          const a = activeTab===id;
-          return (
-            <button key={id} onClick={()=>setActiveTab(id)} style={{
-              display:'flex', alignItems:'center', gap:9, padding:'9px 12px',
-              borderRadius:9, border:'none', cursor:'pointer', width:'100%',
-              background: a?T.blueDim:'transparent', transition:'all 0.15s',
-            }}>
-              <Icon size={14} color={a?T.blue:T.textMuted}/>
-              <span style={{ fontSize:12.5, fontWeight:a?700:500, color:a?T.blue:T.textSecondary }}>{label}</span>
-            </button>
-          );
-        })}
-      </nav>
-      <div style={{ padding:'10px 10px 16px', borderTop:`1px solid ${T.border}`, display:'flex', flexDirection:'column', gap:2 }}>
-        {bot.map(({Icon,label},i)=>(
-          <button key={i} style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 12px', borderRadius:9, border:'none', cursor:'pointer', background:'transparent' }}>
-            <Icon size={13} color={T.textMuted}/><span style={{ fontSize:11.5, color:T.textMuted }}>{label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
+
   );
 }
 
