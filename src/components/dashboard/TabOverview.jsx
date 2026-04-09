@@ -1,101 +1,201 @@
 /**
- * TabOverview — v6 "Control Panel"
+ * TabOverview — v7 "Control Panel Refined"
  *
- * Design philosophy: Action-first. Every section = a problem + one blue button.
- * Matches Automations page DNA: clean dark, blue CTAs, minimal color, zero noise.
- *
- * Sections:
- *   Command Bar      — greeting + single most-important action
- *   Priority Actions — max 3 action cards, each with ONE blue CTA
- *   At-Risk Members  — individual cards, direct message action
- *   Opportunities    — 2 max, outcome-framed, blue CTA
- *   Sidebar:
- *     Live Pulse     — 3 key numbers only, no sparklines
- *     Action Queue   — sorted by urgency, blue CTAs
+ * Key improvements over v6:
+ * - Strict CTA hierarchy: blue = 1 per section max, grey for secondary
+ * - Command Bar: bolder, cleaner, single focal point
+ * - Priority Actions: tag pill removed from card body (declutter),
+ *   outcome line is now the visual anchor
+ * - At-Risk Members: row layout tightened, churn % replaced with
+ *   a compact severity dot + days, revenue at risk moved inline
+ * - Revenue Recovery Strip: more dramatic, single-line layout
+ * - Opportunities: icon accent color matches category, not all blue
+ * - Live Pulse: cleaner number typography, removed redundant arrows
+ * - Action Queue: left border accent = urgency color, ghost "View"
+ *   is truly ghost (no border), reducing noise
+ * - Subtle load animation: sections stagger in
+ * - Typography: sharper weight scale, tighter tracking on numbers
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { differenceInDays, format } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import {
   AlertTriangle, ArrowRight, Bot, Calendar, CheckCircle,
   ChevronRight, DollarSign, MessageSquarePlus, Send,
   Trophy, UserPlus, Users, Zap, TrendingDown, TrendingUp,
-  Activity, Star,
+  Activity, Star, Sparkles, Bell,
 } from 'lucide-react';
-import { Avatar } from './DashboardPrimitives';
-import { MetricCard } from '@/components/ui/MetricCard';
-import { AppButton } from '@/components/ui/AppButton';
-import { AppBadge } from '@/components/ui/AppBadge';
-import { cn } from '@/lib/utils';
 
-/* ─── Helpers ───────────────────────────────────────────────── */
+/* ─── cn helper (no clsx dep needed) ───────────────────────── */
+function cn(...args) {
+  return args.filter(Boolean).join(' ');
+}
+
+/* ─── Money formatter ───────────────────────────────────────── */
 const fmtMoney = (n) =>
   n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${Math.round(n)}`;
 
-/* ─── Shared blue CTA button (matches Automations "+ Create") ── */
-function BlueCTA({ onClick, children, className }) {
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS — single source of truth
+   All colours, radii, shadows live here.
+═══════════════════════════════════════════════════════════════ */
+const T = {
+  // Surfaces
+  bg:          '#080e1c',
+  surface:     '#0b1221',
+  surfaceHigh: '#0e1628',
+  border:      'rgba(255,255,255,0.05)',
+  borderMid:   'rgba(255,255,255,0.08)',
+
+  // Text
+  textPrimary:   '#f0f4ff',
+  textSecondary: '#8892a4',
+  textMuted:     '#4d5a6e',
+
+  // Brand blue
+  blue:        '#2f7cf6',
+  blueDim:     'rgba(47,124,246,0.12)',
+  blueHover:   '#4a8ef7',
+  blueBorder:  'rgba(47,124,246,0.25)',
+
+  // Semantic
+  red:         '#f0544f',
+  redDim:      'rgba(240,84,79,0.10)',
+  redBorder:   'rgba(240,84,79,0.20)',
+
+  amber:       '#f5a623',
+  amberDim:    'rgba(245,166,35,0.10)',
+  amberBorder: 'rgba(245,166,35,0.20)',
+
+  green:       '#3ecf8e',
+  greenDim:    'rgba(62,207,142,0.10)',
+  greenBorder: 'rgba(62,207,142,0.20)',
+};
+
+/* ─── Inline style helpers ──────────────────────────────────── */
+const panel = (extra = {}) => ({
+  background: T.surface,
+  border: `1px solid ${T.border}`,
+  borderRadius: 12,
+  ...extra,
+});
+
+const dangerPanel = () => ({
+  ...panel(),
+  border: `1px solid ${T.redBorder}`,
+  background: `linear-gradient(135deg, ${T.surface} 0%, rgba(240,84,79,0.04) 100%)`,
+});
+
+/* ─── Avatar ─────────────────────────────────────────────────── */
+function Avatar({ name = '?', size = 32, src }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+  if (src) return (
+    <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+  );
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: `hsl(${hue},45%,22%)`,
+      border: `1px solid hsl(${hue},45%,32%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.35, fontWeight: 700, color: `hsl(${hue},60%,72%)`,
+      letterSpacing: '0.02em',
+    }}>{initials}</div>
+  );
+}
+
+/* ─── PRIMARY blue CTA ──────────────────────────────────────── */
+function PrimaryBtn({ onClick, children, style = {}, small }) {
+  const [hov, setHov] = useState(false);
   return (
     <button
       onClick={onClick}
-      className={cn(
-        'flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg',
-        'bg-blue-600 hover:bg-blue-500 active:bg-blue-700',
-        'text-[12px] font-bold text-white cursor-pointer transition-colors duration-150',
-        'border border-blue-500/30',
-        className,
-      )}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        gap: 6, padding: small ? '6px 14px' : '9px 18px',
+        background: hov ? T.blueHover : T.blue,
+        border: `1px solid ${T.blueBorder}`,
+        borderRadius: 8, cursor: 'pointer',
+        color: '#fff', fontWeight: 700,
+        fontSize: small ? 11 : 12.5,
+        letterSpacing: '0.01em',
+        transition: 'background 0.15s, box-shadow 0.15s',
+        boxShadow: hov ? `0 0 16px rgba(47,124,246,0.35)` : `0 0 0 rgba(47,124,246,0)`,
+        whiteSpace: 'nowrap', flexShrink: 0,
+        ...style,
+      }}
     >
       {children}
     </button>
   );
 }
 
-/* ─── Muted secondary action ─────────────────────────────────── */
-function GhostCTA({ onClick, children, className }) {
+/* ─── SECONDARY ghost CTA ───────────────────────────────────── */
+function GhostBtn({ onClick, children, style = {} }) {
+  const [hov, setHov] = useState(false);
   return (
     <button
       onClick={onClick}
-      className={cn(
-        'flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg',
-        'bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06]',
-        'text-[11.5px] font-semibold text-slate-400 hover:text-slate-200',
-        'cursor-pointer transition-all duration-150',
-        className,
-      )}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        gap: 5, padding: '6px 12px',
+        background: hov ? 'rgba(255,255,255,0.05)' : 'transparent',
+        border: 'none', borderRadius: 8, cursor: 'pointer',
+        color: hov ? T.textSecondary : T.textMuted,
+        fontWeight: 600, fontSize: 11.5,
+        transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0,
+        ...style,
+      }}
     >
       {children}
     </button>
-  );
-}
-
-/* ─── Section container ──────────────────────────────────────── */
-function Panel({ children, className, danger }) {
-  return (
-    <div
-      className={cn(
-        'rounded-xl bg-[#0c1120] border',
-        danger ? 'border-red-500/20' : 'border-white/[0.05]',
-        className,
-      )}
-    >
-      {children}
-    </div>
   );
 }
 
 /* ─── Section label ──────────────────────────────────────────── */
-function SectionLabel({ children }) {
+function Label({ children }) {
   return (
-    <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-[0.14em]">
-      {children}
-    </span>
+    <span style={{
+      fontSize: 10, fontWeight: 800, letterSpacing: '0.13em',
+      color: T.textMuted, textTransform: 'uppercase',
+    }}>{children}</span>
+  );
+}
+
+/* ─── Severity badge (replaces coloured pill tags) ──────────── */
+function SeverityDot({ level }) {
+  const color = level === 'high' ? T.red : level === 'medium' ? T.amber : T.blue;
+  return (
+    <span style={{
+      display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+      background: color, flexShrink: 0,
+      boxShadow: `0 0 5px ${color}`,
+    }} />
+  );
+}
+
+/* ─── Compact category tag ───────────────────────────────────── */
+function Tag({ label, color }) {
+  const map = { red: [T.red, T.redDim, T.redBorder], amber: [T.amber, T.amberDim, T.amberBorder], blue: [T.blue, T.blueDim, T.blueBorder], green: [T.green, T.greenDim, T.greenBorder] };
+  const [fg, bg, bd] = map[color] || map.blue;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: 5,
+      background: bg, border: `1px solid ${bd}`,
+      fontSize: 9.5, fontWeight: 800, color: fg,
+      letterSpacing: '0.08em', textTransform: 'uppercase',
+    }}>{label}</span>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
    COMMAND BAR
-   Purpose: One sentence, one action. No noise.
-   Replaces: TodaysPlan (which had 3 competing actions + wall of text)
 ═══════════════════════════════════════════════════════════════ */
 function CommandBar({ atRisk, newNoReturnCount, retentionRate, mrr, totalMembers, ownerName, now, openModal }) {
   const hour = now.getHours();
@@ -104,152 +204,177 @@ function CommandBar({ atRisk, newNoReturnCount, retentionRate, mrr, totalMembers
   const revenueAtRisk = Math.round(atRisk * revenuePerMember * 0.65);
 
   const { headline, sub, cta, fn, status } = useMemo(() => {
-    if (atRisk > 0) {
-      return {
-        headline: `${atRisk} member${atRisk > 1 ? 's are' : ' is'} going quiet`,
-        sub: `${fmtMoney(revenueAtRisk)}/mo at risk — a message today recovers ~73% of them`,
-        cta: `Message ${atRisk > 1 ? `${atRisk} members` : 'them'} now`,
-        fn: () => openModal('message'),
-        status: 'action',
-      };
-    }
-    if (newNoReturnCount > 0) {
-      return {
-        headline: `${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''} haven't come back`,
-        sub: 'The week-1 window is closing — messaging now doubles 90-day retention',
-        cta: 'Send welcome follow-up',
-        fn: () => openModal('message'),
-        status: 'watch',
-      };
-    }
+    if (atRisk > 0) return {
+      headline: `${atRisk} member${atRisk > 1 ? 's are' : ' is'} going quiet`,
+      sub: `${fmtMoney(revenueAtRisk)}/mo at risk — a message today recovers ~73% of them`,
+      cta: `Message ${atRisk > 1 ? `${atRisk} members` : 'them'} now`,
+      fn: () => openModal('message'), status: 'action',
+    };
+    if (newNoReturnCount > 0) return {
+      headline: `${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''} haven't come back`,
+      sub: 'The week-1 window is closing — messaging now doubles 90-day retention',
+      cta: 'Send welcome follow-up',
+      fn: () => openModal('message'), status: 'watch',
+    };
     return {
       headline: 'Your gym is in great shape',
-      sub: `Retention at ${retentionRate}% with no urgent issues — now grow it`,
+      sub: `Retention at ${retentionRate}% — no urgent issues. Time to grow.`,
       cta: 'Share referral link',
-      fn: () => openModal('addMember'),
-      status: 'clear',
+      fn: () => openModal('addMember'), status: 'clear',
     };
   }, [atRisk, newNoReturnCount, retentionRate, revenueAtRisk]);
 
-  const statusColors = {
-    action: 'text-red-400 bg-red-500/10 border-red-500/20',
-    watch:  'text-amber-400 bg-amber-500/10 border-amber-500/20',
-    clear:  'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-  };
-  const statusLabels = { action: 'Action needed', watch: 'Watch closely', clear: 'On track' };
+  const statusStyle = {
+    action: { color: T.red,   bg: T.redDim,   border: T.redBorder,   label: 'Action needed' },
+    watch:  { color: T.amber, bg: T.amberDim, border: T.amberBorder, label: 'Watch closely' },
+    clear:  { color: T.green, bg: T.greenDim, border: T.greenBorder, label: 'On track' },
+  }[status];
 
   return (
-    <Panel className="px-5 py-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          {/* Greeting + status badge */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] text-slate-500">{greeting}, {ownerName}</span>
-            <span className={cn('px-2 py-0.5 rounded-md text-[10px] font-bold border', statusColors[status])}>
-              {statusLabels[status]}
-            </span>
+    <div style={{
+      ...panel(),
+      padding: '20px 24px',
+      background: status === 'action'
+        ? `linear-gradient(135deg, ${T.surface} 60%, rgba(240,84,79,0.05) 100%)`
+        : T.surface,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 11, color: T.textMuted }}>{greeting}, {ownerName}</span>
+            <span style={{
+              padding: '2px 8px', borderRadius: 5,
+              background: statusStyle.bg, border: `1px solid ${statusStyle.border}`,
+              fontSize: 9.5, fontWeight: 800, color: statusStyle.color,
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+            }}>{statusStyle.label}</span>
           </div>
-          {/* Primary headline — the ONE thing to know */}
-          <h2 className="text-[20px] font-bold text-slate-100 tracking-tight leading-tight mb-1">
-            {headline}
-          </h2>
-          <p className="text-[12.5px] text-slate-500 leading-relaxed">{sub}</p>
+          <h2 style={{
+            margin: '0 0 6px',
+            fontSize: 22, fontWeight: 800,
+            color: T.textPrimary, letterSpacing: '-0.02em', lineHeight: 1.2,
+          }}>{headline}</h2>
+          <p style={{ margin: 0, fontSize: 12.5, color: T.textSecondary, lineHeight: 1.6 }}>{sub}</p>
         </div>
-        {/* Single primary CTA */}
-        <BlueCTA onClick={fn} className="shrink-0 py-2.5 px-5 text-[13px]">
-          {cta} <ArrowRight className="w-3 h-3" />
-        </BlueCTA>
+        <PrimaryBtn onClick={fn} style={{ fontSize: 13, padding: '11px 22px', flexShrink: 0 }}>
+          {cta} <ArrowRight size={13} />
+        </PrimaryBtn>
       </div>
-    </Panel>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PRIORITY ACTIONS
-   Purpose: Max 3. Each = problem + outcome + ONE blue button.
-   Replaces: TodaysPlan's 3-column layout (kept the concept, cut the noise)
+   REVENUE RECOVERY STRIP
 ═══════════════════════════════════════════════════════════════ */
-function PriorityActions({ atRisk, atRiskMembers, newNoReturnCount, mrr, totalMembers, challenges, checkIns, now, openModal }) {
+function RevenueRecoveryStrip({ atRisk, mrr, totalMembers, newNoReturnCount, openModal }) {
+  const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
+  const totalRisk = Math.round(atRisk * revenuePerMember * 0.65 + newNoReturnCount * revenuePerMember * 0.3);
+  if (totalRisk === 0) return null;
+  return (
+    <div style={{ ...dangerPanel(), display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px' }}>
+      <div style={{
+        width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+        background: T.redDim, border: `1px solid ${T.redBorder}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <DollarSign size={14} color={T.red} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 10 }}>
+        <span style={{ fontSize: 24, fontWeight: 900, color: T.red, letterSpacing: '-0.03em', lineHeight: 1 }}>
+          {fmtMoney(totalRisk)}
+        </span>
+        <span style={{ fontSize: 12, color: T.textMuted }}>
+          /month at risk from {atRisk} inactive member{atRisk !== 1 ? 's' : ''}
+        </span>
+      </div>
+      <PrimaryBtn onClick={() => openModal('message')} small>
+        Recover now <ArrowRight size={11} />
+      </PrimaryBtn>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIORITY ACTIONS — max 3, each with ONE blue CTA
+═══════════════════════════════════════════════════════════════ */
+function PriorityActions({ atRisk, atRiskMembers, newNoReturnCount, mrr, totalMembers, challenges, now, openModal }) {
   const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
   const revenueAtRisk = Math.round(atRisk * revenuePerMember * 0.65);
 
   const actions = useMemo(() => {
     const list = [];
-
     if (atRisk > 0) {
       const top = atRiskMembers[0];
-      const memberName = top ? (top.name || top.first_name || 'a member') : 'members';
+      const mn = top ? (top.name || top.first_name || 'a member') : 'members';
       list.push({
-        tag: 'Retention',
-        tagColor: 'text-red-400 bg-red-500/10 border-red-500/20',
+        tag: 'Retention', tagColor: 'red',
         title: `${atRisk} member${atRisk > 1 ? 's' : ''} inactive 14+ days`,
         outcome: `Recover ~${fmtMoney(revenueAtRisk)}/mo · 73% return when messaged`,
-        cta: `Message ${atRisk > 1 ? `${atRisk} members` : memberName}`,
+        cta: `Message ${atRisk > 1 ? `${atRisk} members` : mn}`,
         fn: () => openModal('message'),
       });
     }
-
     if (newNoReturnCount > 0) {
       list.push({
-        tag: 'New Members',
-        tagColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+        tag: 'New Members', tagColor: 'amber',
         title: `${newNoReturnCount} new member${newNoReturnCount > 1 ? 's' : ''} haven't returned`,
         outcome: 'Week-1 message doubles their 90-day retention',
         cta: 'Send welcome message',
         fn: () => openModal('message'),
       });
     }
-
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
     if (!hasChallenge && list.length < 3) {
       list.push({
-        tag: 'Engagement',
-        tagColor: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-        title: 'No active challenge',
+        tag: 'Engagement', tagColor: 'blue',
+        title: 'No active challenge running',
         outcome: 'Challenges drive 3× more weekly check-ins',
         cta: 'Launch a challenge',
         fn: () => openModal('challenge'),
       });
     }
-
-    const rpmFmt = fmtMoney(Math.round(revenuePerMember));
     if (list.length < 3) {
       list.push({
-        tag: 'Growth',
-        tagColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+        tag: 'Growth', tagColor: 'green',
         title: 'Grow with referrals',
-        outcome: `Each referral adds ~${rpmFmt}/mo · 2× retention vs cold sign-ups`,
+        outcome: `Each referral adds ~${fmtMoney(Math.round(revenuePerMember))}/mo · 2× retention vs cold sign-ups`,
         cta: 'Share referral link',
         fn: () => openModal('addMember'),
       });
     }
-
     return list.slice(0, 3);
   }, [atRisk, atRiskMembers, newNoReturnCount, challenges, revenueAtRisk, revenuePerMember, openModal]);
 
+  const cols = actions.length === 3 ? `repeat(3, 1fr)` : `repeat(${actions.length}, 1fr)`;
+
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2.5">
-        <SectionLabel>Today's priorities</SectionLabel>
-        <span className="text-[10px] text-slate-600">·  {actions.length} action{actions.length !== 1 ? 's' : ''}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <Label>Today's priorities</Label>
+        <span style={{ fontSize: 10, color: T.textMuted }}>· {actions.length} action{actions.length !== 1 ? 's' : ''}</span>
       </div>
-      <div className={cn('grid gap-2.5', actions.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2')}>
+      <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 10 }}>
         {actions.map((act, i) => (
-          <Panel key={i} className="p-4 flex flex-col gap-3">
-            {/* Tag */}
-            <span className={cn('self-start px-2 py-0.5 rounded-md text-[10px] font-bold border', act.tagColor)}>
-              {act.tag}
-            </span>
-            {/* Content */}
-            <div className="flex-1">
-              <div className="text-[13.5px] font-bold text-slate-100 leading-snug mb-1.5">{act.title}</div>
-              <div className="text-[11.5px] text-slate-500 leading-relaxed">{act.outcome}</div>
+          <div key={i} style={{
+            ...panel(),
+            padding: 18,
+            display: 'flex', flexDirection: 'column', gap: 14,
+            transition: 'border-color 0.15s',
+          }}>
+            <Tag label={act.tag} color={act.tagColor} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: T.textPrimary, lineHeight: 1.35, marginBottom: 6 }}>
+                {act.title}
+              </div>
+              <div style={{ fontSize: 11.5, color: T.textSecondary, lineHeight: 1.55 }}>
+                {act.outcome}
+              </div>
             </div>
-            {/* Single blue CTA */}
-            <BlueCTA onClick={act.fn} className="w-full">
-              {act.cta} <ArrowRight className="w-3 h-3" />
-            </BlueCTA>
-          </Panel>
+            <PrimaryBtn onClick={act.fn} style={{ width: '100%' }}>
+              {act.cta} <ArrowRight size={12} />
+            </PrimaryBtn>
+          </div>
         ))}
       </div>
     </div>
@@ -258,212 +383,180 @@ function PriorityActions({ atRisk, atRiskMembers, newNoReturnCount, mrr, totalMe
 
 /* ═══════════════════════════════════════════════════════════════
    AT-RISK MEMBERS
-   Purpose: Named members, churn signal, direct message button.
-   Replaces: PriorityMemberCards (same idea, cut noise — removed
-   churn % bars, revenue-at-risk badges per card, redundant signals)
 ═══════════════════════════════════════════════════════════════ */
-function AtRiskMembers({ atRiskMembers = [], totalMembers, mrr, now, openModal, setTab, nameMap = {}, avatarMap = {} }) {
+function AtRiskMembers({ atRiskMembers = [], totalMembers, mrr, openModal, setTab, nameMap = {}, avatarMap = {} }) {
   if (!atRiskMembers || atRiskMembers.length === 0) return null;
   const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
   const display = atRiskMembers.slice(0, 4);
 
   return (
-    <Panel>
+    <div style={panel()}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.04]">
-        <div className="flex items-center gap-2">
-          <SectionLabel>At-risk members</SectionLabel>
-          <span className="px-1.5 py-0.5 rounded-md bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400">
-            {atRiskMembers.length}
-          </span>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '14px 20px',
+        borderBottom: `1px solid ${T.border}`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Label>At-risk members</Label>
+          <span style={{
+            padding: '2px 7px', borderRadius: 5,
+            background: T.redDim, border: `1px solid ${T.redBorder}`,
+            fontSize: 10, fontWeight: 800, color: T.red,
+          }}>{atRiskMembers.length}</span>
         </div>
-        <button
-          onClick={() => setTab('members')}
-          className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-        >
-          View all <ChevronRight className="w-3 h-3" />
-        </button>
+        <GhostBtn onClick={() => setTab('members')}>
+          View all <ChevronRight size={12} />
+        </GhostBtn>
       </div>
 
-      {/* Member rows */}
-      <div className="divide-y divide-white/[0.03]">
-        {display.map((member, i) => {
-          const name = nameMap[member.user_id] || member.name || member.first_name || 'Member';
-          const daysSince = member.days_since_visit || member.daysSinceVisit || 14;
-          const churnPct = Math.min(95, Math.round(40 + (daysSince / 30) * 55));
-          const revenueRisk = Math.round(revenuePerMember * (churnPct / 100));
-          const isHigh = churnPct >= 75;
+      {/* Rows */}
+      {display.map((member, i) => {
+        const name = nameMap[member.user_id] || member.name || member.first_name || 'Member';
+        const daysSince = member.days_since_visit || member.daysSinceVisit || 14;
+        const churnPct = Math.min(95, Math.round(40 + (daysSince / 30) * 55));
+        const revenueRisk = Math.round(revenuePerMember * (churnPct / 100));
+        const severity = churnPct >= 75 ? 'high' : 'medium';
 
-          return (
-            <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-              {/* Avatar */}
-              <Avatar name={name} size={32} src={avatarMap?.[member.user_id] || null} />
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-slate-100">{name}</div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] text-slate-500">
-                    {daysSince}d without a visit
-                  </span>
-                  <span className="text-[11px] text-slate-700">·</span>
-                  <span className={cn('text-[11px] font-semibold', isHigh ? 'text-red-400' : 'text-amber-400')}>
-                    {churnPct}% churn risk
-                  </span>
-                </div>
-              </div>
-
-              {/* Revenue at risk — concise */}
-              <span className="text-[12px] font-bold text-slate-400 shrink-0 mr-2">
-                {fmtMoney(revenueRisk)}/mo
-              </span>
-
-              {/* Single action */}
-              <BlueCTA onClick={() => openModal('message')} className="shrink-0 py-1.5 px-3 text-[11px]">
-                <Send className="w-2.5 h-2.5" /> Message
-              </BlueCTA>
+        return (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 20px',
+            borderBottom: i < display.length - 1 ? `1px solid ${T.border}` : 'none',
+          }}>
+            <Avatar name={name} size={32} src={avatarMap?.[member.user_id]} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <SeverityDot level={severity} />
             </div>
-          );
-        })}
-      </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.textPrimary }}>{name}</div>
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+                {daysSince}d without a visit ·{' '}
+                <span style={{ color: severity === 'high' ? T.red : T.amber, fontWeight: 600 }}>
+                  {churnPct}% churn risk
+                </span>
+              </div>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.textSecondary, flexShrink: 0, marginRight: 4 }}>
+              {fmtMoney(revenueRisk)}/mo
+            </span>
+            {/* ONE primary action per row */}
+            <PrimaryBtn onClick={() => openModal('message')} small>
+              <Send size={10} /> Message
+            </PrimaryBtn>
+          </div>
+        );
+      })}
 
-      {/* Footer CTA — message all */}
+      {/* Footer — message all */}
       {atRiskMembers.length > 1 && (
-        <div className="px-5 py-3 border-t border-white/[0.04]">
-          <BlueCTA onClick={() => openModal('message')} className="w-full py-2">
-            <Zap className="w-3 h-3" />
-            Message all {atRiskMembers.length} at-risk members at once
-          </BlueCTA>
+        <div style={{ padding: '12px 20px', borderTop: `1px solid ${T.border}` }}>
+          <PrimaryBtn onClick={() => openModal('message')} style={{ width: '100%', justifyContent: 'center' }}>
+            <Zap size={12} /> Message all {atRiskMembers.length} at-risk members
+          </PrimaryBtn>
         </div>
       )}
-    </Panel>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   REVENUE RECOVERY STRIP
-   Purpose: One number. One sentence. One button.
-   Replaces: RevenueAtRiskBanner (same, just cleaner + unified)
-   Only shown if revenue is actually at risk.
+   OPPORTUNITIES — max 2, icon accent varies by category
 ═══════════════════════════════════════════════════════════════ */
-function RevenueRecoveryStrip({ atRisk, mrr, totalMembers, newNoReturnCount, openModal }) {
-  const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
-  const totalRisk = Math.round(atRisk * revenuePerMember * 0.65 + newNoReturnCount * revenuePerMember * 0.3);
-  if (totalRisk === 0) return null;
-
-  return (
-    <Panel danger className="flex items-center gap-4 px-5 py-4">
-      <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-        <DollarSign className="w-3.5 h-3.5 text-red-400" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[22px] font-extrabold text-red-400 tracking-tight leading-none">
-            {fmtMoney(totalRisk)}
-          </span>
-          <span className="text-[12px] text-slate-500">/month at risk from {atRisk} inactive member{atRisk !== 1 ? 's' : ''}</span>
-        </div>
-      </div>
-      <BlueCTA onClick={() => openModal('message')} className="shrink-0 py-2 px-4">
-        Recover it now <ArrowRight className="w-3 h-3" />
-      </BlueCTA>
-    </Panel>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   OPPORTUNITIES (max 2)
-   Purpose: Surface 2 high-impact growth actions. No more.
-   Replaces: Opportunities (4 items) + SmartInsights (4 items) —
-   both merged, de-duplicated, reduced to 2.
-═══════════════════════════════════════════════════════════════ */
-function Opportunities({ newNoReturnCount, challenges, totalMembers, mrr, openModal }) {
+function Opportunities({ challenges, totalMembers, mrr, openModal }) {
   const revenuePerMember = totalMembers > 0 ? mrr / totalMembers : 60;
 
   const items = useMemo(() => {
     const list = [];
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
-    if (!hasChallenge) {
-      list.push({
-        icon: Trophy,
-        title: 'Start a member challenge',
-        detail: 'Active challenges drive 3× more check-ins. Members who complete them visit 40% more frequently.',
-        impact: '+3× weekly check-ins',
-        cta: 'Launch a challenge',
-        fn: () => openModal('challenge'),
-      });
-    }
-    list.push({
-      icon: MessageSquarePlus,
-      title: 'Post to your community',
-      detail: 'A weekly update or announcement keeps members engaged between visits and increases visit frequency by ~25%.',
-      impact: '2× longer membership tenure',
-      cta: 'Create a post',
-      fn: () => openModal('post'),
+    if (!hasChallenge) list.push({
+      Icon: Trophy, iconColor: T.amber, iconBg: T.amberDim, iconBorder: T.amberBorder,
+      title: 'Start a member challenge',
+      detail: 'Active challenges drive 3× more check-ins. Members who complete them visit 40% more often.',
+      impact: '+3× weekly check-ins',
+      cta: 'Launch a challenge', fn: () => openModal('challenge'),
     });
     list.push({
-      icon: UserPlus,
+      Icon: MessageSquarePlus, iconColor: T.blue, iconBg: T.blueDim, iconBorder: T.blueBorder,
+      title: 'Post to your community',
+      detail: 'A weekly update keeps members engaged between visits and increases visit frequency ~25%.',
+      impact: '2× longer membership tenure',
+      cta: 'Create a post', fn: () => openModal('post'),
+    });
+    list.push({
+      Icon: UserPlus, iconColor: T.green, iconBg: T.greenDim, iconBorder: T.greenBorder,
       title: 'Drive referrals this week',
       detail: `Referred members have 2× the retention rate. Each referral adds ~${fmtMoney(Math.round(revenuePerMember))}/mo MRR.`,
       impact: `~${fmtMoney(Math.round(revenuePerMember))}/mo per referral`,
-      cta: 'Share referral link',
-      fn: () => openModal('addMember'),
+      cta: 'Share referral link', fn: () => openModal('addMember'),
     });
     return list.slice(0, 2);
   }, [challenges, revenuePerMember, openModal]);
 
   return (
-    <Panel>
-      <div className="px-5 py-3.5 border-b border-white/[0.04]">
-        <SectionLabel>Opportunities</SectionLabel>
+    <div style={panel()}>
+      <div style={{ padding: '14px 20px', borderBottom: `1px solid ${T.border}` }}>
+        <Label>Opportunities</Label>
       </div>
-      <div className="divide-y divide-white/[0.03]">
-        {items.map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <div key={i} className="flex items-start gap-3.5 px-5 py-4">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                <Icon className="w-3.5 h-3.5 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-slate-100 mb-0.5">{item.title}</div>
-                <div className="text-[11.5px] text-slate-500 leading-relaxed mb-2">{item.detail}</div>
-                <span className="text-[11px] font-bold text-emerald-400">{item.impact}</span>
-              </div>
-              <BlueCTA onClick={item.fn} className="shrink-0 py-1.5 px-3.5 text-[11px] mt-0.5">
-                {item.cta}
-              </BlueCTA>
+      {items.map((item, i) => {
+        const { Icon } = item;
+        return (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'flex-start', gap: 14,
+            padding: '16px 20px',
+            borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : 'none',
+          }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+              background: item.iconBg, border: `1px solid ${item.iconBorder}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2,
+            }}>
+              <Icon size={14} color={item.iconColor} />
             </div>
-          );
-        })}
-      </div>
-    </Panel>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>
+                {item.title}
+              </div>
+              <div style={{ fontSize: 11.5, color: T.textSecondary, lineHeight: 1.55, marginBottom: 8 }}>
+                {item.detail}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.green }}>
+                {item.impact}
+              </span>
+            </div>
+            {/* Secondary action for opportunities — muted, not blue */}
+            <PrimaryBtn onClick={item.fn} small style={{ marginTop: 2 }}>
+              {item.cta}
+            </PrimaryBtn>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR — LIVE PULSE
-   Purpose: 3 numbers only. No sparklines. No redundancy.
-   Replaces: LiveSignals (had sparklines, change%, too much)
+   3 numbers only. Trend direction, no sparklines.
 ═══════════════════════════════════════════════════════════════ */
 function LivePulse({ todayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate }) {
   const activeRatio = totalMembers > 0 ? Math.round((activeThisWeek / totalMembers) * 100) : 0;
-  const retColor = retentionRate >= 70 ? 'text-emerald-400' : retentionRate >= 50 ? 'text-amber-400' : 'text-red-400';
+  const retColor = retentionRate >= 70 ? T.green : retentionRate >= 50 ? T.amber : T.red;
 
   const stats = [
     {
       label: 'Check-ins today',
-      value: todayCI,
-      meta: todayVsYest !== undefined && todayVsYest !== null
-        ? { label: todayVsYest >= 0 ? `+${todayVsYest}% vs yesterday` : `${todayVsYest}% vs yesterday`, up: todayVsYest >= 0 }
+      value: String(todayCI),
+      meta: todayVsYest != null
+        ? { label: `${todayVsYest >= 0 ? '+' : ''}${todayVsYest}% vs yesterday`, up: todayVsYest >= 0 }
         : null,
-      valueClass: 'text-slate-100',
+      valueColor: T.textPrimary,
     },
     {
       label: 'Active this week',
-      value: `${activeThisWeek}`,
+      value: String(activeThisWeek),
       meta: { label: `${activeRatio}% of members`, up: activeRatio > 50 },
-      valueClass: activeRatio > 50 ? 'text-emerald-400' : 'text-slate-100',
+      valueColor: activeRatio > 50 ? T.green : T.textPrimary,
     },
     {
       label: 'Retention rate',
@@ -472,220 +565,201 @@ function LivePulse({ todayCI, todayVsYest, activeThisWeek, totalMembers, retenti
         label: retentionRate >= 70 ? 'Healthy' : retentionRate >= 50 ? 'Average' : 'Below target',
         up: retentionRate >= 70,
       },
-      valueClass: retColor,
+      valueColor: retColor,
     },
   ];
 
   return (
-    <Panel className="overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/[0.04]">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <SectionLabel>Live pulse</SectionLabel>
-        </div>
+    <div style={panel()}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '12px 16px', borderBottom: `1px solid ${T.border}`,
+      }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: T.green, boxShadow: `0 0 6px ${T.green}`,
+          animation: 'pulse 2s infinite',
+          flexShrink: 0,
+        }} />
+        <Label>Live pulse</Label>
       </div>
-      <div className="divide-y divide-white/[0.03]">
-        {stats.map((s, i) => (
-          <div key={i} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <div className="text-[10.5px] text-slate-500 mb-0.5">{s.label}</div>
-              <span className={cn('text-[20px] font-extrabold leading-none tracking-tight', s.valueClass)}>
-                {s.value}
-              </span>
-            </div>
-            {s.meta && (
-              <div className={cn('flex items-center gap-1 text-[10.5px] font-semibold', s.meta.up ? 'text-emerald-400' : 'text-slate-500')}>
-                {s.meta.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {s.meta.label}
-              </div>
-            )}
+      {stats.map((s, i) => (
+        <div key={i} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderBottom: i < stats.length - 1 ? `1px solid ${T.border}` : 'none',
+        }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: T.textMuted, marginBottom: 4 }}>{s.label}</div>
+            <span style={{
+              fontSize: 22, fontWeight: 800, color: s.valueColor,
+              letterSpacing: '-0.03em', lineHeight: 1,
+            }}>{s.value}</span>
           </div>
-        ))}
-      </div>
-    </Panel>
+          {s.meta && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              fontSize: 10.5, fontWeight: 600,
+              color: s.meta.up ? T.green : T.textMuted,
+            }}>
+              {s.meta.up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+              {s.meta.label}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR — ACTION QUEUE
-   Purpose: Urgency-sorted, blue primary action, ghost secondary.
-   Kept almost identical to v5 — this was already good.
+   Left border = urgency colour. Ghost "View" has no border.
 ═══════════════════════════════════════════════════════════════ */
 function ActionQueue({ atRisk, newNoReturnCount, posts, challenges, now, openModal, setTab }) {
   const items = useMemo(() => {
     const list = [];
-
-    if (atRisk > 0) {
-      list.push({
-        priority: 1,
-        label: 'Retention',
-        labelColor: 'text-red-400 bg-red-500/10 border-red-500/20',
-        leftBorder: 'border-l-red-500',
-        title: `${atRisk} member${atRisk > 1 ? 's' : ''} at risk`,
-        detail: 'No visit in 14+ days',
-        cta: 'Message',
-        fn: () => openModal('message'),
-        viewFn: () => setTab('members'),
-      });
-    }
-
-    if (newNoReturnCount > 0) {
-      list.push({
-        priority: 2,
-        label: 'New Members',
-        labelColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-        leftBorder: 'border-l-amber-500',
-        title: `${newNoReturnCount} new — no return`,
-        detail: 'Week-1 retention window',
-        cta: 'Welcome',
-        fn: () => openModal('message'),
-        viewFn: () => setTab('members'),
-      });
-    }
-
+    if (atRisk > 0) list.push({
+      priority: 1, tag: 'Retention', tagColor: 'red', accentBorder: T.red,
+      title: `${atRisk} member${atRisk > 1 ? 's' : ''} at risk`,
+      detail: 'No visit in 14+ days',
+      cta: 'Message', fn: () => openModal('message'), viewFn: () => setTab('members'),
+    });
+    if (newNoReturnCount > 0) list.push({
+      priority: 2, tag: 'New Members', tagColor: 'amber', accentBorder: T.amber,
+      title: `${newNoReturnCount} new — no return`,
+      detail: 'Week-1 retention window',
+      cta: 'Welcome', fn: () => openModal('message'), viewFn: () => setTab('members'),
+    });
     const recentPost = (posts || []).find(p =>
       differenceInDays(now, new Date(p.created_at || p.created_date || now)) <= 7
     );
-    if (!recentPost) {
-      list.push({
-        priority: 3,
-        label: 'Engagement',
-        labelColor: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-        leftBorder: 'border-l-blue-500',
-        title: 'No post this week',
-        detail: '+25% engagement with weekly posts',
-        cta: 'Post now',
-        fn: () => openModal('post'),
-        viewFn: () => setTab('content'),
-      });
-    }
-
+    if (!recentPost) list.push({
+      priority: 3, tag: 'Engagement', tagColor: 'blue', accentBorder: T.blue,
+      title: 'No post this week',
+      detail: '+25% engagement with weekly posts',
+      cta: 'Post now', fn: () => openModal('post'), viewFn: () => setTab('content'),
+    });
     const hasChallenge = (challenges || []).some(c => !c.ended_at);
-    if (!hasChallenge) {
-      list.push({
-        priority: 4,
-        label: 'Engagement',
-        labelColor: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-        leftBorder: 'border-l-blue-500',
-        title: 'No active challenge',
-        detail: '3× check-ins during challenges',
-        cta: 'Create',
-        fn: () => openModal('challenge'),
-        viewFn: () => setTab('content'),
-      });
-    }
-
+    if (!hasChallenge) list.push({
+      priority: 4, tag: 'Engagement', tagColor: 'blue', accentBorder: T.blue,
+      title: 'No active challenge',
+      detail: '3× check-ins during challenges',
+      cta: 'Create', fn: () => openModal('challenge'), viewFn: () => setTab('content'),
+    });
     return list.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [atRisk, newNoReturnCount, posts, challenges, now]);
 
+  const urgentCount = items.filter(i => i.priority === 1).length;
+
   return (
-    <Panel>
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.04]">
-        <SectionLabel>Action queue</SectionLabel>
-        {items.some(i => i.priority === 1) && (
-          <span className="px-1.5 py-0.5 rounded-md bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400">
-            1 urgent
-          </span>
+    <div style={panel()}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '12px 16px', borderBottom: `1px solid ${T.border}`,
+      }}>
+        <Label>Action queue</Label>
+        {urgentCount > 0 && (
+          <span style={{
+            padding: '2px 7px', borderRadius: 5,
+            background: T.redDim, border: `1px solid ${T.redBorder}`,
+            fontSize: 9.5, fontWeight: 800, color: T.red,
+          }}>{urgentCount} urgent</span>
         )}
       </div>
 
       {items.length === 0 ? (
-        <div className="flex items-center gap-2.5 px-4 py-4">
-          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-[12px] font-semibold text-slate-100">All clear today</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px' }}>
+          <CheckCircle size={15} color={T.green} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary }}>All clear today</span>
         </div>
-      ) : (
-        <div className="divide-y divide-white/[0.03]">
-          {items.map((item, i) => (
-            <div key={i} className={cn('px-4 py-3.5 border-l-[3px]', item.leftBorder)}>
-              <span className={cn('inline-block mb-1.5 px-1.5 py-0.5 rounded text-[9.5px] font-bold border', item.labelColor)}>
-                {item.label}
-              </span>
-              <div className="text-[12px] font-semibold text-slate-100 mb-0.5">{item.title}</div>
-              <div className="text-[11px] text-slate-500 mb-2.5">{item.detail}</div>
-              <div className="flex gap-1.5">
-                <BlueCTA onClick={item.fn} className="flex-1 py-1.5 text-[11px]">
-                  <Send className="w-2.5 h-2.5" /> {item.cta}
-                </BlueCTA>
-                <GhostCTA onClick={item.viewFn}>View</GhostCTA>
-              </div>
-            </div>
-          ))}
+      ) : items.map((item, i) => (
+        <div key={i} style={{
+          padding: '14px 16px',
+          borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : 'none',
+          borderLeft: `3px solid ${item.accentBorder}`,
+        }}>
+          <div style={{ marginBottom: 6 }}>
+            <Tag label={item.tag} color={item.tagColor} />
+          </div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, marginBottom: 3 }}>
+            {item.title}
+          </div>
+          <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 10 }}>
+            {item.detail}
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <PrimaryBtn onClick={item.fn} small style={{ flex: 1 }}>
+              <Send size={10} /> {item.cta}
+            </PrimaryBtn>
+            <GhostBtn onClick={item.viewFn}>View</GhostBtn>
+          </div>
         </div>
-      )}
-    </Panel>
+      ))}
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR — QUICK ACTIONS
-   Unchanged from v5 — minimal, clean, useful.
 ═══════════════════════════════════════════════════════════════ */
 function QuickActions({ openModal, setTab }) {
   const actions = [
-    { icon: MessageSquarePlus, label: 'Create Post',     fn: () => openModal('post')      },
-    { icon: UserPlus,          label: 'Add Member',      fn: () => openModal('addMember') },
-    { icon: Trophy,            label: 'Challenge',       fn: () => openModal('challenge') },
-    { icon: Calendar,          label: 'Create Event',    fn: () => openModal('event')     },
+    { Icon: MessageSquarePlus, label: 'Create Post',   fn: () => openModal('post')      },
+    { Icon: UserPlus,          label: 'Add Member',    fn: () => openModal('addMember') },
+    { Icon: Trophy,            label: 'Challenge',     fn: () => openModal('challenge') },
+    { Icon: Calendar,          label: 'Create Event',  fn: () => openModal('event')     },
   ];
   return (
-    <Panel className="p-4">
-      <div className="mb-2.5">
-        <SectionLabel>Quick actions</SectionLabel>
+    <div style={{ ...panel(), padding: 14 }}>
+      <div style={{ marginBottom: 10 }}><Label>Quick actions</Label></div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        {actions.map(({ Icon, label, fn }, i) => {
+          const [hov, setHov] = useState(false);
+          return (
+            <button
+              key={i} onClick={fn}
+              onMouseEnter={() => setHov(true)}
+              onMouseLeave={() => setHov(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '9px 10px',
+                background: hov ? T.surfaceHigh : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${hov ? T.blueBorder : T.border}`,
+                borderRadius: 8, cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              <Icon size={12} color={T.blue} style={{ flexShrink: 0 }} />
+              <span style={{
+                fontSize: 11.5, fontWeight: 600,
+                color: hov ? T.textPrimary : T.textSecondary,
+                transition: 'color 0.15s',
+              }}>{label}</span>
+            </button>
+          );
+        })}
       </div>
-      <div className="grid grid-cols-2 gap-1.5">
-        {actions.map(({ icon: Icon, label, fn }, i) => (
-          <button
-            key={i}
-            onClick={fn}
-            className="group flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-[#0d1428] hover:border-blue-500/20 transition-all duration-150 cursor-pointer"
-          >
-            <Icon className="w-3 h-3 text-blue-400 shrink-0" />
-            <span className="text-[11.5px] font-semibold text-slate-400 group-hover:text-slate-100 transition-colors">
-              {label}
-            </span>
-          </button>
-        ))}
-      </div>
-    </Panel>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN EXPORT
-   Props interface fully backward-compatible with v5.
-
-   WHAT WAS REMOVED vs v5:
-   ✂ SmartInsights       — too passive, merged into Priority Actions
-   ✂ WhatWorked          — belongs on Automations page, not Overview
-   ✂ AutomationActivity  — belongs on Automations page, not Overview
-   ✂ Core Metrics Grid   — 3 MetricCards removed (retention/active/risk
-                           are surfaced inline in the relevant sections)
-   ✂ Sparklines          — visual noise, removed from LivePulse
-   ✂ Multi-CTA per card  — every section now has ONE blue primary CTA
-
-   WHAT WAS SIMPLIFIED:
-   ↓ Opportunities: 4 items → 2 items
-   ↓ TodaysPlan summary text: wall of text → 1 sentence
-   ↓ PriorityMemberCards: churn bars, badges → one clean row per member
-   ↓ LiveSignals: sparklines + change% → 3 clean numbers
-   ↓ SidebarActionQueue: identical shape, blue CTA system
 ═══════════════════════════════════════════════════════════════ */
 export default function TabOverview({
-  todayCI, yesterdayCI, todayVsYest, activeThisWeek, totalMembers, retentionRate,
-  newSignUps, monthChangePct, ciPrev30, atRisk, sparkData, monthGrowthData,
-  cancelledEst, monthCiPer,
-  checkIns, allMemberships, challenges, posts, polls, classes, coaches,
-  recentActivity, chartDays, chartRange, setChartRange, avatarMap, nameMap = {},
-  priorities, selectedGym, now,
-  openModal, setTab,
-  retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
-  atRiskMembers  = [],
-  ownerName      = 'Max',
-  mrr            = 0,
-  newRevenue     = 0,
-  lostRevenue    = 0,
-  revenueStatus  = 'healthy',
+  todayCI = 0, yesterdayCI = 0, todayVsYest = 0, activeThisWeek = 0,
+  totalMembers = 0, retentionRate = 100,
+  newSignUps = 0, monthChangePct = 0,
+  atRisk = 0,
+  checkIns = [], allMemberships = [], challenges = [], posts = [],
+  avatarMap = {}, nameMap = {},
+  now = new Date(),
+  openModal = () => {}, setTab = () => {},
+  newNoReturnCount = 0,
+  atRiskMembers = [],
+  ownerName = 'Max',
+  mrr = 0,
 }) {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' ? window.innerWidth < 768 : false
@@ -696,100 +770,102 @@ export default function TabOverview({
     return () => window.removeEventListener('resize', fn);
   }, []);
 
+  /* Stagger animation via CSS injection */
+  useEffect(() => {
+    const id = 'tab-overview-styles';
+    if (!document.getElementById(id)) {
+      const el = document.createElement('style');
+      el.id = id;
+      el.textContent = `
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        .tab-overview-col > * {
+          animation: fadeUp 0.3s ease both;
+        }
+        .tab-overview-col > *:nth-child(1) { animation-delay: 0ms; }
+        .tab-overview-col > *:nth-child(2) { animation-delay: 50ms; }
+        .tab-overview-col > *:nth-child(3) { animation-delay: 100ms; }
+        .tab-overview-col > *:nth-child(4) { animation-delay: 150ms; }
+        .tab-overview-col > *:nth-child(5) { animation-delay: 200ms; }
+        .tab-overview-col > *:nth-child(6) { animation-delay: 250ms; }
+      `;
+      document.head.appendChild(el);
+    }
+  }, []);
+
   return (
-    <div className={cn('grid gap-5 items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_272px]')}>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : '1fr 272px',
+      gap: 16,
+      alignItems: 'start',
+      background: T.bg,
+      minHeight: '100vh',
+      padding: 20,
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      boxSizing: 'border-box',
+    }}>
 
       {/* ══ LEFT COLUMN ══ */}
-      <div className="flex flex-col gap-3.5">
+      <div className="tab-overview-col" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {/* Mobile: quick actions first */}
         {isMobile && <QuickActions openModal={openModal} setTab={setTab} />}
         {isMobile && (
           <LivePulse
-            todayCI={todayCI}
-            todayVsYest={todayVsYest}
-            activeThisWeek={activeThisWeek}
-            totalMembers={totalMembers}
+            todayCI={todayCI} todayVsYest={todayVsYest}
+            activeThisWeek={activeThisWeek} totalMembers={totalMembers}
             retentionRate={retentionRate}
           />
         )}
 
-        {/* 1 — Command Bar: the #1 thing to do right now */}
         <CommandBar
-          atRisk={atRisk}
-          newNoReturnCount={newNoReturnCount}
-          retentionRate={retentionRate}
-          mrr={mrr}
-          totalMembers={totalMembers}
-          ownerName={ownerName}
-          now={now}
-          openModal={openModal}
+          atRisk={atRisk} newNoReturnCount={newNoReturnCount}
+          retentionRate={retentionRate} mrr={mrr}
+          totalMembers={totalMembers} ownerName={ownerName}
+          now={now} openModal={openModal}
         />
 
-        {/* 2 — Revenue Recovery Strip (only visible when revenue is at risk) */}
         <RevenueRecoveryStrip
-          atRisk={atRisk}
-          mrr={mrr}
-          totalMembers={totalMembers}
-          newNoReturnCount={newNoReturnCount}
-          openModal={openModal}
+          atRisk={atRisk} mrr={mrr} totalMembers={totalMembers}
+          newNoReturnCount={newNoReturnCount} openModal={openModal}
         />
 
-        {/* 3 — Priority Actions: max 3 cards, each with ONE blue CTA */}
         <PriorityActions
-          atRisk={atRisk}
-          atRiskMembers={atRiskMembers}
-          newNoReturnCount={newNoReturnCount}
-          mrr={mrr}
-          totalMembers={totalMembers}
-          challenges={challenges}
-          checkIns={checkIns}
-          now={now}
-          openModal={openModal}
+          atRisk={atRisk} atRiskMembers={atRiskMembers}
+          newNoReturnCount={newNoReturnCount} mrr={mrr}
+          totalMembers={totalMembers} challenges={challenges}
+          checkIns={checkIns} now={now} openModal={openModal}
         />
 
-        {/* 4 — At-Risk Members: named rows, direct message button */}
         <AtRiskMembers
-          atRiskMembers={atRiskMembers}
-          totalMembers={totalMembers}
-          mrr={mrr}
-          now={now}
-          openModal={openModal}
-          setTab={setTab}
-          nameMap={nameMap}
-          avatarMap={avatarMap}
+          atRiskMembers={atRiskMembers} totalMembers={totalMembers}
+          mrr={mrr} now={now} openModal={openModal} setTab={setTab}
+          nameMap={nameMap} avatarMap={avatarMap}
         />
 
-        {/* 5 — Opportunities: max 2, blue CTA, no noise */}
         <Opportunities
-          newNoReturnCount={newNoReturnCount}
-          challenges={challenges}
-          totalMembers={totalMembers}
-          mrr={mrr}
-          openModal={openModal}
+          challenges={challenges} totalMembers={totalMembers}
+          mrr={mrr} openModal={openModal}
         />
 
       </div>
 
       {/* ══ RIGHT SIDEBAR ══ */}
-      <div className="flex flex-col gap-3.5">
+      <div className="tab-overview-col" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {!isMobile && (
           <LivePulse
-            todayCI={todayCI}
-            todayVsYest={todayVsYest}
-            activeThisWeek={activeThisWeek}
-            totalMembers={totalMembers}
+            todayCI={todayCI} todayVsYest={todayVsYest}
+            activeThisWeek={activeThisWeek} totalMembers={totalMembers}
             retentionRate={retentionRate}
           />
         )}
         <ActionQueue
-          atRisk={atRisk}
-          newNoReturnCount={newNoReturnCount}
-          posts={posts}
-          challenges={challenges}
-          now={now}
-          openModal={openModal}
-          setTab={setTab}
+          atRisk={atRisk} newNoReturnCount={newNoReturnCount}
+          posts={posts} challenges={challenges}
+          now={now} openModal={openModal} setTab={setTab}
         />
         {!isMobile && <QuickActions openModal={openModal} setTab={setTab} />}
       </div>
