@@ -583,7 +583,7 @@ export default function Gyms() {
             <div className="mb-4">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Recently Viewed</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {recentlyViewedGyms.map((gym) =>
+                  {recentlyViewedGyms.slice(0, 3).map((gym) =>
                 <div key={gym.id} className="group relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                       <div
