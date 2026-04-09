@@ -821,23 +821,25 @@ export default function ClassDetailModal({
                         {className}
                       </h2>
                       {instructor && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <button onClick={() => setShowCoachProfile(true)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1, minWidth: 0 }}>
                             <div style={{ width: 33, height: 33, borderRadius: '50%', background: `linear-gradient(135deg,${c.color}55,${c.color}22)`, border: `1.5px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: c.color, flexShrink: 0, boxShadow: `0 0 10px ${c.glow}` }}>
                               {ini(instructor)}
                             </div>
-                            <div>
+                            <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{instructor}</div>
-                              <div style={{ fontSize: 10, color: c.color, fontWeight: 600, marginTop: 2 }}>Lead Instructor · View profile →</div>
+                              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', fontWeight: 600, marginTop: 2 }}>Lead Instructor</div>
                             </div>
-                          </button>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                             <div style={{ display: 'flex', gap: 1 }}>
                               {[1, 2, 3, 4, 5].map(s => <Star key={s} style={{ width: 10, height: 10, fill: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)', color: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)' }} />)}
                             </div>
                             <span style={{ fontSize: 12, fontWeight: 800, color: '#fbbf24' }}>{avg}</span>
-                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>({reviewCount})</span>
+                            <button onClick={() => setShowCoachProfile(true)}
+                              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: `1px solid ${c.border}`, background: c.bg, color: c.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                              View Profile
+                            </button>
                           </div>
                         </div>
                       )}
