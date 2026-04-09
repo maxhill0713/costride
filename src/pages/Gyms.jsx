@@ -91,6 +91,16 @@ export default function Gyms() {
 
   usePrimaryGymDialogStyles();
 
+  // ── Overscroll background fix ──
+  useEffect(() => {
+    document.body.style.backgroundColor = '#02040a';
+    document.documentElement.style.backgroundColor = '#02040a';
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, []);
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => null),
@@ -372,16 +382,14 @@ export default function Gyms() {
           </div>
         </div>
       </div>);
-
   };
 
   return (
-    // ── FIX: transparent main div + fixed background div for seamless overscroll ──
-    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
-    {/* Overscroll background fix — covers rubber-band pull area on iOS/Android */}
-    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+    <div className="min-h-screen">
+      {/* Fixed background — covers rubber-band overscroll area on iOS/Android */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
-    <Tabs defaultValue="my-gyms" className="w-full">
+      <Tabs defaultValue="my-gyms" className="w-full">
         {/* ── Fixed header — Star + Tabs + Join with Code all in one bar ── */}
         <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
@@ -427,13 +435,11 @@ export default function Gyms() {
                     WebkitBackdropFilter: 'blur(16px)',
                     boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
                   }}>
-                  
                         <div
                     className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                     style={{
                       background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
                     }} />
-                  
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                           {gym.image_url ?
                     <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" /> :
@@ -524,7 +530,6 @@ export default function Gyms() {
                     spellCheck="false"
                     style={{ fontSize: '16px' }}
                     className="flex w-full px-3 py-1 text-base shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200" />
-                  
                   {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
                 </div>
                 <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
@@ -593,7 +598,6 @@ export default function Gyms() {
                       WebkitBackdropFilter: 'blur(16px)',
                       boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
                     }}>
-                    
                         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                     style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
@@ -646,13 +650,11 @@ export default function Gyms() {
                     WebkitBackdropFilter: 'blur(16px)',
                     boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
                   }}>
-                  
                       <div
                     className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                     style={{
                       background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
                     }} />
-                  
                       <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                         {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="eager" fetchpriority="high" />}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -689,8 +691,10 @@ export default function Gyms() {
           </div>
         </TabsContent>
       </Tabs>
+
       <EditHeroImageModal open={!!editingGym} onClose={() => setEditingGym(null)} currentImageUrl={editingGym?.image_url} onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })} isLoading={updateGymImageMutation.isPending} />
       <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} gymCount={userGyms.length} />
+
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
@@ -711,6 +715,7 @@ export default function Gyms() {
           </div>
         </DialogContent>
       </Dialog>
+
       <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <div>
@@ -733,7 +738,6 @@ export default function Gyms() {
         <DialogContent
           data-primary-gym-dialog
           className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 pg-item-in" style={{ animationDelay: '60ms' }}>
               <Star className="w-5 h-5 text-purple-400" />Set Primary Gym
@@ -752,7 +756,6 @@ export default function Gyms() {
                     onClick={() => setSelectedPrimaryGym(gym.id)}
                     className={`pg-item-in w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}
                     style={{ animationDelay: `${140 + i * 55}ms` }}>
-                    
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div>
@@ -763,13 +766,11 @@ export default function Gyms() {
                       {isPrimary && <Badge className="bg-purple-500 text-white"><Star className="w-3 h-3 mr-1" />Primary</Badge>}
                     </div>
                   </button>);
-
               })}
             </div>
             <div
               className="flex gap-3 pg-item-in"
               style={{ animationDelay: `${140 + userGyms.length * 55}ms` }}>
-              
               <Button onClick={() => {setShowPrimaryGymModal(false);setSelectedPrimaryGym(null);}} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700">Cancel</Button>
               <Button onClick={() => {if (selectedPrimaryGym) {updatePrimaryGymMutation.mutate(selectedPrimaryGym);} else {setShowPrimaryGymModal(false);setSelectedPrimaryGym(null);}}} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
                 {updatePrimaryGymMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
@@ -813,6 +814,7 @@ export default function Gyms() {
           </div>
         </DialogContent>
       </Dialog>
+
       {showFilterModal &&
       <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
@@ -854,6 +856,7 @@ export default function Gyms() {
           </div>
         </>
       }
+
       <Dialog open={showAddGymModal} onOpenChange={() => {setShowAddGymModal(false);setSelectedPlaceGym(null);setIsOwner(false);setGymType('general');}}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
@@ -907,6 +910,6 @@ export default function Gyms() {
           }
         </DialogContent>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }
