@@ -522,37 +522,6 @@ function LastSevenDaysWinbacks() {
         );
         }
 
-/* ─── Live Pulse Feed ────────────────────────────────────────── */
-function LivePulseFeed() {
-  const events = [
-    { name: 'James Olafor', action: 'returned via automation', time: '3h ago' },
-    { name: 'Sarah Chen',   action: 'booked class via Nudge',  time: '5h ago' },
-  ];
-  return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Live Pulse Feed</span>
-        </div>
-        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
-      </div>
-      {events.map((ev, i) => (
-        <div key={i} style={{ padding: '11px 14px', borderBottom: i < events.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
-          <Avatar name={ev.name} size={27} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: C.text, lineHeight: 1.4 }}>
-              <span style={{ fontWeight: 700 }}>{ev.name}</span>
-              <span style={{ color: C.muted }}> – {ev.action}</span>
-            </div>
-            <div style={{ fontSize: 9.5, color: C.dim, marginTop: 2 }}>{ev.time}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ─── Member Milestones ──────────────────────────────────────── */
 function MemberMilestones() {
   const list = [
