@@ -29,7 +29,7 @@ function PageShell({ title, children }) {
     <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
       {/* Status bar colour fill — matches header bg so it bleeds to top of phone */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'env(safe-area-inset-top)', background: 'rgba(2,4,10,0.95)', zIndex: 20 }} />
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
         <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
           <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
             <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
