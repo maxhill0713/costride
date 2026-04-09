@@ -775,6 +775,22 @@ function ActionQueue({ atRisk, newNoReturnCount, posts, challenges, now, openMod
 }
 
 /* ─── Quick Actions ──────────────────────────────────────────── */
+function QuickActionBtn({ Icon, label, fn }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 7, padding: '9px 10px',
+        background: hov ? T.surfaceHigh : 'rgba(255,255,255,0.02)',
+        border: `1px solid ${hov ? T.blueBorder : T.border}`,
+        borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s', width: '100%',
+      }}>
+      <Icon size={12} color={T.blue} style={{ flexShrink: 0 }} />
+      <span style={{ fontSize: 11.5, fontWeight: 600, color: hov ? T.textPrimary : T.textSecondary, transition: 'color 0.15s' }}>{label}</span>
+    </button>
+  );
+}
+
 function QuickActions({ openModal, setTab }) {
   const actions = [
     { Icon: MessageSquarePlus, label: 'Create Post',  fn: () => openModal('post')      },
@@ -786,21 +802,9 @@ function QuickActions({ openModal, setTab }) {
     <div style={{ ...panel(), padding: 14 }}>
       <div style={{ marginBottom: 10 }}><Label>Quick actions</Label></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        {actions.map(({ Icon, label, fn }, i) => {
-          const [hov, setHov] = useState(false);
-          return (
-            <button key={i} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7, padding: '9px 10px',
-                background: hov ? T.surfaceHigh : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${hov ? T.blueBorder : T.border}`,
-                borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
-              }}>
-              <Icon size={12} color={T.blue} style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: hov ? T.textPrimary : T.textSecondary, transition: 'color 0.15s' }}>{label}</span>
-            </button>
-          );
-        })}
+        {actions.map(({ Icon, label, fn }, i) => (
+          <QuickActionBtn key={i} Icon={Icon} label={label} fn={fn} />
+        ))}
       </div>
     </div>
   );
