@@ -783,76 +783,68 @@ export default function MembersPageAI() {
       fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased",
     }}>
-      {/* Left sidebar */}
-      <Sidebar />
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Scrollable center */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px 80px", minWidth: 0 }}>
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-        <TopBar atRiskCount={counts.atRisk} />
-
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          {/* Scrollable center */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px 80px", minWidth: 0 }}>
-
-            {/* Page heading — matches "Content Center / Hub" pattern */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: "-0.02em", display: "flex", alignItems: "baseline", gap: 6 }}>
-                  Members
-                  <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
-                  <span style={{ color: "#818cf8" }}>CRM</span>
-                </div>
-                <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>AI-powered retention · know who needs you, act instantly</div>
+          {/* Page heading */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: "-0.02em", display: "flex", alignItems: "baseline", gap: 6 }}>
+                Members
+                <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
+                <span style={{ color: "#818cf8" }}>CRM</span>
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
-                  <Activity size={11} /> Export
-                </button>
-                <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "#3b82f6", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-                  <Plus size={13} /> Invite Member
-                </button>
-              </div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>AI-powered retention · know who needs you, act instantly</div>
             </div>
-
-            {/* Main table card */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
-              <FilterBar
-                filter={filter} setFilter={setFilter}
-                search={search} setSearch={setSearch}
-                sort={sort}     setSort={setSort}
-                counts={counts}
-              />
-              <MembersTable
-                members={members} filter={filter} search={search} sort={sort} setSort={setSort}
-                selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
-                previewMember={previewMember} setPreviewMember={setPreviewMember}
-                onMessage={handleMessage}
-              />
-              <BulkBar
-                selectedRows={selectedRows} members={members}
-                onClear={() => setSelectedRows(new Set())}
-                onBulkMessage={sel => setMessageTarget(sel[0])}
-              />
-              {/* Pagination */}
-              <div style={{ padding: "8px 14px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {[ChevronLeft, ChevronRight].map((Icon, i) => (
-                    <button key={i} style={{ width: 26, height: 26, borderRadius: 7, background: "transparent", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: 0.4 }}>
-                      <Icon size={11} color={C.muted} />
-                    </button>
-                  ))}
-                  <button style={{ width: 26, height: 26, borderRadius: 7, background: C.card2, border: `1px solid ${C.border2}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11.5, fontWeight: 800, color: C.text }}>
-                    1
-                  </button>
-                </div>
-                <span style={{ fontSize: 10.5, color: C.dim }}>{members.length} members · page 1 of 1</span>
-              </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                <Activity size={11} /> Export
+              </button>
+              <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "#3b82f6", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                <Plus size={13} /> Invite Member
+              </button>
             </div>
           </div>
 
-          {/* Right action sidebar */}
-          <ActionSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+          {/* Main table card */}
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+            <FilterBar
+              filter={filter} setFilter={setFilter}
+              search={search} setSearch={setSearch}
+              sort={sort}     setSort={setSort}
+              counts={counts}
+            />
+            <MembersTable
+              members={members} filter={filter} search={search} sort={sort} setSort={setSort}
+              selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
+              previewMember={previewMember} setPreviewMember={setPreviewMember}
+              onMessage={handleMessage}
+            />
+            <BulkBar
+              selectedRows={selectedRows} members={members}
+              onClear={() => setSelectedRows(new Set())}
+              onBulkMessage={sel => setMessageTarget(sel[0])}
+            />
+            {/* Pagination */}
+            <div style={{ padding: "8px 14px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[ChevronLeft, ChevronRight].map((Icon, i) => (
+                  <button key={i} style={{ width: 26, height: 26, borderRadius: 7, background: "transparent", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: 0.4 }}>
+                    <Icon size={11} color={C.muted} />
+                  </button>
+                ))}
+                <button style={{ width: 26, height: 26, borderRadius: 7, background: C.card2, border: `1px solid ${C.border2}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11.5, fontWeight: 800, color: C.text }}>
+                  1
+                </button>
+              </div>
+              <span style={{ fontSize: 10.5, color: C.dim }}>{members.length} members · page 1 of 1</span>
+            </div>
+          </div>
         </div>
+
+        {/* Right action sidebar */}
+        <ActionSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
       </div>
 
       {/* Overlays */}
