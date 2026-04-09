@@ -329,8 +329,9 @@ export default function Profile() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-        <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
+<div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+      {/* ── TOP BAR ── */}        <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
           <div className="w-28 h-4 rounded bg-slate-700/60 animate-pulse" />
           <div className="w-6 h-6 rounded bg-slate-700/60 animate-pulse" />
         </div>
