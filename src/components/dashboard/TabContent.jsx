@@ -528,6 +528,207 @@ function RightSidebar() {
   );
 }
 
+/* ─── content area ─────────────────────────────────────────────── */
+function ContentArea({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
+  const [tab, setTab] = useState("Drafts");
+  const [alert, setAlert] = useState(true);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px 40px", minWidth: 0 }}>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: "-0.02em", display: "flex", alignItems: "baseline", gap: 6 }}>
+              Content Center
+              <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
+              <span style={{ color: "#818cf8" }}>Hub</span>
+            </div>
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setShowCreateMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Create New <ChevronDown size={11} />
+              </button>
+              {showCreateMenu && (
+                <>
+                  <div onClick={() => setShowCreateMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
+                  <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 100, background: "#0d1320", border: `1px solid ${C.border2}`, borderRadius: 10, overflow: "hidden", minWidth: 170, boxShadow: "0 12px 36px rgba(0,0,0,0.6)" }}>
+                    {[
+                      { label: "📝 New Post",      action: () => { openModal?.("post");      setShowCreateMenu(false); setTab("Posts"); } },
+                      { label: "📅 New Event",     action: () => { openModal?.("event");     setShowCreateMenu(false); setTab("Events"); } },
+                      { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowCreateMenu(false); setTab("Challenges"); } },
+                      { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowCreateMenu(false); setTab("Polls"); } },
+                    ].map(item => (
+                      <button key={item.label} onClick={item.action} style={{ width: "100%", display: "block", padding: "9px 16px", background: "transparent", border: "none", color: C.text, fontSize: 12.5, fontWeight: 500, cursor: "pointer", textAlign: "left" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(59,130,246,0.1)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {alert && <AlertBanner onDismiss={() => setAlert(false)} />}
+          <JourneyCard />
+          <Tabs active={tab} setActive={setTab} />
+
+          {tab === "Drafts" && (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 9 }}>Draft Content</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                {DRAFTS.map(d => <DraftCard key={d.id} d={d} />)}
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 9 }}>All Content (Drafts &amp; Scheduled)</div>
+              <ContentTable />
+              <FeedRow />
+            </>
+          )}
+
+          {tab === "Events" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>{events.length} Events</div>
+                <button onClick={() => openModal?.("event")} style={{ padding: "6px 14px", borderRadius: 7, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={11} /> Add Event</button>
+              </div>
+              {events.length === 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}><Flame size={20} color="#60a5fa" /></div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>No events yet</div>
+                  <button onClick={() => openModal?.("event")} style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={12} /> Create</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {events.map(ev => (
+                    <div key={ev.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{ev.title}</div>
+                        {ev.description && <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>{ev.description}</div>}
+                        {ev.event_date && <div style={{ fontSize: 11, color: C.dim, marginTop: 4 }}>{new Date(ev.event_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.muted }}>{ev.attendees || 0} attending</div>
+                      {onDeleteEvent && <button onClick={() => onDeleteEvent(ev.id)} style={{ background: "rgba(240,79,79,0.08)", border: "1px solid rgba(240,79,79,0.22)", borderRadius: 6, padding: "4px 10px", color: "#f87171", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Delete</button>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "Challenges" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>{challenges.length} Challenges</div>
+                <button onClick={() => openModal?.("challenge")} style={{ padding: "6px 14px", borderRadius: 7, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={11} /> New Challenge</button>
+              </div>
+              {challenges.length === 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}><Flame size={20} color="#60a5fa" /></div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>No challenges yet</div>
+                  <button onClick={() => openModal?.("challenge")} style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={12} /> Create</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {challenges.map(ch => (
+                    <div key={ch.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{ch.title}</div>
+                          <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 800, textTransform: "uppercase", background: ch.status === "active" ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)", color: ch.status === "active" ? "#34d399" : C.muted, border: `1px solid ${ch.status === "active" ? "rgba(52,211,153,0.25)" : C.border}` }}>{ch.status}</span>
+                        </div>
+                        {ch.description && <div style={{ fontSize: 11.5, color: C.muted }}>{ch.description}</div>}
+                        <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.muted }}>{(ch.participants || []).length} joined</div>
+                      {onDeleteChallenge && <button onClick={() => onDeleteChallenge(ch.id)} style={{ background: "rgba(240,79,79,0.08)", border: "1px solid rgba(240,79,79,0.22)", borderRadius: 6, padding: "4px 10px", color: "#f87171", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Delete</button>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "Polls" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>{polls.length} Polls</div>
+                <button onClick={() => openModal?.("poll")} style={{ padding: "6px 14px", borderRadius: 7, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={11} /> New Poll</button>
+              </div>
+              {polls.length === 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}><Flame size={20} color="#60a5fa" /></div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>No active polls</div>
+                  <button onClick={() => openModal?.("poll")} style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={12} /> Create</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {polls.map(poll => (
+                    <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{poll.question || poll.title}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 11, color: C.muted }}>{(poll.voters || []).length} votes</span>
+                          {onDeleteChallenge && <button onClick={() => onDeleteChallenge(poll.id)} style={{ background: "rgba(240,79,79,0.08)", border: "1px solid rgba(240,79,79,0.22)", borderRadius: 6, padding: "4px 10px", color: "#f87171", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Delete</button>}
+                        </div>
+                      </div>
+                      {(poll.options || []).map((opt, i) => {
+                        const optText = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
+                        const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
+                        const total = Math.max((poll.voters || []).length, 1);
+                        const pct = Math.round(optVotes / total * 100);
+                        return (
+                          <div key={i} style={{ marginBottom: 5 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.muted, marginBottom: 3 }}><span>{optText}</span><span>{pct}%</span></div>
+                            <div style={{ height: 4, background: C.dimmer, borderRadius: 2, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: "#3b82f6", borderRadius: 2 }} /></div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "Posts" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>{posts.length} Posts</div>
+                <button onClick={() => openModal?.("post")} style={{ padding: "6px 14px", borderRadius: 7, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={11} /> New Post</button>
+              </div>
+              {posts.length === 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}><Flame size={20} color="#60a5fa" /></div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>No posts yet</div>
+                  <button onClick={() => openModal?.("post")} style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={12} /> Create</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {posts.map(p => (
+                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                      {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>{p.member_name}</div>
+                        <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: C.dim }}>{Object.keys(p.reactions || {}).length} reactions</div>
+                      {onDeletePost && <button onClick={() => onDeletePost(p.id)} style={{ background: "rgba(240,79,79,0.08)", border: "1px solid rgba(240,79,79,0.22)", borderRadius: 6, padding: "4px 10px", color: "#f87171", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Delete</button>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
+        <RightSidebar />
+      </div>
+    </div>
+  );
+}
+
 /* ─── root ────────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
   return (
