@@ -17,6 +17,24 @@ import { cn } from '@/lib/utils';
 import ProfileDropdown from '../components/dashboard/ProfileDropdown';
 import MemberQuickModal from '../components/dashboard/MemberQuickModal';
 import QRCode from 'react-qr-code';
+import ManageClassesModal from '../components/gym/ManageClassesModal';
+import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
+import CreateEventModal from '../components/events/CreateEventModal';
+import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import QRScanner from '../components/gym/QRScanner';
+import CreatePollModal from '../components/polls/CreatePollModal';
+import ManageRewardsModal from '../components/gym/ManageRewardsModal';
+import ManageCoachesModal from '../components/gym/ManageCoachesModal';
+import EditGymPhotoModal from '../components/gym/EditGymPhotoModal';
+import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
+import ManageMembersModal from '../components/gym/ManageMembersModal';
+import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
+import ManageAmenitiesModal from '../components/gym/ManageAmenitiesModal';
+import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
+import EditGymLogoModal from '../components/gym/EditGymLogoModal';
+import EditPricingModal from '../components/gym/EditPricingModal';
+import GymJoinPoster from '../components/dashboard/GymJoinPoster';
+import MemberChatPanel from '../components/dashboard/MemberChatPanel';
 
 import { lazy, Suspense } from 'react';
 
