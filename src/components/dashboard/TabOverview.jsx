@@ -518,45 +518,7 @@ function LastSevenDaysWinbacks() {
         </div>
         </div>
         </div>
-        </div>
         );
-        }
-
-/* ─── Member Milestones ──────────────────────────────────────── */
-function MemberMilestones() {
-  const list = [
-    { name: 'Sarah A.', text: '30 Days Complete!', Icon: Trophy, color: C.amber  },
-    { name: 'Mike C.',  text: '30 Days Complete!', Icon: Trophy, color: C.amber  },
-    { name: 'Mike C.',  text: '100 Workout Club!', Icon: Award,  color: C.purple },
-  ];
-  return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: C.amberDim, border: `1px solid ${C.amberBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Trophy size={12} color={C.amber} />
-          </div>
-          <div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Member Milestones</div>
-            <div style={{ fontSize: 9.5, color: C.muted, marginTop: 1 }}>Celebrating this week</div>
-          </div>
-        </div>
-        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
-      </div>
-      {list.map((m, i) => (
-        <div key={i} style={{ padding: '10px 14px', borderBottom: i < list.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
-          <Avatar name={m.name} size={26} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: C.text }}>
-              <span style={{ fontWeight: 700 }}>{m.name}</span>
-              <span style={{ color: C.muted }}> – {m.text}</span>
-            </div>
-          </div>
-          <m.Icon size={13} color={m.color} style={{ flexShrink: 0 }} />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 /* ═══════════════════════════════════════════════════════════════
