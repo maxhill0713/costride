@@ -586,7 +586,7 @@ export default function Profile() {
             {/* Sheet: springs up from the bottom */}
             <motion.div
               key="create-post-sheet"
-              className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-5 pb-20 pt-4"
+              className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-5 pb-26 pt-4"
               variants={sheetVariants}
               initial="hidden"
               animate="visible"
