@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, Flame, Calendar, Target, Users, Crown, Star, Zap, Check } from 'lucide-react';
+import { Trophy, Star, Crown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
@@ -32,16 +30,12 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
 
   const handleEquipBadge = async (badgeId) => {
     let newEquipped = [...equippedBadges];
-    
     if (newEquipped.includes(badgeId)) {
       newEquipped = newEquipped.filter(id => id !== badgeId);
     } else {
-      if (newEquipped.length >= 3) {
-        newEquipped.shift();
-      }
+      if (newEquipped.length >= 3) newEquipped.shift();
       newEquipped.push(badgeId);
     }
-    
     setEquippedBadges(newEquipped);
     await base44.auth.updateMe({ equipped_badges: newEquipped });
   };
@@ -51,125 +45,155 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
   return (
     <AnimatePresence>
       {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end justify-center"
-      >
-        <motion.div
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-t-3xl border-t border-x border-white/10 shadow-2xl"
-        >
-          {/* Drag handle bar */}
-          <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-            <div className="w-9 h-1 rounded-full bg-white/25" />
-          </div>
+        <>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 10010,
+              background: 'rgba(0,0,0,0.82)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+            }}
+          />
 
-          {/* Header */}
-          <div className="flex items-center justify-center px-6 pt-2 pb-5">
-            <h2 className="text-xl font-bold text-white">Your Badges</h2>
-          </div>
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0,
+              zIndex: 10011,
+              display: 'flex', flexDirection: 'column',
+              background: 'rgba(10,10,18,0.98)',
+              borderTop: '1px solid rgba(255,255,255,0.09)',
+              borderTopLeftRadius: 28, borderTopRightRadius: 28,
+              paddingBottom: 'max(env(safe-area-inset-bottom,0px),12px)',
+              fontFamily: "'SF Pro Display',-apple-system,sans-serif",
+              overflow: 'hidden',
+            }}
+          >
+            {/* Drag handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.22)' }} />
+            </div>
 
-          <div className="space-y-6 px-6 pb-8">
-            {/* Equipped Badges Showcase */}
-            {equippedBadgeDetails.length > 0 && (
-              <div>
-                <h3 className="text-xs font-bold text-amber-300 mb-3 flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5 text-amber-400" />
-                  Your Showcase (Equipped)
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {equippedBadgeDetails.map((badge) => {
-                    const Icon = badge.icon;
-                    return (
-                      <motion.div
-                        key={badge.id}
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        onClick={() => handleEquipBadge(badge.id)}
-                        className={`relative p-3 rounded-xl bg-gradient-to-br ${badge.color} border border-white/30 shadow-md cursor-pointer hover:scale-105 transition-transform`}
-                      >
-                        <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-                          <Check className="w-2 h-2 text-amber-900" strokeWidth={3} />
-                        </div>
-                        {badge.image ? (
-                          <img src={badge.image} alt={badge.title} className="w-8 h-8 mx-auto mb-1 object-contain" />
-                        ) : (
-                          <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                            <Icon className="w-4 h-4 text-white drop-shadow-lg" strokeWidth={2.5} />
+            {/* Title */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px 18px 12px', flexShrink: 0 }}>
+              <span style={{ color: 'white', fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em' }}>Your Badges</span>
+            </div>
+
+            {/* Content */}
+            <div style={{ overflowY: 'auto', padding: '0 18px 24px' }}>
+
+              {/* Equipped showcase */}
+              {equippedBadgeDetails.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <Crown style={{ width: 13, height: 13, color: '#fbbf24' }} />
+                    <span style={{ color: '#fcd34d', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Your Showcase</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {equippedBadgeDetails.map(badge => {
+                      const Icon = badge.icon;
+                      return (
+                        <motion.div
+                          key={badge.id}
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleEquipBadge(badge.id)}
+                          style={{
+                            position: 'relative', padding: '10px 8px',
+                            borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                            background: 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.08))',
+                            border: '1px solid rgba(251,191,36,0.35)',
+                          }}
+                        >
+                          <div style={{ position: 'absolute', top: 6, right: 6, width: 14, height: 14, background: '#fbbf24', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Check style={{ width: 8, height: 8, color: '#78350f' }} strokeWidth={3} />
                           </div>
-                        )}
-                        <h4 className="font-bold text-white text-[9px] text-center drop-shadow line-clamp-1">{badge.title}</h4>
-                      </motion.div>
-                    );
-                  })}
+                          {badge.image
+                            ? <img src={badge.image} alt={badge.title} style={{ width: 36, height: 36, objectFit: 'contain', margin: '0 auto 6px' }} />
+                            : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px' }}><Icon style={{ width: 18, height: 18, color: 'white' }} /></div>
+                          }
+                          <p style={{ color: 'white', fontSize: 9, fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{badge.title}</p>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Earned Badges */}
-            {earnedBadges.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-400" />
-                  Earned ({earnedBadges.length})
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {earnedBadges.map((badge, index) => {
-                    const Icon = badge.icon;
-                    const isEquipped = equippedBadges.includes(badge.id);
-                    return (
-                      <motion.div
-                        key={badge.id}
-                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ delay: index * 0.05, duration: 0.3, type: "spring" }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => handleEquipBadge(badge.id)}
-                      >
-                        <Card className={`p-3 text-center bg-gradient-to-br ${badge.color} border ${isEquipped ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-white/20 hover:border-white/40'} shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group cursor-pointer`}>
+              {/* Divider */}
+              {equippedBadgeDetails.length > 0 && earnedBadges.length > 0 && (
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', marginBottom: 20 }} />
+              )}
+
+              {/* Earned badges */}
+              {earnedBadges.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <Trophy style={{ width: 13, height: 13, color: '#facc15' }} />
+                    <span style={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Earned ({earnedBadges.length})</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {earnedBadges.map((badge, index) => {
+                      const Icon = badge.icon;
+                      const isEquipped = equippedBadges.includes(badge.id);
+                      return (
+                        <motion.div
+                          key={badge.id}
+                          initial={{ opacity: 0, scale: 0.85, y: 8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ delay: index * 0.05, type: 'spring' }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleEquipBadge(badge.id)}
+                          style={{
+                            position: 'relative', padding: '10px 8px',
+                            borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                            background: isEquipped
+                              ? 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.08))'
+                              : 'rgba(255,255,255,0.05)',
+                            border: isEquipped
+                              ? '1px solid rgba(251,191,36,0.45)'
+                              : '1px solid rgba(255,255,255,0.09)',
+                            boxShadow: isEquipped ? '0 0 0 2px rgba(251,191,36,0.18)' : 'none',
+                          }}
+                        >
                           {isEquipped && (
-                            <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10">
-                              <Check className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} />
+                            <div style={{ position: 'absolute', top: 6, right: 6, width: 14, height: 14, background: '#fbbf24', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Check style={{ width: 8, height: 8, color: '#78350f' }} strokeWidth={3} />
                             </div>
                           )}
-
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-
-                          {badge.image ? (
-                            <img src={badge.image} alt={badge.title} className="w-10 h-10 mx-auto mb-1.5 object-contain relative z-10" />
-                          ) : (
-                            <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
-                              <Icon className="w-5 h-5 text-white drop-shadow-lg z-10" strokeWidth={2.5} />
-                            </div>
-                          )}
-
-                          <h4 className="font-bold text-white text-[10px] mb-0.5 drop-shadow line-clamp-1">{badge.title}</h4>
-                          <p className="text-[8px] text-white/80 font-medium drop-shadow line-clamp-1">{badge.description}</p>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
+                          {badge.image
+                            ? <img src={badge.image} alt={badge.title} style={{ width: 36, height: 36, objectFit: 'contain', margin: '0 auto 6px' }} />
+                            : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px' }}><Icon style={{ width: 18, height: 18, color: 'white' }} /></div>
+                          }
+                          <p style={{ color: 'white', fontSize: 9, fontWeight: 700, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{badge.title}</p>
+                          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 8, fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{badge.description}</p>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {earnedBadges.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-slate-400">Check out the monthly challenges to earn some badges!</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
+              {earnedBadges.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>Check out the monthly challenges to earn some badges!</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
