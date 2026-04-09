@@ -1,121 +1,467 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CalendarDays, User, Send, ChevronRight, CheckCircle, X, BadgeCheck } from 'lucide-react';
+import {
+  CalendarDays, User, Send, ChevronRight, CheckCircle, X, BadgeCheck,
+  Paperclip, Camera, Image, Film, FileText, Play, Download,
+} from 'lucide-react';
 
+/* ─────────── helpers ─────────── */
+const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+const fmtTime = (date) => {
+  if (!date) return '';
+  const d = new Date(date); const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
+  if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday: 'short' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+};
+
+/* ─────────── MediaBubble ─────────── */
+function MediaBubble({ url, type, name, isMe }) {
+  const [playing, setPlaying] = useState(false);
+  if (type === 'image') {
+    return (
+      <a href={url} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 2 }}>
+        <img src={url} alt="" style={{ maxWidth: 200, maxHeight: 220, borderRadius: 12, objectFit: 'cover', display: 'block', border: '1px solid rgba(255,255,255,0.08)' }} />
+      </a>
+    );
+  }
+  if (type === 'video') {
+    return (
+      <div style={{ position: 'relative', maxWidth: 220, borderRadius: 12, overflow: 'hidden', background: '#000', marginBottom: 2 }}>
+        <video
+          src={url}
+          style={{ width: '100%', maxHeight: 200, display: 'block', objectFit: 'cover' }}
+          controls={playing}
+          onClick={() => setPlaying(true)}
+        />
+        {!playing && (
+          <div
+            onClick={() => setPlaying(true)}
+            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.35)' }}
+          >
+            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Play style={{ width: 18, height: 18, color: '#111', marginLeft: 2 }} />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <a href={url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: isMe ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none', marginBottom: 2, maxWidth: 220 }}>
+      <FileText style={{ width: 16, height: 16, color: isMe ? '#fff' : '#94a3b8', flexShrink: 0 }} />
+      <span style={{ fontSize: 12, fontWeight: 600, color: isMe ? '#fff' : '#cbd5e1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name || 'File'}</span>
+      <Download style={{ width: 12, height: 12, color: isMe ? 'rgba(255,255,255,0.6)' : '#475569', flexShrink: 0 }} />
+    </a>
+  );
+}
+
+/* ─────────── AttachMenu ─────────── */
+function AttachMenu({ onPickFile, onPickCamera, onClose }) {
+  useEffect(() => {
+    const handler = (e) => { if (!e.target.closest('[data-attach-menu]')) onClose(); };
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [onClose]);
+
+  const items = [
+    { icon: Image, label: 'Photo / Video', action: () => { onPickFile('image/*,video/*'); onClose(); } },
+    { icon: Camera, label: 'Camera',        action: () => { onPickCamera(); onClose(); } },
+    { icon: FileText, label: 'File',         action: () => { onPickFile('*/*'); onClose(); } },
+  ];
+
+  return (
+    <div data-attach-menu style={{
+      position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, zIndex: 20,
+      background: 'linear-gradient(160deg, #141b2e 0%, #0b0f1e 100%)',
+      border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16,
+      padding: 6, display: 'flex', flexDirection: 'column', gap: 2,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+      minWidth: 160,
+    }}>
+      {items.map(({ icon: Icon, label, action }) => (
+        <button key={label} onClick={action} style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
+          borderRadius: 10, border: 'none', background: 'none', cursor: 'pointer',
+          fontSize: 13, fontWeight: 600, color: '#cbd5e1', fontFamily: 'inherit',
+          transition: 'background 0.1s',
+        }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'none'}
+        >
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon style={{ width: 14, height: 14, color: '#818cf8' }} />
+          </div>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────── MediaPreviewStrip ─────────── */
+function MediaPreviewStrip({ previews, onRemove }) {
+  if (!previews.length) return null;
+  return (
+    <div style={{ display: 'flex', gap: 8, padding: '8px 12px 0', flexWrap: 'nowrap', overflowX: 'auto' }}>
+      {previews.map((p, i) => (
+        <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+          {p.type.startsWith('image/') ? (
+            <img src={p.objectUrl} alt="" style={{ width: 60, height: 60, borderRadius: 10, objectFit: 'cover', border: '1px solid rgba(99,102,241,0.4)' }} />
+          ) : p.type.startsWith('video/') ? (
+            <div style={{ width: 60, height: 60, borderRadius: 10, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,0.4)' }}>
+              <Film style={{ width: 20, height: 20, color: '#818cf8' }} />
+            </div>
+          ) : (
+            <div style={{ width: 60, height: 60, borderRadius: 10, background: 'rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, border: '1px solid rgba(99,102,241,0.4)', padding: 4 }}>
+              <FileText style={{ width: 18, height: 18, color: '#818cf8' }} />
+              <span style={{ fontSize: 9, color: '#64748b', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 52 }}>{p.name}</span>
+            </div>
+          )}
+          <button onClick={() => onRemove(i)} style={{ position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: '50%', background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+            <X style={{ width: 10, height: 10, color: '#94a3b8' }} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────── CoachMessages ─────────── */
 function CoachMessages({ currentUser }) {
   const [openThread, setOpenThread] = useState(null);
   const [replyText, setReplyText]   = useState('');
-  const bottomRef = useRef(null);
+  const [previews, setPreviews]     = useState([]);
+  const [showAttach, setShowAttach] = useState(false);
+  const [uploading, setUploading]   = useState(false);
+  const bottomRef   = useRef(null);
+  const fileInputRef = useRef(null);
+  const fileAcceptRef = useRef('image/*,video/*');
   const qc = useQueryClient();
 
-  const { data: received = [], isLoading } = useQuery({ queryKey: ['coachMessages', currentUser?.id], queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200), enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000 });
-  const { data: sent = [] } = useQuery({ queryKey: ['coachMessagesSent', currentUser?.id], queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200), enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000 });
-
-  const sendReply = useMutation({
-    mutationFn: content => base44.entities.Message.create({ sender_id: currentUser.id, sender_name: currentUser.full_name || currentUser.email, sender_avatar: currentUser.avatar_url || null, receiver_id: openThread, receiver_name: threads.find(t => t.sender_id === openThread)?.name || 'Coach', content, read: false }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] }); qc.invalidateQueries({ queryKey: ['coachMessagesSent', currentUser?.id] }); qc.invalidateQueries({ queryKey: ['dashMessages'] }); setReplyText(''); },
+  const { data: received = [], isLoading } = useQuery({
+    queryKey: ['coachMessages', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
+    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
+  });
+  const { data: sent = [] } = useQuery({
+    queryKey: ['coachMessagesSent', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200),
+    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
   });
 
   const threads = useMemo(() => {
     const map = {};
-    received.forEach(msg => { const otherId = msg.sender_id; if (!map[otherId]) map[otherId] = { sender_id: otherId, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] }; map[otherId].messages.push(msg); });
-    sent.forEach(msg => { const otherId = msg.receiver_id; if (map[otherId]) map[otherId].messages.push(msg); });
-    Object.values(map).forEach(t => { const seen = new Set(); t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; }); t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)); });
-    return Object.values(map).sort((a, b) => { const la = a.messages[a.messages.length - 1]?.created_date || 0; const lb = b.messages[b.messages.length - 1]?.created_date || 0; return new Date(lb) - new Date(la); });
-  }, [received, sent]);
+    received.forEach(msg => {
+      const id = msg.sender_id;
+      if (!map[id]) map[id] = { sender_id: id, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] };
+      map[id].messages.push(msg);
+    });
+    sent.forEach(msg => {
+      const id = msg.receiver_id;
+      if (map[id]) map[id].messages.push(msg);
+    });
+    Object.values(map).forEach(t => {
+      const seen = new Set();
+      t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+      t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+      t.unread = t.messages.filter(m => m.receiver_id === currentUser?.id && !m.read).length;
+    });
+    return Object.values(map).sort((a, b) => {
+      const la = a.messages[a.messages.length - 1]?.created_date || 0;
+      const lb = b.messages[b.messages.length - 1]?.created_date || 0;
+      return new Date(lb) - new Date(la);
+    });
+  }, [received, sent, currentUser?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [openThread, received, sent]);
 
   const activeThread = threads.find(t => t.sender_id === openThread);
-  const fmtTime = (date) => { if (!date) return ''; const d = new Date(date); const now = new Date(); const diffDays = Math.floor((now - d) / 86400000); if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); if (diffDays === 1) return 'Yesterday'; if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday: 'short' }); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
 
+  const handlePickFile = (accept) => {
+    fileAcceptRef.current = accept;
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = accept;
+      fileInputRef.current.removeAttribute('capture');
+      fileInputRef.current.click();
+    }
+  };
+
+  const handlePickCamera = () => {
+    fileAcceptRef.current = 'image/*';
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.setAttribute('capture', 'environment');
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const newPreviews = files.map(file => ({
+      file,
+      name: file.name,
+      type: file.type,
+      objectUrl: URL.createObjectURL(file),
+    }));
+    setPreviews(prev => [...prev, ...newPreviews]);
+    e.target.value = '';
+  };
+
+  const removePreview = useCallback((index) => {
+    setPreviews(prev => {
+      URL.revokeObjectURL(prev[index].objectUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => { previews.forEach(p => URL.revokeObjectURL(p.objectUrl)); };
+  }, []);
+
+  const sendReply = useMutation({
+    mutationFn: async ({ content, mediaUrl, mediaType, mediaName }) => {
+      const receiverName = threads.find(t => t.sender_id === openThread)?.name || 'Coach';
+      return base44.entities.Message.create({
+        sender_id:     currentUser.id,
+        sender_name:   currentUser.full_name || currentUser.email,
+        sender_avatar: currentUser.avatar_url || null,
+        receiver_id:   openThread,
+        receiver_name: receiverName,
+        content:       content || '',
+        media_url:     mediaUrl || null,
+        media_type:    mediaType || null,
+        media_name:    mediaName || null,
+        read:          false,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] });
+      qc.invalidateQueries({ queryKey: ['coachMessagesSent', currentUser?.id] });
+      qc.invalidateQueries({ queryKey: ['dashMessages'] });
+      setReplyText('');
+      setPreviews([]);
+    },
+  });
+
+  const handleSend = async () => {
+    if (uploading || sendReply.isPending) return;
+    const hasText = replyText.trim().length > 0;
+    const hasMedia = previews.length > 0;
+    if (!hasText && !hasMedia) return;
+
+    setUploading(true);
+    try {
+      if (hasMedia) {
+        // Send each media file as a separate message (with optional text on first)
+        for (let i = 0; i < previews.length; i++) {
+          const p = previews[i];
+          const isFirst = i === 0;
+          let mediaUrl = null;
+          let mediaType = 'file';
+          try {
+            const result = await base44.integrations.Core.UploadFile({ file: p.file });
+            mediaUrl = result.file_url;
+          } catch {
+            mediaUrl = p.objectUrl;
+          }
+          if (p.type.startsWith('image/')) mediaType = 'image';
+          else if (p.type.startsWith('video/')) mediaType = 'video';
+          await sendReply.mutateAsync({
+            content:   isFirst && hasText ? replyText.trim() : '',
+            mediaUrl,
+            mediaType,
+            mediaName: p.name,
+          });
+        }
+      } else {
+        await sendReply.mutateAsync({ content: replyText.trim() });
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const canSend = (replyText.trim().length > 0 || previews.length > 0) && !uploading && !sendReply.isPending;
+
+  /* ── Thread view ── */
   if (activeThread) {
-    const handleSend = () => { if (!replyText.trim()) return; sendReply.mutate(replyText.trim()); };
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', background: 'linear-gradient(135deg, rgba(10,14,30,0.98) 0%, rgba(5,8,20,1) 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.02)' }}>
-          <button onClick={() => setOpenThread(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: '#94a3b8' }}>
-            <ChevronRight style={{ width: 20, height: 20, transform: 'rotate(180deg)' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.015)', backdropFilter: 'blur(12px)' }}>
+          <button onClick={() => setOpenThread(null)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, cursor: 'pointer', padding: '6px 8px', display: 'flex', color: '#94a3b8', flexShrink: 0 }}>
+            <ChevronRight style={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
           </button>
           <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 10px rgba(59,130,246,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', fontSize: 15, fontWeight: 800, color: '#3b82f6' }}>
-              {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}
+            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: activeThread.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.5)', boxShadow: '0 0 14px rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#818cf8' }}>
+              {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(activeThread.name)}
             </div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #080e18' }} />
+            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #060810', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
           </div>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>{activeThread.name}</p>
-            <p style={{ fontSize: 11, color: '#475569', margin: '1px 0 0' }}>Coach · Tap to reply</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>{activeThread.name}</p>
+            <p style={{ fontSize: 11, color: '#22c55e', margin: '1px 0 0', fontWeight: 600 }}>Online · Coach</p>
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {activeThread.messages.map((msg, i) => {
             const isMe = msg.sender_id === currentUser?.id;
-            const prevMsg = activeThread.messages[i - 1];
-            const showAvatar = !isMe && (i === 0 || prevMsg?.sender_id !== msg.sender_id);
+            const prev = activeThread.messages[i - 1];
+            const showAvatar = !isMe && (i === 0 || prev?.sender_id !== msg.sender_id);
+            const isGrouped = i > 0 && prev?.sender_id === msg.sender_id && (new Date(msg.created_date) - new Date(prev?.created_date)) < 60000;
+            const hasMedia = !!msg.media_url;
+            const hasText  = !!msg.content;
+
             return (
-              <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8 }}>
+              <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8, marginTop: isGrouped ? 2 : 6 }}>
                 {!isMe && (
                   <div style={{ width: 28, flexShrink: 0 }}>
-                    {showAvatar && <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', background: activeThread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#3b82f6' }}>{activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (activeThread.name || '?').charAt(0).toUpperCase()}</div>}
+                    {showAvatar
+                      ? <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', background: activeThread.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#818cf8' }}>
+                          {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(activeThread.name)}
+                        </div>
+                      : null}
                   </div>
                 )}
                 <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2, alignItems: isMe ? 'flex-end' : 'flex-start' }}>
-                  {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4 }}>{activeThread.name}</span>}
-                  <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? '#3b82f6' : 'rgba(255,255,255,0.08)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.5 }}>{msg.content}</div>
-                  <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4, paddingRight: 4 }}>{fmtTime(msg.created_date)}</span>
+                  {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4, marginBottom: 1 }}>{activeThread.name}</span>}
+                  {hasMedia && <MediaBubble url={msg.media_url} type={msg.media_type || 'file'} name={msg.media_name} isMe={isMe} />}
+                  {hasText && (
+                    <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'rgba(255,255,255,0.07)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.08)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.55, boxShadow: isMe ? '0 2px 12px rgba(99,102,241,0.35)' : 'none' }}>
+                      {msg.content}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 10, color: '#1e2d42', paddingLeft: 4, paddingRight: 4 }}>{fmtTime(msg.created_date)}</span>
                 </div>
               </div>
             );
           })}
           <div ref={bottomRef} />
         </div>
-        <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 8, alignItems: 'flex-end', flexShrink: 0, background: 'rgba(255,255,255,0.01)' }}>
-          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder={`Reply to ${activeThread.name}…`} rows={1} style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '10px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }} onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
-          <button onClick={handleSend} disabled={!replyText.trim() || sendReply.isPending} style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: replyText.trim() ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: 'none', cursor: replyText.trim() ? 'pointer' : 'default', transition: 'background 0.15s', flexShrink: 0, boxShadow: replyText.trim() ? '0 0 12px rgba(59,130,246,0.4)' : 'none' }}>
-            <Send style={{ width: 16, height: 16, color: replyText.trim() ? '#fff' : '#334155' }} />
+
+        {/* Media preview strip */}
+        <MediaPreviewStrip previews={previews} onRemove={removePreview} />
+
+        {/* Input bar */}
+        <div style={{ padding: '10px 12px 12px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 8, alignItems: 'flex-end', flexShrink: 0, background: 'rgba(0,0,0,0.2)', position: 'relative' }}>
+          {showAttach && (
+            <AttachMenu
+              onPickFile={handlePickFile}
+              onPickCamera={handlePickCamera}
+              onClose={() => setShowAttach(false)}
+            />
+          )}
+          <button
+            onClick={() => setShowAttach(v => !v)}
+            style={{ width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showAttach ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)', border: `1px solid ${showAttach ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.09)'}`, cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+          >
+            <Paperclip style={{ width: 15, height: 15, color: showAttach ? '#818cf8' : '#475569' }} />
+          </button>
+          <textarea
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder={`Message ${activeThread.name}…`}
+            rows={1}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 18, padding: '9px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto', transition: 'border-color 0.15s' }}
+            onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!canSend}
+            style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: canSend ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: canSend ? 'pointer' : 'default', transition: 'all 0.15s', flexShrink: 0, boxShadow: canSend ? '0 4px 14px rgba(99,102,241,0.5)' : 'none' }}
+          >
+            {uploading || sendReply.isPending
+              ? <div className="animate-spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
+              : <Send style={{ width: 14, height: 14, color: canSend ? '#fff' : '#334155', marginLeft: 1 }} />
+            }
           </button>
         </div>
+        <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileChange} />
       </div>
     );
   }
 
+  /* ── Loading skeleton ── */
   if (isLoading) return (
-    <div className="space-y-2">
-      {[1,2,3].map(i => <div key={i} style={{ height: 72, borderRadius: 16, background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite' }} />)}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+      {[1,2,3].map(i => (
+        <div key={i} style={{ height: 74, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 14, padding: '0 16px' }}>
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.06)', width: '55%' }} />
+            <div style={{ height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', width: '80%' }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 
+  /* ── Empty state ── */
   if (threads.length === 0) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
-      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-        <User style={{ width: 26, height: 26, color: '#a78bfa' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '52px 24px', textAlign: 'center' }}>
+      <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <User style={{ width: 28, height: 28, color: '#6366f1' }} />
       </div>
-      <p style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>No messages yet</p>
-      <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, maxWidth: 240, margin: 0 }}>When a coach or gym owner messages you, it will appear here.</p>
+      <p style={{ fontSize: 15, fontWeight: 800, color: '#e2e8f0', margin: '0 0 6px', letterSpacing: '-0.01em' }}>No messages yet</p>
+      <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.65, maxWidth: 240, margin: 0 }}>When a coach or gym owner messages you, their conversation will appear here.</p>
     </div>
   );
 
+  /* ── Thread list ── */
   return (
-    <div style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(10,14,30,0.97) 0%, rgba(5,8,20,1) 100%)' }}>
+    <div style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
       {threads.map((thread, idx) => {
         const lastMsg = thread.messages[thread.messages.length - 1];
+        const isLastFromMe = lastMsg?.sender_id === currentUser?.id;
+        const hasUnread = thread.unread > 0;
+        const lastPreview = lastMsg?.media_type === 'image' ? '📷 Photo'
+          : lastMsg?.media_type === 'video' ? '🎥 Video'
+          : lastMsg?.media_type === 'file'  ? '📎 File'
+          : (lastMsg?.content || '');
+
         return (
-          <button key={thread.sender_id} onClick={() => setOpenThread(thread.sender_id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', border: 'none', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit', textAlign: 'left', borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'background 0.12s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <button
+            key={thread.sender_id}
+            onClick={() => setOpenThread(thread.sender_id)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', border: 'none', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit', textAlign: 'left', borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            {/* Avatar */}
             <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', border: '2px solid #3b82f6', boxShadow: '0 0 12px rgba(59,130,246,0.55)', background: thread.avatar ? 'transparent' : 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#3b82f6' }}>
-                {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (thread.name || '?').charAt(0).toUpperCase()}
+              <div style={{ width: 50, height: 50, borderRadius: '50%', overflow: 'hidden', background: thread.avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: `2px solid ${hasUnread ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.3)'}`, boxShadow: hasUnread ? '0 0 14px rgba(99,102,241,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 800, color: '#818cf8', transition: 'all 0.2s' }}>
+                {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread.name)}
               </div>
+              {/* Online dot */}
+              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #060810', boxShadow: '0 0 6px rgba(16,185,129,0.5)' }} />
             </div>
+
+            {/* Content */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{thread.name}</span>
-                <span style={{ fontSize: 11, color: '#334155', flexShrink: 0, marginLeft: 8 }}>{fmtTime(lastMsg?.created_date)}</span>
+                <span style={{ fontSize: 14, fontWeight: hasUnread ? 800 : 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{thread.name}</span>
+                <span style={{ fontSize: 11, color: hasUnread ? '#6366f1' : '#334155', flexShrink: 0, marginLeft: 8, fontWeight: hasUnread ? 700 : 500 }}>{fmtTime(lastMsg?.created_date)}</span>
               </div>
-              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{lastMsg?.content || ''}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {isLastFromMe && <span style={{ fontSize: 11, color: '#334155', flexShrink: 0 }}>You: </span>}
+                <span style={{ fontSize: 13, color: hasUnread ? '#94a3b8' : '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontWeight: hasUnread ? 600 : 400 }}>{lastPreview}</span>
+              </div>
             </div>
-            <ChevronRight style={{ width: 16, height: 16, color: '#2d3f55', flexShrink: 0 }} />
+
+            {/* Unread badge or chevron */}
+            {hasUnread
+              ? <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10, fontWeight: 800, color: '#fff', boxShadow: '0 2px 8px rgba(99,102,241,0.5)' }}>{thread.unread > 9 ? '9+' : thread.unread}</div>
+              : <ChevronRight style={{ width: 14, height: 14, color: '#1e2d42', flexShrink: 0 }} />
+            }
           </button>
         );
       })}
@@ -123,30 +469,48 @@ function CoachMessages({ currentUser }) {
   );
 }
 
+/* ─────────── CoachInviteBanner ─────────── */
 function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }) {
-  const iniLocal = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
-    <div style={{ background: 'linear-gradient(135deg, rgba(30,58,138,0.45) 0%, rgba(16,19,40,0.95) 100%)', border: '1px solid rgba(59,130,246,0.35)', borderBottom: '3px solid rgba(29,78,216,0.55)', borderRadius: 18, padding: '16px 16px', boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: invite.coach_avatar ? 'transparent' : 'rgba(59,130,246,0.15)', border: '2px solid rgba(59,130,246,0.5)', boxShadow: '0 0 14px rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#3b82f6' }}>
-          {invite.coach_avatar ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : iniLocal(invite.coach_name)}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', marginBottom: 3, letterSpacing: '-0.01em' }}>{invite.coach_name}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>Coach</span>
-            <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+    <div style={{ background: 'linear-gradient(160deg, #0c1128 0%, #060c1e 100%)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+      {/* Top accent line */}
+      <div style={{ height: 3, background: 'linear-gradient(90deg, #4f46e5, #818cf8, #6366f1)', opacity: 0.8 }} />
+      <div style={{ padding: '16px 16px 18px' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Coach Request</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: invite.coach_avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: '2px solid rgba(99,102,241,0.5)', boxShadow: '0 0 18px rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#818cf8' }}>
+              {invite.coach_avatar ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(invite.coach_name)}
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-            Wants you as a personal training client{invite.coach_gym_name ? ` · ${invite.coach_gym_name}` : ''}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', marginBottom: 3 }}>{invite.coach_name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#818cf8' }}>Personal Trainer</span>
+              <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+            </div>
+            {invite.coach_gym_name && (
+              <div style={{ fontSize: 11, color: '#475569', fontWeight: 500 }}>{invite.coach_gym_name}</div>
+            )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <button onClick={onAccept} disabled={accepting || declining} style={{ width: 42, height: 42, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, #22c55e, #16a34a, #15803d)', border: '1px solid transparent', borderBottom: '3px solid #14532d', boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(34,197,94,0.3)', cursor: 'pointer', transition: 'all 0.1s', opacity: accepting || declining ? 0.6 : 1 }}>
-            <CheckCircle style={{ width: 18, height: 18, color: '#fff' }} />
+        <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.55, margin: '12px 0 14px', paddingLeft: 2 }}>
+          {invite.coach_name.split(' ')[0]} wants to work with you as their personal training client.
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onAccept}
+            disabled={accepting || declining}
+            style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'linear-gradient(135deg, #16a34a, #22c55e)', border: '1px solid rgba(34,197,94,0.3)', cursor: 'pointer', fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', boxShadow: '0 4px 14px rgba(34,197,94,0.3)', opacity: accepting || declining ? 0.6 : 1, transition: 'all 0.15s', fontFamily: 'inherit' }}
+          >
+            <CheckCircle style={{ width: 16, height: 16 }} /> Accept
           </button>
-          <button onClick={onDecline} disabled={accepting || declining} style={{ width: 42, height: 42, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, #ef4444, #dc2626, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(239,68,68,0.3)', cursor: 'pointer', transition: 'all 0.1s', opacity: accepting || declining ? 0.6 : 1 }}>
-            <X style={{ width: 18, height: 18, color: '#fff' }} />
+          <button
+            onClick={onDecline}
+            disabled={accepting || declining}
+            style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#64748b', letterSpacing: '-0.01em', opacity: accepting || declining ? 0.6 : 1, transition: 'all 0.15s', fontFamily: 'inherit' }}
+          >
+            <X style={{ width: 15, height: 15 }} /> Decline
           </button>
         </div>
       </div>
@@ -154,30 +518,38 @@ function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }
   );
 }
 
+/* ─────────── MyCoachBox ─────────── */
 function MyCoachBox({ invite }) {
-  const iniLocal = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
-    <div style={{ background: 'linear-gradient(135deg, rgba(10,14,30,0.97) 0%, rgba(5,8,20,1) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '18px 18px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{ width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: invite.coach_avatar ? 'transparent' : 'rgba(59,130,246,0.15)', border: '2px solid rgba(59,130,246,0.5)', boxShadow: '0 0 12px rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#3b82f6' }}>
-          {invite.coach_avatar ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : iniLocal(invite.coach_name)}
-        </div>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.01em' }}>{invite.coach_name}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>Coach</span>
-            <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+    <div style={{ background: 'linear-gradient(160deg, #0c1128 0%, #060c1e 100%)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+      <div style={{ height: 3, background: 'linear-gradient(90deg, #4f46e5, #818cf8)', opacity: 0.6 }} />
+      <div style={{ padding: '16px 16px 18px' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Your Coach</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: invite.coach_avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: '2px solid rgba(99,102,241,0.45)', boxShadow: '0 0 14px rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#818cf8' }}>
+            {invite.coach_avatar ? <img src={invite.coach_avatar} alt={invite.coach_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(invite.coach_name)}
+          </div>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', marginBottom: 3 }}>{invite.coach_name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#818cf8' }}>Personal Trainer</span>
+              <BadgeCheck style={{ width: 13, height: 13, color: '#22c55e' }} />
+            </div>
           </div>
         </div>
-      </div>
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
-      <div style={{ fontSize: 12, color: '#334155', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
-        Your coach will add workouts &amp; programmes here soon.
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '14px 0' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <CalendarDays style={{ width: 13, height: 13, color: '#6366f1' }} />
+          </div>
+          <p style={{ fontSize: 12, color: '#475569', fontStyle: 'italic', margin: 0 }}>Your coach will add workouts &amp; programmes here soon.</p>
+        </div>
       </div>
     </div>
   );
 }
 
+/* ─────────── TrainerTab ─────────── */
 export default function TrainerTab({ currentUser }) {
   const [activeSection, setActiveSection] = useState('coaches');
   const queryClient = useQueryClient();
@@ -188,8 +560,16 @@ export default function TrainerTab({ currentUser }) {
   const { data: me } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const user = me || currentUser;
 
-  const { data: pendingInvites = [] } = useQuery({ queryKey: ['coachInvitesPending', user?.id], queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'pending' }, '-created_date', 20), enabled: !!user?.id, staleTime: 0, refetchInterval: 15 * 1000 });
-  const { data: acceptedInvites = [] } = useQuery({ queryKey: ['coachInvitesAccepted', user?.id], queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'accepted' }, '-created_date', 10), enabled: !!user?.id, staleTime: 0, refetchInterval: 30 * 1000 });
+  const { data: pendingInvites = [] } = useQuery({
+    queryKey: ['coachInvitesPending', user?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'pending' }, '-created_date', 20),
+    enabled: !!user?.id, staleTime: 0, refetchInterval: 15 * 1000,
+  });
+  const { data: acceptedInvites = [] } = useQuery({
+    queryKey: ['coachInvitesAccepted', user?.id],
+    queryFn: () => base44.entities.CoachInvite.filter({ member_id: user.id, status: 'accepted' }, '-created_date', 10),
+    enabled: !!user?.id, staleTime: 0, refetchInterval: 30 * 1000,
+  });
 
   const [processingId, setProcessingId] = useState(null);
 
@@ -214,7 +594,7 @@ export default function TrainerTab({ currentUser }) {
         <button onClick={() => setActiveSection('classes')} className={`${btnBase} ${activeSection === 'classes' ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_5px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]' : btnInactive}`}>
           <CalendarDays className="w-4 h-4" />Classes
         </button>
-        <button onClick={() => setActiveSection('coaches')} className={`${btnBase} ${activeSection === 'coaches' ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]' : btnInactive}`}>
+        <button onClick={() => setActiveSection('coaches')} className={`${btnBase} ${activeSection === 'coaches' ? 'bg-gradient-to-b from-indigo-400 via-indigo-500 to-indigo-600 text-white border-transparent shadow-[0_5px_0_0_#3730a3,0_8px_20px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]' : btnInactive}`}>
           <User className="w-4 h-4" />Coaches
         </button>
       </div>
@@ -231,15 +611,20 @@ export default function TrainerTab({ currentUser }) {
         <div className="space-y-4">
           {pendingInvites.length > 0 && (
             <div className="space-y-3">
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Coach Requests</p>
               {pendingInvites.map(invite => (
-                <CoachInviteBanner key={invite.id} invite={invite} accepting={processingId === invite.id} declining={processingId === invite.id} onAccept={() => handleAccept(invite)} onDecline={() => handleDecline(invite)} />
+                <CoachInviteBanner
+                  key={invite.id}
+                  invite={invite}
+                  accepting={processingId === invite.id}
+                  declining={processingId === invite.id}
+                  onAccept={() => handleAccept(invite)}
+                  onDecline={() => handleDecline(invite)}
+                />
               ))}
             </div>
           )}
           {acceptedInvites.length > 0 && (
             <div className="space-y-3">
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Personal Trainer</p>
               {acceptedInvites.map(invite => (
                 <MyCoachBox key={invite.id} invite={invite} />
               ))}
