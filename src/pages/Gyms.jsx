@@ -390,8 +390,8 @@ export default function Gyms() {
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="my-gyms" className="w-full">
-        {/* ── Fixed header — sits below the transparent safe area ── */}
-        <div className="fixed left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4 pt-4" style={{ top: 'env(safe-area-inset-top)' }}>
+        {/* ── Fixed header — Star + Tabs + Join with Code all in one bar ── */}
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center h-10 gap-6">
               {userGyms.length > 0 &&
