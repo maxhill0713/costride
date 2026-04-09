@@ -95,7 +95,10 @@ function FriendsSection({
             animate="visible"
             exit="exit">
             
-              <div className="w-11/12 max-w-2xl mt-14 h-[50vh] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+              <div
+                className="w-11/12 max-w-2xl h-[50vh] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden"
+                style={{ marginTop: 'calc(1rem + env(safe-area-inset-top))' }}
+              >
                 <div className="px-3 py-1 flex items-center gap-1">
                   <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -296,7 +299,10 @@ function FriendsSection({
             animate="visible"
             exit="exit">
             
-              <div className="w-11/12 max-w-2xl mt-14 h-[50vh] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+              <div
+                className="w-11/12 max-w-2xl h-[50vh] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden"
+                style={{ marginTop: 'calc(1rem + env(safe-area-inset-top))' }}
+              >
                 <div className="px-3 py-1 flex items-center gap-1">
                   <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
