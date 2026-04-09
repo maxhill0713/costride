@@ -338,7 +338,7 @@ export default function Home() {
       try { return await base44.auth.me(); }
       catch (error) { console.error('Auth error:', error); return null; }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // always fetch fresh user data to catch onboarding_completed resets
     gcTime: 10 * 60 * 1000,
   });
 

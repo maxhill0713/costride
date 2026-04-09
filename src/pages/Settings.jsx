@@ -247,12 +247,12 @@ export default function Settings() {
     setShowDeleteDialog(false);
     try {
       await base44.functions.invoke('deleteUserAccount');
-      // Clear all cached query data
+      // Clear all cached query data so fresh data is loaded on next sign-in
       queryClient.clear();
       // Clear localStorage/sessionStorage to reset all cached app data
       localStorage.clear();
       sessionStorage.clear();
-      // Force logout with redirect to login/onboarding page
+      // Force logout
       await base44.auth.logout();
     } catch (error) {
       console.error('Delete account error:', error);

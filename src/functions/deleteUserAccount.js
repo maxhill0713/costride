@@ -63,13 +63,21 @@ Deno.serve(async (req) => {
       ),
     ]);
 
-    // Reset onboarding flag so user can go through fresh onboarding on next sign-up
-    await db.entities.User.update(userId, {
+    // Reset all profile data so user goes through fresh onboarding on next sign-in
+    await base44.asServiceRole.entities.User.update(userId, {
       onboarding_completed: false,
+      account_type: null,
+      primary_gym_id: null,
+      training_days: null,
+      custom_workout_types: null,
+      workout_split: null,
+      custom_split_name: null,
+      current_streak: 0,
+      streak_freezes: 0,
+      avatar_url: null,
+      display_name: null,
+      username: null,
     });
-
-    // Logout the user (this removes their session)
-    await base44.auth.logout();
 
     return Response.json({ success: true, message: 'Account and all associated data deleted successfully' });
   } catch (error) {
